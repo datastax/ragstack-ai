@@ -1,3 +1,3 @@
 
 def test_import():
-    from ragstack.vectorstores import Cassandra # noqa
+    from ragstack.langchain.vectorstores import Cassandra # noqa
