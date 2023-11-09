@@ -4,7 +4,7 @@ The project uses [poetry](https://python-poetry.org/).
 To install poetry:
 
 ```shell
-pip install poetry
+pip install poetry pytest
 ```
 
 ## Run tests
