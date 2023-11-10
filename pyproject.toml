@@ -5,12 +5,43 @@ description = "RAGStack"
 license = "Apache-2.0"
 authors = ["DataStax"]
 readme = "README.md"
-packages = [{include = "ragstack"}]
+packages = [
+    {include = "ragstack"},
+    {include = "langchain", from = "ragstack-langchain/libs/langchain"},
+    {include = "langsmith", from = "ragstack-langsmith/python"},
+    {include = "langserve", from = "ragstack-langserve"}
+]
+exclude = ["ragstack-langserve/langserve/playground"]
+include = ["ragstack-langserve/langserve/playground/dist/**/*"]
 
 [tool.poetry.dependencies]
 python = ">=3.9,<4.0"
-ragstack-ai-langchain = { version = "0.0.1a2", extras = ["openai"] }
-ragstack-ai-langserve = "0.0.1a2"
+astrapy = "0.5.8"
+
+# Common LangChain/LangSmith/LangServe dependencies
+pydantic = ">=1,<3"
+requests = "^2"
+
+# Langchain non-optional dependencies
+SQLAlchemy = ">=1.4,<3"
+PyYAML = ">=5.3"
+numpy = "^1"
+dataclasses-json = ">= 0.5.7, < 0.7"
+tenacity = "^8.1.0"
+aiohttp = "^3.8.3"
+async-timeout = {version = "^4.0.0", python = "<3.11"}
+anyio = "<4.0"
+jsonpatch = "^1.33"
+
+# LangChain openai extra-dependencies
+openai = "^0"
+tiktoken = ">=0.3.2,<0.6.0"
+
+# LangSmith dependencies
+pytest-subtests = "^0.11.0"
+
+# LangServe non-optional dependencies
+httpx = ">=0.23.0" # May be able to decrease this version
 
 [tool.poetry.group.test.dependencies]
 pytest = "*"
