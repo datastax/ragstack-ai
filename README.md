@@ -7,6 +7,11 @@ To install poetry:
 pip install poetry
 ```
 
+## Setup git submodules
+```shell
+git submodule update --init
+```
+
 ## Install dependencies
 ```shell
 poetry install
