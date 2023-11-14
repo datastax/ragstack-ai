@@ -239,15 +239,17 @@ class MyTestCase(unittest.TestCase):
         self.astra_db_token = os.environ["ASTRA_DB_TOKEN"],
         self.astra_keyspace = os.environ["ASTRA_KEYSPACE"],
         self.astra_table_name = os.environ["ASTRA_TABLE_NAME"],
-        astra_vector_store = AstraDB(
-            collection_name=self.astra_table_name,
-            namespace=self.astra_keyspace,
-            token=self.astra_db_token,
-            api_endpoint=self.astra_db_endpoint
+        from astrapy.db import (
+            AstraDB as LibAstraDB,
         )
-        astra_vector_store.delete_collection()
+        astra_db = LibAstraDB(
+            token=self.astra_db_token,
+            api_endpoint=self.astra_db_endpoint,
+            namespace=self.astra_keyspace,
+        )
+        astra_db.delete_collection(self.astra_table_name)
         yield
-        astra_vector_store.delete_collection()
+        astra_db.delete_collection(self.astra_table_name)
 
 
 
