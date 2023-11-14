@@ -235,10 +235,10 @@ class MyTestCase(unittest.TestCase):
 
     @pytest.fixture(autouse=True)
     def run_before_and_after_tests(self):
-        self.astra_db_endpoint = os.environ["ASTRA_DB_ENDPOINT"],
-        self.astra_db_token = os.environ["ASTRA_DB_TOKEN"],
-        self.astra_keyspace = os.environ["ASTRA_KEYSPACE"],
-        self.astra_table_name = os.environ["ASTRA_TABLE_NAME"],
+        self.astra_db_endpoint = os.environ["ASTRA_DB_ENDPOINT"]
+        self.astra_db_token = os.environ["ASTRA_DB_TOKEN"]
+        self.astra_keyspace = os.environ["ASTRA_KEYSPACE"]
+        self.astra_table_name = os.environ["ASTRA_TABLE_NAME"]
         from astrapy.db import (
             AstraDB as LibAstraDB,
         )
