@@ -1,3 +1,4 @@
+import pytest
 import unittest
 import os
 from operator import itemgetter
@@ -232,12 +233,30 @@ def ingest_and_invoke(question, **kwargs) -> str:
 
 class MyTestCase(unittest.TestCase):
 
+    @pytest.fixture(autouse=True)
+    def run_before_and_after_tests(self):
+        self.astra_db_endpoint = os.environ["ASTRA_DB_ENDPOINT"],
+        self.astra_db_token = os.environ["ASTRA_DB_TOKEN"],
+        self.astra_keyspace = os.environ["ASTRA_KEYSPACE"],
+        self.astra_table_name = os.environ["ASTRA_TABLE_NAME"],
+        astra_vector_store = AstraDB(
+            collection_name=self.astra_table_name,
+            namespace=self.astra_keyspace,
+            token=self.astra_db_token,
+            api_endpoint=self.astra_db_endpoint
+        )
+        astra_vector_store.delete_collection()
+        yield
+        astra_vector_store.delete_collection()
+
+
+
     def test_astra_dev(self):
         response = ingest_and_invoke("When was released MyFakeProductForTesting for the first time ?",
-            astra_db_endpoint=os.environ["ASTRA_DB_ENDPOINT"],
-            astra_db_token=os.environ["ASTRA_DB_TOKEN"],
-            astra_db_keyspace=os.environ["ASTRA_KEYSPACE"],
-            astra_db_table_name=os.environ["ASTRA_TABLE_NAME"],
+            astra_db_endpoint=self.astra_db_endpoint,
+            astra_db_token=self.astra_db_token,
+            astra_db_keyspace=self.astra_keyspace,
+            astra_db_table_name=self.astra_table_name,
             openai_key=os.environ["OPEN_AI_KEY"]
         )
         print(f"Got response ${response}")
