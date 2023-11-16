@@ -1,0 +1,37 @@
+= Connect to astradb
+
+RAGStack includes the astrapy package, which connects your client application with an AstraDB vector database.
+
+. Export environment variables or use a .env file:
++
+[source,bash]
+----
+export ASTRA_DB_ID=2d6b7600-886e-4852-8f9a-1b59508df040
+export ASTRA_DB_REGION=us-east-2
+export ASTRA_DB_APPLICATION_TOKEN=AstraCS:XXXX
+export ASTRA_DB_API_ENDPOINT={ASTRA_DB_ID}-{ASTRA_DB_REGION}.apps.astra.datastax.com
+----
+
+. Test your connection by creating a new collection in your Astra vector database:
++
+[source,python]
+----
+import os
+from astrapy.db import AstraDB
+
+ASTRA_DB_APPLICATION_TOKEN = os.environ.get("ASTRA_DB_APPLICATION_TOKEN")
+ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
+
+# Initialization
+db = AstraDB(
+  token=ASTRA_DB_APPLICATION_TOKEN,
+  api_endpoint=ASTRA_DB_API_ENDPOINT,
+)
+
+# Create collection
+col = db.create_collection("test", dimension=5)
+----
+
+Success returns no response.
+In your Astra vector database, a new collection is now available.
+
