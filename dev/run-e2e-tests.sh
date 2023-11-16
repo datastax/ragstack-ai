@@ -10,7 +10,11 @@ if [ -z "${OPEN_AI_KEY}" ]; then
     exit 1
 fi
 
-export ASTRA_DB_ENDPOINT="https://c814e15c-e184-47d8-804b-a599ada476e6-europe-west4.apps.astra-dev.datastax.com"
+if [ -z "${ASTRA_DB_ENDPOINT}" ]; then
+    echo "ASTRA_DB_ENDPOINT is not set"
+    exit 1
+fi
+
 export ASTRA_KEYSPACE=ragstacke2e
 export ASTRA_TABLE_NAME=documents_$(echo $RANDOM | md5sum | head -c 20)
 
