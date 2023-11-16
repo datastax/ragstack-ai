@@ -7,25 +7,26 @@ git:
 
 site:
   title: DataStax RAGStack Docs
-  start_page: ROOT::index.adoc
-  url: https://docs.datastax.com/en/ragstack
+  start_page: ragstack::index.adoc
   robots: disallow
 
 content:
-  branches: main # Sources default to this branch if none are specified.
+  # branches: main # Sources default to this branch if none are specified.
   sources:
   - url: https://github.com/datastax/ragstack-ai.git
-    branches: add-docs
+    branches: add-docs # Override the default branch for this source.
     start_path: docs
 
 antora:
   extensions:
   - '@antora/collector-extension'
+  - lib/tailwind-processor.js
 
 asciidoc:
   extensions:
   - '@asciidoctor/tabs'
-  # - lib/remote-include-processor.js
+  - lib/remote-include-processor.js
+  - lib/svg-macro.js
   - asciidoctor-kroki
   - asciidoctor-external-callout
   attributes:
