@@ -1,0 +1,490 @@
+= Quickstart
+
+The {ragstack} project combines the intelligence of large language models with the agility of stream processing to create powerful Generative AI applications.
+
+This guide will help you build and deploy a {ragstack} application to Astra Streaming.
+[IMPORTANT]
+====
+*Private preview feature*
+{ragstack} is available only in a *private preview*. This feature is not intended for production use, has not been certified for production workloads, and might contain bugs and other functional issues. There is no guarantee that a preview feature will ever become generally available.If you are interested in participating in the private preview, contact us at mailto:Astra-PM@datastax.com[Astra-PM@datastax.com,RAGSstack private preview,I am interested in the RAGStack private preview.]. We will contact you with more information.
+====
+== Install {ragstack} CLI
+
+Install the {ragstack} CLI:
+[source,bash]
+----
+brew install datastax/ragstack/ragstack
+----
+
+For more on the {ragstack} CLI, see https://docs.langstream.ai/installation/langstream-cli[{ragstack} CLI^]{external-link-icon}.
+
+== Enable {ragstack} in Astra
+
+xref:getting-started:index.adoc[Create an Astra Streaming tenant] in the GCP us-east-1 region. More regions will be available soon.
+
+Your tenant will be created with a default namespace, which is a logical grouping of topics.
+
+Your tenant will be listed in the {ragstack} tab. Select *Enable* to enable {ragstack} for your tenant.
+
+image::enable.png[Enable {ragstack}]
+
+Under the hood, this is enabling the xref:starlight-for-kafka:ROOT:index.adoc[Starlight for Kafka] API for your tenant to connect to your Kafka cluster.
+
+== Connect {ragstack} to your tenant
+
+Select the *Generate Configuration Command* button to generate a CLI configuration file for your tenant.
+
+Run the generated command in your local environment to connect your tenant to the {ragstack} CLI.
+[tabs]
+====
+{ragstack} CLI::
++
+--
+[source,plain]
+----
+ragstack profiles import astra-rs-tenant --inline 'base64:...' --set-current -u
+----
+--
+
+Result::
++
+--
+[source,plain]
+----
+profile astra-rs-tenant created
+profile astra-rs-tenant set as current
+----
+--
+====
+
+The configuration values will look something like this.
+[source,plain]
+----
+tenant: rs-tenant
+webServiceUrl: https://pulsar-gcp-useast1.api.streaming.datastax.com/ragstack
+apiGatewayUrl: wss://lsgwy-gcp-useast1.streaming.datastax.com/ragstack-api-gateway/
+token: AstraCS:...
+----
+
+Your tenant is now connected to the {ragstack} CLI.
+[NOTE]
+====
+You can also establish a connection by including the configuration values from the Astra Streaming Connect tab in your {ragstack} application's instance.yaml file.
+See << instance >> for an example.
+====
+== Build a {ragstack} Application
+
+Build a {ragstack} application by creating YAML files to describe the application.
+The application folder structure looks like this:
+
+[source,shell]
+----
+|- project-folder
+    |- application
+        |- pipeline.yaml
+        |- gateways.yaml
+        |- configuration.yaml
+|- secrets.yaml
+|- instance.yaml
+----
+
+Here's a shortcut:
+[source,shell]
+----
+mkdir project-folder && cd project-folder
+touch secrets.yaml instance.yaml
+mkdir application && cd application
+touch pipeline.yaml gateways.yaml configuration.yaml
+----
+
+The instance.yaml and secrets.yaml files cannot be in the "application" directory, because the application directory is passed as a zip at runtime.
+Next, you will populate the YAML files to connect your application to your Astra Streaming tenant.
+
+== Populate YAML files
+[#instance]
+Instance.yaml declares the application's processing infrastructure, including where streaming and compute take place.
+The secrets for tokens and passwords are stored in the secrets.yaml file, which you'll populate in the next step.
+An instance.yaml file can be downloaded from the Connect tab of your Astra Streaming tenant. Paste it into your instance.yaml file to connect your application to your tenant.
+[source,yaml]
+----
+instance:
+  streamingCluster:
+    type: "kafka"
+    configuration:
+      admin:
+        bootstrap.servers: "${ secrets.kafka.bootstrapServers }"
+        security.protocol: "${ secrets.kafka.securityProtocol }"
+        sasl.jaas.config: "org.apache.kafka.common.security.plain.PlainLoginModule required username='${ secrets.kafka.username }' password='${ secrets.kafka.password }';"
+        sasl.mechanism: PLAIN
+        session.timeout.ms: "45000"
+
+  computeCluster:
+    type: "kubernetes"
+----
+
+Secrets.yaml contains auth information for connecting to other services.
+Secret values can be modified directly in secrets.yaml, or you can pass your secrets as environment variables or in a .env file. The secrets.yaml resolves these environment variables.
+
+[source,bash]
+----
+export ASTRA_CLIENT_ID=...
+export ASTRA_SECRET=...
+export ASTRA_DATABASE=...
+export ASTRA_TOKEN=...
+----
+
+When you go to production, you should create a dedicated secrets.yaml file for each environment.
+The Astra client-id, token, and secret are found in the Astra UI.
+The values for the Kafka bootstrap server are found in your Astra Streaming tenant or in the Starlight for Kafka ssl.properties file.
+The Azure access key and URL are found in your Azure OpenAI deployment.
+A secrets.yaml file can be downloaded from the Connect tab of your Astra Streaming tenant.
+Paste it into your secrets.yaml file to authorize your application to your tenant.
+For more on finding values for secrets, see https://docs.langstream.ai/building-applications/secrets.html[Secrets^]{external-link-icon}.
+[source,yaml]
+----
+secrets:
+  - id: astra
+    data:
+      clientId: ${ASTRA_CLIENT_ID:-}
+      secret: ${ASTRA_SECRET:-}
+      token: ${ASTRA_TOKEN:-}
+      database: ${ASTRA_DATABASE:-}
+      secureBundle: ${ASTRA_SECURE_BUNDLE:-}
+      environment: ${ASTRA_ENVIRONMENT:-PROD}
+  - id: open-ai
+    data:
+      access-key: "${OPEN_AI_ACCESS_KEY:-}"
+      url: "${OPEN_AI_URL:-}"
+      provider: "${OPEN_AI_PROVIDER:-azure}"
+      embeddings-model: "${OPEN_AI_EMBEDDINGS_MODEL:-text-embedding-ada-002}"
+      chat-completions-model: "${OPEN_AI_CHAT_COMPLETIONS_MODEL:-gpt-35-turbo}"
+  - id: google
+    data:
+      client-id: "${GOOGLE_CLIENT_ID:-}"
+----
+
+You can either replace the values in secrets.yaml with the actual values, use a `.env` file, or export the secrets as below:
+[source,shell]
+----
+export OPEN_AI_URL=https://company-openai-dev.openai.azure.com/
+export OPEN_AI_ACCESS_KEY=your-openai-access-key
+export OPEN_AI_EMBEDDINGS_MODEL=text-embedding-ada-002
+export OPEN_AI_CHAT_COMPLETIONS_MODEL=gpt-35-turbo
+export OPEN_AI_PROVIDER=azure
+export KAFKA_USERNAME=rs-tenant
+export KAFKA_PASSWORD=eyRrr...
+export KAFKA_BOOTSTRAP_SERVERS=kafka-gcp-useast1.streaming.datastax.com:9093
+export KAFKA_TENANT=rs-tenant
+export ASTRA_CLIENT_ID=xxxx
+export ASTRA_TOKEN=AstraCS:...
+export GOOGLE_CLIENT_ID=xxxx.apps.googleusercontent.com
+----
+[NOTE]
+====
+For more on creating a Google client ID, see https://developers.google.com/identity/protocols/oauth2#serviceaccount[Google Service Account^]{external-link-icon}.
+====
+
+Pipeline.yaml contains the chain of agents that makes up your program, and the input and output topics that they communicate with.
+For more on building pipelines, see https://docs.langstream.ai/building-applications/pipelines[Pipelines^]{external-link-icon}.
+[source,yaml]
+----
+topics:
+  - name: "input-topic"
+    creation-mode: create-if-not-exists
+  - name: "output-topic"
+    creation-mode: create-if-not-exists
+  - name: "history-topic"
+    creation-mode: create-if-not-exists
+pipeline:
+  - name: "convert-to-json"
+    type: "document-to-json"
+    input: "input-topic"
+    configuration:
+      text-field: "question"
+  - name: "ai-chat-completions"
+    type: "ai-chat-completions"
+    output: "history-topic"
+    configuration:
+      model: "${secrets.open-ai.chat-completions-model}" # This needs to be set to the model deployment name, not the base name
+      # on the log-topic we add a field with the answer
+      completion-field: "value.answer"
+      # we are also logging the prompt we sent to the LLM
+      log-field: "value.prompt"
+      # here we configure the streaming behavior
+      # as soon as the LLM answers with a chunk we send it to the answers-topic
+      stream-to-topic: "output-topic"
+      # on the streaming answer we send the answer as whole message
+      # the 'value' syntax is used to refer to the whole value of the message
+      stream-response-completion-field: "value"
+      # we want to stream the answer as soon as we have 10 chunks
+      # in order to reduce latency for the first message the agent sends the first message
+      # with 1 chunk, then with 2 chunks....up to the min-chunks-per-message value
+      # eventually we want to send bigger messages to reduce the overhead of each message on the topic
+      min-chunks-per-message: 10
+      messages:
+        - role: user
+          content: "You are a helpful assistant. Below you can find a question from the user. Please try to help them the best way you can.\n\n{{ value.question}}"
+----
+
+Gateways.yaml contains API gateways for communicating with your application.
+For more on gateways and authentication, see https://docs.langstream.ai/building-applications/api-gateways[API Gateways^]{external-link-icon}.
+[source,yaml]
+----
+gateways:
+  - id: produce-input
+    type: produce
+    topic: input-topic
+    parameters:
+      - sessionId
+    produce-options:
+      headers:
+        - key: ragstack-client-session-id
+          value-from-parameters: sessionId
+
+  - id: chat
+    type: chat
+    chat-options:
+      answers-topic: output-topic
+      questions-topic: input-topic
+
+  - id: consume-output
+    type: consume
+    topic: output-topic
+    parameters:
+      - sessionId
+    consume-options:
+      filters:
+        headers:
+          - key: ragstack-client-session-id
+            value-from-parameters: sessionId
+
+  - id: consume-history
+    type: consume
+    topic: history-topic
+    parameters:
+      - sessionId
+    consume-options:
+      filters:
+        headers:
+          - key: ragstack-client-session-id
+            value-from-parameters: sessionId
+
+  - id: produce-input-auth
+    type: produce
+    topic: input-topic
+    parameters:
+      - sessionId
+    authentication:
+      provider: google
+      configuration:
+        clientId: "${secrets.google.client-id}"
+    produce-options:
+      headers:
+        - key: ragstack-client-user-id
+          value-from-authentication: subject
+
+  - id: consume-output-auth
+    type: consume
+    topic: output-topic
+    parameters:
+      - sessionId
+    authentication:
+      provider: google
+      configuration:
+        clientId: "${secrets.google.client-id}"
+    consume-options:
+      filters:
+        headers:
+          - key: ragstack-client-user-id
+            value-from-authentication: subject
+----
+
+Configuration.yaml contains additional configuration and resources for your application.
+A configuration.yaml file can be downloaded from the Connect tab of your Astra Streaming tenant (under AstraDB).
+For more on configuration, see https://docs.langstream.ai/building-applications/configuration[Configuration^]{external-link-icon}.
+[source,yaml]
+----
+configuration:
+  resources:
+    - type: "open-ai-configuration"
+      name: "OpenAI Azure configuration"
+      configuration:
+        url: "${secrets.open-ai.url}"
+        access-key: "${secrets.open-ai.access-key}"
+        provider: "${secrets.open-ai.provider}"
+----
+
+Remember to save all your yaml files.
+
+== Deploy the {ragstack} application on Astra
+
+To deploy the application, run the following commands from the root of your application folder.
+The first command deploys the application from the YAML files you created above, and the second command gets the status of the application.
+For more on {ragstack} CLI commands, see https://docs.langstream.ai/installation/langstream-cli[{ragstack} CLI^]{external-link-icon}.
+[tabs]
+====
+{ragstack} CLI::
++
+--
+[source,plain]
+----
+ragstack apps deploy sample-app -app ./application -i ./instance.yaml -s ./secrets.yaml
+ragstack apps get sample-app
+----
+--
+
+Result::
++
+--
+[source,plain]
+----
+packaging app: /Users/mendon.kissling/sample-app/./application
+app packaged
+deploying application: sample-app (1 KB)
+application sample-app deployed
+ID               STREAMING        COMPUTE          STATUS           EXECUTORS        REPLICAS
+sample-app       kafka            kubernetes       DEPLOYED         1/1              1/1
+----
+--
+====
+
+Ensure your app is running - a Kubernetes pod should be deployed with your application, and STATUS will change to DEPLOYED.
+
+Your application should be listed in your {ragstack} tenant:
+
+image::app-deployed.png[App deployed]
+
+You should see a map of your application in the {ragstack} UI:
+
+image::app-map.png[App map]
+
+Hmm, this application has an Error. To get logs, use `ragstack apps logs <my-application>`.
+
+== {ragstack} CLI connection values
+
+If you're running into issues, ensure the values in your CLI profile match the values in your Astra Streaming tenant.
+
+If you're unsure of the profile name, use `ragstack profiles list`, then `ragstack profiles get <my-profile> -o=json` to display the current values.
+
+[source,plain]
+----
+{
+  "webServiceUrl" : "https://pulsar-gcp-useast1.api.streaming.datastax.com/langstream",
+  "apiGatewayUrl" : "wss://lsgwy-gcp-useast1.streaming.datastax.com/langstream-api-gateway/",
+  "tenant" : "ragstack-tenant",
+  "token" : "AstraCS:<token>",
+  "name" : "astra-ragstack-tenant"
+}
+----
+
+To update these values, use `ragstack profiles update astra-ragstack-tenant --command-option="value"`.
+[cols="2,3", options="header"]
+|===
+| Command Option   | Description
+| --set-current    | Set this profile as current
+| --web-service-url| webServiceUrl of the profile
+| --api-gateway-url| apiGatewayUrl of the profile
+| --tenant         | tenant of the profile
+| --token          | token of the profile
+|===
+
+If you get lost along the way, here are the default profile values:
+[source,plain]
+----
+webServiceUrl: "http://localhost:8090"
+apiGatewayUrl: "ws://localhost:8091"
+tenant: "default"
+token: null
+----
+
+Issue a curl call to your {ragstack} tenant to find the connection values for your tenant.
+The `X-DataStax-Current-Org` value is the client-id associated with the Astra token, and can be found in the Astra UI.
+[tabs]
+====
+curl::
++
+--
+[source,plain]
+----
+curl --location --request POST 'https://pulsar-gcp-useast1.api.streaming.datastax.com/langstream/ragstack-tenant' \
+--header 'X-DataStax-Current-Org:lzAiCLsTMKruZZZUxieNgYhe' \
+--header 'X-DataStax-Pulsar-Cluster: pulsar-gcp-useast1' \
+--header 'Authorization: Bearer AstraCS:<token value>'
+----
+--
+
+Result::
++
+--
+[source,plain]
+----
+{
+  "status":true,
+  "webServiceUrl":"https://pulsar-gcp-useast1.api.streaming.datastax.com/langstream",
+  "apiGatewayUrl":"wss://lsgwy-gcp-useast1.streaming.datastax.com/langstream-api-gateway/",
+  "tenant":"astra-ragstack-tenant",
+  "token":"{astra token}"}%
+----
+--
+====
+
+Ensure the values returned from the curl call match the values in your {ragstack} CLI profile.
+
+== Check connection to Astra
+
+In the {ragstack} CLI, run the following command to open a gateway connection to your Astra Streaming tenant.
+This command will connect to your tenant and consume from the output-topic and produce to the input-topic.
+[source,plain]
+----
+ragstack gateway chat sample-app -cg consume-output -pg produce-input -p sessionId=$(uuidgen)
+----
+
+In Astra Streaming, confirm that your application is connected to your tenant.
+Select the Websocket tab of your {ragstack}-enabled tenant, and choose to consume from output-topic and to produce to input-topic.
+If the Websocket tab is not visible, you may need to refresh the page or try opening it in Incognito mode.
+Send a message to your application, and confirm that it is received by the Astra websocket:
+[source,plain]
+----
+ragstack gateway chat sample-app -cg consume-output -pg produce-input -p sessionId=$(uuidgen)
+Connected to wss://lsgwy-gcp-useast1.streaming.datastax.com/langstream-api-gateway//v1/consume/ragstack-tenant/sample-app/consume-output?param:sessionId=F85E4665-BE00-4513-A5C5-E59B42646490&option:position=latest
+Connected to wss://lsgwy-gcp-useast1.streaming.datastax.com/langstream-api-gateway//v1/produce/ragstack-tenant/sample-app/produce-input?param:sessionId=F85E4665-BE00-4513-A5C5-E59B42646490
+
+You:
+> Hi Astra, it's me, K8s. How are you?
+..✅
+...
+----
+
+image::websocket-chat.png[Websocket chat]
+
+Your gateway connection is confirmed, and you can send messages to your application.
+This sample-app also produces messages to the consume-history gateway to provide more context to the AI model.
+To consume from this gateway, run the following command:
+[tabs]
+====
+{ragstack} CLI::
++
+--
+[source,plain]
+----
+ragstack gateway consume sample-app consume-history -p sessionId=F85E4665-BE00-4513-A5C5-E59B42646490
+----
+--
+
+Result::
++
+--
+[source,plain]
+----
+Connected to wss://lsgwy-gcp-useast1.streaming.datastax.com/langstream-api-gateway//v1/consume/ragstack-tenant/sample-app/consume-history?param:sessionId=F85E4665-BE00-4513-A5C5-E59B42646490
+{"record":{"key":null,"value":"Hi K8s, it's me, Astra.","headers":{}},"offset":"eyJvZmZzZXRzIjp7IjAiOiIxIn19"}
+----
+--
+====
+
+== What's next?
+
+{ragstack} is built with the LangStream framework, which is a set of tools for building Generative AI streaming applications.
+
+For more, see https://github.com/LangStream/langstream[GitHub^]{external-link-icon}.
+

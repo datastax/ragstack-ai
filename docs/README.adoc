@@ -1,0 +1,126 @@
+= {company} {product} Docs
+// Variables:
+:product: RAGStack
+:company: DataStax
+// Settings:
+:!example-caption:
+:experimental:
+:hide-uri-scheme:
+:toc: macro
+ifdef::env-github[]
+:icons: font
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+:badges:
+endif::[]
+// URLs:
+:url-org: https://github.com/riptano
+:url-ui-repo: {url-org}/docs-ui
+:url-playbook-repo: {url-org}/docs-site
+:url-contribute:
+:url-datastax: https://datastax.com
+:url-datastax-docs: https://docs.datastax.com
+:url-coppi: https://coppi.aws.dsinternal.org
+:url-docs-preview: http://docs-preview.datastax.com
+:url-asciidoc-docs: https://docs.asciidoctor.org/asciidoc/latest/
+
+
+This repository hosts the future documentation source for {company} {product}.
+
+== Running a test build
+
+. Clone this repository
++
+[source,shell]
+----
+git clone https://github.com/datastax/ragstack-ai.git
+----
+
+. If you don't already have Node.js installed, do the following:
+
+.. Install https://github.com/nvm-sh/nvm[nvm].
++
+If you're on macOS, you can install nvm using https://brew.sh/[Homebrew]:
++
+[source,shell]
+----
+brew install nvm
+----
+
+.. Use nvm to install Node.js.
++
+[source,shell]
+----
+nvm install --lts
+----
++
+[source,shell]
+----
+nvm use --lts
+----
++
+[source,shell]
+----
+nvm alias default node
+----
+
+. Install the project dependencies.
++
+[source,shell]
+----
+cd ragstack-ai/docs
+----
++
+[source,shell]
+----
+npm install
+----
+
+. Build the site.
++
+[source,shell]
+----
+npm run build:local
+----
++
+If the build was successful, you'll see the following output in your terminal:
++
+[source,console]
+----
+Site generation complete!
+Open file:///Users/your-name/repos/ragstack-docs/build/site/index.html in a browser to view your site.
+----
++
+To view the site, paste the entire `\file:///` path into your browser's address bar and press kbd:[Return].
+
+////
+== Contributing
+
+Check out our {url-contribute}[contributing guide] to learn how to:
+
+* submit a bug or feedback issue
+* set up your documentation workspace
+* build the documentation
+* submit a pull request
+
+Thank you for helping to make the documentation better.
+
+== Docs component configuration
+
+This repository contains an Antora docs component.
+Keep in mind these key repository features:
+
+* Component name, version, and start page are configured in each branch's _antora.yml_ file.
+* The navigation for all {product} modules, including those aggregated from other repositories, is stored in the ROOT module's _nav.adoc_ file.
+* The production branch is `main`.
+
+== Documentation site toolchain
+
+The documentation source files are marked up with AsciiDoc.
+Once merged into a production branch, the source files and their assets are aggregated, converted to HTML, and published by Antora to our staging and production sites.
+The docs components and {url-ui-repo}[site UI] are orchestrated by the {url-playbook-repo}[docs site playbook].
+See the contributing guide to learn more.
+////
