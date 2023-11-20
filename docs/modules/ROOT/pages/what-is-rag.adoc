@@ -1,0 +1,86 @@
+= What is RAG?
+
+Complete RAG example available:
+* https://colab.research.google.com/github/mendonk/ragstack-notebooks/blob/main/ragstack.ipynb[Colab]
+* https://github.com/mendonk/ragstack-notebooks/blob/main/ragstack.ipynb[GitHub]
+
+Retrieval Augmented Generation (RAG) is a popular machine learning technique that retrieves prior context from a memory system to construct a prompt that is passed to a model.
+
+This means the power of Large Language Models, but trained on your data.
+
+The RAG pattern has 5 steps:
+
+. Construct information base
+. Basic retrieval
+. Generation with augmented context
+. Advanced retrieval and generation
+. Evaluate quality
+
+== Construct information base
+
+Load the knowledge - structured or unstructured - you want your application to draw context from.
+
+This can include documents accumulated from web scraping, a folder of PDFs, or a whole book!
+
+Whichever format you source from, the files are first loaded as `Document` objects. Document objects contain text and associated metadata.
+
+Documents are split into chunks, and each chunk is indexed. The index is used to retrieve the most relevant chunks for a given query.
+
+The chunks are then passed to an embedding model, which converts the text into a vector representation. Embeddings are vectors that capture semantic relationships between concepts or objects by placing related objects nearby to each other in the embedding space.
+
+Finally, embeddings are stored in a vector database for future use as context in the RAG pipeline.
+
+== Basic retrieval
+Search the knowledge base for relevant data.
+The system searches through its information base to find relevant information that matches the initial query or prompt. This is akin to a targeted search through a vast database, where the goal is to find pieces of information that are most pertinent to the task at hand. The effectiveness of this step is critical, as it lays the groundwork for the subsequent generation process. The retrieved information at this stage is usually more straightforward and direct, focusing on directly answering or addressing the query.
+
+== Generation with augmented context
+Insert relevant data from the knowledge base into the LLM prompt, to contextualize the question. This is the “retrieval augmented” part.
+
+For example - we want a deeper understanding of our company's sales data.
+We have lots of PDF printouts of sales reports, so chunked and embedded the sales data into a vector database.
+Now, we'll prompt an LLM with a question about sales, and we will augment the prompt with the most relevant chunks of sales data for the LLM to use as context.
+[NOTE]
+====
+This is not complete code.
+====
+[source,python]
+----
+from langchain.prompts import ChatPromptTemplate
+from langchain.chat_models import ChatOpenAI
+from langchain.schema.output_parser import StrOutputParser
+from langchain.schema.runnable import RunnableLambda, RunnablePassthrough
+
+retriever = vstore.as_retriever(search_kwargs={'k': 3})
+
+prompt_template = """
+Answer the question based only on the supplied context. If you don't know the answer, say you don't know the answer.
+Context: {context}
+Question: {question}
+Your answer:
+"""
+prompt = ChatPromptTemplate.from_template(prompt_template)
+model = ChatOpenAI(openai_api_key=openai_key)
+
+chain = (
+    {"context": retriever, "question": RunnablePassthrough()}
+    | prompt
+    | model
+    | StrOutputParser()
+)
+
+chain.invoke("In the given context, what product are sales team members selling the most?")
+----
+
+This concludes a basic RAG workflow.
+. Construct information base
+. Basic retrieval
+. Generation with augmented context
+
+== Advanced retrieval and generation
+This step goes beyond mere retrieval; it involves understanding context, making connections between different pieces of information, and generating a cohesive and relevant output. The system may revisit the information base multiple times, refining its search and generation as it gains more context from the ongoing interaction or task.
+
+== Evaluate quality
+The Evaluate Quality step aseeses the effectiveness and relevance of the generated content. In this stage, the system or the evaluators (which can be automated systems, human reviewers, or a combination of both) analyze the generated output for its accuracy, relevance, coherence, and overall quality. This evaluation can be based on predefined metrics, user feedback, or other performance indicators. The insights gained from this evaluation are crucial for refining the RAG system, improving its retrieval methods, and enhancing the overall generation process for future tasks.
+
+
