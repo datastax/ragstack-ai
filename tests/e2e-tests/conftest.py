@@ -52,7 +52,7 @@ def dump_report():
     print("Compatibility matrix results:")
     print(compatibility_matrix_results)
     report_str = generate_markdown_report(compatibility_matrix_results)
-    with open("compatibility-matrix.md", "w") as f:
+    with open("generated-compatibility-matrix.md", "w") as f:
         f.write(report_str)
 
 
