@@ -51,8 +51,12 @@ jobs:
       - name: Dump report on Github Summary
         if: always()
         run: |
+          echo "## E2E Tests Compatibility Matrix" > $GITHUB_STEP_SUMMARY
           if [ -f "tests/e2e-tests/compatibility-matrix.md" ]; then
             echo "$(cat tests/e2e-tests/compatibility-matrix.md)" >> $GITHUB_STEP_SUMMARY
+            echo "Report added to the summary"
+          else
+            echo "Report not found"
           fi
       - name: Build the distribution package
         run: |
