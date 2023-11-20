@@ -8,6 +8,7 @@ from langchain.chat_models import ChatOpenAI, AzureChatOpenAI
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.schema.language_model import BaseLanguageModel
 
+
 def get_required_env(name) -> str:
     if name not in os.environ:
         raise Exception(f"Missing required environment variable: {name}")
@@ -22,7 +23,7 @@ def init_vector_db(impl, embedding: Embeddings) -> VectorStore:
             embedding=embedding,
             namespace=get_required_env("ASTRA_KEYSPACE"),
             token=get_required_env("ASTRA_DB_TOKEN"),
-            api_endpoint=get_required_env("ASTRA_DB_ENDPOINT")
+            api_endpoint=get_required_env("ASTRA_DB_ENDPOINT"),
         )
         return vector_db
     else:
@@ -41,7 +42,9 @@ def init_embeddings(impl) -> Embeddings:
         key = get_required_env("OPEN_AI_KEY")
         return OpenAIEmbeddings(openai_api_key=key)
     elif impl == "openai-azure":
-        model_and_deployment = get_required_env("AZURE_OPEN_AI_EMBEDDINGS_MODEL_DEPLOYMENT")
+        model_and_deployment = get_required_env(
+            "AZURE_OPEN_AI_EMBEDDINGS_MODEL_DEPLOYMENT"
+        )
         return OpenAIEmbeddings(
             model=model_and_deployment,
             deployment=model_and_deployment,
@@ -78,7 +81,7 @@ def init_llm(impl) -> BaseLanguageModel:
             openai_api_base=get_required_env("AZURE_OPEN_AI_ENDPOINT"),
             openai_api_key=get_required_env("AZURE_OPEN_AI_KEY"),
             openai_api_type="azure",
-            openai_api_version="2023-07-01-preview"
+            openai_api_version="2023-07-01-preview",
         )
         return azure_open_ai
     else:
@@ -91,8 +94,10 @@ def close_llm(impl, llm: BaseLanguageModel):
     else:
         raise Exception("Unknown llm implementation: " + impl)
 
+
 def vector_dbs():
     return ["astradb"]
+
 
 @pytest.mark.parametrize("vector_db", vector_dbs())
 def test_openai_azure(vector_db: str):
@@ -103,14 +108,17 @@ def test_openai_azure(vector_db: str):
 def test_openai(vector_db: str):
     _run_test(vector_db=vector_db, embedding="openai", llm="openai")
 
+
 def _run_test(vector_db: str, embedding: str, llm: str):
     embeddings_impl = init_embeddings(embedding)
     vector_db_impl = init_vector_db(vector_db, embeddings_impl)
     llm_impl = init_llm(llm)
     try:
-        response = run_application(question="When was released MyFakeProductForTesting for the first time ?",
-                                   vector_store=vector_db_impl,
-                                   llm=llm_impl)
+        response = run_application(
+            question="When was released MyFakeProductForTesting for the first time ?",
+            vector_store=vector_db_impl,
+            llm=llm_impl,
+        )
         print(f"Got response ${response}")
         assert "2020" in response
     finally:
