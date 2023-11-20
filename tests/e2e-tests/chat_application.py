@@ -1,19 +1,8 @@
-import pytest
-import unittest
-import os
 from operator import itemgetter
-from typing import Dict, List, Optional, Sequence, Any
+from typing import Dict, List, Optional, Sequence
 
-from openai import Embedding
 
-from langchain.callbacks.tracers import ConsoleCallbackHandler
-from langchain.chat_models.base import BaseChatModel
-from langchain.schema.embeddings import Embeddings
 from langchain.schema.vectorstore import VectorStore
-from langchain.vectorstores import AstraDB
-from langchain.callbacks.manager import Callbacks, collect_runs
-from langchain.chat_models import ChatOpenAI
-from langchain.embeddings import OpenAIEmbeddings
 from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder, PromptTemplate
 from langchain.schema import Document
 from langchain.schema.language_model import BaseLanguageModel
@@ -28,7 +17,6 @@ from langchain.schema.runnable import (
 )
 from pydantic import BaseModel
 
-import logging
 
 RESPONSE_TEMPLATE = """\
 You are an expert programmer and problem-solver, tasked with answering any question \
@@ -78,40 +66,12 @@ class ChatRequest(BaseModel):
     chat_history: Optional[List[Dict[str, str]]]
 
 
-class FakeRetriever(BaseRetriever):
-    def _get_relevant_documents(
-            self,
-            query: str,
-            *,
-            callbacks: Callbacks = None,
-            tags: Optional[List[str]] = None,
-            metadata: Optional[Dict[str, Any]] = None,
-            **kwargs: Any,
-    ) -> List[Document]:
-        return [Document(page_content="foo"), Document(page_content="bar")]
-
-    async def _aget_relevant_documents(
-            self,
-            query: str,
-            *,
-            callbacks: Callbacks = None,
-            tags: Optional[List[str]] = None,
-            metadata: Optional[Dict[str, Any]] = None,
-            **kwargs: Any,
-    ) -> List[Document]:
-        return [Document(page_content="foo"), Document(page_content="bar")]
-
-
-def get_retriever(embeddingsModel) -> BaseRetriever:
-    return FakeRetriever()
-
-
 def create_retriever_chain(
-        llm: BaseLanguageModel, retriever: BaseRetriever
+    llm: BaseLanguageModel, retriever: BaseRetriever
 ) -> Runnable:
-    CONDENSE_QUESTION_PROMPT = PromptTemplate.from_template(REPHRASE_TEMPLATE)
+    condense_question_prompt = PromptTemplate.from_template(REPHRASE_TEMPLATE)
     condense_question_chain = (
-            CONDENSE_QUESTION_PROMPT | llm | StrOutputParser()
+        condense_question_prompt | llm | StrOutputParser()
     ).with_config(
         run_name="CondenseQuestion",
     )
@@ -124,10 +84,10 @@ def create_retriever_chain(
             conversation_chain.with_config(run_name="RetrievalChainWithHistory"),
         ),
         (
-                RunnableLambda(itemgetter("question")).with_config(
-                    run_name="Itemgetter:question"
-                )
-                | retriever
+            RunnableLambda(itemgetter("question")).with_config(
+                run_name="Itemgetter:question"
+            )
+            | retriever
         ).with_config(run_name="RetrievalChainWithNoHistory"),
     ).with_config(run_name="RouteDependingOnChatHistory")
 
@@ -152,8 +112,8 @@ def serialize_history(request: ChatRequest):
 
 
 def create_chain(
-        llm: BaseLanguageModel,
-        retriever: BaseRetriever,
+    llm: BaseLanguageModel,
+    retriever: BaseRetriever,
 ) -> Runnable:
     retriever_chain = create_retriever_chain(
         llm,
@@ -178,32 +138,31 @@ def create_chain(
         run_name="GenerateResponse",
     )
     return (
-            {
-                "question": RunnableLambda(itemgetter("question")).with_config(
-                    run_name="Itemgetter:question"
-                ),
-                "chat_history": RunnableLambda(serialize_history).with_config(
-                    run_name="SerializeHistory"
-                ),
-            }
-            | _context
-            | response_synthesizer
+        {
+            "question": RunnableLambda(itemgetter("question")).with_config(
+                run_name="Itemgetter:question"
+            ),
+            "chat_history": RunnableLambda(serialize_history).with_config(
+                run_name="SerializeHistory"
+            ),
+        }
+        | _context
+        | response_synthesizer
     )
 
 
 def run_application(question, vector_store: VectorStore, llm: BaseLanguageModel) -> str:
-    vector_store.add_texts([
-        "MyFakeProductForTesting is a versatile testing tool designed to streamline the testing process for software developers, quality assurance professionals, and product testers. It provides a comprehensive solution for testing various aspects of applications and systems, ensuring robust performance and functionality.",
-        "MyFakeProductForTesting comes equipped with an advanced dynamic test scenario generator. This feature allows users to create realistic test scenarios by simulating various user interactions, system inputs, and environmental conditions. The dynamic nature of the generator ensures that tests are not only diverse but also adaptive to changes in the application under test.",
-        "The product includes an intelligent bug detection and analysis module. It not only identifies bugs and issues but also provides in-depth analysis and insights into the root causes. The system utilizes machine learning algorithms to categorize and prioritize bugs, making it easier for developers and testers to address critical issues first.",
-        "MyFakeProductForTesting first release happened in June 2020."
-    ])
+    vector_store.add_texts(
+        [
+            "MyFakeProductForTesting is a versatile testing tool designed to streamline the testing process for software developers, quality assurance professionals, and product testers. It provides a comprehensive solution for testing various aspects of applications and systems, ensuring robust performance and functionality.",
+            "MyFakeProductForTesting comes equipped with an advanced dynamic test scenario generator. This feature allows users to create realistic test scenarios by simulating various user interactions, system inputs, and environmental conditions. The dynamic nature of the generator ensures that tests are not only diverse but also adaptive to changes in the application under test.",
+            "The product includes an intelligent bug detection and analysis module. It not only identifies bugs and issues but also provides in-depth analysis and insights into the root causes. The system utilizes machine learning algorithms to categorize and prioritize bugs, making it easier for developers and testers to address critical issues first.",
+            "MyFakeProductForTesting first release happened in June 2020.",
+        ]
+    )
     retriever = vector_store.as_retriever()
     answer_chain = create_chain(
         llm,
         retriever,
     )
-    return answer_chain.invoke({
-        "question": question,
-        "chat_history": []
-    })
+    return answer_chain.invoke({"question": question, "chat_history": []})
