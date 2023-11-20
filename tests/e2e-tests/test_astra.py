@@ -1,266 +1,122 @@
 import pytest
-import unittest
+from chat_application import run_application
 import os
-from operator import itemgetter
-from typing import Dict, List, Optional, Sequence, Any
+from langchain.schema.embeddings import Embeddings
+from langchain.schema.vectorstore import VectorStore
 from langchain.vectorstores import AstraDB
-from langchain.callbacks.manager import Callbacks, collect_runs
-from langchain.chat_models import ChatOpenAI
+from langchain.chat_models import ChatOpenAI, AzureChatOpenAI
 from langchain.embeddings import OpenAIEmbeddings
-from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder, PromptTemplate
-from langchain.schema import Document
 from langchain.schema.language_model import BaseLanguageModel
-from langchain.schema.messages import AIMessage, HumanMessage
-from langchain.schema.output_parser import StrOutputParser
-from langchain.schema.retriever import BaseRetriever
-from langchain.schema.runnable import (
-    Runnable,
-    RunnableBranch,
-    RunnableLambda,
-    RunnableMap,
-)
-from pydantic import BaseModel
 
-import logging
-
-RESPONSE_TEMPLATE = """\
-You are an expert programmer and problem-solver, tasked with answering any question \
-about MyFakeProductForTesting.
-
-Generate a comprehensive and informative answer of 80 words or less for the \
-given question based solely on the provided search results (URL and content). You must \
-only use information from the provided search results. Use an unbiased and \
-journalistic tone. Combine search results together into a coherent answer. Do not \
-repeat text. Cite search results using [${{number}}] notation. Only cite the most \
-relevant results that answer the question accurately. Place these citations at the end \
-of the sentence or paragraph that reference them - do not put them all at the end. If \
-different results refer to different entities within the same name, write separate \
-answers for each entity.
-
-You should use bullet points in your answer for readability. Put citations where they apply
-rather than putting them all at the end.
-
-If there is nothing in the context relevant to the question at hand, just say "Hmm, \
-I'm not sure." Don't try to make up an answer.
-
-Anything between the following `context`  html blocks is retrieved from a knowledge \
-bank, not part of the conversation with the user. 
-
-<context>
-    {context} 
-<context/>
-
-REMEMBER: If there is no relevant information within the context, just say "Hmm, I'm \
-not sure." Don't try to make up an answer. Anything between the preceding 'context' \
-html blocks is retrieved from a knowledge bank, not part of the conversation with the \
-user.\
-"""
-
-REPHRASE_TEMPLATE = """\
-Given the following conversation and a follow up question, rephrase the follow up \
-question to be a standalone question.
-
-Chat History:
-{chat_history}
-Follow Up Input: {question}
-Standalone Question:"""
+def get_required_env(name) -> str:
+    if name not in os.environ:
+        raise Exception(f"Missing required environment variable: {name}")
+    return os.environ[name]
 
 
-class ChatRequest(BaseModel):
-    question: str
-    chat_history: Optional[List[Dict[str, str]]]
-
-
-class FakeRetriever(BaseRetriever):
-    def _get_relevant_documents(
-            self,
-            query: str,
-            *,
-            callbacks: Callbacks = None,
-            tags: Optional[List[str]] = None,
-            metadata: Optional[Dict[str, Any]] = None,
-            **kwargs: Any,
-    ) -> List[Document]:
-        return [Document(page_content="foo"), Document(page_content="bar")]
-
-    async def _aget_relevant_documents(
-            self,
-            query: str,
-            *,
-            callbacks: Callbacks = None,
-            tags: Optional[List[str]] = None,
-            metadata: Optional[Dict[str, Any]] = None,
-            **kwargs: Any,
-    ) -> List[Document]:
-        return [Document(page_content="foo"), Document(page_content="bar")]
-
-
-def get_retriever(embeddingsModel) -> BaseRetriever:
-    return FakeRetriever()
-
-
-def create_retriever_chain(
-        llm: BaseLanguageModel, retriever: BaseRetriever
-) -> Runnable:
-    CONDENSE_QUESTION_PROMPT = PromptTemplate.from_template(REPHRASE_TEMPLATE)
-    condense_question_chain = (
-            CONDENSE_QUESTION_PROMPT | llm | StrOutputParser()
-    ).with_config(
-        run_name="CondenseQuestion",
-    )
-    conversation_chain = condense_question_chain | retriever
-    return RunnableBranch(
-        (
-            RunnableLambda(lambda x: bool(x.get("chat_history"))).with_config(
-                run_name="HasChatHistoryCheck"
-            ),
-            conversation_chain.with_config(run_name="RetrievalChainWithHistory"),
-        ),
-        (
-                RunnableLambda(itemgetter("question")).with_config(
-                    run_name="Itemgetter:question"
-                )
-                | retriever
-        ).with_config(run_name="RetrievalChainWithNoHistory"),
-    ).with_config(run_name="RouteDependingOnChatHistory")
-
-
-def format_docs(docs: Sequence[Document]) -> str:
-    formatted_docs = []
-    for i, doc in enumerate(docs):
-        doc_string = f"<doc id='{i}'>{doc.page_content}</doc>"
-        formatted_docs.append(doc_string)
-    return "\n".join(formatted_docs)
-
-
-def serialize_history(request: ChatRequest):
-    chat_history = request["chat_history"] or []
-    converted_chat_history = []
-    for message in chat_history:
-        if message.get("human") is not None:
-            converted_chat_history.append(HumanMessage(content=message["human"]))
-        if message.get("ai") is not None:
-            converted_chat_history.append(AIMessage(content=message["ai"]))
-    return converted_chat_history
-
-
-def create_chain(
-        llm: BaseLanguageModel,
-        retriever: BaseRetriever,
-) -> Runnable:
-    retriever_chain = create_retriever_chain(
-        llm,
-        retriever,
-    ).with_config(run_name="FindDocs")
-    _context = RunnableMap(
-        {
-            "context": retriever_chain | format_docs,
-            "question": itemgetter("question"),
-            "chat_history": itemgetter("chat_history"),
-        }
-    ).with_config(run_name="RetrieveDocs")
-    prompt = ChatPromptTemplate.from_messages(
-        [
-            ("system", RESPONSE_TEMPLATE),
-            MessagesPlaceholder(variable_name="chat_history"),
-            ("human", "{question}"),
-        ]
-    )
-
-    response_synthesizer = (prompt | llm | StrOutputParser()).with_config(
-        run_name="GenerateResponse",
-    )
-    return (
-            {
-                "question": RunnableLambda(itemgetter("question")).with_config(
-                    run_name="Itemgetter:question"
-                ),
-                "chat_history": RunnableLambda(serialize_history).with_config(
-                    run_name="SerializeHistory"
-                ),
-            }
-            | _context
-            | response_synthesizer
-    )
-
-
-def ingest_and_invoke(question, **kwargs) -> str:
-    astra_db_endpoint = kwargs["astra_db_endpoint"]
-    astra_db_token = kwargs["astra_db_token"]
-    astra_keyspace = kwargs["astra_db_keyspace"]
-    astra_table_name = kwargs["astra_db_table_name"]
-    openai_key = kwargs["openai_key"]
-
-    embedding = OpenAIEmbeddings(openai_api_key=openai_key)
-
-    astra_vector_store = AstraDB(
-        collection_name=astra_table_name,
-        embedding=embedding,
-        namespace=astra_keyspace,
-        token=astra_db_token,
-        api_endpoint=astra_db_endpoint
-    )
-
-    astra_vector_store.add_texts([
-        "MyFakeProductForTesting is a versatile testing tool designed to streamline the testing process for software developers, quality assurance professionals, and product testers. It provides a comprehensive solution for testing various aspects of applications and systems, ensuring robust performance and functionality.",
-        "MyFakeProductForTesting comes equipped with an advanced dynamic test scenario generator. This feature allows users to create realistic test scenarios by simulating various user interactions, system inputs, and environmental conditions. The dynamic nature of the generator ensures that tests are not only diverse but also adaptive to changes in the application under test.",
-        "The product includes an intelligent bug detection and analysis module. It not only identifies bugs and issues but also provides in-depth analysis and insights into the root causes. The system utilizes machine learning algorithms to categorize and prioritize bugs, making it easier for developers and testers to address critical issues first.",
-        "MyFakeProductForTesting first release happened in June 2020."
-    ])
-
-    llm = ChatOpenAI(
-        openai_api_key=openai_key,
-        model="gpt-3.5-turbo-16k",
-        streaming=True,
-        temperature=0,
-    )
-    retriever = astra_vector_store.as_retriever()
-
-    answer_chain = create_chain(
-        llm,
-        retriever,
-    )
-
-
-    return answer_chain.invoke({
-        "question": question,
-        "chat_history": []
-    })
-
-
-
-
-
-class MyTestCase(unittest.TestCase):
-
-    @pytest.fixture(autouse=True)
-    def run_before_and_after_tests(self):
-        self.astra_db_endpoint = os.environ["ASTRA_DB_ENDPOINT"]
-        self.astra_db_token = os.environ["ASTRA_DB_TOKEN"]
-        self.astra_keyspace = os.environ["ASTRA_KEYSPACE"]
-        self.astra_table_name = os.environ["ASTRA_TABLE_NAME"]
-        from astrapy.db import (
-            AstraDB as LibAstraDB,
+def init_vector_db(impl, embedding: Embeddings) -> VectorStore:
+    if impl == "astradb":
+        collection = get_required_env("ASTRA_TABLE_NAME")
+        vector_db = AstraDB(
+            collection_name=collection,
+            embedding=embedding,
+            namespace=get_required_env("ASTRA_KEYSPACE"),
+            token=get_required_env("ASTRA_DB_TOKEN"),
+            api_endpoint=get_required_env("ASTRA_DB_ENDPOINT")
         )
-        astra_db = LibAstraDB(
-            token=self.astra_db_token,
-            api_endpoint=self.astra_db_endpoint,
-            namespace=self.astra_keyspace,
+        return vector_db
+    else:
+        raise Exception("Unknown vector db implementation: " + impl)
+
+
+def close_vector_db(impl: str, vector_store: VectorStore):
+    if impl == "astradb":
+        vector_store.astra_db.delete_collection(vector_store.collection_name)
+    else:
+        raise Exception("Unknown vector db implementation: " + impl)
+
+
+def init_embeddings(impl) -> Embeddings:
+    if impl == "openai":
+        key = get_required_env("OPEN_AI_KEY")
+        return OpenAIEmbeddings(openai_api_key=key)
+    elif impl == "openai-azure":
+        model_and_deployment = get_required_env("AZURE_OPEN_AI_EMBEDDINGS_MODEL_DEPLOYMENT")
+        return OpenAIEmbeddings(
+            model=model_and_deployment,
+            deployment=model_and_deployment,
+            openai_api_key=get_required_env("AZURE_OPEN_AI_KEY"),
+            openai_api_base=get_required_env("AZURE_OPEN_AI_ENDPOINT"),
+            openai_api_type="azure",
+            openai_api_version="2023-05-15",
+            chunk_size=1,
         )
-        astra_db.delete_collection(self.astra_table_name)
-        yield
-        astra_db.delete_collection(self.astra_table_name)
+    else:
+        raise Exception("Unknown embedding implementation: " + impl)
 
 
+def close_embeddings(impl, embeddings: Embeddings):
+    if impl in ("openai", "openai-azure"):
+        pass
+    else:
+        raise Exception("Unknown embedding implementation: " + impl)
 
-    def test_astra_dev(self):
-        response = ingest_and_invoke("When was released MyFakeProductForTesting for the first time ?",
-            astra_db_endpoint=self.astra_db_endpoint,
-            astra_db_token=self.astra_db_token,
-            astra_db_keyspace=self.astra_keyspace,
-            astra_db_table_name=self.astra_table_name,
-            openai_key=os.environ["OPEN_AI_KEY"]
+
+def init_llm(impl) -> BaseLanguageModel:
+    if impl == "openai":
+        key = get_required_env("OPEN_AI_KEY")
+        return ChatOpenAI(
+            openai_api_key=key,
+            model="gpt-3.5-turbo-16k",
+            streaming=True,
+            temperature=0,
         )
+    elif impl == "openai-azure":
+        model_and_deployment = get_required_env("AZURE_OPEN_AI_CHAT_MODEL_DEPLOYMENT")
+        azure_open_ai = AzureChatOpenAI(
+            azure_deployment=model_and_deployment,
+            openai_api_base=get_required_env("AZURE_OPEN_AI_ENDPOINT"),
+            openai_api_key=get_required_env("AZURE_OPEN_AI_KEY"),
+            openai_api_type="azure",
+            openai_api_version="2023-07-01-preview"
+        )
+        return azure_open_ai
+    else:
+        raise Exception("Unknown llm implementation: " + impl)
+
+
+def close_llm(impl, llm: BaseLanguageModel):
+    if impl in ("openai", "openai-azure"):
+        pass
+    else:
+        raise Exception("Unknown llm implementation: " + impl)
+
+def vector_dbs():
+    return ["astradb"]
+
+@pytest.mark.parametrize("vector_db", vector_dbs())
+def test_openai_azure(vector_db: str):
+    _run_test(vector_db=vector_db, embedding="openai-azure", llm="openai-azure")
+
+
+@pytest.mark.parametrize("vector_db", vector_dbs())
+def test_openai(vector_db: str):
+    _run_test(vector_db=vector_db, embedding="openai", llm="openai")
+
+def _run_test(vector_db: str, embedding: str, llm: str):
+    embeddings_impl = init_embeddings(embedding)
+    vector_db_impl = init_vector_db(vector_db, embeddings_impl)
+    llm_impl = init_llm(llm)
+    try:
+        response = run_application(question="When was released MyFakeProductForTesting for the first time ?",
+                                   vector_store=vector_db_impl,
+                                   llm=llm_impl)
         print(f"Got response ${response}")
         assert "2020" in response
-
+    finally:
+        if vector_db_impl:
+            close_vector_db(vector_db, vector_db_impl)
+        if embeddings_impl:
+            close_embeddings(embedding, embeddings_impl)
+        if llm_impl:
+            close_llm(llm, llm_impl)

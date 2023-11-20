@@ -1,22 +1,27 @@
 #!/bin/bash
 set -e
 
-if [ -z "${ASTRA_DB_TOKEN}" ]; then
-    echo "ASTRA_DB_TOKEN is not set"
-    exit 1
-fi
-if [ -z "${OPEN_AI_KEY}" ]; then
-    echo "OPEN_AI_KEY is not set"
-    exit 1
-fi
+check_env() {
+  local var_name=$1
+  if [ -z "${!var_name}" ]; then
+      echo "Error: Environment variable '$var_name' is missing."
+      exit 1
+  fi
+}
 
-if [ -z "${ASTRA_DB_ENDPOINT}" ]; then
-    echo "ASTRA_DB_ENDPOINT is not set"
-    exit 1
-fi
-
+# astra
+check_env ASTRA_DB_TOKEN
+check_env ASTRA_DB_ENDPOINT
 export ASTRA_KEYSPACE=ragstacke2e
 export ASTRA_TABLE_NAME=documents_$(echo $RANDOM | md5sum | head -c 20)
 
-poetry run pytest tests/e2e-tests
+# open-ai
+check_env OPEN_AI_KEY
+# azure-open-ai
+check_env AZURE_OPEN_AI_KEY
+check_env AZURE_OPEN_AI_ENDPOINT
+export AZURE_OPEN_AI_CHAT_MODEL_DEPLOYMENT="gpt-35-turbo"
+export AZURE_OPEN_AI_EMBEDDINGS_MODEL_DEPLOYMENT="text-embedding-ada-002"
+
+poetry run pytest tests/e2e-tests "$@"
 
