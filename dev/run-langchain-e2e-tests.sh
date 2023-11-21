@@ -1,15 +1,17 @@
 #!/bin/bash
 set -e
 
-if [ -z "${ASTRA_DB_TOKEN}" ]; then
-    echo "ASTRA_DB_TOKEN is not set"
-    exit 1
-fi
+check_env() {
+  local var_name=$1
+  if [ -z "${!var_name}" ]; then
+      echo "Error: Environment variable '$var_name' is missing."
+      #exit 1
+  fi
+}
 
-if [ -z "${ASTRA_DB_ENDPOINT}" ]; then
-    echo "ASTRA_DB_ENDPOINT is not set"
-    exit 1
-fi
+# astra
+check_env ASTRA_DB_TOKEN
+check_env ASTRA_DB_ENDPOINT
 
 export ASTRA_DB_APPLICATION_TOKEN=$ASTRA_DB_TOKEN
 export ASTRA_DB_API_ENDPOINT=$ASTRA_DB_ENDPOINT
