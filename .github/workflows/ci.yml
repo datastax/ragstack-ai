@@ -1,12 +1,18 @@
 name: RAGStack CI
 on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: '0 0 * * *'
+  push:
+    branches:
+      - main
   pull_request:
     branches:
       - main
 
 jobs:
   tests:
-    name: Unit tests
+    name: Tests
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
@@ -17,7 +23,6 @@ jobs:
         with:
           ssh-private-key: |
             ${{ secrets.SSH_PRIVATE_KEY_LANGCHAIN_SUBMODULE }}
-            ${{ secrets.SSH_PRIVATE_KEY_LANGSERVE_SUBMODULE }}
             ${{ secrets.SSH_PRIVATE_KEY_LANGSMITH_SUBMODULE }}
 
       - name: Update submodules
@@ -35,16 +40,9 @@ jobs:
           python -m pip install poetry
           poetry install
 
-      - name: Run tests
+      - name: Run unit tests
         run: |
           poetry run pytest tests/unit-tests
-
-      - name: Run E2E tests
-        run: |
-          export ASTRA_DB_TOKEN="${{ secrets.E2E_TESTS_ASTRA_DB_TOKEN }}"
-          export ASTRA_DB_ENDPOINT="${{ secrets.E2E_TESTS_ASTRA_DB_ENDPOINT }}"
-          export OPEN_AI_KEY="${{ secrets.E2E_TESTS_OPEN_AI_KEY }}"
-          ./dev/run-e2e-tests.sh
 
       - name: Build the distribution package
         run: |
@@ -56,3 +54,30 @@ jobs:
           source /tmp/venv/bin/activate
           pip install dist/ragstack_ai-*.whl
           pytest tests/unit-tests
+
+      - name: Run E2E tests
+        run: |
+          source /tmp/venv/bin/activate
+          export ASTRA_DB_TOKEN="${{ secrets.E2E_TESTS_ASTRA_DB_TOKEN }}"
+          export ASTRA_DB_ENDPOINT="${{ secrets.E2E_TESTS_ASTRA_DB_ENDPOINT }}"
+          export OPEN_AI_KEY="${{ secrets.E2E_TESTS_OPEN_AI_KEY }}"
+          export AZURE_OPEN_AI_KEY="${{ secrets.E2E_TESTS_AZURE_OPEN_AI_KEY }}"
+          export AZURE_OPEN_AI_ENDPOINT="${{ secrets.E2E_TESTS_AZURE_OPEN_AI_ENDPOINT }}"
+          ./dev/run-e2e-tests.sh
+
+      - name: Dump report on Github Summary
+        if: always()
+        run: |
+          if [ -f "generated-compatibility-matrix.md" ]; then
+            echo "$(cat generated-compatibility-matrix.md)" >> $GITHUB_STEP_SUMMARY
+            echo "Report added to the summary"
+          else
+            echo "Report not found"
+          fi
+
+      - name: Run LangChain tests
+        run: |
+          source /tmp/venv/bin/activate
+          export ASTRA_DB_TOKEN="${{ secrets.E2E_TESTS_ASTRA_DB_TOKEN }}"
+          export ASTRA_DB_ENDPOINT="${{ secrets.E2E_TESTS_ASTRA_DB_ENDPOINT }}"
+          ./dev/run-langchain-e2e-tests.sh
