@@ -1,3 +1,5 @@
+import json
+
 import pytest
 from chat_application import run_application
 import os
@@ -7,6 +9,11 @@ from langchain.vectorstores import AstraDB
 from langchain.chat_models import ChatOpenAI, AzureChatOpenAI
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.schema.language_model import BaseLanguageModel
+from conftest import set_current_test_info
+
+
+
+
 
 
 def get_required_env(name) -> str:
@@ -110,6 +117,8 @@ def test_openai(vector_db: str):
 
 
 def _run_test(vector_db: str, embedding: str, llm: str):
+    set_current_test_info(llm=llm, embedding=embedding, vector_db=vector_db)
+
     embeddings_impl = init_embeddings(embedding)
     vector_db_impl = init_vector_db(vector_db, embeddings_impl)
     llm_impl = init_llm(llm)
