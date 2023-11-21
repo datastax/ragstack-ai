@@ -44,12 +44,6 @@ jobs:
         run: |
           poetry run pytest tests/unit-tests
 
-      - name: Run LangChain tests
-        run: |
-          export ASTRA_DB_TOKEN="${{ secrets.E2E_TESTS_ASTRA_DB_TOKEN }}"
-          export ASTRA_DB_ENDPOINT="${{ secrets.E2E_TESTS_ASTRA_DB_ENDPOINT }}"
-          ./dev/run-langchain-e2e-tests.sh
-
       - name: Build the distribution package
         run: |
           poetry build
@@ -79,3 +73,9 @@ jobs:
           else
             echo "Report not found"
           fi
+
+      - name: Run LangChain tests
+        run: |
+          export ASTRA_DB_TOKEN="${{ secrets.E2E_TESTS_ASTRA_DB_TOKEN }}"
+          export ASTRA_DB_ENDPOINT="${{ secrets.E2E_TESTS_ASTRA_DB_ENDPOINT }}"
+          ./dev/run-langchain-e2e-tests.sh
