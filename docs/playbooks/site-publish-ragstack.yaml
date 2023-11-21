@@ -7,26 +7,30 @@ git:
 
 site:
   title: DataStax RAGStack Docs
-  start_page: ragstack::index.adoc
-  robots: disallow
+  start_page: docs::index.adoc
+  url: https://docs.datastax.com/en/ragstack
+  # The google_analytics and segment_io site keys must be in the release playbook
+  # of each docset. This ensures that the Google Tag Manager (GTM) and Segment
+  # scripts get loaded into the docsets that get published to docs.datastax.com.
+  robots: allow
+  keys:
+    google_analytics: 'GTM-5FSG7Q'
+    segment_io: 'd24gQtyKIUu5mLdkp11xjfiXLhRqx0HH'
 
 content:
-  # branches: main # Sources default to this branch if none are specified.
   sources:
-  - url: https://github.com/datastax/ragstack-ai.git
-    branches: add-docs # Override the default branch for this source.
+  - url: '~/work/ragstack-ai'
+    branches: HEAD
     start_path: docs
 
 antora:
   extensions:
   - '@antora/collector-extension'
-  - lib/tailwind-processor.js
 
 asciidoc:
   extensions:
   - '@asciidoctor/tabs'
-  - lib/remote-include-processor.js
-  - lib/svg-macro.js
+  - extensions/remote-include-processor.js
   - asciidoctor-kroki
   - asciidoctor-external-callout
   attributes:
@@ -40,6 +44,7 @@ asciidoc:
     max-include-depth: 10
     page-toclevels: 2@
     sectlinks: ''
+    page-pagination: ''
     tabs-sync-option: ''
     table-caption: false
     figure-caption: false
@@ -53,6 +58,11 @@ asciidoc:
     glossary-url: 'https://docs.datastax.com/en/glossary/docs/index.html#'
     external-link-icon: '&#x2197;'
 
+    # Bsys requires the URLs of the content source repos of the current docset
+    # to be listed as attributes in the site-publish playbook in the form
+    # "<repo-name>: 'ssh://github.com/<org-name>/<repo-name>.git'".
+    ragstack-ai: 'ssh://https://github.com/datastax/ragstack-ai.git'
+
 urls:
   # redirect_facility: httpd
   latest_version_segment_strategy: redirect:from
@@ -60,10 +70,13 @@ urls:
 
 ui:
   bundle:
-    url: https://github.com/riptano/docs-ui/releases/latest/download/ui-bundle.zip
+    url: https://github.com/riptano/antora-ui-docs/releases/latest/download/ui-bundle.zip
     # url: https://gitlab.com/antora/antora-ui-default/-/jobs/artifacts/HEAD/raw/build/ui-bundle.zip?job=bundle-stable
     snapshot: true
-  # supplemental_files: supplemental-ui
 
 output:
-  dir: 'build/site'
+  # Bsys requires the output.dir in the site-publish playbook to be specifically
+  # set to "~/work/<repo-name>/build/site". This is because bsys clones the
+  # content source repo into "/work", and then looks for the Antora-generated
+  # site in "build/site" within the repo directory when deploying/syncing.
+  dir: '~/work/ragstack-ai/docs/build/site'
