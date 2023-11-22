@@ -28,11 +28,14 @@ jobs:
           git clone https://github.com/langchain-ai/langchain.git --depth 1 --branch master --single-branch langchain-master
           cd langchain-master/libs/langchain
           poetry install
+          python -m venv /tmp/venv
+          source /tmp/venv/bin/activate
+          pip install dist/langchain-*.whl
           
 
       - name: Run E2E tests
         run: |
-          poetry run pip install pytest "astrapy==0.6.0"
+          pip install pytest "astrapy==0.6.0" 
           export ASTRA_DB_TOKEN="${{ secrets.E2E_TESTS_ASTRA_DB_TOKEN }}"
           export ASTRA_DB_ENDPOINT="${{ secrets.E2E_TESTS_ASTRA_DB_ENDPOINT }}"
           export OPEN_AI_KEY="${{ secrets.E2E_TESTS_OPEN_AI_KEY }}"
