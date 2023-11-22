@@ -79,7 +79,6 @@ jobs:
         if: always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
         run: |
           if [ -f "ragstack-e2e-tests/generated-compatibility-matrix.txt" ]; then
-            git_ref = $(git rev-parse --short HEAD)
             echo "{\"content\":\"$(cat ragstack-e2e-tests/generated-compatibility-matrix.txt)\",\"commit\":\"$(git rev-parse --short HEAD)\"}" > slack-report.json
             echo "Slack report generated"
             cat slack-report.json
