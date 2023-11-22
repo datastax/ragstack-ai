@@ -84,7 +84,7 @@ jobs:
               cat ragstack-e2e-tests/generated-compatibility-matrix.txt | sed 's/"/\\"/g' | while IFS= read -r line; do
                 echo -n "$line\n"
               done
-              echo "\",\"commit\":\"$(git rev-parse --short HEAD)\"}"
+              echo "\",\"commit\":\"$(git rev-parse --short HEAD)\",\"url\":\"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\"}"
             } > slack-report.json
             echo "Slack report generated"
             cat slack-report.json
