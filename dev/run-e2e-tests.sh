@@ -23,5 +23,6 @@ check_env AZURE_OPEN_AI_ENDPOINT
 export AZURE_OPEN_AI_CHAT_MODEL_DEPLOYMENT="gpt-35-turbo"
 export AZURE_OPEN_AI_EMBEDDINGS_MODEL_DEPLOYMENT="text-embedding-ada-002"
 
-poetry run pytest tests/e2e-tests "$@"
+cd ragstack-e2e-tests
+poetry run pytest tests "$@"
 
