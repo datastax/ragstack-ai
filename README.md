@@ -33,14 +33,17 @@ poetry install
 
 ## Run Tests
 
-### Run Unit Tests
 ```shell
 poetry run pytest tests/unit-tests
 ```
 
-### Run End-to-End tests
-End-to-end testing requires Azure OpenAPI keys, as well as the AstraDB URL and key. You can find the example script for running these tests at [run-e2e-tests.sh](./dev/run-e2e-tests.sh). The script specifies the required environment variables that need to be set for the tests to run successfully.
+## Run End-to-End tests
+End-to-end testing requires a lot of external service credentials. 
+You can find the example script for running these tests at [run-e2e-tests.sh](./dev/run-e2e-tests.sh). 
+The script specifies the required environment variables that need to be set for the tests to run successfully.
+
 ```shell
+cd ragstack-e2e-tests
 poetry run pytest tests
 ```
 
