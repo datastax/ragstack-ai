@@ -75,6 +75,31 @@ jobs:
             echo "Report not found"
           fi
 
+      - name: Prepare report for Slack
+        if: always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+        run: |
+          if [ -f "ragstack-e2e-tests/generated-compatibility-matrix.txt" ]; then
+            {
+              echo -n '{"content": "'
+              cat ragstack-e2e-tests/generated-compatibility-matrix.txt | sed 's/"/\\"/g' | while IFS= read -r line; do
+                echo -n "$line\n"
+              done
+              echo "\",\"commit\":\"$(git rev-parse --short HEAD)\",\"url\":\"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\",\"type\":\"ragstack\"}"
+            } > slack-report.json
+            echo "Slack report generated"
+            cat slack-report.json
+          else
+            echo "{}" > slack-report.json
+          fi
+
+      - name: Dump report on Slack
+        if: always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          payload-file-path: "./slack-report.json"
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
       - name: Run LangChain tests
         run: |
           source /tmp/venv/bin/activate
