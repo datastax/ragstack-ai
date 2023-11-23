@@ -5,7 +5,7 @@ check_env() {
   local var_name=$1
   if [ -z "${!var_name}" ]; then
       echo "Error: Environment variable '$var_name' is missing."
-      #exit 1
+      exit 1
   fi
 }
 
