@@ -3,16 +3,17 @@ import json
 import pytest
 from chat_application import run_application
 import os
+
+from langchain.llms.vertexai import VertexAI
 from langchain.schema.embeddings import Embeddings
 from langchain.schema.vectorstore import VectorStore
 from langchain.vectorstores import AstraDB
-from langchain.chat_models import ChatOpenAI, AzureChatOpenAI
-from langchain.embeddings import OpenAIEmbeddings
+from langchain.chat_models import ChatOpenAI, AzureChatOpenAI, ChatVertexAI
+from langchain.embeddings import OpenAIEmbeddings, VertexAIEmbeddings
 from langchain.schema.language_model import BaseLanguageModel
 from conftest import set_current_test_info
 
 VECTOR_ASTRADB_PROD = "astradb-prod"
-
 VECTOR_ASTRADB_DEV = "astradb-dev"
 
 
@@ -70,15 +71,15 @@ def init_embeddings(impl) -> Embeddings:
             openai_api_version="2023-05-15",
             chunk_size=1,
         )
+    elif impl == "vertex-ai":
+        return VertexAIEmbeddings(model_name="textembedding-gecko")
+
     else:
         raise Exception("Unknown embedding implementation: " + impl)
 
 
 def close_embeddings(impl, embeddings: Embeddings):
-    if impl in ("openai", "openai-azure"):
-        pass
-    else:
-        raise Exception("Unknown embedding implementation: " + impl)
+    pass
 
 
 def init_llm(impl) -> BaseLanguageModel:
@@ -100,15 +101,14 @@ def init_llm(impl) -> BaseLanguageModel:
             openai_api_version="2023-07-01-preview",
         )
         return azure_open_ai
+    elif impl == "vertex-ai":
+        return ChatVertexAI()
     else:
         raise Exception("Unknown llm implementation: " + impl)
 
 
 def close_llm(impl, llm: BaseLanguageModel):
-    if impl in ("openai", "openai-azure"):
-        pass
-    else:
-        raise Exception("Unknown llm implementation: " + impl)
+    pass
 
 
 def vector_dbs():
@@ -123,6 +123,11 @@ def test_openai_azure(vector_db: str):
 @pytest.mark.parametrize("vector_db", vector_dbs())
 def test_openai(vector_db: str):
     _run_test(vector_db=vector_db, embedding="openai", llm="openai")
+
+
+@pytest.mark.parametrize("vector_db", vector_dbs())
+def test_vertex_ai(vector_db: str):
+    _run_test(vector_db=vector_db, embedding="vertex-ai", llm="vertex-ai")
 
 
 def _run_test(vector_db: str, embedding: str, llm: str):
