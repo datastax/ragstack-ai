@@ -34,16 +34,19 @@ def set_current_test_info(llm: str, embedding: str, vector_db: str) -> None:
 
 
 def generate_plain_text_report(tests: List[dict]) -> str:
-    result = ""
+    result = "(Vector, Embedding, LLM)\n\n"
     for test in tests:
         llm = test['specs']['llm']
         embedding = test['specs']['embedding']
         vector_db = test['specs']['vector_db']
-        result += "Vector: " + vector_db + "\n"
-        result += "Embedding: " + embedding + "\n"
-        result += "LLM: " + llm + "\n"
-        result += "Result: " + test['result'] + (" " + str(test['error']) if test['error'] else "") + "\n"
-        result += "-" * 80 + "\n"
+        result += "-" * 60 + "\n"
+        result += vector_db
+        result += " | "
+        result += embedding
+        result += " | "
+        result += llm
+        result += ": "
+        result += test['result'] + (" " + str(test['error']) if test['error'] else "") + "\n"
     return result
 
 def generate_markdown_report(tests: List[dict]) -> str:
