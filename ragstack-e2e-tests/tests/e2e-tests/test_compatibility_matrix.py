@@ -11,9 +11,9 @@ from langchain.embeddings import OpenAIEmbeddings
 from langchain.schema.language_model import BaseLanguageModel
 from conftest import set_current_test_info
 
+VECTOR_ASTRADB_PROD = "astradb-prod"
 
-
-
+VECTOR_ASTRADB_DEV = "astradb-dev"
 
 
 def get_required_env(name) -> str:
@@ -23,14 +23,23 @@ def get_required_env(name) -> str:
 
 
 def init_vector_db(impl, embedding: Embeddings) -> VectorStore:
-    if impl == "astradb":
-        collection = get_required_env("ASTRA_TABLE_NAME")
+    if impl in [VECTOR_ASTRADB_DEV, VECTOR_ASTRADB_PROD]:
+        if impl == VECTOR_ASTRADB_DEV:
+            collection = get_required_env("ASTRA_DEV_TABLE_NAME")
+            namespace = get_required_env("ASTRA_DEV_KEYSPACE")
+            token = get_required_env("ASTRA_DEV_DB_TOKEN")
+            api_endpoint = get_required_env("ASTRA_DEV_DB_ENDPOINT")
+        else:
+            collection = get_required_env("ASTRA_PROD_TABLE_NAME")
+            namespace = get_required_env("ASTRA_PROD_KEYSPACE")
+            token = get_required_env("ASTRA_PROD_DB_TOKEN")
+            api_endpoint = get_required_env("ASTRA_PROD_DB_ENDPOINT")
         vector_db = AstraDB(
             collection_name=collection,
             embedding=embedding,
-            namespace=get_required_env("ASTRA_KEYSPACE"),
-            token=get_required_env("ASTRA_DB_TOKEN"),
-            api_endpoint=get_required_env("ASTRA_DB_ENDPOINT"),
+            namespace=namespace,
+            token=token,
+            api_endpoint=api_endpoint,
         )
         return vector_db
     else:
@@ -103,7 +112,7 @@ def close_llm(impl, llm: BaseLanguageModel):
 
 
 def vector_dbs():
-    return ["astradb"]
+    return [VECTOR_ASTRADB_DEV, VECTOR_ASTRADB_PROD]
 
 
 @pytest.mark.parametrize("vector_db", vector_dbs())
