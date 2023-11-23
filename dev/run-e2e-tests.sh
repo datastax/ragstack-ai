@@ -29,6 +29,11 @@ check_env AZURE_OPEN_AI_ENDPOINT
 export AZURE_OPEN_AI_CHAT_MODEL_DEPLOYMENT="gpt-35-turbo"
 export AZURE_OPEN_AI_EMBEDDINGS_MODEL_DEPLOYMENT="text-embedding-ada-002"
 
+# vertex-ai
+check_env GCLOUD_ACCOUNT_KEY_JSON
+echo $GCLOUD_ACCOUNT_KEY_JSON > /tmp/gcloud-account-key.json
+export GOOGLE_APPLICATION_CREDENTIALS=/tmp/gcloud-account-key.json
+
 cd ragstack-e2e-tests
 poetry run pytest tests "$@"
 
