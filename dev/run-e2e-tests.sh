@@ -5,15 +5,21 @@ check_env() {
   local var_name=$1
   if [ -z "${!var_name}" ]; then
       echo "Error: Environment variable '$var_name' is missing."
-      #exit 1
+      exit 1
   fi
 }
 
-# astra
-check_env ASTRA_DB_TOKEN
-check_env ASTRA_DB_ENDPOINT
-export ASTRA_KEYSPACE=ragstacke2e
-export ASTRA_TABLE_NAME=documents_$(echo $RANDOM | md5sum | head -c 20)
+# astra dev
+check_env ASTRA_DEV_DB_TOKEN
+check_env ASTRA_DEV_DB_ENDPOINT
+export ASTRA_DEV_KEYSPACE=ragstacke2e
+export ASTRA_DEV_TABLE_NAME=documents_$(echo $RANDOM | md5sum | head -c 20)
+
+# astra prod
+check_env ASTRA_PROD_DB_TOKEN
+check_env ASTRA_PROD_DB_ENDPOINT
+export ASTRA_PROD_KEYSPACE=ragstacke2e
+export ASTRA_PROD_TABLE_NAME=documents_$(echo $RANDOM | md5sum | head -c 20)
 
 # open-ai
 check_env OPEN_AI_KEY
