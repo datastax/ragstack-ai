@@ -47,7 +47,7 @@ def init_vector_db(impl, embedding: Embeddings) -> VectorStore:
 
 
 def close_vector_db(impl: str, vector_store: VectorStore):
-    if impl == "astradb":
+    if impl in [VECTOR_ASTRADB_DEV, VECTOR_ASTRADB_PROD]:
         vector_store.astra_db.delete_collection(vector_store.collection_name)
     else:
         raise Exception("Unknown vector db implementation: " + impl)
