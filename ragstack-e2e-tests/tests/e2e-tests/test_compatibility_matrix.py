@@ -27,18 +27,15 @@ def init_vector_db(impl, embedding: Embeddings) -> VectorStore:
     if impl in [VECTOR_ASTRADB_DEV, VECTOR_ASTRADB_PROD]:
         if impl == VECTOR_ASTRADB_DEV:
             collection = get_required_env("ASTRA_DEV_TABLE_NAME")
-            namespace = get_required_env("ASTRA_DEV_KEYSPACE")
             token = get_required_env("ASTRA_DEV_DB_TOKEN")
             api_endpoint = get_required_env("ASTRA_DEV_DB_ENDPOINT")
         else:
             collection = get_required_env("ASTRA_PROD_TABLE_NAME")
-            namespace = get_required_env("ASTRA_PROD_KEYSPACE")
             token = get_required_env("ASTRA_PROD_DB_TOKEN")
             api_endpoint = get_required_env("ASTRA_PROD_DB_ENDPOINT")
         vector_db = AstraDB(
             collection_name=collection,
             embedding=embedding,
-            namespace=namespace,
             token=token,
             api_endpoint=api_endpoint,
         )
@@ -112,7 +109,10 @@ def close_llm(impl, llm: BaseLanguageModel):
 
 
 def vector_dbs():
-    return [VECTOR_ASTRADB_DEV, VECTOR_ASTRADB_PROD]
+    return [
+        VECTOR_ASTRADB_DEV,
+        VECTOR_ASTRADB_PROD
+    ]
 
 
 @pytest.mark.parametrize("vector_db", vector_dbs())
