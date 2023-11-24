@@ -37,6 +37,12 @@ check_env GCLOUD_ACCOUNT_KEY_JSON
 echo $GCLOUD_ACCOUNT_KEY_JSON > /tmp/gcloud-account-key.json
 export GOOGLE_APPLICATION_CREDENTIALS=/tmp/gcloud-account-key.json
 
+# bedrock
+check_env AWS_ACCESS_KEY_ID
+check_env AWS_SECRET_ACCESS_KEY
+check_env BEDROCK_AWS_REGION
+check_env BEDROCK_ANTHROPIC_CHAT_MODEL
+
 cd ragstack-e2e-tests
 poetry run pytest tests "$@"
 
