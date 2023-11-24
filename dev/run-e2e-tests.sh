@@ -7,7 +7,12 @@ check_env() {
       echo "Error: Environment variable '$var_name' is missing."
       exit 1
   fi
+  echo "Environment variable '$var_name' is set."
 }
+
+## You have to create a keyspace named "ragstacke2e" in your Astra environment.
+## If you have enabled the "Preview" for the "Vector experience" you have to disable it in order
+## to be able to create a keyspace with the name "ragstacke2e".
 
 # astra dev
 check_env ASTRA_DEV_DB_TOKEN
