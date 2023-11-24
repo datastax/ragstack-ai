@@ -17,13 +17,11 @@ check_env() {
 # astra dev
 check_env ASTRA_DEV_DB_TOKEN
 check_env ASTRA_DEV_DB_ENDPOINT
-export ASTRA_DEV_KEYSPACE=ragstacke2e
 export ASTRA_DEV_TABLE_NAME=documents_$(echo $RANDOM | md5sum | head -c 20)
 
 # astra prod
 check_env ASTRA_PROD_DB_TOKEN
 check_env ASTRA_PROD_DB_ENDPOINT
-export ASTRA_PROD_KEYSPACE=ragstacke2e
 export ASTRA_PROD_TABLE_NAME=documents_$(echo $RANDOM | md5sum | head -c 20)
 
 # open-ai

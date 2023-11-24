@@ -10,20 +10,15 @@ In order to rebase onto the upstream projects, you can use the following command
 langchain_version=v0.0.x
 git clone https://github.com/datastax/ragstack-ai-langchain.git
 cd ragstack-ai-langchain
-git checkout -b new-rebase-on-$langchain_version
 git remote add upstream https://github.com/langchain-ai/langchain.git
 git fetch upstream
 # choose a langchain tag
 git rebase $langchain_version
-git push origin new-rebase-on-$langchain_version
+git push origin -f
 ```
-Then open a PR and ensure CI is passing.
-Once the PR is merged you have to create the git tag.
 
+Then we create the git tag:
 ```shell
-git checkout master
-git fetch origin 
-git reset --hard origin/master
 git tag ragstack-${langchain_version}.0
 git push origin --tags 
 ```
