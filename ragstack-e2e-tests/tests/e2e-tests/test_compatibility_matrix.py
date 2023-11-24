@@ -10,6 +10,7 @@ from langchain.schema.vectorstore import VectorStore
 from langchain.vectorstores import AstraDB
 from langchain.chat_models import ChatOpenAI, AzureChatOpenAI, ChatVertexAI
 from langchain.embeddings import OpenAIEmbeddings, VertexAIEmbeddings
+from langchain.embeddings.azure_openai import AzureOpenAIEmbeddings
 from langchain.schema.language_model import BaseLanguageModel
 from conftest import set_current_test_info
 
@@ -62,7 +63,7 @@ def init_embeddings(impl) -> Embeddings:
         model_and_deployment = get_required_env(
             "AZURE_OPEN_AI_EMBEDDINGS_MODEL_DEPLOYMENT"
         )
-        return OpenAIEmbeddings(
+        return AzureOpenAIEmbeddings(
             model=model_and_deployment,
             deployment=model_and_deployment,
             openai_api_key=get_required_env("AZURE_OPEN_AI_KEY"),
