@@ -103,7 +103,7 @@ def init_llm(impl) -> BaseLanguageModel:
     elif impl == "vertex-ai":
         return ChatVertexAI()
     elif impl == "bedrock-anthropic":
-        return BedrockChat(model_id=get_required_env("BEDROCK_ANTHROPIC_CHAT_MODEL"),
+        return BedrockChat(model_id="anthropic.claude-v2",
                            region_name=get_required_env("BEDROCK_AWS_REGION"))
     else:
         raise Exception("Unknown llm implementation: " + impl)
