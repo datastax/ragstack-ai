@@ -105,9 +105,6 @@ def init_llm(impl) -> BaseLanguageModel:
     elif impl == "bedrock-anthropic":
         return BedrockChat(model_id=get_required_env("BEDROCK_ANTHROPIC_CHAT_MODEL"),
                            region_name=get_required_env("BEDROCK_AWS_REGION"))
-    elif impl == "bedrock-jurassic":
-        return BedrockChat(model_id=get_required_env("BEDROCK_JURASSIC_CHAT_MODEL"),
-                           region_name=get_required_env("BEDROCK_AWS_REGION"))
     else:
         raise Exception("Unknown llm implementation: " + impl)
 
@@ -138,8 +135,8 @@ def test_vertex_ai(vector_db: str):
     _run_test(vector_db=vector_db, embedding="vertex-ai", llm="vertex-ai")
 
 @pytest.mark.parametrize("vector_db", vector_dbs())
-def test_bedrock_jurassic(vector_db: str):
-    _run_test(vector_db=vector_db, embedding="bedrock", llm="bedrock-jurassic")
+def test_bedrock_anthropic(vector_db: str):
+    _run_test(vector_db=vector_db, embedding="bedrock", llm="bedrock-anthropic")
 
 
 def _run_test(vector_db: str, embedding: str, llm: str):
