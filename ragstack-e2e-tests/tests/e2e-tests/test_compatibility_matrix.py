@@ -115,7 +115,7 @@ def close_llm(impl, llm: BaseLanguageModel):
 
 def vector_dbs():
     return [
-        VECTOR_ASTRADB_DEV,
+        #VECTOR_ASTRADB_DEV,
         VECTOR_ASTRADB_PROD
     ]
 
