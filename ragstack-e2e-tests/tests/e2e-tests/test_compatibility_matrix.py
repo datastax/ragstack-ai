@@ -1,11 +1,7 @@
-import json
-
 import pytest
 from chat_application import run_application
 import os
 
-from langchain.llms.bedrock import Bedrock
-from langchain.llms.vertexai import VertexAI
 from langchain.schema.embeddings import Embeddings
 from langchain.schema.vectorstore import VectorStore
 from langchain.vectorstores import AstraDB
@@ -104,8 +100,10 @@ def init_llm(impl) -> BaseLanguageModel:
     elif impl == "vertex-ai":
         return ChatVertexAI()
     elif impl == "bedrock-anthropic":
-        return BedrockChat(model_id="anthropic.claude-v2",
-                           region_name=get_required_env("BEDROCK_AWS_REGION"))
+        return BedrockChat(
+            model_id="anthropic.claude-v2",
+            region_name=get_required_env("BEDROCK_AWS_REGION"),
+        )
     else:
         raise Exception("Unknown llm implementation: " + impl)
 
@@ -116,7 +114,7 @@ def close_llm(impl, llm: BaseLanguageModel):
 
 def vector_dbs():
     return [
-        #VECTOR_ASTRADB_DEV,
+        # VECTOR_ASTRADB_DEV,
         VECTOR_ASTRADB_PROD
     ]
 
@@ -134,6 +132,7 @@ def test_openai(vector_db: str):
 @pytest.mark.parametrize("vector_db", vector_dbs())
 def test_vertex_ai(vector_db: str):
     _run_test(vector_db=vector_db, embedding="vertex-ai", llm="vertex-ai")
+
 
 @pytest.mark.parametrize("vector_db", vector_dbs())
 def test_bedrock_anthropic(vector_db: str):

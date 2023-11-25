@@ -43,5 +43,6 @@ check_env AWS_SECRET_ACCESS_KEY
 check_env BEDROCK_AWS_REGION
 
 cd ragstack-e2e-tests
+poetry run black .
+poetry run ruff .
 poetry run pytest tests "$@"
-

@@ -1,5 +1,4 @@
 import json
-import unicodedata
 from typing import List
 
 import pytest
@@ -25,20 +24,19 @@ def pytest_runtest_makereport(item, call):
         compatibility_matrix_results.append(result)
         os.environ["RAGSTACK_E2E_TESTS_COMPATIBILITY_MATRIX_INFO"] = ""
 
+
 def set_current_test_info(llm: str, embedding: str, vector_db: str) -> None:
-    os.environ["RAGSTACK_E2E_TESTS_COMPATIBILITY_MATRIX_INFO"] = json.dumps({
-        "llm": llm,
-        "embedding": embedding,
-        "vector_db": vector_db
-    })
+    os.environ["RAGSTACK_E2E_TESTS_COMPATIBILITY_MATRIX_INFO"] = json.dumps(
+        {"llm": llm, "embedding": embedding, "vector_db": vector_db}
+    )
 
 
 def generate_plain_text_report(tests: List[dict]) -> str:
     result = "(Vector, Embedding, LLM)\n\n"
     for test in tests:
-        llm = test['specs']['llm']
-        embedding = test['specs']['embedding']
-        vector_db = test['specs']['vector_db']
+        llm = test["specs"]["llm"]
+        embedding = test["specs"]["embedding"]
+        vector_db = test["specs"]["vector_db"]
         result += "-" * 60 + "\n"
         result += vector_db
         result += " | "
@@ -46,8 +44,11 @@ def generate_plain_text_report(tests: List[dict]) -> str:
         result += " | "
         result += llm
         result += ": "
-        result += test['result'] + (" " + str(test['error']) if test['error'] else "") + "\n"
+        result += (
+            test["result"] + (" " + str(test["error"]) if test["error"] else "") + "\n"
+        )
     return result
+
 
 def generate_markdown_report(tests: List[dict]) -> str:
     report = "## Compatibility matrix results\n\n"
@@ -55,16 +56,16 @@ def generate_markdown_report(tests: List[dict]) -> str:
     report += "|-----------|-----------|-----|--------|\n"
 
     for test in tests:
-        llm = test['specs']['llm']
-        embedding = test['specs']['embedding']
-        vector_db = test['specs']['vector_db']
-        result = test['result'] + (" " + str(test['error']) if test['error'] else "")
+        llm = test["specs"]["llm"]
+        embedding = test["specs"]["embedding"]
+        vector_db = test["specs"]["vector_db"]
+        result = test["result"] + (" " + str(test["error"]) if test["error"] else "")
         report += f"| {vector_db} | {embedding} | {llm} | {result} |\n"
 
     return report
 
 
-@pytest.fixture(scope='session', autouse=True)
+@pytest.fixture(scope="session", autouse=True)
 def dump_report():
     yield
     print("Compatibility matrix results:")
@@ -73,6 +74,3 @@ def dump_report():
         f.write(generate_markdown_report(compatibility_matrix_results))
     with open("generated-compatibility-matrix.txt", "w") as f:
         f.write(generate_plain_text_report(compatibility_matrix_results))
-
-
-
