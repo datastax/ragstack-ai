@@ -4,10 +4,10 @@ set -e
 check_env() {
   local var_name=$1
   if [ -z "${!var_name}" ]; then
-      echo "Error: Environment variable '$var_name' is missing."
-      exit 1
+      echo "Warning: Environment variable '$var_name' is missing. Some tests will be skipped."
+  else
+      echo "Environment variable '$var_name' is set."
   fi
-  echo "Environment variable '$var_name' is set."
 }
 
 ## You have to create a keyspace named "ragstacke2e" in your Astra environment.
