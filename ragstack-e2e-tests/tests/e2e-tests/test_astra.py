@@ -1,15 +1,30 @@
-import pytest
+import logging
+from typing import List
 
+import pytest
 from langchain.schema.embeddings import Embeddings
 from langchain.schema.vectorstore import VectorStore
 from langchain.vectorstores import AstraDB
 from langchain.chat_models import ChatOpenAI
-from langchain.embeddings import OpenAIEmbeddings
 from langchain.schema.language_model import BaseLanguageModel
 from conftest import get_required_env
 
 VECTOR_ASTRADB_PROD = "astradb-prod"
 VECTOR_ASTRADB_DEV = "astradb-dev"
+
+
+class MockEmbeddings(Embeddings):
+    def __init__(self):
+        self.embedded_documents = None
+        self.embedded_query = None
+
+    def embed_documents(self, texts: List[str]) -> List[List[float]]:
+        self.embedded_documents = texts
+        return [[1.0, 2.0, 3.0]] * len(texts)
+
+    def embed_query(self, text: str) -> List[float]:
+        self.embedded_query = text
+        return [1.0, 2.0, 3.0]
 
 
 def init_vector_db(impl, embedding: Embeddings) -> VectorStore:
@@ -41,8 +56,7 @@ def close_vector_db(impl: str, vector_store: VectorStore):
 
 
 def init_embeddings() -> Embeddings:
-    key = get_required_env("OPEN_AI_KEY")
-    return OpenAIEmbeddings(openai_api_key=key)
+    return MockEmbeddings()
 
 
 def close_embeddings(embeddings: Embeddings):
@@ -80,6 +94,43 @@ def test_basic_vector_search(vector_db: str):
         )
         retriever = vectorstore.as_retriever()
         assert len(retriever.get_relevant_documents("RAGStack")) > 0
+
+    _run_test(vector_db, test)
+
+
+@pytest.mark.parametrize("vector_db", vector_dbs())
+def test_basic_metadata_filtering(vector_db: str):
+    print("Running test_basic_metadata_filtering")
+
+    def test(vectorstore, llm, embedding):
+        collection = vectorstore.collection
+
+        vectorstore.add_texts(
+            texts=["RAGStack is a framework to run LangChain in production"],
+            metadatas=[{"id": "http://mywebsite", "language": "en", "source": "website", "name": "Homepage"}],
+        )
+
+        response = collection.find_one(filter={}).get("data").get("document")
+        print("Response:", response)
+        assert response.get('content') == "RAGStack is a framework to run LangChain in production"
+        assert response.get('metadata').get('id') == "http://mywebsite"
+        assert response.get('metadata').get('source') == "website"
+
+        response = collection.find_one(filter={"metadata.source": "website"}).get("data").get("document")
+        print("Response:", response)
+        assert response.get('content') == "RAGStack is a framework to run LangChain in production"
+        assert response.get('metadata').get('id') == "http://mywebsite"
+        assert response.get('metadata').get('source') == "website"
+
+        response = collection.find_one(filter={
+            "$and":
+                [{"metadata.language": "en"},
+                 {"metadata.source": "website"}]
+        }).get("data").get("document")
+        print("Response:", response)
+        assert response.get('content') == "RAGStack is a framework to run LangChain in production"
+        assert response.get('metadata').get('id') == "http://mywebsite"
+        assert response.get('metadata').get('source') == "website"
 
     _run_test(vector_db, test)
 
