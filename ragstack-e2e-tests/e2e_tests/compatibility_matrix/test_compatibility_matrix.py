@@ -67,9 +67,15 @@ def init_embeddings(impl) -> Embeddings:
     elif impl == "vertex-ai":
         return VertexAIEmbeddings(model_name="textembedding-gecko")
     elif impl == "bedrock-titan":
-        return BedrockEmbeddings(model_id="amazon.titan-embed-text-v1", region_name=get_required_env("BEDROCK_AWS_REGION"))
+        return BedrockEmbeddings(
+            model_id="amazon.titan-embed-text-v1",
+            region_name=get_required_env("BEDROCK_AWS_REGION"),
+        )
     elif impl == "bedrock-cohere":
-        return BedrockEmbeddings(model_id="cohere.embed-english-v3", region_name=get_required_env("BEDROCK_AWS_REGION"))
+        return BedrockEmbeddings(
+            model_id="cohere.embed-english-v3",
+            region_name=get_required_env("BEDROCK_AWS_REGION"),
+        )
     else:
         raise Exception("Unknown embedding implementation: " + impl)
 
@@ -120,8 +126,11 @@ def close_llm(impl, llm: BaseLanguageModel):
 # def test_openai_azure_astra_dev():
 #     _run_test(vector_db=VECTOR_ASTRADB_DEV, embedding="openai-azure", llm="openai-azure")
 
+
 def test_openai_azure():
-    _run_test(vector_db=VECTOR_ASTRADB_PROD, embedding="openai-azure", llm="openai-azure")
+    _run_test(
+        vector_db=VECTOR_ASTRADB_PROD, embedding="openai-azure", llm="openai-azure"
+    )
 
 
 def test_openai():
@@ -133,11 +142,17 @@ def test_vertex_ai():
 
 
 def test_bedrock_anthropic():
-    _run_test(vector_db=VECTOR_ASTRADB_PROD, embedding="bedrock-titan", llm="bedrock-anthropic")
+    _run_test(
+        vector_db=VECTOR_ASTRADB_PROD,
+        embedding="bedrock-titan",
+        llm="bedrock-anthropic",
+    )
+
 
 def test_bedrock_meta():
-    _run_test(vector_db=VECTOR_ASTRADB_PROD, embedding="bedrock-cohere", llm="bedrock-meta")
-
+    _run_test(
+        vector_db=VECTOR_ASTRADB_PROD, embedding="bedrock-cohere", llm="bedrock-meta"
+    )
 
 
 def _run_test(vector_db: str, embedding: str, llm: str):
