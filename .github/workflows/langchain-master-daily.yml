@@ -44,7 +44,7 @@ jobs:
         if: always()
         id: commit-ref
         run:
-            echo "::set-output name=commit-ref::$(cd langchain-master && git rev-parse --short HEAD)"
+            echo "::set-output name=commit-ref::$(grep resolved_reference poetry.lock | awk -F'"' '{print $2}')"
 
       - name: Prepare report for Slack
         if: always()
