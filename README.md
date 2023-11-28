@@ -44,7 +44,7 @@ The script specifies the required environment variables that need to be set for 
 
 ```shell
 cd ragstack-e2e-tests
-poetry run pytest tests
+poetry run pytest e2e_tests
 ```
 
 ## Build the package distribution
