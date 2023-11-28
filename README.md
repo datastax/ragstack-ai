@@ -38,13 +38,11 @@ poetry run pytest tests/unit-tests
 ```
 
 ## Run End-to-End tests
-End-to-end testing requires a lot of external service credentials. 
-You can find the example script for running these tests at [run-e2e-tests.sh](./dev/run-e2e-tests.sh). 
-The script specifies the required environment variables that need to be set for the tests to run successfully.
+End-to-end testing requires a lot of external service credentials.
+The required environment variables that need to be set for the tests to run successfully can be found in the [tox.ini](./ragstack-e2e-tests/tox.ini).
 
 ```shell
-cd ragstack-e2e-tests
-poetry run pytest e2e_tests
+poetry run tox -c ragstack-e2e-tests
 ```
 
 ## Build the package distribution
