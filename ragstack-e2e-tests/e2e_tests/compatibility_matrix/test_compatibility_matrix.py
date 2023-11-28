@@ -66,8 +66,10 @@ def init_embeddings(impl) -> Embeddings:
         )
     elif impl == "vertex-ai":
         return VertexAIEmbeddings(model_name="textembedding-gecko")
-    elif impl == "bedrock":
-        return BedrockEmbeddings(region_name=get_required_env("BEDROCK_AWS_REGION"))
+    elif impl == "bedrock-titan":
+        return BedrockEmbeddings(model_id="amazon.titan-embed-text-v1", region_name=get_required_env("BEDROCK_AWS_REGION"))
+    elif impl == "bedrock-cohere":
+        return BedrockEmbeddings(model_id="cohere.embed-english-v3", region_name=get_required_env("BEDROCK_AWS_REGION"))
     else:
         raise Exception("Unknown embedding implementation: " + impl)
 
@@ -102,6 +104,11 @@ def init_llm(impl) -> BaseLanguageModel:
             model_id="anthropic.claude-v2",
             region_name=get_required_env("BEDROCK_AWS_REGION"),
         )
+    elif impl == "bedrock-meta":
+        return BedrockChat(
+            model_id="meta.llama2-13b-chat-v1",
+            region_name=get_required_env("BEDROCK_AWS_REGION"),
+        )
     else:
         raise Exception("Unknown llm implementation: " + impl)
 
@@ -110,31 +117,27 @@ def close_llm(impl, llm: BaseLanguageModel):
     pass
 
 
-def vector_dbs():
-    return [
-        # VECTOR_ASTRADB_DEV,
-        VECTOR_ASTRADB_PROD
-    ]
+def test_openai_azure_astra_dev():
+    _run_test(vector_db=VECTOR_ASTRADB_PROD, embedding="openai-azure", llm="openai-azure")
+
+def test_openai_azure():
+    _run_test(vector_db=VECTOR_ASTRADB_DEV, embedding="openai-azure", llm="openai-azure")
 
 
-@pytest.mark.parametrize("vector_db", vector_dbs())
-def test_openai_azure(vector_db: str):
-    _run_test(vector_db=vector_db, embedding="openai-azure", llm="openai-azure")
+def test_openai():
+    _run_test(vector_db=VECTOR_ASTRADB_PROD, embedding="openai", llm="openai")
 
 
-@pytest.mark.parametrize("vector_db", vector_dbs())
-def test_openai(vector_db: str):
-    _run_test(vector_db=vector_db, embedding="openai", llm="openai")
+def test_vertex_ai():
+    _run_test(vector_db=VECTOR_ASTRADB_PROD, embedding="vertex-ai", llm="vertex-ai")
 
 
-@pytest.mark.parametrize("vector_db", vector_dbs())
-def test_vertex_ai(vector_db: str):
-    _run_test(vector_db=vector_db, embedding="vertex-ai", llm="vertex-ai")
+def test_bedrock_anthropic():
+    _run_test(vector_db=VECTOR_ASTRADB_PROD, embedding="bedrock-titan", llm="bedrock-anthropic")
 
+def test_bedrock_meta():
+    _run_test(vector_db=VECTOR_ASTRADB_PROD, embedding="bedrock-cohere", llm="bedrock-meta")
 
-@pytest.mark.parametrize("vector_db", vector_dbs())
-def test_bedrock_anthropic(vector_db: str):
-    _run_test(vector_db=vector_db, embedding="bedrock", llm="bedrock-anthropic")
 
 
 def _run_test(vector_db: str, embedding: str, llm: str):
