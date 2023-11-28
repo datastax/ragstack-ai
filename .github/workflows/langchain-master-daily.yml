@@ -56,9 +56,9 @@ jobs:
 
       - name: Compute commit URL
         if: always()
-        id: commit-url
+        id: commit-ref
         run:
-            echo "::set-output name=commit-url::$(cd langchain-master && git rev-parse --short HEAD)"
+            echo "::set-output name=commit-ref::$(cd langchain-master && git rev-parse --short HEAD)"
 
       - name: Prepare report for Slack
         if: always()
@@ -67,7 +67,7 @@ jobs:
           output-file: slack-report.json
           type: langchain
           outcome: ${{ steps.e2e-tests.outcome }}
-          commit-url: ${{ steps.commit-url.outputs.commit-url }}
+          commit-url: "https://github.com/langchain-ai/langchain/commits/${{ steps.commit-ref.outputs.commit-ref }}"
 
       - name: Dump report on Slack
         if: always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
