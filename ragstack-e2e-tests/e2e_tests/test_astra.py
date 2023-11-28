@@ -13,9 +13,7 @@ from e2e_tests.conftest import get_required_env
 def test_basic_vector_search(environment):
     print("Running test_basic_vector_search")
     vectorstore = environment.vectorstore
-    vectorstore.add_texts(
-        ["RAGStack is a framework to run LangChain in production"]
-    )
+    vectorstore.add_texts(["RAGStack is a framework to run LangChain in production"])
     retriever = vectorstore.as_retriever()
     assert len(retriever.get_relevant_documents("RAGStack")) > 0
 
@@ -28,32 +26,69 @@ def test_basic_metadata_filtering(environment):
 
     vectorstore.add_texts(
         texts=["RAGStack is a framework to run LangChain in production"],
-        metadatas=[{"id": "http://mywebsite", "language": "en", "source": "website", "name": "Homepage"}],
+        metadatas=[
+            {
+                "id": "http://mywebsite",
+                "language": "en",
+                "source": "website",
+                "name": "Homepage",
+            }
+        ],
     )
 
     response = collection.find_one(filter={}).get("data").get("document")
     print("Response:", response)
-    verify_document(response, "RAGStack is a framework to run LangChain in production",
-                    {"id": "http://mywebsite", "language": "en", "source": "website", "name": "Homepage"})
+    verify_document(
+        response,
+        "RAGStack is a framework to run LangChain in production",
+        {
+            "id": "http://mywebsite",
+            "language": "en",
+            "source": "website",
+            "name": "Homepage",
+        },
+    )
 
-    response = collection.find_one(filter={"metadata.source": "website"}).get("data").get("document")
+    response = (
+        collection.find_one(filter={"metadata.source": "website"})
+        .get("data")
+        .get("document")
+    )
     print("Response:", response)
-    verify_document(response, "RAGStack is a framework to run LangChain in production",
-                    {"id": "http://mywebsite", "language": "en", "source": "website", "name": "Homepage"})
+    verify_document(
+        response,
+        "RAGStack is a framework to run LangChain in production",
+        {
+            "id": "http://mywebsite",
+            "language": "en",
+            "source": "website",
+            "name": "Homepage",
+        },
+    )
 
-    response = collection.find_one(filter={
-        "$and":
-            [{"metadata.language": "en"},
-             {"metadata.source": "website"}]
-    }).get("data").get("document")
+    response = (
+        collection.find_one(
+            filter={
+                "$and": [{"metadata.language": "en"}, {"metadata.source": "website"}]
+            }
+        )
+        .get("data")
+        .get("document")
+    )
     print("Response:", response)
-    verify_document(response, "RAGStack is a framework to run LangChain in production",
-                    {"id": "http://mywebsite", "language": "en", "source": "website", "name": "Homepage"})
+    verify_document(
+        response,
+        "RAGStack is a framework to run LangChain in production",
+        {
+            "id": "http://mywebsite",
+            "language": "en",
+            "source": "website",
+            "name": "Homepage",
+        },
+    )
 
     try:
-        collection.find_one(filter={
-            'metadata.chunks': {'$gt': 2}
-        })
+        collection.find_one(filter={"metadata.chunks": {"$gt": 2}})
         pytest.fail("Should have thrown ValueError")
     except ValueError as e:
         # This looks very ugly, but it's the only way to get the error message
@@ -61,12 +96,14 @@ def test_basic_metadata_filtering(environment):
         error = json.loads(e.args[0])[1]
         assert error.get("errorCode") == "UNSUPPORTED_FILTER_OPERATION"
 
+
 def verify_document(document, expected_content, expected_metadata):
-    assert document.get('content') == expected_content
-    assert document.get('metadata').get('id') == expected_metadata.get('id')
-    assert document.get('metadata').get('source') == expected_metadata.get('source')
-    assert document.get('metadata').get('language') == expected_metadata.get('language')
-    assert document.get('metadata').get('name') == expected_metadata.get('name')
+    assert document.get("content") == expected_content
+    assert document.get("metadata").get("id") == expected_metadata.get("id")
+    assert document.get("metadata").get("source") == expected_metadata.get("source")
+    assert document.get("metadata").get("language") == expected_metadata.get("language")
+    assert document.get("metadata").get("name") == expected_metadata.get("name")
+
 
 class MockEmbeddings(Embeddings):
     def __init__(self):
@@ -100,17 +137,22 @@ def init_vector_db(embedding: Embeddings) -> VectorStore:
 
 
 class Environment:
-    def __init__(self, vectorstore: VectorStore, llm: BaseLanguageModel, embedding: Embeddings):
+    def __init__(
+        self, vectorstore: VectorStore, llm: BaseLanguageModel, embedding: Embeddings
+    ):
         self.vectorstore = vectorstore
         self.llm = llm
         self.embedding = embedding
+
 
 @pytest.fixture
 def environment():
     embeddings_impl = init_embeddings()
     vector_db_impl = init_vector_db(embeddings_impl)
     llm_impl = init_llm()
-    yield Environment(vectorstore=vector_db_impl, llm=llm_impl, embedding=embeddings_impl)
+    yield Environment(
+        vectorstore=vector_db_impl, llm=llm_impl, embedding=embeddings_impl
+    )
     close_vector_db(vector_db_impl)
 
 
