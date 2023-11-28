@@ -32,6 +32,12 @@ runs:
             echo -n "$line\n"
           done
         } >> ${{ inputs.output-file }}
+        echo "Compatibility matrix report found"
+      else
+        echo "Compatibility matrix report NOT found"
+        pwd
+        ls -la .
+        ls -la ragstack-e2e-tests || echo "ragstack-e2e-tests dir not found"
       fi
       echo "\",\"commit\":\"${{ inputs.commit-url }}\",\"url\":\"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\",\"type\":\"${{ inputs.type }}\"}" >> ${{ inputs.output-file }}
       echo "Slack report generated to ${{ inputs.output-file }}"

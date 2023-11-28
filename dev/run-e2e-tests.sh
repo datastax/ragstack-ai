@@ -45,4 +45,4 @@ check_env BEDROCK_AWS_REGION
 cd ragstack-e2e-tests
 poetry run black .
 poetry run ruff .
-poetry run pytest tests "$@"
+poetry run pytest e2e_tests "$@"
