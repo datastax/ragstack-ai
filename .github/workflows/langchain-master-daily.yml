@@ -2,7 +2,7 @@ name: Daily LangChain master
 on:
   workflow_dispatch: {}
   schedule:
-    - cron: '0 1 * * *'
+    - cron: '0 */2 * * *'
 
 jobs:
   tests:
@@ -36,6 +36,7 @@ jobs:
           
 
       - name: Run E2E tests
+        id: e2e-tests
         env:
           ASTRA_DEV_DB_TOKEN: "${{ secrets.E2E_TESTS_ASTRA_DEV_DB_TOKEN }}"
           ASTRA_DEV_DB_ENDPOINT: "${{ secrets.E2E_TESTS_ASTRA_DEV_DB_ENDPOINT }}"
@@ -53,23 +54,20 @@ jobs:
           pip install pytest astrapy openai tiktoken google-cloud-aiplatform boto3
           ./dev/run-e2e-tests.sh
 
+      - name: Compute commit URL
+        if: always()
+        id: commit-ref
+        run:
+            echo "::set-output name=commit-ref::$(cd langchain-master && git rev-parse --short HEAD)"
+
       - name: Prepare report for Slack
         if: always()
-        run: |
-          
-          if [ -f "ragstack-e2e-tests/generated-compatibility-matrix.txt" ]; then
-            {
-              echo -n '{"content": "'
-              cat ragstack-e2e-tests/generated-compatibility-matrix.txt | sed 's/"/\\"/g' | while IFS= read -r line; do
-                echo -n "$line\n"
-              done
-              echo "\",\"commit\":\"https://github.com/langchain-ai/langchain/commits/$(cd langchain-master && git rev-parse --short HEAD)\",\"url\":\"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\",\"type\":\"langchain\"}"
-            } > slack-report.json
-            echo "Slack report generated"
-            cat slack-report.json
-          else
-            echo "{}" > slack-report.json
-          fi
+        uses: ./.github/actions/generate-slack-report
+        with:
+          output-file: slack-report.json
+          type: langchain
+          outcome: ${{ steps.e2e-tests.outcome }}
+          commit-url: "https://github.com/langchain-ai/langchain/commits/${{ steps.commit-ref.outputs.commit-ref }}"
 
       - name: Dump report on Slack
         if: always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')

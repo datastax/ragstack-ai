@@ -6,7 +6,7 @@ from langchain.schema.vectorstore import VectorStore
 from langchain.vectorstores import AstraDB
 from langchain.chat_models import ChatOpenAI
 from langchain.schema.language_model import BaseLanguageModel
-from conftest import get_required_env
+from e2e_tests.conftest import get_required_env
 
 VECTOR_ASTRADB_PROD = "astradb-prod"
 VECTOR_ASTRADB_DEV = "astradb-dev"
