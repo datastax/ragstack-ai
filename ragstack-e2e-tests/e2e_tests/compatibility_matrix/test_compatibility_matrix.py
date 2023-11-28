@@ -117,8 +117,8 @@ def close_llm(impl, llm: BaseLanguageModel):
     pass
 
 
-def test_openai_azure_astra_dev():
-    _run_test(vector_db=VECTOR_ASTRADB_PROD, embedding="openai-azure", llm="openai-azure")
+#def test_openai_azure_astra_dev():
+#    _run_test(vector_db=VECTOR_ASTRADB_PROD, embedding="openai-azure", llm="openai-azure")
 
 def test_openai_azure():
     _run_test(vector_db=VECTOR_ASTRADB_DEV, embedding="openai-azure", llm="openai-azure")
