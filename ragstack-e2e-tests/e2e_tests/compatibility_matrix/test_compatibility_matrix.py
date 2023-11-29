@@ -35,6 +35,13 @@ def init_vector_db(impl, embedding: Embeddings) -> VectorStore:
             token=token,
             api_endpoint=api_endpoint,
         )
+        vector_db.delete_collection()
+        vector_db = AstraDB(
+            collection_name=collection,
+            embedding=embedding,
+            token=token,
+            api_endpoint=api_endpoint,
+        )
         return vector_db
     else:
         raise Exception("Unknown vector db implementation: " + impl)

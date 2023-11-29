@@ -133,6 +133,13 @@ def init_vector_db(embedding: Embeddings) -> VectorStore:
         token=token,
         api_endpoint=api_endpoint,
     )
+    vector_db.delete_collection()
+    vector_db = AstraDB(
+        collection_name=collection,
+        embedding=embedding,
+        token=token,
+        api_endpoint=api_endpoint,
+    )
     return vector_db
 
 
@@ -157,7 +164,7 @@ def environment():
 
 
 def close_vector_db(vector_store: VectorStore):
-    vector_store.astra_db.delete_collection(vector_store.collection_name)
+    vector_store.delete_collection()
 
 
 def init_embeddings() -> Embeddings:
