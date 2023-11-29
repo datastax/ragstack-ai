@@ -1,5 +1,5 @@
 from e2e_tests.compatibility_matrix.conftest import (
-    set_current_test_info,
+    set_current_test_info_simple_rag,
     get_required_env,
 )
 from e2e_tests.compatibility_matrix.chat_application import run_application
@@ -156,7 +156,7 @@ def test_bedrock_meta():
 
 
 def _run_test(vector_db: str, embedding: str, llm: str):
-    set_current_test_info(llm=llm, embedding=embedding, vector_db=vector_db)
+    set_current_test_info_simple_rag(llm=llm, embedding=embedding, vector_db=vector_db)
 
     embeddings_impl = init_embeddings(embedding)
     vector_db_impl = init_vector_db(vector_db, embeddings_impl)
