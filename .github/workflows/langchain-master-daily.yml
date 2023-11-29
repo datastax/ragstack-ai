@@ -44,7 +44,7 @@ jobs:
         if: always()
         id: commit-ref
         run:
-            echo "::set-output name=commit-ref::$(cd ragstack-e2e-tests && grep resolved_reference poetry.lock | awk -F'"' '{print $2}')"
+            echo "::set-output name=commit-ref::$(grep resolved_reference ragstack-e2e-tests/poetry.lock | awk -F'"' '{print $2}' | head -1)"
 
       - name: Prepare report for Slack
         if: always()
