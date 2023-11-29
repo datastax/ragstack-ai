@@ -8,6 +8,7 @@ compatibility_matrix_results = {}
 TYPE_SIMPLE_RAG = "simple-rag"
 TYPE_DOCUMENT_LOADER = "document-loader"
 
+
 @pytest.hookimpl(tryfirst=True, hookwrapper=True)
 def pytest_runtest_makereport(item, call):
     # execute all other hooks to obtain the report object
@@ -32,8 +33,14 @@ def pytest_runtest_makereport(item, call):
 
 def set_current_test_info_simple_rag(llm: str, embedding: str, vector_db: str) -> None:
     os.environ["RAGSTACK_E2E_TESTS_COMPATIBILITY_MATRIX_INFO"] = json.dumps(
-        {"type": TYPE_SIMPLE_RAG, "llm": llm, "embedding": embedding, "vector_db": vector_db}
+        {
+            "type": TYPE_SIMPLE_RAG,
+            "llm": llm,
+            "embedding": embedding,
+            "vector_db": vector_db,
+        }
     )
+
 
 def set_current_test_info_document_loader(doc_loader: str) -> None:
     os.environ["RAGSTACK_E2E_TESTS_COMPATIBILITY_MATRIX_INFO"] = json.dumps(
@@ -68,7 +75,7 @@ def generate_plain_text_report_simple_rag(tests):
         result += llm
         result += ": "
         result += (
-                test["result"] + (" " + str(test["error"]) if test["error"] else "") + "\n"
+            test["result"] + (" " + str(test["error"]) if test["error"] else "") + "\n"
         )
     return result
 
@@ -81,7 +88,7 @@ def generate_plain_text_report_doc_loader(tests):
         result += doc_loader
         result += ": "
         result += (
-                test["result"] + (" " + str(test["error"]) if test["error"] else "") + "\n"
+            test["result"] + (" " + str(test["error"]) if test["error"] else "") + "\n"
         )
     return result
 
@@ -108,6 +115,7 @@ def generate_markdown_report_simple_rag(tests):
         report += f"| {vector_db} | {embedding} | {llm} | {result} |\n"
 
     return report
+
 
 def generate_markdown_report_doc_loader(tests):
     report = "| Document Loader | Result |\n"

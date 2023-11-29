@@ -4,7 +4,6 @@ from e2e_tests.compatibility_matrix.conftest import (
 )
 from e2e_tests.compatibility_matrix.chat_application import run_application
 
-import pytest
 
 from langchain.schema.embeddings import Embeddings
 from langchain.schema.vectorstore import VectorStore
@@ -124,7 +123,9 @@ def close_llm(impl, llm: BaseLanguageModel):
 
 
 # def test_openai_azure_astra_dev():
-#     _run_test(vector_db=VECTOR_ASTRADB_DEV, embedding="openai-azure", llm="openai-azure")
+#     _run_test(
+#         vector_db=VECTOR_ASTRADB_DEV, embedding="openai-azure", llm="openai-azure"
+#     )
 
 
 def test_openai_azure():
