@@ -96,7 +96,7 @@ def test_basic_metadata_filtering(environment):
         print("Error:", e)
         if "UNSUPPORTED_FILTER_OPERATION" not in e.args[0]:
             pytest.fail(
-                f"Should have thrown ValueError with UNSUPPORTED_FILTER_OPERATION but it was {e}"
+                f"Should have thrown ValueError with UNSUPPORTED_FILTER_OPERATION but it was {e}"  # noqa: E501
             )
 
         # This looks very ugly, but it's the only way to get the error message
@@ -112,7 +112,7 @@ def test_basic_metadata_filtering(environment):
             )
         else:
             pytest.fail(
-                f"Should have thrown ValueError with UNSUPPORTED_FILTER_OPERATION but it was {e}"
+                f"Should have thrown ValueError with UNSUPPORTED_FILTER_OPERATION but it was {e}"  # noqa: E501
             )
 
 

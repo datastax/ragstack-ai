@@ -40,7 +40,7 @@ def test_web_based_loader():
     assert "0.1.0 - Oct 4, 2023" in doc1.page_content
     assert doc1.metadata == {
         "source": "https://langstream.ai/changelog/",
-        "title": "LangStream Changelog | LangStream: an Event-Driven Developer Platform for LLM Apps",  # noqa
+        "title": "LangStream Changelog | LangStream: an Event-Driven Developer Platform for LLM Apps",  # noqa: E501
         "description": "Notes from releases",
         "language": "en",
     }
