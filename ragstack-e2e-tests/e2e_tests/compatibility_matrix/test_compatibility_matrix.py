@@ -1,10 +1,12 @@
+import logging
+
+from astrapy.db import AstraDB as LibAstraDB
 from e2e_tests.compatibility_matrix.conftest import (
-    set_current_test_info,
+    set_current_test_info_simple_rag,
     get_required_env,
 )
 from e2e_tests.compatibility_matrix.chat_application import run_application
 
-import pytest
 
 from langchain.schema.embeddings import Embeddings
 from langchain.schema.vectorstore import VectorStore
@@ -29,6 +31,14 @@ def init_vector_db(impl, embedding: Embeddings) -> VectorStore:
             collection = get_required_env("ASTRA_PROD_TABLE_NAME")
             token = get_required_env("ASTRA_PROD_DB_TOKEN")
             api_endpoint = get_required_env("ASTRA_PROD_DB_ENDPOINT")
+
+        raw_client = LibAstraDB(api_endpoint=api_endpoint, token=token)
+        collections = raw_client.get_collections().get("status").get("collections")
+        logging.info(f"Existing collections: {collections}")
+        for collection_info in collections:
+            logging.info(f"Deleting collection: {collection_info}")
+            raw_client.delete_collection(collection_info)
+
         vector_db = AstraDB(
             collection_name=collection,
             embedding=embedding,
@@ -124,7 +134,9 @@ def close_llm(impl, llm: BaseLanguageModel):
 
 
 # def test_openai_azure_astra_dev():
-#     _run_test(vector_db=VECTOR_ASTRADB_DEV, embedding="openai-azure", llm="openai-azure")
+#     _run_test(
+#         vector_db=VECTOR_ASTRADB_DEV, embedding="openai-azure", llm="openai-azure"
+#     )
 
 
 def test_openai_azure():
@@ -156,7 +168,7 @@ def test_bedrock_meta():
 
 
 def _run_test(vector_db: str, embedding: str, llm: str):
-    set_current_test_info(llm=llm, embedding=embedding, vector_db=vector_db)
+    set_current_test_info_simple_rag(llm=llm, embedding=embedding, vector_db=vector_db)
 
     embeddings_impl = init_embeddings(embedding)
     vector_db_impl = init_vector_db(vector_db, embeddings_impl)

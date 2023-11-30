@@ -1,6 +1,8 @@
 import json
+import logging
 from typing import List
 
+from astrapy.db import AstraDB as LibAstraDB
 import pytest
 from langchain.schema.embeddings import Embeddings
 from langchain.schema.vectorstore import VectorStore
@@ -91,10 +93,27 @@ def test_basic_metadata_filtering(environment):
         collection.find_one(filter={"metadata.chunks": {"$gt": 2}})
         pytest.fail("Should have thrown ValueError")
     except ValueError as e:
+        print("Error:", e)
+        if "UNSUPPORTED_FILTER_OPERATION" not in e.args[0]:
+            pytest.fail(
+                f"Should have thrown ValueError with UNSUPPORTED_FILTER_OPERATION but it was {e}"
+            )
+
         # This looks very ugly, but it's the only way to get the error message
         # reference ticket on Astrapy https://github.com/datastax/astrapy/issues/126
-        error = json.loads(e.args[0])[1]
-        assert error.get("errorCode") == "UNSUPPORTED_FILTER_OPERATION"
+        errors = json.loads(e.args[0])
+        if len(errors) == 1:
+            error = errors[0]
+            assert error.get("errorCode") == "UNSUPPORTED_FILTER_OPERATION"
+        elif len(errors) > 1:
+            assert (
+                errors[0].get("errorCode") == "UNSUPPORTED_FILTER_OPERATION"
+                or errors[1].get("errorCode") == "UNSUPPORTED_FILTER_OPERATION"
+            )
+        else:
+            pytest.fail(
+                f"Should have thrown ValueError with UNSUPPORTED_FILTER_OPERATION but it was {e}"
+            )
 
 
 def verify_document(document, expected_content, expected_metadata):
@@ -127,6 +146,14 @@ def init_vector_db(embedding: Embeddings) -> VectorStore:
     collection = get_required_env("ASTRA_PROD_TABLE_NAME")
     token = get_required_env("ASTRA_PROD_DB_TOKEN")
     api_endpoint = get_required_env("ASTRA_PROD_DB_ENDPOINT")
+
+    raw_client = LibAstraDB(api_endpoint=api_endpoint, token=token)
+    collections = raw_client.get_collections().get("status").get("collections")
+    logging.info(f"Existing collections: {collections}")
+    for collection_info in collections:
+        logging.info(f"Deleting collection: {collection_info}")
+        raw_client.delete_collection(collection_info)
+
     vector_db = AstraDB(
         collection_name=collection,
         embedding=embedding,
