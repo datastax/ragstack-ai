@@ -1,3 +1,7 @@
+import logging
+
+from astrapy.db import AstraDB as LibAstraDB
+import astrapy.db
 from e2e_tests.compatibility_matrix.conftest import (
     set_current_test_info_simple_rag,
     get_required_env,
@@ -28,6 +32,14 @@ def init_vector_db(impl, embedding: Embeddings) -> VectorStore:
             collection = get_required_env("ASTRA_PROD_TABLE_NAME")
             token = get_required_env("ASTRA_PROD_DB_TOKEN")
             api_endpoint = get_required_env("ASTRA_PROD_DB_ENDPOINT")
+
+        raw_client = LibAstraDB(api_endpoint=api_endpoint, token=token)
+        collections = raw_client.get_collections().get("status").get("collections")
+        logging.info(f"Existing collections: {collections}")
+        for collection_info in collections:
+            logging.info(f"Deleting collection: {collection_info}")
+            raw_client.delete_collection(collection_info)
+
         vector_db = AstraDB(
             collection_name=collection,
             embedding=embedding,
