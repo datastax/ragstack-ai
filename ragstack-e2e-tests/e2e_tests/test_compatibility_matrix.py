@@ -97,7 +97,6 @@ def init_vector_db(impl, embedding: Embeddings) -> VectorStore:
 
 def close_vector_db(impl: str, vector_store: VectorStore):
     if impl in [VECTOR_ASTRADB_DEV, VECTOR_ASTRADB_PROD]:
-        # FRAZ: how is this working
         vector_store.astra_db.delete_collection(vector_store.collection_name)
     elif impl == VECTOR_CASSANDRA:
         vector_store.delete_collection()
@@ -200,9 +199,7 @@ def close_llm(impl, llm: BaseLanguageModel):
 
 @pytest.mark.parametrize("vector_db", vector_dbs())
 def test_openai_azure(vector_db: str):
-    _run_test(
-        vector_db=VECTOR_ASTRADB_PROD, embedding="openai-azure", llm="openai-azure"
-    )
+    _run_test(vector_db=vector_db, embedding="openai-azure", llm="openai-azure")
 
 
 @pytest.mark.parametrize("vector_db", vector_dbs())
@@ -212,13 +209,13 @@ def test_openai(vector_db: str):
 
 @pytest.mark.parametrize("vector_db", vector_dbs())
 def test_vertex_ai(vector_db: str):
-    _run_test(vector_db=VECTOR_ASTRADB_PROD, embedding="vertex-ai", llm="vertex-ai")
+    _run_test(vector_db=vector_db, embedding="vertex-ai", llm="vertex-ai")
 
 
 @pytest.mark.parametrize("vector_db", vector_dbs())
 def test_bedrock_anthropic(vector_db: str):
     _run_test(
-        vector_db=VECTOR_ASTRADB_PROD,
+        vector_db=vector_db,
         embedding="bedrock-titan",
         llm="bedrock-anthropic",
     )
@@ -226,9 +223,7 @@ def test_bedrock_anthropic(vector_db: str):
 
 @pytest.mark.parametrize("vector_db", vector_dbs())
 def test_bedrock_meta(vector_db: str):
-    _run_test(
-        vector_db=VECTOR_ASTRADB_PROD, embedding="bedrock-cohere", llm="bedrock-meta"
-    )
+    _run_test(vector_db=vector_db, embedding="bedrock-cohere", llm="bedrock-meta")
 
 
 def test_huggingface_hub():
