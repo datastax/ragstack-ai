@@ -94,7 +94,7 @@ def test_basic_metadata_filtering(environment):
         pytest.fail("Should have thrown ValueError")
     except ValueError as e:
         print("Error:", e)
-        if not ("UNSUPPORTED_FILTER_OPERATION" in e.args[0]):
+        if "UNSUPPORTED_FILTER_OPERATION" not in e.args[0]:
             pytest.fail(
                 f"Should have thrown ValueError with UNSUPPORTED_FILTER_OPERATION but it was {e}"
             )
