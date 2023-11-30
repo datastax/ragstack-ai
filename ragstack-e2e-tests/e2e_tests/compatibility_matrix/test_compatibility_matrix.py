@@ -1,7 +1,6 @@
 import logging
 
 from astrapy.db import AstraDB as LibAstraDB
-import astrapy.db
 from e2e_tests.compatibility_matrix.conftest import (
     set_current_test_info_simple_rag,
     get_required_env,

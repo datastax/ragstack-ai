@@ -93,10 +93,27 @@ def test_basic_metadata_filtering(environment):
         collection.find_one(filter={"metadata.chunks": {"$gt": 2}})
         pytest.fail("Should have thrown ValueError")
     except ValueError as e:
+        print("Error:", e)
+        if "UNSUPPORTED_FILTER_OPERATION" not in e.args[0]:
+            pytest.fail(
+                f"Should have thrown ValueError with UNSUPPORTED_FILTER_OPERATION but it was {e}"
+            )
+
         # This looks very ugly, but it's the only way to get the error message
         # reference ticket on Astrapy https://github.com/datastax/astrapy/issues/126
-        error = json.loads(e.args[0])[1]
-        assert error.get("errorCode") == "UNSUPPORTED_FILTER_OPERATION"
+        errors = json.loads(e.args[0])
+        if len(errors) == 1:
+            error = errors[0]
+            assert error.get("errorCode") == "UNSUPPORTED_FILTER_OPERATION"
+        elif len(errors) > 1:
+            assert (
+                errors[0].get("errorCode") == "UNSUPPORTED_FILTER_OPERATION"
+                or errors[1].get("errorCode") == "UNSUPPORTED_FILTER_OPERATION"
+            )
+        else:
+            pytest.fail(
+                f"Should have thrown ValueError with UNSUPPORTED_FILTER_OPERATION but it was {e}"
+            )
 
 
 def verify_document(document, expected_content, expected_metadata):
