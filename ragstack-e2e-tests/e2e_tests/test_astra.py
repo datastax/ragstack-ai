@@ -1,6 +1,8 @@
 import json
+import logging
 from typing import List
 
+from astrapy.db import AstraDB as LibAstraDB
 import pytest
 from langchain.schema.embeddings import Embeddings
 from langchain.schema.vectorstore import VectorStore
@@ -144,6 +146,14 @@ def init_vector_db(embedding: Embeddings) -> VectorStore:
     collection = get_required_env("ASTRA_PROD_TABLE_NAME")
     token = get_required_env("ASTRA_PROD_DB_TOKEN")
     api_endpoint = get_required_env("ASTRA_PROD_DB_ENDPOINT")
+
+    raw_client = LibAstraDB(api_endpoint=api_endpoint, token=token)
+    collections = raw_client.get_collections().get("status").get("collections")
+    logging.info(f"Existing collections: {collections}")
+    for collection_info in collections:
+        logging.info(f"Deleting collection: {collection_info}")
+        raw_client.delete_collection(collection_info)
+
     vector_db = AstraDB(
         collection_name=collection,
         embedding=embedding,
