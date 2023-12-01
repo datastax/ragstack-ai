@@ -1,0 +1,21 @@
+name: Astra DB Cleanup
+description: Delete a database in Astra DB
+
+inputs:
+  astra-token:
+    required: true
+    description: 'Astra DB application token'
+  db-name:
+    required: true
+    description: 'Astra DB database name'
+runs:
+  using: "composite"
+  steps:
+  - name: Install Astra CLI
+    shell: bash
+    run: curl -Ls "https://dtsx.io/get-astra-cli" | bash
+  - name: Create a new database
+    shell: bash
+    run: |
+      echo $ASTRA_DB_NAME
+      /home/runner/.astra/cli/astra db delete "${{ inputs.db-name }}" --token ${{ inputs.astra-token }}
