@@ -18,6 +18,8 @@ runs:
     run: curl -Ls "https://dtsx.io/get-astra-cli" | bash
   - name: Create a new database
     shell: bash
+    env:
+      TERM: linux
     run: |
       echo $ASTRA_DB_NAME
       /home/runner/.astra/cli/astra db delete "${{ inputs.db-name }}" --token ${{ inputs.astra-token }}
