@@ -73,7 +73,27 @@ The Astra API endpoint is available in the Astra Portal (e.g. `https://<ASTRA_DB
 +
 Create an OpenAI key at https://platform.openai.com/ (e.g. `sk-xxxx`).
 +
-You must have an existing collection in Astra (e.g. `my-collection`), or create a collection with the <<collection,collection>> step.
+You must have an existing collection in Astra (e.g. `test`). If you don't have one, create one in the Astra portal, or with the JSON API (using the `.env` values from the next step):
++
+[source,curl]
+----
+curl -v -s --location \
+--request POST https://${ASTRA_DB_ID}-${ASTRA_DB_REGION}.apps.astra.datastax.com/api/json/v1/default_keyspace \
+--header "X-Cassandra-Token: $ASTRA_DB_APPLICATION_TOKEN" \
+--header "Content-Type: application/json" \
+--header "Accept: application/json" \
+--data '{
+  "createCollection": {
+    "name": "test",
+    "options" : {
+      "vector" : {
+      "dimension" : 5,
+      "metric" : "cosine"
+      }
+    }
+  }
+}'
+----
 +
 . Create a `.env` file in the root of your program with the values from your Astra Connect tab.
 +
@@ -84,31 +104,6 @@ ASTRA_DB_API_ENDPOINT="<Astra DB API endpoint>"
 OPENAI_API_KEY="sk-..."
 ASTRA_DB_COLLECTION="test"
 ----
-+
-. {product} includes the astrapy package, which connects your client application with a {db-vector} database.
-Test your connection by creating a new collection in your database:
-+
-[id=collection]
-[source,python]
-----
-import os
-from astrapy.db import AstraDB
-
-ASTRA_DB_APPLICATION_TOKEN = os.environ.get("ASTRA_DB_APPLICATION_TOKEN")
-ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
-
-# Initialization
-db = AstraDB(
-  token=ASTRA_DB_APPLICATION_TOKEN,
-  api_endpoint=ASTRA_DB_API_ENDPOINT,
-)
-
-# Create collection
-col = db.create_collection("test", dimension=5)
-----
-
-Success returns no response.
-In your Astra database, a new collection called `test` is now available.
 
 == RAG workflow
 
@@ -226,7 +221,8 @@ print(response)
 ----
 
 . You should get a response like this:
-[source,bash]
++
+[source,console]
 ----
 An example entry:
 {'author': 'aristotle', 'quote': 'Love well, be loved and do something of value.', 'tags': 'love;ethics'}
@@ -317,7 +313,7 @@ print(response)
 
 Result::
 +
-[source,bash]
+[source,console]
 ----
 An example entry:
 {'author': 'aristotle', 'quote': 'Love well, be loved and do something of value.', 'tags': 'love;ethics'}
@@ -327,5 +323,29 @@ The subject that philosophers are most concerned with in the given context is tr
 ----
 ======
 
+== Cleanup
 
+To *clear data* from your vector database but keep the collection, use the `vstore.clear()` method.
+
+To *delete the collection* from your vector database, use the `vstore.delete_collection()` method.
+
+To delete a collection with the JSON API:
++
+[source,curl]
+----
+curl -v -s --location \
+--request POST https://${ASTRA_DB_ID}-${ASTRA_DB_REGION}.apps.astra.datastax.com/api/json/v1/default_keyspace \
+--header "X-Cassandra-Token: $ASTRA_DB_APPLICATION_TOKEN" \
+--header "Content-Type: application/json" \
+--header "Accept: application/json" \
+--data '{
+  "deleteCollection": {
+    "name": "test"
+  }
+}'
+----
+
+== What's next?
+
+* xref:what-is-rag.adoc[]: Learn more about the RAG pattern.
 
