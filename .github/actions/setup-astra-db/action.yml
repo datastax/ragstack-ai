@@ -22,7 +22,7 @@ runs:
     env:
       TERM: linux
     run: |
-      echo $ASTRA_DB_NAME
+      set -x
       /home/runner/.astra/cli/astra db create "${{ inputs.db-name }}" -k default_keyspace --token ${{ inputs.astra-token }} --vector
       
       database_id=$(echo "$text" | grep 'Name' | awk -F '|' '{print $3}' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
