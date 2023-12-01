@@ -13,11 +13,11 @@ runs:
   steps:
   - name: Install Astra CLI
     shell: bash
+    env:
+      TERM: linux
     run: curl -Ls "https://dtsx.io/get-astra-cli" | bash
   - name: Create a new database
     shell: bash
-    env:
-      TERM: linux
     run: |
       echo $ASTRA_DB_NAME
       /home/runner/.astra/cli/astra db create "${{ inputs.db-name }}" -k default_keyspace --token ${{ inputs.astra-token }} --vector
