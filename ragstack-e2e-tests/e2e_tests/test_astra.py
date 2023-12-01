@@ -230,8 +230,8 @@ def init_vector_db(embedding: Embeddings) -> VectorStore:
     collections = raw_client.get_collections().get("status").get("collections")
     logging.info(f"Existing collections: {collections}")
     for collection_info in collections:
-        logging.info(f"Deleting collection: {collection_info}")
-        raw_client.delete_collection(collection_info)
+        logging.info(f"Truncating collection: {collection_info}")
+        raw_client.truncate_collection(collection_info)
 
     vector_db = AstraDB(
         collection_name=collection,
@@ -263,7 +263,7 @@ def environment():
 
 
 def close_vector_db(vector_store: VectorStore):
-    vector_store.astra_db.delete_collection(vector_store.collection_name)
+    vector_store.astra_db.truncate_collection(vector_store.collection_name)
 
 
 def init_embeddings() -> Embeddings:
