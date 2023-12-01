@@ -11,15 +11,10 @@ inputs:
 runs:
   using: "composite"
   steps:
-  - name: Install Astra CLI
-    shell: bash
-    continue-on-error: true
-    env:
-      TERM: linux
-    run: curl -Ls "https://dtsx.io/get-astra-cli" | bash
   - name: Delete database
     shell: bash
     env:
       TERM: linux
     run: |
+      (curl -Ls "https://dtsx.io/get-astra-cli" | bash) || true
       /home/runner/.astra/cli/astra db delete "${{ inputs.db-name }}" --token ${{ inputs.astra-token }}

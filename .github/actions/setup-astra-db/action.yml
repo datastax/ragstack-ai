@@ -11,19 +11,14 @@ inputs:
 runs:
   using: "composite"
   steps:
-  - name: Install Astra CLI
-    shell: bash
-    continue-on-error: true
-    env:
-      TERM: linux
-    run: curl -Ls "https://dtsx.io/get-astra-cli" | bash
   - name: Create a new database
     shell: bash
     env:
       TERM: linux
     run: |
       set -x
-      /home/runner/.astra/cli/astra db create "${{ inputs.db-name }}" -k default_keyspace --token ${{ inputs.astra-token }} --vector
+      (curl -Ls "https://dtsx.io/get-astra-cli" | bash) || true 
+      /home/runner/.astra/cli/astra db create "${{ inputs.db-name }}" -k default_keyspace --token "${{ inputs.astra-token }}" --vector
       
       database_id=$(echo "$text" | grep 'Name' | awk -F '|' '{print $3}' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
       region=$(echo "$text" | grep 'Regions' | grep '\[0\]' | awk -F '|' '{print $3}' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
