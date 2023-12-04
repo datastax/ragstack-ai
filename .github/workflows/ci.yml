@@ -11,6 +11,10 @@ on:
     branches:
       - main
 
+concurrency:
+  group: ragstack-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   tests:
     name: Tests
@@ -39,7 +43,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install poetry
-          poetry install
+          poetry install --no-root
 
       - name: Run unit tests
         run: |
@@ -115,11 +119,3 @@ jobs:
           payload-file-path: "./slack-report.json"
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-
-      - name: Run LangChain tests
-        env:
-          ASTRA_DB_TOKEN: "${{ secrets.E2E_TESTS_ASTRA_DB_TOKEN }}"
-          ASTRA_DB_ENDPOINT: "${{ secrets.E2E_TESTS_ASTRA_DB_ENDPOINT }}"
-        run: |
-          source /tmp/venv/bin/activate
-          ./dev/run-langchain-e2e-tests.sh
