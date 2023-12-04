@@ -6,16 +6,16 @@ from e2e_tests.conftest import (
     get_required_env,
 )
 from e2e_tests.chat_application import run_application
-
+from langchain.llms.huggingface_hub import HuggingFaceHub
 
 from langchain.schema.embeddings import Embeddings
 from langchain.schema.vectorstore import VectorStore
 from langchain.vectorstores import AstraDB
 from langchain.chat_models import ChatOpenAI, AzureChatOpenAI, ChatVertexAI, BedrockChat
-from langchain.embeddings import OpenAIEmbeddings, VertexAIEmbeddings, BedrockEmbeddings
+from langchain.embeddings import OpenAIEmbeddings, VertexAIEmbeddings, BedrockEmbeddings, \
+    HuggingFaceInferenceAPIEmbeddings
 from langchain.embeddings.azure_openai import AzureOpenAIEmbeddings
 from langchain.schema.language_model import BaseLanguageModel
-
 
 VECTOR_ASTRADB_PROD = "astradb-prod"
 VECTOR_ASTRADB_DEV = "astradb-dev"
@@ -86,6 +86,11 @@ def init_embeddings(impl) -> Embeddings:
             model_id="cohere.embed-english-v3",
             region_name=get_required_env("BEDROCK_AWS_REGION"),
         )
+    elif impl == "huggingface-hub":
+        return HuggingFaceInferenceAPIEmbeddings(
+            api_key=get_required_env("HUGGINGFACE_HUB_KEY"),
+            model_name="sentence-transformers/all-MiniLM-l6-v2"
+        )
     else:
         raise Exception("Unknown embedding implementation: " + impl)
 
@@ -124,6 +129,12 @@ def init_llm(impl) -> BaseLanguageModel:
         return BedrockChat(
             model_id="meta.llama2-13b-chat-v1",
             region_name=get_required_env("BEDROCK_AWS_REGION"),
+        )
+    elif impl == "huggingface-hub":
+        return HuggingFaceHub(
+            repo_id="google/flan-t5-xxl",
+            huggingfacehub_api_token=get_required_env("HUGGINGFACE_HUB_KEY"),
+            model_kwargs={"temperature": 0.5, "max_length": 64}
         )
     else:
         raise Exception("Unknown llm implementation: " + impl)
@@ -165,6 +176,13 @@ def test_bedrock_meta():
     _run_test(
         vector_db=VECTOR_ASTRADB_PROD, embedding="bedrock-cohere", llm="bedrock-meta"
     )
+
+
+def test_huggingface_hub():
+    _run_test(
+        vector_db=VECTOR_ASTRADB_PROD, embedding="huggingface-hub", llm="huggingface-hub"
+    )
+
 
 
 def _run_test(vector_db: str, embedding: str, llm: str):
