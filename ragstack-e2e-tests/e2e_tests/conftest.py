@@ -45,7 +45,9 @@ def pytest_runtest_makereport(item, call):
 
 
 def set_current_test_info_simple_rag(llm: str, embedding: str, vector_db: str) -> None:
-    os.environ["RAGSTACK_E2E_TESTS_TEST_INFO"] = f"simple_rag::{llm}_{embedding}_{vector_db}"
+    os.environ[
+        "RAGSTACK_E2E_TESTS_TEST_INFO"
+    ] = f"simple_rag::{llm}_{embedding}_{vector_db}"
 
 
 def set_current_test_info_document_loader(doc_loader: str) -> None:
