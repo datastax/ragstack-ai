@@ -1,6 +1,6 @@
 import tempfile
 
-from e2e_tests.compatibility_matrix.conftest import (
+from e2e_tests.conftest import (
     set_current_test_info_document_loader,
 )
 

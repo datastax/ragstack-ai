@@ -20,21 +20,21 @@ runs:
   - shell: bash
     run: |
       if [ "${{ inputs.outcome }}" != "success" ]; then
-        summary="Other tests: FAILED ❌"
+        summary="FAILED ❌"
       else
-        summary="Other tests: PASSED ✅"
+        summary="PASSED ✅"
       fi
       echo -n '{"content": "' > ${{ inputs.output-file }}
       echo -n "$summary\n" >> ${{ inputs.output-file }}
-      if [ -f "ragstack-e2e-tests/generated-compatibility-matrix.txt" ]; then
+      if [ -f "ragstack-e2e-tests/generated-test-report.txt" ]; then
         {
-          cat ragstack-e2e-tests/generated-compatibility-matrix.txt | sed 's/"/\\"/g' | while IFS= read -r line; do
+          cat ragstack-e2e-tests/generated-test-report.txt | sed 's/"/\\"/g' | while IFS= read -r line; do
             echo -n "$line\n"
           done
         } >> ${{ inputs.output-file }}
-        echo "Compatibility matrix report found"
+        echo "Test report found"
       else
-        echo "Compatibility matrix report NOT found"
+        echo "Test report report NOT found"
         pwd
         ls -la .
         ls -la ragstack-e2e-tests || echo "ragstack-e2e-tests dir not found"
