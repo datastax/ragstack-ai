@@ -68,7 +68,6 @@ os.environ["ASTRA_DEV_TABLE_NAME"] = f"documents_{random_string()}"
 
 # astra prod
 os.environ["ASTRA_PROD_TABLE_NAME"] = f"documents_{random_string()}"
-os.environ["ASTRA_PROD_KEYSPACE"] = "default_keyspace"
 
 # azure-open-ai
 os.environ["AZURE_OPEN_AI_CHAT_MODEL_DEPLOYMENT"] = "gpt-35-turbo"

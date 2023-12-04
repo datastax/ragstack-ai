@@ -36,27 +36,13 @@ def vector_dbs():
     ]
 
 
-def delete_collections(api_endpoint, token):
-    """
-    Deletes all collections.
-
-    Current AstraDB has a limit of 5 collections, meaning orphaned collections
-    will cause subsequent tests to fail if the limit is reached.
-    """
-    raw_client = LibAstraDB(api_endpoint=api_endpoint, token=token)
-    collections = raw_client.get_collections().get("status").get("collections")
-    logging.info(f"Existing collections: {collections}")
-    for collection_info in collections:
-        logging.info(f"Deleting collection: {collection_info}")
-        raw_client.delete_collection(collection_info)
-
-
 def init_vector_db(impl, embedding: Embeddings) -> VectorStore:
     if impl == VECTOR_ASTRADB_DEV:
         collection = get_required_env("ASTRA_DEV_TABLE_NAME")
         token = get_required_env("ASTRA_DEV_DB_TOKEN")
         api_endpoint = get_required_env("ASTRA_DEV_DB_ENDPOINT")
 
+        # Ensure collections from previous runs are cleared
         delete_collections(api_endpoint, token)
 
         return AstraDB(
@@ -70,6 +56,7 @@ def init_vector_db(impl, embedding: Embeddings) -> VectorStore:
         token = get_required_env("ASTRA_PROD_DB_TOKEN")
         api_endpoint = get_required_env("ASTRA_PROD_DB_ENDPOINT")
 
+        # Ensure collections from previous runs are cleared
         delete_collections(api_endpoint, token)
 
         return AstraDB(
@@ -80,9 +67,13 @@ def init_vector_db(impl, embedding: Embeddings) -> VectorStore:
         )
     elif impl == VECTOR_CASSANDRA:
         table_name = get_required_env("ASTRA_PROD_TABLE_NAME")
-        keyspace = get_required_env("ASTRA_DB_KEYSPACE")
+        keyspace = get_required_env("CASSANDRA_KEYSPACE")
         token = get_required_env("ASTRA_PROD_DB_TOKEN")
         id = get_required_env("ASTRA_PROD_DB_ID")
+        api_endpoint = get_required_env("ASTRA_PROD_DB_ENDPOINT")
+
+        # Ensure collections from previous runs are cleared
+        delete_collections(api_endpoint, token)
 
         cassio.init(token=token, database_id=id)
         return Cassandra(
@@ -93,6 +84,21 @@ def init_vector_db(impl, embedding: Embeddings) -> VectorStore:
         )
     else:
         raise Exception("Unknown vector db implementation: " + impl)
+
+
+def delete_collections(api_endpoint, token):
+    """
+    Deletes all collections.
+
+    Current AstraDB has a limit of 5 collections, meaning orphaned collections
+    will cause subsequent tests to fail if the limit is reached.
+    """
+    raw_client = LibAstraDB(api_endpoint=api_endpoint, token=token)
+    collections = raw_client.get_collections().get("status").get("collections")
+    logging.info(f"Existing collections: {collections}")
+    for collection_info in collections:
+        logging.info(f"Deleting collection: {collection_info}")
+        raw_client.delete_collection(collection_info)
 
 
 def close_vector_db(impl: str, vector_store: VectorStore):
