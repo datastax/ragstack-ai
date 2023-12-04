@@ -1,4 +1,4 @@
-# RAGStack
+# RAGStack LangChain
 
 ## Poetry set up
 

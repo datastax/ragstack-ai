@@ -4,6 +4,8 @@ from typing import List
 
 from astrapy.db import AstraDB as LibAstraDB
 import pytest
+from httpx import ConnectError
+
 from langchain.schema.embeddings import Embeddings
 from langchain.schema.vectorstore import VectorStore
 from langchain.vectorstores import AstraDB
@@ -18,6 +20,83 @@ def test_basic_vector_search(environment):
     vectorstore.add_texts(["RAGStack is a framework to run LangChain in production"])
     retriever = vectorstore.as_retriever()
     assert len(retriever.get_relevant_documents("RAGStack")) > 0
+
+
+def test_ingest_errors(environment):
+    print("Running test_ingestion")
+    vectorstore = environment.vectorstore
+
+    empty_text = ""
+
+    try:
+        # empty test is not allowed
+        vectorstore.add_texts([empty_text])
+    except ValueError as e:
+        print("Error:", e)
+        # API Exception while running bulk insertion: [{'message': "Failed to insert document with _id '5eb4789401d2433182e3ecd5df6660d6': INVALID_ARGUMENT: Zero vectors cannot be indexed or queried with cosine similarity"}]
+        if "INVALID_ARGUMENT" not in e.args[0]:
+            pytest.fail(
+                f"Should have thrown ValueError with INVALID_ARGUMENT but it was {e}"
+            )
+
+    very_long_text = "RAGStack is a framework to run LangChain in production. " * 1000
+    try:
+        vectorstore.add_texts([very_long_text])
+        pytest.fail("Should have thrown ValueError")
+    except ValueError as e:
+        print("Error:", e)
+        # API Exception while running bulk insertion: {'errors': [{'message': 'Document size limitation violated: String value length (56000) exceeds maximum allowed (16000)', 'errorCode': 'SHRED_DOC_LIMIT_VIOLATION'}]}
+        if "SHRED_DOC_LIMIT_VIOLATION" not in e.args[0]:
+            pytest.fail(
+                f"Should have thrown ValueError with SHRED_DOC_LIMIT_VIOLATION but it was {e}"
+            )
+
+    very_very_long_text = (
+        "RAGStack is a framework to run LangChain in production. " * 10000
+    )
+    try:
+        vectorstore.add_texts([very_very_long_text])
+        pytest.fail("Should have thrown ValueError")
+    except ValueError as e:
+        print("Error:", e)
+        # API Exception while running bulk insertion: {'errors': [{'message': 'Document size limitation violated: String value length (560000) exceeds maximum allowed (16000)', 'errorCode': 'SHRED_DOC_LIMIT_VIOLATION'}]}
+        if "SHRED_DOC_LIMIT_VIOLATION" not in e.args[0]:
+            pytest.fail(
+                f"Should have thrown ValueError with SHRED_DOC_LIMIT_VIOLATION but it was {e}"
+            )
+
+
+def test_wrong_connection_parameters():
+    # This is expected to be a valid endpoint, because we want to test an AUTHENTICATION error
+    api_endpoint = get_required_env("ASTRA_PROD_DB_ENDPOINT")
+
+    try:
+        AstraDB(
+            collection_name="something",
+            embedding=init_embeddings(),
+            token="xxxxx",
+            # we assume that post 1234 is not open locally
+            api_endpoint="https://locahost:1234",
+        )
+        pytest.fail("Should not have thrown exception")
+    except ConnectError as e:
+        print("Error:", e)
+        pass
+
+    try:
+        AstraDB(
+            collection_name="something",
+            embedding=init_embeddings(),
+            token="this-is-a-wrong-token",
+            api_endpoint=api_endpoint,
+        )
+        pytest.fail("Should not have thrown exception")
+    except ValueError as e:
+        print("Error:", e)
+        if "UNAUTHENTICATED" not in e.args[0]:
+            pytest.fail(
+                f"Should have thrown ValueError with UNAUTHENTICATED but it was {e}"
+            )
 
 
 def test_basic_metadata_filtering(environment):
@@ -96,7 +175,7 @@ def test_basic_metadata_filtering(environment):
         print("Error:", e)
         if "UNSUPPORTED_FILTER_OPERATION" not in e.args[0]:
             pytest.fail(
-                f"Should have thrown ValueError with UNSUPPORTED_FILTER_OPERATION but it was {e}"
+                f"Should have thrown ValueError with UNSUPPORTED_FILTER_OPERATION but it was {e}"  # noqa: E501
             )
 
         # This looks very ugly, but it's the only way to get the error message
@@ -112,7 +191,7 @@ def test_basic_metadata_filtering(environment):
             )
         else:
             pytest.fail(
-                f"Should have thrown ValueError with UNSUPPORTED_FILTER_OPERATION but it was {e}"
+                f"Should have thrown ValueError with UNSUPPORTED_FILTER_OPERATION but it was {e}"  # noqa: E501
             )
 
 
