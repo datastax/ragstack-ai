@@ -5,20 +5,76 @@ Set up a local development environment and install RAGStack.
 == Venv
 . Install Python 3.7 or higher.
 . Create a virtual environment, activate it, and install RAGStack.
++
 [source,python]
 ----
 python -m venv <venv-name>
 source <venv-name>/bin/activate
 pip install ragstack-ai
 ----
++
 . To run an application:
++
 [source,python]
 ----
 python ragstack-application.py
 ----
-
++
 . To deactivate the virtual environment, type `deactivate`.
+
 == Poetry
+[NOTE]
+====
+Poetry requires Python 3.8+.
+====
+. Install https://python-poetry.org/[Poetry].
+. If you already have a `poetry.lock` file, use `poetry add ragstack-ai` to add RAGStack to your project.
+. In your application directory, run `poetry init` to create a `pyproject.toml` file.
+Poetry will ask you a few questions about your project and create the `.toml` file for you.
++
+[source,console]
+----
+poetry init
+
+This command will guide you through creating your pyproject.toml config.
+
+Package name [temporary-astra]:
+Version [0.1.0]:
+Description []:
+Author [Mendon Kissling <59585235+mendonk@users.noreply.github.com>, n to skip]:
+License []:
+Compatible Python versions [^3.11]:
+
+Would you like to define your main dependencies interactively? (yes/no) [yes] yes
+Package to add or search for (leave blank to skip): ragstack-ai
+Enter package # to add, or the complete package name if it is not listed []:
+ [ 0] ragstack-ai
+ > 0
+Enter the version constraint to require (or leave blank to use the latest version): 
+Using version ^0.1.2 for ragstack-ai
+----
+
+. When asked `Would you like to define your main dependencies interactively? (yes/no)`, type `yes`.
+. When prompted `Package to add or search for (leave blank to skip):`, type `ragstack-ai` and leave the version constraint blank to use the latest version.
+. Once the Poetry virtual environment is created, type `poetry shell` to activate it as a nested shell.
+. Type `poetry install`. This command reads the `pyproject.toml` file, downloads the latest versions of the dependencies, and installs them in the virtual environment. All packages and their exact versions are written to the `poetry.lock` file, locking the project to those specific versions. You should commit the `poetry.lock` file to your project repo so that all people working on the project are locked to the same versions of dependencies.
++
+[source,console]
+----
+poetry install
+Updating dependencies
+Resolving dependencies...
+
+Package operations: 65 installs, 0 updates, 0 removals
+
+  • Installing click (8.1.7)
+
+...
+
+Writing lock file
+
+Installing the current project: temporary-astra (0.1.0)
+----
 
 == Conda
 . Install https://www.anaconda.com/download[Conda] or https://docs.conda.io/projects/miniconda/en/latest/[Miniconda].
