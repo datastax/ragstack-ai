@@ -33,15 +33,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install poetry
-          poetry install --no-root
-
-      - name: Run ragstack-ai-langchain unit tests
-        run: |
-          poetry run tox -c libs/ragstack-ai-langchain
-
-      - name: Run ragstack-ai-llamaindex unit tests
-        run: |
-          poetry run tox -c libs/ragstack-ai-llamaindex
+          poetry install --no-root --extras all
 
       - name: Run ragstack-ai unit tests
         run: |
@@ -55,7 +47,7 @@ jobs:
         run: |
           python -m venv /tmp/venv
           source /tmp/venv/bin/activate
-          pip install pytest dist/ragstack_ai-*.whl
+          pip install pytest 'dist/ragstack_ai-0.1.2-py3-none-any.whl[all]'
           pytest tests/unit-tests
           deactivate
 
