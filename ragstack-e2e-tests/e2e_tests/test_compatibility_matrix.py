@@ -12,8 +12,12 @@ from langchain.schema.embeddings import Embeddings
 from langchain.schema.vectorstore import VectorStore
 from langchain.vectorstores import AstraDB
 from langchain.chat_models import ChatOpenAI, AzureChatOpenAI, ChatVertexAI, BedrockChat
-from langchain.embeddings import OpenAIEmbeddings, VertexAIEmbeddings, BedrockEmbeddings, \
-    HuggingFaceInferenceAPIEmbeddings
+from langchain.embeddings import (
+    OpenAIEmbeddings,
+    VertexAIEmbeddings,
+    BedrockEmbeddings,
+    HuggingFaceInferenceAPIEmbeddings,
+)
 from langchain.embeddings.azure_openai import AzureOpenAIEmbeddings
 from langchain.schema.language_model import BaseLanguageModel
 
@@ -89,7 +93,7 @@ def init_embeddings(impl) -> Embeddings:
     elif impl == "huggingface-hub":
         return HuggingFaceInferenceAPIEmbeddings(
             api_key=get_required_env("HUGGINGFACE_HUB_KEY"),
-            model_name="sentence-transformers/all-MiniLM-l6-v2"
+            model_name="sentence-transformers/all-MiniLM-l6-v2",
         )
     else:
         raise Exception("Unknown embedding implementation: " + impl)
@@ -134,7 +138,7 @@ def init_llm(impl) -> BaseLanguageModel:
         return HuggingFaceHub(
             repo_id="google/flan-t5-xxl",
             huggingfacehub_api_token=get_required_env("HUGGINGFACE_HUB_KEY"),
-            model_kwargs={"temperature": 0.5, "max_length": 64}
+            model_kwargs={"temperature": 0.5, "max_length": 64},
         )
     else:
         raise Exception("Unknown llm implementation: " + impl)
@@ -180,9 +184,10 @@ def test_bedrock_meta():
 
 def test_huggingface_hub():
     _run_test(
-        vector_db=VECTOR_ASTRADB_PROD, embedding="huggingface-hub", llm="huggingface-hub"
+        vector_db=VECTOR_ASTRADB_PROD,
+        embedding="huggingface-hub",
+        llm="huggingface-hub",
     )
-
 
 
 def _run_test(vector_db: str, embedding: str, llm: str):
