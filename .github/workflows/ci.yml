@@ -23,16 +23,6 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v3
 
-      - name: Add SSH private keys for submodule repositories
-        uses: webfactory/ssh-agent@v0.8.0
-        with:
-          ssh-private-key: |
-            ${{ secrets.SSH_PRIVATE_KEY_LANGCHAIN_SUBMODULE }}
-            ${{ secrets.SSH_PRIVATE_KEY_LANGSMITH_SUBMODULE }}
-
-      - name: Update submodules
-        run: git submodule update --init --recursive
-
       - name: 'Setup: Python 3.11'
         uses: actions/setup-python@v4
         with:
@@ -45,7 +35,15 @@ jobs:
           python -m pip install poetry
           poetry install --no-root
 
-      - name: Run unit tests
+      - name: Run ragstack-ai-langchain unit tests
+        run: |
+          poetry run tox -c libs/ragstack-ai-langchain
+
+      - name: Run ragstack-ai-llamaindex unit tests
+        run: |
+          poetry run tox -c libs/ragstack-ai-llamaindex
+
+      - name: Run ragstack-ai unit tests
         run: |
           poetry run pytest tests/unit-tests
 
@@ -84,6 +82,7 @@ jobs:
           AWS_ACCESS_KEY_ID: "${{ secrets.E2E_TESTS_AWS_ACCESS_KEY_ID }}"
           AWS_SECRET_ACCESS_KEY: "${{ secrets.E2E_TESTS_AWS_SECRET_ACCESS_KEY }}"
           BEDROCK_AWS_REGION: "${{ secrets.E2E_TESTS_BEDROCK_AWS_REGION }}"
+          HUGGINGFACE_HUB_KEY: "${{ secrets.E2E_TESTS_HUGGINGFACE_HUB_KEY }}"
         run: |
           poetry run tox -c ragstack-e2e-tests
 
