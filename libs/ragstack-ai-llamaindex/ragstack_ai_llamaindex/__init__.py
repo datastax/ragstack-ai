@@ -11,7 +11,7 @@ del metadata  # optional, avoids polluting the results of dir(__package__)
 
 
 # LlamaHub is disabled while using RAGStack AI, because it would download unknown software from the Internet.
-def disabled_download_loader():
+def disabled_download_loader(*args, **kwargs):
     raise ImportError(
         "LlamaHub is disabled while using RAGStack AI, because it would download unknown software from the Internet.")
 
