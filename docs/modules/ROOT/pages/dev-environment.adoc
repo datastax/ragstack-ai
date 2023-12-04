@@ -13,13 +13,19 @@ source <venv-name>/bin/activate
 pip install ragstack-ai
 ----
 +
-. To run an application:
+. Once you're satisfied with your local environment, freeze its dependencies to a `requirements.txt` file. This file can then be used to recreate the environment elsewhere:
 +
 [source,python]
 ----
-python ragstack-application.py
+pip freeze > requirements.txt
 ----
 +
+. To take your local environment to a production setting, create a new virtual environment and install the dependencies from the `requirements.txt` file:
+[source,python]
+----
+pip install -r requirements.txt
+----
+
 . To deactivate the virtual environment, type `deactivate`.
 
 == Poetry
@@ -75,15 +81,32 @@ Writing lock file
 
 Installing the current project: temporary-astra (0.1.0)
 ----
++
+. To 
 
 == Conda
 . Install https://www.anaconda.com/download[Conda] or https://docs.conda.io/projects/miniconda/en/latest/[Miniconda].
 . Create a virtual environment, activate it, and install RAGStack.
++
 [source,python]
 ----
 conda create --name <venv-name>
 conda activate <venv-name>
 pip install ragstack-ai
 ----
-
-To deactivate the virtual environment, type `conda deactivate`.
++
+. Once you're satisfied with your local environment, export it to a YAML file. This file can then be used to recreate the environment elsewhere:
++
+[source,bash]
+----
+conda env export > environment.yml
+----
+It's a good practice to keep `environment.yml` in version control to ensure reproducibility.
+. To take your local environment to a production setting, create a new conda virtual environment from the `environment.yml` file:
++
+[source,bash]
+----
+conda create --name prod-ragstack --clone ragstack-venv
+----
+This will create a new conda environment with the same packages and versions as your local environment.
+. To deactivate the virtual environment, type `conda deactivate`.
