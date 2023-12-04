@@ -3,7 +3,7 @@
 Set up a local development environment and install RAGStack.
 
 == Venv
-. Install Python 3.7 or higher.
+. Install https://www.python.org/downloads/[Python 3.7]{external-link-icon} or higher.
 . Create a virtual environment, activate it, and install RAGStack.
 +
 [source,python]
@@ -21,12 +21,40 @@ pip freeze > requirements.txt
 ----
 +
 . To take your local environment to a production setting, create a new virtual environment and install the dependencies from the `requirements.txt` file:
++
 [source,python]
 ----
 pip install -r requirements.txt
 ----
-
++
 . To deactivate the virtual environment, type `deactivate`.
+
+== Conda
+. Install https://www.anaconda.com/download[Conda]{external-link-icon} or https://docs.conda.io/projects/miniconda/en/latest/[Miniconda]{external-link-icon}.
+. Create a virtual environment, activate it, and install RAGStack.
++
+[source,python]
+----
+conda create --name <venv-name>
+conda activate <venv-name>
+pip install ragstack-ai
+----
++
+. Once you're satisfied with your local environment, export it to a YAML file. This file can then be used to recreate the environment elsewhere:
++
+[source,bash]
+----
+conda env export > environment.yml
+----
+It's a good practice to keep `environment.yml` in version control to ensure reproducibility.
+. To take your local environment to a production setting, create a new conda virtual environment from the `environment.yml` file:
++
+[source,bash]
+----
+conda create --name prod-ragstack --clone ragstack-venv
+----
+This will create a new conda environment with the same packages and versions as your local environment.
+. To deactivate the virtual environment, type `conda deactivate`.
 
 == Poetry
 [NOTE]
@@ -35,6 +63,7 @@ Poetry requires Python 3.8+.
 ====
 . Install https://python-poetry.org/[Poetry].
 . If you already have a `poetry.lock` file, use `poetry add ragstack-ai` to add RAGStack to your project.
+If not, continue to the next step.
 . In your application directory, run `poetry init` to create a `pyproject.toml` file.
 Poetry will ask you a few questions about your project and create the `.toml` file for you.
 +
@@ -83,30 +112,3 @@ Installing the current project: temporary-astra (0.1.0)
 ----
 +
 . To deactivate the virtual environment, type `exit`.
-
-== Conda
-. Install https://www.anaconda.com/download[Conda] or https://docs.conda.io/projects/miniconda/en/latest/[Miniconda].
-. Create a virtual environment, activate it, and install RAGStack.
-+
-[source,python]
-----
-conda create --name <venv-name>
-conda activate <venv-name>
-pip install ragstack-ai
-----
-+
-. Once you're satisfied with your local environment, export it to a YAML file. This file can then be used to recreate the environment elsewhere:
-+
-[source,bash]
-----
-conda env export > environment.yml
-----
-It's a good practice to keep `environment.yml` in version control to ensure reproducibility.
-. To take your local environment to a production setting, create a new conda virtual environment from the `environment.yml` file:
-+
-[source,bash]
-----
-conda create --name prod-ragstack --clone ragstack-venv
-----
-This will create a new conda environment with the same packages and versions as your local environment.
-. To deactivate the virtual environment, type `conda deactivate`.
