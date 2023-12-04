@@ -19,13 +19,8 @@ runs:
   steps:
   - shell: bash
     run: |
-      if [ "${{ inputs.outcome }}" != "success" ]; then
-        summary="FAILED ❌"
-      else
-        summary="PASSED ✅"
-      fi
+      
       echo -n '{"content": "' > ${{ inputs.output-file }}
-      echo -n "$summary\n" >> ${{ inputs.output-file }}
       if [ -f "ragstack-e2e-tests/generated-test-report.txt" ]; then
         {
           cat ragstack-e2e-tests/generated-test-report.txt | sed 's/"/\\"/g' | while IFS= read -r line; do
@@ -39,6 +34,11 @@ runs:
         ls -la .
         ls -la ragstack-e2e-tests || echo "ragstack-e2e-tests dir not found"
       fi
-      echo "\",\"commit\":\"${{ inputs.commit-url }}\",\"url\":\"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\",\"type\":\"${{ inputs.type }}\"}" >> ${{ inputs.output-file }}
+      if [ "${{ inputs.outcome }}" != "success" ]; then
+        summary="FAILED ❌"
+      else
+        summary="PASSED ✅"
+      fi
+      echo "\",\"summary\":\"$summary\",\"commit\":\"${{ inputs.commit-url }}\",\"url\":\"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\",\"type\":\"${{ inputs.type }}\"}" >> ${{ inputs.output-file }}
       echo "Slack report generated to ${{ inputs.output-file }}"
       cat ${{ inputs.output-file }}
