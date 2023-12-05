@@ -31,7 +31,7 @@ VECTOR_CASSANDRA = "cassandra"
 
 def vector_dbs():
     return [
-        VECTOR_ASTRADB_PROD,
+        VECTOR_ASTRADB_DEV,
         VECTOR_CASSANDRA,
     ]
 
@@ -211,10 +211,10 @@ def close_llm(impl, llm: BaseLanguageModel):
     pass
 
 
-# def test_openai_azure_astra_dev():
-#     _run_test(
-#         vector_db=VECTOR_ASTRADB_DEV, embedding="openai-azure", llm="openai-azure"
-#     )
+def test_openai_azure_astra_prod():
+    _run_test(
+        vector_db=VECTOR_ASTRADB_PROD, embedding="openai-azure", llm="openai-azure"
+    )
 
 
 @pytest.mark.parametrize("vector_db", vector_dbs())

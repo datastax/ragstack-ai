@@ -68,7 +68,7 @@ def test_ingest_errors(environment):
 
 def test_wrong_connection_parameters():
     # This is expected to be a valid endpoint, because we want to test an AUTHENTICATION error
-    api_endpoint = get_required_env("ASTRA_PROD_DB_ENDPOINT")
+    api_endpoint = get_required_env("ASTRA_DEV_DB_ENDPOINT")
 
     try:
         AstraDB(
@@ -222,9 +222,9 @@ class MockEmbeddings(Embeddings):
 
 
 def init_vector_db(embedding: Embeddings) -> VectorStore:
-    collection = get_required_env("ASTRA_PROD_TABLE_NAME")
-    token = get_required_env("ASTRA_PROD_DB_TOKEN")
-    api_endpoint = get_required_env("ASTRA_PROD_DB_ENDPOINT")
+    collection = get_required_env("ASTRA_DEV_TABLE_NAME")
+    token = get_required_env("ASTRA_DEV_DB_TOKEN")
+    api_endpoint = get_required_env("ASTRA_DEV_DB_ENDPOINT")
 
     raw_client = LibAstraDB(api_endpoint=api_endpoint, token=token)
     collections = raw_client.get_collections().get("status").get("collections")
