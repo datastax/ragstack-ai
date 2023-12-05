@@ -67,7 +67,6 @@ def init_vector_db(impl, embedding: Embeddings) -> VectorStore:
         )
     elif impl == VECTOR_CASSANDRA:
         table_name = get_required_env("ASTRA_PROD_TABLE_NAME")
-        keyspace = get_required_env("CASSANDRA_KEYSPACE")
         token = get_required_env("ASTRA_PROD_DB_TOKEN")
         id = get_required_env("ASTRA_PROD_DB_ID")
         api_endpoint = get_required_env("ASTRA_PROD_DB_ENDPOINT")
@@ -79,7 +78,7 @@ def init_vector_db(impl, embedding: Embeddings) -> VectorStore:
         return Cassandra(
             embedding=embedding,
             session=None,
-            keyspace=keyspace,
+            keyspace="default_keyspace",
             table_name=table_name,
         )
     else:
@@ -105,7 +104,7 @@ def close_vector_db(impl: str, vector_store: VectorStore):
     if impl in [VECTOR_ASTRADB_DEV, VECTOR_ASTRADB_PROD]:
         vector_store.astra_db.delete_collection(vector_store.collection_name)
     elif impl == VECTOR_CASSANDRA:
-        vector_store.delete_collection()
+        vector_store.table.session.execute(f"DROP TABLE IF EXISTS {vector_store.keyspace}.{vector_store.table_name};")
     else:
         raise Exception("Unknown vector db implementation: " + impl)
 
