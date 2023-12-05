@@ -100,20 +100,26 @@ def delete_collections(api_endpoint, token):
         raw_client.delete_collection(collection_info)
 
 
-def astra_delete_collection(api_endpoint=str, token=str, collection_name=str) -> None:
+def astra_delete_collection(
+    api_endpoint: str, token: str, collection_name: str
+) -> None:
     raw_client = LibAstraDB(api_endpoint=api_endpoint, token=token)
     raw_client.delete_collection(collection_name)
 
 
 def close_vector_db(impl: str, vector_store: VectorStore):
     if impl == VECTOR_ASTRADB_DEV:
-        astra_delete_collection(api_endpoint=get_required_env("ASTRA_DEV_DB_ENDPOINT"),
-                                token=get_required_env("ASTRA_DEV_DB_TOKEN"),
-                                collection_name=get_required_env("ASTRA_DEV_TABLE_NAME"))
+        astra_delete_collection(
+            api_endpoint=get_required_env("ASTRA_DEV_DB_ENDPOINT"),
+            token=get_required_env("ASTRA_DEV_DB_TOKEN"),
+            collection_name=get_required_env("ASTRA_DEV_TABLE_NAME"),
+        )
     elif impl == VECTOR_ASTRADB_PROD or impl == VECTOR_CASSANDRA:
-        astra_delete_collection(api_endpoint=get_required_env("ASTRA_PROD_DB_ENDPOINT"),
-                                token=get_required_env("ASTRA_PROD_DB_TOKEN"),
-                                collection_name=get_required_env("ASTRA_PROD_TABLE_NAME"))
+        astra_delete_collection(
+            api_endpoint=get_required_env("ASTRA_PROD_DB_ENDPOINT"),
+            token=get_required_env("ASTRA_PROD_DB_TOKEN"),
+            collection_name=get_required_env("ASTRA_PROD_TABLE_NAME"),
+        )
     else:
         raise Exception("Unknown vector db implementation: " + impl)
 
