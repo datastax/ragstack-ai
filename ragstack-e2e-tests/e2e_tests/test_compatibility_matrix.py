@@ -99,12 +99,14 @@ def delete_collections(api_endpoint, token):
         logging.info(f"Deleting collection: {collection_info}")
         raw_client.delete_collection(collection_info)
 
+def astra_delete_collection(api_endpoint, token, collection_name):
+    raw_client = LibAstraDB(api_endpoint=api_endpoint, token=token)
+    raw_client.delete_collection(collection_name)
+
 
 def close_vector_db(impl: str, vector_store: VectorStore):
-    if impl in [VECTOR_ASTRADB_DEV, VECTOR_ASTRADB_PROD]:
-        vector_store.astra_db.delete_collection(vector_store.collection_name)
-    elif impl == VECTOR_CASSANDRA:
-        vector_store.table.session.execute(f"DROP TABLE IF EXISTS {vector_store.keyspace}.{vector_store.table_name};")
+    if impl in [VECTOR_ASTRADB_DEV, VECTOR_ASTRADB_PROD, VECTOR_CASSANDRA]:
+        astra_delete_collection(vector_store.collection_name)
     else:
         raise Exception("Unknown vector db implementation: " + impl)
 
