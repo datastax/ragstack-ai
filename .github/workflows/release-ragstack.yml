@@ -1,18 +1,16 @@
 name: Release RAGStack package
 
 on:
-  workflow_dispatch:
-    inputs:
-      pypi-use-test-release:
-        description: 'Whether to release to TestPyPI or PyPI'
-        type: boolean
-        required: true
-        default: false
+  push:
+    tags:
+      - "ragstack-ai-*"
 
 jobs:
   release:
     name: Release package
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Release
         uses: ./.github/actions/release-package
@@ -20,4 +18,12 @@ jobs:
           package-directory: "."
           pypi-token: ${{ secrets.PYPI_API_TOKEN }}
           pypi-test-token: ${{ secrets.PYPI_TEST_API_TOKEN }}
-          pypi-use-test-release: ${{ github.event.inputs.pypi-use-test-release }}
+
+      - name: Create GitHub Release
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "dist/*.whl"
+          token: ${{ secrets.GITHUB_TOKEN }}
+          generateReleaseNotes: true
+          prerelease: false
+
