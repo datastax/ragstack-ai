@@ -32,24 +32,11 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install poetry
-          poetry install --no-root
+          python -m pip install tox
 
       - name: Run ragstack-ai unit tests
         run: |
-          poetry run pytest tests/unit-tests
-
-      - name: Build the distribution package
-        run: |
-          poetry build
-
-      - name: Test the distribution package
-        run: |
-          python -m venv /tmp/venv
-          source /tmp/venv/bin/activate
-          pip install pytest dist/ragstack_ai-*.whl
-          pytest tests/unit-tests
-          deactivate
+          tox
 
       - name: Run notebook tests
         env:
@@ -58,7 +45,7 @@ jobs:
           ASTRA_DB_ID: "${{ secrets.E2E_TESTS_ASTRA_DB_ID }}"
           OPENAI_API_KEY: "${{ secrets.E2E_TESTS_OPEN_AI_KEY }}"
         run: |
-          poetry run pytest --nbmake examples/notebooks/*.ipynb
+          tox -e notebooks
 
       - name: Run E2E tests
         id: e2e-tests
@@ -76,7 +63,7 @@ jobs:
           BEDROCK_AWS_REGION: "${{ secrets.E2E_TESTS_BEDROCK_AWS_REGION }}"
           HUGGINGFACE_HUB_KEY: "${{ secrets.E2E_TESTS_HUGGINGFACE_HUB_KEY }}"
         run: |
-          poetry run tox -c ragstack-e2e-tests
+          tox -c ragstack-e2e-tests
 
       - name: Dump report on Github Summary
         if: always()
