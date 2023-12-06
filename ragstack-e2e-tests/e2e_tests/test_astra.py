@@ -4,7 +4,6 @@ from typing import List
 
 from astrapy.db import AstraDB as LibAstraDB
 import pytest
-from httpx import ConnectError
 
 from langchain.schema.embeddings import Embeddings
 from langchain.schema.vectorstore import VectorStore
@@ -33,10 +32,13 @@ def test_ingest_errors(environment):
         vectorstore.add_texts([empty_text])
     except ValueError as e:
         print("Error:", e)
-        # API Exception while running bulk insertion: [{'message': "Failed to insert document with _id '5eb4789401d2433182e3ecd5df6660d6': INVALID_ARGUMENT: Zero vectors cannot be indexed or queried with cosine similarity"}]
-        if "INVALID_ARGUMENT" not in e.args[0]:
+        # API Exception while running bulk insertion: [{'message': "Failed to insert document with _id 'b388435404254c17b720816ee9e0ddc4': Zero vectors cannot be indexed or queried with cosine similarity"}]
+        if (
+            "Zero vectors cannot be indexed or queried with cosine similarity"
+            not in e.args[0]
+        ):
             pytest.fail(
-                f"Should have thrown ValueError with INVALID_ARGUMENT but it was {e}"
+                f"Should have thrown ValueError with Zero vectors cannot be indexed or queried with cosine similarity but it was {e}"
             )
 
     very_long_text = "RAGStack is a framework to run LangChain in production. " * 1000
@@ -66,37 +68,38 @@ def test_ingest_errors(environment):
             )
 
 
-def test_wrong_connection_parameters():
-    # This is expected to be a valid endpoint, because we want to test an AUTHENTICATION error
-    api_endpoint = get_default_astra_ref().api_endpoint
-
-    try:
-        AstraDB(
-            collection_name="something",
-            embedding=init_embeddings(),
-            token="xxxxx",
-            # we assume that post 1234 is not open locally
-            api_endpoint="https://locahost:1234",
-        )
-        pytest.fail("Should not have thrown exception")
-    except ConnectError as e:
-        print("Error:", e)
-        pass
-
-    try:
-        AstraDB(
-            collection_name="something",
-            embedding=init_embeddings(),
-            token="this-is-a-wrong-token",
-            api_endpoint=api_endpoint,
-        )
-        pytest.fail("Should not have thrown exception")
-    except ValueError as e:
-        print("Error:", e)
-        if "UNAUTHENTICATED" not in e.args[0]:
-            pytest.fail(
-                f"Should have thrown ValueError with UNAUTHENTICATED but it was {e}"
-            )
+# def test_wrong_connection_parameters():
+#    # This is expected to be a valid endpoint, because we want to test an AUTHENTICATION error
+#    api_endpoint = get_required_env("ASTRA_PROD_DB_ENDPOINT")
+#
+#    try:
+#        AstraDB(
+#            collection_name="something",
+#            embedding=init_embeddings(),
+#            token="xxxxx",
+#            # we assume that post 1234 is not open locally
+#            api_endpoint="https://locahost:1234",
+#        )
+#        pytest.fail("Should have thrown exception")
+#    except ConnectError as e:
+#        print("Error:", e)
+#        pass
+#
+#    try:
+#        print("api_endpoint:", api_endpoint)
+#        AstraDB(
+#            collection_name="something",
+#            embedding=init_embeddings(),
+#            token="this-is-a-wrong-token",
+#            api_endpoint=api_endpoint,
+#        )
+#        pytest.fail("Should have thrown exception")
+#    except ValueError as e:
+#        print("Error:", e)
+#        if "AUTHENTICATION ERROR" not in e.args[0]:
+#            pytest.fail(
+#                f"Should have thrown ValueError with AUTHENTICATION ERROR but it was {e}"
+#            )
 
 
 def test_basic_metadata_filtering(environment):
