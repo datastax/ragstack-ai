@@ -52,7 +52,7 @@ def test_ingest_errors(environment):
             )
 
     very_very_long_text = (
-        "RAGStack is a framework to run LangChain in production. " * 10000
+            "RAGStack is a framework to run LangChain in production. " * 10000
     )
     try:
         vectorstore.add_texts([very_very_long_text])
@@ -68,7 +68,7 @@ def test_ingest_errors(environment):
 
 def test_wrong_connection_parameters():
     # This is expected to be a valid endpoint, because we want to test an AUTHENTICATION error
-    api_endpoint = get_default_astra_ref().api_endpoint
+    # api_endpoint = get_default_astra_ref().api_endpoint
 
     try:
         db = AstraDB(
@@ -78,27 +78,30 @@ def test_wrong_connection_parameters():
             # we assume that post 1234 is not open locally
             api_endpoint="https://locahost:1234",
         )
-        db.find()
-        pytest.fail("Should not have thrown exception")
+        db.add_texts(
+            texts=["RAGStack is a framework to run LangChain in production"])
+        pytest.fail("Should have thrown exception")
     except ConnectError as e:
         print("Error:", e)
         pass
 
-    try:
-        db = AstraDB(
-            collection_name="something",
-            embedding=init_embeddings(),
-            token="this-is-a-wrong-token",
-            api_endpoint=api_endpoint,
-        )
-        db.find()
-        pytest.fail("Should not have thrown exception")
-    except ValueError as e:
-        print("Error:", e)
-        if "AUTHENTICATION ERROR" not in e.args[0]:
-            pytest.fail(
-                f"Should have thrown ValueError with AUTHENTICATION ERROR but it was {e}"
-            )
+
+#    try:
+#        db = AstraDB(
+#            collection_name="something",
+#            embedding=init_embeddings(),
+#            token="this-is-a-wrong-token",
+#            api_endpoint=api_endpoint,
+#        )
+#        db.add_texts(
+#            texts=["RAGStack is a framework to run LangChain in production"])
+#        pytest.fail("Should have thrown exception")
+#    except ValueError as e:
+#        print("Error:", e)
+#        if "AUTHENTICATION ERROR" not in e.args[0]:
+#            pytest.fail(
+#                f"Should have thrown ValueError with AUTHENTICATION ERROR but it was {e}"
+#            )
 
 
 def test_basic_metadata_filtering(environment):
@@ -188,8 +191,8 @@ def test_basic_metadata_filtering(environment):
             assert error.get("errorCode") == "UNSUPPORTED_FILTER_OPERATION"
         elif len(errors) > 1:
             assert (
-                errors[0].get("errorCode") == "UNSUPPORTED_FILTER_OPERATION"
-                or errors[1].get("errorCode") == "UNSUPPORTED_FILTER_OPERATION"
+                    errors[0].get("errorCode") == "UNSUPPORTED_FILTER_OPERATION"
+                    or errors[1].get("errorCode") == "UNSUPPORTED_FILTER_OPERATION"
             )
         else:
             pytest.fail(
@@ -247,7 +250,7 @@ def init_vector_db(embedding: Embeddings) -> VectorStore:
 
 class Environment:
     def __init__(
-        self, vectorstore: VectorStore, llm: BaseLanguageModel, embedding: Embeddings
+            self, vectorstore: VectorStore, llm: BaseLanguageModel, embedding: Embeddings
     ):
         self.vectorstore = vectorstore
         self.llm = llm

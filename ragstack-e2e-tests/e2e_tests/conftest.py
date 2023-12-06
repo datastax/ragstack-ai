@@ -5,7 +5,6 @@ from dataclasses import dataclass
 import pytest
 import os
 
-
 def random_string():
     return str(uuid.uuid4()).split("-")[0]
 
