@@ -81,10 +81,10 @@ def dump_report():
     stats_str = "Tests passed: " + str(tests_stats["passed"]) + ", failed: " + str(
         tests_stats["failed"]) + ", skipped: " + str(tests_stats["skipped"]) + "\n"
     with open("all-tests-report.txt", "w") as f:
-        f.write(stats_str)
+        f.write(stats_str + "\n")
         f.write("\n".join(all_report_lines))
     with open("failed-tests-report.txt", "w") as f:
-        f.write(stats_str)
+        f.write(stats_str + "\n")
         f.write("\n".join(failed_report_lines))
 
 
