@@ -1,21 +1,15 @@
-import logging
-
+import cassio
+import pytest
 from astrapy.db import AstraDB as LibAstraDB
 from e2e_tests.conftest import (
     set_current_test_info_simple_rag,
     get_required_env,
     get_astra_dev_ref,
     get_astra_prod_ref,
+    delete_all_astra_collections,
+    delete_astra_collection,
 )
-from e2e_tests.chat_application import run_application
-from langchain.llms.huggingface_hub import HuggingFaceHub
-
-import pytest
-import cassio
-
-from langchain.schema.embeddings import Embeddings
-from langchain.schema.vectorstore import VectorStore
-from langchain.vectorstores import AstraDB, Cassandra
+from e2e_tests.langchain.chat_application import run_application
 from langchain.chat_models import ChatOpenAI, AzureChatOpenAI, ChatVertexAI, BedrockChat
 from langchain.embeddings import (
     OpenAIEmbeddings,
@@ -24,7 +18,11 @@ from langchain.embeddings import (
     HuggingFaceInferenceAPIEmbeddings,
 )
 from langchain.embeddings.azure_openai import AzureOpenAIEmbeddings
+from langchain.llms.huggingface_hub import HuggingFaceHub
+from langchain.schema.embeddings import Embeddings
 from langchain.schema.language_model import BaseLanguageModel
+from langchain.schema.vectorstore import VectorStore
+from langchain.vectorstores import AstraDB, Cassandra
 
 VECTOR_ASTRADB_PROD = "astradb-prod"
 VECTOR_ASTRADB_DEV = "astradb-dev"
@@ -41,67 +39,43 @@ def vector_dbs():
 def init_vector_db(impl, embedding: Embeddings) -> VectorStore:
     if impl == VECTOR_ASTRADB_DEV:
         ref = get_astra_dev_ref()
-        collection = ref.collection
-        token = ref.token
-        api_endpoint = ref.api_endpoint
 
         # Ensure collections from previous runs are cleared
-        delete_collections(api_endpoint, token)
+        delete_all_astra_collections(ref)
 
         return AstraDB(
-            collection_name=collection,
+            collection_name=ref.collection,
             embedding=embedding,
-            token=token,
-            api_endpoint=api_endpoint,
+            token=ref.token,
+            api_endpoint=ref.api_endpoint,
         )
     elif impl == VECTOR_ASTRADB_PROD:
         ref = get_astra_prod_ref()
-        collection = ref.collection
-        token = ref.token
-        api_endpoint = ref.api_endpoint
 
         # Ensure collections from previous runs are cleared
-        delete_collections(api_endpoint, token)
+        delete_all_astra_collections(ref)
 
         return AstraDB(
-            collection_name=collection,
+            collection_name=ref.collection,
             embedding=embedding,
-            token=token,
-            api_endpoint=api_endpoint,
+            token=ref.token,
+            api_endpoint=ref.api_endpoint,
         )
     elif impl == VECTOR_CASSANDRA:
         ref = get_astra_prod_ref()
-        table_name = ref.collection
-        token = ref.token
-        api_endpoint = ref.api_endpoint
 
         # Ensure collections from previous runs are cleared
-        delete_collections(api_endpoint, token)
+        delete_all_astra_collections(ref)
 
-        cassio.init(token=token, database_id=ref.id)
+        cassio.init(token=ref.token, database_id=ref.id)
         return Cassandra(
             embedding=embedding,
             session=None,
             keyspace="default_keyspace",
-            table_name=table_name,
+            table_name=ref.collection,
         )
     else:
         raise Exception("Unknown vector db implementation: " + impl)
-
-
-def delete_collections(api_endpoint, token):
-    """
-    Deletes all collections.
-
-    Current AstraDB has a limit of 5 collections, meaning orphaned collections
-    will cause subsequent tests to fail if the limit is reached.
-    """
-    raw_client = LibAstraDB(api_endpoint=api_endpoint, token=token)
-    collections = raw_client.get_collections().get("status").get("collections")
-    logging.info(f"Existing collections: {collections}")
-    for collection_info in collections:
-        logging.info(f"Deleting collection: {collection_info}")
-        raw_client.delete_collection(collection_info)
 
 
 def astra_delete_collection(
@@ -113,25 +87,9 @@ def astra_delete_collection(
 
 def close_vector_db(impl: str, vector_store: VectorStore):
     if impl == VECTOR_ASTRADB_DEV:
-        ref = get_astra_dev_ref()
-        collection = ref.collection
-        token = ref.token
-        api_endpoint = ref.api_endpoint
-        astra_delete_collection(
-            api_endpoint=api_endpoint,
-            token=token,
-            collection_name=collection,
-        )
+        delete_astra_collection(get_astra_dev_ref())
     elif impl == VECTOR_ASTRADB_PROD or impl == VECTOR_CASSANDRA:
-        ref = get_astra_prod_ref()
-        collection = ref.collection
-        token = ref.token
-        api_endpoint = ref.api_endpoint
-        astra_delete_collection(
-            api_endpoint=api_endpoint,
-            token=token,
-            collection_name=collection,
-        )
+        delete_astra_collection(get_astra_prod_ref())
     else:
         raise Exception("Unknown vector db implementation: " + impl)
 
