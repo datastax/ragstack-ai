@@ -21,9 +21,9 @@ runs:
     run: |
       
       echo -n '{"content": "' > ${{ inputs.output-file }}
-      if [ -f "ragstack-e2e-tests/generated-test-report.txt" ]; then
+      if [ -f "ragstack-e2e-tests/failed-tests-report.txt" ]; then
         {
-          cat ragstack-e2e-tests/generated-test-report.txt | sed 's/"/\\"/g' | while IFS= read -r line; do
+          cat ragstack-e2e-tests/failed-tests-report.txt | sed 's/"/\\"/g' | while IFS= read -r line; do
             echo -n "$line\n"
           done
         } >> ${{ inputs.output-file }}
