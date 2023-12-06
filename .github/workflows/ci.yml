@@ -79,8 +79,7 @@ jobs:
       - name: Compute commit URL
         if: always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
         id: commit-ref
-        run:
-            echo "::set-output name=commit-ref::$(git rev-parse --short HEAD)"
+        run: echo "commit-ref=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
       - name: Prepare report for Slack
         if: always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')

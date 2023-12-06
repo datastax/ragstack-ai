@@ -28,6 +28,11 @@ def get_required_env(name) -> str:
 
 failed_report_lines = []
 all_report_lines = []
+tests_stats = {
+    "passed": 0,
+    "failed": 0,
+    "skipped": 0,
+}
 
 
 @pytest.hookimpl(tryfirst=True, hookwrapper=True)
@@ -41,15 +46,18 @@ def pytest_runtest_makereport(item, call):
             info = os.path.basename(item.path) + "::" + item.name
         if rep.outcome == "failed":
             test_outcome = "❌"
-        elif rep.outcome == "success":
+            tests_stats["failed"] += 1
+        elif rep.outcome == "passed":
             test_outcome = "✅"
+            tests_stats["passed"] += 1
         elif rep.outcome == "skipped":
             test_outcome = "⚠️"
+            tests_stats["skipped"] += 1
         else:
             test_outcome = f"(? {rep.outcome}))"
         result = " " + str(call.excinfo) if call.excinfo else ""
         report_line = f"{info} -> {test_outcome}{result}"
-        if rep.outcome != "sucess":
+        if rep.outcome != "passed":
             # also keep skipped tests in the report
             failed_report_lines.append(report_line)
         all_report_lines.append(report_line)
@@ -69,9 +77,14 @@ def dump_report():
     yield
     print("\n\nAll tests report:")
     print("\n".join(all_report_lines))
+
+    stats_str = "Tests passed: " + str(tests_stats["passed"]) + ", failed: " + str(
+        tests_stats["failed"]) + ", skipped: " + str(tests_stats["skipped"]) + "\n"
     with open("all-tests-report.txt", "w") as f:
+        f.write(stats_str)
         f.write("\n".join(all_report_lines))
     with open("failed-tests-report.txt", "w") as f:
+        f.write(stats_str)
         f.write("\n".join(failed_report_lines))
 
 

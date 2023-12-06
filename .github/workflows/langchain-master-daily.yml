@@ -44,8 +44,7 @@ jobs:
       - name: Compute commit URL
         if: always()
         id: commit-ref
-        run:
-            echo "::set-output name=commit-ref::$(grep resolved_reference ragstack-e2e-tests/poetry.lock | awk -F'"' '{print $2}' | head -1)"
+        run: echo "commit-ref=$(grep resolved_reference ragstack-e2e-tests/poetry.lock | awk -F'"' '{print $2}' | head -1)" >> $GITHUB_OUTPUT
 
       - name: Prepare report for Slack
         if: always()
