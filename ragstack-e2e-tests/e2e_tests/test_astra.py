@@ -33,7 +33,10 @@ def test_ingest_errors(environment):
     except ValueError as e:
         print("Error:", e)
         # API Exception while running bulk insertion: [{'message': "Failed to insert document with _id 'b388435404254c17b720816ee9e0ddc4': Zero vectors cannot be indexed or queried with cosine similarity"}]
-        if "Zero vectors cannot be indexed or queried with cosine similarity" not in e.args[0]:
+        if (
+            "Zero vectors cannot be indexed or queried with cosine similarity"
+            not in e.args[0]
+        ):
             pytest.fail(
                 f"Should have thrown ValueError with Zero vectors cannot be indexed or queried with cosine similarity but it was {e}"
             )
@@ -51,7 +54,7 @@ def test_ingest_errors(environment):
             )
 
     very_very_long_text = (
-            "RAGStack is a framework to run LangChain in production. " * 10000
+        "RAGStack is a framework to run LangChain in production. " * 10000
     )
     try:
         vectorstore.add_texts([very_very_long_text])
@@ -64,7 +67,8 @@ def test_ingest_errors(environment):
                 f"Should have thrown ValueError with SHRED_DOC_LIMIT_VIOLATION but it was {e}"
             )
 
-#def test_wrong_connection_parameters():
+
+# def test_wrong_connection_parameters():
 #    # This is expected to be a valid endpoint, because we want to test an AUTHENTICATION error
 #    api_endpoint = get_required_env("ASTRA_PROD_DB_ENDPOINT")
 #
@@ -96,6 +100,7 @@ def test_ingest_errors(environment):
 #            pytest.fail(
 #                f"Should have thrown ValueError with AUTHENTICATION ERROR but it was {e}"
 #            )
+
 
 def test_basic_metadata_filtering(environment):
     print("Running test_basic_metadata_filtering")
@@ -184,8 +189,8 @@ def test_basic_metadata_filtering(environment):
             assert error.get("errorCode") == "UNSUPPORTED_FILTER_OPERATION"
         elif len(errors) > 1:
             assert (
-                    errors[0].get("errorCode") == "UNSUPPORTED_FILTER_OPERATION"
-                    or errors[1].get("errorCode") == "UNSUPPORTED_FILTER_OPERATION"
+                errors[0].get("errorCode") == "UNSUPPORTED_FILTER_OPERATION"
+                or errors[1].get("errorCode") == "UNSUPPORTED_FILTER_OPERATION"
             )
         else:
             pytest.fail(
@@ -243,7 +248,7 @@ def init_vector_db(embedding: Embeddings) -> VectorStore:
 
 class Environment:
     def __init__(
-            self, vectorstore: VectorStore, llm: BaseLanguageModel, embedding: Embeddings
+        self, vectorstore: VectorStore, llm: BaseLanguageModel, embedding: Embeddings
     ):
         self.vectorstore = vectorstore
         self.llm = llm

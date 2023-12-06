@@ -5,6 +5,7 @@ from dataclasses import dataclass
 import pytest
 import os
 
+
 def random_string():
     return str(uuid.uuid4()).split("-")[0]
 
@@ -109,8 +110,15 @@ def dump_report():
     print("\n\nAll tests report:")
     print("\n".join(all_report_lines))
 
-    stats_str = "Tests passed: " + str(tests_stats["passed"]) + ", failed: " + str(
-        tests_stats["failed"]) + ", skipped: " + str(tests_stats["skipped"]) + "\n"
+    stats_str = (
+        "Tests passed: "
+        + str(tests_stats["passed"])
+        + ", failed: "
+        + str(tests_stats["failed"])
+        + ", skipped: "
+        + str(tests_stats["skipped"])
+        + "\n"
+    )
     with open("all-tests-report.txt", "w") as f:
         f.write(stats_str + "\n")
         f.write("\n".join(all_report_lines))
