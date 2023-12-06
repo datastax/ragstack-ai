@@ -68,40 +68,36 @@ def test_ingest_errors(environment):
 
 def test_wrong_connection_parameters():
     # This is expected to be a valid endpoint, because we want to test an AUTHENTICATION error
-    # api_endpoint = get_default_astra_ref().api_endpoint
+    api_endpoint = get_default_astra_ref().api_endpoint
 
     try:
-        db = AstraDB(
+        AstraDB(
             collection_name="something",
             embedding=init_embeddings(),
             token="xxxxx",
             # we assume that post 1234 is not open locally
             api_endpoint="https://locahost:1234",
         )
-        db.add_texts(
-            texts=["RAGStack is a framework to run LangChain in production"])
         pytest.fail("Should have thrown exception")
     except ConnectError as e:
         print("Error:", e)
         pass
 
-
-#    try:
-#        db = AstraDB(
-#            collection_name="something",
-#            embedding=init_embeddings(),
-#            token="this-is-a-wrong-token",
-#            api_endpoint=api_endpoint,
-#        )
-#        db.add_texts(
-#            texts=["RAGStack is a framework to run LangChain in production"])
-#        pytest.fail("Should have thrown exception")
-#    except ValueError as e:
-#        print("Error:", e)
-#        if "AUTHENTICATION ERROR" not in e.args[0]:
-#            pytest.fail(
-#                f"Should have thrown ValueError with AUTHENTICATION ERROR but it was {e}"
-#            )
+    try:
+        print("api_endpoint:", api_endpoint)
+        AstraDB(
+            collection_name="something",
+            embedding=init_embeddings(),
+            token="this-is-a-wrong-token",
+            api_endpoint=api_endpoint,
+        )
+        pytest.fail("Should have thrown exception")
+    except ValueError as e:
+        print("Error:", e)
+        if "AUTHENTICATION ERROR" not in e.args[0]:
+            pytest.fail(
+                f"Should have thrown ValueError with AUTHENTICATION ERROR but it was {e}"
+            )
 
 
 def test_basic_metadata_filtering(environment):
