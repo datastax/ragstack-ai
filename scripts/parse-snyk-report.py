@@ -16,7 +16,7 @@ with open(input_file, 'r') as file:
         for vulnerability in vulnerabilities:
             title = vulnerability.get('title', 'N/A')
             cvssScore = vulnerability.get('cvssScore', 'N/A')
-            from_packages = ', '.join(vulnerability.get('from', []))
+            from_packages = ' -> '.join(vulnerability.get('from', []))
 
-            report_line = f"{title} - {from_packages} - {cvssScore}\n"
+            report_line = f"{title} | {from_packages} | {cvssScore}\n"
             output.write(report_line)
