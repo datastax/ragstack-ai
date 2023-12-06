@@ -20,12 +20,20 @@ jobs:
         uses: ./.github/actions/snyk-python-3.11
         with:
           token: ${{ secrets.SNYK_TOKEN }}
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+      - name: Process Snyk report
+        #if: always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+        if: always()
+        run: python ./scripts/process-snyk-report.py snyk-vuln.json snyk-report.txt
+
       - name: Prepare report for Slack
         #if: always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
         if: always()
         uses: ./.github/actions/generate-slack-report
         with:
-          from-report-file: snyk-vuln.json
+          from-report-file: snyk-report.txt
           output-file: slack-report.json
           type: "RAGStack Security Scan"
           outcome: ${{ steps.snyk.outcome }}
