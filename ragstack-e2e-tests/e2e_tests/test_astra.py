@@ -11,7 +11,7 @@ from langchain.schema.vectorstore import VectorStore
 from langchain.vectorstores import AstraDB
 from langchain.chat_models import ChatOpenAI
 from langchain.schema.language_model import BaseLanguageModel
-from e2e_tests.conftest import get_required_env
+from e2e_tests.conftest import get_required_env, get_default_astra_ref
 
 
 def test_basic_vector_search(environment):
@@ -68,7 +68,7 @@ def test_ingest_errors(environment):
 
 def test_wrong_connection_parameters():
     # This is expected to be a valid endpoint, because we want to test an AUTHENTICATION error
-    api_endpoint = get_required_env("ASTRA_DEV_DB_ENDPOINT")
+    api_endpoint = get_default_astra_ref().api_endpoint
 
     try:
         AstraDB(
@@ -222,9 +222,10 @@ class MockEmbeddings(Embeddings):
 
 
 def init_vector_db(embedding: Embeddings) -> VectorStore:
-    collection = get_required_env("ASTRA_DEV_TABLE_NAME")
-    token = get_required_env("ASTRA_DEV_DB_TOKEN")
-    api_endpoint = get_required_env("ASTRA_DEV_DB_ENDPOINT")
+    astra_ref = get_default_astra_ref()
+    collection = astra_ref.collection
+    token = astra_ref.token
+    api_endpoint = astra_ref.api_endpoint
 
     raw_client = LibAstraDB(api_endpoint=api_endpoint, token=token)
     collections = raw_client.get_collections().get("status").get("collections")

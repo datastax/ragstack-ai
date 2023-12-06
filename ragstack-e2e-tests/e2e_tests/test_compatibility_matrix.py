@@ -4,6 +4,8 @@ from astrapy.db import AstraDB as LibAstraDB
 from e2e_tests.conftest import (
     set_current_test_info_simple_rag,
     get_required_env,
+    get_astra_dev_ref,
+    get_astra_prod_ref,
 )
 from e2e_tests.chat_application import run_application
 from langchain.llms.huggingface_hub import HuggingFaceHub
@@ -38,9 +40,10 @@ def vector_dbs():
 
 def init_vector_db(impl, embedding: Embeddings) -> VectorStore:
     if impl == VECTOR_ASTRADB_DEV:
-        collection = get_required_env("ASTRA_DEV_TABLE_NAME")
-        token = get_required_env("ASTRA_DEV_DB_TOKEN")
-        api_endpoint = get_required_env("ASTRA_DEV_DB_ENDPOINT")
+        ref = get_astra_dev_ref()
+        collection = ref.collection
+        token = ref.token
+        api_endpoint = ref.api_endpoint
 
         # Ensure collections from previous runs are cleared
         delete_collections(api_endpoint, token)
@@ -52,9 +55,10 @@ def init_vector_db(impl, embedding: Embeddings) -> VectorStore:
             api_endpoint=api_endpoint,
         )
     elif impl == VECTOR_ASTRADB_PROD:
-        collection = get_required_env("ASTRA_PROD_TABLE_NAME")
-        token = get_required_env("ASTRA_PROD_DB_TOKEN")
-        api_endpoint = get_required_env("ASTRA_PROD_DB_ENDPOINT")
+        ref = get_astra_prod_ref()
+        collection = ref.collection
+        token = ref.token
+        api_endpoint = ref.api_endpoint
 
         # Ensure collections from previous runs are cleared
         delete_collections(api_endpoint, token)
@@ -66,15 +70,15 @@ def init_vector_db(impl, embedding: Embeddings) -> VectorStore:
             api_endpoint=api_endpoint,
         )
     elif impl == VECTOR_CASSANDRA:
-        table_name = get_required_env("ASTRA_PROD_TABLE_NAME")
-        token = get_required_env("ASTRA_PROD_DB_TOKEN")
-        id = get_required_env("ASTRA_PROD_DB_ID")
-        api_endpoint = get_required_env("ASTRA_PROD_DB_ENDPOINT")
+        ref = get_astra_prod_ref()
+        table_name = ref.collection
+        token = ref.token
+        api_endpoint = ref.api_endpoint
 
         # Ensure collections from previous runs are cleared
         delete_collections(api_endpoint, token)
 
-        cassio.init(token=token, database_id=id)
+        cassio.init(token=token, database_id=ref.id)
         return Cassandra(
             embedding=embedding,
             session=None,
@@ -109,16 +113,24 @@ def astra_delete_collection(
 
 def close_vector_db(impl: str, vector_store: VectorStore):
     if impl == VECTOR_ASTRADB_DEV:
+        ref = get_astra_dev_ref()
+        collection = ref.collection
+        token = ref.token
+        api_endpoint = ref.api_endpoint
         astra_delete_collection(
-            api_endpoint=get_required_env("ASTRA_DEV_DB_ENDPOINT"),
-            token=get_required_env("ASTRA_DEV_DB_TOKEN"),
-            collection_name=get_required_env("ASTRA_DEV_TABLE_NAME"),
+            api_endpoint=api_endpoint,
+            token=token,
+            collection_name=collection,
         )
     elif impl == VECTOR_ASTRADB_PROD or impl == VECTOR_CASSANDRA:
+        ref = get_astra_prod_ref()
+        collection = ref.collection
+        token = ref.token
+        api_endpoint = ref.api_endpoint
         astra_delete_collection(
-            api_endpoint=get_required_env("ASTRA_PROD_DB_ENDPOINT"),
-            token=get_required_env("ASTRA_PROD_DB_TOKEN"),
-            collection_name=get_required_env("ASTRA_PROD_TABLE_NAME"),
+            api_endpoint=api_endpoint,
+            token=token,
+            collection_name=collection,
         )
     else:
         raise Exception("Unknown vector db implementation: " + impl)

@@ -1,5 +1,6 @@
 import logging
 import uuid
+from dataclasses import dataclass
 
 import pytest
 import os
@@ -24,6 +25,36 @@ def get_required_env(name) -> str:
     if name not in os.environ:
         pytest.skip(f"Missing required environment variable: {name}")
     return os.environ[name]
+
+
+@dataclass
+class AstraRef:
+    token: str
+    api_endpoint: str
+    collection: str
+    id: str
+
+
+def get_astra_dev_ref() -> AstraRef:
+    return AstraRef(
+        token=get_required_env("ASTRA_DEV_DB_TOKEN"),
+        api_endpoint=get_required_env("ASTRA_DEV_DB_ENDPOINT"),
+        collection=get_required_env("ASTRA_DEV_TABLE_NAME"),
+        id=get_required_env("ASTRA_DEV_DB_ID"),
+    )
+
+
+def get_astra_prod_ref() -> AstraRef:
+    return AstraRef(
+        token=get_required_env("ASTRA_PROD_DB_TOKEN"),
+        api_endpoint=get_required_env("ASTRA_PROD_DB_ENDPOINT"),
+        collection=get_required_env("ASTRA_PROD_TABLE_NAME"),
+        id=get_required_env("ASTRA_PROD_DB_ID"),
+    )
+
+
+def get_default_astra_ref() -> AstraRef:
+    return get_astra_prod_ref()
 
 
 failed_report_lines = []
@@ -61,6 +92,7 @@ def pytest_runtest_makereport(item, call):
             # also keep skipped tests in the report
             failed_report_lines.append(report_line)
         all_report_lines.append(report_line)
+
 
 def set_current_test_info_simple_rag(llm: str, embedding: str, vector_db: str) -> None:
     os.environ[
