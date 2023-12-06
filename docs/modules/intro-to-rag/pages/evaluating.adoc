@@ -1,0 +1,39 @@
+= Evaluating performance
+
+RAG performance can be logged, measured, and improved like any other technical solution, but since the LLM output is non-deterministic, you can’t just write unit tests and move on.
+
+A few different approaches have emerged to solve this problem.
+
+The first approach is user evaluation of the LLM responses. You’ve probably seen the thumbs-up/thumbs-down rating on ChatGPT’s responses. Users provide feedback which is used to tune the LLM. If users aren’t supplying a lot of feedback, how often they request regenerated responses is also an actionable metric.
+
+The second approach is LLM self-evaluation. An example of this is the LangChain AutoEvaluator here (https://github.com/langchain-ai/auto-evaluator). 
+
+Lastly, good old human spot-checking can evaluate the LLM’s outputs. Inspect your responses manually and determine if they meet the quality you require. 
+
+== How is response quality measured?
+
+Ragas (https://github.com/explodinggradients/ragas) for example, calculates a score based on:
+
+* faithfulness - the factual consistency of the answer to the context base on the question.
+
+* context_precision - a measure of how relevant the retrieved context is to the question. Conveys quality of the retrieval pipeline.
+
+* answer_relevancy - a measure of how relevant the answer is to the question
+
+* context_recall: measures the ability of the retriever to retrieve all the necessary information needed to answer the question.
+
+TruLens, another AI evaluation tool, evaluates RAG applications according to the “RAG triad”.
+
+* Context Relevance
+Is the retrieved context relevant to the query?
+The first step of any RAG application is retrieval. To verify the quality of retrieval, ensure that each chunk of context is relevant to the input query. This is critical because the LLM will use this context to form an answer, so any irrelevant information in the context could be weaved into a hallucination.
+
+* Groundedness
+Is the response supported by the context?
+After the context is retrieved, it is then formed into an answer by an LLM. LLMs often stray from the facts provided, exaggerating or expanding to a correct-sounding answer. To verify the groundedness of an application, separate the response into separate statements and independently search for evidence that supports each within the retrieved context.
+
+* Answer Relevance
+Is the answer relevant to the query? Is the final response useful?
+The LLM response still needs to helpfully answer the original question. Verify this by evaluating the relevance of the final response to the user input.
+
+Ideally, if the vector database contains only accurate information, then the answers provided by the RAG should also be accurate.
