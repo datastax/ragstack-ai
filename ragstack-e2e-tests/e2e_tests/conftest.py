@@ -1,9 +1,10 @@
 import logging
+import os
 import uuid
 from dataclasses import dataclass
 
 import pytest
-import os
+from astrapy.db import AstraDB as LibAstraDB
 
 
 def random_string():
@@ -55,6 +56,26 @@ def get_astra_prod_ref() -> AstraRef:
 
 def get_default_astra_ref() -> AstraRef:
     return get_astra_prod_ref()
+
+
+def delete_all_astra_collections(astra_ref: AstraRef):
+    """
+    Deletes all collections.
+
+    Current AstraDB has a limit of 5 collections, meaning orphaned collections
+    will cause subsequent tests to fail if the limit is reached.
+    """
+    raw_client = LibAstraDB(api_endpoint=astra_ref.api_endpoint, token=astra_ref.token)
+    collections = raw_client.get_collections().get("status").get("collections")
+    logging.info(f"Existing collections: {collections}")
+    for collection_info in collections:
+        logging.info(f"Deleting collection: {collection_info}")
+        raw_client.delete_collection(collection_info)
+
+
+def delete_astra_collection(astra_ref: AstraRef) -> None:
+    raw_client = LibAstraDB(api_endpoint=astra_ref.api_endpoint, token=astra_ref.token)
+    raw_client.delete_collection(astra_ref.collection)
 
 
 failed_report_lines = []
