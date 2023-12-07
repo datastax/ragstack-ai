@@ -1,5 +1,6 @@
 import os
 from abc import ABC, abstractmethod
+from typing import Type
 
 import pytest
 from e2e_tests.conftest import (
@@ -10,42 +11,73 @@ from e2e_tests.conftest import (
     delete_all_astra_collections,
     delete_astra_collection,
 )
+from langchain.embeddings import VertexAIEmbeddings
 from llama_index import (
     VectorStoreIndex,
     StorageContext,
     ServiceContext,
     Document,
-    OpenAIEmbedding,
 )
-from llama_index.embeddings import AzureOpenAIEmbedding
-from llama_index.llms import OpenAI, AzureOpenAI
+from llama_index.embeddings import (
+    OpenAIEmbedding,
+    AzureOpenAIEmbedding,
+)
+from llama_index.embeddings.utils import EmbedType
+from llama_index.llms import OpenAI, AzureOpenAI, Vertex
 from llama_index.vector_stores import AstraDBVectorStore
+from llama_index.vector_stores.types import VectorStore
 
 
 class ContextMixin(ABC):
+    def __init__(self):
+        pass
+
     @property
     @abstractmethod
     def name(self) -> str:
         ...
 
+    @abstractmethod
     def __enter__(self):
-        return self
+        ...
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         pass
 
 
-class AstraDBVectorStoreContext(ContextMixin, ABC):
-    def __init__(self, astra_ref: AstraRef):
+class EmbeddingsContextMixin(ContextMixin):
+    @abstractmethod
+    def __enter__(self) -> EmbedType:
+        ...
+
+    @property
+    @abstractmethod
+    def embedding_dimension(self) -> int:
+        ...
+
+
+class VectorStoreContext(ContextMixin, ABC):
+    def __init__(self, embedding_dimension: int):
+        super().__init__()
+        self.embedding_dimension = embedding_dimension
+
+    @abstractmethod
+    def __enter__(self) -> VectorStore:
+        ...
+
+
+class AstraDBVectorStoreContext(VectorStoreContext, ABC):
+    def __init__(self, astra_ref: AstraRef, embedding_dimension: int):
+        super().__init__(embedding_dimension)
         self.astra_ref = astra_ref
         self.vector_store = None
 
-    def __enter__(self):
+    def __enter__(self) -> AstraDBVectorStore:
         delete_all_astra_collections(self.astra_ref)
 
         self.vector_store = AstraDBVectorStore(
             collection_name=self.astra_ref.collection,
-            embedding_dimension=1536,
+            embedding_dimension=self.embedding_dimension,
             token=self.astra_ref.token,
             api_endpoint=self.astra_ref.api_endpoint,
         )
@@ -58,29 +90,30 @@ class AstraDBVectorStoreContext(ContextMixin, ABC):
 class DevAstraDBVectorStoreContext(AstraDBVectorStoreContext):
     name = "astradb-dev"
 
-    def __init__(self):
-        super().__init__(get_astra_dev_ref())
+    def __init__(self, embedding_dimension: int):
+        super().__init__(get_astra_dev_ref(), embedding_dimension)
 
 
 class ProdAstraDBVectorStoreContext(AstraDBVectorStoreContext):
     name = "astradb-prod"
 
-    def __init__(self):
-        super().__init__(get_astra_prod_ref())
+    def __init__(self, embedding_dimension: int):
+        super().__init__(get_astra_prod_ref(), embedding_dimension)
 
 
 class OpenAILLMContext(ContextMixin):
     name = "openai"
 
-    def __enter__(self):
+    def __enter__(self) -> OpenAI:
         key = get_required_env("OPEN_AI_KEY")
         return OpenAI(api_key=key)
 
 
-class OpenAIEmbeddingsContext(ContextMixin):
+class OpenAIEmbeddingsContext(EmbeddingsContextMixin):
     name = "openai"
+    embedding_dimension = 1536
 
-    def __enter__(self):
+    def __enter__(self) -> OpenAIEmbedding:
         key = get_required_env("OPEN_AI_KEY")
         return OpenAIEmbedding(api_key=key)
 
@@ -88,7 +121,7 @@ class OpenAIEmbeddingsContext(ContextMixin):
 class AzureOpenAILLMContext(ContextMixin):
     name = "openai-azure"
 
-    def __enter__(self):
+    def __enter__(self) -> AzureOpenAI:
         return AzureOpenAI(
             azure_deployment=get_required_env("AZURE_OPEN_AI_CHAT_MODEL_DEPLOYMENT"),
             azure_endpoint=get_required_env("AZURE_OPEN_AI_ENDPOINT"),
@@ -97,10 +130,11 @@ class AzureOpenAILLMContext(ContextMixin):
         )
 
 
-class AzureOpenAIEmbeddingsContext(ContextMixin):
+class AzureOpenAIEmbeddingsContext(EmbeddingsContextMixin):
     name = "openai-azure"
+    embedding_dimension = 1536
 
-    def __enter__(self):
+    def __enter__(self) -> AzureOpenAIEmbedding:
         model_and_deployment = get_required_env(
             "AZURE_OPEN_AI_EMBEDDINGS_MODEL_DEPLOYMENT"
         )
@@ -114,22 +148,53 @@ class AzureOpenAIEmbeddingsContext(ContextMixin):
         )
 
 
-def test_openai():
-    _run_test(ProdAstraDBVectorStoreContext, OpenAILLMContext, OpenAIEmbeddingsContext)
+class VertexLLMContext(ContextMixin):
+    name = "vertex-ai"
+
+    def __enter__(self):
+        return Vertex(model="chat-bison")
+
+
+class VertexEmbeddingsContext(EmbeddingsContextMixin):
+    name = "vertex-ai"
+    embedding_dimension = 768
+
+    def __enter__(self) -> EmbedType:
+        return VertexAIEmbeddings(model_name="textembedding-gecko")
+
+
+def test_openai_azure_astra_dev():
+    _run_test(
+        DevAstraDBVectorStoreContext,
+        AzureOpenAIEmbeddingsContext,
+        AzureOpenAILLMContext,
+    )
 
 
 @pytest.mark.parametrize(
-    "vector_store", [ProdAstraDBVectorStoreContext, DevAstraDBVectorStoreContext]
+    "embedding,llm",
+    [
+        (OpenAIEmbeddingsContext, OpenAILLMContext),
+        (AzureOpenAIEmbeddingsContext, AzureOpenAILLMContext),
+        (VertexEmbeddingsContext, VertexLLMContext),
+    ],
 )
-def test_openai_azure(vector_store):
-    _run_test(vector_store, AzureOpenAILLMContext, AzureOpenAIEmbeddingsContext)
+def test_rag(embedding, llm):
+    _run_test(ProdAstraDBVectorStoreContext, embedding, llm)
 
 
-def _run_test(vector_store_ctx, llm_ctx, embed_model_ctx):
+def _run_test(
+    vector_store_ctx_cls: Type[VectorStoreContext],
+    embed_model_ctx_cls: Type[EmbeddingsContextMixin],
+    llm_ctx_cls: Type[ContextMixin],
+):
+    embed_model_ctx = embed_model_ctx_cls()
+    llm_ctx = llm_ctx_cls()
+    vector_store_ctx = vector_store_ctx_cls(embed_model_ctx.embedding_dimension)
     os.environ[
         "RAGSTACK_E2E_TESTS_TEST_INFO"
     ] = f"llama_index_retrieve::{llm_ctx.name},{embed_model_ctx.name},{vector_store_ctx.name}"
-    with vector_store_ctx() as vector_store, llm_ctx() as llm, embed_model_ctx() as embed_model:
+    with vector_store_ctx as vector_store, llm_ctx as llm, embed_model_ctx as embed_model:
         storage_context = StorageContext.from_defaults(vector_store=vector_store)
         service_context = ServiceContext.from_defaults(llm=llm, embed_model=embed_model)
 

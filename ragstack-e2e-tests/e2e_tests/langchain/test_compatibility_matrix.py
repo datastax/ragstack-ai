@@ -29,13 +29,6 @@ VECTOR_ASTRADB_DEV = "astradb-dev"
 VECTOR_CASSANDRA = "cassandra"
 
 
-def vector_dbs():
-    return [
-        VECTOR_ASTRADB_PROD,
-        VECTOR_CASSANDRA,
-    ]
-
-
 def init_vector_db(impl, embedding: Embeddings) -> VectorStore:
     if impl == VECTOR_ASTRADB_DEV:
         ref = get_astra_dev_ref()
@@ -187,7 +180,13 @@ def test_openai_azure_astra_dev():
     )
 
 
-@pytest.mark.parametrize("vector_db", vector_dbs())
+@pytest.mark.parametrize(
+    "vector_db",
+    [
+        VECTOR_ASTRADB_PROD,
+        VECTOR_CASSANDRA,
+    ],
+)
 @pytest.mark.parametrize(
     "embedding,llm",
     [
