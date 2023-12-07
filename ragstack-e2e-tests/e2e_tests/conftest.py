@@ -111,9 +111,10 @@ def pytest_runtest_makereport(item, call):
             tests_stats["skipped"] += 1
         else:
             test_outcome = f"(? {rep.outcome}))"
-        print(call)
+        logging.info("Test call: " + call)
         result = " " + str(call.excinfo) if call.excinfo else ""
         report_line = f"{info} -> {test_outcome}{result}"
+        logging.info("Test report line: " + report_line)
         if rep.outcome != "passed":
             # also keep skipped tests in the report
             failed_report_lines.append(report_line)
