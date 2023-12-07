@@ -20,6 +20,7 @@ runs:
       (curl -Ls "https://dtsx.io/get-astra-cli" | bash) || true 
       /home/runner/.astra/cli/astra db create -v "${{ inputs.db-name }}" -k default_keyspace --token "${{ inputs.astra-token }}" --vector
       
+      text=$(/home/runner/.astra/cli/astra describe "${{ inputs.db-name }}" --token "${{ inputs.astra-token }}"
       database_id=$(echo "$text" | grep 'Name' | awk -F '|' '{print $3}' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
       region=$(echo "$text" | grep 'Regions' | grep '\[0\]' | awk -F '|' '{print $3}' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
 
