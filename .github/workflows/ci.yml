@@ -40,18 +40,27 @@ jobs:
         run: |
           tox
 
-      - name: Setup AstraDB
+      - name: Setup AstraDB prod
         uses: ./.github/actions/setup-astra-db
-        id: astra-db
+        id: astra-db-prod
         with:
           astra-token: ${{ secrets.E2E_TESTS_ASTRA_PROD_DB_TOKEN }}
           db-name: ${{ github.run_id }}
+          env: PROD
+
+      - name: Setup AstraDB dev
+        uses: ./.github/actions/setup-astra-db
+        id: astra-db-dev
+        with:
+          astra-token: ${{ secrets.E2E_TESTS_ASTRA_DEV_DB_TOKEN }}
+          db-name: ${{ github.run_id }}
+          env: DEV
 
       - name: Run notebook tests
         env:
           ASTRA_DB_APPLICATION_TOKEN: "${{ secrets.E2E_TESTS_ASTRA_PROD_DB_TOKEN }}"
-          ASTRA_DB_API_ENDPOINT: "${{ steps.astra-db.outputs.db_endpoint }}"
-          ASTRA_DB_ID: "${{ steps.astra-db.outputs.db_id }}"
+          ASTRA_DB_API_ENDPOINT: "${{ steps.astra-db-prod.outputs.db_endpoint }}"
+          ASTRA_DB_ID: "${{ steps.astra-db-prod.outputs.db_id }}"
           OPENAI_API_KEY: "${{ secrets.E2E_TESTS_OPEN_AI_KEY }}"
         run: |
           tox -e notebooks
@@ -61,11 +70,11 @@ jobs:
         if: always() && steps.astra-db.outcome == 'success'
         env:
           ASTRA_DEV_DB_TOKEN: "${{ secrets.E2E_TESTS_ASTRA_DEV_DB_TOKEN }}"
-          ASTRA_DEV_DB_ENDPOINT: "${{ secrets.E2E_TESTS_ASTRA_DEV_DB_ENDPOINT }}"
-          ASTRA_DEV_DB_ID: "${{ secrets.E2E_TESTS_ASTRA_DEV_DB_ID }}"
+          ASTRA_DEV_DB_ENDPOINT: "${{ steps.astra-db-dev.outputs.db_endpoint }}"
+          ASTRA_DEV_DB_ID: "${{ steps.astra-db-dev.outputs.db_id }}"
           ASTRA_PROD_DB_TOKEN: "${{ secrets.E2E_TESTS_ASTRA_PROD_DB_TOKEN }}"
-          ASTRA_PROD_DB_ENDPOINT: "${{ steps.astra-db.outputs.db_endpoint }}"
-          ASTRA_PROD_DB_ID: "${{ steps.astra-db.outputs.db_id }}"
+          ASTRA_PROD_DB_ENDPOINT: "${{ steps.astra-db-prod.outputs.db_endpoint }}"
+          ASTRA_PROD_DB_ID: "${{ steps.astra-db-prod.outputs.db_id }}"
           OPEN_AI_KEY: "${{ secrets.E2E_TESTS_OPEN_AI_KEY }}"
           AZURE_OPEN_AI_KEY: "${{ secrets.E2E_TESTS_AZURE_OPEN_AI_KEY }}"
           AZURE_OPEN_AI_ENDPOINT: "${{ secrets.E2E_TESTS_AZURE_OPEN_AI_ENDPOINT }}"
@@ -110,10 +119,20 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
-      - name: Cleanup Astra
+      - name: Cleanup Astra prod
         if: always()
         continue-on-error: true
         uses: ./.github/actions/cleanup-astra-db
         with:
           astra-token: ${{ secrets.E2E_TESTS_ASTRA_PROD_DB_TOKEN }}
           db-name: ${{ github.run_id }}
+          env: PROD
+
+      - name: Cleanup Astra dev
+        if: always()
+        continue-on-error: true
+        uses: ./.github/actions/cleanup-astra-db
+        with:
+          astra-token: ${{ secrets.E2E_TESTS_ASTRA_DEV_DB_TOKEN }}
+          db-name: ${{ github.run_id }}
+          env: DEV
