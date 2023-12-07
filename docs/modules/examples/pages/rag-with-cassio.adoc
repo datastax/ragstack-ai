@@ -1,0 +1,276 @@
+= RAGStack with CassIO
+:toc: macro
+:toc-title:
+
+image::https://colab.research.google.com/assets/colab-badge.svg[align="left",link="https://colab.research.google.com/github/datastax/ragstack-ai-examples/blob/main/RAG_with_cassio.ipynb"]
+
+== Introduction
+Large Language Models (LLMs) have a data freshness problem. The most powerful LLMs in the world, like GPT-4, have no idea about recent world events.
+
+The world of LLMs is frozen in time. Their world exists as a static snapshot of the world as it was within their training data.
+
+A solution to this problem is Retrieval Augmentated Generation (RAG). The idea behind this is that we retrieve relevant information from an external knowledge base and give that information to our LLM. In this notebook, we will learn how to do that. In this demo, external or proprietary data will be stored in Astra DB and used to provide more current LLM responses.
+
+== Prerequisites Setup
+Follow these steps to create a new vector search enabled database in Astra.
+* Generate a new "Database Administrator" token.
+* Download the secure connect bundle for the database you just created (you can do this from the "Connect" tab of your database).
+* You will also need the necessary secret for the LLM provider of your choice:
+** If Open AI, then you will need an Open AI API Key. This will require an Open AI account with billing enabled.
+** If Vertex AI, you will need a config file.
+* For more details, see https://cassio.org[cassio.org].
+
+[source,python]
+----
+# install required dependencies
+! pip install ragstack-ai datasets google-cloud-aiplatform pandas 
+----
+
+You may be asked to "Restart the Runtime" at this time, as some dependencies have been upgraded. Please do restart the runtime now for a smoother execution from this point onward.
+
+== Astra DB Setup
+The following steps will ask for the keyspace of the vector search enabled Astra DB that you want to use for this example, as well as the Astra DB Token that you generated as part of the prerequisites. You will also require to upload the Secure Connect Bundle.
+
+Lastly, we are going to create helper functions for a secure connection to Astra DB `getCQLSession`, `getCQLKeyspace`, and `getTableCount`.
+
+[source,python]
+----
+# Input your database keyspace name:
+ASTRA_DB_KEYSPACE = input('Your Astra DB Keyspace name: ')
+from getpass import getpass
+# Input your Astra DB token string, the one starting with "AstraCS:..."
+ASTRA_DB_TOKEN_BASED_PASSWORD = getpass('Your Astra DB Token: ')
+ASTRA_DB_TABLE_NAME = input("Please provide the name of the table to be created: ")
+# Upload your Secure Connect Bundle zipfile:
+# (Note - this notebook only works in google colab)
+import os
+from google.colab import files
+
+print('Please upload your Secure Connect Bundle')
+uploaded = files.upload()
+if uploaded:
+    astraBundleFileTitle = list(uploaded.keys())[0]
+    ASTRA_DB_SECURE_BUNDLE_PATH = os.path.join(os.getcwd(), astraBundleFileTitle)
+else:
+    raise ValueError(
+        'Cannot proceed without Secure Connect Bundle. Please re-run the cell.'
+    )
+----
+
+[source,python]
+----
+# colab-specific override of helper functions
+from cassandra.cluster import (
+    Cluster,
+)
+from cassandra.auth import PlainTextAuthProvider
+from cassandra.query import SimpleStatement
+
+# The "username" is the literal string 'token' for this connection mode:
+ASTRA_DB_TOKEN_BASED_USERNAME = 'token'
+
+def getCQLSession(mode='astra_db'):
+    if mode == 'astra_db':
+        cluster = Cluster(
+            cloud={
+                "secure_connect_bundle": ASTRA_DB_SECURE_BUNDLE_PATH,
+            },
+            auth_provider=PlainTextAuthProvider(
+                ASTRA_DB_TOKEN_BASED_USERNAME,
+                ASTRA_DB_TOKEN_BASED_PASSWORD,
+            ),
+        )
+        astraSession = cluster.connect()
+        return astraSession
+    else:
+        raise ValueError('Unsupported CQL Session mode')
+
+def getCQLKeyspace(mode='astra_db'):
+    if mode == 'astra_db':
+        return ASTRA_DB_KEYSPACE
+    else:
+        raise ValueError('Unsupported CQL Session mode')
+
+def getTableCount():
+  # create a query that counts the number of records of the Astra DB table
+  query = SimpleStatement(f"""SELECT COUNT(*) FROM {keyspace}.{table_name};""")
+
+  # execute the query
+  results = session.execute(query)
+  return results.one().count
+----
+
+== LLM Provider
+In the cell below, you can choose between GCP VertexAI or OpenAI for your LLM services. (See https://cassio.org[Pre-requisites on cassio.org] for more details).
+
+Make sure you set the `llmProvider` variable and supply the corresponding access secrets in the following cell.
+
+[source,python]
+----
+# Set your secret(s) for LLM access:
+llmProvider = 'OpenAI'  # 'GCP_VertexAI'
+if llmProvider == 'OpenAI':
+    apiSecret = getpass(f'Your secret for LLM provider "{llmProvider}": ')
+    os.environ['OPENAI_API_KEY'] = apiSecret
+elif llmProvider == 'GCP_VertexAI':
+    # we need a json file
+    print(f'Please upload your Service Account JSON for the LLM provider "{llmProvider}":')
+    from google.colab import files
+    uploaded = files.upload()
+    if uploaded:
+        vertexAIJsonFileTitle = list(uploaded.keys())[0]
+        os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = os.path.join(os.getcwd(), vertexAIJsonFileTitle)
+    else:
+        raise ValueError(
+            'No file uploaded. Please re-run the cell.'
+        )
+else:
+    raise ValueError('Unknown/unsupported LLM Provider')
+----
+
+== Provide Sample Data
+A sample document is provided from CassIO. You may provide your own files instead in the following cell.
+
+[source,python]
+----
+# retrieve the text of a short story that will be indexed in the vector store
+! curl https://raw.githubusercontent.com/CassioML/cassio-website/main/docs/frameworks/langchain/texts/amontillado.txt --output amontillado.txt
+SAMPLEDATA = ["amontillado.txt"]
+# Alternatively, provide your own file. However, you will want to update your queries to match the content of your file.
+
+# Upload sample file (Note: this assumes you are on Google Colab. Local Jupyter notebooks can provide the path to their files directly by uncommenting and running just the next line).
+# SAMPLEDATA = ["<path_to_file>"]
+
+print('Please upload your own sample file:')
+uploaded = files.upload()
+if uploaded:
+    SAMPLEDATA = uploaded
+else:
+    raise ValueError(
+        'Cannot proceed without Sample Data. Please re-run the cell.'
+    )
+
+print(f'Please make sure to change your queries to match the contents of your file!')
+----
+
+== Vector Similarity Search QA Quickstart
+NOTE: This uses Cassandra's "Vector Similarity Search" capability. Make sure you are connecting to a vector-enabled database for this demo.
+
+A database connection is needed to access Cassandra. The following assumes that a vector-search-capable Astra DB instance is available. Adjust as needed.
+
+[source,python]
+----
+# Don't mind the "Closing connection" error after "downgrading protocol..." messages,
+# it is really just a warning: the connection will work smoothly.
+cqlMode = 'astra_db'
+session = getCQLSession(mode=cqlMode)
+keyspace = getCQLKeyspace(mode=cqlMode)
+----
+
+Both an LLM and an embedding function are required.
+
+Below is the logic to instantiate the LLM and embeddings of choice. We choose to leave it in the notebooks for clarity.
+
+[source,python]
+----
+# creation of the LLM resources
+from langchain.chat_models import ChatOpenAI
+
+if llmProvider == 'GCP_VertexAI':
+    from langchain.llms import VertexAI
+    from langchain.embeddings import VertexAIEmbeddings
+    llm = VertexAI()
+    myEmbedding = VertexAIEmbeddings()
+    print('LLM+embeddings from VertexAI')
+elif llmProvider == 'OpenAI':
+    from langchain.llms import OpenAI
+    from langchain.embeddings import OpenAIEmbeddings
+    llm = ChatOpenAI(temperature=0)
+    myEmbedding = OpenAIEmbeddings()
+    print('LLM+embeddings from OpenAI')
+else:
+    raise ValueError('Unknown LLM provider.')
+----
+
+== Langchain Retrieval Augmentation
+The following is a minimal usage of the Cassandra vector store. The store is created and filled at once, and is then queried to retrieve relevant parts of the indexed text, which are then stuffed into a prompt finally used to answer a question.
+
+[source,python]
+----
+# Import the needed libraries and declare the LLM model
+from langchain.embeddings import OpenAIEmbeddings
+from langchain.vectorstores.cassandra import Cassandra
+from langchain.document_loaders import TextLoader
+from langchain.document_loaders import PyPDFLoader
+
+# Loop through each file and load it into our vector store
+documents = []
+for filename in SAMPLEDATA:
+  path = os.path.join(os.getcwd(), filename)
+
+  # Supported file types are pdf and txt
+  if filename.endswith(".pdf"):
+    loader = PyPDFLoader(path)
+    new_docs = loader.load_and_split()
+    print(f"Processed pdf file: {filename}")
+  elif filename.endswith(".txt"):
+    loader = TextLoader(path)
+    new_docs = loader.load_and_split()
+    print(f"Processed txt file: {filename}")
+  else:
+    print(f"Unsupported file type: {filename}")
+
+  if len(new_docs) > 0:
+    documents.extend(new_docs)
+
+cassVStore = Cassandra.from_documents(
+  documents=documents,
+  embedding=OpenAIEmbeddings(),
+  session=session,
+  keyspace=ASTRA_DB_KEYSPACE,
+  table_name=ASTRA_DB_TABLE_NAME,
+)
+
+# empty the list of file names -- we don't want to accidentally load the same files again
+SAMPLEDATA = []
+
+print(f"\nProcessing done.")
+----
+
+[source,python]
+----
+from cassandra.query import SimpleStatement
+
+# create a query that returns the 3 rows of the Astra DB table
+cqlSelect = SimpleStatement(f"""SELECT * from {keyspace}.{ASTRA_DB_TABLE_NAME} limit 3;""")
+
+rows = session.execute(cqlSelect)
+for row_i, row in enumerate(rows):
+    print(f'\nRow {row_i}:')
+    print(f'    row_id:      {row.row_id}')
+    print(f'    vector: {str(row.vector)[:64]} ...')
+    print(f'    body_blob:         {row.body_blob} ...')
+
+print('\n...')
+----
+
+== Now let's query our proprietary store.
+From `langchain.indexes.vectorstore` we will use `VectorStoreIndexWrapper` to facilitate our queries.
+
+[source,python]
+----
+from langchain.indexes.vectorstore import VectorStoreIndexWrapper
+
+index = VectorStoreIndexWrapper(vectorstore=cassVStore)
+query = "Who is Luchesi?"
+index.query(query,llm=llm)
+query = "What motivates Montresor to seek revenge against Fortunato?"
+index.query(query,llm=llm)
+# We can query the index for the relevant documents, which act as context for the LLM. 
+retriever = index.vectorstore.as_retriever(search_kwargs={
+    'k': 2, # retrieve 2 documents
+})
+retriever.get_relevant_documents(
+    "What motivates Montresor to seek revenge against Fortunado?"
+)
+----
