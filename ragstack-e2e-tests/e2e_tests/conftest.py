@@ -6,6 +6,9 @@ from dataclasses import dataclass
 import pytest
 from astrapy.db import AstraDB as LibAstraDB
 
+LOGGER = logging.getLogger(__name__)
+
+
 
 def random_string():
     return str(uuid.uuid4()).split("-")[0]
@@ -24,6 +27,7 @@ logging.basicConfig(
 
 def get_required_env(name) -> str:
     if name not in os.environ:
+        LOGGER.warning(f"Missing required environment variable: {name}")
         pytest.skip(f"Missing required environment variable: {name}")
     return os.environ[name]
 
@@ -107,15 +111,14 @@ def pytest_runtest_makereport(item, call):
             tests_stats["skipped"] += 1
         else:
             test_outcome = f"(? {rep.outcome}))"
+        print(call)
         result = " " + str(call.excinfo) if call.excinfo else ""
         report_line = f"{info} -> {test_outcome}{result}"
         if rep.outcome != "passed":
             # also keep skipped tests in the report
             failed_report_lines.append(report_line)
         all_report_lines.append(report_line)
-        os.environ[
-            "RAGSTACK_E2E_TESTS_TEST_INFO"
-        ] = ""
+        os.environ["RAGSTACK_E2E_TESTS_TEST_INFO"] = ""
 
 
 def set_current_test_info_simple_rag(llm: str, embedding: str, vector_db: str) -> None:
