@@ -12,6 +12,7 @@ from e2e_tests.conftest import (
     delete_astra_collection,
 )
 from langchain.embeddings import VertexAIEmbeddings
+from langchain_core.embeddings import Embeddings
 from llama_index import (
     VectorStoreIndex,
     StorageContext,
@@ -21,9 +22,10 @@ from llama_index import (
 from llama_index.embeddings import (
     OpenAIEmbedding,
     AzureOpenAIEmbedding,
+    HuggingFaceInferenceAPIEmbedding,
 )
 from llama_index.embeddings.utils import EmbedType
-from llama_index.llms import OpenAI, AzureOpenAI, Vertex
+from llama_index.llms import OpenAI, AzureOpenAI, Vertex, HuggingFaceInferenceAPI
 from llama_index.vector_stores import AstraDBVectorStore
 from llama_index.vector_stores.types import VectorStore
 
@@ -159,8 +161,29 @@ class VertexEmbeddingsContext(EmbeddingsContextMixin):
     name = "vertex-ai"
     embedding_dimension = 768
 
-    def __enter__(self) -> EmbedType:
+    def __enter__(self) -> Embeddings:
         return VertexAIEmbeddings(model_name="textembedding-gecko")
+
+
+class HuggingFaceHubLLMContext(ContextMixin):
+    name = "huggingface-hub"
+
+    def __enter__(self):
+        return HuggingFaceInferenceAPI(
+            model_name="google/flan-t5-xxl",
+            token=get_required_env("HUGGINGFACE_HUB_KEY"),
+        )
+
+
+class HuggingFaceHubEmbeddingsContext(EmbeddingsContextMixin):
+    name = "huggingface-hub"
+    embedding_dimension = 768
+
+    def __enter__(self) -> HuggingFaceInferenceAPIEmbedding:
+        return HuggingFaceInferenceAPIEmbedding(
+            model_name="facebook/bart-base",
+            token=get_required_env("HUGGINGFACE_HUB_KEY"),
+        )
 
 
 def test_openai_azure_astra_dev():
@@ -181,6 +204,14 @@ def test_openai_azure_astra_dev():
 )
 def test_rag(embedding, llm):
     _run_test(ProdAstraDBVectorStoreContext, embedding, llm)
+
+
+def test_huggingface_hub():
+    _run_test(
+        ProdAstraDBVectorStoreContext,
+        HuggingFaceHubEmbeddingsContext,
+        HuggingFaceHubLLMContext,
+    )
 
 
 def _run_test(
