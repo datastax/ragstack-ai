@@ -12,6 +12,9 @@ from langchain.vectorstores import AstraDB
 from langchain.chat_models import ChatOpenAI
 from langchain.schema.language_model import BaseLanguageModel
 from e2e_tests.conftest import get_required_env, get_default_astra_ref
+from langchain_core.documents import Document
+from langchain_core.runnables import RunnableConfig
+from langchain_core.vectorstores import VectorStore
 
 
 def test_basic_vector_search(environment):
@@ -104,8 +107,8 @@ def test_wrong_connection_parameters():
             )
 
 
-def test_basic_metadata_filtering(environment):
-    print("Running test_basic_metadata_filtering")
+def test_basic_metadata_filtering_no_vector(environment):
+    print("Running test_basic_metadata_filtering_no_vector")
 
     vectorstore = environment.vectorstore
     collection = vectorstore.collection
@@ -201,11 +204,211 @@ def test_basic_metadata_filtering(environment):
 
 
 def verify_document(document, expected_content, expected_metadata):
-    assert document.get("content") == expected_content
-    assert document.get("metadata").get("id") == expected_metadata.get("id")
-    assert document.get("metadata").get("source") == expected_metadata.get("source")
-    assert document.get("metadata").get("language") == expected_metadata.get("language")
-    assert document.get("metadata").get("name") == expected_metadata.get("name")
+    if isinstance(document, Document):
+        assert document.page_content == expected_content
+        assert document.metadata == expected_metadata
+    else:
+        assert document.get("content") == expected_content
+        assert document.get("metadata") == expected_metadata
+
+
+def test_vector_search_with_metadata(environment):
+    print("Running test_vector_search_with_metadata")
+
+    vectorstore: VectorStore = environment.vectorstore
+
+    document_ids = vectorstore.add_texts(
+        texts=[
+            "RAGStack is a framework to run LangChain in production",
+            "RAGStack is developed by DataStax",
+        ],
+        metadatas=[
+            {
+                "id": "http://mywebsite/intro",
+                "source": "website",
+                "context": "homepage",
+            },
+            {"id": "http://mywebsite/about", "source": "website", "context": "other"},
+        ],
+    )
+
+    # test for search
+
+    documents = vectorstore.search(
+        "RAGStack", "similarity", filter={"context": "homepage"}
+    )
+    assert len(documents) == 1
+    verify_document(
+        documents[0],
+        "RAGStack is a framework to run LangChain in production",
+        {"id": "http://mywebsite/intro", "source": "website", "context": "homepage"},
+    )
+
+    documents = vectorstore.search("RAGStack", "similarity")
+    assert len(documents) == 2
+
+    documents = vectorstore.search(
+        "RAGStack", "similarity", filter={"context": "homepage"}
+    )
+    assert len(documents) == 1
+    verify_document(
+        documents[0],
+        "RAGStack is a framework to run LangChain in production",
+        {"id": "http://mywebsite/intro", "source": "website", "context": "homepage"},
+    )
+
+    documents = vectorstore.search("RAGStack", "mmr")
+    assert len(documents) == 2
+
+    documents = vectorstore.search("RAGStack", "mmr", filter={"context": "homepage"})
+    assert len(documents) == 1
+    verify_document(
+        documents[0],
+        "RAGStack is a framework to run LangChain in production",
+        {"id": "http://mywebsite/intro", "source": "website", "context": "homepage"},
+    )
+
+    documents = vectorstore.similarity_search(
+        "RAGStack", filter={"context": "homepage"}
+    )
+    assert len(documents) == 1
+    verify_document(
+        documents[0],
+        "RAGStack is a framework to run LangChain in production",
+        {"id": "http://mywebsite/intro", "source": "website", "context": "homepage"},
+    )
+
+    documents = vectorstore.similarity_search(
+        "RAGStack", distance_threshold=0.9, filter={"context": "homepage"}
+    )
+    assert len(documents) == 1
+    verify_document(
+        documents[0],
+        "RAGStack is a framework to run LangChain in production",
+        {"id": "http://mywebsite/intro", "source": "website", "context": "homepage"},
+    )
+
+    # test for similarity_search_with_score
+
+    documents_with_score = vectorstore.similarity_search_with_score(
+        "RAGStack", filter={"context": "homepage"}
+    )
+    assert len(documents_with_score) == 1
+    # th elements are Tuple(document, score)
+    score = documents_with_score[0][1]
+    assert score > 0.1
+
+    verify_document(
+        documents_with_score[0][0],
+        "RAGStack is a framework to run LangChain in production",
+        {"id": "http://mywebsite/intro", "source": "website", "context": "homepage"},
+    )
+
+    # test for similarity_search_with_relevance_scores
+
+    documents_with_score = vectorstore.similarity_search_with_relevance_scores(
+        query="RAGStack", k=1, filter={"context": "homepage"}
+    )
+    assert len(documents_with_score) == 1
+    # the elements are Tuple(document, score)
+    score = documents_with_score[0][1]
+    assert score > 0.1
+
+    verify_document(
+        documents_with_score[0][0],
+        "RAGStack is a framework to run LangChain in production",
+        {"id": "http://mywebsite/intro", "source": "website", "context": "homepage"},
+    )
+
+    documents_with_score = vectorstore.similarity_search_with_relevance_scores(
+        query="RAGStack", k=1
+    )
+    assert len(documents_with_score) == 1
+    # the elements are Tuple(document, score)
+    score = documents_with_score[0][1]
+    assert score > 0.1
+
+    # test for max_marginal_relevance_search_by_vector
+
+    embeddings: Embeddings = vectorstore.embeddings
+    vector = embeddings.embed_query("RAGStack")
+
+    documents = vectorstore.max_marginal_relevance_search_by_vector(
+        embedding=vector, k=1
+    )
+    assert len(documents) == 1
+
+    documents = vectorstore.max_marginal_relevance_search_by_vector(
+        embedding=vector, k=1, filter={"context": "none"}
+    )
+    assert len(documents) == 0
+
+    documents = vectorstore.max_marginal_relevance_search_by_vector(
+        embedding=vector, k=1, filter={"context": "homepage"}
+    )
+    assert len(documents) == 1
+
+    verify_document(
+        documents[0],
+        "RAGStack is a framework to run LangChain in production",
+        {"id": "http://mywebsite/intro", "source": "website", "context": "homepage"},
+    )
+
+    documents = vectorstore.similarity_search_by_vector(embedding=vector, k=1)
+    assert len(documents) == 1
+
+    documents = vectorstore.similarity_search_by_vector(embedding=vector, k=2)
+    assert len(documents) == 2
+
+    documents = vectorstore.similarity_search_by_vector(
+        embedding=vector, k=1, filter={"context": "none"}
+    )
+    assert len(documents) == 0
+
+    documents = vectorstore.similarity_search_by_vector(
+        embedding=vector, k=1, filter={"context": "homepage"}
+    )
+    assert len(documents) == 1
+
+    verify_document(
+        documents[0],
+        "RAGStack is a framework to run LangChain in production",
+        {"id": "http://mywebsite/intro", "source": "website", "context": "homepage"},
+    )
+
+    # Use Retriever
+
+    retriever = vectorstore.as_retriever(
+        search_kwargs={"filter": {"context": "homepage"}}
+    )
+    documents = retriever.get_relevant_documents("RAGStack")
+    assert len(documents) == 1
+    verify_document(
+        documents[0],
+        "RAGStack is a framework to run LangChain in production",
+        {"id": "http://mywebsite/intro", "source": "website", "context": "homepage"},
+    )
+
+    retriever = vectorstore.as_retriever()
+    documents = retriever.get_relevant_documents("RAGStack")
+    assert len(documents) == 2
+
+    documents = retriever.invoke("RAGStack", RunnableConfig(tags=["custom_retriever"]))
+    assert len(documents) == 2
+
+    retriever = vectorstore.as_retriever(search_kwargs={"k": 1})
+    documents = retriever.get_relevant_documents("RAGStack")
+    assert len(documents) == 1
+
+    retriever = vectorstore.as_retriever(search_kwargs={"k": 2})
+    documents = retriever.get_relevant_documents("RAGStack")
+    assert len(documents) == 2
+
+    # delete all the documents
+    vectorstore.delete(document_ids)
+
+    documents = vectorstore.search("RAGStack", "similarity")
+    assert len(documents) == 0
 
 
 class MockEmbeddings(Embeddings):
