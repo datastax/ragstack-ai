@@ -71,7 +71,8 @@ def test_ingest_errors(environment):
 
 def test_wrong_connection_parameters():
     # This is expected to be a valid endpoint, because we want to test an AUTHENTICATION error
-    api_endpoint = get_required_env("ASTRA_PROD_DB_ENDPOINT")
+    astra_ref = get_default_astra_ref()
+    api_endpoint = astra_ref.api_endpoint
 
     try:
         AstraDB(
