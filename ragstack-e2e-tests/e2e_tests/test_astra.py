@@ -4,6 +4,7 @@ from typing import List
 
 from astrapy.db import AstraDB as LibAstraDB
 import pytest
+from httpx import ConnectError
 
 from langchain.schema.embeddings import Embeddings
 from langchain.schema.vectorstore import VectorStore
@@ -68,38 +69,38 @@ def test_ingest_errors(environment):
             )
 
 
-# def test_wrong_connection_parameters():
-#    # This is expected to be a valid endpoint, because we want to test an AUTHENTICATION error
-#    api_endpoint = get_required_env("ASTRA_PROD_DB_ENDPOINT")
-#
-#    try:
-#        AstraDB(
-#            collection_name="something",
-#            embedding=init_embeddings(),
-#            token="xxxxx",
-#            # we assume that post 1234 is not open locally
-#            api_endpoint="https://locahost:1234",
-#        )
-#        pytest.fail("Should have thrown exception")
-#    except ConnectError as e:
-#        print("Error:", e)
-#        pass
-#
-#    try:
-#        print("api_endpoint:", api_endpoint)
-#        AstraDB(
-#            collection_name="something",
-#            embedding=init_embeddings(),
-#            token="this-is-a-wrong-token",
-#            api_endpoint=api_endpoint,
-#        )
-#        pytest.fail("Should have thrown exception")
-#    except ValueError as e:
-#        print("Error:", e)
-#        if "AUTHENTICATION ERROR" not in e.args[0]:
-#            pytest.fail(
-#                f"Should have thrown ValueError with AUTHENTICATION ERROR but it was {e}"
-#            )
+def test_wrong_connection_parameters():
+    # This is expected to be a valid endpoint, because we want to test an AUTHENTICATION error
+    api_endpoint = get_required_env("ASTRA_PROD_DB_ENDPOINT")
+
+    try:
+        AstraDB(
+            collection_name="something",
+            embedding=init_embeddings(),
+            token="xxxxx",
+            # we assume that post 1234 is not open locally
+            api_endpoint="https://locahost:1234",
+        )
+        pytest.fail("Should have thrown exception")
+    except ConnectError as e:
+        print("Error:", e)
+        pass
+
+    try:
+        print("api_endpoint:", api_endpoint)
+        AstraDB(
+            collection_name="something",
+            embedding=init_embeddings(),
+            token="this-is-a-wrong-token",
+            api_endpoint=api_endpoint,
+        )
+        pytest.fail("Should have thrown exception")
+    except ValueError as e:
+        print("Error:", e)
+        if "AUTHENTICATION ERROR" not in e.args[0]:
+            pytest.fail(
+                f"Should have thrown ValueError with AUTHENTICATION ERROR but it was {e}"
+            )
 
 
 def test_basic_metadata_filtering(environment):
