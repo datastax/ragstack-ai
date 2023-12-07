@@ -29,13 +29,6 @@ VECTOR_ASTRADB_DEV = "astradb-dev"
 VECTOR_CASSANDRA = "cassandra"
 
 
-def vector_dbs():
-    return [
-        VECTOR_ASTRADB_PROD,
-        VECTOR_CASSANDRA,
-    ]
-
-
 def init_vector_db(impl, embedding: Embeddings) -> VectorStore:
     if impl == VECTOR_ASTRADB_DEV:
         ref = get_astra_dev_ref()
@@ -187,33 +180,25 @@ def test_openai_azure_astra_dev():
     )
 
 
-@pytest.mark.parametrize("vector_db", vector_dbs())
-def test_openai_azure(vector_db: str):
-    _run_test(vector_db=vector_db, embedding="openai-azure", llm="openai-azure")
-
-
-@pytest.mark.parametrize("vector_db", vector_dbs())
-def test_openai(vector_db: str):
-    _run_test(vector_db=vector_db, embedding="openai", llm="openai")
-
-
-@pytest.mark.parametrize("vector_db", vector_dbs())
-def test_vertex_ai(vector_db: str):
-    _run_test(vector_db=vector_db, embedding="vertex-ai", llm="vertex-ai")
-
-
-@pytest.mark.parametrize("vector_db", vector_dbs())
-def test_bedrock_anthropic(vector_db: str):
-    _run_test(
-        vector_db=vector_db,
-        embedding="bedrock-titan",
-        llm="bedrock-anthropic",
-    )
-
-
-@pytest.mark.parametrize("vector_db", vector_dbs())
-def test_bedrock_meta(vector_db: str):
-    _run_test(vector_db=vector_db, embedding="bedrock-cohere", llm="bedrock-meta")
+@pytest.mark.parametrize(
+    "vector_db",
+    [
+        VECTOR_ASTRADB_PROD,
+        VECTOR_CASSANDRA,
+    ],
+)
+@pytest.mark.parametrize(
+    "embedding,llm",
+    [
+        ("openai", "openai"),
+        ("openai-azure", "openai-azure"),
+        ("vertex-ai", "vertex-ai"),
+        ("bedrock-titan", "bedrock-anthropic"),
+        ("bedrock-cohere", "bedrock-meta"),
+    ],
+)
+def test_rag(embedding: str, llm: str, vector_db: str):
+    _run_test(vector_db=vector_db, embedding=embedding, llm=llm)
 
 
 def test_huggingface_hub():
