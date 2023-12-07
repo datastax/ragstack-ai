@@ -71,7 +71,7 @@ jobs:
 
       - name: Run E2E tests
         id: e2e-tests
-        if: always() && steps.astra-db.outcome == 'success'
+        if: always() && (steps.astra-db-prod.outcome == 'success' && steps.astra-db-dev.outcome == 'success')
         env:
           ASTRA_DEV_DB_TOKEN: "${{ secrets.E2E_TESTS_ASTRA_DEV_DB_TOKEN }}"
           ASTRA_DEV_DB_ENDPOINT: "${{ steps.astra-db-dev.outputs.db_endpoint }}"
