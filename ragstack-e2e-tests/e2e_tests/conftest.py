@@ -9,7 +9,6 @@ from astrapy.db import AstraDB as LibAstraDB
 LOGGER = logging.getLogger(__name__)
 
 
-
 def random_string():
     return str(uuid.uuid4()).split("-")[0]
 
