@@ -113,6 +113,9 @@ def pytest_runtest_makereport(item, call):
             # also keep skipped tests in the report
             failed_report_lines.append(report_line)
         all_report_lines.append(report_line)
+        os.environ[
+            "RAGSTACK_E2E_TESTS_TEST_INFO"
+        ] = ""
 
 
 def set_current_test_info_simple_rag(llm: str, embedding: str, vector_db: str) -> None:
