@@ -38,13 +38,13 @@ runs:
     - name: Compute PyPI Url
       id: pypi-url
       shell: bash
-      run:
+      run: |
           if [ "${{ inputs.pypi-use-test-release }}" == "true" ]; then
-            echo "::set-output name=pypi-url::https://test.pypi.org/legacy/"
-            echo "::set-output name=password::${{ inputs.pypi-test-token }}"
+            echo "pypi-url=https://test.pypi.org/legacy/" >> $GITHUB_OUTPUT
+            echo "password=${{ inputs.pypi-test-token }}" >> $GITHUB_OUTPUT
           else
-            echo "::set-output name=pypi-url::https://pypi.org/legacy/"
-            echo "::set-output name=password::${{ inputs.pypi-token }}"
+            echo "pypi-url=https://pypi.org/legacy/" >> $GITHUB_OUTPUT
+            echo "password=${{ inputs.pypi-token }}" >> $GITHUB_OUTPUT
           fi
 
     - name: Publish package to TestPyPI

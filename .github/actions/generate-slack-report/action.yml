@@ -1,6 +1,9 @@
 name: 'Generate Slack report'
 description: 'Generate a report for Slack'
 inputs:
+  from-report-file:
+    required: true
+    description: 'File to read the report from'
   output-file:
     required: true
     description: 'File to write the report to'
@@ -21,18 +24,17 @@ runs:
     run: |
       
       echo -n '{"content": "' > ${{ inputs.output-file }}
-      if [ -f "ragstack-e2e-tests/generated-test-report.txt" ]; then
+      if [ -f "${{ inputs.from-report-file }}" ]; then
         {
-          cat ragstack-e2e-tests/generated-test-report.txt | sed 's/"/\\"/g' | while IFS= read -r line; do
+          cat ${{ inputs.from-report-file }} | sed 's/"/\\"/g' | while IFS= read -r line; do
             echo -n "$line\n"
           done
         } >> ${{ inputs.output-file }}
-        echo "Test report found"
+        echo "Report found"
       else
-        echo "Test report report NOT found"
+        echo "Report NOT found"
         pwd
         ls -la .
-        ls -la ragstack-e2e-tests || echo "ragstack-e2e-tests dir not found"
       fi
       if [ "${{ inputs.outcome }}" != "success" ]; then
         summary="FAILED ❌"

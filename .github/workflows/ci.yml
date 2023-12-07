@@ -6,6 +6,8 @@ on:
   pull_request:
     paths-ignore:
       - '.github/workflows/langchain-master-daily.yml'
+      - '.github/workflows/release-ragstack.yml'
+      - '.github/workflows/security-scan.yml'
       - 'docs/**'
       - 'README.md'
     branches:
@@ -32,49 +34,30 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install poetry
-          poetry install --no-root
-
-      - name: Run ragstack-ai-langchain unit tests
-        run: |
-          poetry run tox -c libs/ragstack-ai-langchain
-
-      - name: Run ragstack-ai-llamaindex unit tests
-        run: |
-          poetry run tox -c libs/ragstack-ai-llamaindex
+          python -m pip install tox
 
       - name: Run ragstack-ai unit tests
         run: |
-          poetry run pytest tests/unit-tests
-
-      - name: Build the distribution package
-        run: |
-          poetry build
-
-      - name: Test the distribution package
-        run: |
-          python -m venv /tmp/venv
-          source /tmp/venv/bin/activate
-          pip install pytest dist/ragstack_ai-*.whl
-          pytest tests/unit-tests
-          deactivate
+          tox
 
       - name: Run notebook tests
         env:
-          ASTRA_DB_APPLICATION_TOKEN: "${{ secrets.E2E_TESTS_ASTRA_DB_TOKEN }}"
-          ASTRA_DB_API_ENDPOINT: "${{ secrets.E2E_TESTS_ASTRA_DB_ENDPOINT }}"
-          ASTRA_DB_ID: "${{ secrets.E2E_TESTS_ASTRA_DB_ID }}"
+          ASTRA_DB_APPLICATION_TOKEN: "${{ secrets.E2E_TESTS_ASTRA_PROD_DB_TOKEN }}"
+          ASTRA_DB_API_ENDPOINT: "${{ secrets.E2E_TESTS_ASTRA_PROD_DB_ENDPOINT }}"
+          ASTRA_DB_ID: "${{ secrets.E2E_TESTS_ASTRA_PROD_DB_ID }}"
           OPENAI_API_KEY: "${{ secrets.E2E_TESTS_OPEN_AI_KEY }}"
         run: |
-          poetry run pytest --nbmake examples/notebooks/*.ipynb
+          tox -e notebooks
 
       - name: Run E2E tests
         id: e2e-tests
         env:
           ASTRA_DEV_DB_TOKEN: "${{ secrets.E2E_TESTS_ASTRA_DEV_DB_TOKEN }}"
           ASTRA_DEV_DB_ENDPOINT: "${{ secrets.E2E_TESTS_ASTRA_DEV_DB_ENDPOINT }}"
-          ASTRA_PROD_DB_TOKEN: "${{ secrets.E2E_TESTS_ASTRA_DB_TOKEN }}"
-          ASTRA_PROD_DB_ENDPOINT: "${{ secrets.E2E_TESTS_ASTRA_DB_ENDPOINT }}"
+          ASTRA_DEV_DB_ID: "${{ secrets.E2E_TESTS_ASTRA_DEV_DB_ID }}"
+          ASTRA_PROD_DB_TOKEN: "${{ secrets.E2E_TESTS_ASTRA_PROD_DB_TOKEN }}"
+          ASTRA_PROD_DB_ENDPOINT: "${{ secrets.E2E_TESTS_ASTRA_PROD_DB_ENDPOINT }}"
+          ASTRA_PROD_DB_ID: "${{ secrets.E2E_TESTS_ASTRA_PROD_DB_ID }}"
           OPEN_AI_KEY: "${{ secrets.E2E_TESTS_OPEN_AI_KEY }}"
           AZURE_OPEN_AI_KEY: "${{ secrets.E2E_TESTS_AZURE_OPEN_AI_KEY }}"
           AZURE_OPEN_AI_ENDPOINT: "${{ secrets.E2E_TESTS_AZURE_OPEN_AI_ENDPOINT }}"
@@ -84,13 +67,13 @@ jobs:
           BEDROCK_AWS_REGION: "${{ secrets.E2E_TESTS_BEDROCK_AWS_REGION }}"
           HUGGINGFACE_HUB_KEY: "${{ secrets.E2E_TESTS_HUGGINGFACE_HUB_KEY }}"
         run: |
-          poetry run tox -c ragstack-e2e-tests
+          tox -c ragstack-e2e-tests
 
       - name: Dump report on Github Summary
         if: always()
         run: |
-          if [ -f "ragstack-e2e-tests/generated-test-report.txt" ]; then
-            echo "$(cat ragstack-e2e-tests/generated-test-report.txt)" >> $GITHUB_STEP_SUMMARY
+          if [ -f "ragstack-e2e-tests/all-tests-report.txt" ]; then
+            echo "$(cat ragstack-e2e-tests/all-tests-report.txt)" >> $GITHUB_STEP_SUMMARY
             echo "Report added to the summary"
           else
             echo "Report not found"
@@ -99,15 +82,15 @@ jobs:
       - name: Compute commit URL
         if: always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
         id: commit-ref
-        run:
-            echo "::set-output name=commit-ref::$(git rev-parse --short HEAD)"
+        run: echo "commit-ref=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
       - name: Prepare report for Slack
         if: always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
         uses: ./.github/actions/generate-slack-report
         with:
+          from-report-file: ragstack-e2e-tests/failed-tests-report.txt
           output-file: slack-report.json
-          type: ragstack
+          type: "RAGStack Tests"
           outcome: ${{ steps.e2e-tests.outcome }}
           commit-url: "https://github.com/datastax/ragstack-ai/commits/${{ steps.commit-ref.outputs.commit-ref }}"
 

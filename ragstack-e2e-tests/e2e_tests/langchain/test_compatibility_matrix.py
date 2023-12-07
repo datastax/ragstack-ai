@@ -1,16 +1,15 @@
-import logging
-
+import cassio
+import pytest
 from astrapy.db import AstraDB as LibAstraDB
 from e2e_tests.conftest import (
     set_current_test_info_simple_rag,
     get_required_env,
+    get_astra_dev_ref,
+    get_astra_prod_ref,
+    delete_all_astra_collections,
+    delete_astra_collection,
 )
-from e2e_tests.chat_application import run_application
-from langchain.llms.huggingface_hub import HuggingFaceHub
-
-from langchain.schema.embeddings import Embeddings
-from langchain.schema.vectorstore import VectorStore
-from langchain.vectorstores import AstraDB
+from e2e_tests.langchain.chat_application import run_application
 from langchain.chat_models import ChatOpenAI, AzureChatOpenAI, ChatVertexAI, BedrockChat
 from langchain.embeddings import (
     OpenAIEmbeddings,
@@ -19,44 +18,71 @@ from langchain.embeddings import (
     HuggingFaceInferenceAPIEmbeddings,
 )
 from langchain.embeddings.azure_openai import AzureOpenAIEmbeddings
+from langchain.llms.huggingface_hub import HuggingFaceHub
+from langchain.schema.embeddings import Embeddings
 from langchain.schema.language_model import BaseLanguageModel
+from langchain.schema.vectorstore import VectorStore
+from langchain.vectorstores import AstraDB, Cassandra
 
 VECTOR_ASTRADB_PROD = "astradb-prod"
 VECTOR_ASTRADB_DEV = "astradb-dev"
+VECTOR_CASSANDRA = "cassandra"
 
 
 def init_vector_db(impl, embedding: Embeddings) -> VectorStore:
-    if impl in [VECTOR_ASTRADB_DEV, VECTOR_ASTRADB_PROD]:
-        if impl == VECTOR_ASTRADB_DEV:
-            collection = get_required_env("ASTRA_DEV_TABLE_NAME")
-            token = get_required_env("ASTRA_DEV_DB_TOKEN")
-            api_endpoint = get_required_env("ASTRA_DEV_DB_ENDPOINT")
-        else:
-            collection = get_required_env("ASTRA_PROD_TABLE_NAME")
-            token = get_required_env("ASTRA_PROD_DB_TOKEN")
-            api_endpoint = get_required_env("ASTRA_PROD_DB_ENDPOINT")
+    if impl == VECTOR_ASTRADB_DEV:
+        ref = get_astra_dev_ref()
 
-        raw_client = LibAstraDB(api_endpoint=api_endpoint, token=token)
-        collections = raw_client.get_collections().get("status").get("collections")
-        logging.info(f"Existing collections: {collections}")
-        for collection_info in collections:
-            logging.info(f"Deleting collection: {collection_info}")
-            raw_client.delete_collection(collection_info)
+        # Ensure collections from previous runs are cleared
+        delete_all_astra_collections(ref)
 
-        vector_db = AstraDB(
-            collection_name=collection,
+        return AstraDB(
+            collection_name=ref.collection,
             embedding=embedding,
-            token=token,
-            api_endpoint=api_endpoint,
+            token=ref.token,
+            api_endpoint=ref.api_endpoint,
         )
-        return vector_db
+    elif impl == VECTOR_ASTRADB_PROD:
+        ref = get_astra_prod_ref()
+
+        # Ensure collections from previous runs are cleared
+        delete_all_astra_collections(ref)
+
+        return AstraDB(
+            collection_name=ref.collection,
+            embedding=embedding,
+            token=ref.token,
+            api_endpoint=ref.api_endpoint,
+        )
+    elif impl == VECTOR_CASSANDRA:
+        ref = get_astra_prod_ref()
+
+        # Ensure collections from previous runs are cleared
+        delete_all_astra_collections(ref)
+
+        cassio.init(token=ref.token, database_id=ref.id)
+        return Cassandra(
+            embedding=embedding,
+            session=None,
+            keyspace="default_keyspace",
+            table_name=ref.collection,
+        )
     else:
         raise Exception("Unknown vector db implementation: " + impl)
 
 
+def astra_delete_collection(
+    api_endpoint: str, token: str, collection_name: str
+) -> None:
+    raw_client = LibAstraDB(api_endpoint=api_endpoint, token=token)
+    raw_client.delete_collection(collection_name)
+
+
 def close_vector_db(impl: str, vector_store: VectorStore):
-    if impl in [VECTOR_ASTRADB_DEV, VECTOR_ASTRADB_PROD]:
-        vector_store.astra_db.delete_collection(vector_store.collection_name)
+    if impl == VECTOR_ASTRADB_DEV:
+        delete_astra_collection(get_astra_dev_ref())
+    elif impl == VECTOR_ASTRADB_PROD or impl == VECTOR_CASSANDRA:
+        delete_astra_collection(get_astra_prod_ref())
     else:
         raise Exception("Unknown vector db implementation: " + impl)
 
@@ -148,38 +174,31 @@ def close_llm(impl, llm: BaseLanguageModel):
     pass
 
 
-# def test_openai_azure_astra_dev():
-#     _run_test(
-#         vector_db=VECTOR_ASTRADB_DEV, embedding="openai-azure", llm="openai-azure"
-#     )
-
-
-def test_openai_azure():
+def test_openai_azure_astra_dev():
     _run_test(
-        vector_db=VECTOR_ASTRADB_PROD, embedding="openai-azure", llm="openai-azure"
+        vector_db=VECTOR_ASTRADB_DEV, embedding="openai-azure", llm="openai-azure"
     )
 
 
-def test_openai():
-    _run_test(vector_db=VECTOR_ASTRADB_PROD, embedding="openai", llm="openai")
-
-
-def test_vertex_ai():
-    _run_test(vector_db=VECTOR_ASTRADB_PROD, embedding="vertex-ai", llm="vertex-ai")
-
-
-def test_bedrock_anthropic():
-    _run_test(
-        vector_db=VECTOR_ASTRADB_PROD,
-        embedding="bedrock-titan",
-        llm="bedrock-anthropic",
-    )
-
-
-def test_bedrock_meta():
-    _run_test(
-        vector_db=VECTOR_ASTRADB_PROD, embedding="bedrock-cohere", llm="bedrock-meta"
-    )
+@pytest.mark.parametrize(
+    "vector_db",
+    [
+        VECTOR_ASTRADB_PROD,
+        VECTOR_CASSANDRA,
+    ],
+)
+@pytest.mark.parametrize(
+    "embedding,llm",
+    [
+        ("openai", "openai"),
+        ("openai-azure", "openai-azure"),
+        ("vertex-ai", "vertex-ai"),
+        ("bedrock-titan", "bedrock-anthropic"),
+        ("bedrock-cohere", "bedrock-meta"),
+    ],
+)
+def test_rag(embedding: str, llm: str, vector_db: str):
+    _run_test(vector_db=vector_db, embedding=embedding, llm=llm)
 
 
 def test_huggingface_hub():
