@@ -17,11 +17,20 @@ inputs:
   cloud:
     required: true
     description: 'Astra DB cloud'
+
+  outputs:
+    db_endpoint:
+      description: "Full URL endpoint of the database"
+      value: ${{ steps.db-setup.outputs.db_endpoint }}
+    db_id:
+      description: "Database ID"
+      value: ${{ steps.db-setup.outputs.db_id }}
 runs:
   using: "composite"
   steps:
   - name: Create a new database
     shell: bash
+    id: db-setup
     env:
       TERM: linux
     run: |
@@ -38,6 +47,6 @@ runs:
       fi
       db_endpoint="https://${database_id}-${{ inputs.region }}.apps.${domain}.datastax.com"
       echo "Database endpoint: $db_endpoint"
-      echo "::set-output name=db_endpoint::$db_endpoint"
-      echo "::set-output name=db_id::$database_id"
+      echo "db_endpoint=$db_endpoint" >> $GITHUB_OUTPUT
+      echo "db_id=$database_id" >> $GITHUB_OUTPUT
 
