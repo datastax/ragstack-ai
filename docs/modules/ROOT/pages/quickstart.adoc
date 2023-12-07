@@ -20,7 +20,51 @@ This quickstart also uses the HuggingFace datasets library to load a small datas
 ----
 pip3 install ragstack-ai datasets
 ----
++
+. To see current RAGStack version:
++
+[tabs]
+======
+Command::
++
+[source,bash]
+----
+pip3 show ragstack-ai
+----
 
+Result::
++
+[source,console]
+----
+Name: ragstack-ai
+Version: 0.1.1
+Summary: RAGStack
+----
+======
++
+. To upgrade the RAGStack package:
++
+[tabs]
+======
+Command::
++
+[source,bash]
+----
+pip3 install ragstack-ai --upgrade
+----
+
+Result::
++
+[source,console]
+----
+Requirement already satisfied: ragstack-ai in ./ragstack-venv/lib/python3.11/site-packages (0.1.0)
+Collecting ragstack-ai
+  Downloading ragstack_ai-0.1.1-py3-none-any.whl.metadata (2.4 kB)
+…installing packages…
+Successfully installed astrapy-0.6.1 backoff-2.2.1 chardet-5.2.0 emoji-2.8.0 filetype-1.2.0 h2-4.1.0 hpack-4.0.0 httpcore-1.0.2 httpx-0.25.1 hyperframe-6.0.1 joblib-1.3.2 langdetect-1.0.9 lxml-4.9.3 nltk-3.8.1 python-iso639-2023.6.15 python-magic-0.4.27 ragstack-ai-0.1.1 rapidfuzz-3.5.2 tabulate-0.9.0 unstructured-0.10.30
+----
+======
++
 . If you don't have a vector database, create one at https://astra.datastax.com/.
 +
 The Astra application token must have Database Administrator permissions (e.g. `AstraCS:WSnyFUhRxsrg…`​).
@@ -29,7 +73,27 @@ The Astra API endpoint is available in the Astra Portal (e.g. `https://<ASTRA_DB
 +
 Create an OpenAI key at https://platform.openai.com/ (e.g. `sk-xxxx`).
 +
-You must have an existing collection in Astra (e.g. `my-collection`).
+You must have an existing collection in Astra (e.g. `test`). If you don't have one, create one in the Astra portal, or with the JSON API (using the `.env` values from the next step):
++
+[source,curl]
+----
+curl -v -s --location \
+--request POST https://${ASTRA_DB_ID}-${ASTRA_DB_REGION}.apps.astra.datastax.com/api/json/v1/default_keyspace \
+--header "X-Cassandra-Token: $ASTRA_DB_APPLICATION_TOKEN" \
+--header "Content-Type: application/json" \
+--header "Accept: application/json" \
+--data '{
+  "createCollection": {
+    "name": "test",
+    "options" : {
+      "vector" : {
+      "dimension" : 5,
+      "metric" : "cosine"
+      }
+    }
+  }
+}'
+----
 +
 . Create a `.env` file in the root of your program with the values from your Astra Connect tab.
 +
@@ -157,7 +221,8 @@ print(response)
 ----
 
 . You should get a response like this:
-[source,bash]
++
+[source,console]
 ----
 An example entry:
 {'author': 'aristotle', 'quote': 'Love well, be loved and do something of value.', 'tags': 'love;ethics'}
@@ -248,7 +313,7 @@ print(response)
 
 Result::
 +
-[source,bash]
+[source,console]
 ----
 An example entry:
 {'author': 'aristotle', 'quote': 'Love well, be loved and do something of value.', 'tags': 'love;ethics'}
@@ -258,5 +323,28 @@ The subject that philosophers are most concerned with in the given context is tr
 ----
 ======
 
+== Cleanup
 
+To *clear data* from your vector database but keep the collection, use the `vstore.clear()` method.
+
+To *delete the collection* from your vector database, use the `vstore.delete_collection()` method.
+
+To delete a collection with the JSON API:
+[source,curl]
+----
+curl -v -s --location \
+--request POST https://${ASTRA_DB_ID}-${ASTRA_DB_REGION}.apps.astra.datastax.com/api/json/v1/default_keyspace \
+--header "X-Cassandra-Token: $ASTRA_DB_APPLICATION_TOKEN" \
+--header "Content-Type: application/json" \
+--header "Accept: application/json" \
+--data '{
+  "deleteCollection": {
+    "name": "test"
+  }
+}'
+----
+
+== What's next?
+
+* xref:what-is-rag.adoc[]: Learn more about the RAG pattern.
 
