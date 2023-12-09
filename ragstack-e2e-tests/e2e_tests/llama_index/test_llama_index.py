@@ -1,18 +1,17 @@
-import os
 from abc import ABC, abstractmethod
 from typing import Type
 
 import pytest
 from e2e_tests.conftest import (
     AstraRef,
+    set_current_test_info,
     get_required_env,
     get_astra_dev_ref,
     get_astra_prod_ref,
     delete_all_astra_collections,
     delete_astra_collection,
 )
-from langchain.embeddings import VertexAIEmbeddings
-from langchain_core.embeddings import Embeddings
+from langchain.embeddings import VertexAIEmbeddings, HuggingFaceInferenceAPIEmbeddings
 from llama_index import (
     VectorStoreIndex,
     StorageContext,
@@ -22,7 +21,6 @@ from llama_index import (
 from llama_index.embeddings import (
     OpenAIEmbedding,
     AzureOpenAIEmbedding,
-    HuggingFaceInferenceAPIEmbedding,
 )
 from llama_index.embeddings.utils import EmbedType
 from llama_index.llms import OpenAI, AzureOpenAI, Vertex, HuggingFaceInferenceAPI
@@ -161,7 +159,9 @@ class VertexEmbeddingsContext(EmbeddingsContextMixin):
     name = "vertex-ai"
     embedding_dimension = 768
 
-    def __enter__(self) -> Embeddings:
+    def __enter__(self) -> VertexAIEmbeddings:
+        # Llama-Index doesn't have Vertex AI embedding
+        # so we use LangChain's wrapped one
         return VertexAIEmbeddings(model_name="textembedding-gecko")
 
 
@@ -177,12 +177,14 @@ class HuggingFaceHubLLMContext(ContextMixin):
 
 class HuggingFaceHubEmbeddingsContext(EmbeddingsContextMixin):
     name = "huggingface-hub"
-    embedding_dimension = 768
+    embedding_dimension = 384
 
-    def __enter__(self) -> HuggingFaceInferenceAPIEmbedding:
-        return HuggingFaceInferenceAPIEmbedding(
-            model_name="facebook/bart-base",
-            token=get_required_env("HUGGINGFACE_HUB_KEY"),
+    def __enter__(self) -> HuggingFaceInferenceAPIEmbeddings:
+        # There's a bug in Llama-Index HuggingFace Hub embedding
+        # so we use LangChain's wrapped one for now
+        return HuggingFaceInferenceAPIEmbeddings(
+            api_key=get_required_env("HUGGINGFACE_HUB_KEY"),
+            model_name="sentence-transformers/all-MiniLM-l6-v2",
         )
 
 
@@ -200,18 +202,11 @@ def test_openai_azure_astra_dev():
         (OpenAIEmbeddingsContext, OpenAILLMContext),
         (AzureOpenAIEmbeddingsContext, AzureOpenAILLMContext),
         (VertexEmbeddingsContext, VertexLLMContext),
+        (HuggingFaceHubEmbeddingsContext, HuggingFaceHubLLMContext),
     ],
 )
 def test_rag(embedding, llm):
     _run_test(ProdAstraDBVectorStoreContext, embedding, llm)
-
-
-def test_huggingface_hub():
-    _run_test(
-        ProdAstraDBVectorStoreContext,
-        HuggingFaceHubEmbeddingsContext,
-        HuggingFaceHubLLMContext,
-    )
 
 
 def _run_test(
@@ -222,9 +217,10 @@ def _run_test(
     embed_model_ctx = embed_model_ctx_cls()
     llm_ctx = llm_ctx_cls()
     vector_store_ctx = vector_store_ctx_cls(embed_model_ctx.embedding_dimension)
-    os.environ[
-        "RAGSTACK_E2E_TESTS_TEST_INFO"
-    ] = f"llama_index_retrieve::{llm_ctx.name},{embed_model_ctx.name},{vector_store_ctx.name}"
+    set_current_test_info(
+        "llama_index_retrieve",
+        f"{llm_ctx.name},{embed_model_ctx.name},{vector_store_ctx.name}",
+    )
     with vector_store_ctx as vector_store, llm_ctx as llm, embed_model_ctx as embed_model:
         storage_context = StorageContext.from_defaults(vector_store=vector_store)
         service_context = ServiceContext.from_defaults(llm=llm, embed_model=embed_model)

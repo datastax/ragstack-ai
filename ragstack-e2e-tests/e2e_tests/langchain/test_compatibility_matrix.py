@@ -2,7 +2,7 @@ import cassio
 import pytest
 from astrapy.db import AstraDB as LibAstraDB
 from e2e_tests.conftest import (
-    set_current_test_info_simple_rag,
+    set_current_test_info,
     get_required_env,
     get_astra_dev_ref,
     get_astra_prod_ref,
@@ -210,7 +210,7 @@ def test_huggingface_hub():
 
 
 def _run_test(vector_db: str, embedding: str, llm: str):
-    set_current_test_info_simple_rag(llm=llm, embedding=embedding, vector_db=vector_db)
+    set_current_test_info("simple_rag", f"{llm},{embedding},{vector_db}")
 
     embeddings_impl = init_embeddings(embedding)
     vector_db_impl = init_vector_db(vector_db, embeddings_impl)

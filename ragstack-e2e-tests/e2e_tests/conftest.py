@@ -120,14 +120,8 @@ def pytest_runtest_makereport(item, call):
         os.environ["RAGSTACK_E2E_TESTS_TEST_INFO"] = ""
 
 
-def set_current_test_info_simple_rag(llm: str, embedding: str, vector_db: str) -> None:
-    os.environ[
-        "RAGSTACK_E2E_TESTS_TEST_INFO"
-    ] = f"simple_rag::{llm},{embedding},{vector_db}"
-
-
-def set_current_test_info_document_loader(doc_loader: str) -> None:
-    os.environ["RAGSTACK_E2E_TESTS_TEST_INFO"] = f"document_loader::{doc_loader}"
+def set_current_test_info(test_name: str, test_info: str):
+    os.environ["RAGSTACK_E2E_TESTS_TEST_INFO"] = f"{test_name}::{test_info}"
 
 
 @pytest.fixture(scope="session", autouse=True)
