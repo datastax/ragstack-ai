@@ -182,7 +182,7 @@ def test_openai_azure_astra_dev(astra_db_dev, azure_openai_embedding, azure_open
         ("azure_openai_embedding", "azure_openai_llm"),
         ("vertex_embedding", "vertex_llm"),
         ("bedrock_titan_embedding", "bedrock_anthropic_llm"),
-        # Deactivated for now beccause of
+        # Deactivated for now because of
         # https://github.com/run-llama/llama_index/pull/9396
         # ("bedrock_cohere_embedding", "bedrock_meta_llm"),
         ("huggingface_hub_embedding", "huggingface_hub_llm"),
