@@ -1,13 +1,5 @@
+import cassio
 import pytest
-from e2e_tests.conftest import (
-    AstraRef,
-    set_current_test_info,
-    get_required_env,
-    get_astra_dev_ref,
-    get_astra_prod_ref,
-    delete_all_astra_collections,
-    delete_astra_collection,
-)
 from langchain.embeddings import VertexAIEmbeddings, HuggingFaceInferenceAPIEmbeddings
 from llama_index import (
     VectorStoreIndex,
@@ -27,7 +19,17 @@ from llama_index.llms import (
     Bedrock,
     HuggingFaceInferenceAPI,
 )
-from llama_index.vector_stores import AstraDBVectorStore
+from llama_index.vector_stores import AstraDBVectorStore, CassandraVectorStore
+
+from e2e_tests.conftest import (
+    AstraRef,
+    set_current_test_info,
+    get_required_env,
+    get_astra_dev_ref,
+    get_astra_prod_ref,
+    delete_all_astra_collections,
+    delete_astra_collection,
+)
 
 
 def astra_db(name, astra_ref: AstraRef):
@@ -53,6 +55,20 @@ def astra_db_prod():
 @pytest.fixture
 def astra_db_dev():
     yield from astra_db("astradb-dev", get_astra_dev_ref())
+
+
+@pytest.fixture
+def cassandra():
+    astra_ref = get_astra_prod_ref()
+    delete_all_astra_collections(astra_ref)
+    cassio.init(token=astra_ref.token, database_id=astra_ref.id)
+    yield "cassandra", lambda embedding_dimension: CassandraVectorStore(
+        embedding_dimension=embedding_dimension,
+        session=None,
+        keyspace="default_keyspace",
+        table=astra_ref.collection,
+    )
+    delete_astra_collection(astra_ref)
 
 
 @pytest.fixture
@@ -174,7 +190,7 @@ def test_openai_azure_astra_dev(astra_db_dev, azure_openai_embedding, azure_open
     _run_test(astra_db_dev, azure_openai_embedding, azure_openai_llm)
 
 
-@pytest.mark.parametrize("vector_store", ["astra_db_prod"])
+@pytest.mark.parametrize("vector_store", ["astra_db_prod", "cassandra"])
 @pytest.mark.parametrize(
     "embedding,llm",
     [
