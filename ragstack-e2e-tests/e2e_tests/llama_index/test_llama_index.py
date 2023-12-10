@@ -18,8 +18,15 @@ from llama_index import (
 from llama_index.embeddings import (
     OpenAIEmbedding,
     AzureOpenAIEmbedding,
+    BedrockEmbedding,
 )
-from llama_index.llms import OpenAI, AzureOpenAI, Vertex, HuggingFaceInferenceAPI
+from llama_index.llms import (
+    OpenAI,
+    AzureOpenAI,
+    Vertex,
+    Bedrock,
+    HuggingFaceInferenceAPI,
+)
 from llama_index.vector_stores import AstraDBVectorStore
 
 
@@ -98,6 +105,50 @@ def vertex_embedding():
 
 
 @pytest.fixture
+def bedrock_anthropic_llm():
+    return "bedrock-anthropic", Bedrock(
+        model="anthropic.claude-v2",
+        aws_access_key_id=get_required_env("AWS_ACCESS_KEY_ID"),
+        aws_secret_access_key=get_required_env("AWS_SECRET_ACCESS_KEY"),
+        aws_region_name=get_required_env("BEDROCK_AWS_REGION"),
+    )
+
+
+@pytest.fixture
+def bedrock_meta_llm():
+    return "bedrock-meta", Bedrock(
+        model="meta.llama2-13b-chat-v1",
+        aws_access_key_id=get_required_env("AWS_ACCESS_KEY_ID"),
+        aws_secret_access_key=get_required_env("AWS_SECRET_ACCESS_KEY"),
+        aws_region_name=get_required_env("BEDROCK_AWS_REGION"),
+    )
+
+
+@pytest.fixture
+def bedrock_titan_embedding():
+    return (
+        "bedrock-titan",
+        1536,
+        BedrockEmbedding.from_credentials(
+            model_name="amazon.titan-embed-text-v1",
+            aws_region=get_required_env("BEDROCK_AWS_REGION"),
+        ),
+    )
+
+
+@pytest.fixture
+def bedrock_cohere_embedding():
+    return (
+        "bedrock-cohere",
+        1024,
+        BedrockEmbedding.from_credentials(
+            model_name="cohere.embed-english-v3",
+            aws_region=get_required_env("BEDROCK_AWS_REGION"),
+        ),
+    )
+
+
+@pytest.fixture
 def huggingface_hub_llm():
     return "huggingface-hub", HuggingFaceInferenceAPI(
         model_name="google/flan-t5-xxl",
@@ -130,6 +181,10 @@ def test_openai_azure_astra_dev(astra_db_dev, azure_openai_embedding, azure_open
         ("openai_embedding", "openai_llm"),
         ("azure_openai_embedding", "azure_openai_llm"),
         ("vertex_embedding", "vertex_llm"),
+        ("bedrock_titan_embedding", "bedrock_anthropic_llm"),
+        # Deactivated for now because of
+        # https://github.com/run-llama/llama_index/pull/9396
+        # ("bedrock_cohere_embedding", "bedrock_meta_llm"),
         ("huggingface_hub_embedding", "huggingface_hub_llm"),
     ],
 )
