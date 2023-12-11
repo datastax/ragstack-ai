@@ -12,7 +12,7 @@ on:
 
 jobs:
   langchain-tests:
-    name: LangChain Tests
+    name: LangChain Tests (${{ matrix.name }})
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -90,7 +90,7 @@ jobs:
         with:
           from-report-file: "ragstack-e2e-tests/failed-tests-report.txt"
           output-file: slack-report.json
-          type: "LangChain Tests"
+          type: "LangChain Tests (${{ matrix.name }})"
           outcome: ${{ steps.e2e-tests.outcome }}
           commit-url: "https://github.com/langchain-ai/langchain/commits/${{ steps.commit-ref.outputs.commit-ref }}"
 

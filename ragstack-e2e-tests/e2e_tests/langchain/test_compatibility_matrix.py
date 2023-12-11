@@ -154,7 +154,6 @@ def huggingface_hub_embedding():
     )
 
 
-
 @pytest.mark.parametrize("vector_store", ["astra_db", "cassandra"])
 @pytest.mark.parametrize(
     "embedding,llm",
