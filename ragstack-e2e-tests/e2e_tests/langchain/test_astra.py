@@ -10,7 +10,7 @@ from langchain.schema.embeddings import Embeddings
 from langchain.vectorstores import AstraDB
 from langchain.chat_models import ChatOpenAI
 from langchain.schema.language_model import BaseLanguageModel
-from e2e_tests.conftest import get_required_env, get_default_astra_ref
+from e2e_tests.conftest import get_required_env, get_astra_ref
 from langchain_core.documents import Document
 from langchain_core.runnables import RunnableConfig
 from langchain_core.vectorstores import VectorStore
@@ -73,7 +73,7 @@ def test_ingest_errors(environment):
 
 def test_wrong_connection_parameters():
     # This is expected to be a valid endpoint, because we want to test an AUTHENTICATION error
-    astra_ref = get_default_astra_ref()
+    astra_ref = get_astra_ref()
     api_endpoint = astra_ref.api_endpoint
 
     try:
@@ -429,7 +429,7 @@ class MockEmbeddings(Embeddings):
 
 
 def init_vector_db(embedding: Embeddings) -> VectorStore:
-    astra_ref = get_default_astra_ref()
+    astra_ref = get_astra_ref()
     collection = astra_ref.collection
     token = astra_ref.token
     api_endpoint = astra_ref.api_endpoint
