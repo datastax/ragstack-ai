@@ -134,11 +134,8 @@ def dump_report():
         f.write("\n".join(failed_report_lines))
 
 
-# astra dev
-os.environ["ASTRA_DEV_TABLE_NAME"] = f"documents_{random_string()}"
-
-# astra prod
-os.environ["ASTRA_PROD_TABLE_NAME"] = f"documents_{random_string()}"
+# astra
+os.environ["ASTRA_TABLE_NAME"] = f"documents_{random_string()}"
 
 # azure-open-ai
 os.environ["AZURE_OPEN_AI_CHAT_MODEL_DEPLOYMENT"] = "gpt-35-turbo"

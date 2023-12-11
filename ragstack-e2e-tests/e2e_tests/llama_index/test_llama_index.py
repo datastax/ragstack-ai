@@ -53,7 +53,7 @@ def astra_db():
 
 @pytest.fixture
 def cassandra():
-    astra_ref = get_astra_prod_ref()
+    astra_ref = get_astra_ref()
     delete_all_astra_collections(astra_ref)
     cassio.init(token=astra_ref.token, database_id=astra_ref.id)
     yield "cassandra", lambda embedding_dimension: CassandraVectorStore(
@@ -178,10 +178,6 @@ def huggingface_hub_embedding():
             model_name="sentence-transformers/all-MiniLM-l6-v2",
         ),
     )
-
-
-def test_openai_azure_astra_dev(astra_db_dev, azure_openai_embedding, azure_openai_llm):
-    _run_test(astra_db_dev, azure_openai_embedding, azure_openai_llm)
 
 
 @pytest.mark.parametrize("vector_store", ["astra_db", "cassandra"])
