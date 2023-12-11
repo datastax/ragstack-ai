@@ -23,15 +23,35 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install tox
 
+      - name: Setup AstraDB prod
+        uses: ./.github/actions/setup-astra-db
+        id: astra-db-prod
+        with:
+          astra-token: ${{ secrets.E2E_TESTS_ASTRA_PROD_DB_TOKEN }}
+          db-name: ${{ github.run_id }}
+          env: PROD
+          region: us-east-2
+          cloud: aws
+
+      - name: Setup AstraDB dev
+        uses: ./.github/actions/setup-astra-db
+        id: astra-db-dev
+        with:
+          astra-token: ${{ secrets.E2E_TESTS_ASTRA_DEV_DB_TOKEN }}
+          db-name: ${{ github.run_id }}
+          env: DEV
+          region: us-west-2
+          cloud: aws
+
       - name: Run E2E tests
         id: e2e-tests
         env:
           ASTRA_DEV_DB_TOKEN: "${{ secrets.E2E_TESTS_ASTRA_DEV_DB_TOKEN }}"
-          ASTRA_DEV_DB_ENDPOINT: "${{ secrets.E2E_TESTS_ASTRA_DEV_DB_ENDPOINT }}"
-          ASTRA_DEV_DB_ID: "${{ secrets.E2E_TESTS_ASTRA_DEV_DB_ID }}"
+          ASTRA_DEV_DB_ENDPOINT: "${{ steps.astra-db-dev.outputs.db_endpoint }}"
+          ASTRA_DEV_DB_ID: "${{ steps.astra-db-dev.outputs.db_id }}"
           ASTRA_PROD_DB_TOKEN: "${{ secrets.E2E_TESTS_ASTRA_PROD_DB_TOKEN }}"
-          ASTRA_PROD_DB_ENDPOINT: "${{ secrets.E2E_TESTS_ASTRA_PROD_DB_ENDPOINT }}"
-          ASTRA_PROD_DB_ID: "${{ secrets.E2E_TESTS_ASTRA_PROD_DB_ID }}"
+          ASTRA_PROD_DB_ENDPOINT: "${{ steps.astra-db-prod.outputs.db_endpoint }}"
+          ASTRA_PROD_DB_ID: "${{ steps.astra-db-prod.outputs.db_id }}"
           OPEN_AI_KEY: "${{ secrets.E2E_TESTS_OPEN_AI_KEY }}"
           AZURE_OPEN_AI_KEY: "${{ secrets.E2E_TESTS_AZURE_OPEN_AI_KEY }}"
           AZURE_OPEN_AI_ENDPOINT: "${{ secrets.E2E_TESTS_AZURE_OPEN_AI_ENDPOINT }}"
@@ -42,6 +62,16 @@ jobs:
           HUGGINGFACE_HUB_KEY: "${{ secrets.E2E_TESTS_HUGGINGFACE_HUB_KEY }}"
         run: |
           tox -c ragstack-e2e-tests -e langchain
+
+      - name: Dump report on Github Summary
+        if: always()
+        run: |
+          if [ -f "ragstack-e2e-tests/all-tests-report.txt" ]; then
+            echo "$(cat ragstack-e2e-tests/all-tests-report.txt)" >> $GITHUB_STEP_SUMMARY
+            echo "Report added to the summary"
+          else
+            echo "Report not found"
+          fi
 
       - name: Compute commit URL
         if: always()
@@ -65,3 +95,22 @@ jobs:
           payload-file-path: "./slack-report.json"
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Cleanup Astra prod
+        if: always()
+        continue-on-error: true
+        uses: ./.github/actions/cleanup-astra-db
+        with:
+          astra-token: ${{ secrets.E2E_TESTS_ASTRA_PROD_DB_TOKEN }}
+          db-name: ${{ github.run_id }}
+          env: PROD
+
+      - name: Cleanup Astra dev
+        if: always()
+        continue-on-error: true
+        uses: ./.github/actions/cleanup-astra-db
+        with:
+          astra-token: ${{ secrets.E2E_TESTS_ASTRA_DEV_DB_TOKEN }}
+          db-name: ${{ github.run_id }}
+          env: DEV
+
