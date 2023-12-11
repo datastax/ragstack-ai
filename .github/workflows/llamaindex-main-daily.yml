@@ -38,6 +38,7 @@ jobs:
           /home/runner/.astra/cli/astra db create -v "${{ github.run_id }}" --env DEV -k default_keyspace --token "${{ secrets.E2E_TESTS_ASTRA_DEV_DB_TOKEN }}" --vector --region us-west-2 --cloud aws
   llamaindex-tests:
     name: Llama-Index Tests
+    needs: [setup-astra-prod, setup-astra-dev]
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
