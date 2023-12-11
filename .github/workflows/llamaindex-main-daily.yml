@@ -1,8 +1,8 @@
-name: LangChain master
+name: Daily Llama-Index main
 on:
   workflow_dispatch: {}
   schedule:
-    - cron: '0 */2 * * *'
+    - cron: '30 */2 * * *'
   pull_request:
     paths:
       - '.github/**'
@@ -36,10 +36,10 @@ jobs:
           set -x
           (curl -Ls "https://dtsx.io/get-astra-cli" | bash) || true
           /home/runner/.astra/cli/astra db create -v "${{ github.run_id }}" --env DEV -k default_keyspace --token "${{ secrets.E2E_TESTS_ASTRA_DEV_DB_TOKEN }}" --vector --region us-west-2 --cloud aws
-  langchain-tests:
-    name: LangChain Tests
-    runs-on: ubuntu-latest
+  llamaindex-tests:
+    name: Llama-Index Tests
     needs: [setup-astra-prod, setup-astra-dev]
+    runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
         uses: actions/checkout@v3
@@ -91,7 +91,7 @@ jobs:
           BEDROCK_AWS_REGION: "${{ secrets.E2E_TESTS_BEDROCK_AWS_REGION }}"
           HUGGINGFACE_HUB_KEY: "${{ secrets.E2E_TESTS_HUGGINGFACE_HUB_KEY }}"
         run: |
-          tox -c ragstack-e2e-tests -e langchain
+          tox -c ragstack-e2e-tests -e llamaindex
 
       - name: Dump report on Github Summary
         if: always()
@@ -114,9 +114,9 @@ jobs:
         with:
           from-report-file: "ragstack-e2e-tests/failed-tests-report.txt"
           output-file: slack-report.json
-          type: "LangChain Tests"
+          type: "Llama-Index Tests"
           outcome: ${{ steps.e2e-tests.outcome }}
-          commit-url: "https://github.com/langchain-ai/langchain/commits/${{ steps.commit-ref.outputs.commit-ref }}"
+          commit-url: "https://github.com/run-llama/llama_index/commits/${{ steps.commit-ref.outputs.commit-ref }}"
 
       - name: Dump report on Slack
         if: always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
@@ -130,7 +130,7 @@ jobs:
     name: Cleanup Astra prod
     runs-on: ubuntu-latest
     if: always()
-    needs: [langchain-tests]
+    needs: [llamaindex-tests]
     steps:
       - name: Cleanup Astra prod
         if: always()
@@ -146,7 +146,7 @@ jobs:
     name: Cleanup Astra dev
     runs-on: ubuntu-latest
     if: always()
-    needs: [langchain-tests]
+    needs: [llamaindex-tests]
     steps:
       - name: Cleanup Astra dev
         if: always()
@@ -157,3 +157,4 @@ jobs:
         run: |
           (curl -Ls "https://dtsx.io/get-astra-cli" | bash) || true
           /home/runner/.astra/cli/astra db delete "${{ github.run_id }}" --token ${{ secrets.E2E_TESTS_ASTRA_DEV_DB_TOKEN }} --env DEV
+

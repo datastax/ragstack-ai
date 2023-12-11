@@ -1,10 +1,14 @@
 import tempfile
 
 from e2e_tests.conftest import (
-    set_current_test_info_document_loader,
+    set_current_test_info,
 )
 
 from langchain.document_loaders import CSVLoader, WebBaseLoader
+
+
+def set_current_test_info_document_loader(doc_loader: str):
+    set_current_test_info("document_loader", doc_loader)
 
 
 def test_csv_loader():
