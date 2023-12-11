@@ -1,0 +1,67 @@
+name: Daily Llama-Index main
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: '30 */2 * * *'
+
+jobs:
+  tests:
+    name: Llama-Index Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v3
+
+      - name: 'Setup: Python 3.11'
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install tox
+
+      - name: Run E2E tests
+        id: e2e-tests
+        env:
+          ASTRA_DEV_DB_TOKEN: "${{ secrets.E2E_TESTS_ASTRA_DEV_DB_TOKEN }}"
+          ASTRA_DEV_DB_ENDPOINT: "${{ secrets.E2E_TESTS_ASTRA_DEV_DB_ENDPOINT }}"
+          ASTRA_DEV_DB_ID: "${{ secrets.E2E_TESTS_ASTRA_DEV_DB_ID }}"
+          ASTRA_PROD_DB_TOKEN: "${{ secrets.E2E_TESTS_ASTRA_PROD_DB_TOKEN }}"
+          ASTRA_PROD_DB_ENDPOINT: "${{ secrets.E2E_TESTS_ASTRA_PROD_DB_ENDPOINT }}"
+          ASTRA_PROD_DB_ID: "${{ secrets.E2E_TESTS_ASTRA_PROD_DB_ID }}"
+          OPEN_AI_KEY: "${{ secrets.E2E_TESTS_OPEN_AI_KEY }}"
+          AZURE_OPEN_AI_KEY: "${{ secrets.E2E_TESTS_AZURE_OPEN_AI_KEY }}"
+          AZURE_OPEN_AI_ENDPOINT: "${{ secrets.E2E_TESTS_AZURE_OPEN_AI_ENDPOINT }}"
+          GCLOUD_ACCOUNT_KEY_JSON: "${{ secrets.E2E_TESTS_GCLOUD_ACCOUNT_KEY_JSON }}"
+          AWS_ACCESS_KEY_ID: "${{ secrets.E2E_TESTS_AWS_ACCESS_KEY_ID }}"
+          AWS_SECRET_ACCESS_KEY: "${{ secrets.E2E_TESTS_AWS_SECRET_ACCESS_KEY }}"
+          BEDROCK_AWS_REGION: "${{ secrets.E2E_TESTS_BEDROCK_AWS_REGION }}"
+          HUGGINGFACE_HUB_KEY: "${{ secrets.E2E_TESTS_HUGGINGFACE_HUB_KEY }}"
+        run: |
+          tox -c ragstack-e2e-tests -e llamaindex
+
+      - name: Compute commit URL
+        if: always()
+        id: commit-ref
+        run: echo "commit-ref=$(grep resolved_reference ragstack-e2e-tests/poetry.lock | awk -F'"' '{print $2}' | head -1)" >> $GITHUB_OUTPUT
+
+      - name: Prepare report for Slack
+        if: always()
+        uses: ./.github/actions/generate-slack-report
+        with:
+          from-report-file: "ragstack-e2e-tests/failed-tests-report.txt"
+          output-file: slack-report.json
+          type: "Llama-Index Tests"
+          outcome: ${{ steps.e2e-tests.outcome }}
+          commit-url: "https://github.com/run-llama/llama_index/commits/${{ steps.commit-ref.outputs.commit-ref }}"
+
+      - name: Dump report on Slack
+        if: always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          payload-file-path: "./slack-report.json"
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
