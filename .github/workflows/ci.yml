@@ -49,12 +49,12 @@ jobs:
       matrix:
         include:
           - name: Astra PROD
-            astra-token: ${{ secrets.E2E_TESTS_ASTRA_PROD_DB_TOKEN }}
+            astra_token_secret: E2E_TESTS_ASTRA_PROD_DB_TOKEN
             env: PROD
             region: us-east-2
             cloud: aws
           - name: Astra DEV
-            astra-token: ${{ secrets.E2E_TESTS_ASTRA_DEV_DB_TOKEN }}
+            astra_token_secret: E2E_TESTS_ASTRA_DEV_DB_TOKEN
             env: DEV
             region: us-west-2
             cloud: aws
@@ -78,7 +78,7 @@ jobs:
         uses: ./.github/actions/setup-astra-db
         id: astra-db
         with:
-          astra-token: ${{ matrix.astra-token }}
+          astra-token: ${{ secrets[matrix.astra_token_secret] }}
           db-name: ${{ github.run_id }}
           env: ${{ matrix.env }}
           region: ${{ matrix.region }}
@@ -86,7 +86,7 @@ jobs:
 
       - name: Run notebook tests
         env:
-          ASTRA_DB_APPLICATION_TOKEN: "${{ matrix.astra-token }}"
+          ASTRA_DB_APPLICATION_TOKEN: "${{ secrets[matrix.astra_token_secret] }}"
           ASTRA_DB_API_ENDPOINT: "${{ steps.astra-db.outputs.db_endpoint }}"
           ASTRA_DB_ID: "${{ steps.astra-db.outputs.db_id }}"
           OPENAI_API_KEY: "${{ secrets.E2E_TESTS_OPEN_AI_KEY }}"
@@ -97,7 +97,7 @@ jobs:
         id: e2e-tests
         if: always() && steps.astra-db.outcome == 'success'
         env:
-          ASTRA_DB_TOKEN: "${{ matrix.astra-token }}"
+          ASTRA_DB_TOKEN: "${{ secrets[matrix.astra_token_secret] }}"
           ASTRA_DB_ENDPOINT: "${{ steps.astra-db.outputs.db_endpoint }}"
           ASTRA_DB_ID: "${{ steps.astra-db.outputs.db_id }}"
           OPEN_AI_KEY: "${{ secrets.E2E_TESTS_OPEN_AI_KEY }}"
@@ -148,6 +148,6 @@ jobs:
         uses: ./.github/actions/cleanup-astra-db
         if: always()
         with:
-          astra-token: ${{ matrix.astra-token }}
+          astra-token: ${{ secrets[matrix.astra_token_secret] }}
           db-name: ${{ github.run_id }}
           env: ${{ matrix.env }}
