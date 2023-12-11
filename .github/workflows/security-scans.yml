@@ -4,10 +4,9 @@ on:
   workflow_dispatch: {}
   schedule:
     - cron: '0 0 * * *'
-# might be a good idea to run this on every PR, but it's a bit too noisy since we cannot actually fix the vulnerabilities sometimes but we don't want to ignore them as well
-#  pull_request:
-#    branches:
-#      - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
   snyk:
@@ -27,6 +26,16 @@ jobs:
       - name: Process Snyk report
         if: always()
         run: python ./scripts/parse-snyk-report.py snyk-vuln.json snyk-report.txt
+
+      - name: Dump report on Github Summary
+        if: always()
+        run: |
+          if [ -f "snyk-report.txt" ]; then
+            echo "$(cat snyk-report.txt)" >> $GITHUB_STEP_SUMMARY
+            echo "Report added to the summary"
+          else
+            echo "Report not found"
+          fi
 
       - name: Prepare report for Slack
         if: always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
