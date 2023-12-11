@@ -14,6 +14,9 @@ inputs:
   region:
     required: true
     description: 'Astra DB region'
+  cloud:
+    required: true
+    description: 'Astra DB cloud'
 
 outputs:
   db_endpoint:
@@ -32,7 +35,9 @@ runs:
       TERM: linux
     run: |
       set -x
-      (curl -Ls "https://dtsx.io/get-astra-cli" | bash) || true
+      (curl -Ls "https://dtsx.io/get-astra-cli" | bash) || true 
+      /home/runner/.astra/cli/astra db create -v "${{ inputs.db-name }}" --env "${{ inputs.env }}" -k default_keyspace --token "${{ inputs.astra-token }}" --vector --region "${{ inputs.region }}" --cloud "${{ inputs.cloud }}"
+      
       text=$(/home/runner/.astra/cli/astra db describe "${{ inputs.db-name }}" --token "${{ inputs.astra-token }}" --env "${{ inputs.env }}" )
       database_id=$(echo "$text" | grep 'id' | awk -F '|' '{print $3}' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
       echo "Found database id: $database_id"
@@ -44,4 +49,3 @@ runs:
       echo "Database endpoint: $db_endpoint"
       echo "db_endpoint=$db_endpoint" >> $GITHUB_OUTPUT
       echo "db_id=$database_id" >> $GITHUB_OUTPUT
-
