@@ -1,0 +1,119 @@
+= Foward-Looking Augmented REtrieval (FLARE)
+
+image::https://colab.research.google.com/assets/colab-badge.svg[align="left",link="https://colab.research.google.com/github/datastax/ragstack-ai-examples/blob/main/FLARE.ipynb"]
+
+FLARE is an advanced retrieval technique that combines retrieval and generation in LLMs.
+It enhances the accuracy of responses by iteratively predicting the upcoming sentence to anticipate future content when the model encounters a token it is uncertain about.
+See the original repository link:https://github.com/jzbjyb/FLARE/tree/main[here]{external-link-icon} for more detail.
+
+The basic workflow is:
+
+. Send a query.
+. The model generates tokens while iteratively predicting the upcoming sentence.
+. If the model sees a token with a low confidence level, it uses the predicted sentence as a query to retrieve new, relevant documents.
+. The upcoming sentence is regenerated using the retrieved documents.
+. Repeat steps 2-4 until the response is complete.
+
+In this tutorial, you will use an Astra DB vector store, an OpenAI embedding model, an OpenAI LLM, and LangChain to orchestrate FLARE in a RAG pipeline.
+
+include::examples:partial$prerequisites.adoc[]
+
+== Setup
+
+`ragstack-ai` includes all the packages you need to build a FLARE pipeline.
+
+. Install the following libraries.
++
+[source,shell]
+----
+pip install ragstack-ai
+----
++
+. Import dependencies.
++
+[source,python]
+----
+import os
+import getpass
+from langchain.vectorstores.astradb import AstraDB
+from langchain.embeddings import OpenAIEmbeddings
+from langchain.document_loaders import TextLoader
+from langchain.globals import set_verbose
+from langchain.chat_models import ChatOpenAI
+from langchain.llms.openai import OpenAI
+from langchain.chains import FlareChain
+from langchain.chains.flare.base import QuestionGeneratorChain
+----
+
+== Embedding Model and Vector Store
+
+. Configure your embedding model and vector store:
++
+[source,python]
+----
+embedding = OpenAIEmbeddings()
+vstore = AstraDB(
+        collection_name=collection,
+        embedding=embedding,
+        token=astra_token,
+        api_endpoint=astra_endpoint
+    )
+print("Astra vector store configured")
+----
++
+. Retrieve the text of a short story that will be indexed in the vector store:
++
+[source,python]
+----
+curl https://raw.githubusercontent.com/CassioML/cassio-website/main/docs/frameworks/langchain/texts/amontillado.txt --output amontillado.txt
+input = "amontillado.txt"
+----
++
+. Create embeddings by inserting your documents into the vector store.
+The final print statement verifies that the documents were embedded.
++
+[source,python]
+----
+loader = TextLoader(input)
+documents = loader.load_and_split()
+
+inserted_ids = vstore.add_documents(documents)
+print(f"\nInserted {len(inserted_ids)} documents.")
+
+print(vstore.astra_db.collection(collection).find())
+----
+
+== FLARE Chain
+
+Using LangChain's FLARE chain with verbose mode on, we can see exactly what is happening under the hood.
+
+. Set verbose mode and configure FLARE chain:
++
+[source,python]
+----
+from langchain.globals import set_verbose # already imported, just for clarity
+set_verbose(True)
+
+retriever = vstore.as_retriever()
+
+flare = FlareChain.from_llm(
+    llm=ChatOpenAI(temperature=0), 
+    retriever=retriever,
+    max_generation_len=256, 
+    min_prob=0.3,
+)
+----
++
+. Run the FLARE chain with a query:
++
+[source,python]
+----
+query = "Who is Luchesi in relation to Antonio?"
+flare.run(query)
+----
+
+You now have a fully functioning RAG pipeline using the FLARE technique!
+FLARE is one of many ways to improve RAG.
+
+See our other xref:examples:index.adoc[examples] for advanced RAG techniques, as well as evaluation examples that compare results using multiple RAG techniques.
+
