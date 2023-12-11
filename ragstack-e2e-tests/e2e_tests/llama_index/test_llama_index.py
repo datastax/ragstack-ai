@@ -22,7 +22,6 @@ from llama_index.llms import (
 from llama_index.vector_stores import AstraDBVectorStore, CassandraVectorStore
 
 from e2e_tests.conftest import (
-    AstraRef,
     set_current_test_info,
     get_required_env,
     get_astra_ref,

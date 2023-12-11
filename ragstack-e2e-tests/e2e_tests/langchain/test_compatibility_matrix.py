@@ -1,7 +1,6 @@
 import cassio
 import pytest
 from e2e_tests.conftest import (
-    AstraRef,
     set_current_test_info,
     get_required_env,
     get_astra_ref,
