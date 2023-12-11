@@ -39,26 +39,13 @@ class AstraRef:
     id: str
 
 
-def get_astra_dev_ref() -> AstraRef:
+def get_astra_ref() -> AstraRef:
     return AstraRef(
-        token=get_required_env("ASTRA_DEV_DB_TOKEN"),
-        api_endpoint=get_required_env("ASTRA_DEV_DB_ENDPOINT"),
-        collection=get_required_env("ASTRA_DEV_TABLE_NAME"),
-        id=get_required_env("ASTRA_DEV_DB_ID"),
+        token=get_required_env("ASTRA_DB_TOKEN"),
+        api_endpoint=get_required_env("ASTRA_DB_ENDPOINT"),
+        collection=get_required_env("ASTRA_TABLE_NAME"),
+        id=get_required_env("ASTRA_DB_ID"),
     )
-
-
-def get_astra_prod_ref() -> AstraRef:
-    return AstraRef(
-        token=get_required_env("ASTRA_PROD_DB_TOKEN"),
-        api_endpoint=get_required_env("ASTRA_PROD_DB_ENDPOINT"),
-        collection=get_required_env("ASTRA_PROD_TABLE_NAME"),
-        id=get_required_env("ASTRA_PROD_DB_ID"),
-    )
-
-
-def get_default_astra_ref() -> AstraRef:
-    return get_astra_prod_ref()
 
 
 def delete_all_astra_collections(astra_ref: AstraRef):

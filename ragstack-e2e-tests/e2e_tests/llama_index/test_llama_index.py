@@ -25,8 +25,7 @@ from e2e_tests.conftest import (
     AstraRef,
     set_current_test_info,
     get_required_env,
-    get_astra_dev_ref,
-    get_astra_prod_ref,
+    get_astra_ref,
     delete_all_astra_collections,
     delete_astra_collection,
 )
@@ -48,13 +47,8 @@ def astra_db(name, astra_ref: AstraRef):
 
 
 @pytest.fixture
-def astra_db_prod():
-    yield from astra_db("astradb-prod", get_astra_prod_ref())
-
-
-@pytest.fixture
-def astra_db_dev():
-    yield from astra_db("astradb-dev", get_astra_dev_ref())
+def astra_db():
+    yield from astra_db("astradb", get_astra_ref())
 
 
 @pytest.fixture
@@ -190,7 +184,7 @@ def test_openai_azure_astra_dev(astra_db_dev, azure_openai_embedding, azure_open
     _run_test(astra_db_dev, azure_openai_embedding, azure_openai_llm)
 
 
-@pytest.mark.parametrize("vector_store", ["astra_db_prod", "cassandra"])
+@pytest.mark.parametrize("vector_store", ["astra_db", "cassandra"])
 @pytest.mark.parametrize(
     "embedding,llm",
     [

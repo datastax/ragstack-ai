@@ -97,12 +97,9 @@ jobs:
         id: e2e-tests
         if: always() && steps.astra-db.outcome == 'success'
         env:
-          ASTRA_DEV_DB_TOKEN: "${{ matrix.astra-token }}"
-          ASTRA_DEV_DB_ENDPOINT: "${{ steps.astra-db.outputs.db_endpoint }}"
-          ASTRA_DEV_DB_ID: "${{ steps.astra-db.outputs.db_id }}"
-          ASTRA_PROD_DB_TOKEN: "${{ matrix.astra-token }}"
-          ASTRA_PROD_DB_ENDPOINT: "${{ steps.astra-db.outputs.db_endpoint }}"
-          ASTRA_PROD_DB_ID: "${{ steps.astra-db.outputs.db_id }}"
+          ASTRA_DB_TOKEN: "${{ matrix.astra-token }}"
+          ASTRA_DB_ENDPOINT: "${{ steps.astra-db.outputs.db_endpoint }}"
+          ASTRA_DB_ID: "${{ steps.astra-db.outputs.db_id }}"
           OPEN_AI_KEY: "${{ secrets.E2E_TESTS_OPEN_AI_KEY }}"
           AZURE_OPEN_AI_KEY: "${{ secrets.E2E_TESTS_AZURE_OPEN_AI_KEY }}"
           AZURE_OPEN_AI_ENDPOINT: "${{ secrets.E2E_TESTS_AZURE_OPEN_AI_ENDPOINT }}"
