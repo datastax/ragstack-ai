@@ -3,10 +3,42 @@ on:
   workflow_dispatch: {}
   schedule:
     - cron: '30 */2 * * *'
+  pull_request:
+    paths:
+      - '.github/**'
+      - 'ragstack-e2e-tests/**'
+    branches:
+      - main
 
 jobs:
-  tests:
+  setup-astra-prod:
+    name: Setup AstraDB prod
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup AstraDB prod
+        shell: bash
+        env:
+          TERM: linux
+        run: |
+          set -x
+          (curl -Ls "https://dtsx.io/get-astra-cli" | bash) || true
+          /home/runner/.astra/cli/astra db create -v "${{ github.run_id }}" --env PROD -k default_keyspace --token "${{ secrets.E2E_TESTS_ASTRA_PROD_DB_TOKEN }}" --vector --region us-east-2 --cloud aws
+
+  setup-astra-dev:
+    name: Setup AstraDB dev
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup AstraDB dev
+        shell: bash
+        env:
+          TERM: linux
+        run: |
+          set -x
+          (curl -Ls "https://dtsx.io/get-astra-cli" | bash) || true
+          /home/runner/.astra/cli/astra db create -v "${{ github.run_id }}" --env DEV -k default_keyspace --token "${{ secrets.E2E_TESTS_ASTRA_DEV_DB_TOKEN }}" --vector --region us-west-2 --cloud aws
+  llamaindex-tests:
     name: Llama-Index Tests
+    needs: [setup-astra-prod, setup-astra-dev]
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
@@ -23,15 +55,33 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install tox
 
+      - name: Get AstraDB prod ID
+        uses: ./.github/actions/get-astra-db-id
+        id: astra-db-prod
+        with:
+          astra-token: ${{ secrets.E2E_TESTS_ASTRA_PROD_DB_TOKEN }}
+          db-name: ${{ github.run_id }}
+          env: PROD
+          region: us-east-2
+
+      - name: Get AstraDB dev ID
+        uses: ./.github/actions/get-astra-db-id
+        id: astra-db-dev
+        with:
+          astra-token: ${{ secrets.E2E_TESTS_ASTRA_DEV_DB_TOKEN }}
+          db-name: ${{ github.run_id }}
+          env: DEV
+          region: us-west-2
+
       - name: Run E2E tests
         id: e2e-tests
         env:
           ASTRA_DEV_DB_TOKEN: "${{ secrets.E2E_TESTS_ASTRA_DEV_DB_TOKEN }}"
-          ASTRA_DEV_DB_ENDPOINT: "${{ secrets.E2E_TESTS_ASTRA_DEV_DB_ENDPOINT }}"
-          ASTRA_DEV_DB_ID: "${{ secrets.E2E_TESTS_ASTRA_DEV_DB_ID }}"
+          ASTRA_DEV_DB_ENDPOINT: "${{ steps.astra-db-dev.outputs.db_endpoint }}"
+          ASTRA_DEV_DB_ID: "${{ steps.astra-db-dev.outputs.db_id }}"
           ASTRA_PROD_DB_TOKEN: "${{ secrets.E2E_TESTS_ASTRA_PROD_DB_TOKEN }}"
-          ASTRA_PROD_DB_ENDPOINT: "${{ secrets.E2E_TESTS_ASTRA_PROD_DB_ENDPOINT }}"
-          ASTRA_PROD_DB_ID: "${{ secrets.E2E_TESTS_ASTRA_PROD_DB_ID }}"
+          ASTRA_PROD_DB_ENDPOINT: "${{ steps.astra-db-prod.outputs.db_endpoint }}"
+          ASTRA_PROD_DB_ID: "${{ steps.astra-db-prod.outputs.db_id }}"
           OPEN_AI_KEY: "${{ secrets.E2E_TESTS_OPEN_AI_KEY }}"
           AZURE_OPEN_AI_KEY: "${{ secrets.E2E_TESTS_AZURE_OPEN_AI_KEY }}"
           AZURE_OPEN_AI_ENDPOINT: "${{ secrets.E2E_TESTS_AZURE_OPEN_AI_ENDPOINT }}"
@@ -42,6 +92,16 @@ jobs:
           HUGGINGFACE_HUB_KEY: "${{ secrets.E2E_TESTS_HUGGINGFACE_HUB_KEY }}"
         run: |
           tox -c ragstack-e2e-tests -e llamaindex
+
+      - name: Dump report on Github Summary
+        if: always()
+        run: |
+          if [ -f "ragstack-e2e-tests/all-tests-report.txt" ]; then
+            echo "$(cat ragstack-e2e-tests/all-tests-report.txt)" >> $GITHUB_STEP_SUMMARY
+            echo "Report added to the summary"
+          else
+            echo "Report not found"
+          fi
 
       - name: Compute commit URL
         if: always()
@@ -65,3 +125,36 @@ jobs:
           payload-file-path: "./slack-report.json"
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  cleanup-astra-prod:
+    name: Cleanup Astra prod
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [llamaindex-tests]
+    steps:
+      - name: Cleanup Astra prod
+        if: always()
+        continue-on-error: true
+        shell: bash
+        env:
+          TERM: linux
+        run: |
+          (curl -Ls "https://dtsx.io/get-astra-cli" | bash) || true
+          /home/runner/.astra/cli/astra db delete "${{ github.run_id }}" --token ${{ secrets.E2E_TESTS_ASTRA_PROD_DB_TOKEN }} --env PROD
+
+  cleanup-astra-dev:
+    name: Cleanup Astra dev
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [llamaindex-tests]
+    steps:
+      - name: Cleanup Astra dev
+        if: always()
+        continue-on-error: true
+        shell: bash
+        env:
+          TERM: linux
+        run: |
+          (curl -Ls "https://dtsx.io/get-astra-cli" | bash) || true
+          /home/runner/.astra/cli/astra db delete "${{ github.run_id }}" --token ${{ secrets.E2E_TESTS_ASTRA_DEV_DB_TOKEN }} --env DEV
+

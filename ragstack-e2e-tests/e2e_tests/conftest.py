@@ -127,8 +127,8 @@ def set_current_test_info(test_name: str, test_info: str):
 @pytest.fixture(scope="session", autouse=True)
 def dump_report():
     yield
-    print("\n\nAll tests report:")
-    print("\n".join(all_report_lines))
+    logging.info("All tests report:")
+    logging.info("\n".join(all_report_lines))
 
     stats_str = (
         "Tests passed: "
