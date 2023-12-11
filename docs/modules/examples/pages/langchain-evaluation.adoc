@@ -1,0 +1,258 @@
+= Evaluating RAG Pipelines with LangChain
+
+image::https://colab.research.google.com/assets/colab-badge.svg[align="left",link="https://colab.research.google.com/github/datastax/ragstack-ai-examples/blob/main/langchain_evaluation.ipynb"]
+
+This notebook demonstrates how to evaluate a RAG pipeline using LangChain's QA Evaluator. This evaluator helps measure the correctness of a response given some context, making it ideally suited for evaluating a RAG pipeline. At the end of this notebook, you will have a measurable QA model using RAG.
+
+In this tutorial, you will use an Astra DB vector store, an OpenAI embedding model, an OpenAI LLM, LangChain, and LangSmith.
+
+include::examples:partial$prerequisites.adoc[]
+
+You will also need a https://smith.langchain.com/[LangSmith] account and the following environment variables set.
+`LANGCHAIN_PROJECT` defaults to `default` if not specified.
++
+[source,bash]
+----
+LANGCHAIN_TRACING_V2="true"
+LANGCHAIN_ENDPOINT="https://api.smith.langchain.com"
+LANGCHAIN_API_KEY="<your-api-key>"
+LANGCHAIN_PROJECT="Project:"
+----
+
+== Setup
+
+`ragstack-ai` includes all the packages you need to build a RAG pipeline.
+
+The additional `langchain[openai]` package includes LangSmith.
+
+. Install necessary libraries:
++
+[source,shell]
+----
+pip install ragstack-ai langchain[openai]
+----
+
+. Import dependencies:
++
+[source,python]
+----
+import os
+from dotenv import load_dotenv
+from langchain.embeddings.openai import OpenAIEmbeddings
+from langchain.vectorstores.astradb import AstraDB
+from langchain.document_loaders import TextLoader
+from langchain.document_loaders import PyPDFLoader
+from langchain.evaluation import EvaluatorType
+from langchain.smith import RunEvalConfig, run_on_dataset
+from langsmith import Client
+from langsmith.utils import LangSmithError
+from langchain.chains import RetrievalQA
+----
+
+== Embedding Model and Vector Store
+
+. Configure your embedding model and vector store:
++
+[source,python]
+----
+embedding = OpenAIEmbeddings(openai_api_key=openai_key)
+vstore = AstraDB(
+    collection_name=collection,
+    embedding=embedding,
+    token=astra_token,
+    api_endpoint=astra_endpoint,
+)
+print("Astra vector store configured")
+----
++
+. Retrieve and process text for the vector store:
++
+[source,shell]
+----
+curl https://raw.githubusercontent.com/CassioML/cassio-website/main/docs/frameworks/langchain/texts/amontillado.txt --output amontillado.txt
+SAMPLEDATA = ["amontillado.txt"]
+----
++
+. Loop through each file and load it into our vector store.
+You loaded `amontillado.txt` in the previous step, but this processor can also process PDFs.
++
+`SAMPLEDATA = []` clears the list so the same files aren't processed twice.
++
+[source,python]
+----
+documents = []
+for filename in SAMPLEDATA:
+    path = os.path.join(os.getcwd(), filename)
+
+    if filename.endswith(".pdf"):
+        loader = PyPDFLoader(path)
+        new_docs = loader.load_and_split()
+        print(f"Processed pdf file: {filename}")
+    elif filename.endswith(".txt"):
+        loader = TextLoader(path)
+        new_docs = loader.load_and_split()
+        print(f"Processed txt file: {filename}")
+    else:
+        print(f"Unsupported file type: {filename}")
+
+    if len(new_docs) > 0:
+        documents.extend(new_docs)
+
+SAMPLEDATA = []
+
+print(f"\nProcessing done.")
+----
++
+. Create embeddings by inserting your documents into the vector store.
+The final print statement verifies that the documents were embedded.
++
+[source,python]
+----
+inserted_ids = vstore.add_documents(documents)
+print(f"\nInserted {len(inserted_ids)} documents.")
+
+print(vstore.astra_db.collection(collection).find())
+----
++
+. Retrieve context from your vector database, and pass it to the model with the prompt.
++
+[source,python]
+----
+retriever = vstore.as_retriever(search_kwargs={"k": 3})
+
+prompt_template = """
+Answer the question based only on the supplied context. If you don't know the answer, say you don't know the answer.
+Context: {context}
+Question: {question}
+Your answer:
+"""
+prompt = ChatPromptTemplate.from_template(prompt_template)
+model = ChatOpenAI(openai_api_key=openai_key)
+
+chain = (
+    {"context": retriever, "question": RunnablePassthrough()}
+    | prompt
+    | model
+    | StrOutputParser()
+)
+
+chain.invoke(
+    "In the given context, what motivates the narrator, Montresor, to seek revenge against Fortunato?"
+)
+----
+
+== Evaluation
+
+LangChain offers several built-in https://docs.smith.langchain.com/evaluation/evaluator-implementations[evaluators] to test the efficacy of your RAG pipeline. Since you've now created a RAG pipeline, the QA Evaluator is a good fit.
+
+Remember that LLMs are probablistic -- responses will not be the exact same for each invocation. Evaluation results will differ between invocations, and they may be imperfect. Using the metrics as part of a larger holistic testing strategy for your RAG application is recommended.
+
+. Setup LangSmith for evaluation.
++
+[source,python]
+----
+LANGCHAIN_TRACING_V2 = os.getenv("LANGCHAIN_TRACING_V2")
+LANGCHAIN_ENDPOINT = os.getenv("LANGCHAIN_ENDPOINT")
+LANGCHAIN_API_KEY = os.getenv("LANGCHAIN_API_KEY")
+LANGCHAIN_PROJECT = os.getenv("LANGCHAIN_PROJECT")
+----
++
+. Set evaluation questions for your data.
++
+[source,python]
+----
+eval_questions = [
+    "What motivates the narrator, Montresor, to seek revenge against Fortunato?",
+    "What are the major themes in this story?",
+    "What is the significance of the story taking place during the carnival season?",
+    "What literary techniques does Poe use to create suspense and tension in the story?",
+]
+
+eval_answers = [
+    "Montresor is insulted by Lenora and seeks revenge.",  # Incorrect Answer
+    "The major themes are happiness and trustworthiness.",  # Incorrect Answer
+    "The carnival season is a time of celebration and merriment, which contrasts with the sinister events of the story.",
+    "Poe uses foreshadowing, irony, and symbolism to create suspense and tension.",
+]
+
+examples = zip(eval_questions, eval_answers)
+----
++
+. Create your dataset in LangSmith.
+This code first checks if the dataset exists, and if not, creates one with your evaluation questions.
++
+[source,python]
+----
+client = Client()
+dataset_name = "test_eval_dataset"
+
+try:
+    dataset = client.read_dataset(dataset_name=dataset_name)
+    print("using existing dataset: ", dataset.name)
+except LangSmithError:
+    dataset = client.create_dataset(
+        dataset_name=dataset_name,
+        description="sample evaluation dataset",
+    )
+    for question, answer in examples:
+        client.create_example(
+            inputs={"input": question},
+            outputs={"answer": answer},
+            dataset_id=dataset.id,
+        )
+
+    print("Created a new dataset: ", dataset.name)
+----
++
+. Since chains and agents can be stateful (they can have memory), create a constructor to pass in to the `run_on_dataset` method.
+This is so any state in the chain is not reused when evaluating individual examples.
++
+[source,python]
+----
+def create_qa_chain(llm, vstore, return_context=True):
+    qa_chain = RetrievalQA.from_chain_type(
+        llm,
+        retriever=vstore.as_retriever(),
+        return_source_documents=return_context,
+    )
+    return qa_chain
+----
++
+. Run evaluation.
++
+[source,python]
+----
+evaluation_config = RunEvalConfig(
+    evaluators=[
+        "qa",
+        "context_qa",
+        "cot_qa",
+    ],
+    prediction_key="result",
+)
+
+client = Client()
+run_on_dataset(
+    dataset_name=dataset_name,
+    llm_or_chain_factory=create_qa_chain(llm=model, vstore=vstore),
+    client=client,
+    evaluation=evaluation_config,
+    verbose=True,
+)
+----
+
+The `evaluators` selected above perform different measurements against your LLM responses.
+
+* `context_qa` instructs the LLM chain to use the provided reference context in determining correctness.
+
+* `qa` instructs an LLMChain to directly grade a response as "correct" or "incorrect" based on the reference answer.
+
+* `cot_qa` instructs the LLM chain to use chain of thought "reasoning" before determining a final verdict. This tends to lead to responses that better correlate with human labels, for a slightly higher token and runtime cost.
+
+For more on evaluators, see https://docs.smith.langchain.com/evaluation/evaluator-implementations[LangChain evaluators]{external-link-icon}.
+
+== What's Next
+
+Having set up a RAG pipeline and run evaluation over it, you can explore more advanced queries, use internal documentation for evaluation, implement advanced RAG techniques, and evaluate with external evaluation tools.
+
+Find more examples xref:index.adoc[here].
