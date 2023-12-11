@@ -21,11 +21,13 @@ from langchain.llms.huggingface_hub import HuggingFaceHub
 from langchain.vectorstores import AstraDB, Cassandra
 
 
-def astra_db(name, astra_ref: AstraRef):
+@pytest.fixture
+def astra_db():
+    astra_ref = get_astra_ref()
     delete_all_astra_collections(astra_ref)
 
     yield (
-        name,
+        "astradb",
         lambda embedding: AstraDB(
             collection_name=astra_ref.collection,
             embedding=embedding,
@@ -34,11 +36,6 @@ def astra_db(name, astra_ref: AstraRef):
         ),
     )
     delete_astra_collection(astra_ref)
-
-
-@pytest.fixture
-def astra_db():
-    yield from astra_db("astradb", get_astra_ref())
 
 
 @pytest.fixture
