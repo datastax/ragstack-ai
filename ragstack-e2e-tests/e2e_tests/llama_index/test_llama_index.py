@@ -110,7 +110,7 @@ def vertex_embedding():
     return "vertex-ai", 768, VertexAIEmbeddings(model_name="textembedding-gecko")
 
 
-@pytest.fixture
+# @pytest.fixture
 # def bedrock_anthropic_llm():
 #    return "bedrock-anthropic", Bedrock(
 #        model="anthropic.claude-v2",
