@@ -56,7 +56,7 @@ def astra_db():
             collection_name=astra_ref.collection + "_chat_memory",
         ),
     )
-    # delete_all_astra_collections_with_client(astra_db_client())
+    delete_all_astra_collections_with_client(astra_db_client())
 
 
 @pytest.fixture
