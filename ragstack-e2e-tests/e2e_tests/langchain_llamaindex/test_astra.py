@@ -18,6 +18,8 @@ from llama_index import (
 from llama_index.llms import OpenAI
 from llama_index.vector_stores import (
     AstraDBVectorStore,
+    MetadataFilters,
+    ExactMatchFilter,
 )
 
 
@@ -191,21 +193,23 @@ def test_ingest_langchain_retrieve_llama_index(environment):
         print("doc:", doc)
         assert "framework" in doc.text
 
-    # TODO: uncomment this after https://github.com/run-llama/llama_index/issues/9432 is fixed
-
     # Verify compatibility of metadata filtering
-    # filters = MetadataFilters(filters=[ExactMatchFilter(key="source", value="llama-index-ingest")])
-    # retriever = index.as_retriever(filters=filters)
-    # documents_from_llamaindex = retriever.retrieve("What is RAGStack ?")
-    # assert len(documents_from_llamaindex) > 0
-    # for doc in documents_from_llamaindex:
-    #         print("doc:", doc)
-    #    assert "framework" in doc.text
+    filters = MetadataFilters(
+        filters=[ExactMatchFilter(key="source", value="llama-index-ingest")]
+    )
+    retriever = index.as_retriever(filters=filters)
+    documents_from_llamaindex = retriever.retrieve("What is RAGStack ?")
+    assert len(documents_from_llamaindex) > 0
+    for doc in documents_from_llamaindex:
+        print("doc:", doc)
+        assert "framework" in doc.text
 
-    #  filters = MetadataFilters(filters=[ExactMatchFilter(key="source", value="don't-find-anything-please")])
-    # retriever_no_docs = index.as_retriever(filters=filters)
-    # documents_from_llamaindex = retriever_no_docs.retrieve("What is RAGStack ?")
-    # assert len(documents_from_llamaindex) == 0
+    filters = MetadataFilters(
+        filters=[ExactMatchFilter(key="source", value="don't-find-anything-please")]
+    )
+    retriever_no_docs = index.as_retriever(filters=filters)
+    documents_from_llamaindex = retriever_no_docs.retrieve("What is RAGStack ?")
+    assert len(documents_from_llamaindex) == 0
 
     # Basic RAG with LlamaIndex
     query_engine = index.as_query_engine()
