@@ -1,0 +1,288 @@
+= Migration
+
+To migrate an existing LangChain application to RAGStack and use RAGStack's pinned, tested version of LangChain instead, you need to uninstall LangChain and install RAGStack.
+
+. `pip uninstall langchain`
+. `pip install ragstack-ai --upgrade-strategy="only-if-needed"`
+. `pip list` to see your current list of packages.
+
+An example migration is shown below.
+
+== RAGStack packages
+RAGStack contains the following packages as of version 0.3.1.
+You can replace any of these packages in your existing application with the `ragstack-ai` version.
+
+.RAGStack 0.3.1 packages
+[%collapsible%open]
+====
+[source,console]
+----
+Package             Version
+------------------- ------------
+aiohttp             3.9.1
+aiosignal           1.3.1
+annotated-types     0.6.0
+anyio               4.1.0
+astrapy             0.6.2
+attrs               23.1.0
+backoff             2.2.1
+beautifulsoup4      4.12.2
+cassandra-driver    3.28.0
+cassio              0.1.3
+certifi             2023.11.17
+chardet             5.2.0
+charset-normalizer  3.3.2
+click               8.1.7
+dataclasses-json    0.6.3
+Deprecated          1.2.14
+distro              1.8.0
+emoji               2.9.0
+filetype            1.2.0
+frozenlist          1.4.0
+fsspec              2023.12.2
+geomet              0.2.1.post1
+greenlet            3.0.2
+h11                 0.14.0
+h2                  4.1.0
+hpack               4.0.0
+httpcore            1.0.2
+httpx               0.25.2
+hyperframe          6.0.1
+idna                3.6
+joblib              1.3.2
+jsonpatch           1.33
+jsonpointer         2.4
+langchain           0.0.349
+langchain-community 0.0.1
+langchain-core      0.0.13
+langdetect          1.0.9
+langsmith           0.0.69
+llama-index         0.9.14
+lxml                4.9.3
+marshmallow         3.20.1
+multidict           6.0.4
+mypy-extensions     1.0.0
+nest-asyncio        1.5.8
+nltk                3.8.1
+numpy               1.26.2
+openai              1.3.8
+packaging           23.2
+pandas              2.1.4
+pip                 23.2.1
+pydantic            2.5.2
+pydantic_core       2.14.5
+python-dateutil     2.8.2
+python-iso639       2023.12.11
+python-magic        0.4.27
+pytz                2023.3.post1
+PyYAML              6.0.1
+ragstack-ai         0.3.1
+rapidfuzz           3.5.2
+regex               2023.10.3
+requests            2.31.0
+setuptools          65.5.0
+six                 1.16.0
+sniffio             1.3.0
+soupsieve           2.5
+SQLAlchemy          2.0.23
+tabulate            0.9.0
+tenacity            8.2.3
+tiktoken            0.5.2
+tqdm                4.66.1
+typing_extensions   4.9.0
+typing-inspect      0.9.0
+tzdata              2023.3
+unstructured        0.10.30
+urllib3             2.1.0
+wrapt               1.16.0
+yarl                1.9.4
+----
+====
+
+== Example migration
+
+Here is a simple LangChain application that loads a dataset from HuggingFace and embeds the document objects in AstraDB.
+
+.migration.py
+[%collapsible%open]
+====
+[source,python]
+----
+import os
+from datasets import load_dataset
+from dotenv import load_dotenv
+from langchain.document_loaders import PyPDFDirectoryLoader
+from langchain.vectorstores.astradb import AstraDB
+from langchain.embeddings import OpenAIEmbeddings
+from langchain.schema import Document
+
+load_dotenv()
+
+ASTRA_DB_APPLICATION_TOKEN = os.environ.get("ASTRA_DB_APPLICATION_TOKEN")
+ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
+OPEN_AI_API_KEY = os.environ.get("OPENAI_API_KEY")
+ASTRA_DB_COLLECTION = os.environ.get("ASTRA_DB_COLLECTION")
+
+embedding = OpenAIEmbeddings()
+vstore = AstraDB(
+    embedding=embedding,
+    collection_name="test3",
+    token=os.environ["ASTRA_DB_APPLICATION_TOKEN"],
+    api_endpoint=os.environ["ASTRA_DB_API_ENDPOINT"],
+)
+print(vstore.astra_db.collection(ASTRA_DB_COLLECTION).find())
+
+philo_dataset = load_dataset("datastax/philosopher-quotes")["train"]
+print("An example entry:")
+print(philo_dataset[16])
+
+docs = []
+for entry in philo_dataset:
+    metadata = {"author": entry["author"]}
+    if entry["tags"]:
+        for tag in entry["tags"].split(";"):
+            metadata[tag] = "y"
+    doc = Document(page_content=entry["quote"], metadata=metadata)
+    docs.append(doc)
+
+inserted_ids = vstore.add_documents(docs)
+print(f"\nInserted {len(inserted_ids)} documents.")
+
+print(vstore.astra_db.collection(ASTRA_DB_COLLECTION).find())
+
+vstore.clear()
+----
+====
+
+. This application requires installation of the following packages:
++
+[source,python]
+----
+pip install langchain datasets openai astrapy tiktoken python-dotenv
+----
++
+. You decide you want to use RAGStack's pinned, tested version of LangChain (`langchain-0.0.349`) instead of the latest version of LangChain (`langchain-0.0.350`).
++
+*You must uninstall LangChain first.*
++
+[source,python]
+----
+pip uninstall langchain
+Successfully uninstalled langchain-0.0.350
+----
++
+. Install the `ragstack-ai` package with the `--upgrade-strategy="only-if-needed"` option.
+This ensures pip will not upgrade any packages that are already installed, unless required by the `ragstack-ai` package.
++
+[source,python]
+----
+pip install --upgrade-strategy="only-if-needed"
+----
+
+. When the package is installed, run `pip list` to see your current list of packages.
+Notice that the pinned version of langchain is `0.0.349`.
++
+.Pip list
+[%collapsible%open]
+====
+[source,console]
+----
+Package             Version
+------------------- ------------
+aiohttp             3.9.1
+aiosignal           1.3.1
+annotated-types     0.6.0
+anyio               4.1.0
+astrapy             0.6.2
+attrs               23.1.0
+backoff             2.2.1
+beautifulsoup4      4.12.2
+cassandra-driver    3.28.0
+cassio              0.1.3
+certifi             2023.11.17
+chardet             5.2.0
+charset-normalizer  3.3.2
+click               8.1.7
+dataclasses-json    0.6.3
+datasets            2.15.0
+Deprecated          1.2.14
+dill                0.3.7
+distro              1.8.0
+emoji               2.9.0
+filelock            3.13.1
+filetype            1.2.0
+frozenlist          1.4.0
+fsspec              2023.10.0
+geomet              0.2.1.post1
+greenlet            3.0.2
+h11                 0.14.0
+h2                  4.1.0
+hpack               4.0.0
+httpcore            1.0.2
+httpx               0.25.2
+huggingface-hub     0.19.4
+hyperframe          6.0.1
+idna                3.6
+joblib              1.3.2
+jsonpatch           1.33
+jsonpointer         2.4
+langchain           0.0.349
+langchain-community 0.0.1
+langchain-core      0.0.13
+langdetect          1.0.9
+langsmith           0.0.69
+llama-index         0.9.14
+lxml                4.9.3
+marshmallow         3.20.1
+multidict           6.0.4
+multiprocess        0.70.15
+mypy-extensions     1.0.0
+nest-asyncio        1.5.8
+nltk                3.8.1
+numpy               1.26.2
+openai              1.3.8
+packaging           23.2
+pandas              2.1.4
+pip                 23.2.1
+pyarrow             14.0.1
+pyarrow-hotfix      0.6
+pydantic            2.5.2
+pydantic_core       2.14.5
+python-dateutil     2.8.2
+python-dotenv       1.0.0
+python-iso639       2023.12.11
+python-magic        0.4.27
+pytz                2023.3.post1
+PyYAML              6.0.1
+ragstack-ai         0.3.1
+rapidfuzz           3.5.2
+regex               2023.10.3
+requests            2.31.0
+setuptools          65.5.0
+six                 1.16.0
+sniffio             1.3.0
+soupsieve           2.5
+SQLAlchemy          2.0.23
+tabulate            0.9.0
+tenacity            8.2.3
+tiktoken            0.5.2
+tqdm                4.66.1
+typing_extensions   4.9.0
+typing-inspect      0.9.0
+tzdata              2023.3
+unstructured        0.10.30
+urllib3             2.1.0
+wrapt               1.16.0
+xxhash              3.4.1
+yarl                1.9.4
+----
+====
++
+. Run your application...
++
+[source,python]
+----
+python3 migration.py
+----
+
+...and you should see the same output as before, with no changes to your code required!
