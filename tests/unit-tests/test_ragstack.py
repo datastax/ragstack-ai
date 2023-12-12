@@ -9,3 +9,9 @@ def test_import():
     import unstructured  # noqa
     import openai  # noqa
     import tiktoken  # noqa
+
+def test_meta():
+    from importlib import metadata
+    meta = metadata.metadata("ragstack-ai")
+    assert meta["version"]
+    assert meta["license"] == "BUSL-1.1"
