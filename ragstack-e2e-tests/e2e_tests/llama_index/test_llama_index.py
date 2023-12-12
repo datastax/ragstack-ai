@@ -111,13 +111,12 @@ def vertex_embedding():
 
 
 @pytest.fixture
-def bedrock_anthropic_llm():
-    return "bedrock-anthropic", Bedrock(
-        model="anthropic.claude-v2",
-        aws_access_key_id=get_required_env("AWS_ACCESS_KEY_ID"),
-        aws_secret_access_key=get_required_env("AWS_SECRET_ACCESS_KEY"),
-        aws_region_name=get_required_env("BEDROCK_AWS_REGION"),
-    )
+# def bedrock_anthropic_llm():
+#    return "bedrock-anthropic", Bedrock(
+#        model="anthropic.claude-v2",
+#        aws_access_key_id=get_required_env("AWS_ACCESS_KEY_ID"),
+#        aws_secret_access_key=get_required_env("AWS_SECRET_ACCESS_KEY"),
+#        aws_region_name=get_required_env("BEDROCK_AWS_REGION"),#
 
 
 @pytest.fixture
