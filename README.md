@@ -1,6 +1,9 @@
 # RAGStack
+[RAGStack](https://www.datastax.com/products/ragstack) is an out of the box solution simplifying Retrieval Augmented Generation (RAG) in AI apps.
 
-## Poetry set up
+## Getting Started
+
+### Poetry set up
 
 The project uses [poetry](https://python-poetry.org/).
 To install poetry:
@@ -9,12 +12,12 @@ To install poetry:
 pip install poetry
 ```
 
-## Install dependencies
+### Install dependencies
 ```shell
 poetry install
 ```
 
-## Build the package distribution
+### Build the package distribution
 ```shell
 poetry build
 ```
