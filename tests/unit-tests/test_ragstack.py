@@ -1,8 +1,6 @@
 def test_import():
-    from llama_index.vector_stores import (
-        AstraDBVectorStore,
-        CassandraVectorStore,
-    )  # noqa
+    from llama_index.vector_stores import AstraDBVectorStore  # noqa
+    from llama_index.vector_stores import CassandraVectorStore  # noqa
     from langchain.vectorstores import AstraDB  # noqa
     import langchain_core  # noqa
     import langsmith  # noqa
