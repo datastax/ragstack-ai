@@ -9,7 +9,23 @@
 
 [RAGStack](https://www.datastax.com/products/ragstack) is an out of the box solution simplifying Retrieval Augmented Generation (RAG) in AI apps.
 
-## Development setup
+RAGStack includes the best open-source for implementing RAG, giving developers a comprehensive Gen AI Stack leveraging [LangChain](https://python.langchain.com/docs/get_started/introduction), [CassIO](https://cassio.org/) and more.
+
+## Quick Install
+
+With pip:
+```bash
+pip install ragstack-ai
+```
+
+## Documentation
+
+[DataStax RAGStack Documentation](https://docs.datastax.com/en/ragstack/docs/index.html)
+* [Quickstart](https://docs.datastax.com/en/ragstack/docs/quickstart.html)
+* [Examples](https://docs.datastax.com/en/ragstack/docs/examples/index.html)
+* [What is RAG?](https://docs.datastax.com/en/ragstack/docs/intro-to-rag/index.html)
+
+## Contributing
 
 1. The project uses [poetry](https://python-poetry.org/).
 To install poetry:
