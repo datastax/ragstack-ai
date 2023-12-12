@@ -110,13 +110,14 @@ def vertex_embedding():
     return "vertex-ai", 768, VertexAIEmbeddings(model_name="textembedding-gecko")
 
 
-# @pytest.fixture
-# def bedrock_anthropic_llm():
-#    return "bedrock-anthropic", Bedrock(
-#        model="anthropic.claude-v2",
-#        aws_access_key_id=get_required_env("AWS_ACCESS_KEY_ID"),
-#        aws_secret_access_key=get_required_env("AWS_SECRET_ACCESS_KEY"),
-#        aws_region_name=get_required_env("BEDROCK_AWS_REGION"),#
+@pytest.fixture
+def bedrock_anthropic_llm():
+    return "bedrock-anthropic", Bedrock(
+        model="anthropic.claude-v2",
+        aws_access_key_id=get_required_env("AWS_ACCESS_KEY_ID"),
+        aws_secret_access_key=get_required_env("AWS_SECRET_ACCESS_KEY"),
+        aws_region_name=get_required_env("BEDROCK_AWS_REGION"),
+    )
 
 
 @pytest.fixture
@@ -182,7 +183,7 @@ def huggingface_hub_embedding():
         ("openai_embedding", "openai_llm"),
         ("azure_openai_embedding", "azure_openai_llm"),
         ("vertex_embedding", "vertex_llm"),
-        ("bedrock_titan_embedding", "bedrock_anthropic_llm"),
+        ("bedrock_titan_embedding"),
         # Deactivated for now because of
         # https://github.com/run-llama/llama_index/pull/9396
         # ("bedrock_cohere_embedding", "bedrock_meta_llm"),
