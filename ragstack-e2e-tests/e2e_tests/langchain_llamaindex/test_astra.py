@@ -19,7 +19,6 @@ from llama_index.llms import OpenAI
 from llama_index.vector_stores import (
     AstraDBVectorStore,
     MetadataFilters,
-    MetadataFilter,
     ExactMatchFilter,
 )
 
