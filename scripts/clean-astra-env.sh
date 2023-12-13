@@ -16,6 +16,9 @@ ASTRA_BIN=${ASTRA_BIN:-astra}
 THRESHOLD_SECONDS=3600
 CURRENT_SECONDS=$(date +%s)
 
+echo "Listing databases:"
+list_output=$($ASTRA_BIN db list -o json --token $ASTRA_TOKEN --env $ASTRA_ENV)
+echo $list_output
 $ASTRA_BIN db list -o json --token $ASTRA_TOKEN --env $ASTRA_ENV | jq -r '.data.[].Name' | while IFS= read -r name; do
   echo "==============="
   echo "Database: $name"
