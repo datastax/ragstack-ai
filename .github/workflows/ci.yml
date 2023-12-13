@@ -56,7 +56,8 @@ jobs:
 
   e2e-tests:
     name: End-to-end Tests (${{ matrix.name }})
-    if: jobs.preconditions.outputs.e2e_tests == 'true' || jobs.preconditions.outputs.notebooks == 'true' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    needs: ["preconditions"]
+    if: needs.preconditions.outputs.e2e_tests == 'true' || needs.preconditions.outputs.notebooks == 'true' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -99,7 +100,7 @@ jobs:
           cloud: ${{ matrix.cloud }}
 
       - name: Run notebook tests
-        if: jobs.preconditions.outputs.notebooks == 'true' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        if: needs.preconditions.outputs.notebooks == 'true' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
         env:
           ASTRA_DB_APPLICATION_TOKEN: "${{ secrets[matrix.astra_token_secret] }}"
           ASTRA_DB_API_ENDPOINT: "${{ steps.astra-db.outputs.db_endpoint }}"
@@ -111,7 +112,7 @@ jobs:
 
       - name: Run E2E tests
         id: e2e-tests
-        if: jobs.preconditions.outputs.e2e_tests == 'true' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        if: needs.preconditions.outputs.e2e_tests == 'true' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
         env:
           ASTRA_DB_TOKEN: "${{ secrets[matrix.astra_token_secret] }}"
           ASTRA_DB_ENDPOINT: "${{ steps.astra-db.outputs.db_endpoint }}"
