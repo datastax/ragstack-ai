@@ -29,20 +29,25 @@ pip install ragstack-ai
 * [Examples](https://docs.datastax.com/en/ragstack/docs/examples/index.html)
 * [What is RAG?](https://docs.datastax.com/en/ragstack/docs/intro-to-rag/index.html)
 
-## Contributing
+## Contributing and building locally
 
-1. The project uses [poetry](https://python-poetry.org/).
+1. Clone this repo:
+```shell
+git clone https://github.com/datastax/ragstack-ai
+```
+
+2. The project uses [poetry](https://python-poetry.org/).
 To install poetry:
 ```shell
 pip install poetry
 ```
 
-2. Install dependencies
+3. Install dependencies
 ```shell
 poetry install
 ```
 
-3. Build the package distribution
+4. Build the package distribution
 ```shell
 poetry build
 ```
