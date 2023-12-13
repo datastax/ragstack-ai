@@ -18,8 +18,7 @@ CURRENT_SECONDS=$(date +%s)
 
 echo "Listing databases:"
 list_output=$($ASTRA_BIN db list -o json --token $ASTRA_TOKEN --env $ASTRA_ENV)
-echo $list_output
-$ASTRA_BIN db list -o json --token $ASTRA_TOKEN --env $ASTRA_ENV | jq -r '.data.[].Name' | while IFS= read -r name; do
+echo $list_output | jq -r '.data[].Name' | while IFS= read -r name; do
   echo "==============="
   echo "Database: $name"
   describe_out=$($ASTRA_BIN db describe $name -o json --token $ASTRA_TOKEN --env $ASTRA_ENV)
