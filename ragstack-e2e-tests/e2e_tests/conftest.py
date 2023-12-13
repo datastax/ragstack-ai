@@ -1,5 +1,6 @@
 import logging
 import os
+import time
 import uuid
 from dataclasses import dataclass
 
@@ -89,10 +90,15 @@ tests_stats = {
 
 @pytest.hookimpl(tryfirst=True, hookwrapper=True)
 def pytest_runtest_makereport(item, call):
-    # execute all other hooks to obtain the report object
+    info = os.path.basename(item.path) + "::" + item.name
+
     outcome = yield
     rep = outcome.get_result()
     if rep.when == "call":
+        start_time = int(os.environ["RAGSTACK_E2E_TESTS_TEST_START"])
+        os.environ["RAGSTACK_E2E_TESTS_TEST_START"] = ""
+        total_time = round((time.perf_counter_ns() - start_time) / 1e9)
+        logging.info(f"Test {info} took: {total_time} seconds")
         info = os.getenv("RAGSTACK_E2E_TESTS_TEST_INFO", "")
         if not info:
             info = os.path.basename(item.path) + "::" + item.name
@@ -108,13 +114,15 @@ def pytest_runtest_makereport(item, call):
         else:
             test_outcome = f"(? {rep.outcome}))"
         result = " " + str(call.excinfo) if call.excinfo else ""
-        report_line = f"{info} -> {test_outcome}{result}"
+        report_line = f"{info} -> {test_outcome}{result} ({total_time} s)"
         logging.info("Test report line: " + report_line)
         if rep.outcome != "passed":
             # also keep skipped tests in the report
             failed_report_lines.append(report_line)
         all_report_lines.append(report_line)
         os.environ["RAGSTACK_E2E_TESTS_TEST_INFO"] = ""
+    else:
+        os.environ["RAGSTACK_E2E_TESTS_TEST_START"] = str(time.perf_counter_ns())
 
 
 def set_current_test_info(test_name: str, test_info: str):
