@@ -1,14 +1,11 @@
+try:
+    import requests
+except ImportError:
+    print("Please install requests: pip install requests")
+    exit(1)
 import sys
 
-import requests
-
-try:
-    import toml
-except ImportError:
-    print("Please install toml package")
-    sys.exit(1)
-
-IMPORTANT_DEPENDENCIES = ["langchain", "llama-index", "astrapy", "cassio"]
+IMPORTANT_DEPENDENCIES = ["langchain", "llama-index", "astrapy", "cassio", "unstructured"]
 
 
 def main():
