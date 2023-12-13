@@ -28,6 +28,7 @@ jobs:
           ASTRA_TOKEN: "${{ secrets[matrix.astra_token_secret] }}"
           ASTRA_ENV: "${{ matrix.env }}"
         run: |
+          set -e
           (curl -Ls "https://dtsx.io/get-astra-cli" | bash) || true
-          source ~/.bashrc
+          export ASTRA_BIN=/home/runner/.astra/cli/astra
           ./scripts/clean-astra-env.sh
