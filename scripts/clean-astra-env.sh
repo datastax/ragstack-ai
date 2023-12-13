@@ -10,14 +10,16 @@ if [ -z "$ASTRA_ENV" ]; then
   exit 1
 fi
 
+ASTRA_BIN=${ASTRA_BIN:-astra}
+
 
 THRESHOLD_SECONDS=3600
 CURRENT_SECONDS=$(date +%s)
 
-astra db list -o json --token $ASTRA_TOKEN --env $ASTRA_ENV | jq -r '.data.[].Name' | while IFS= read -r name; do
+$ASTRA_BIN db list -o json --token $ASTRA_TOKEN --env $ASTRA_ENV | jq -r '.data.[].Name' | while IFS= read -r name; do
   echo "==============="
   echo "Database: $name"
-  describe_out=$(astra db describe $name -o json --token $ASTRA_TOKEN --env $ASTRA_ENV)
+  describe_out=$($ASTRA_BIN db describe $name -o json --token $ASTRA_TOKEN --env $ASTRA_ENV)
   status=$(echo "$describe_out" | jq -r '.data.status')
   echo "Status: $status"
   if [ "$status" == "TERMINATING" ]; then
@@ -31,7 +33,7 @@ astra db list -o json --token $ASTRA_TOKEN --env $ASTRA_ENV | jq -r '.data.[].Na
 
   if [ "$time_diff" -gt "$THRESHOLD_SECONDS" ]; then
       echo "Deleting $name.."
-      astra db delete -v "$name" --token $ASTRA_TOKEN --env $ASTRA_ENV --async
+      $ASTRA_BIN db delete -v "$name" --token $ASTRA_TOKEN --env $ASTRA_ENV --async
       echo "Database $name issued to deletion"
   else
       echo "Skipping $name"
