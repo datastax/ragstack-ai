@@ -1,0 +1,464 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>langchain_community.llms.aleph_alpha &mdash; 🦜🔗 LangChain 0.0.349</title>
+  
+  <link rel="canonical" href="https://api.python.langchain.com/en/latest/_modules/langchain_community/llms/aleph_alpha.html" />
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/vendor/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/autodoc_pydantic.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/panels-bootstrap.5fd3999ee7762ccc51105388f4a9d115.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+<script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+<script src="../../../_static/jquery.js"></script> 
+</head>
+<body>
+
+
+<nav id="navbar" class="sk-docs-navbar navbar navbar-expand-md navbar-light bg-light py-0">
+  <div class="container-fluid sk-docs-container px-0">
+    <button
+      id="sk-navbar-toggler"
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="sk-navbar-collapse collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../api_reference.html">API</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../core_api_reference.html">Core</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../community_api_reference.html">Community</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../experimental_api_reference.html">Experimental</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" target="_blank" rel="noopener noreferrer" href="https://python.langchain.com/">Python Docs</a>
+        </li>
+      </ul>
+      <div id="searchbox" role="search">
+          <div class="searchformwrapper">
+          <form class="search" action="../../../search.html" method="get">
+            <input class="sk-search-text-input" type="text" name="q" aria-labelledby="searchlabel" />
+            <input class="sk-search-text-btn" type="submit" value="Go" />
+          </form>
+          </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="d-flex" id="sk-doc-wrapper">
+    <input type="checkbox" name="sk-toggle-checkbox" id="sk-toggle-checkbox">
+    <label id="sk-sidemenu-toggle" class="sk-btn-toggle-toc btn sk-btn-primary" for="sk-toggle-checkbox">Toggle Menu</label>
+    <div id="sk-sidebar-wrapper" class="border-right">
+      <div class="sk-sidebar-toc-wrapper">
+        <div class="btn-group w-100 mb-2" role="group" aria-label="rellinks">
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Prev</a><a href="../../index.html" role="button" class="btn sk-btn-rellink py-1" sk-rellink-tooltip="Module code">Up</a>
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Next</a>
+        </div>
+        <div class="alert alert-warning p-1 mb-2" role="alert">
+          <p class="text-center mb-0">
+          <strong>LangChain 0.0.349</strong><br/>
+          </p>
+        </div>
+            <div class="sk-sidebar-toc">
+              
+            </div>
+      </div>
+    </div>
+    <div id="sk-page-content-wrapper">
+      <div class="sk-page-content container-fluid body px-md-3" role="main">
+        
+  <h1>Source code for langchain_community.llms.aleph_alpha</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Sequence</span>
+
+<span class="kn">from</span> <span class="nn">langchain_core.callbacks</span> <span class="kn">import</span> <span class="n">CallbackManagerForLLMRun</span>
+<span class="kn">from</span> <span class="nn">langchain_core.language_models.llms</span> <span class="kn">import</span> <span class="n">LLM</span>
+<span class="kn">from</span> <span class="nn">langchain_core.pydantic_v1</span> <span class="kn">import</span> <span class="n">Extra</span><span class="p">,</span> <span class="n">root_validator</span>
+<span class="kn">from</span> <span class="nn">langchain_core.utils</span> <span class="kn">import</span> <span class="n">convert_to_secret_str</span><span class="p">,</span> <span class="n">get_from_dict_or_env</span>
+
+<span class="kn">from</span> <span class="nn">langchain_community.llms.utils</span> <span class="kn">import</span> <span class="n">enforce_stop_tokens</span>
+
+
+<div class="viewcode-block" id="AlephAlpha"><a class="viewcode-back" href="../../../llms/langchain_community.llms.aleph_alpha.AlephAlpha.html#langchain_community.llms.aleph_alpha.AlephAlpha">[docs]</a><span class="k">class</span> <span class="nc">AlephAlpha</span><span class="p">(</span><span class="n">LLM</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Aleph Alpha large language models.</span>
+
+<span class="sd">    To use, you should have the ``aleph_alpha_client`` python package installed, and the</span>
+<span class="sd">    environment variable ``ALEPH_ALPHA_API_KEY`` set with your API key, or pass</span>
+<span class="sd">    it as a named parameter to the constructor.</span>
+
+<span class="sd">    Parameters are explained more in depth here:</span>
+<span class="sd">    https://github.com/Aleph-Alpha/aleph-alpha-client/blob/c14b7dd2b4325c7da0d6a119f6e76385800e097b/aleph_alpha_client/completion.py#L10</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            from langchain_community.llms import AlephAlpha</span>
+<span class="sd">            aleph_alpha = AlephAlpha(aleph_alpha_api_key=&quot;my-api-key&quot;)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">client</span><span class="p">:</span> <span class="n">Any</span>  <span class="c1">#: :meta private:</span>
+    <span class="n">model</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;luminous-base&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Model name to use.&quot;&quot;&quot;</span>
+
+    <span class="n">maximum_tokens</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">64</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The maximum number of tokens to be generated.&quot;&quot;&quot;</span>
+
+    <span class="n">temperature</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A non-negative float that tunes the degree of randomness in generation.&quot;&quot;&quot;</span>
+
+    <span class="n">top_k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Number of most likely tokens to consider at each step.&quot;&quot;&quot;</span>
+
+    <span class="n">top_p</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Total probability mass of tokens to consider at each step.&quot;&quot;&quot;</span>
+
+    <span class="n">presence_penalty</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Penalizes repeated tokens.&quot;&quot;&quot;</span>
+
+    <span class="n">frequency_penalty</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Penalizes repeated tokens according to frequency.&quot;&quot;&quot;</span>
+
+    <span class="n">repetition_penalties_include_prompt</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Flag deciding whether presence penalty or frequency penalty are</span>
+<span class="sd">    updated from the prompt.&quot;&quot;&quot;</span>
+
+    <span class="n">use_multiplicative_presence_penalty</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Flag deciding whether presence penalty is applied</span>
+<span class="sd">    multiplicatively (True) or additively (False).&quot;&quot;&quot;</span>
+
+    <span class="n">penalty_bias</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Penalty bias for the completion.&quot;&quot;&quot;</span>
+
+    <span class="n">penalty_exceptions</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;List of strings that may be generated without penalty,</span>
+<span class="sd">    regardless of other penalty settings&quot;&quot;&quot;</span>
+
+    <span class="n">penalty_exceptions_include_stop_sequences</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Should stop_sequences be included in penalty_exceptions.&quot;&quot;&quot;</span>
+
+    <span class="n">best_of</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;returns the one with the &quot;best of&quot; results</span>
+<span class="sd">    (highest log probability per token)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;How many completions to generate for each prompt.&quot;&quot;&quot;</span>
+
+    <span class="n">logit_bias</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The logit bias allows to influence the likelihood of generating tokens.&quot;&quot;&quot;</span>
+
+    <span class="n">log_probs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Number of top log probabilities to be returned for each generated token.&quot;&quot;&quot;</span>
+
+    <span class="n">tokens</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;return tokens of completion.&quot;&quot;&quot;</span>
+
+    <span class="n">disable_optimizations</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="n">minimum_tokens</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate at least this number of tokens.&quot;&quot;&quot;</span>
+
+    <span class="n">echo</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Echo the prompt in the completion.&quot;&quot;&quot;</span>
+
+    <span class="n">use_multiplicative_frequency_penalty</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="n">sequence_penalty</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+    <span class="n">sequence_penalty_min_length</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span>
+
+    <span class="n">use_multiplicative_sequence_penalty</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="n">completion_bias_inclusion</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="n">completion_bias_inclusion_first_token_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="n">completion_bias_exclusion</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="n">completion_bias_exclusion_first_token_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Only consider the first token for the completion_bias_exclusion.&quot;&quot;&quot;</span>
+
+    <span class="n">contextual_control_threshold</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;If set to None, attention control parameters only apply to those tokens that have</span>
+<span class="sd">    explicitly been set in the request.</span>
+<span class="sd">    If set to a non-None value, control parameters are also applied to similar tokens.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">control_log_additive</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;True: apply control by adding the log(control_factor) to attention scores.</span>
+<span class="sd">    False: (attention_scores - - attention_scores.min(-1)) * control_factor</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">repetition_penalties_include_completion</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Flag deciding whether presence penalty or frequency penalty</span>
+<span class="sd">    are updated from the completion.&quot;&quot;&quot;</span>
+
+    <span class="n">raw_completion</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Force the raw completion of the model to be returned.&quot;&quot;&quot;</span>
+
+    <span class="n">stop_sequences</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Stop sequences to use.&quot;&quot;&quot;</span>
+
+    <span class="c1"># Client params</span>
+    <span class="n">aleph_alpha_api_key</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;API key for Aleph Alpha API.&quot;&quot;&quot;</span>
+    <span class="n">host</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;https://api.aleph-alpha.com&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The hostname of the API host. </span>
+<span class="sd">    The default one is &quot;https://api.aleph-alpha.com&quot;)&quot;&quot;&quot;</span>
+    <span class="n">hosting</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Determines in which datacenters the request may be processed.</span>
+<span class="sd">    You can either set the parameter to &quot;aleph-alpha&quot; or omit it (defaulting to None).</span>
+<span class="sd">    Not setting this value, or setting it to None, gives us maximal </span>
+<span class="sd">    flexibility in processing your request in our</span>
+<span class="sd">    own datacenters and on servers hosted with other providers. </span>
+<span class="sd">    Choose this option for maximal availability.</span>
+<span class="sd">    Setting it to &quot;aleph-alpha&quot; allows us to only process the </span>
+<span class="sd">    request in our own datacenters.</span>
+<span class="sd">    Choose this option for maximal data privacy.&quot;&quot;&quot;</span>
+    <span class="n">request_timeout_seconds</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">305</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Client timeout that will be set for HTTP requests in the </span>
+<span class="sd">    `requests` library&#39;s API calls.</span>
+<span class="sd">    Server will close all requests after 300 seconds with an internal server error.&quot;&quot;&quot;</span>
+    <span class="n">total_retries</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The number of retries made in case requests fail with certain retryable </span>
+<span class="sd">    status codes. If the last</span>
+<span class="sd">    retry fails a corresponding exception is raised. Note, that between retries</span>
+<span class="sd">    an exponential backoff</span>
+<span class="sd">    is applied, starting with 0.5 s after the first retry and doubling for</span>
+<span class="sd">    each retry made. So with the</span>
+<span class="sd">    default setting of 8 retries a total wait time of 63.5 s is added </span>
+<span class="sd">    between the retries.&quot;&quot;&quot;</span>
+    <span class="n">nice</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Setting this to True, will signal to the API that you intend to be </span>
+<span class="sd">    nice to other users</span>
+<span class="sd">    by de-prioritizing your request below concurrent ones.&quot;&quot;&quot;</span>
+
+    <span class="k">class</span> <span class="nc">Config</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Configuration for this pydantic object.&quot;&quot;&quot;</span>
+
+        <span class="n">extra</span> <span class="o">=</span> <span class="n">Extra</span><span class="o">.</span><span class="n">forbid</span>
+
+    <span class="nd">@root_validator</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">validate_environment</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Validate that api key and python package exists in environment.&quot;&quot;&quot;</span>
+        <span class="n">values</span><span class="p">[</span><span class="s2">&quot;aleph_alpha_api_key&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">convert_to_secret_str</span><span class="p">(</span>
+            <span class="n">get_from_dict_or_env</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="s2">&quot;aleph_alpha_api_key&quot;</span><span class="p">,</span> <span class="s2">&quot;ALEPH_ALPHA_API_KEY&quot;</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">aleph_alpha_client</span> <span class="kn">import</span> <span class="n">Client</span>
+
+            <span class="n">values</span><span class="p">[</span><span class="s2">&quot;client&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span>
+                <span class="n">token</span><span class="o">=</span><span class="n">values</span><span class="p">[</span><span class="s2">&quot;aleph_alpha_api_key&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get_secret_value</span><span class="p">(),</span>
+                <span class="n">host</span><span class="o">=</span><span class="n">values</span><span class="p">[</span><span class="s2">&quot;host&quot;</span><span class="p">],</span>
+                <span class="n">hosting</span><span class="o">=</span><span class="n">values</span><span class="p">[</span><span class="s2">&quot;hosting&quot;</span><span class="p">],</span>
+                <span class="n">request_timeout_seconds</span><span class="o">=</span><span class="n">values</span><span class="p">[</span><span class="s2">&quot;request_timeout_seconds&quot;</span><span class="p">],</span>
+                <span class="n">total_retries</span><span class="o">=</span><span class="n">values</span><span class="p">[</span><span class="s2">&quot;total_retries&quot;</span><span class="p">],</span>
+                <span class="n">nice</span><span class="o">=</span><span class="n">values</span><span class="p">[</span><span class="s2">&quot;nice&quot;</span><span class="p">],</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+                <span class="s2">&quot;Could not import aleph_alpha_client python package. &quot;</span>
+                <span class="s2">&quot;Please install it with `pip install aleph_alpha_client`.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">values</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_default_params</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the default parameters for calling the Aleph Alpha API.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;maximum_tokens&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">maximum_tokens</span><span class="p">,</span>
+            <span class="s2">&quot;temperature&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">temperature</span><span class="p">,</span>
+            <span class="s2">&quot;top_k&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">top_k</span><span class="p">,</span>
+            <span class="s2">&quot;top_p&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">top_p</span><span class="p">,</span>
+            <span class="s2">&quot;presence_penalty&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">presence_penalty</span><span class="p">,</span>
+            <span class="s2">&quot;frequency_penalty&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">frequency_penalty</span><span class="p">,</span>
+            <span class="s2">&quot;n&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">,</span>
+            <span class="s2">&quot;repetition_penalties_include_prompt&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">repetition_penalties_include_prompt</span><span class="p">,</span>  <span class="c1"># noqa: E501</span>
+            <span class="s2">&quot;use_multiplicative_presence_penalty&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_multiplicative_presence_penalty</span><span class="p">,</span>  <span class="c1"># noqa: E501</span>
+            <span class="s2">&quot;penalty_bias&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">penalty_bias</span><span class="p">,</span>
+            <span class="s2">&quot;penalty_exceptions&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">penalty_exceptions</span><span class="p">,</span>
+            <span class="s2">&quot;penalty_exceptions_include_stop_sequences&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">penalty_exceptions_include_stop_sequences</span><span class="p">,</span>  <span class="c1"># noqa: E501</span>
+            <span class="s2">&quot;best_of&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">best_of</span><span class="p">,</span>
+            <span class="s2">&quot;logit_bias&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">logit_bias</span><span class="p">,</span>
+            <span class="s2">&quot;log_probs&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_probs</span><span class="p">,</span>
+            <span class="s2">&quot;tokens&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">tokens</span><span class="p">,</span>
+            <span class="s2">&quot;disable_optimizations&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">disable_optimizations</span><span class="p">,</span>
+            <span class="s2">&quot;minimum_tokens&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">minimum_tokens</span><span class="p">,</span>
+            <span class="s2">&quot;echo&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">echo</span><span class="p">,</span>
+            <span class="s2">&quot;use_multiplicative_frequency_penalty&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_multiplicative_frequency_penalty</span><span class="p">,</span>  <span class="c1"># noqa: E501</span>
+            <span class="s2">&quot;sequence_penalty&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">sequence_penalty</span><span class="p">,</span>
+            <span class="s2">&quot;sequence_penalty_min_length&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">sequence_penalty_min_length</span><span class="p">,</span>
+            <span class="s2">&quot;use_multiplicative_sequence_penalty&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_multiplicative_sequence_penalty</span><span class="p">,</span>  <span class="c1"># noqa: E501</span>
+            <span class="s2">&quot;completion_bias_inclusion&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">completion_bias_inclusion</span><span class="p">,</span>
+            <span class="s2">&quot;completion_bias_inclusion_first_token_only&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">completion_bias_inclusion_first_token_only</span><span class="p">,</span>  <span class="c1"># noqa: E501</span>
+            <span class="s2">&quot;completion_bias_exclusion&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">completion_bias_exclusion</span><span class="p">,</span>
+            <span class="s2">&quot;completion_bias_exclusion_first_token_only&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">completion_bias_exclusion_first_token_only</span><span class="p">,</span>  <span class="c1"># noqa: E501</span>
+            <span class="s2">&quot;contextual_control_threshold&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">contextual_control_threshold</span><span class="p">,</span>
+            <span class="s2">&quot;control_log_additive&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">control_log_additive</span><span class="p">,</span>
+            <span class="s2">&quot;repetition_penalties_include_completion&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">repetition_penalties_include_completion</span><span class="p">,</span>  <span class="c1"># noqa: E501</span>
+            <span class="s2">&quot;raw_completion&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">raw_completion</span><span class="p">,</span>
+        <span class="p">}</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_identifying_params</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the identifying parameters.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span><span class="o">**</span><span class="p">{</span><span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">},</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_default_params</span><span class="p">}</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_llm_type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return type of llm.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s2">&quot;aleph_alpha&quot;</span>
+
+    <span class="k">def</span> <span class="nf">_call</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">stop</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">run_manager</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">CallbackManagerForLLMRun</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Call out to Aleph Alpha&#39;s completion endpoint.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            prompt: The prompt to pass into the model.</span>
+<span class="sd">            stop: Optional list of stop words to use when generating.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The string generated by the model.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            .. code-block:: python</span>
+
+<span class="sd">                response = aleph_alpha(&quot;Tell me a joke.&quot;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">aleph_alpha_client</span> <span class="kn">import</span> <span class="n">CompletionRequest</span><span class="p">,</span> <span class="n">Prompt</span>
+
+        <span class="n">params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_default_params</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop_sequences</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">stop</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;stop sequences found in both the input and default params.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop_sequences</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">params</span><span class="p">[</span><span class="s2">&quot;stop_sequences&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop_sequences</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">params</span><span class="p">[</span><span class="s2">&quot;stop_sequences&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">stop</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="n">params</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">}</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="n">CompletionRequest</span><span class="p">(</span><span class="n">prompt</span><span class="o">=</span><span class="n">Prompt</span><span class="o">.</span><span class="n">from_text</span><span class="p">(</span><span class="n">prompt</span><span class="p">),</span> <span class="o">**</span><span class="n">params</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">complete</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">request</span><span class="o">=</span><span class="n">request</span><span class="p">)</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">completions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">completion</span>
+        <span class="c1"># If stop tokens are provided, Aleph Alpha&#39;s endpoint returns them.</span>
+        <span class="c1"># In order to make this consistent with other endpoints, we strip them.</span>
+        <span class="k">if</span> <span class="n">stop</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop_sequences</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="n">enforce_stop_tokens</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">params</span><span class="p">[</span><span class="s2">&quot;stop_sequences&quot;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">text</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">aa</span> <span class="o">=</span> <span class="n">AlephAlpha</span><span class="p">()</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="n">aa</span><span class="p">(</span><span class="s2">&quot;How are you?&quot;</span><span class="p">))</span>
+</pre></div>
+
+      </div>
+    <div class="container">
+      <footer class="sk-content-footer">
+            &copy; 2023, Harrison Chase.
+          Last updated on Dec 14, 2023.
+      </footer>
+    </div>
+  </div>
+</div>
+<script src="../../../_static/js/vendor/bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    /* Add a [>>>] button on the top-right corner of code samples to hide
+     * the >>> and ... prompts and the output and thus make the code
+     * copyable. */
+    var div = $('.highlight-python .highlight,' +
+                '.highlight-python3 .highlight,' +
+                '.highlight-pycon .highlight,' +
+		'.highlight-default .highlight')
+    var pre = div.find('pre');
+
+    // get the styles from the current theme
+    pre.parent().parent().css('position', 'relative');
+    var hide_text = 'Hide prompts and outputs';
+    var show_text = 'Show prompts and outputs';
+
+    // create and add the button to all the code blocks that contain >>>
+    div.each(function(index) {
+        var jthis = $(this);
+        if (jthis.find('.gp').length > 0) {
+            var button = $('<span class="copybutton">&gt;&gt;&gt;</span>');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+            jthis.prepend(button);
+        }
+        // tracebacks (.gt) contain bare text elements that need to be
+        // wrapped in a span to work with .nextUntil() (see later)
+        jthis.find('pre:has(.gt)').contents().filter(function() {
+            return ((this.nodeType == 3) && (this.data.trim().length > 0));
+        }).wrap('<span>');
+    });
+
+    // define the behavior of the button when it's clicked
+    $('.copybutton').click(function(e){
+        e.preventDefault();
+        var button = $(this);
+        if (button.data('hidden') === 'false') {
+            // hide the code output
+            button.parent().find('.go, .gp, .gt').hide();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'hidden');
+            button.css('text-decoration', 'line-through');
+            button.attr('title', show_text);
+            button.data('hidden', 'true');
+        } else {
+            // show the code output
+            button.parent().find('.go, .gp, .gt').show();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'visible');
+            button.css('text-decoration', 'none');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+        }
+    });
+
+	/*** Add permalink buttons next to glossary terms ***/
+	$('dl.glossary > dt[id]').append(function() {
+		return ('<a class="headerlink" href="#' +
+			    this.getAttribute('id') +
+			    '" title="Permalink to this term">¶</a>');
+	});
+});
+
+</script>
+    
+</body>
+</html>

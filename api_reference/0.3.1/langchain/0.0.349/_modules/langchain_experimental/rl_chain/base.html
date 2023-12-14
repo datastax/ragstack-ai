@@ -1,0 +1,812 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>langchain_experimental.rl_chain.base &mdash; 🦜🔗 LangChain 0.0.349</title>
+  
+  <link rel="canonical" href="https://api.python.langchain.com/en/latest/_modules/langchain_experimental/rl_chain/base.html" />
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/vendor/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/autodoc_pydantic.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/panels-bootstrap.5fd3999ee7762ccc51105388f4a9d115.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+<script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+<script src="../../../_static/jquery.js"></script> 
+</head>
+<body>
+
+
+<nav id="navbar" class="sk-docs-navbar navbar navbar-expand-md navbar-light bg-light py-0">
+  <div class="container-fluid sk-docs-container px-0">
+    <button
+      id="sk-navbar-toggler"
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="sk-navbar-collapse collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../api_reference.html">API</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../core_api_reference.html">Core</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../community_api_reference.html">Community</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../experimental_api_reference.html">Experimental</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" target="_blank" rel="noopener noreferrer" href="https://python.langchain.com/">Python Docs</a>
+        </li>
+      </ul>
+      <div id="searchbox" role="search">
+          <div class="searchformwrapper">
+          <form class="search" action="../../../search.html" method="get">
+            <input class="sk-search-text-input" type="text" name="q" aria-labelledby="searchlabel" />
+            <input class="sk-search-text-btn" type="submit" value="Go" />
+          </form>
+          </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="d-flex" id="sk-doc-wrapper">
+    <input type="checkbox" name="sk-toggle-checkbox" id="sk-toggle-checkbox">
+    <label id="sk-sidemenu-toggle" class="sk-btn-toggle-toc btn sk-btn-primary" for="sk-toggle-checkbox">Toggle Menu</label>
+    <div id="sk-sidebar-wrapper" class="border-right">
+      <div class="sk-sidebar-toc-wrapper">
+        <div class="btn-group w-100 mb-2" role="group" aria-label="rellinks">
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Prev</a><a href="../../index.html" role="button" class="btn sk-btn-rellink py-1" sk-rellink-tooltip="Module code">Up</a>
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Next</a>
+        </div>
+        <div class="alert alert-warning p-1 mb-2" role="alert">
+          <p class="text-center mb-0">
+          <strong>LangChain 0.0.349</strong><br/>
+          </p>
+        </div>
+            <div class="sk-sidebar-toc">
+              
+            </div>
+      </div>
+    </div>
+    <div id="sk-page-content-wrapper">
+      <div class="sk-page-content container-fluid body px-md-3" role="main">
+        
+  <h1>Source code for langchain_experimental.rl_chain.base</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">TYPE_CHECKING</span><span class="p">,</span>
+    <span class="n">Any</span><span class="p">,</span>
+    <span class="n">Dict</span><span class="p">,</span>
+    <span class="n">Generic</span><span class="p">,</span>
+    <span class="n">List</span><span class="p">,</span>
+    <span class="n">Optional</span><span class="p">,</span>
+    <span class="n">Tuple</span><span class="p">,</span>
+    <span class="n">Type</span><span class="p">,</span>
+    <span class="n">TypeVar</span><span class="p">,</span>
+    <span class="n">Union</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">langchain.callbacks.manager</span> <span class="kn">import</span> <span class="n">CallbackManagerForChainRun</span>
+<span class="kn">from</span> <span class="nn">langchain.chains.base</span> <span class="kn">import</span> <span class="n">Chain</span>
+<span class="kn">from</span> <span class="nn">langchain.chains.llm</span> <span class="kn">import</span> <span class="n">LLMChain</span>
+<span class="kn">from</span> <span class="nn">langchain.prompts</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">BasePromptTemplate</span><span class="p">,</span>
+    <span class="n">ChatPromptTemplate</span><span class="p">,</span>
+    <span class="n">HumanMessagePromptTemplate</span><span class="p">,</span>
+    <span class="n">SystemMessagePromptTemplate</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">langchain_experimental.pydantic_v1</span> <span class="kn">import</span> <span class="n">BaseModel</span><span class="p">,</span> <span class="n">Extra</span><span class="p">,</span> <span class="n">root_validator</span>
+<span class="kn">from</span> <span class="nn">langchain_experimental.rl_chain.metrics</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">MetricsTrackerAverage</span><span class="p">,</span>
+    <span class="n">MetricsTrackerRollingWindow</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">langchain_experimental.rl_chain.model_repository</span> <span class="kn">import</span> <span class="n">ModelRepository</span>
+<span class="kn">from</span> <span class="nn">langchain_experimental.rl_chain.vw_logger</span> <span class="kn">import</span> <span class="n">VwLogger</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">vowpal_wabbit_next</span> <span class="k">as</span> <span class="nn">vw</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">_BasedOn</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+
+    <span class="fm">__repr__</span> <span class="o">=</span> <span class="fm">__str__</span>
+
+
+<div class="viewcode-block" id="BasedOn"><a class="viewcode-back" href="../../../rl_chain/langchain_experimental.rl_chain.base.BasedOn.html#langchain_experimental.rl_chain.base.BasedOn">[docs]</a><span class="k">def</span> <span class="nf">BasedOn</span><span class="p">(</span><span class="n">anything</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_BasedOn</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">_BasedOn</span><span class="p">(</span><span class="n">anything</span><span class="p">)</span></div>
+
+
+<span class="k">class</span> <span class="nc">_ToSelectFrom</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+
+    <span class="fm">__repr__</span> <span class="o">=</span> <span class="fm">__str__</span>
+
+
+<div class="viewcode-block" id="ToSelectFrom"><a class="viewcode-back" href="../../../rl_chain/langchain_experimental.rl_chain.base.ToSelectFrom.html#langchain_experimental.rl_chain.base.ToSelectFrom">[docs]</a><span class="k">def</span> <span class="nf">ToSelectFrom</span><span class="p">(</span><span class="n">anything</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_ToSelectFrom</span><span class="p">:</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">anything</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;ToSelectFrom must be a list to select from&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_ToSelectFrom</span><span class="p">(</span><span class="n">anything</span><span class="p">)</span></div>
+
+
+<span class="k">class</span> <span class="nc">_Embed</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">keep</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">keep</span> <span class="o">=</span> <span class="n">keep</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+
+    <span class="fm">__repr__</span> <span class="o">=</span> <span class="fm">__str__</span>
+
+
+<div class="viewcode-block" id="Embed"><a class="viewcode-back" href="../../../rl_chain/langchain_experimental.rl_chain.base.Embed.html#langchain_experimental.rl_chain.base.Embed">[docs]</a><span class="k">def</span> <span class="nf">Embed</span><span class="p">(</span><span class="n">anything</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">keep</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">anything</span><span class="p">,</span> <span class="n">_ToSelectFrom</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ToSelectFrom</span><span class="p">(</span><span class="n">Embed</span><span class="p">(</span><span class="n">anything</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">keep</span><span class="o">=</span><span class="n">keep</span><span class="p">))</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">anything</span><span class="p">,</span> <span class="n">_BasedOn</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">BasedOn</span><span class="p">(</span><span class="n">Embed</span><span class="p">(</span><span class="n">anything</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">keep</span><span class="o">=</span><span class="n">keep</span><span class="p">))</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">anything</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">Embed</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">keep</span><span class="o">=</span><span class="n">keep</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">anything</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">anything</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">Embed</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">keep</span><span class="o">=</span><span class="n">keep</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">anything</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">anything</span><span class="p">,</span> <span class="n">_Embed</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">anything</span>
+    <span class="k">return</span> <span class="n">_Embed</span><span class="p">(</span><span class="n">anything</span><span class="p">,</span> <span class="n">keep</span><span class="o">=</span><span class="n">keep</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="EmbedAndKeep"><a class="viewcode-back" href="../../../rl_chain/langchain_experimental.rl_chain.base.EmbedAndKeep.html#langchain_experimental.rl_chain.base.EmbedAndKeep">[docs]</a><span class="k">def</span> <span class="nf">EmbedAndKeep</span><span class="p">(</span><span class="n">anything</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">Embed</span><span class="p">(</span><span class="n">anything</span><span class="p">,</span> <span class="n">keep</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+<span class="c1"># helper functions</span>
+
+
+<div class="viewcode-block" id="stringify_embedding"><a class="viewcode-back" href="../../../rl_chain/langchain_experimental.rl_chain.base.stringify_embedding.html#langchain_experimental.rl_chain.base.stringify_embedding">[docs]</a><span class="k">def</span> <span class="nf">stringify_embedding</span><span class="p">(</span><span class="n">embedding</span><span class="p">:</span> <span class="n">List</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">return</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">embedding</span><span class="p">)])</span></div>
+
+
+<div class="viewcode-block" id="parse_lines"><a class="viewcode-back" href="../../../rl_chain/langchain_experimental.rl_chain.base.parse_lines.html#langchain_experimental.rl_chain.base.parse_lines">[docs]</a><span class="k">def</span> <span class="nf">parse_lines</span><span class="p">(</span><span class="n">parser</span><span class="p">:</span> <span class="s2">&quot;vw.TextFormatParser&quot;</span><span class="p">,</span> <span class="n">input_str</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="s2">&quot;vw.Example&quot;</span><span class="p">]:</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">parse_line</span><span class="p">(</span><span class="n">line</span><span class="p">)</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">input_str</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)]</span></div>
+
+
+<div class="viewcode-block" id="get_based_on_and_to_select_from"><a class="viewcode-back" href="../../../rl_chain/langchain_experimental.rl_chain.base.get_based_on_and_to_select_from.html#langchain_experimental.rl_chain.base.get_based_on_and_to_select_from">[docs]</a><span class="k">def</span> <span class="nf">get_based_on_and_to_select_from</span><span class="p">(</span><span class="n">inputs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Dict</span><span class="p">,</span> <span class="n">Dict</span><span class="p">]:</span>
+    <span class="n">to_select_from</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">k</span><span class="p">:</span> <span class="n">inputs</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">inputs</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">inputs</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">_ToSelectFrom</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">to_select_from</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;No variables using &#39;ToSelectFrom&#39; found in the inputs. Please include at least one variable containing a list to select from.&quot;</span>  <span class="c1"># noqa: E501</span>
+        <span class="p">)</span>
+
+    <span class="n">based_on</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">k</span><span class="p">:</span> <span class="n">inputs</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">value</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">inputs</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="p">[</span><span class="n">inputs</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">inputs</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">inputs</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">_BasedOn</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">based_on</span><span class="p">,</span> <span class="n">to_select_from</span></div>
+
+
+<div class="viewcode-block" id="prepare_inputs_for_autoembed"><a class="viewcode-back" href="../../../rl_chain/langchain_experimental.rl_chain.base.prepare_inputs_for_autoembed.html#langchain_experimental.rl_chain.base.prepare_inputs_for_autoembed">[docs]</a><span class="k">def</span> <span class="nf">prepare_inputs_for_autoembed</span><span class="p">(</span><span class="n">inputs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    go over all the inputs and if something is either wrapped in _ToSelectFrom or _BasedOn, and if their inner values are not already _Embed,</span>
+<span class="sd">    then wrap them in EmbedAndKeep while retaining their _ToSelectFrom or _BasedOn status</span>
+<span class="sd">    &quot;&quot;&quot;</span>  <span class="c1"># noqa: E501</span>
+
+    <span class="n">next_inputs</span> <span class="o">=</span> <span class="n">inputs</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">next_inputs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">_ToSelectFrom</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">_BasedOn</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">_Embed</span><span class="p">):</span>
+                <span class="n">next_inputs</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">EmbedAndKeep</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">next_inputs</span></div>
+
+
+<span class="c1"># end helper functions</span>
+
+
+<div class="viewcode-block" id="Selected"><a class="viewcode-back" href="../../../rl_chain/langchain_experimental.rl_chain.base.Selected.html#langchain_experimental.rl_chain.base.Selected">[docs]</a><span class="k">class</span> <span class="nc">Selected</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+    <span class="k">pass</span></div>
+
+
+<span class="n">TSelected</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;TSelected&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">Selected</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Event"><a class="viewcode-back" href="../../../rl_chain/langchain_experimental.rl_chain.base.Event.html#langchain_experimental.rl_chain.base.Event">[docs]</a><span class="k">class</span> <span class="nc">Event</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">TSelected</span><span class="p">],</span> <span class="n">ABC</span><span class="p">):</span>
+    <span class="n">inputs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
+    <span class="n">selected</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TSelected</span><span class="p">]</span>
+
+<div class="viewcode-block" id="Event.__init__"><a class="viewcode-back" href="../../../rl_chain/langchain_experimental.rl_chain.base.Event.html#langchain_experimental.rl_chain.base.Event.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">selected</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TSelected</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span> <span class="o">=</span> <span class="n">inputs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">selected</span> <span class="o">=</span> <span class="n">selected</span></div></div>
+
+
+<span class="n">TEvent</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;TEvent&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">Event</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Policy"><a class="viewcode-back" href="../../../rl_chain/langchain_experimental.rl_chain.base.Policy.html#langchain_experimental.rl_chain.base.Policy">[docs]</a><span class="k">class</span> <span class="nc">Policy</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">TEvent</span><span class="p">],</span> <span class="n">ABC</span><span class="p">):</span>
+<div class="viewcode-block" id="Policy.__init__"><a class="viewcode-back" href="../../../rl_chain/langchain_experimental.rl_chain.base.Policy.html#langchain_experimental.rl_chain.base.Policy.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">):</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="Policy.predict"><a class="viewcode-back" href="../../../rl_chain/langchain_experimental.rl_chain.base.Policy.html#langchain_experimental.rl_chain.base.Policy.predict">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="n">TEvent</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+        <span class="o">...</span></div>
+
+<div class="viewcode-block" id="Policy.learn"><a class="viewcode-back" href="../../../rl_chain/langchain_experimental.rl_chain.base.Policy.html#langchain_experimental.rl_chain.base.Policy.learn">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">learn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="n">TEvent</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="o">...</span></div>
+
+<div class="viewcode-block" id="Policy.log"><a class="viewcode-back" href="../../../rl_chain/langchain_experimental.rl_chain.base.Policy.html#langchain_experimental.rl_chain.base.Policy.log">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">log</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="n">TEvent</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="o">...</span></div>
+
+<div class="viewcode-block" id="Policy.save"><a class="viewcode-back" href="../../../rl_chain/langchain_experimental.rl_chain.base.Policy.html#langchain_experimental.rl_chain.base.Policy.save">[docs]</a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">pass</span></div></div>
+
+
+<div class="viewcode-block" id="VwPolicy"><a class="viewcode-back" href="../../../rl_chain/langchain_experimental.rl_chain.base.VwPolicy.html#langchain_experimental.rl_chain.base.VwPolicy">[docs]</a><span class="k">class</span> <span class="nc">VwPolicy</span><span class="p">(</span><span class="n">Policy</span><span class="p">):</span>
+<div class="viewcode-block" id="VwPolicy.__init__"><a class="viewcode-back" href="../../../rl_chain/langchain_experimental.rl_chain.base.VwPolicy.html#langchain_experimental.rl_chain.base.VwPolicy.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">model_repo</span><span class="p">:</span> <span class="n">ModelRepository</span><span class="p">,</span>
+        <span class="n">vw_cmd</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">feature_embedder</span><span class="p">:</span> <span class="n">Embedder</span><span class="p">,</span>
+        <span class="n">vw_logger</span><span class="p">:</span> <span class="n">VwLogger</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_repo</span> <span class="o">=</span> <span class="n">model_repo</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">workspace</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_repo</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">vw_cmd</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">feature_embedder</span> <span class="o">=</span> <span class="n">feature_embedder</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vw_logger</span> <span class="o">=</span> <span class="n">vw_logger</span></div>
+
+<div class="viewcode-block" id="VwPolicy.predict"><a class="viewcode-back" href="../../../rl_chain/langchain_experimental.rl_chain.base.VwPolicy.html#langchain_experimental.rl_chain.base.VwPolicy.predict">[docs]</a>    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="n">TEvent</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+        <span class="kn">import</span> <span class="nn">vowpal_wabbit_next</span> <span class="k">as</span> <span class="nn">vw</span>
+
+        <span class="n">text_parser</span> <span class="o">=</span> <span class="n">vw</span><span class="o">.</span><span class="n">TextFormatParser</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">workspace</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">workspace</span><span class="o">.</span><span class="n">predict_one</span><span class="p">(</span>
+            <span class="n">parse_lines</span><span class="p">(</span><span class="n">text_parser</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">feature_embedder</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">event</span><span class="p">))</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="VwPolicy.learn"><a class="viewcode-back" href="../../../rl_chain/langchain_experimental.rl_chain.base.VwPolicy.html#langchain_experimental.rl_chain.base.VwPolicy.learn">[docs]</a>    <span class="k">def</span> <span class="nf">learn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="n">TEvent</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="kn">import</span> <span class="nn">vowpal_wabbit_next</span> <span class="k">as</span> <span class="nn">vw</span>
+
+        <span class="n">vw_ex</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">feature_embedder</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+        <span class="n">text_parser</span> <span class="o">=</span> <span class="n">vw</span><span class="o">.</span><span class="n">TextFormatParser</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">workspace</span><span class="p">)</span>
+        <span class="n">multi_ex</span> <span class="o">=</span> <span class="n">parse_lines</span><span class="p">(</span><span class="n">text_parser</span><span class="p">,</span> <span class="n">vw_ex</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">workspace</span><span class="o">.</span><span class="n">learn_one</span><span class="p">(</span><span class="n">multi_ex</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="VwPolicy.log"><a class="viewcode-back" href="../../../rl_chain/langchain_experimental.rl_chain.base.VwPolicy.html#langchain_experimental.rl_chain.base.VwPolicy.log">[docs]</a>    <span class="k">def</span> <span class="nf">log</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="n">TEvent</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">vw_logger</span><span class="o">.</span><span class="n">logging_enabled</span><span class="p">():</span>
+            <span class="n">vw_ex</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">feature_embedder</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">vw_logger</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">vw_ex</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="VwPolicy.save"><a class="viewcode-back" href="../../../rl_chain/langchain_experimental.rl_chain.base.VwPolicy.html#langchain_experimental.rl_chain.base.VwPolicy.save">[docs]</a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_repo</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">workspace</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="Embedder"><a class="viewcode-back" href="../../../rl_chain/langchain_experimental.rl_chain.base.Embedder.html#langchain_experimental.rl_chain.base.Embedder">[docs]</a><span class="k">class</span> <span class="nc">Embedder</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">TEvent</span><span class="p">],</span> <span class="n">ABC</span><span class="p">):</span>
+<div class="viewcode-block" id="Embedder.__init__"><a class="viewcode-back" href="../../../rl_chain/langchain_experimental.rl_chain.base.Embedder.html#langchain_experimental.rl_chain.base.Embedder.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">):</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="Embedder.format"><a class="viewcode-back" href="../../../rl_chain/langchain_experimental.rl_chain.base.Embedder.html#langchain_experimental.rl_chain.base.Embedder.format">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">format</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="n">TEvent</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="o">...</span></div></div>
+
+
+<div class="viewcode-block" id="SelectionScorer"><a class="viewcode-back" href="../../../rl_chain/langchain_experimental.rl_chain.base.SelectionScorer.html#langchain_experimental.rl_chain.base.SelectionScorer">[docs]</a><span class="k">class</span> <span class="nc">SelectionScorer</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">TEvent</span><span class="p">],</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">BaseModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Abstract method to grade the chosen selection or the response of the llm&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="SelectionScorer.score_response"><a class="viewcode-back" href="../../../rl_chain/langchain_experimental.rl_chain.base.SelectionScorer.html#langchain_experimental.rl_chain.base.SelectionScorer.score_response">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">score_response</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">llm_response</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="n">TEvent</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="o">...</span></div></div>
+
+
+<div class="viewcode-block" id="AutoSelectionScorer"><a class="viewcode-back" href="../../../rl_chain/langchain_experimental.rl_chain.base.AutoSelectionScorer.html#langchain_experimental.rl_chain.base.AutoSelectionScorer">[docs]</a><span class="k">class</span> <span class="nc">AutoSelectionScorer</span><span class="p">(</span><span class="n">SelectionScorer</span><span class="p">[</span><span class="n">Event</span><span class="p">],</span> <span class="n">BaseModel</span><span class="p">):</span>
+    <span class="n">llm_chain</span><span class="p">:</span> <span class="n">LLMChain</span>
+    <span class="n">prompt</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">BasePromptTemplate</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">scoring_criteria_template_str</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="AutoSelectionScorer.get_default_system_prompt"><a class="viewcode-back" href="../../../rl_chain/langchain_experimental.rl_chain.base.AutoSelectionScorer.html#langchain_experimental.rl_chain.base.AutoSelectionScorer.get_default_system_prompt">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">get_default_system_prompt</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">SystemMessagePromptTemplate</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">SystemMessagePromptTemplate</span><span class="o">.</span><span class="n">from_template</span><span class="p">(</span>
+            <span class="s2">&quot;PLEASE RESPOND ONLY WITH A SINGLE FLOAT AND NO OTHER TEXT EXPLANATION</span><span class="se">\n</span><span class="s2"> </span><span class="se">\</span>
+<span class="s2">                You are a strict judge that is called on to rank a response based on </span><span class="se">\</span>
+<span class="s2">                    given criteria. You must respond with your ranking by providing a </span><span class="se">\</span>
+<span class="s2">                        single float within the range [0, 1], 0 being very bad </span><span class="se">\</span>
+<span class="s2">                            response and 1 being very good response.&quot;</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="AutoSelectionScorer.get_default_prompt"><a class="viewcode-back" href="../../../rl_chain/langchain_experimental.rl_chain.base.AutoSelectionScorer.html#langchain_experimental.rl_chain.base.AutoSelectionScorer.get_default_prompt">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">get_default_prompt</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">ChatPromptTemplate</span><span class="p">:</span>
+        <span class="n">human_template</span> <span class="o">=</span> <span class="s1">&#39;Given this based_on &quot;</span><span class="si">{rl_chain_selected_based_on}</span><span class="s1">&quot; </span><span class="se">\</span>
+<span class="s1">            as the most important attribute, rank how good or bad this text is: </span><span class="se">\</span>
+<span class="s1">                &quot;</span><span class="si">{rl_chain_selected}</span><span class="s1">&quot;.&#39;</span>
+        <span class="n">human_message_prompt</span> <span class="o">=</span> <span class="n">HumanMessagePromptTemplate</span><span class="o">.</span><span class="n">from_template</span><span class="p">(</span><span class="n">human_template</span><span class="p">)</span>
+        <span class="n">default_system_prompt</span> <span class="o">=</span> <span class="n">AutoSelectionScorer</span><span class="o">.</span><span class="n">get_default_system_prompt</span><span class="p">()</span>
+        <span class="n">chat_prompt</span> <span class="o">=</span> <span class="n">ChatPromptTemplate</span><span class="o">.</span><span class="n">from_messages</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">default_system_prompt</span><span class="p">,</span> <span class="n">human_message_prompt</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">chat_prompt</span></div>
+
+    <span class="nd">@root_validator</span><span class="p">(</span><span class="n">pre</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">set_prompt_and_llm_chain</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+        <span class="n">llm</span> <span class="o">=</span> <span class="n">values</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;llm&quot;</span><span class="p">)</span>
+        <span class="n">prompt</span> <span class="o">=</span> <span class="n">values</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;prompt&quot;</span><span class="p">)</span>
+        <span class="n">scoring_criteria_template_str</span> <span class="o">=</span> <span class="n">values</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;scoring_criteria_template_str&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">prompt</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">scoring_criteria_template_str</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">prompt</span> <span class="o">=</span> <span class="n">AutoSelectionScorer</span><span class="o">.</span><span class="n">get_default_prompt</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="n">prompt</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">scoring_criteria_template_str</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">human_message_prompt</span> <span class="o">=</span> <span class="n">HumanMessagePromptTemplate</span><span class="o">.</span><span class="n">from_template</span><span class="p">(</span>
+                <span class="n">scoring_criteria_template_str</span>
+            <span class="p">)</span>
+            <span class="n">default_system_prompt</span> <span class="o">=</span> <span class="n">AutoSelectionScorer</span><span class="o">.</span><span class="n">get_default_system_prompt</span><span class="p">()</span>
+            <span class="n">prompt</span> <span class="o">=</span> <span class="n">ChatPromptTemplate</span><span class="o">.</span><span class="n">from_messages</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">default_system_prompt</span><span class="p">,</span> <span class="n">human_message_prompt</span><span class="p">]</span>
+            <span class="p">)</span>
+        <span class="n">values</span><span class="p">[</span><span class="s2">&quot;prompt&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">prompt</span>
+        <span class="n">values</span><span class="p">[</span><span class="s2">&quot;llm_chain&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">LLMChain</span><span class="p">(</span><span class="n">llm</span><span class="o">=</span><span class="n">llm</span><span class="p">,</span> <span class="n">prompt</span><span class="o">=</span><span class="n">prompt</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">values</span>
+
+<div class="viewcode-block" id="AutoSelectionScorer.score_response"><a class="viewcode-back" href="../../../rl_chain/langchain_experimental.rl_chain.base.AutoSelectionScorer.html#langchain_experimental.rl_chain.base.AutoSelectionScorer.score_response">[docs]</a>    <span class="k">def</span> <span class="nf">score_response</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">llm_response</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="n">Event</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="n">ranking</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">llm_chain</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">llm_response</span><span class="o">=</span><span class="n">llm_response</span><span class="p">,</span> <span class="o">**</span><span class="n">inputs</span><span class="p">)</span>
+        <span class="n">ranking</span> <span class="o">=</span> <span class="n">ranking</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">resp</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">ranking</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">resp</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;The auto selection scorer did not manage to score the response, there is always the option to try again or tweak the reward prompt. Error: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>  <span class="c1"># noqa: E501</span>
+            <span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="RLChain"><a class="viewcode-back" href="../../../rl_chain/langchain_experimental.rl_chain.base.RLChain.html#langchain_experimental.rl_chain.base.RLChain">[docs]</a><span class="k">class</span> <span class="nc">RLChain</span><span class="p">(</span><span class="n">Chain</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">TEvent</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The `RLChain` class leverages the Vowpal Wabbit (VW) model as a learned policy for reinforcement learning.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        - llm_chain (Chain): Represents the underlying Language Model chain.</span>
+<span class="sd">        - prompt (BasePromptTemplate): The template for the base prompt.</span>
+<span class="sd">        - selection_scorer (Union[SelectionScorer, None]): Scorer for the selection. Can be set to None.</span>
+<span class="sd">        - policy (Optional[Policy]): The policy used by the chain to learn to populate a dynamic prompt.</span>
+<span class="sd">        - auto_embed (bool): Determines if embedding should be automatic. Default is False.</span>
+<span class="sd">        - metrics (Optional[Union[MetricsTrackerRollingWindow, MetricsTrackerAverage]]): Tracker for metrics, can be set to None.</span>
+
+<span class="sd">    Initialization Attributes:</span>
+<span class="sd">        - feature_embedder (Embedder): Embedder used for the `BasedOn` and `ToSelectFrom` inputs.</span>
+<span class="sd">        - model_save_dir (str, optional): Directory for saving the VW model. Default is the current directory.</span>
+<span class="sd">        - reset_model (bool): If set to True, the model starts training from scratch. Default is False.</span>
+<span class="sd">        - vw_cmd (List[str], optional): Command line arguments for the VW model.</span>
+<span class="sd">        - policy (Type[VwPolicy]): Policy used by the chain.</span>
+<span class="sd">        - vw_logs (Optional[Union[str, os.PathLike]]): Path for the VW logs.</span>
+<span class="sd">        - metrics_step (int): Step for the metrics tracker. Default is -1. If set without metrics_window_size, average metrics will be tracked, otherwise rolling window metrics will be tracked.</span>
+<span class="sd">        - metrics_window_size (int): Window size for the metrics tracker. Default is -1. If set, rolling window metrics will be tracked.</span>
+
+<span class="sd">    Notes:</span>
+<span class="sd">        The class initializes the VW model using the provided arguments. If `selection_scorer` is not provided, a warning is logged, indicating that no reinforcement learning will occur unless the `update_with_delayed_score` method is called.</span>
+<span class="sd">    &quot;&quot;&quot;</span>  <span class="c1"># noqa: E501</span>
+
+    <span class="k">class</span> <span class="nc">_NoOpPolicy</span><span class="p">(</span><span class="n">Policy</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Placeholder policy that does nothing&quot;&quot;&quot;</span>
+
+        <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="n">TEvent</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="k">def</span> <span class="nf">learn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="n">TEvent</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+        <span class="k">def</span> <span class="nf">log</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="n">TEvent</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+    <span class="n">llm_chain</span><span class="p">:</span> <span class="n">Chain</span>
+
+    <span class="n">output_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;result&quot;</span>  <span class="c1">#: :meta private:</span>
+    <span class="n">prompt</span><span class="p">:</span> <span class="n">BasePromptTemplate</span>
+    <span class="n">selection_scorer</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">SelectionScorer</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
+    <span class="n">active_policy</span><span class="p">:</span> <span class="n">Policy</span> <span class="o">=</span> <span class="n">_NoOpPolicy</span><span class="p">()</span>
+    <span class="n">auto_embed</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">selection_scorer_activated</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">selected_input_key</span> <span class="o">=</span> <span class="s2">&quot;rl_chain_selected&quot;</span>
+    <span class="n">selected_based_on_input_key</span> <span class="o">=</span> <span class="s2">&quot;rl_chain_selected_based_on&quot;</span>
+    <span class="n">metrics</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">MetricsTrackerRollingWindow</span><span class="p">,</span> <span class="n">MetricsTrackerAverage</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">feature_embedder</span><span class="p">:</span> <span class="n">Embedder</span><span class="p">,</span>
+        <span class="n">model_save_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;./&quot;</span><span class="p">,</span>
+        <span class="n">reset_model</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">vw_cmd</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">policy</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">Policy</span><span class="p">]</span> <span class="o">=</span> <span class="n">VwPolicy</span><span class="p">,</span>
+        <span class="n">vw_logs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">PathLike</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">metrics_step</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">metrics_window_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">selection_scorer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s2">&quot;No selection scorer provided, which means that no </span><span class="se">\</span>
+<span class="s2">                    reinforcement learning will be done in the RL chain </span><span class="se">\</span>
+<span class="s2">                        unless update_with_delayed_score is called.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">active_policy</span><span class="p">,</span> <span class="n">RLChain</span><span class="o">.</span><span class="n">_NoOpPolicy</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">active_policy</span> <span class="o">=</span> <span class="n">policy</span><span class="p">(</span>
+                <span class="n">model_repo</span><span class="o">=</span><span class="n">ModelRepository</span><span class="p">(</span>
+                    <span class="n">model_save_dir</span><span class="p">,</span> <span class="n">with_history</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">reset</span><span class="o">=</span><span class="n">reset_model</span>
+                <span class="p">),</span>
+                <span class="n">vw_cmd</span><span class="o">=</span><span class="n">vw_cmd</span> <span class="ow">or</span> <span class="p">[],</span>
+                <span class="n">feature_embedder</span><span class="o">=</span><span class="n">feature_embedder</span><span class="p">,</span>
+                <span class="n">vw_logger</span><span class="o">=</span><span class="n">VwLogger</span><span class="p">(</span><span class="n">vw_logs</span><span class="p">),</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">metrics_window_size</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span> <span class="o">=</span> <span class="n">MetricsTrackerRollingWindow</span><span class="p">(</span>
+                <span class="n">step</span><span class="o">=</span><span class="n">metrics_step</span><span class="p">,</span> <span class="n">window_size</span><span class="o">=</span><span class="n">metrics_window_size</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span> <span class="o">=</span> <span class="n">MetricsTrackerAverage</span><span class="p">(</span><span class="n">step</span><span class="o">=</span><span class="n">metrics_step</span><span class="p">)</span>
+
+    <span class="k">class</span> <span class="nc">Config</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Configuration for this pydantic object.&quot;&quot;&quot;</span>
+
+        <span class="n">extra</span> <span class="o">=</span> <span class="n">Extra</span><span class="o">.</span><span class="n">forbid</span>
+        <span class="n">arbitrary_types_allowed</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">input_keys</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Expect input key.</span>
+<span class="sd">        :meta private:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">output_keys</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Expect output key.</span>
+
+<span class="sd">        :meta private:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">output_key</span><span class="p">]</span>
+
+<div class="viewcode-block" id="RLChain.update_with_delayed_score"><a class="viewcode-back" href="../../../rl_chain/langchain_experimental.rl_chain.base.RLChain.html#langchain_experimental.rl_chain.base.RLChain.update_with_delayed_score">[docs]</a>    <span class="k">def</span> <span class="nf">update_with_delayed_score</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">score</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">chain_response</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">force_score</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Updates the learned policy with the score provided.</span>
+<span class="sd">        Will raise an error if selection_scorer is set, and force_score=True was not provided during the method call</span>
+<span class="sd">        &quot;&quot;&quot;</span>  <span class="c1"># noqa: E501</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_can_use_selection_scorer</span><span class="p">()</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">force_score</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="s2">&quot;The selection scorer is set, and force_score was not set to True. Please set force_score=True to use this function.&quot;</span>  <span class="c1"># noqa: E501</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">on_feedback</span><span class="p">(</span><span class="n">score</span><span class="p">)</span>
+        <span class="n">event</span><span class="p">:</span> <span class="n">TEvent</span> <span class="o">=</span> <span class="n">chain_response</span><span class="p">[</span><span class="s2">&quot;selection_metadata&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_call_after_scoring_before_learning</span><span class="p">(</span><span class="n">event</span><span class="o">=</span><span class="n">event</span><span class="p">,</span> <span class="n">score</span><span class="o">=</span><span class="n">score</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">active_policy</span><span class="o">.</span><span class="n">learn</span><span class="p">(</span><span class="n">event</span><span class="o">=</span><span class="n">event</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">active_policy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">event</span><span class="o">=</span><span class="n">event</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="RLChain.deactivate_selection_scorer"><a class="viewcode-back" href="../../../rl_chain/langchain_experimental.rl_chain.base.RLChain.html#langchain_experimental.rl_chain.base.RLChain.deactivate_selection_scorer">[docs]</a>    <span class="k">def</span> <span class="nf">deactivate_selection_scorer</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Deactivates the selection scorer, meaning that the chain will no longer attempt to use the selection scorer to score responses.</span>
+<span class="sd">        &quot;&quot;&quot;</span>  <span class="c1"># noqa: E501</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">selection_scorer_activated</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="RLChain.activate_selection_scorer"><a class="viewcode-back" href="../../../rl_chain/langchain_experimental.rl_chain.base.RLChain.html#langchain_experimental.rl_chain.base.RLChain.activate_selection_scorer">[docs]</a>    <span class="k">def</span> <span class="nf">activate_selection_scorer</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Activates the selection scorer, meaning that the chain will attempt to use the selection scorer to score responses.</span>
+<span class="sd">        &quot;&quot;&quot;</span>  <span class="c1"># noqa: E501</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">selection_scorer_activated</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="RLChain.save_progress"><a class="viewcode-back" href="../../../rl_chain/langchain_experimental.rl_chain.base.RLChain.html#langchain_experimental.rl_chain.base.RLChain.save_progress">[docs]</a>    <span class="k">def</span> <span class="nf">save_progress</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This function should be called to save the state of the learned policy model.</span>
+<span class="sd">        &quot;&quot;&quot;</span>  <span class="c1"># noqa: E501</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">active_policy</span><span class="o">.</span><span class="n">save</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">_validate_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_validate_inputs</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">selected_input_key</span> <span class="ow">in</span> <span class="n">inputs</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+            <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">selected_based_on_input_key</span> <span class="ow">in</span> <span class="n">inputs</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+        <span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;The rl chain does not accept &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">selected_input_key</span><span class="si">}</span><span class="s2">&#39; or &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">selected_based_on_input_key</span><span class="si">}</span><span class="s2">&#39; as input keys, they are reserved for internal use during auto reward.&quot;</span>  <span class="c1"># noqa: E501</span>
+            <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_can_use_selection_scorer</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns whether the chain can use the selection scorer to score responses or not.</span>
+<span class="sd">        &quot;&quot;&quot;</span>  <span class="c1"># noqa: E501</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">selection_scorer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">selection_scorer_activated</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">_call_before_predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">TEvent</span><span class="p">:</span>
+        <span class="o">...</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">_call_after_predict_before_llm</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">event</span><span class="p">:</span> <span class="n">TEvent</span><span class="p">,</span> <span class="n">prediction</span><span class="p">:</span> <span class="n">Any</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">TEvent</span><span class="p">]:</span>
+        <span class="o">...</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">_call_after_llm_before_scoring</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">llm_response</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="n">TEvent</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">TEvent</span><span class="p">]:</span>
+        <span class="o">...</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">_call_after_scoring_before_learning</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="n">TEvent</span><span class="p">,</span> <span class="n">score</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TEvent</span><span class="p">:</span>
+        <span class="o">...</span>
+
+    <span class="k">def</span> <span class="nf">_call</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">inputs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+        <span class="n">run_manager</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">CallbackManagerForChainRun</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+        <span class="n">_run_manager</span> <span class="o">=</span> <span class="n">run_manager</span> <span class="ow">or</span> <span class="n">CallbackManagerForChainRun</span><span class="o">.</span><span class="n">get_noop_manager</span><span class="p">()</span>
+
+        <span class="n">event</span><span class="p">:</span> <span class="n">TEvent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_before_predict</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">)</span>
+        <span class="n">prediction</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">active_policy</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">event</span><span class="o">=</span><span class="n">event</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">on_decision</span><span class="p">()</span>
+
+        <span class="n">next_chain_inputs</span><span class="p">,</span> <span class="n">event</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_after_predict_before_llm</span><span class="p">(</span>
+            <span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="n">event</span><span class="p">,</span> <span class="n">prediction</span><span class="o">=</span><span class="n">prediction</span>
+        <span class="p">)</span>
+
+        <span class="n">t</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">llm_chain</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="o">**</span><span class="n">next_chain_inputs</span><span class="p">,</span> <span class="n">callbacks</span><span class="o">=</span><span class="n">_run_manager</span><span class="o">.</span><span class="n">get_child</span><span class="p">())</span>
+        <span class="n">_run_manager</span><span class="o">.</span><span class="n">on_text</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;green&quot;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+            <span class="n">_run_manager</span><span class="o">.</span><span class="n">on_text</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Code: &quot;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>
+
+        <span class="n">output</span> <span class="o">=</span> <span class="n">t</span>
+        <span class="n">_run_manager</span><span class="o">.</span><span class="n">on_text</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Answer: &quot;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>
+        <span class="n">_run_manager</span><span class="o">.</span><span class="n">on_text</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;yellow&quot;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>
+
+        <span class="n">next_chain_inputs</span><span class="p">,</span> <span class="n">event</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_after_llm_before_scoring</span><span class="p">(</span>
+            <span class="n">llm_response</span><span class="o">=</span><span class="n">output</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="n">event</span>
+        <span class="p">)</span>
+
+        <span class="n">score</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_can_use_selection_scorer</span><span class="p">():</span>
+                <span class="n">score</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">selection_scorer</span><span class="o">.</span><span class="n">score_response</span><span class="p">(</span>  <span class="c1"># type: ignore</span>
+                    <span class="n">inputs</span><span class="o">=</span><span class="n">next_chain_inputs</span><span class="p">,</span> <span class="n">llm_response</span><span class="o">=</span><span class="n">output</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="n">event</span>
+                <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;The selection scorer was not able to score, </span><span class="se">\</span>
+<span class="s2">                and the chain was not able to adjust to this response, error: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span> <span class="ow">and</span> <span class="n">score</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">on_feedback</span><span class="p">(</span><span class="n">score</span><span class="p">)</span>
+
+        <span class="n">event</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_after_scoring_before_learning</span><span class="p">(</span><span class="n">score</span><span class="o">=</span><span class="n">score</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="n">event</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">active_policy</span><span class="o">.</span><span class="n">learn</span><span class="p">(</span><span class="n">event</span><span class="o">=</span><span class="n">event</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">active_policy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">event</span><span class="o">=</span><span class="n">event</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">output_key</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;response&quot;</span><span class="p">:</span> <span class="n">output</span><span class="p">,</span> <span class="s2">&quot;selection_metadata&quot;</span><span class="p">:</span> <span class="n">event</span><span class="p">}}</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_chain_type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;llm_personalizer_chain&quot;</span></div>
+
+
+<div class="viewcode-block" id="is_stringtype_instance"><a class="viewcode-back" href="../../../rl_chain/langchain_experimental.rl_chain.base.is_stringtype_instance.html#langchain_experimental.rl_chain.base.is_stringtype_instance">[docs]</a><span class="k">def</span> <span class="nf">is_stringtype_instance</span><span class="p">(</span><span class="n">item</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Helper function to check if an item is a string.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span>
+        <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">_Embed</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="embed_string_type"><a class="viewcode-back" href="../../../rl_chain/langchain_experimental.rl_chain.base.embed_string_type.html#langchain_experimental.rl_chain.base.embed_string_type">[docs]</a><span class="k">def</span> <span class="nf">embed_string_type</span><span class="p">(</span>
+    <span class="n">item</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">_Embed</span><span class="p">],</span> <span class="n">model</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">namespace</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Helper function to embed a string or an _Embed object.&quot;&quot;&quot;</span>
+    <span class="n">keep_str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">_Embed</span><span class="p">):</span>
+        <span class="n">encoded</span> <span class="o">=</span> <span class="n">stringify_embedding</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">value</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">keep</span><span class="p">:</span>
+            <span class="n">keep_str</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;_&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">encoded</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;_&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported type </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">item</span><span class="p">)</span><span class="si">}</span><span class="s2"> for embedding&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">namespace</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;The default namespace must be provided when embedding a string or _Embed object.&quot;</span>  <span class="c1"># noqa: E501</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="p">{</span><span class="n">namespace</span><span class="p">:</span> <span class="n">keep_str</span> <span class="o">+</span> <span class="n">encoded</span><span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="embed_dict_type"><a class="viewcode-back" href="../../../rl_chain/langchain_experimental.rl_chain.base.embed_dict_type.html#langchain_experimental.rl_chain.base.embed_dict_type">[docs]</a><span class="k">def</span> <span class="nf">embed_dict_type</span><span class="p">(</span><span class="n">item</span><span class="p">:</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Helper function to embed a dictionary item.&quot;&quot;&quot;</span>
+    <span class="n">inner_dict</span><span class="p">:</span> <span class="n">Dict</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">ns</span><span class="p">,</span> <span class="n">embed_item</span> <span class="ow">in</span> <span class="n">item</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">embed_item</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="n">inner_dict</span><span class="p">[</span><span class="n">ns</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">embed_list_item</span> <span class="ow">in</span> <span class="n">embed_item</span><span class="p">:</span>
+                <span class="n">embedded</span> <span class="o">=</span> <span class="n">embed_string_type</span><span class="p">(</span><span class="n">embed_list_item</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">ns</span><span class="p">)</span>
+                <span class="n">inner_dict</span><span class="p">[</span><span class="n">ns</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">embedded</span><span class="p">[</span><span class="n">ns</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">inner_dict</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">embed_string_type</span><span class="p">(</span><span class="n">embed_item</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">ns</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">inner_dict</span></div>
+
+
+<div class="viewcode-block" id="embed_list_type"><a class="viewcode-back" href="../../../rl_chain/langchain_experimental.rl_chain.base.embed_list_type.html#langchain_experimental.rl_chain.base.embed_list_type">[docs]</a><span class="k">def</span> <span class="nf">embed_list_type</span><span class="p">(</span>
+    <span class="n">item</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">namespace</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]]:</span>
+    <span class="n">ret_list</span><span class="p">:</span> <span class="n">List</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">embed_item</span> <span class="ow">in</span> <span class="n">item</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">embed_item</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">ret_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">embed_dict_type</span><span class="p">(</span><span class="n">embed_item</span><span class="p">,</span> <span class="n">model</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">embed_item</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="n">item_embedding</span> <span class="o">=</span> <span class="n">embed_list_type</span><span class="p">(</span><span class="n">embed_item</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">namespace</span><span class="p">)</span>
+            <span class="c1"># Get the first key from the first dictionary</span>
+            <span class="n">first_key</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">item_embedding</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+            <span class="c1"># Group the values under that key</span>
+            <span class="n">grouping</span> <span class="o">=</span> <span class="p">{</span><span class="n">first_key</span><span class="p">:</span> <span class="p">[</span><span class="n">item</span><span class="p">[</span><span class="n">first_key</span><span class="p">]</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">item_embedding</span><span class="p">]}</span>
+            <span class="n">ret_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">grouping</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ret_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">embed_string_type</span><span class="p">(</span><span class="n">embed_item</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">namespace</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">ret_list</span></div>
+
+
+<div class="viewcode-block" id="embed"><a class="viewcode-back" href="../../../rl_chain/langchain_experimental.rl_chain.base.embed.html#langchain_experimental.rl_chain.base.embed">[docs]</a><span class="k">def</span> <span class="nf">embed</span><span class="p">(</span>
+    <span class="n">to_embed</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">_Embed</span><span class="p">],</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">_Embed</span><span class="p">]],</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">]],</span>
+    <span class="n">model</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="n">namespace</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Embeds the actions or context using the SentenceTransformer model (or a model that has an `encode` function)</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        to_embed: (Union[Union(str, _Embed(str)), Dict, List[Union(str, _Embed(str))], List[Dict]], required) The text to be embedded, either a string, a list of strings or a dictionary or a list of dictionaries.</span>
+<span class="sd">        namespace: (str, optional) The default namespace to use when dictionary or list of dictionaries not provided.</span>
+<span class="sd">        model: (Any, required) The model to use for embedding</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        List[Dict[str, str]]: A list of dictionaries where each dictionary has the namespace as the key and the embedded string as the value</span>
+<span class="sd">    &quot;&quot;&quot;</span>  <span class="c1"># noqa: E501</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">to_embed</span><span class="p">,</span> <span class="n">_Embed</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">to_embed</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">))</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span>
+        <span class="n">to_embed</span><span class="p">,</span> <span class="nb">str</span>
+    <span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">embed_string_type</span><span class="p">(</span><span class="n">to_embed</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">namespace</span><span class="p">)]</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">to_embed</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">embed_dict_type</span><span class="p">(</span><span class="n">to_embed</span><span class="p">,</span> <span class="n">model</span><span class="p">)]</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">to_embed</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">embed_list_type</span><span class="p">(</span><span class="n">to_embed</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">namespace</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid input format for embedding&quot;</span><span class="p">)</span></div>
+</pre></div>
+
+      </div>
+    <div class="container">
+      <footer class="sk-content-footer">
+            &copy; 2023, Harrison Chase.
+          Last updated on Dec 14, 2023.
+      </footer>
+    </div>
+  </div>
+</div>
+<script src="../../../_static/js/vendor/bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    /* Add a [>>>] button on the top-right corner of code samples to hide
+     * the >>> and ... prompts and the output and thus make the code
+     * copyable. */
+    var div = $('.highlight-python .highlight,' +
+                '.highlight-python3 .highlight,' +
+                '.highlight-pycon .highlight,' +
+		'.highlight-default .highlight')
+    var pre = div.find('pre');
+
+    // get the styles from the current theme
+    pre.parent().parent().css('position', 'relative');
+    var hide_text = 'Hide prompts and outputs';
+    var show_text = 'Show prompts and outputs';
+
+    // create and add the button to all the code blocks that contain >>>
+    div.each(function(index) {
+        var jthis = $(this);
+        if (jthis.find('.gp').length > 0) {
+            var button = $('<span class="copybutton">&gt;&gt;&gt;</span>');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+            jthis.prepend(button);
+        }
+        // tracebacks (.gt) contain bare text elements that need to be
+        // wrapped in a span to work with .nextUntil() (see later)
+        jthis.find('pre:has(.gt)').contents().filter(function() {
+            return ((this.nodeType == 3) && (this.data.trim().length > 0));
+        }).wrap('<span>');
+    });
+
+    // define the behavior of the button when it's clicked
+    $('.copybutton').click(function(e){
+        e.preventDefault();
+        var button = $(this);
+        if (button.data('hidden') === 'false') {
+            // hide the code output
+            button.parent().find('.go, .gp, .gt').hide();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'hidden');
+            button.css('text-decoration', 'line-through');
+            button.attr('title', show_text);
+            button.data('hidden', 'true');
+        } else {
+            // show the code output
+            button.parent().find('.go, .gp, .gt').show();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'visible');
+            button.css('text-decoration', 'none');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+        }
+    });
+
+	/*** Add permalink buttons next to glossary terms ***/
+	$('dl.glossary > dt[id]').append(function() {
+		return ('<a class="headerlink" href="#' +
+			    this.getAttribute('id') +
+			    '" title="Permalink to this term">¶</a>');
+	});
+});
+
+</script>
+    
+</body>
+</html>

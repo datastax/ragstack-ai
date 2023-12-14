@@ -1,0 +1,369 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>langchain_community.callbacks.whylabs_callback &mdash; 🦜🔗 LangChain 0.0.349</title>
+  
+  <link rel="canonical" href="https://api.python.langchain.com/en/latest/_modules/langchain_community/callbacks/whylabs_callback.html" />
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/vendor/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/autodoc_pydantic.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/panels-bootstrap.5fd3999ee7762ccc51105388f4a9d115.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+<script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+<script src="../../../_static/jquery.js"></script> 
+</head>
+<body>
+
+
+<nav id="navbar" class="sk-docs-navbar navbar navbar-expand-md navbar-light bg-light py-0">
+  <div class="container-fluid sk-docs-container px-0">
+    <button
+      id="sk-navbar-toggler"
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="sk-navbar-collapse collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../api_reference.html">API</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../core_api_reference.html">Core</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../community_api_reference.html">Community</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../experimental_api_reference.html">Experimental</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" target="_blank" rel="noopener noreferrer" href="https://python.langchain.com/">Python Docs</a>
+        </li>
+      </ul>
+      <div id="searchbox" role="search">
+          <div class="searchformwrapper">
+          <form class="search" action="../../../search.html" method="get">
+            <input class="sk-search-text-input" type="text" name="q" aria-labelledby="searchlabel" />
+            <input class="sk-search-text-btn" type="submit" value="Go" />
+          </form>
+          </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="d-flex" id="sk-doc-wrapper">
+    <input type="checkbox" name="sk-toggle-checkbox" id="sk-toggle-checkbox">
+    <label id="sk-sidemenu-toggle" class="sk-btn-toggle-toc btn sk-btn-primary" for="sk-toggle-checkbox">Toggle Menu</label>
+    <div id="sk-sidebar-wrapper" class="border-right">
+      <div class="sk-sidebar-toc-wrapper">
+        <div class="btn-group w-100 mb-2" role="group" aria-label="rellinks">
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Prev</a><a href="../../index.html" role="button" class="btn sk-btn-rellink py-1" sk-rellink-tooltip="Module code">Up</a>
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Next</a>
+        </div>
+        <div class="alert alert-warning p-1 mb-2" role="alert">
+          <p class="text-center mb-0">
+          <strong>LangChain 0.0.349</strong><br/>
+          </p>
+        </div>
+            <div class="sk-sidebar-toc">
+              
+            </div>
+      </div>
+    </div>
+    <div id="sk-page-content-wrapper">
+      <div class="sk-page-content container-fluid body px-md-3" role="main">
+        
+  <h1>Source code for langchain_community.callbacks.whylabs_callback</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="kn">from</span> <span class="nn">langchain_core.callbacks</span> <span class="kn">import</span> <span class="n">BaseCallbackHandler</span>
+<span class="kn">from</span> <span class="nn">langchain_core.utils</span> <span class="kn">import</span> <span class="n">get_from_env</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">whylogs.api.logger.logger</span> <span class="kn">import</span> <span class="n">Logger</span>
+
+<span class="n">diagnostic_logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="import_langkit"><a class="viewcode-back" href="../../../callbacks/langchain_community.callbacks.whylabs_callback.import_langkit.html#langchain_community.callbacks.whylabs_callback.import_langkit">[docs]</a><span class="k">def</span> <span class="nf">import_langkit</span><span class="p">(</span>
+    <span class="n">sentiment</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">toxicity</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">themes</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Import the langkit python package and raise an error if it is not installed.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        sentiment: Whether to import the langkit.sentiment module. Defaults to False.</span>
+<span class="sd">        toxicity: Whether to import the langkit.toxicity module. Defaults to False.</span>
+<span class="sd">        themes: Whether to import the langkit.themes module. Defaults to False.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The imported langkit module.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">import</span> <span class="nn">langkit</span>  <span class="c1"># noqa: F401</span>
+        <span class="kn">import</span> <span class="nn">langkit.regexes</span>  <span class="c1"># noqa: F401</span>
+        <span class="kn">import</span> <span class="nn">langkit.textstat</span>  <span class="c1"># noqa: F401</span>
+
+        <span class="k">if</span> <span class="n">sentiment</span><span class="p">:</span>
+            <span class="kn">import</span> <span class="nn">langkit.sentiment</span>  <span class="c1"># noqa: F401</span>
+        <span class="k">if</span> <span class="n">toxicity</span><span class="p">:</span>
+            <span class="kn">import</span> <span class="nn">langkit.toxicity</span>  <span class="c1"># noqa: F401</span>
+        <span class="k">if</span> <span class="n">themes</span><span class="p">:</span>
+            <span class="kn">import</span> <span class="nn">langkit.themes</span>  <span class="c1"># noqa: F401</span>
+    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+            <span class="s2">&quot;To use the whylabs callback manager you need to have the `langkit` python &quot;</span>
+            <span class="s2">&quot;package installed. Please install it with `pip install langkit`.&quot;</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">langkit</span></div>
+
+
+<div class="viewcode-block" id="WhyLabsCallbackHandler"><a class="viewcode-back" href="../../../callbacks/langchain_community.callbacks.whylabs_callback.WhyLabsCallbackHandler.html#langchain_community.callbacks.whylabs_callback.WhyLabsCallbackHandler">[docs]</a><span class="k">class</span> <span class="nc">WhyLabsCallbackHandler</span><span class="p">(</span><span class="n">BaseCallbackHandler</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Callback Handler for logging to WhyLabs. This callback handler utilizes</span>
+<span class="sd">    `langkit` to extract features from the prompts &amp; responses when interacting with</span>
+<span class="sd">    an LLM. These features can be used to guardrail, evaluate, and observe interactions</span>
+<span class="sd">    over time to detect issues relating to hallucinations, prompt engineering,</span>
+<span class="sd">    or output validation. LangKit is an LLM monitoring toolkit developed by WhyLabs.</span>
+
+<span class="sd">    Here are some examples of what can be monitored with LangKit:</span>
+<span class="sd">    * Text Quality</span>
+<span class="sd">      - readability score</span>
+<span class="sd">      - complexity and grade scores</span>
+<span class="sd">    * Text Relevance</span>
+<span class="sd">      - Similarity scores between prompt/responses</span>
+<span class="sd">      - Similarity scores against user-defined themes</span>
+<span class="sd">      - Topic classification</span>
+<span class="sd">    * Security and Privacy</span>
+<span class="sd">      - patterns - count of strings matching a user-defined regex pattern group</span>
+<span class="sd">      - jailbreaks - similarity scores with respect to known jailbreak attempts</span>
+<span class="sd">      - prompt injection - similarity scores with respect to known prompt attacks</span>
+<span class="sd">      - refusals - similarity scores with respect to known LLM refusal responses</span>
+<span class="sd">    * Sentiment and Toxicity</span>
+<span class="sd">      - sentiment analysis</span>
+<span class="sd">      - toxicity analysis</span>
+
+<span class="sd">    For more information, see https://docs.whylabs.ai/docs/language-model-monitoring</span>
+<span class="sd">    or check out the LangKit repo here: https://github.com/whylabs/langkit</span>
+
+<span class="sd">    ---</span>
+<span class="sd">    Args:</span>
+<span class="sd">        api_key (Optional[str]): WhyLabs API key. Optional because the preferred</span>
+<span class="sd">            way to specify the API key is with environment variable</span>
+<span class="sd">            WHYLABS_API_KEY.</span>
+<span class="sd">        org_id (Optional[str]): WhyLabs organization id to write profiles to.</span>
+<span class="sd">            Optional because the preferred way to specify the organization id is</span>
+<span class="sd">            with environment variable WHYLABS_DEFAULT_ORG_ID.</span>
+<span class="sd">        dataset_id (Optional[str]): WhyLabs dataset id to write profiles to.</span>
+<span class="sd">            Optional because the preferred way to specify the dataset id is</span>
+<span class="sd">            with environment variable WHYLABS_DEFAULT_DATASET_ID.</span>
+<span class="sd">        sentiment (bool): Whether to enable sentiment analysis. Defaults to False.</span>
+<span class="sd">        toxicity (bool): Whether to enable toxicity analysis. Defaults to False.</span>
+<span class="sd">        themes (bool): Whether to enable theme analysis. Defaults to False.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="WhyLabsCallbackHandler.__init__"><a class="viewcode-back" href="../../../callbacks/langchain_community.callbacks.whylabs_callback.WhyLabsCallbackHandler.html#langchain_community.callbacks.whylabs_callback.WhyLabsCallbackHandler.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span><span class="p">,</span> <span class="n">handler</span><span class="p">:</span> <span class="n">Any</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initiate the rolling logger.&quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">handler</span><span class="p">,</span> <span class="s2">&quot;init&quot;</span><span class="p">):</span>
+            <span class="n">handler</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">handler</span><span class="p">,</span> <span class="s2">&quot;_get_callbacks&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_callbacks</span> <span class="o">=</span> <span class="n">handler</span><span class="o">.</span><span class="n">_get_callbacks</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_callbacks</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+            <span class="n">diagnostic_logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;initialized handler without callbacks.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span> <span class="o">=</span> <span class="n">logger</span></div>
+
+<div class="viewcode-block" id="WhyLabsCallbackHandler.flush"><a class="viewcode-back" href="../../../callbacks/langchain_community.callbacks.whylabs_callback.WhyLabsCallbackHandler.html#langchain_community.callbacks.whylabs_callback.WhyLabsCallbackHandler.flush">[docs]</a>    <span class="k">def</span> <span class="nf">flush</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Explicitly write current profile if using a rolling logger.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="p">,</span> <span class="s2">&quot;_do_rollover&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">_do_rollover</span><span class="p">()</span>
+            <span class="n">diagnostic_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Flushing WhyLabs logger, writing profile...&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="WhyLabsCallbackHandler.close"><a class="viewcode-back" href="../../../callbacks/langchain_community.callbacks.whylabs_callback.WhyLabsCallbackHandler.html#langchain_community.callbacks.whylabs_callback.WhyLabsCallbackHandler.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Close any loggers to allow writing out of any profiles before exiting.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="p">,</span> <span class="s2">&quot;close&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="n">diagnostic_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Closing WhyLabs logger, see you next time!&quot;</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">WhyLabsCallbackHandler</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="fm">__exit__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">exception_type</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">exception_value</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">traceback</span><span class="p">:</span> <span class="n">Any</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+<div class="viewcode-block" id="WhyLabsCallbackHandler.from_params"><a class="viewcode-back" href="../../../callbacks/langchain_community.callbacks.whylabs_callback.WhyLabsCallbackHandler.html#langchain_community.callbacks.whylabs_callback.WhyLabsCallbackHandler.from_params">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_params</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">api_key</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">org_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">dataset_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">sentiment</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">toxicity</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">themes</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">logger</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Logger</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">WhyLabsCallbackHandler</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Instantiate whylogs Logger from params.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            api_key (Optional[str]): WhyLabs API key. Optional because the preferred</span>
+<span class="sd">                way to specify the API key is with environment variable</span>
+<span class="sd">                WHYLABS_API_KEY.</span>
+<span class="sd">            org_id (Optional[str]): WhyLabs organization id to write profiles to.</span>
+<span class="sd">                If not set must be specified in environment variable</span>
+<span class="sd">                WHYLABS_DEFAULT_ORG_ID.</span>
+<span class="sd">            dataset_id (Optional[str]): The model or dataset this callback is gathering</span>
+<span class="sd">                telemetry for. If not set must be specified in environment variable</span>
+<span class="sd">                WHYLABS_DEFAULT_DATASET_ID.</span>
+<span class="sd">            sentiment (bool): If True will initialize a model to perform</span>
+<span class="sd">                sentiment analysis compound score. Defaults to False and will not gather</span>
+<span class="sd">                this metric.</span>
+<span class="sd">            toxicity (bool): If True will initialize a model to score</span>
+<span class="sd">                toxicity. Defaults to False and will not gather this metric.</span>
+<span class="sd">            themes (bool): If True will initialize a model to calculate</span>
+<span class="sd">                distance to configured themes. Defaults to None and will not gather this</span>
+<span class="sd">                metric.</span>
+<span class="sd">            logger (Optional[Logger]): If specified will bind the configured logger as</span>
+<span class="sd">                the telemetry gathering agent. Defaults to LangKit schema with periodic</span>
+<span class="sd">                WhyLabs writer.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># langkit library will import necessary whylogs libraries</span>
+        <span class="n">import_langkit</span><span class="p">(</span><span class="n">sentiment</span><span class="o">=</span><span class="n">sentiment</span><span class="p">,</span> <span class="n">toxicity</span><span class="o">=</span><span class="n">toxicity</span><span class="p">,</span> <span class="n">themes</span><span class="o">=</span><span class="n">themes</span><span class="p">)</span>
+
+        <span class="kn">import</span> <span class="nn">whylogs</span> <span class="k">as</span> <span class="nn">why</span>
+        <span class="kn">from</span> <span class="nn">langkit.callback_handler</span> <span class="kn">import</span> <span class="n">get_callback_instance</span>
+        <span class="kn">from</span> <span class="nn">whylogs.api.writer.whylabs</span> <span class="kn">import</span> <span class="n">WhyLabsWriter</span>
+        <span class="kn">from</span> <span class="nn">whylogs.experimental.core.udf_schema</span> <span class="kn">import</span> <span class="n">udf_schema</span>
+
+        <span class="k">if</span> <span class="n">logger</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">api_key</span> <span class="o">=</span> <span class="n">api_key</span> <span class="ow">or</span> <span class="n">get_from_env</span><span class="p">(</span><span class="s2">&quot;api_key&quot;</span><span class="p">,</span> <span class="s2">&quot;WHYLABS_API_KEY&quot;</span><span class="p">)</span>
+            <span class="n">org_id</span> <span class="o">=</span> <span class="n">org_id</span> <span class="ow">or</span> <span class="n">get_from_env</span><span class="p">(</span><span class="s2">&quot;org_id&quot;</span><span class="p">,</span> <span class="s2">&quot;WHYLABS_DEFAULT_ORG_ID&quot;</span><span class="p">)</span>
+            <span class="n">dataset_id</span> <span class="o">=</span> <span class="n">dataset_id</span> <span class="ow">or</span> <span class="n">get_from_env</span><span class="p">(</span>
+                <span class="s2">&quot;dataset_id&quot;</span><span class="p">,</span> <span class="s2">&quot;WHYLABS_DEFAULT_DATASET_ID&quot;</span>
+            <span class="p">)</span>
+            <span class="n">whylabs_writer</span> <span class="o">=</span> <span class="n">WhyLabsWriter</span><span class="p">(</span>
+                <span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">,</span> <span class="n">org_id</span><span class="o">=</span><span class="n">org_id</span><span class="p">,</span> <span class="n">dataset_id</span><span class="o">=</span><span class="n">dataset_id</span>
+            <span class="p">)</span>
+
+            <span class="n">whylabs_logger</span> <span class="o">=</span> <span class="n">why</span><span class="o">.</span><span class="n">logger</span><span class="p">(</span>
+                <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;rolling&quot;</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">when</span><span class="o">=</span><span class="s2">&quot;M&quot;</span><span class="p">,</span> <span class="n">schema</span><span class="o">=</span><span class="n">udf_schema</span><span class="p">()</span>
+            <span class="p">)</span>
+
+            <span class="n">whylabs_logger</span><span class="o">.</span><span class="n">append_writer</span><span class="p">(</span><span class="n">writer</span><span class="o">=</span><span class="n">whylabs_writer</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">diagnostic_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Using passed in whylogs logger </span><span class="si">{logger}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">whylabs_logger</span> <span class="o">=</span> <span class="n">logger</span>
+
+        <span class="n">callback_handler_cls</span> <span class="o">=</span> <span class="n">get_callback_instance</span><span class="p">(</span><span class="n">logger</span><span class="o">=</span><span class="n">whylabs_logger</span><span class="p">,</span> <span class="n">impl</span><span class="o">=</span><span class="bp">cls</span><span class="p">)</span>
+        <span class="n">diagnostic_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="s2">&quot;Started whylogs Logger with WhyLabsWriter and initialized LangKit. 📝&quot;</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">callback_handler_cls</span></div></div>
+</pre></div>
+
+      </div>
+    <div class="container">
+      <footer class="sk-content-footer">
+            &copy; 2023, Harrison Chase.
+          Last updated on Dec 14, 2023.
+      </footer>
+    </div>
+  </div>
+</div>
+<script src="../../../_static/js/vendor/bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    /* Add a [>>>] button on the top-right corner of code samples to hide
+     * the >>> and ... prompts and the output and thus make the code
+     * copyable. */
+    var div = $('.highlight-python .highlight,' +
+                '.highlight-python3 .highlight,' +
+                '.highlight-pycon .highlight,' +
+		'.highlight-default .highlight')
+    var pre = div.find('pre');
+
+    // get the styles from the current theme
+    pre.parent().parent().css('position', 'relative');
+    var hide_text = 'Hide prompts and outputs';
+    var show_text = 'Show prompts and outputs';
+
+    // create and add the button to all the code blocks that contain >>>
+    div.each(function(index) {
+        var jthis = $(this);
+        if (jthis.find('.gp').length > 0) {
+            var button = $('<span class="copybutton">&gt;&gt;&gt;</span>');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+            jthis.prepend(button);
+        }
+        // tracebacks (.gt) contain bare text elements that need to be
+        // wrapped in a span to work with .nextUntil() (see later)
+        jthis.find('pre:has(.gt)').contents().filter(function() {
+            return ((this.nodeType == 3) && (this.data.trim().length > 0));
+        }).wrap('<span>');
+    });
+
+    // define the behavior of the button when it's clicked
+    $('.copybutton').click(function(e){
+        e.preventDefault();
+        var button = $(this);
+        if (button.data('hidden') === 'false') {
+            // hide the code output
+            button.parent().find('.go, .gp, .gt').hide();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'hidden');
+            button.css('text-decoration', 'line-through');
+            button.attr('title', show_text);
+            button.data('hidden', 'true');
+        } else {
+            // show the code output
+            button.parent().find('.go, .gp, .gt').show();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'visible');
+            button.css('text-decoration', 'none');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+        }
+    });
+
+	/*** Add permalink buttons next to glossary terms ***/
+	$('dl.glossary > dt[id]').append(function() {
+		return ('<a class="headerlink" href="#' +
+			    this.getAttribute('id') +
+			    '" title="Permalink to this term">¶</a>');
+	});
+});
+
+</script>
+    
+</body>
+</html>
