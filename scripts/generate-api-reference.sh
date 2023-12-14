@@ -33,5 +33,4 @@ mkdir -p $here/dist
 mkdir -p $here/dist/api_reference
 mkdir -p $here/dist/api_reference/$ragstack_version
 mkdir -p $here/dist/api_reference/$ragstack_version/langchain
-mkdir -p $here/dist/api_reference/$ragstack_version/langchain/$langchain_version
-cp -r /tmp/lc/docs/api_reference/_build/html/* $here/dist/api_reference/$ragstack_version/langchain/$langchain_version
+cp -r /tmp/lc/docs/api_reference/_build/html/* $here/dist/api_reference/$ragstack_version/langchain
