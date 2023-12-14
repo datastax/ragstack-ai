@@ -134,6 +134,8 @@ def dump_report():
     yield
     logging.info("All tests report:")
     logging.info("\n".join(all_report_lines))
+    logging.info("Failed tests report:")
+    logging.info("\n".join(failed_report_lines))
 
     stats_str = (
         "Tests passed: "
