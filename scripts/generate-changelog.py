@@ -26,6 +26,9 @@ def main():
                 break
         if package_name in IMPORTANT_DEPENDENCIES:
             version_range = split[1].replace('(', '').replace(')', '')
+            if package_name == "langchain":
+                version_range = f"https://datastax.github.io/ragstack-ai/api_reference/{package_version}/langchain[{version_range}]{{external-link-icon}}" # noqa
+
             deps_str += f"\n| {package_name}\n| {version_range}\n"
 
     release_date = json_response["urls"][0]["upload_time"][:10]
