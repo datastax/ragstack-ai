@@ -31,7 +31,7 @@ def test_ingest_errors(environment):
     empty_text = ""
 
     try:
-        # empty test is not allowed
+        # empty text computes embeddings vector as all zeroes and this is not allowed
         vectorstore.add_texts([empty_text])
     except ValueError as e:
         print("Error:", e)

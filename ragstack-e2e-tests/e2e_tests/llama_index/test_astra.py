@@ -1,4 +1,6 @@
 import logging
+from typing import List
+
 from astrapy.db import AstraDB as LibAstraDB
 import pytest
 from httpx import ConnectError
@@ -38,7 +40,7 @@ def test_ingest_errors(environment):
     empty_text = ""
 
     try:
-        # empty test is not allowed
+        # empty text computes embeddings vector as all zeroes and this is not allowed
         documents = [Document(text=empty_text)]
 
         VectorStoreIndex.from_documents(
@@ -141,14 +143,17 @@ def init_vector_db() -> AstraDBVectorStore:
     collections = raw_client.get_collections().get("status").get("collections")
     logging.info(f"Existing collections: {collections}")
     for collection_info in collections:
-        logging.info(f"Deleting collection: {collection_info}")
-        raw_client.delete_collection(collection_info)
+        try:
+            logging.info(f"Deleting collection: {collection_info}")
+            raw_client.delete_collection(collection_info)
+        except Exception as e:
+            logging.error(f"Error while deleting collection {collection_info}: {e}")
 
     vector_db = AstraDBVectorStore(
         token=token,
         api_endpoint=api_endpoint,
         collection_name=collection,
-        embedding_dimension=1536,
+        embedding_dimension=3,
     )
 
     return vector_db
@@ -185,9 +190,25 @@ def close_vector_db(vector_store: AstraDBVectorStore):
     )
 
 
+class MockEmbeddings(BaseEmbedding):
+    def _get_query_embedding(self, query: str) -> List[float]:
+        return self.mock_embedding(query)
+
+    async def _aget_query_embedding(self, query: str) -> List[float]:
+        return self.mock_embedding(query)
+
+    def _get_text_embedding(self, text: str) -> List[float]:
+        return self.mock_embedding(text)
+
+    @staticmethod
+    def mock_embedding(text: str):
+        res = [len(text) / 2, len(text) / 5, len(text) / 10]
+        logging.info("mock_embedding for " + text + " : " + str(res))
+        return res
+
+
 def init_embeddings() -> BaseEmbedding:
-    openai_key = get_required_env("OPEN_AI_KEY")
-    return OpenAIEmbedding(api_key=openai_key)
+    return MockEmbeddings()
 
 
 def init_llm() -> LLM:
