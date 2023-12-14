@@ -12,7 +12,7 @@ from generation import basic_chat_with_memory, open_ai_model
 
 
 def initialize_streamlit_app():
-    title = "Chat with your favorite philosophy AI bot AriBotle: powered by RAGStacks"
+    title = "Chat with philosophy AI AriBotle: powered by RAGStacks"
     st.set_page_config(
         page_title=title,
         layout="centered",
@@ -21,9 +21,9 @@ def initialize_streamlit_app():
     )
 
     st.title(title)
-    st.info(
-        "Check out TODO",
-    )
+    # st.info(
+    #     "Check out TODO",
+    # )
 
     if "messages" not in st.session_state.keys():
         st.session_state.messages = [
@@ -33,23 +33,21 @@ def initialize_streamlit_app():
             }
         ]
 
-    vstore = load_data()
-    print("Loaded data")
-
-    retriever = as_retriever(vstore)
-    model = open_ai_model()
-
-    prompt = """
-    You are a philosopher that draws inspiration from great thinkers of the past
-    to craft well-thought answers to user questions. Use the provided context as the basis
-    for your answers and do not make up new reasoning paths - just mix-and-match what you are given.
-    Your answers must be concise and to the point, and refrain from answering about other topics than philosophy.
-    """
-
-    print(f"Initializing model with prompt:\n{prompt}")
-    chain = basic_chat_with_memory(retriever, model, prompt)
-
     if "chat_engine" not in st.session_state.keys():
+        vstore = load_data()
+
+        retriever = as_retriever(vstore)
+        model = open_ai_model()
+
+        prompt = """
+        You are a philosopher that draws inspiration from great thinkers of the past
+        to craft well-thought answers to user questions. Use the provided context as the basis
+        for your answers and do not make up new reasoning paths - just mix-and-match what you are given.
+        Your answers must be concise and to the point, and refrain from answering about other topics than philosophy.
+        """
+
+        print(f"Initializing model with prompt:\n{prompt}")
+        chain = basic_chat_with_memory(retriever, model, prompt)
         st.session_state.chat_engine = chain
 
     if question := st.chat_input("Your question: "):

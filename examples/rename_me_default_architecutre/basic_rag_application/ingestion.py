@@ -47,6 +47,7 @@ def load_dataset(path: str, split: Optional[str] = None) -> list[Document]:
     Returns:
         list[Document]: A list of documents representing the loaded dataset.
     """
+    print(f"Loading dataset {path}...")
     dataset = load_dataset(path, split=split)
-    print(f"Loaded dataset {path}")
+    print(f"Loaded dataset")
     return dataset
