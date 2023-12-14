@@ -44,8 +44,6 @@ def initialize_streamlit_app():
     to craft well-thought answers to user questions. Use the provided context as the basis
     for your answers and do not make up new reasoning paths - just mix-and-match what you are given.
     Your answers must be concise and to the point, and refrain from answering about other topics than philosophy.
-
-    IMPORTANT: End every answer with a catchy sign-off that includes your name: AriBotle.
     """
 
     print(f"Initializing model with prompt:\n{prompt}")
@@ -63,10 +61,10 @@ def initialize_streamlit_app():
 
     if st.session_state.messages[-1]["role"] != "assistant":
         with st.chat_message("assistant"):
-            with st.spinner("Thinking..."):
+            with st.spinner("Pondering..."):
                 response = st.session_state.chat_engine.invoke(question)
-                st.write(response)
-                message = {"role": "assistant", "content": response}
+                st.write(response["response"])
+                message = {"role": "assistant", "content": response["response"]}
                 st.session_state.messages.append(message)
 
 
@@ -85,7 +83,7 @@ def load_data():
         split_documents = token_text_split(documents, chunk_size=1028, chunk_overlap=64)
 
         # Storage / Embedding
-        # collection = input("Collection: ")ko
+        # collection = input("Collection: ")
         collection = "test"
         embedding = open_ai_embeddings()
         token = os.environ["ASTRA_DB_APPLICATION_TOKEN"]
