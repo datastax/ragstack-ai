@@ -1,0 +1,21 @@
+name: Update GitHub pages
+
+on:
+  workflow_dispatch:
+    inputs:
+      ragstack-version:
+        description: 'RAGStack version (must exists on PyPI)'
+        required: true
+
+jobs:
+  update-api-reference:
+    name: Update API reference
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Update API reference
+        uses: ./.github/actions/deploy-api-reference
+        with:
+          ragstack-version: ${{ github.event.inputs.ragstack-version }}
