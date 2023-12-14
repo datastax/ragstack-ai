@@ -1,0 +1,632 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>html.parser &mdash; 🦜🔗 LangChain 0.0.349</title>
+  
+  <link rel="canonical" href="https://api.python.langchain.com/en/latest/_modules/html/parser.html" />
+
+  
+
+  <link rel="stylesheet" href="../../_static/css/vendor/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/autodoc_pydantic.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/panels-bootstrap.5fd3999ee7762ccc51105388f4a9d115.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/css/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+<script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+<script src="../../_static/jquery.js"></script> 
+</head>
+<body>
+
+
+<nav id="navbar" class="sk-docs-navbar navbar navbar-expand-md navbar-light bg-light py-0">
+  <div class="container-fluid sk-docs-container px-0">
+    <button
+      id="sk-navbar-toggler"
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="sk-navbar-collapse collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../api_reference.html">API</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../core_api_reference.html">Core</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../community_api_reference.html">Community</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../experimental_api_reference.html">Experimental</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" target="_blank" rel="noopener noreferrer" href="https://python.langchain.com/">Python Docs</a>
+        </li>
+      </ul>
+      <div id="searchbox" role="search">
+          <div class="searchformwrapper">
+          <form class="search" action="../../search.html" method="get">
+            <input class="sk-search-text-input" type="text" name="q" aria-labelledby="searchlabel" />
+            <input class="sk-search-text-btn" type="submit" value="Go" />
+          </form>
+          </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="d-flex" id="sk-doc-wrapper">
+    <input type="checkbox" name="sk-toggle-checkbox" id="sk-toggle-checkbox">
+    <label id="sk-sidemenu-toggle" class="sk-btn-toggle-toc btn sk-btn-primary" for="sk-toggle-checkbox">Toggle Menu</label>
+    <div id="sk-sidebar-wrapper" class="border-right">
+      <div class="sk-sidebar-toc-wrapper">
+        <div class="btn-group w-100 mb-2" role="group" aria-label="rellinks">
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Prev</a><a href="../index.html" role="button" class="btn sk-btn-rellink py-1" sk-rellink-tooltip="Module code">Up</a>
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Next</a>
+        </div>
+        <div class="alert alert-warning p-1 mb-2" role="alert">
+          <p class="text-center mb-0">
+          <strong>LangChain 0.0.349</strong><br/>
+          </p>
+        </div>
+            <div class="sk-sidebar-toc">
+              
+            </div>
+      </div>
+    </div>
+    <div id="sk-page-content-wrapper">
+      <div class="sk-page-content container-fluid body px-md-3" role="main">
+        
+  <h1>Source code for html.parser</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;A parser for HTML and XHTML.&quot;&quot;&quot;</span>
+
+<span class="c1"># This file is based on sgmllib.py, but the API is slightly different.</span>
+
+<span class="c1"># XXX There should be a way to distinguish between PCDATA (parsed</span>
+<span class="c1"># character data -- the normal case), RCDATA (replaceable character</span>
+<span class="c1"># data -- only char and entity references and end tags are special)</span>
+<span class="c1"># and CDATA (character data -- only end tags are special).</span>
+
+
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">_markupbase</span>
+
+<span class="kn">from</span> <span class="nn">html</span> <span class="kn">import</span> <span class="n">unescape</span>
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;HTMLParser&#39;</span><span class="p">]</span>
+
+<span class="c1"># Regular expressions used for parsing</span>
+
+<span class="n">interesting_normal</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;[&amp;&lt;]&#39;</span><span class="p">)</span>
+<span class="n">incomplete</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;&amp;[a-zA-Z#]&#39;</span><span class="p">)</span>
+
+<span class="n">entityref</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;&amp;([a-zA-Z][-.a-zA-Z0-9]*)[^a-zA-Z0-9]&#39;</span><span class="p">)</span>
+<span class="n">charref</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;&amp;#(?:[0-9]+|[xX][0-9a-fA-F]+)[^0-9a-fA-F]&#39;</span><span class="p">)</span>
+
+<span class="n">starttagopen</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;&lt;[a-zA-Z]&#39;</span><span class="p">)</span>
+<span class="n">piclose</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;&gt;&#39;</span><span class="p">)</span>
+<span class="n">commentclose</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;--\s*&gt;&#39;</span><span class="p">)</span>
+<span class="c1"># Note:</span>
+<span class="c1">#  1) if you change tagfind/attrfind remember to update locatestarttagend too;</span>
+<span class="c1">#  2) if you change tagfind/attrfind and/or locatestarttagend the parser will</span>
+<span class="c1">#     explode, so don&#39;t do it.</span>
+<span class="c1"># see http://www.w3.org/TR/html5/tokenization.html#tag-open-state</span>
+<span class="c1"># and http://www.w3.org/TR/html5/tokenization.html#tag-name-state</span>
+<span class="n">tagfind_tolerant</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;([a-zA-Z][^\t\n\r\f /&gt;\x00]*)(?:\s|/(?!&gt;))*&#39;</span><span class="p">)</span>
+<span class="n">attrfind_tolerant</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span>
+    <span class="sa">r</span><span class="s1">&#39;((?&lt;=[</span><span class="se">\&#39;</span><span class="s1">&quot;\s/])[^\s/&gt;][^\s/=&gt;]*)(\s*=+\s*&#39;</span>
+    <span class="sa">r</span><span class="s1">&#39;(</span><span class="se">\&#39;</span><span class="s1">[^</span><span class="se">\&#39;</span><span class="s1">]*</span><span class="se">\&#39;</span><span class="s1">|&quot;[^&quot;]*&quot;|(?![</span><span class="se">\&#39;</span><span class="s1">&quot;])[^&gt;\s]*))?(?:\s|/(?!&gt;))*&#39;</span><span class="p">)</span>
+<span class="n">locatestarttagend_tolerant</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">  &lt;[a-zA-Z][^\t\n\r\f /&gt;\x00]*       # tag name</span>
+<span class="s2">  (?:[\s/]*                          # optional whitespace before attribute name</span>
+<span class="s2">    (?:(?&lt;=[&#39;&quot;\s/])[^\s/&gt;][^\s/=&gt;]*  # attribute name</span>
+<span class="s2">      (?:\s*=+\s*                    # value indicator</span>
+<span class="s2">        (?:&#39;[^&#39;]*&#39;                   # LITA-enclosed value</span>
+<span class="s2">          |&quot;[^&quot;]*&quot;                   # LIT-enclosed value</span>
+<span class="s2">          |(?![&#39;&quot;])[^&gt;\s]*           # bare value</span>
+<span class="s2">         )</span>
+<span class="s2">        \s*                          # possibly followed by a space</span>
+<span class="s2">       )?(?:\s|/(?!&gt;))*</span>
+<span class="s2">     )*</span>
+<span class="s2">   )?</span>
+<span class="s2">  \s*                                # trailing whitespace</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">VERBOSE</span><span class="p">)</span>
+<span class="n">endendtag</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;&gt;&#39;</span><span class="p">)</span>
+<span class="c1"># the HTML 5 spec, section 8.1.2.2, doesn&#39;t allow spaces between</span>
+<span class="c1"># &lt;/ and the tag name, so maybe this should be fixed</span>
+<span class="n">endtagfind</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;&lt;/\s*([a-zA-Z][-.a-zA-Z0-9:_]*)\s*&gt;&#39;</span><span class="p">)</span>
+
+
+
+<span class="k">class</span> <span class="nc">HTMLParser</span><span class="p">(</span><span class="n">_markupbase</span><span class="o">.</span><span class="n">ParserBase</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Find tags and other markup and call handler functions.</span>
+
+<span class="sd">    Usage:</span>
+<span class="sd">        p = HTMLParser()</span>
+<span class="sd">        p.feed(data)</span>
+<span class="sd">        ...</span>
+<span class="sd">        p.close()</span>
+
+<span class="sd">    Start tags are handled by calling self.handle_starttag() or</span>
+<span class="sd">    self.handle_startendtag(); end tags by self.handle_endtag().  The</span>
+<span class="sd">    data between tags is passed from the parser to the derived class</span>
+<span class="sd">    by calling self.handle_data() with the data as argument (the data</span>
+<span class="sd">    may be split up in arbitrary chunks).  If convert_charrefs is</span>
+<span class="sd">    True the character references are converted automatically to the</span>
+<span class="sd">    corresponding Unicode character (and self.handle_data() is no</span>
+<span class="sd">    longer split in chunks), otherwise they are passed by calling</span>
+<span class="sd">    self.handle_entityref() or self.handle_charref() with the string</span>
+<span class="sd">    containing respectively the named or numeric reference as the</span>
+<span class="sd">    argument.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">CDATA_CONTENT_ELEMENTS</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;script&quot;</span><span class="p">,</span> <span class="s2">&quot;style&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">convert_charrefs</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize and reset this instance.</span>
+
+<span class="sd">        If convert_charrefs is True (the default), all character references</span>
+<span class="sd">        are automatically converted to the corresponding Unicode characters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">convert_charrefs</span> <span class="o">=</span> <span class="n">convert_charrefs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reset this instance.  Loses all unprocessed data.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rawdata</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lasttag</span> <span class="o">=</span> <span class="s1">&#39;???&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">interesting</span> <span class="o">=</span> <span class="n">interesting_normal</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cdata_elem</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">_markupbase</span><span class="o">.</span><span class="n">ParserBase</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">feed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Feed data to the parser.</span>
+
+<span class="sd">        Call this as often as you want, with as little or as much text</span>
+<span class="sd">        as you want (may include &#39;\n&#39;).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rawdata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rawdata</span> <span class="o">+</span> <span class="n">data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">goahead</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Handle any buffered data.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">goahead</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">__starttag_text</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">get_starttag_text</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return full source of start tag: &#39;&lt;...&gt;&#39;.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__starttag_text</span>
+
+    <span class="k">def</span> <span class="nf">set_cdata_mode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">elem</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cdata_elem</span> <span class="o">=</span> <span class="n">elem</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">interesting</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;&lt;/\s*</span><span class="si">%s</span><span class="s1">\s*&gt;&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">cdata_elem</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">clear_cdata_mode</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">interesting</span> <span class="o">=</span> <span class="n">interesting_normal</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cdata_elem</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="c1"># Internal -- handle data as far as reasonable.  May leave state</span>
+    <span class="c1"># and data to be processed by a subsequent call.  If &#39;end&#39; is</span>
+    <span class="c1"># true, force handling all data as if followed by EOF marker.</span>
+    <span class="k">def</span> <span class="nf">goahead</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">end</span><span class="p">):</span>
+        <span class="n">rawdata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rawdata</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">rawdata</span><span class="p">)</span>
+        <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">convert_charrefs</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">cdata_elem</span><span class="p">:</span>
+                <span class="n">j</span> <span class="o">=</span> <span class="n">rawdata</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;&lt;&#39;</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="c1"># if we can&#39;t find the next &lt;, either we are at the end</span>
+                    <span class="c1"># or there&#39;s more text incoming.  If the latter is True,</span>
+                    <span class="c1"># we can&#39;t pass the text to handle_data in case we have</span>
+                    <span class="c1"># a charref cut in half at end.  Try to determine if</span>
+                    <span class="c1"># this is the case before proceeding by looking for an</span>
+                    <span class="c1"># &amp; near the end and see if it&#39;s followed by a space or ;.</span>
+                    <span class="n">amppos</span> <span class="o">=</span> <span class="n">rawdata</span><span class="o">.</span><span class="n">rfind</span><span class="p">(</span><span class="s1">&#39;&amp;&#39;</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">n</span><span class="o">-</span><span class="mi">34</span><span class="p">))</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="n">amppos</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="ow">and</span>
+                        <span class="ow">not</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;[\s;]&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">rawdata</span><span class="p">,</span> <span class="n">amppos</span><span class="p">)):</span>
+                        <span class="k">break</span>  <span class="c1"># wait till we get all the text</span>
+                    <span class="n">j</span> <span class="o">=</span> <span class="n">n</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">match</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">interesting</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">rawdata</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>  <span class="c1"># &lt; or &amp;</span>
+                <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
+                    <span class="n">j</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cdata_elem</span><span class="p">:</span>
+                        <span class="k">break</span>
+                    <span class="n">j</span> <span class="o">=</span> <span class="n">n</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">j</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">convert_charrefs</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">cdata_elem</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">handle_data</span><span class="p">(</span><span class="n">unescape</span><span class="p">(</span><span class="n">rawdata</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">j</span><span class="p">]))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">handle_data</span><span class="p">(</span><span class="n">rawdata</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">j</span><span class="p">])</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">updatepos</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="n">n</span><span class="p">:</span> <span class="k">break</span>
+            <span class="n">startswith</span> <span class="o">=</span> <span class="n">rawdata</span><span class="o">.</span><span class="n">startswith</span>
+            <span class="k">if</span> <span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;&lt;&#39;</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">starttagopen</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">rawdata</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span> <span class="c1"># &lt; + letter</span>
+                    <span class="n">k</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse_starttag</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;&lt;/&quot;</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+                    <span class="n">k</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse_endtag</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;&lt;!--&quot;</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+                    <span class="n">k</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse_comment</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;&lt;?&quot;</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+                    <span class="n">k</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse_pi</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;&lt;!&quot;</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+                    <span class="n">k</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse_html_declaration</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">handle_data</span><span class="p">(</span><span class="s2">&quot;&lt;&quot;</span><span class="p">)</span>
+                    <span class="n">k</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">break</span>
+                <span class="k">if</span> <span class="n">k</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">end</span><span class="p">:</span>
+                        <span class="k">break</span>
+                    <span class="n">k</span> <span class="o">=</span> <span class="n">rawdata</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;&gt;&#39;</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">k</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="n">k</span> <span class="o">=</span> <span class="n">rawdata</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;&lt;&#39;</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">k</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                            <span class="n">k</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">k</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">convert_charrefs</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">cdata_elem</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">handle_data</span><span class="p">(</span><span class="n">unescape</span><span class="p">(</span><span class="n">rawdata</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">k</span><span class="p">]))</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">handle_data</span><span class="p">(</span><span class="n">rawdata</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">k</span><span class="p">])</span>
+                <span class="n">i</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">updatepos</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;&amp;#&quot;</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+                <span class="n">match</span> <span class="o">=</span> <span class="n">charref</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">rawdata</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
+                    <span class="n">name</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">()[</span><span class="mi">2</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">handle_charref</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+                    <span class="n">k</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">end</span><span class="p">()</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;;&#39;</span><span class="p">,</span> <span class="n">k</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+                        <span class="n">k</span> <span class="o">=</span> <span class="n">k</span> <span class="o">-</span> <span class="mi">1</span>
+                    <span class="n">i</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">updatepos</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
+                    <span class="k">continue</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="s2">&quot;;&quot;</span> <span class="ow">in</span> <span class="n">rawdata</span><span class="p">[</span><span class="n">i</span><span class="p">:]:</span>  <span class="c1"># bail by consuming &amp;#</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">handle_data</span><span class="p">(</span><span class="n">rawdata</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="o">+</span><span class="mi">2</span><span class="p">])</span>
+                        <span class="n">i</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">updatepos</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span>
+                    <span class="k">break</span>
+            <span class="k">elif</span> <span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;&amp;&#39;</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+                <span class="n">match</span> <span class="o">=</span> <span class="n">entityref</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">rawdata</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
+                    <span class="n">name</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">handle_entityref</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+                    <span class="n">k</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">end</span><span class="p">()</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;;&#39;</span><span class="p">,</span> <span class="n">k</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+                        <span class="n">k</span> <span class="o">=</span> <span class="n">k</span> <span class="o">-</span> <span class="mi">1</span>
+                    <span class="n">i</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">updatepos</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
+                    <span class="k">continue</span>
+                <span class="n">match</span> <span class="o">=</span> <span class="n">incomplete</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">rawdata</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
+                    <span class="c1"># match.group() will contain at least 2 chars</span>
+                    <span class="k">if</span> <span class="n">end</span> <span class="ow">and</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">()</span> <span class="o">==</span> <span class="n">rawdata</span><span class="p">[</span><span class="n">i</span><span class="p">:]:</span>
+                        <span class="n">k</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">end</span><span class="p">()</span>
+                        <span class="k">if</span> <span class="n">k</span> <span class="o">&lt;=</span> <span class="n">i</span><span class="p">:</span>
+                            <span class="n">k</span> <span class="o">=</span> <span class="n">n</span>
+                        <span class="n">i</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">updatepos</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                    <span class="c1"># incomplete</span>
+                    <span class="k">break</span>
+                <span class="k">elif</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">:</span>
+                    <span class="c1"># not the end of the buffer, and can&#39;t be confused</span>
+                    <span class="c1"># with some other construct</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">handle_data</span><span class="p">(</span><span class="s2">&quot;&amp;&quot;</span><span class="p">)</span>
+                    <span class="n">i</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">updatepos</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">break</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;interesting.search() lied&quot;</span>
+        <span class="c1"># end while</span>
+        <span class="k">if</span> <span class="n">end</span> <span class="ow">and</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">cdata_elem</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">convert_charrefs</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">cdata_elem</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">handle_data</span><span class="p">(</span><span class="n">unescape</span><span class="p">(</span><span class="n">rawdata</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">n</span><span class="p">]))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">handle_data</span><span class="p">(</span><span class="n">rawdata</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">n</span><span class="p">])</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">updatepos</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rawdata</span> <span class="o">=</span> <span class="n">rawdata</span><span class="p">[</span><span class="n">i</span><span class="p">:]</span>
+
+    <span class="c1"># Internal -- parse html declarations, return length or -1 if not terminated</span>
+    <span class="c1"># See w3.org/TR/html5/tokenization.html#markup-declaration-open-state</span>
+    <span class="c1"># See also parse_declaration in _markupbase</span>
+    <span class="k">def</span> <span class="nf">parse_html_declaration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+        <span class="n">rawdata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rawdata</span>
+        <span class="k">assert</span> <span class="n">rawdata</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="o">+</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;&lt;!&#39;</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;unexpected call to &#39;</span>
+                                        <span class="s1">&#39;parse_html_declaration()&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">rawdata</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="o">+</span><span class="mi">4</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;&lt;!--&#39;</span><span class="p">:</span>
+            <span class="c1"># this case is actually already handled in goahead()</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse_comment</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">rawdata</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="o">+</span><span class="mi">3</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;&lt;![&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse_marked_section</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">rawdata</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="o">+</span><span class="mi">9</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;&lt;!doctype&#39;</span><span class="p">:</span>
+            <span class="c1"># find the closing &gt;</span>
+            <span class="n">gtpos</span> <span class="o">=</span> <span class="n">rawdata</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;&gt;&#39;</span><span class="p">,</span> <span class="n">i</span><span class="o">+</span><span class="mi">9</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">gtpos</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+                <span class="k">return</span> <span class="o">-</span><span class="mi">1</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">handle_decl</span><span class="p">(</span><span class="n">rawdata</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">2</span><span class="p">:</span><span class="n">gtpos</span><span class="p">])</span>
+            <span class="k">return</span> <span class="n">gtpos</span><span class="o">+</span><span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse_bogus_comment</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+    <span class="c1"># Internal -- parse bogus comment, return length or -1 if not terminated</span>
+    <span class="c1"># see http://www.w3.org/TR/html5/tokenization.html#bogus-comment-state</span>
+    <span class="k">def</span> <span class="nf">parse_bogus_comment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">report</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="n">rawdata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rawdata</span>
+        <span class="k">assert</span> <span class="n">rawdata</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="o">+</span><span class="mi">2</span><span class="p">]</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;&lt;!&#39;</span><span class="p">,</span> <span class="s1">&#39;&lt;/&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;unexpected call to &#39;</span>
+                                                <span class="s1">&#39;parse_comment()&#39;</span><span class="p">)</span>
+        <span class="n">pos</span> <span class="o">=</span> <span class="n">rawdata</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;&gt;&#39;</span><span class="p">,</span> <span class="n">i</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">pos</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="k">if</span> <span class="n">report</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">handle_comment</span><span class="p">(</span><span class="n">rawdata</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">2</span><span class="p">:</span><span class="n">pos</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">pos</span> <span class="o">+</span> <span class="mi">1</span>
+
+    <span class="c1"># Internal -- parse processing instr, return end or -1 if not terminated</span>
+    <span class="k">def</span> <span class="nf">parse_pi</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+        <span class="n">rawdata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rawdata</span>
+        <span class="k">assert</span> <span class="n">rawdata</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="o">+</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;&lt;?&#39;</span><span class="p">,</span> <span class="s1">&#39;unexpected call to parse_pi()&#39;</span>
+        <span class="n">match</span> <span class="o">=</span> <span class="n">piclose</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">rawdata</span><span class="p">,</span> <span class="n">i</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span> <span class="c1"># &gt;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">match</span><span class="p">:</span>
+            <span class="k">return</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="n">j</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">handle_pi</span><span class="p">(</span><span class="n">rawdata</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">2</span><span class="p">:</span> <span class="n">j</span><span class="p">])</span>
+        <span class="n">j</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">end</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">j</span>
+
+    <span class="c1"># Internal -- handle starttag, return end or -1 if not terminated</span>
+    <span class="k">def</span> <span class="nf">parse_starttag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__starttag_text</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">endpos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_for_whole_start_tag</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">endpos</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">endpos</span>
+        <span class="n">rawdata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rawdata</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__starttag_text</span> <span class="o">=</span> <span class="n">rawdata</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">endpos</span><span class="p">]</span>
+
+        <span class="c1"># Now parse the data between i+1 and j into a tag and attrs</span>
+        <span class="n">attrs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">match</span> <span class="o">=</span> <span class="n">tagfind_tolerant</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">rawdata</span><span class="p">,</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">match</span><span class="p">,</span> <span class="s1">&#39;unexpected call to parse_starttag()&#39;</span>
+        <span class="n">k</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">end</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lasttag</span> <span class="o">=</span> <span class="n">tag</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="k">while</span> <span class="n">k</span> <span class="o">&lt;</span> <span class="n">endpos</span><span class="p">:</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="n">attrfind_tolerant</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">rawdata</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">m</span><span class="p">:</span>
+                <span class="k">break</span>
+            <span class="n">attrname</span><span class="p">,</span> <span class="n">rest</span><span class="p">,</span> <span class="n">attrvalue</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">rest</span><span class="p">:</span>
+                <span class="n">attrvalue</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">elif</span> <span class="n">attrvalue</span><span class="p">[:</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;</span><span class="se">\&#39;</span><span class="s1">&#39;</span> <span class="o">==</span> <span class="n">attrvalue</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">:]</span> <span class="ow">or</span> \
+                 <span class="n">attrvalue</span><span class="p">[:</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;&quot;&#39;</span> <span class="o">==</span> <span class="n">attrvalue</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">:]:</span>
+                <span class="n">attrvalue</span> <span class="o">=</span> <span class="n">attrvalue</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">attrvalue</span><span class="p">:</span>
+                <span class="n">attrvalue</span> <span class="o">=</span> <span class="n">unescape</span><span class="p">(</span><span class="n">attrvalue</span><span class="p">)</span>
+            <span class="n">attrs</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">attrname</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span> <span class="n">attrvalue</span><span class="p">))</span>
+            <span class="n">k</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">end</span><span class="p">()</span>
+
+        <span class="n">end</span> <span class="o">=</span> <span class="n">rawdata</span><span class="p">[</span><span class="n">k</span><span class="p">:</span><span class="n">endpos</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">end</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;&gt;&quot;</span><span class="p">,</span> <span class="s2">&quot;/&gt;&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">handle_data</span><span class="p">(</span><span class="n">rawdata</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">endpos</span><span class="p">])</span>
+            <span class="k">return</span> <span class="n">endpos</span>
+        <span class="k">if</span> <span class="n">end</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;/&gt;&#39;</span><span class="p">):</span>
+            <span class="c1"># XHTML-style empty tag: &lt;span attr=&quot;value&quot; /&gt;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">handle_startendtag</span><span class="p">(</span><span class="n">tag</span><span class="p">,</span> <span class="n">attrs</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">handle_starttag</span><span class="p">(</span><span class="n">tag</span><span class="p">,</span> <span class="n">attrs</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">tag</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">CDATA_CONTENT_ELEMENTS</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">set_cdata_mode</span><span class="p">(</span><span class="n">tag</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">endpos</span>
+
+    <span class="c1"># Internal -- check to see if we have a complete starttag; return end</span>
+    <span class="c1"># or -1 if incomplete.</span>
+    <span class="k">def</span> <span class="nf">check_for_whole_start_tag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+        <span class="n">rawdata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rawdata</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="n">locatestarttagend_tolerant</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">rawdata</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">m</span><span class="p">:</span>
+            <span class="n">j</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">end</span><span class="p">()</span>
+            <span class="nb">next</span> <span class="o">=</span> <span class="n">rawdata</span><span class="p">[</span><span class="n">j</span><span class="p">:</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">next</span> <span class="o">==</span> <span class="s2">&quot;&gt;&quot;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">j</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="nb">next</span> <span class="o">==</span> <span class="s2">&quot;/&quot;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">rawdata</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;/&gt;&quot;</span><span class="p">,</span> <span class="n">j</span><span class="p">):</span>
+                    <span class="k">return</span> <span class="n">j</span> <span class="o">+</span> <span class="mi">2</span>
+                <span class="k">if</span> <span class="n">rawdata</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="n">j</span><span class="p">):</span>
+                    <span class="c1"># buffer boundary</span>
+                    <span class="k">return</span> <span class="o">-</span><span class="mi">1</span>
+                <span class="c1"># else bogus input</span>
+                <span class="k">if</span> <span class="n">j</span> <span class="o">&gt;</span> <span class="n">i</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">j</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="nb">next</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                <span class="c1"># end of input</span>
+                <span class="k">return</span> <span class="o">-</span><span class="mi">1</span>
+            <span class="k">if</span> <span class="nb">next</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;abcdefghijklmnopqrstuvwxyz=/&quot;</span>
+                        <span class="s2">&quot;ABCDEFGHIJKLMNOPQRSTUVWXYZ&quot;</span><span class="p">):</span>
+                <span class="c1"># end of input in or before attribute value, or we have the</span>
+                <span class="c1"># &#39;/&#39; from a &#39;/&gt;&#39; ending</span>
+                <span class="k">return</span> <span class="o">-</span><span class="mi">1</span>
+            <span class="k">if</span> <span class="n">j</span> <span class="o">&gt;</span> <span class="n">i</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">j</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span><span class="s2">&quot;we should not get here!&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Internal -- parse endtag, return end or -1 if incomplete</span>
+    <span class="k">def</span> <span class="nf">parse_endtag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+        <span class="n">rawdata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rawdata</span>
+        <span class="k">assert</span> <span class="n">rawdata</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="o">+</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;&lt;/&quot;</span><span class="p">,</span> <span class="s2">&quot;unexpected call to parse_endtag&quot;</span>
+        <span class="n">match</span> <span class="o">=</span> <span class="n">endendtag</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">rawdata</span><span class="p">,</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># &gt;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">match</span><span class="p">:</span>
+            <span class="k">return</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="n">gtpos</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">end</span><span class="p">()</span>
+        <span class="n">match</span> <span class="o">=</span> <span class="n">endtagfind</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">rawdata</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span> <span class="c1"># &lt;/ + tag + &gt;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">match</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cdata_elem</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">handle_data</span><span class="p">(</span><span class="n">rawdata</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">gtpos</span><span class="p">])</span>
+                <span class="k">return</span> <span class="n">gtpos</span>
+            <span class="c1"># find the name: w3.org/TR/html5/tokenization.html#tag-name-state</span>
+            <span class="n">namematch</span> <span class="o">=</span> <span class="n">tagfind_tolerant</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">rawdata</span><span class="p">,</span> <span class="n">i</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">namematch</span><span class="p">:</span>
+                <span class="c1"># w3.org/TR/html5/tokenization.html#end-tag-open-state</span>
+                <span class="k">if</span> <span class="n">rawdata</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="o">+</span><span class="mi">3</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;&lt;/&gt;&#39;</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">i</span><span class="o">+</span><span class="mi">3</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse_bogus_comment</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+            <span class="n">tagname</span> <span class="o">=</span> <span class="n">namematch</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+            <span class="c1"># consume and ignore other stuff between the name and the &gt;</span>
+            <span class="c1"># Note: this is not 100% correct, since we might have things like</span>
+            <span class="c1"># &lt;/tag attr=&quot;&gt;&quot;&gt;, but looking for &gt; after the name should cover</span>
+            <span class="c1"># most of the cases and is much simpler</span>
+            <span class="n">gtpos</span> <span class="o">=</span> <span class="n">rawdata</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;&gt;&#39;</span><span class="p">,</span> <span class="n">namematch</span><span class="o">.</span><span class="n">end</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">handle_endtag</span><span class="p">(</span><span class="n">tagname</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">gtpos</span><span class="o">+</span><span class="mi">1</span>
+
+        <span class="n">elem</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="c1"># script or style</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cdata_elem</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">elem</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cdata_elem</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">handle_data</span><span class="p">(</span><span class="n">rawdata</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">gtpos</span><span class="p">])</span>
+                <span class="k">return</span> <span class="n">gtpos</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">handle_endtag</span><span class="p">(</span><span class="n">elem</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clear_cdata_mode</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">gtpos</span>
+
+    <span class="c1"># Overridable -- finish processing of start+end tag: &lt;tag.../&gt;</span>
+    <span class="k">def</span> <span class="nf">handle_startendtag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tag</span><span class="p">,</span> <span class="n">attrs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">handle_starttag</span><span class="p">(</span><span class="n">tag</span><span class="p">,</span> <span class="n">attrs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">handle_endtag</span><span class="p">(</span><span class="n">tag</span><span class="p">)</span>
+
+    <span class="c1"># Overridable -- handle start tag</span>
+    <span class="k">def</span> <span class="nf">handle_starttag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tag</span><span class="p">,</span> <span class="n">attrs</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="c1"># Overridable -- handle end tag</span>
+    <span class="k">def</span> <span class="nf">handle_endtag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tag</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="c1"># Overridable -- handle character reference</span>
+    <span class="k">def</span> <span class="nf">handle_charref</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="c1"># Overridable -- handle entity reference</span>
+    <span class="k">def</span> <span class="nf">handle_entityref</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="c1"># Overridable -- handle data</span>
+    <span class="k">def</span> <span class="nf">handle_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="c1"># Overridable -- handle comment</span>
+    <span class="k">def</span> <span class="nf">handle_comment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="c1"># Overridable -- handle declaration</span>
+    <span class="k">def</span> <span class="nf">handle_decl</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">decl</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="c1"># Overridable -- handle processing instruction</span>
+    <span class="k">def</span> <span class="nf">handle_pi</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">unknown_decl</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="k">pass</span>
+</pre></div>
+
+      </div>
+    <div class="container">
+      <footer class="sk-content-footer">
+            &copy; 2023, Harrison Chase.
+          Last updated on Dec 14, 2023.
+      </footer>
+    </div>
+  </div>
+</div>
+<script src="../../_static/js/vendor/bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    /* Add a [>>>] button on the top-right corner of code samples to hide
+     * the >>> and ... prompts and the output and thus make the code
+     * copyable. */
+    var div = $('.highlight-python .highlight,' +
+                '.highlight-python3 .highlight,' +
+                '.highlight-pycon .highlight,' +
+		'.highlight-default .highlight')
+    var pre = div.find('pre');
+
+    // get the styles from the current theme
+    pre.parent().parent().css('position', 'relative');
+    var hide_text = 'Hide prompts and outputs';
+    var show_text = 'Show prompts and outputs';
+
+    // create and add the button to all the code blocks that contain >>>
+    div.each(function(index) {
+        var jthis = $(this);
+        if (jthis.find('.gp').length > 0) {
+            var button = $('<span class="copybutton">&gt;&gt;&gt;</span>');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+            jthis.prepend(button);
+        }
+        // tracebacks (.gt) contain bare text elements that need to be
+        // wrapped in a span to work with .nextUntil() (see later)
+        jthis.find('pre:has(.gt)').contents().filter(function() {
+            return ((this.nodeType == 3) && (this.data.trim().length > 0));
+        }).wrap('<span>');
+    });
+
+    // define the behavior of the button when it's clicked
+    $('.copybutton').click(function(e){
+        e.preventDefault();
+        var button = $(this);
+        if (button.data('hidden') === 'false') {
+            // hide the code output
+            button.parent().find('.go, .gp, .gt').hide();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'hidden');
+            button.css('text-decoration', 'line-through');
+            button.attr('title', show_text);
+            button.data('hidden', 'true');
+        } else {
+            // show the code output
+            button.parent().find('.go, .gp, .gt').show();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'visible');
+            button.css('text-decoration', 'none');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+        }
+    });
+
+	/*** Add permalink buttons next to glossary terms ***/
+	$('dl.glossary > dt[id]').append(function() {
+		return ('<a class="headerlink" href="#' +
+			    this.getAttribute('id') +
+			    '" title="Permalink to this term">¶</a>');
+	});
+});
+
+</script>
+    
+</body>
+</html>

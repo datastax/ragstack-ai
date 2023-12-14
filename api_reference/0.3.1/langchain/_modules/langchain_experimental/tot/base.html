@@ -1,0 +1,332 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>langchain_experimental.tot.base &mdash; 🦜🔗 LangChain 0.0.349</title>
+  
+  <link rel="canonical" href="https://api.python.langchain.com/en/latest/_modules/langchain_experimental/tot/base.html" />
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/vendor/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/autodoc_pydantic.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/panels-bootstrap.5fd3999ee7762ccc51105388f4a9d115.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+<script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+<script src="../../../_static/jquery.js"></script> 
+</head>
+<body>
+
+
+<nav id="navbar" class="sk-docs-navbar navbar navbar-expand-md navbar-light bg-light py-0">
+  <div class="container-fluid sk-docs-container px-0">
+    <button
+      id="sk-navbar-toggler"
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="sk-navbar-collapse collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../api_reference.html">API</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../core_api_reference.html">Core</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../community_api_reference.html">Community</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../experimental_api_reference.html">Experimental</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" target="_blank" rel="noopener noreferrer" href="https://python.langchain.com/">Python Docs</a>
+        </li>
+      </ul>
+      <div id="searchbox" role="search">
+          <div class="searchformwrapper">
+          <form class="search" action="../../../search.html" method="get">
+            <input class="sk-search-text-input" type="text" name="q" aria-labelledby="searchlabel" />
+            <input class="sk-search-text-btn" type="submit" value="Go" />
+          </form>
+          </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="d-flex" id="sk-doc-wrapper">
+    <input type="checkbox" name="sk-toggle-checkbox" id="sk-toggle-checkbox">
+    <label id="sk-sidemenu-toggle" class="sk-btn-toggle-toc btn sk-btn-primary" for="sk-toggle-checkbox">Toggle Menu</label>
+    <div id="sk-sidebar-wrapper" class="border-right">
+      <div class="sk-sidebar-toc-wrapper">
+        <div class="btn-group w-100 mb-2" role="group" aria-label="rellinks">
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Prev</a><a href="../../index.html" role="button" class="btn sk-btn-rellink py-1" sk-rellink-tooltip="Module code">Up</a>
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Next</a>
+        </div>
+        <div class="alert alert-warning p-1 mb-2" role="alert">
+          <p class="text-center mb-0">
+          <strong>LangChain 0.0.349</strong><br/>
+          </p>
+        </div>
+            <div class="sk-sidebar-toc">
+              
+            </div>
+      </div>
+    </div>
+    <div id="sk-page-content-wrapper">
+      <div class="sk-page-content container-fluid body px-md-3" role="main">
+        
+  <h1>Source code for langchain_experimental.tot.base</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This a Tree of Thought (ToT) chain based on the paper &quot;Large Language Model</span>
+<span class="sd">Guided Tree-of-Thought&quot;</span>
+
+<span class="sd">https://arxiv.org/pdf/2305.08291.pdf</span>
+
+<span class="sd">The Tree of Thought (ToT) chain uses a tree structure to explore the space of</span>
+<span class="sd">possible solutions to a problem.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">from</span> <span class="nn">textwrap</span> <span class="kn">import</span> <span class="n">indent</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Type</span>
+
+<span class="kn">from</span> <span class="nn">langchain.base_language</span> <span class="kn">import</span> <span class="n">BaseLanguageModel</span>
+<span class="kn">from</span> <span class="nn">langchain.callbacks.manager</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AsyncCallbackManagerForChainRun</span><span class="p">,</span>
+    <span class="n">CallbackManagerForChainRun</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">langchain.chains.base</span> <span class="kn">import</span> <span class="n">Chain</span>
+
+<span class="kn">from</span> <span class="nn">langchain_experimental.pydantic_v1</span> <span class="kn">import</span> <span class="n">Extra</span>
+<span class="kn">from</span> <span class="nn">langchain_experimental.tot.checker</span> <span class="kn">import</span> <span class="n">ToTChecker</span>
+<span class="kn">from</span> <span class="nn">langchain_experimental.tot.controller</span> <span class="kn">import</span> <span class="n">ToTController</span>
+<span class="kn">from</span> <span class="nn">langchain_experimental.tot.memory</span> <span class="kn">import</span> <span class="n">ToTDFSMemory</span>
+<span class="kn">from</span> <span class="nn">langchain_experimental.tot.thought</span> <span class="kn">import</span> <span class="n">Thought</span><span class="p">,</span> <span class="n">ThoughtValidity</span>
+<span class="kn">from</span> <span class="nn">langchain_experimental.tot.thought_generation</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">BaseThoughtGenerationStrategy</span><span class="p">,</span>
+    <span class="n">ProposePromptStrategy</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="ToTChain"><a class="viewcode-back" href="../../../tot/langchain_experimental.tot.base.ToTChain.html#langchain_experimental.tot.base.ToTChain">[docs]</a><span class="k">class</span> <span class="nc">ToTChain</span><span class="p">(</span><span class="n">Chain</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A Chain implementing the Tree of Thought (ToT).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">llm</span><span class="p">:</span> <span class="n">BaseLanguageModel</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Language model to use. It must be set to produce different variations for</span>
+<span class="sd">    the same prompt.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">checker</span><span class="p">:</span> <span class="n">ToTChecker</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;ToT Checker to use.&quot;&quot;&quot;</span>
+    <span class="n">output_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;response&quot;</span>  <span class="c1">#: :meta private:</span>
+    <span class="n">k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The maximum number of conversation rounds&quot;&quot;&quot;</span>
+    <span class="n">c</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The number of children to explore at each node&quot;&quot;&quot;</span>
+    <span class="n">tot_memory</span><span class="p">:</span> <span class="n">ToTDFSMemory</span> <span class="o">=</span> <span class="n">ToTDFSMemory</span><span class="p">()</span>
+    <span class="n">tot_controller</span><span class="p">:</span> <span class="n">ToTController</span> <span class="o">=</span> <span class="n">ToTController</span><span class="p">()</span>
+    <span class="n">tot_strategy_class</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">BaseThoughtGenerationStrategy</span><span class="p">]</span> <span class="o">=</span> <span class="n">ProposePromptStrategy</span>
+    <span class="n">verbose_llm</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="k">class</span> <span class="nc">Config</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Configuration for this pydantic object.&quot;&quot;&quot;</span>
+
+        <span class="n">extra</span> <span class="o">=</span> <span class="n">Extra</span><span class="o">.</span><span class="n">forbid</span>
+        <span class="n">arbitrary_types_allowed</span> <span class="o">=</span> <span class="kc">True</span>
+
+<div class="viewcode-block" id="ToTChain.from_llm"><a class="viewcode-back" href="../../../tot/langchain_experimental.tot.base.ToTChain.html#langchain_experimental.tot.base.ToTChain.from_llm">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_llm</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">llm</span><span class="p">:</span> <span class="n">BaseLanguageModel</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ToTChain</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create a ToTChain from a language model.</span>
+
+<span class="sd">        :param llm: The language model to use.</span>
+<span class="sd">        :param kwargs: Additional arguments to pass to the ToTChain constructor.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">llm</span><span class="o">=</span><span class="n">llm</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tot_controller</span><span class="o">.</span><span class="n">c</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">c</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">input_keys</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Will be whatever keys the prompt expects.</span>
+
+<span class="sd">        :meta private:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span><span class="s2">&quot;problem_description&quot;</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">output_keys</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Will always return text key.</span>
+
+<span class="sd">        :meta private:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">output_key</span><span class="p">]</span>
+
+<div class="viewcode-block" id="ToTChain.log_thought"><a class="viewcode-back" href="../../../tot/langchain_experimental.tot.base.ToTChain.html#langchain_experimental.tot.base.ToTChain.log_thought">[docs]</a>    <span class="k">def</span> <span class="nf">log_thought</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">thought</span><span class="p">:</span> <span class="n">Thought</span><span class="p">,</span>
+        <span class="n">level</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">run_manager</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">CallbackManagerForChainRun</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">run_manager</span><span class="p">:</span>
+            <span class="n">colors</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="n">ThoughtValidity</span><span class="o">.</span><span class="n">VALID_FINAL</span><span class="p">:</span> <span class="s2">&quot;green&quot;</span><span class="p">,</span>
+                <span class="n">ThoughtValidity</span><span class="o">.</span><span class="n">VALID_INTERMEDIATE</span><span class="p">:</span> <span class="s2">&quot;yellow&quot;</span><span class="p">,</span>
+                <span class="n">ThoughtValidity</span><span class="o">.</span><span class="n">INVALID</span><span class="p">:</span> <span class="s2">&quot;red&quot;</span><span class="p">,</span>
+            <span class="p">}</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="n">indent</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Thought: </span><span class="si">{</span><span class="n">thought</span><span class="o">.</span><span class="n">text</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;    &quot;</span> <span class="o">*</span> <span class="n">level</span><span class="p">)</span>
+            <span class="n">run_manager</span><span class="o">.</span><span class="n">on_text</span><span class="p">(</span>
+                <span class="n">text</span><span class="o">=</span><span class="n">text</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">colors</span><span class="p">[</span><span class="n">thought</span><span class="o">.</span><span class="n">validity</span><span class="p">],</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verbose</span>
+            <span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_call</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">inputs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+        <span class="n">run_manager</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">CallbackManagerForChainRun</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+        <span class="n">_run_manager</span> <span class="o">=</span> <span class="n">run_manager</span> <span class="ow">or</span> <span class="n">CallbackManagerForChainRun</span><span class="o">.</span><span class="n">get_noop_manager</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">run_manager</span><span class="p">:</span>
+            <span class="n">run_manager</span><span class="o">.</span><span class="n">on_text</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s2">&quot;Starting the ToT solve procedure.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">problem_description</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;problem_description&quot;</span><span class="p">]</span>
+        <span class="n">checker_inputs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;problem_description&quot;</span><span class="p">:</span> <span class="n">problem_description</span><span class="p">}</span>
+        <span class="n">thoughts_path</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">()</span>
+        <span class="n">thought_generator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tot_strategy_class</span><span class="p">(</span>
+            <span class="n">llm</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">llm</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">c</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verbose_llm</span>
+        <span class="p">)</span>
+
+        <span class="n">level</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">k</span><span class="p">):</span>
+            <span class="n">level</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tot_memory</span><span class="o">.</span><span class="n">level</span>
+            <span class="n">thought_text</span> <span class="o">=</span> <span class="n">thought_generator</span><span class="o">.</span><span class="n">next_thought</span><span class="p">(</span>
+                <span class="n">problem_description</span><span class="p">,</span> <span class="n">thoughts_path</span><span class="p">,</span> <span class="n">callbacks</span><span class="o">=</span><span class="n">_run_manager</span><span class="o">.</span><span class="n">get_child</span><span class="p">()</span>
+            <span class="p">)</span>
+            <span class="n">checker_inputs</span><span class="p">[</span><span class="s2">&quot;thoughts&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">thoughts_path</span> <span class="o">+</span> <span class="p">(</span><span class="n">thought_text</span><span class="p">,)</span>
+            <span class="n">thought_validity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">checker</span><span class="p">(</span>
+                <span class="n">checker_inputs</span><span class="p">,</span> <span class="n">callbacks</span><span class="o">=</span><span class="n">_run_manager</span><span class="o">.</span><span class="n">get_child</span><span class="p">()</span>
+            <span class="p">)[</span><span class="s2">&quot;validity&quot;</span><span class="p">]</span>
+            <span class="n">thought</span> <span class="o">=</span> <span class="n">Thought</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="n">thought_text</span><span class="p">,</span> <span class="n">validity</span><span class="o">=</span><span class="n">thought_validity</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">thought</span><span class="o">.</span><span class="n">validity</span> <span class="o">==</span> <span class="n">ThoughtValidity</span><span class="o">.</span><span class="n">VALID_FINAL</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log_thought</span><span class="p">(</span><span class="n">thought</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="n">run_manager</span><span class="p">)</span>
+                <span class="k">return</span> <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">output_key</span><span class="p">:</span> <span class="n">thought</span><span class="o">.</span><span class="n">text</span><span class="p">}</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tot_memory</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="n">thought</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log_thought</span><span class="p">(</span><span class="n">thought</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="n">run_manager</span><span class="p">)</span>
+            <span class="n">thoughts_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tot_controller</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tot_memory</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">output_key</span><span class="p">:</span> <span class="s2">&quot;No solution found&quot;</span><span class="p">}</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_acall</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">inputs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+        <span class="n">run_manager</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AsyncCallbackManagerForChainRun</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Async not implemented yet&quot;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_chain_type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;tot&quot;</span></div>
+</pre></div>
+
+      </div>
+    <div class="container">
+      <footer class="sk-content-footer">
+            &copy; 2023, Harrison Chase.
+          Last updated on Dec 14, 2023.
+      </footer>
+    </div>
+  </div>
+</div>
+<script src="../../../_static/js/vendor/bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    /* Add a [>>>] button on the top-right corner of code samples to hide
+     * the >>> and ... prompts and the output and thus make the code
+     * copyable. */
+    var div = $('.highlight-python .highlight,' +
+                '.highlight-python3 .highlight,' +
+                '.highlight-pycon .highlight,' +
+		'.highlight-default .highlight')
+    var pre = div.find('pre');
+
+    // get the styles from the current theme
+    pre.parent().parent().css('position', 'relative');
+    var hide_text = 'Hide prompts and outputs';
+    var show_text = 'Show prompts and outputs';
+
+    // create and add the button to all the code blocks that contain >>>
+    div.each(function(index) {
+        var jthis = $(this);
+        if (jthis.find('.gp').length > 0) {
+            var button = $('<span class="copybutton">&gt;&gt;&gt;</span>');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+            jthis.prepend(button);
+        }
+        // tracebacks (.gt) contain bare text elements that need to be
+        // wrapped in a span to work with .nextUntil() (see later)
+        jthis.find('pre:has(.gt)').contents().filter(function() {
+            return ((this.nodeType == 3) && (this.data.trim().length > 0));
+        }).wrap('<span>');
+    });
+
+    // define the behavior of the button when it's clicked
+    $('.copybutton').click(function(e){
+        e.preventDefault();
+        var button = $(this);
+        if (button.data('hidden') === 'false') {
+            // hide the code output
+            button.parent().find('.go, .gp, .gt').hide();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'hidden');
+            button.css('text-decoration', 'line-through');
+            button.attr('title', show_text);
+            button.data('hidden', 'true');
+        } else {
+            // show the code output
+            button.parent().find('.go, .gp, .gt').show();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'visible');
+            button.css('text-decoration', 'none');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+        }
+    });
+
+	/*** Add permalink buttons next to glossary terms ***/
+	$('dl.glossary > dt[id]').append(function() {
+		return ('<a class="headerlink" href="#' +
+			    this.getAttribute('id') +
+			    '" title="Permalink to this term">¶</a>');
+	});
+});
+
+</script>
+    
+</body>
+</html>

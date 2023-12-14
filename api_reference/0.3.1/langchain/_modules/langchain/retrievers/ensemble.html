@@ -1,0 +1,363 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>langchain.retrievers.ensemble &mdash; 🦜🔗 LangChain 0.0.349</title>
+  
+  <link rel="canonical" href="https://api.python.langchain.com/en/latest/_modules/langchain/retrievers/ensemble.html" />
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/vendor/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/autodoc_pydantic.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/panels-bootstrap.5fd3999ee7762ccc51105388f4a9d115.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+<script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+<script src="../../../_static/jquery.js"></script> 
+</head>
+<body>
+
+
+<nav id="navbar" class="sk-docs-navbar navbar navbar-expand-md navbar-light bg-light py-0">
+  <div class="container-fluid sk-docs-container px-0">
+    <button
+      id="sk-navbar-toggler"
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="sk-navbar-collapse collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../api_reference.html">API</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../core_api_reference.html">Core</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../community_api_reference.html">Community</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../experimental_api_reference.html">Experimental</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" target="_blank" rel="noopener noreferrer" href="https://python.langchain.com/">Python Docs</a>
+        </li>
+      </ul>
+      <div id="searchbox" role="search">
+          <div class="searchformwrapper">
+          <form class="search" action="../../../search.html" method="get">
+            <input class="sk-search-text-input" type="text" name="q" aria-labelledby="searchlabel" />
+            <input class="sk-search-text-btn" type="submit" value="Go" />
+          </form>
+          </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="d-flex" id="sk-doc-wrapper">
+    <input type="checkbox" name="sk-toggle-checkbox" id="sk-toggle-checkbox">
+    <label id="sk-sidemenu-toggle" class="sk-btn-toggle-toc btn sk-btn-primary" for="sk-toggle-checkbox">Toggle Menu</label>
+    <div id="sk-sidebar-wrapper" class="border-right">
+      <div class="sk-sidebar-toc-wrapper">
+        <div class="btn-group w-100 mb-2" role="group" aria-label="rellinks">
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Prev</a><a href="../../index.html" role="button" class="btn sk-btn-rellink py-1" sk-rellink-tooltip="Module code">Up</a>
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Next</a>
+        </div>
+        <div class="alert alert-warning p-1 mb-2" role="alert">
+          <p class="text-center mb-0">
+          <strong>LangChain 0.0.349</strong><br/>
+          </p>
+        </div>
+            <div class="sk-sidebar-toc">
+              
+            </div>
+      </div>
+    </div>
+    <div id="sk-page-content-wrapper">
+      <div class="sk-page-content container-fluid body px-md-3" role="main">
+        
+  <h1>Source code for langchain.retrievers.ensemble</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Ensemble retriever that ensemble the results of </span>
+<span class="sd">multiple retrievers by using weighted  Reciprocal Rank Fusion</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span>
+
+<span class="kn">from</span> <span class="nn">langchain_core.documents</span> <span class="kn">import</span> <span class="n">Document</span>
+<span class="kn">from</span> <span class="nn">langchain_core.pydantic_v1</span> <span class="kn">import</span> <span class="n">root_validator</span>
+<span class="kn">from</span> <span class="nn">langchain_core.retrievers</span> <span class="kn">import</span> <span class="n">BaseRetriever</span>
+
+<span class="kn">from</span> <span class="nn">langchain.callbacks.manager</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AsyncCallbackManagerForRetrieverRun</span><span class="p">,</span>
+    <span class="n">CallbackManagerForRetrieverRun</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="EnsembleRetriever"><a class="viewcode-back" href="../../../retrievers/langchain.retrievers.ensemble.EnsembleRetriever.html#langchain.retrievers.ensemble.EnsembleRetriever">[docs]</a><span class="k">class</span> <span class="nc">EnsembleRetriever</span><span class="p">(</span><span class="n">BaseRetriever</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Retriever that ensembles the multiple retrievers.</span>
+
+<span class="sd">    It uses a rank fusion.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        retrievers: A list of retrievers to ensemble.</span>
+<span class="sd">        weights: A list of weights corresponding to the retrievers. Defaults to equal</span>
+<span class="sd">            weighting for all retrievers.</span>
+<span class="sd">        c: A constant added to the rank, controlling the balance between the importance</span>
+<span class="sd">            of high-ranked items and the consideration given to lower-ranked items.</span>
+<span class="sd">            Default is 60.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">retrievers</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">BaseRetriever</span><span class="p">]</span>
+    <span class="n">weights</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
+    <span class="n">c</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">60</span>
+
+    <span class="nd">@root_validator</span><span class="p">(</span><span class="n">pre</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">set_weights</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">values</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;weights&quot;</span><span class="p">):</span>
+            <span class="n">n_retrievers</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="s2">&quot;retrievers&quot;</span><span class="p">])</span>
+            <span class="n">values</span><span class="p">[</span><span class="s2">&quot;weights&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span> <span class="o">/</span> <span class="n">n_retrievers</span><span class="p">]</span> <span class="o">*</span> <span class="n">n_retrievers</span>
+        <span class="k">return</span> <span class="n">values</span>
+
+    <span class="k">def</span> <span class="nf">_get_relevant_documents</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">run_manager</span><span class="p">:</span> <span class="n">CallbackManagerForRetrieverRun</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the relevant documents for a given query.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            query: The query to search for.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A list of reranked documents.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Get fused result of the retrievers.</span>
+        <span class="n">fused_documents</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rank_fusion</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">run_manager</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">fused_documents</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_aget_relevant_documents</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">run_manager</span><span class="p">:</span> <span class="n">AsyncCallbackManagerForRetrieverRun</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Asynchronously get the relevant documents for a given query.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            query: The query to search for.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A list of reranked documents.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Get fused result of the retrievers.</span>
+        <span class="n">fused_documents</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">arank_fusion</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">run_manager</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">fused_documents</span>
+
+<div class="viewcode-block" id="EnsembleRetriever.rank_fusion"><a class="viewcode-back" href="../../../retrievers/langchain.retrievers.ensemble.EnsembleRetriever.html#langchain.retrievers.ensemble.EnsembleRetriever.rank_fusion">[docs]</a>    <span class="k">def</span> <span class="nf">rank_fusion</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">run_manager</span><span class="p">:</span> <span class="n">CallbackManagerForRetrieverRun</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Retrieve the results of the retrievers and use rank_fusion_func to get</span>
+<span class="sd">        the final result.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            query: The query to search for.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A list of reranked documents.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Get the results of all retrievers.</span>
+        <span class="n">retriever_docs</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">retriever</span><span class="o">.</span><span class="n">get_relevant_documents</span><span class="p">(</span>
+                <span class="n">query</span><span class="p">,</span> <span class="n">callbacks</span><span class="o">=</span><span class="n">run_manager</span><span class="o">.</span><span class="n">get_child</span><span class="p">(</span><span class="n">tag</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;retriever_</span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">retriever</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">retrievers</span><span class="p">)</span>
+        <span class="p">]</span>
+
+        <span class="c1"># apply rank fusion</span>
+        <span class="n">fused_documents</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">weighted_reciprocal_rank</span><span class="p">(</span><span class="n">retriever_docs</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">fused_documents</span></div>
+
+<div class="viewcode-block" id="EnsembleRetriever.arank_fusion"><a class="viewcode-back" href="../../../retrievers/langchain.retrievers.ensemble.EnsembleRetriever.html#langchain.retrievers.ensemble.EnsembleRetriever.arank_fusion">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">arank_fusion</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">run_manager</span><span class="p">:</span> <span class="n">AsyncCallbackManagerForRetrieverRun</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Asynchronously retrieve the results of the retrievers</span>
+<span class="sd">        and use rank_fusion_func to get the final result.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            query: The query to search for.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A list of reranked documents.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Get the results of all retrievers.</span>
+        <span class="n">retriever_docs</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="k">await</span> <span class="n">retriever</span><span class="o">.</span><span class="n">aget_relevant_documents</span><span class="p">(</span>
+                <span class="n">query</span><span class="p">,</span> <span class="n">callbacks</span><span class="o">=</span><span class="n">run_manager</span><span class="o">.</span><span class="n">get_child</span><span class="p">(</span><span class="n">tag</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;retriever_</span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">retriever</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">retrievers</span><span class="p">)</span>
+        <span class="p">]</span>
+
+        <span class="c1"># apply rank fusion</span>
+        <span class="n">fused_documents</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">weighted_reciprocal_rank</span><span class="p">(</span><span class="n">retriever_docs</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">fused_documents</span></div>
+
+<div class="viewcode-block" id="EnsembleRetriever.weighted_reciprocal_rank"><a class="viewcode-back" href="../../../retrievers/langchain.retrievers.ensemble.EnsembleRetriever.html#langchain.retrievers.ensemble.EnsembleRetriever.weighted_reciprocal_rank">[docs]</a>    <span class="k">def</span> <span class="nf">weighted_reciprocal_rank</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">doc_lists</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">]]</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Perform weighted Reciprocal Rank Fusion on multiple rank lists.</span>
+<span class="sd">        You can find more details about RRF here:</span>
+<span class="sd">        https://plg.uwaterloo.ca/~gvcormac/cormacksigir09-rrf.pdf</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            doc_lists: A list of rank lists, where each rank list contains unique items.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list: The final aggregated list of items sorted by their weighted RRF</span>
+<span class="sd">                    scores in descending order.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">doc_lists</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Number of rank lists must be equal to the number of weights.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Create a union of all unique documents in the input doc_lists</span>
+        <span class="n">all_documents</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">doc_list</span> <span class="ow">in</span> <span class="n">doc_lists</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="n">doc_list</span><span class="p">:</span>
+                <span class="n">all_documents</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">page_content</span><span class="p">)</span>
+
+        <span class="c1"># Initialize the RRF score dictionary for each document</span>
+        <span class="n">rrf_score_dic</span> <span class="o">=</span> <span class="p">{</span><span class="n">doc</span><span class="p">:</span> <span class="mf">0.0</span> <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="n">all_documents</span><span class="p">}</span>
+
+        <span class="c1"># Calculate RRF scores for each document</span>
+        <span class="k">for</span> <span class="n">doc_list</span><span class="p">,</span> <span class="n">weight</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">doc_lists</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">rank</span><span class="p">,</span> <span class="n">doc</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">doc_list</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+                <span class="n">rrf_score</span> <span class="o">=</span> <span class="n">weight</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">rank</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">c</span><span class="p">))</span>
+                <span class="n">rrf_score_dic</span><span class="p">[</span><span class="n">doc</span><span class="o">.</span><span class="n">page_content</span><span class="p">]</span> <span class="o">+=</span> <span class="n">rrf_score</span>
+
+        <span class="c1"># Sort documents by their RRF scores in descending order</span>
+        <span class="n">sorted_documents</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
+            <span class="n">rrf_score_dic</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">rrf_score_dic</span><span class="p">[</span><span class="n">x</span><span class="p">],</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Map the sorted page_content back to the original document objects</span>
+        <span class="n">page_content_to_doc_map</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">doc</span><span class="o">.</span><span class="n">page_content</span><span class="p">:</span> <span class="n">doc</span> <span class="k">for</span> <span class="n">doc_list</span> <span class="ow">in</span> <span class="n">doc_lists</span> <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="n">doc_list</span>
+        <span class="p">}</span>
+        <span class="n">sorted_docs</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">page_content_to_doc_map</span><span class="p">[</span><span class="n">page_content</span><span class="p">]</span> <span class="k">for</span> <span class="n">page_content</span> <span class="ow">in</span> <span class="n">sorted_documents</span>
+        <span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">sorted_docs</span></div></div>
+</pre></div>
+
+      </div>
+    <div class="container">
+      <footer class="sk-content-footer">
+            &copy; 2023, Harrison Chase.
+          Last updated on Dec 14, 2023.
+      </footer>
+    </div>
+  </div>
+</div>
+<script src="../../../_static/js/vendor/bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    /* Add a [>>>] button on the top-right corner of code samples to hide
+     * the >>> and ... prompts and the output and thus make the code
+     * copyable. */
+    var div = $('.highlight-python .highlight,' +
+                '.highlight-python3 .highlight,' +
+                '.highlight-pycon .highlight,' +
+		'.highlight-default .highlight')
+    var pre = div.find('pre');
+
+    // get the styles from the current theme
+    pre.parent().parent().css('position', 'relative');
+    var hide_text = 'Hide prompts and outputs';
+    var show_text = 'Show prompts and outputs';
+
+    // create and add the button to all the code blocks that contain >>>
+    div.each(function(index) {
+        var jthis = $(this);
+        if (jthis.find('.gp').length > 0) {
+            var button = $('<span class="copybutton">&gt;&gt;&gt;</span>');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+            jthis.prepend(button);
+        }
+        // tracebacks (.gt) contain bare text elements that need to be
+        // wrapped in a span to work with .nextUntil() (see later)
+        jthis.find('pre:has(.gt)').contents().filter(function() {
+            return ((this.nodeType == 3) && (this.data.trim().length > 0));
+        }).wrap('<span>');
+    });
+
+    // define the behavior of the button when it's clicked
+    $('.copybutton').click(function(e){
+        e.preventDefault();
+        var button = $(this);
+        if (button.data('hidden') === 'false') {
+            // hide the code output
+            button.parent().find('.go, .gp, .gt').hide();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'hidden');
+            button.css('text-decoration', 'line-through');
+            button.attr('title', show_text);
+            button.data('hidden', 'true');
+        } else {
+            // show the code output
+            button.parent().find('.go, .gp, .gt').show();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'visible');
+            button.css('text-decoration', 'none');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+        }
+    });
+
+	/*** Add permalink buttons next to glossary terms ***/
+	$('dl.glossary > dt[id]').append(function() {
+		return ('<a class="headerlink" href="#' +
+			    this.getAttribute('id') +
+			    '" title="Permalink to this term">¶</a>');
+	});
+});
+
+</script>
+    
+</body>
+</html>

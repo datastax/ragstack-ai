@@ -1,0 +1,1118 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>langchain_community.vectorstores.neo4j_vector &mdash; 🦜🔗 LangChain 0.0.349</title>
+  
+  <link rel="canonical" href="https://api.python.langchain.com/en/latest/_modules/langchain_community/vectorstores/neo4j_vector.html" />
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/vendor/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/autodoc_pydantic.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/panels-bootstrap.5fd3999ee7762ccc51105388f4a9d115.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+<script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+<script src="../../../_static/jquery.js"></script> 
+</head>
+<body>
+
+
+<nav id="navbar" class="sk-docs-navbar navbar navbar-expand-md navbar-light bg-light py-0">
+  <div class="container-fluid sk-docs-container px-0">
+    <button
+      id="sk-navbar-toggler"
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="sk-navbar-collapse collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../api_reference.html">API</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../core_api_reference.html">Core</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../community_api_reference.html">Community</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../experimental_api_reference.html">Experimental</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" target="_blank" rel="noopener noreferrer" href="https://python.langchain.com/">Python Docs</a>
+        </li>
+      </ul>
+      <div id="searchbox" role="search">
+          <div class="searchformwrapper">
+          <form class="search" action="../../../search.html" method="get">
+            <input class="sk-search-text-input" type="text" name="q" aria-labelledby="searchlabel" />
+            <input class="sk-search-text-btn" type="submit" value="Go" />
+          </form>
+          </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="d-flex" id="sk-doc-wrapper">
+    <input type="checkbox" name="sk-toggle-checkbox" id="sk-toggle-checkbox">
+    <label id="sk-sidemenu-toggle" class="sk-btn-toggle-toc btn sk-btn-primary" for="sk-toggle-checkbox">Toggle Menu</label>
+    <div id="sk-sidebar-wrapper" class="border-right">
+      <div class="sk-sidebar-toc-wrapper">
+        <div class="btn-group w-100 mb-2" role="group" aria-label="rellinks">
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Prev</a><a href="../../index.html" role="button" class="btn sk-btn-rellink py-1" sk-rellink-tooltip="Module code">Up</a>
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Next</a>
+        </div>
+        <div class="alert alert-warning p-1 mb-2" role="alert">
+          <p class="text-center mb-0">
+          <strong>LangChain 0.0.349</strong><br/>
+          </p>
+        </div>
+            <div class="sk-sidebar-toc">
+              
+            </div>
+      </div>
+    </div>
+    <div id="sk-page-content-wrapper">
+      <div class="sk-page-content container-fluid body px-md-3" role="main">
+        
+  <h1>Source code for langchain_community.vectorstores.neo4j_vector</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span> <span class="nn">enum</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">uuid</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Any</span><span class="p">,</span>
+    <span class="n">Callable</span><span class="p">,</span>
+    <span class="n">Dict</span><span class="p">,</span>
+    <span class="n">Iterable</span><span class="p">,</span>
+    <span class="n">List</span><span class="p">,</span>
+    <span class="n">Optional</span><span class="p">,</span>
+    <span class="n">Tuple</span><span class="p">,</span>
+    <span class="n">Type</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">langchain_core.documents</span> <span class="kn">import</span> <span class="n">Document</span>
+<span class="kn">from</span> <span class="nn">langchain_core.embeddings</span> <span class="kn">import</span> <span class="n">Embeddings</span>
+<span class="kn">from</span> <span class="nn">langchain_core.utils</span> <span class="kn">import</span> <span class="n">get_from_env</span>
+<span class="kn">from</span> <span class="nn">langchain_core.vectorstores</span> <span class="kn">import</span> <span class="n">VectorStore</span>
+
+<span class="kn">from</span> <span class="nn">langchain_community.vectorstores.utils</span> <span class="kn">import</span> <span class="n">DistanceStrategy</span>
+
+<span class="n">DEFAULT_DISTANCE_STRATEGY</span> <span class="o">=</span> <span class="n">DistanceStrategy</span><span class="o">.</span><span class="n">COSINE</span>
+<span class="n">DISTANCE_MAPPING</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="n">DistanceStrategy</span><span class="o">.</span><span class="n">EUCLIDEAN_DISTANCE</span><span class="p">:</span> <span class="s2">&quot;euclidean&quot;</span><span class="p">,</span>
+    <span class="n">DistanceStrategy</span><span class="o">.</span><span class="n">COSINE</span><span class="p">:</span> <span class="s2">&quot;cosine&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<div class="viewcode-block" id="SearchType"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.neo4j_vector.SearchType.html#langchain_community.vectorstores.neo4j_vector.SearchType">[docs]</a><span class="k">class</span> <span class="nc">SearchType</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">enum</span><span class="o">.</span><span class="n">Enum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Enumerator of the Distance strategies.&quot;&quot;&quot;</span>
+
+    <span class="n">VECTOR</span> <span class="o">=</span> <span class="s2">&quot;vector&quot;</span>
+    <span class="n">HYBRID</span> <span class="o">=</span> <span class="s2">&quot;hybrid&quot;</span></div>
+
+
+<span class="n">DEFAULT_SEARCH_TYPE</span> <span class="o">=</span> <span class="n">SearchType</span><span class="o">.</span><span class="n">VECTOR</span>
+
+
+<span class="k">def</span> <span class="nf">_get_search_index_query</span><span class="p">(</span><span class="n">search_type</span><span class="p">:</span> <span class="n">SearchType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="n">type_to_query_map</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">SearchType</span><span class="o">.</span><span class="n">VECTOR</span><span class="p">:</span> <span class="p">(</span>
+            <span class="s2">&quot;CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score &quot;</span>
+        <span class="p">),</span>
+        <span class="n">SearchType</span><span class="o">.</span><span class="n">HYBRID</span><span class="p">:</span> <span class="p">(</span>
+            <span class="s2">&quot;CALL { &quot;</span>
+            <span class="s2">&quot;CALL db.index.vector.queryNodes($index, $k, $embedding) &quot;</span>
+            <span class="s2">&quot;YIELD node, score &quot;</span>
+            <span class="s2">&quot;RETURN node, score UNION &quot;</span>
+            <span class="s2">&quot;CALL db.index.fulltext.queryNodes($keyword_index, $query, {limit: $k}) &quot;</span>
+            <span class="s2">&quot;YIELD node, score &quot;</span>
+            <span class="s2">&quot;WITH collect({node:node, score:score}) AS nodes, max(score) AS max &quot;</span>
+            <span class="s2">&quot;UNWIND nodes AS n &quot;</span>
+            <span class="s2">&quot;RETURN n.node AS node, (n.score / max) AS score &quot;</span>  <span class="c1"># We use 0 as min</span>
+            <span class="s2">&quot;} &quot;</span>
+            <span class="s2">&quot;WITH node, max(score) AS score ORDER BY score DESC LIMIT $k &quot;</span>  <span class="c1"># dedup</span>
+        <span class="p">),</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">type_to_query_map</span><span class="p">[</span><span class="n">search_type</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="check_if_not_null"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.neo4j_vector.check_if_not_null.html#langchain_community.vectorstores.neo4j_vector.check_if_not_null">[docs]</a><span class="k">def</span> <span class="nf">check_if_not_null</span><span class="p">(</span><span class="n">props</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">values</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check if the values are not None or empty string&quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">prop</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">props</span><span class="p">,</span> <span class="n">values</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">value</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Parameter `</span><span class="si">{</span><span class="n">prop</span><span class="si">}</span><span class="s2">` must not be None or empty string&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="sort_by_index_name"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.neo4j_vector.sort_by_index_name.html#langchain_community.vectorstores.neo4j_vector.sort_by_index_name">[docs]</a><span class="k">def</span> <span class="nf">sort_by_index_name</span><span class="p">(</span>
+    <span class="n">lst</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]],</span> <span class="n">index_name</span><span class="p">:</span> <span class="nb">str</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Sort first element to match the index_name if exists&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">lst</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;index_name&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="n">index_name</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Neo4jVector"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.neo4j_vector.Neo4jVector.html#langchain_community.vectorstores.neo4j_vector.Neo4jVector">[docs]</a><span class="k">class</span> <span class="nc">Neo4jVector</span><span class="p">(</span><span class="n">VectorStore</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;`Neo4j` vector index.</span>
+
+<span class="sd">    To use, you should have the ``neo4j`` python package installed.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        url: Neo4j connection url</span>
+<span class="sd">        username: Neo4j username.</span>
+<span class="sd">        password: Neo4j password</span>
+<span class="sd">        database: Optionally provide Neo4j database</span>
+<span class="sd">                  Defaults to &quot;neo4j&quot;</span>
+<span class="sd">        embedding: Any embedding function implementing</span>
+<span class="sd">            `langchain.embeddings.base.Embeddings` interface.</span>
+<span class="sd">        distance_strategy: The distance strategy to use. (default: COSINE)</span>
+<span class="sd">        pre_delete_collection: If True, will delete existing data if it exists.</span>
+<span class="sd">            (default: False). Useful for testing.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            from langchain_community.vectorstores.neo4j_vector import Neo4jVector</span>
+<span class="sd">            from langchain_community.embeddings.openai import OpenAIEmbeddings</span>
+
+<span class="sd">            url=&quot;bolt://localhost:7687&quot;</span>
+<span class="sd">            username=&quot;neo4j&quot;</span>
+<span class="sd">            password=&quot;pleaseletmein&quot;</span>
+<span class="sd">            embeddings = OpenAIEmbeddings()</span>
+<span class="sd">            vectorestore = Neo4jVector.from_documents(</span>
+<span class="sd">                embedding=embeddings,</span>
+<span class="sd">                documents=docs,</span>
+<span class="sd">                url=url</span>
+<span class="sd">                username=username,</span>
+<span class="sd">                password=password,</span>
+<span class="sd">            )</span>
+
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Neo4jVector.__init__"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.neo4j_vector.Neo4jVector.html#langchain_community.vectorstores.neo4j_vector.Neo4jVector.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">embedding</span><span class="p">:</span> <span class="n">Embeddings</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">search_type</span><span class="p">:</span> <span class="n">SearchType</span> <span class="o">=</span> <span class="n">SearchType</span><span class="o">.</span><span class="n">VECTOR</span><span class="p">,</span>
+        <span class="n">username</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">password</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">url</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">keyword_index_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;keyword&quot;</span><span class="p">,</span>
+        <span class="n">database</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;neo4j&quot;</span><span class="p">,</span>
+        <span class="n">index_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;vector&quot;</span><span class="p">,</span>
+        <span class="n">node_label</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Chunk&quot;</span><span class="p">,</span>
+        <span class="n">embedding_node_property</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;embedding&quot;</span><span class="p">,</span>
+        <span class="n">text_node_property</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;text&quot;</span><span class="p">,</span>
+        <span class="n">distance_strategy</span><span class="p">:</span> <span class="n">DistanceStrategy</span> <span class="o">=</span> <span class="n">DEFAULT_DISTANCE_STRATEGY</span><span class="p">,</span>
+        <span class="n">logger</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">logging</span><span class="o">.</span><span class="n">Logger</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">pre_delete_collection</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">retrieval_query</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">relevance_score_fn</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">float</span><span class="p">],</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">import</span> <span class="nn">neo4j</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+                <span class="s2">&quot;Could not import neo4j python package. &quot;</span>
+                <span class="s2">&quot;Please install it with `pip install neo4j`.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Allow only cosine and euclidean distance strategies</span>
+        <span class="k">if</span> <span class="n">distance_strategy</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span>
+            <span class="n">DistanceStrategy</span><span class="o">.</span><span class="n">EUCLIDEAN_DISTANCE</span><span class="p">,</span>
+            <span class="n">DistanceStrategy</span><span class="o">.</span><span class="n">COSINE</span><span class="p">,</span>
+        <span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;distance_strategy must be either &#39;EUCLIDEAN_DISTANCE&#39; or &#39;COSINE&#39;&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Handle if the credentials are environment variables</span>
+
+        <span class="c1"># Support URL for backwards compatibility</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;NEO4J_URL&quot;</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">get_from_env</span><span class="p">(</span><span class="s2">&quot;url&quot;</span><span class="p">,</span> <span class="s2">&quot;NEO4J_URI&quot;</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span>
+        <span class="n">username</span> <span class="o">=</span> <span class="n">get_from_env</span><span class="p">(</span><span class="s2">&quot;username&quot;</span><span class="p">,</span> <span class="s2">&quot;NEO4J_USERNAME&quot;</span><span class="p">,</span> <span class="n">username</span><span class="p">)</span>
+        <span class="n">password</span> <span class="o">=</span> <span class="n">get_from_env</span><span class="p">(</span><span class="s2">&quot;password&quot;</span><span class="p">,</span> <span class="s2">&quot;NEO4J_PASSWORD&quot;</span><span class="p">,</span> <span class="n">password</span><span class="p">)</span>
+        <span class="n">database</span> <span class="o">=</span> <span class="n">get_from_env</span><span class="p">(</span><span class="s2">&quot;database&quot;</span><span class="p">,</span> <span class="s2">&quot;NEO4J_DATABASE&quot;</span><span class="p">,</span> <span class="n">database</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_driver</span> <span class="o">=</span> <span class="n">neo4j</span><span class="o">.</span><span class="n">GraphDatabase</span><span class="o">.</span><span class="n">driver</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">auth</span><span class="o">=</span><span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">password</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_database</span> <span class="o">=</span> <span class="n">database</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">schema</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="c1"># Verify connection</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_driver</span><span class="o">.</span><span class="n">verify_connectivity</span><span class="p">()</span>
+        <span class="k">except</span> <span class="n">neo4j</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">ServiceUnavailable</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Could not connect to Neo4j database. &quot;</span>
+                <span class="s2">&quot;Please ensure that the url is correct&quot;</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="n">neo4j</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">AuthError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Could not connect to Neo4j database. &quot;</span>
+                <span class="s2">&quot;Please ensure that the username and password are correct&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Verify if the version support vector index</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verify_version</span><span class="p">()</span>
+
+        <span class="c1"># Verify that required values are not null</span>
+        <span class="n">check_if_not_null</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="s2">&quot;index_name&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;node_label&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;embedding_node_property&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;text_node_property&quot;</span><span class="p">,</span>
+            <span class="p">],</span>
+            <span class="p">[</span><span class="n">index_name</span><span class="p">,</span> <span class="n">node_label</span><span class="p">,</span> <span class="n">embedding_node_property</span><span class="p">,</span> <span class="n">text_node_property</span><span class="p">],</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">embedding</span> <span class="o">=</span> <span class="n">embedding</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_distance_strategy</span> <span class="o">=</span> <span class="n">distance_strategy</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">index_name</span> <span class="o">=</span> <span class="n">index_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">keyword_index_name</span> <span class="o">=</span> <span class="n">keyword_index_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">node_label</span> <span class="o">=</span> <span class="n">node_label</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">embedding_node_property</span> <span class="o">=</span> <span class="n">embedding_node_property</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">text_node_property</span> <span class="o">=</span> <span class="n">text_node_property</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logger</span> <span class="ow">or</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">override_relevance_score_fn</span> <span class="o">=</span> <span class="n">relevance_score_fn</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">retrieval_query</span> <span class="o">=</span> <span class="n">retrieval_query</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">search_type</span> <span class="o">=</span> <span class="n">search_type</span>
+        <span class="c1"># Calculate embedding dimension</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">embedding_dimension</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">embedding</span><span class="o">.</span><span class="n">embed_query</span><span class="p">(</span><span class="s2">&quot;foo&quot;</span><span class="p">))</span>
+
+        <span class="c1"># Delete existing data if flagged</span>
+        <span class="k">if</span> <span class="n">pre_delete_collection</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">neo4j.exceptions</span> <span class="kn">import</span> <span class="n">DatabaseError</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;MATCH (n:`</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">node_label</span><span class="si">}</span><span class="s2">`) &quot;</span>
+                <span class="s2">&quot;CALL { WITH n DETACH DELETE n } &quot;</span>
+                <span class="s2">&quot;IN TRANSACTIONS OF 10000 ROWS;&quot;</span>
+            <span class="p">)</span>
+            <span class="c1"># Delete index</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DROP INDEX </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">index_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">DatabaseError</span><span class="p">:</span>  <span class="c1"># Index didn&#39;t exist yet</span>
+                <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="Neo4jVector.query"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.neo4j_vector.Neo4jVector.html#langchain_community.vectorstores.neo4j_vector.Neo4jVector.query">[docs]</a>    <span class="k">def</span> <span class="nf">query</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method sends a Cypher query to the connected Neo4j database</span>
+<span class="sd">        and returns the results as a list of dictionaries.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            query (str): The Cypher query to execute.</span>
+<span class="sd">            params (dict, optional): Dictionary of query parameters. Defaults to {}.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List[Dict[str, Any]]: List of dictionaries containing the query results.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">neo4j.exceptions</span> <span class="kn">import</span> <span class="n">CypherSyntaxError</span>
+
+        <span class="n">params</span> <span class="o">=</span> <span class="n">params</span> <span class="ow">or</span> <span class="p">{}</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_driver</span><span class="o">.</span><span class="n">session</span><span class="p">(</span><span class="n">database</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_database</span><span class="p">)</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+                <span class="k">return</span> <span class="p">[</span><span class="n">r</span><span class="o">.</span><span class="n">data</span><span class="p">()</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">data</span><span class="p">]</span>
+            <span class="k">except</span> <span class="n">CypherSyntaxError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cypher Statement is not valid</span><span class="se">\n</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Neo4jVector.verify_version"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.neo4j_vector.Neo4jVector.html#langchain_community.vectorstores.neo4j_vector.Neo4jVector.verify_version">[docs]</a>    <span class="k">def</span> <span class="nf">verify_version</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check if the connected Neo4j database version supports vector indexing.</span>
+
+<span class="sd">        Queries the Neo4j database to retrieve its version and compares it</span>
+<span class="sd">        against a target version (5.11.0) that is known to support vector</span>
+<span class="sd">        indexing. Raises a ValueError if the connected Neo4j version is</span>
+<span class="sd">        not supported.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">version</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;CALL dbms.components()&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;versions&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s2">&quot;aura&quot;</span> <span class="ow">in</span> <span class="n">version</span><span class="p">:</span>
+            <span class="n">version_tuple</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">version</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)))</span> <span class="o">+</span> <span class="p">(</span><span class="mi">0</span><span class="p">,)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">version_tuple</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">version</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)))</span>
+
+        <span class="n">target_version</span> <span class="o">=</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">version_tuple</span> <span class="o">&lt;</span> <span class="n">target_version</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Version index is only supported in Neo4j version 5.11 or greater&quot;</span>
+            <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Neo4jVector.retrieve_existing_index"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.neo4j_vector.Neo4jVector.html#langchain_community.vectorstores.neo4j_vector.Neo4jVector.retrieve_existing_index">[docs]</a>    <span class="k">def</span> <span class="nf">retrieve_existing_index</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check if the vector index exists in the Neo4j database</span>
+<span class="sd">        and returns its embedding dimension.</span>
+
+<span class="sd">        This method queries the Neo4j database for existing indexes</span>
+<span class="sd">        and attempts to retrieve the dimension of the vector index</span>
+<span class="sd">        with the specified name. If the index exists, its dimension is returned.</span>
+<span class="sd">        If the index doesn&#39;t exist, `None` is returned.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            int or None: The embedding dimension of the existing index if found.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">index_information</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span>
+            <span class="s2">&quot;SHOW INDEXES YIELD name, type, labelsOrTypes, properties, options &quot;</span>
+            <span class="s2">&quot;WHERE type = &#39;VECTOR&#39; AND (name = $index_name &quot;</span>
+            <span class="s2">&quot;OR (labelsOrTypes[0] = $node_label AND &quot;</span>
+            <span class="s2">&quot;properties[0] = $embedding_node_property)) &quot;</span>
+            <span class="s2">&quot;RETURN name, labelsOrTypes, properties, options &quot;</span><span class="p">,</span>
+            <span class="n">params</span><span class="o">=</span><span class="p">{</span>
+                <span class="s2">&quot;index_name&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">index_name</span><span class="p">,</span>
+                <span class="s2">&quot;node_label&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_label</span><span class="p">,</span>
+                <span class="s2">&quot;embedding_node_property&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">embedding_node_property</span><span class="p">,</span>
+            <span class="p">},</span>
+        <span class="p">)</span>
+        <span class="c1"># sort by index_name</span>
+        <span class="n">index_information</span> <span class="o">=</span> <span class="n">sort_by_index_name</span><span class="p">(</span><span class="n">index_information</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">index_name</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">index_name</span> <span class="o">=</span> <span class="n">index_information</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">node_label</span> <span class="o">=</span> <span class="n">index_information</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;labelsOrTypes&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">embedding_node_property</span> <span class="o">=</span> <span class="n">index_information</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;properties&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">embedding_dimension</span> <span class="o">=</span> <span class="n">index_information</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;options&quot;</span><span class="p">][</span><span class="s2">&quot;indexConfig&quot;</span><span class="p">][</span>
+                <span class="s2">&quot;vector.dimensions&quot;</span>
+            <span class="p">]</span>
+
+            <span class="k">return</span> <span class="n">embedding_dimension</span>
+        <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="Neo4jVector.retrieve_existing_fts_index"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.neo4j_vector.Neo4jVector.html#langchain_community.vectorstores.neo4j_vector.Neo4jVector.retrieve_existing_fts_index">[docs]</a>    <span class="k">def</span> <span class="nf">retrieve_existing_fts_index</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">text_node_properties</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check if the fulltext index exists in the Neo4j database</span>
+
+<span class="sd">        This method queries the Neo4j database for existing fts indexes</span>
+<span class="sd">        with the specified name.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            (Tuple): keyword index information</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">index_information</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span>
+            <span class="s2">&quot;SHOW INDEXES YIELD name, type, labelsOrTypes, properties, options &quot;</span>
+            <span class="s2">&quot;WHERE type = &#39;FULLTEXT&#39; AND (name = $keyword_index_name &quot;</span>
+            <span class="s2">&quot;OR (labelsOrTypes = [$node_label] AND &quot;</span>
+            <span class="s2">&quot;properties = $text_node_property)) &quot;</span>
+            <span class="s2">&quot;RETURN name, labelsOrTypes, properties, options &quot;</span><span class="p">,</span>
+            <span class="n">params</span><span class="o">=</span><span class="p">{</span>
+                <span class="s2">&quot;keyword_index_name&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">keyword_index_name</span><span class="p">,</span>
+                <span class="s2">&quot;node_label&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_label</span><span class="p">,</span>
+                <span class="s2">&quot;text_node_property&quot;</span><span class="p">:</span> <span class="n">text_node_properties</span> <span class="ow">or</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">text_node_property</span><span class="p">],</span>
+            <span class="p">},</span>
+        <span class="p">)</span>
+        <span class="c1"># sort by index_name</span>
+        <span class="n">index_information</span> <span class="o">=</span> <span class="n">sort_by_index_name</span><span class="p">(</span><span class="n">index_information</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">index_name</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">keyword_index_name</span> <span class="o">=</span> <span class="n">index_information</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">text_node_property</span> <span class="o">=</span> <span class="n">index_information</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;properties&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">node_label</span> <span class="o">=</span> <span class="n">index_information</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;labelsOrTypes&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">return</span> <span class="n">node_label</span>
+        <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="Neo4jVector.create_new_index"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.neo4j_vector.Neo4jVector.html#langchain_community.vectorstores.neo4j_vector.Neo4jVector.create_new_index">[docs]</a>    <span class="k">def</span> <span class="nf">create_new_index</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method constructs a Cypher query and executes it</span>
+<span class="sd">        to create a new vector index in Neo4j.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">index_query</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot;CALL db.index.vector.createNodeIndex(&quot;</span>
+            <span class="s2">&quot;$index_name,&quot;</span>
+            <span class="s2">&quot;$node_label,&quot;</span>
+            <span class="s2">&quot;$embedding_node_property,&quot;</span>
+            <span class="s2">&quot;toInteger($embedding_dimension),&quot;</span>
+            <span class="s2">&quot;$similarity_metric )&quot;</span>
+        <span class="p">)</span>
+
+        <span class="n">parameters</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;index_name&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">index_name</span><span class="p">,</span>
+            <span class="s2">&quot;node_label&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_label</span><span class="p">,</span>
+            <span class="s2">&quot;embedding_node_property&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">embedding_node_property</span><span class="p">,</span>
+            <span class="s2">&quot;embedding_dimension&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">embedding_dimension</span><span class="p">,</span>
+            <span class="s2">&quot;similarity_metric&quot;</span><span class="p">:</span> <span class="n">DISTANCE_MAPPING</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_distance_strategy</span><span class="p">],</span>
+        <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">index_query</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">parameters</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Neo4jVector.create_new_keyword_index"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.neo4j_vector.Neo4jVector.html#langchain_community.vectorstores.neo4j_vector.Neo4jVector.create_new_keyword_index">[docs]</a>    <span class="k">def</span> <span class="nf">create_new_keyword_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text_node_properties</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method constructs a Cypher query and executes it</span>
+<span class="sd">        to create a new full text index in Neo4j.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">node_props</span> <span class="o">=</span> <span class="n">text_node_properties</span> <span class="ow">or</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">text_node_property</span><span class="p">]</span>
+        <span class="n">fts_index_query</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;CREATE FULLTEXT INDEX </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">keyword_index_name</span><span class="si">}</span><span class="s2"> &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;FOR (n:`</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">node_label</span><span class="si">}</span><span class="s2">`) ON EACH &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;n.`&#39;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">el</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s1">&#39;`&#39;</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">el</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">node_props</span><span class="p">])</span><span class="si">}</span><span class="s2">]&quot;</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">fts_index_query</span><span class="p">)</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">embeddings</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Embeddings</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">embedding</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">__from</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">texts</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">embeddings</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]],</span>
+        <span class="n">embedding</span><span class="p">:</span> <span class="n">Embeddings</span><span class="p">,</span>
+        <span class="n">metadatas</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">ids</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">create_id_index</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">search_type</span><span class="p">:</span> <span class="n">SearchType</span> <span class="o">=</span> <span class="n">SearchType</span><span class="o">.</span><span class="n">VECTOR</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Neo4jVector</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">ids</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ids</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid1</span><span class="p">())</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">texts</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">metadatas</span><span class="p">:</span>
+            <span class="n">metadatas</span> <span class="o">=</span> <span class="p">[{}</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">texts</span><span class="p">]</span>
+
+        <span class="n">store</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="n">embedding</span><span class="o">=</span><span class="n">embedding</span><span class="p">,</span>
+            <span class="n">search_type</span><span class="o">=</span><span class="n">search_type</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="c1"># Check if the vector index already exists</span>
+        <span class="n">embedding_dimension</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">retrieve_existing_index</span><span class="p">()</span>
+
+        <span class="c1"># If the vector index doesn&#39;t exist yet</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">embedding_dimension</span><span class="p">:</span>
+            <span class="n">store</span><span class="o">.</span><span class="n">create_new_index</span><span class="p">()</span>
+        <span class="c1"># If the index already exists, check if embedding dimensions match</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="n">store</span><span class="o">.</span><span class="n">embedding_dimension</span> <span class="o">==</span> <span class="n">embedding_dimension</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Index with name </span><span class="si">{</span><span class="n">store</span><span class="o">.</span><span class="n">index_name</span><span class="si">}</span><span class="s2"> already exists.&quot;</span>
+                <span class="s2">&quot;The provided embedding function and vector index &quot;</span>
+                <span class="s2">&quot;dimensions do not match.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Embedding function dimension: </span><span class="si">{</span><span class="n">store</span><span class="o">.</span><span class="n">embedding_dimension</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Vector index dimension: </span><span class="si">{</span><span class="n">embedding_dimension</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">search_type</span> <span class="o">==</span> <span class="n">SearchType</span><span class="o">.</span><span class="n">HYBRID</span><span class="p">:</span>
+            <span class="n">fts_node_label</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">retrieve_existing_fts_index</span><span class="p">()</span>
+            <span class="c1"># If the FTS index doesn&#39;t exist yet</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">fts_node_label</span><span class="p">:</span>
+                <span class="n">store</span><span class="o">.</span><span class="n">create_new_keyword_index</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>  <span class="c1"># Validate that FTS and Vector index use the same information</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">fts_node_label</span> <span class="o">==</span> <span class="n">store</span><span class="o">.</span><span class="n">node_label</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="s2">&quot;Vector and keyword index don&#39;t index the same node label&quot;</span>
+                    <span class="p">)</span>
+
+        <span class="c1"># Create unique constraint for faster import</span>
+        <span class="k">if</span> <span class="n">create_id_index</span><span class="p">:</span>
+            <span class="n">store</span><span class="o">.</span><span class="n">query</span><span class="p">(</span>
+                <span class="s2">&quot;CREATE CONSTRAINT IF NOT EXISTS &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;FOR (n:`</span><span class="si">{</span><span class="n">store</span><span class="o">.</span><span class="n">node_label</span><span class="si">}</span><span class="s2">`) REQUIRE n.id IS UNIQUE;&quot;</span>
+            <span class="p">)</span>
+
+        <span class="n">store</span><span class="o">.</span><span class="n">add_embeddings</span><span class="p">(</span>
+            <span class="n">texts</span><span class="o">=</span><span class="n">texts</span><span class="p">,</span> <span class="n">embeddings</span><span class="o">=</span><span class="n">embeddings</span><span class="p">,</span> <span class="n">metadatas</span><span class="o">=</span><span class="n">metadatas</span><span class="p">,</span> <span class="n">ids</span><span class="o">=</span><span class="n">ids</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">store</span>
+
+<div class="viewcode-block" id="Neo4jVector.add_embeddings"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.neo4j_vector.Neo4jVector.html#langchain_community.vectorstores.neo4j_vector.Neo4jVector.add_embeddings">[docs]</a>    <span class="k">def</span> <span class="nf">add_embeddings</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">texts</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">embeddings</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]],</span>
+        <span class="n">metadatas</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">ids</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add embeddings to the vectorstore.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            texts: Iterable of strings to add to the vectorstore.</span>
+<span class="sd">            embeddings: List of list of embedding vectors.</span>
+<span class="sd">            metadatas: List of metadatas associated with the texts.</span>
+<span class="sd">            kwargs: vectorstore specific parameters</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">ids</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ids</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid1</span><span class="p">())</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">texts</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">metadatas</span><span class="p">:</span>
+            <span class="n">metadatas</span> <span class="o">=</span> <span class="p">[{}</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">texts</span><span class="p">]</span>
+
+        <span class="n">import_query</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot;UNWIND $data AS row &quot;</span>
+            <span class="s2">&quot;CALL { WITH row &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;MERGE (c:`</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">node_label</span><span class="si">}</span><span class="s2">` </span><span class="se">{{</span><span class="s2">id: row.id</span><span class="se">}}</span><span class="s2">) &quot;</span>
+            <span class="s2">&quot;WITH c, row &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;CALL db.create.setVectorProperty(c, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">embedding_node_property</span><span class="si">}</span><span class="s2">&#39;, row.embedding) &quot;</span>
+            <span class="s2">&quot;YIELD node &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;SET c.`</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">text_node_property</span><span class="si">}</span><span class="s2">` = row.text &quot;</span>
+            <span class="s2">&quot;SET c += row.metadata } IN TRANSACTIONS OF 1000 ROWS&quot;</span>
+        <span class="p">)</span>
+
+        <span class="n">parameters</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="p">{</span><span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="n">text</span><span class="p">,</span> <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="n">metadata</span><span class="p">,</span> <span class="s2">&quot;embedding&quot;</span><span class="p">:</span> <span class="n">embedding</span><span class="p">,</span> <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="nb">id</span><span class="p">}</span>
+                <span class="k">for</span> <span class="n">text</span><span class="p">,</span> <span class="n">metadata</span><span class="p">,</span> <span class="n">embedding</span><span class="p">,</span> <span class="nb">id</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+                    <span class="n">texts</span><span class="p">,</span> <span class="n">metadatas</span><span class="p">,</span> <span class="n">embeddings</span><span class="p">,</span> <span class="n">ids</span>
+                <span class="p">)</span>
+            <span class="p">]</span>
+        <span class="p">}</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">import_query</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">parameters</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">ids</span></div>
+
+<div class="viewcode-block" id="Neo4jVector.add_texts"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.neo4j_vector.Neo4jVector.html#langchain_community.vectorstores.neo4j_vector.Neo4jVector.add_texts">[docs]</a>    <span class="k">def</span> <span class="nf">add_texts</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">texts</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">metadatas</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">ids</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run more texts through the embeddings and add to the vectorstore.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            texts: Iterable of strings to add to the vectorstore.</span>
+<span class="sd">            metadatas: Optional list of metadatas associated with the texts.</span>
+<span class="sd">            kwargs: vectorstore specific parameters</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List of ids from adding the texts into the vectorstore.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">embeddings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">embedding</span><span class="o">.</span><span class="n">embed_documents</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">texts</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_embeddings</span><span class="p">(</span>
+            <span class="n">texts</span><span class="o">=</span><span class="n">texts</span><span class="p">,</span> <span class="n">embeddings</span><span class="o">=</span><span class="n">embeddings</span><span class="p">,</span> <span class="n">metadatas</span><span class="o">=</span><span class="n">metadatas</span><span class="p">,</span> <span class="n">ids</span><span class="o">=</span><span class="n">ids</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Neo4jVector.similarity_search"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.neo4j_vector.Neo4jVector.html#langchain_community.vectorstores.neo4j_vector.Neo4jVector.similarity_search">[docs]</a>    <span class="k">def</span> <span class="nf">similarity_search</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run similarity search with Neo4jVector.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            query (str): Query text to search for.</span>
+<span class="sd">            k (int): Number of results to return. Defaults to 4.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List of Documents most similar to the query.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">embedding</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">embedding</span><span class="o">.</span><span class="n">embed_query</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="n">query</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">similarity_search_by_vector</span><span class="p">(</span>
+            <span class="n">embedding</span><span class="o">=</span><span class="n">embedding</span><span class="p">,</span>
+            <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span>
+            <span class="n">query</span><span class="o">=</span><span class="n">query</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Neo4jVector.similarity_search_with_score"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.neo4j_vector.Neo4jVector.html#langchain_community.vectorstores.neo4j_vector.Neo4jVector.similarity_search_with_score">[docs]</a>    <span class="k">def</span> <span class="nf">similarity_search_with_score</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Document</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return docs most similar to query.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            query: Text to look up documents similar to.</span>
+<span class="sd">            k: Number of Documents to return. Defaults to 4.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List of Documents most similar to the query and score for each</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">embedding</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">embedding</span><span class="o">.</span><span class="n">embed_query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+        <span class="n">docs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">similarity_search_with_score_by_vector</span><span class="p">(</span>
+            <span class="n">embedding</span><span class="o">=</span><span class="n">embedding</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="n">query</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">docs</span></div>
+
+<div class="viewcode-block" id="Neo4jVector.similarity_search_with_score_by_vector"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.neo4j_vector.Neo4jVector.html#langchain_community.vectorstores.neo4j_vector.Neo4jVector.similarity_search_with_score_by_vector">[docs]</a>    <span class="k">def</span> <span class="nf">similarity_search_with_score_by_vector</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">embedding</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Document</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Perform a similarity search in the Neo4j database using a</span>
+<span class="sd">        given vector and return the top k similar documents with their scores.</span>
+
+<span class="sd">        This method uses a Cypher query to find the top k documents that</span>
+<span class="sd">        are most similar to a given embedding. The similarity is measured</span>
+<span class="sd">        using a vector index in the Neo4j database. The results are returned</span>
+<span class="sd">        as a list of tuples, each containing a Document object and</span>
+<span class="sd">        its similarity score.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            embedding (List[float]): The embedding vector to compare against.</span>
+<span class="sd">            k (int, optional): The number of top similar documents to retrieve.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List[Tuple[Document, float]]: A list of tuples, each containing</span>
+<span class="sd">                                a Document object and its similarity score.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">default_retrieval</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;RETURN node.`</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">text_node_property</span><span class="si">}</span><span class="s2">` AS text, score, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;node </span><span class="se">{{</span><span class="s2">.*, `</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">text_node_property</span><span class="si">}</span><span class="s2">`: Null, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;`</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">embedding_node_property</span><span class="si">}</span><span class="s2">`: Null, id: Null </span><span class="se">}}</span><span class="s2"> AS metadata&quot;</span>
+        <span class="p">)</span>
+
+        <span class="n">retrieval_query</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">retrieval_query</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">retrieval_query</span> <span class="k">else</span> <span class="n">default_retrieval</span>
+        <span class="p">)</span>
+
+        <span class="n">read_query</span> <span class="o">=</span> <span class="n">_get_search_index_query</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">search_type</span><span class="p">)</span> <span class="o">+</span> <span class="n">retrieval_query</span>
+        <span class="n">parameters</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;index&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">index_name</span><span class="p">,</span>
+            <span class="s2">&quot;k&quot;</span><span class="p">:</span> <span class="n">k</span><span class="p">,</span>
+            <span class="s2">&quot;embedding&quot;</span><span class="p">:</span> <span class="n">embedding</span><span class="p">,</span>
+            <span class="s2">&quot;keyword_index&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">keyword_index_name</span><span class="p">,</span>
+            <span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;query&quot;</span><span class="p">],</span>
+        <span class="p">}</span>
+
+        <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">read_query</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">parameters</span><span class="p">)</span>
+
+        <span class="n">docs</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">(</span>
+                <span class="n">Document</span><span class="p">(</span>
+                    <span class="n">page_content</span><span class="o">=</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;text&quot;</span><span class="p">],</span>
+                    <span class="n">metadata</span><span class="o">=</span><span class="p">{</span>
+                        <span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;metadata&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                    <span class="p">},</span>
+                <span class="p">),</span>
+                <span class="n">result</span><span class="p">[</span><span class="s2">&quot;score&quot;</span><span class="p">],</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">results</span>
+        <span class="p">]</span>
+        <span class="k">return</span> <span class="n">docs</span></div>
+
+<div class="viewcode-block" id="Neo4jVector.similarity_search_by_vector"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.neo4j_vector.Neo4jVector.html#langchain_community.vectorstores.neo4j_vector.Neo4jVector.similarity_search_by_vector">[docs]</a>    <span class="k">def</span> <span class="nf">similarity_search_by_vector</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">embedding</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+        <span class="n">k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return docs most similar to embedding vector.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            embedding: Embedding to look up documents similar to.</span>
+<span class="sd">            k: Number of Documents to return. Defaults to 4.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List of Documents most similar to the query vector.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">docs_and_scores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">similarity_search_with_score_by_vector</span><span class="p">(</span>
+            <span class="n">embedding</span><span class="o">=</span><span class="n">embedding</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">doc</span> <span class="k">for</span> <span class="n">doc</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">docs_and_scores</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="Neo4jVector.from_texts"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.neo4j_vector.Neo4jVector.html#langchain_community.vectorstores.neo4j_vector.Neo4jVector.from_texts">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_texts</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">Neo4jVector</span><span class="p">],</span>
+        <span class="n">texts</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">embedding</span><span class="p">:</span> <span class="n">Embeddings</span><span class="p">,</span>
+        <span class="n">metadatas</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">distance_strategy</span><span class="p">:</span> <span class="n">DistanceStrategy</span> <span class="o">=</span> <span class="n">DEFAULT_DISTANCE_STRATEGY</span><span class="p">,</span>
+        <span class="n">ids</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Neo4jVector</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return Neo4jVector initialized from texts and embeddings.</span>
+<span class="sd">        Neo4j credentials are required in the form of `url`, `username`,</span>
+<span class="sd">        and `password` and optional `database` parameters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">embeddings</span> <span class="o">=</span> <span class="n">embedding</span><span class="o">.</span><span class="n">embed_documents</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">texts</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__from</span><span class="p">(</span>
+            <span class="n">texts</span><span class="p">,</span>
+            <span class="n">embeddings</span><span class="p">,</span>
+            <span class="n">embedding</span><span class="p">,</span>
+            <span class="n">metadatas</span><span class="o">=</span><span class="n">metadatas</span><span class="p">,</span>
+            <span class="n">ids</span><span class="o">=</span><span class="n">ids</span><span class="p">,</span>
+            <span class="n">distance_strategy</span><span class="o">=</span><span class="n">distance_strategy</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Neo4jVector.from_embeddings"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.neo4j_vector.Neo4jVector.html#langchain_community.vectorstores.neo4j_vector.Neo4jVector.from_embeddings">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_embeddings</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">text_embeddings</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]],</span>
+        <span class="n">embedding</span><span class="p">:</span> <span class="n">Embeddings</span><span class="p">,</span>
+        <span class="n">metadatas</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">distance_strategy</span><span class="p">:</span> <span class="n">DistanceStrategy</span> <span class="o">=</span> <span class="n">DEFAULT_DISTANCE_STRATEGY</span><span class="p">,</span>
+        <span class="n">ids</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">pre_delete_collection</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Neo4jVector</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct Neo4jVector wrapper from raw documents and pre-</span>
+<span class="sd">        generated embeddings.</span>
+
+<span class="sd">        Return Neo4jVector initialized from documents and embeddings.</span>
+<span class="sd">        Neo4j credentials are required in the form of `url`, `username`,</span>
+<span class="sd">        and `password` and optional `database` parameters.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            .. code-block:: python</span>
+
+<span class="sd">                from langchain_community.vectorstores.neo4j_vector import Neo4jVector</span>
+<span class="sd">                from langchain_community.embeddings import OpenAIEmbeddings</span>
+<span class="sd">                embeddings = OpenAIEmbeddings()</span>
+<span class="sd">                text_embeddings = embeddings.embed_documents(texts)</span>
+<span class="sd">                text_embedding_pairs = list(zip(texts, text_embeddings))</span>
+<span class="sd">                vectorstore = Neo4jVector.from_embeddings(</span>
+<span class="sd">                    text_embedding_pairs, embeddings)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">texts</span> <span class="o">=</span> <span class="p">[</span><span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">text_embeddings</span><span class="p">]</span>
+        <span class="n">embeddings</span> <span class="o">=</span> <span class="p">[</span><span class="n">t</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">text_embeddings</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__from</span><span class="p">(</span>
+            <span class="n">texts</span><span class="p">,</span>
+            <span class="n">embeddings</span><span class="p">,</span>
+            <span class="n">embedding</span><span class="p">,</span>
+            <span class="n">metadatas</span><span class="o">=</span><span class="n">metadatas</span><span class="p">,</span>
+            <span class="n">ids</span><span class="o">=</span><span class="n">ids</span><span class="p">,</span>
+            <span class="n">distance_strategy</span><span class="o">=</span><span class="n">distance_strategy</span><span class="p">,</span>
+            <span class="n">pre_delete_collection</span><span class="o">=</span><span class="n">pre_delete_collection</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Neo4jVector.from_existing_index"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.neo4j_vector.Neo4jVector.html#langchain_community.vectorstores.neo4j_vector.Neo4jVector.from_existing_index">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_existing_index</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">Neo4jVector</span><span class="p">],</span>
+        <span class="n">embedding</span><span class="p">:</span> <span class="n">Embeddings</span><span class="p">,</span>
+        <span class="n">index_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">search_type</span><span class="p">:</span> <span class="n">SearchType</span> <span class="o">=</span> <span class="n">DEFAULT_SEARCH_TYPE</span><span class="p">,</span>
+        <span class="n">keyword_index_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Neo4jVector</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get instance of an existing Neo4j vector index. This method will</span>
+<span class="sd">        return the instance of the store without inserting any new</span>
+<span class="sd">        embeddings.</span>
+<span class="sd">        Neo4j credentials are required in the form of `url`, `username`,</span>
+<span class="sd">        and `password` and optional `database` parameters along with</span>
+<span class="sd">        the `index_name` definition.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">search_type</span> <span class="o">==</span> <span class="n">SearchType</span><span class="o">.</span><span class="n">HYBRID</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">keyword_index_name</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;keyword_index name has to be specified &quot;</span>
+                <span class="s2">&quot;when using hybrid search option&quot;</span>
+            <span class="p">)</span>
+
+        <span class="n">store</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="n">embedding</span><span class="o">=</span><span class="n">embedding</span><span class="p">,</span>
+            <span class="n">index_name</span><span class="o">=</span><span class="n">index_name</span><span class="p">,</span>
+            <span class="n">keyword_index_name</span><span class="o">=</span><span class="n">keyword_index_name</span><span class="p">,</span>
+            <span class="n">search_type</span><span class="o">=</span><span class="n">search_type</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">embedding_dimension</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">retrieve_existing_index</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">embedding_dimension</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;The specified vector index name does not exist. &quot;</span>
+                <span class="s2">&quot;Make sure to check if you spelled it correctly&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Check if embedding function and vector index dimensions match</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">store</span><span class="o">.</span><span class="n">embedding_dimension</span> <span class="o">==</span> <span class="n">embedding_dimension</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;The provided embedding function and vector index &quot;</span>
+                <span class="s2">&quot;dimensions do not match.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Embedding function dimension: </span><span class="si">{</span><span class="n">store</span><span class="o">.</span><span class="n">embedding_dimension</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Vector index dimension: </span><span class="si">{</span><span class="n">embedding_dimension</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">search_type</span> <span class="o">==</span> <span class="n">SearchType</span><span class="o">.</span><span class="n">HYBRID</span><span class="p">:</span>
+            <span class="n">fts_node_label</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">retrieve_existing_fts_index</span><span class="p">()</span>
+            <span class="c1"># If the FTS index doesn&#39;t exist yet</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">fts_node_label</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;The specified keyword index name does not exist. &quot;</span>
+                    <span class="s2">&quot;Make sure to check if you spelled it correctly&quot;</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>  <span class="c1"># Validate that FTS and Vector index use the same information</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">fts_node_label</span> <span class="o">==</span> <span class="n">store</span><span class="o">.</span><span class="n">node_label</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="s2">&quot;Vector and keyword index don&#39;t index the same node label&quot;</span>
+                    <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">store</span></div>
+
+<div class="viewcode-block" id="Neo4jVector.from_documents"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.neo4j_vector.Neo4jVector.html#langchain_community.vectorstores.neo4j_vector.Neo4jVector.from_documents">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_documents</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">Neo4jVector</span><span class="p">],</span>
+        <span class="n">documents</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">],</span>
+        <span class="n">embedding</span><span class="p">:</span> <span class="n">Embeddings</span><span class="p">,</span>
+        <span class="n">distance_strategy</span><span class="p">:</span> <span class="n">DistanceStrategy</span> <span class="o">=</span> <span class="n">DEFAULT_DISTANCE_STRATEGY</span><span class="p">,</span>
+        <span class="n">ids</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Neo4jVector</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return Neo4jVector initialized from documents and embeddings.</span>
+<span class="sd">        Neo4j credentials are required in the form of `url`, `username`,</span>
+<span class="sd">        and `password` and optional `database` parameters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">texts</span> <span class="o">=</span> <span class="p">[</span><span class="n">d</span><span class="o">.</span><span class="n">page_content</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">documents</span><span class="p">]</span>
+        <span class="n">metadatas</span> <span class="o">=</span> <span class="p">[</span><span class="n">d</span><span class="o">.</span><span class="n">metadata</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">documents</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">from_texts</span><span class="p">(</span>
+            <span class="n">texts</span><span class="o">=</span><span class="n">texts</span><span class="p">,</span>
+            <span class="n">embedding</span><span class="o">=</span><span class="n">embedding</span><span class="p">,</span>
+            <span class="n">distance_strategy</span><span class="o">=</span><span class="n">distance_strategy</span><span class="p">,</span>
+            <span class="n">metadatas</span><span class="o">=</span><span class="n">metadatas</span><span class="p">,</span>
+            <span class="n">ids</span><span class="o">=</span><span class="n">ids</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Neo4jVector.from_existing_graph"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.neo4j_vector.Neo4jVector.html#langchain_community.vectorstores.neo4j_vector.Neo4jVector.from_existing_graph">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_existing_graph</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">Neo4jVector</span><span class="p">],</span>
+        <span class="n">embedding</span><span class="p">:</span> <span class="n">Embeddings</span><span class="p">,</span>
+        <span class="n">node_label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">embedding_node_property</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">text_node_properties</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">keyword_index_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;keyword&quot;</span><span class="p">,</span>
+        <span class="n">index_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;vector&quot;</span><span class="p">,</span>
+        <span class="n">search_type</span><span class="p">:</span> <span class="n">SearchType</span> <span class="o">=</span> <span class="n">DEFAULT_SEARCH_TYPE</span><span class="p">,</span>
+        <span class="n">retrieval_query</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Neo4jVector</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize and return a Neo4jVector instance from an existing graph.</span>
+
+<span class="sd">        This method initializes a Neo4jVector instance using the provided</span>
+<span class="sd">        parameters and the existing graph. It validates the existence of</span>
+<span class="sd">        the indices and creates new ones if they don&#39;t exist.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">        Neo4jVector: An instance of Neo4jVector initialized with the provided parameters</span>
+<span class="sd">                    and existing graph.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">        &gt;&gt;&gt; neo4j_vector = Neo4jVector.from_existing_graph(</span>
+<span class="sd">        ...     embedding=my_embedding,</span>
+<span class="sd">        ...     node_label=&quot;Document&quot;,</span>
+<span class="sd">        ...     embedding_node_property=&quot;embedding&quot;,</span>
+<span class="sd">        ...     text_node_properties=[&quot;title&quot;, &quot;content&quot;]</span>
+<span class="sd">        ... )</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">        Neo4j credentials are required in the form of `url`, `username`, and `password`,</span>
+<span class="sd">        and optional `database` parameters passed as additional keyword arguments.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Validate the list is not empty</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">text_node_properties</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Parameter `text_node_properties` must not be an empty list&quot;</span>
+            <span class="p">)</span>
+        <span class="c1"># Prefer retrieval query from params, otherwise construct it</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">retrieval_query</span><span class="p">:</span>
+            <span class="n">retrieval_query</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;RETURN reduce(str=&#39;&#39;, k IN </span><span class="si">{</span><span class="n">text_node_properties</span><span class="si">}</span><span class="s2"> |&quot;</span>
+                <span class="s2">&quot; str + &#39;</span><span class="se">\\</span><span class="s2">n&#39; + k + &#39;: &#39; + coalesce(node[k], &#39;&#39;)) AS text, &quot;</span>
+                <span class="s2">&quot;node {.*, `&quot;</span>
+                <span class="o">+</span> <span class="n">embedding_node_property</span>
+                <span class="o">+</span> <span class="s2">&quot;`: Null, id: Null, &quot;</span>
+                <span class="o">+</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="sa">f</span><span class="s2">&quot;`</span><span class="si">{</span><span class="n">prop</span><span class="si">}</span><span class="s2">`: Null&quot;</span> <span class="k">for</span> <span class="n">prop</span> <span class="ow">in</span> <span class="n">text_node_properties</span><span class="p">])</span>
+                <span class="o">+</span> <span class="s2">&quot;} AS metadata, score&quot;</span>
+            <span class="p">)</span>
+        <span class="n">store</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="n">embedding</span><span class="o">=</span><span class="n">embedding</span><span class="p">,</span>
+            <span class="n">index_name</span><span class="o">=</span><span class="n">index_name</span><span class="p">,</span>
+            <span class="n">keyword_index_name</span><span class="o">=</span><span class="n">keyword_index_name</span><span class="p">,</span>
+            <span class="n">search_type</span><span class="o">=</span><span class="n">search_type</span><span class="p">,</span>
+            <span class="n">retrieval_query</span><span class="o">=</span><span class="n">retrieval_query</span><span class="p">,</span>
+            <span class="n">node_label</span><span class="o">=</span><span class="n">node_label</span><span class="p">,</span>
+            <span class="n">embedding_node_property</span><span class="o">=</span><span class="n">embedding_node_property</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Check if the vector index already exists</span>
+        <span class="n">embedding_dimension</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">retrieve_existing_index</span><span class="p">()</span>
+
+        <span class="c1"># If the vector index doesn&#39;t exist yet</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">embedding_dimension</span><span class="p">:</span>
+            <span class="n">store</span><span class="o">.</span><span class="n">create_new_index</span><span class="p">()</span>
+        <span class="c1"># If the index already exists, check if embedding dimensions match</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="n">store</span><span class="o">.</span><span class="n">embedding_dimension</span> <span class="o">==</span> <span class="n">embedding_dimension</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Index with name </span><span class="si">{</span><span class="n">store</span><span class="o">.</span><span class="n">index_name</span><span class="si">}</span><span class="s2"> already exists.&quot;</span>
+                <span class="s2">&quot;The provided embedding function and vector index &quot;</span>
+                <span class="s2">&quot;dimensions do not match.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Embedding function dimension: </span><span class="si">{</span><span class="n">store</span><span class="o">.</span><span class="n">embedding_dimension</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Vector index dimension: </span><span class="si">{</span><span class="n">embedding_dimension</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="c1"># FTS index for Hybrid search</span>
+        <span class="k">if</span> <span class="n">search_type</span> <span class="o">==</span> <span class="n">SearchType</span><span class="o">.</span><span class="n">HYBRID</span><span class="p">:</span>
+            <span class="n">fts_node_label</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">retrieve_existing_fts_index</span><span class="p">(</span><span class="n">text_node_properties</span><span class="p">)</span>
+            <span class="c1"># If the FTS index doesn&#39;t exist yet</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">fts_node_label</span><span class="p">:</span>
+                <span class="n">store</span><span class="o">.</span><span class="n">create_new_keyword_index</span><span class="p">(</span><span class="n">text_node_properties</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>  <span class="c1"># Validate that FTS and Vector index use the same information</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">fts_node_label</span> <span class="o">==</span> <span class="n">store</span><span class="o">.</span><span class="n">node_label</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="s2">&quot;Vector and keyword index don&#39;t index the same node label&quot;</span>
+                    <span class="p">)</span>
+
+        <span class="c1"># Populate embeddings</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">fetch_query</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;MATCH (n:`</span><span class="si">{</span><span class="n">node_label</span><span class="si">}</span><span class="s2">`) &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;WHERE n.</span><span class="si">{</span><span class="n">embedding_node_property</span><span class="si">}</span><span class="s2"> IS null &quot;</span>
+                <span class="s2">&quot;AND any(k in $props WHERE n[k] IS NOT null) &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;RETURN elementId(n) AS id, reduce(str=&#39;&#39;,&quot;</span>
+                <span class="s2">&quot;k IN $props | str + &#39;</span><span class="se">\\</span><span class="s2">n&#39; + k + &#39;:&#39; + coalesce(n[k], &#39;&#39;)) AS text &quot;</span>
+                <span class="s2">&quot;LIMIT 1000&quot;</span>
+            <span class="p">)</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">fetch_query</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;props&quot;</span><span class="p">:</span> <span class="n">text_node_properties</span><span class="p">})</span>
+            <span class="n">text_embeddings</span> <span class="o">=</span> <span class="n">embedding</span><span class="o">.</span><span class="n">embed_documents</span><span class="p">([</span><span class="n">el</span><span class="p">[</span><span class="s2">&quot;text&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">el</span> <span class="ow">in</span> <span class="n">data</span><span class="p">])</span>
+
+            <span class="n">params</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">[</span>
+                    <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="n">el</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">],</span> <span class="s2">&quot;embedding&quot;</span><span class="p">:</span> <span class="n">embedding</span><span class="p">}</span>
+                    <span class="k">for</span> <span class="n">el</span><span class="p">,</span> <span class="n">embedding</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">text_embeddings</span><span class="p">)</span>
+                <span class="p">]</span>
+            <span class="p">}</span>
+
+            <span class="n">store</span><span class="o">.</span><span class="n">query</span><span class="p">(</span>
+                <span class="s2">&quot;UNWIND $data AS row &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;MATCH (n:`</span><span class="si">{</span><span class="n">node_label</span><span class="si">}</span><span class="s2">`) &quot;</span>
+                <span class="s2">&quot;WHERE elementId(n) = row.id &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;CALL db.create.setVectorProperty(n, &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="n">embedding_node_property</span><span class="si">}</span><span class="s2">&#39;, row.embedding) &quot;</span>
+                <span class="s2">&quot;YIELD node RETURN count(*)&quot;</span><span class="p">,</span>
+                <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="c1"># If embedding calculation should be stopped</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1000</span><span class="p">:</span>
+                <span class="k">break</span>
+        <span class="k">return</span> <span class="n">store</span></div>
+
+    <span class="k">def</span> <span class="nf">_select_relevance_score_fn</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">float</span><span class="p">],</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The &#39;correct&#39; relevance function</span>
+<span class="sd">        may differ depending on a few things, including:</span>
+<span class="sd">        - the distance / similarity metric used by the VectorStore</span>
+<span class="sd">        - the scale of your embeddings (OpenAI&#39;s are unit normed. Many others are not!)</span>
+<span class="sd">        - embedding dimensionality</span>
+<span class="sd">        - etc.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">override_relevance_score_fn</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">override_relevance_score_fn</span>
+
+        <span class="c1"># Default strategy is to rely on distance strategy provided</span>
+        <span class="c1"># in vectorstore constructor</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_distance_strategy</span> <span class="o">==</span> <span class="n">DistanceStrategy</span><span class="o">.</span><span class="n">COSINE</span><span class="p">:</span>
+            <span class="k">return</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_distance_strategy</span> <span class="o">==</span> <span class="n">DistanceStrategy</span><span class="o">.</span><span class="n">EUCLIDEAN_DISTANCE</span><span class="p">:</span>
+            <span class="k">return</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;No supported normalization function&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot; for distance_strategy of </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_distance_strategy</span><span class="si">}</span><span class="s2">.&quot;</span>
+                <span class="s2">&quot;Consider providing relevance_score_fn to PGVector constructor.&quot;</span>
+            <span class="p">)</span></div>
+</pre></div>
+
+      </div>
+    <div class="container">
+      <footer class="sk-content-footer">
+            &copy; 2023, Harrison Chase.
+          Last updated on Dec 14, 2023.
+      </footer>
+    </div>
+  </div>
+</div>
+<script src="../../../_static/js/vendor/bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    /* Add a [>>>] button on the top-right corner of code samples to hide
+     * the >>> and ... prompts and the output and thus make the code
+     * copyable. */
+    var div = $('.highlight-python .highlight,' +
+                '.highlight-python3 .highlight,' +
+                '.highlight-pycon .highlight,' +
+		'.highlight-default .highlight')
+    var pre = div.find('pre');
+
+    // get the styles from the current theme
+    pre.parent().parent().css('position', 'relative');
+    var hide_text = 'Hide prompts and outputs';
+    var show_text = 'Show prompts and outputs';
+
+    // create and add the button to all the code blocks that contain >>>
+    div.each(function(index) {
+        var jthis = $(this);
+        if (jthis.find('.gp').length > 0) {
+            var button = $('<span class="copybutton">&gt;&gt;&gt;</span>');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+            jthis.prepend(button);
+        }
+        // tracebacks (.gt) contain bare text elements that need to be
+        // wrapped in a span to work with .nextUntil() (see later)
+        jthis.find('pre:has(.gt)').contents().filter(function() {
+            return ((this.nodeType == 3) && (this.data.trim().length > 0));
+        }).wrap('<span>');
+    });
+
+    // define the behavior of the button when it's clicked
+    $('.copybutton').click(function(e){
+        e.preventDefault();
+        var button = $(this);
+        if (button.data('hidden') === 'false') {
+            // hide the code output
+            button.parent().find('.go, .gp, .gt').hide();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'hidden');
+            button.css('text-decoration', 'line-through');
+            button.attr('title', show_text);
+            button.data('hidden', 'true');
+        } else {
+            // show the code output
+            button.parent().find('.go, .gp, .gt').show();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'visible');
+            button.css('text-decoration', 'none');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+        }
+    });
+
+	/*** Add permalink buttons next to glossary terms ***/
+	$('dl.glossary > dt[id]').append(function() {
+		return ('<a class="headerlink" href="#' +
+			    this.getAttribute('id') +
+			    '" title="Permalink to this term">¶</a>');
+	});
+});
+
+</script>
+    
+</body>
+</html>

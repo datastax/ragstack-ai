@@ -1,0 +1,353 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>langchain.embeddings.cache &mdash; 🦜🔗 LangChain 0.0.349</title>
+  
+  <link rel="canonical" href="https://api.python.langchain.com/en/latest/_modules/langchain/embeddings/cache.html" />
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/vendor/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/autodoc_pydantic.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/panels-bootstrap.5fd3999ee7762ccc51105388f4a9d115.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+<script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+<script src="../../../_static/jquery.js"></script> 
+</head>
+<body>
+
+
+<nav id="navbar" class="sk-docs-navbar navbar navbar-expand-md navbar-light bg-light py-0">
+  <div class="container-fluid sk-docs-container px-0">
+    <button
+      id="sk-navbar-toggler"
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="sk-navbar-collapse collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../api_reference.html">API</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../core_api_reference.html">Core</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../community_api_reference.html">Community</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../experimental_api_reference.html">Experimental</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" target="_blank" rel="noopener noreferrer" href="https://python.langchain.com/">Python Docs</a>
+        </li>
+      </ul>
+      <div id="searchbox" role="search">
+          <div class="searchformwrapper">
+          <form class="search" action="../../../search.html" method="get">
+            <input class="sk-search-text-input" type="text" name="q" aria-labelledby="searchlabel" />
+            <input class="sk-search-text-btn" type="submit" value="Go" />
+          </form>
+          </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="d-flex" id="sk-doc-wrapper">
+    <input type="checkbox" name="sk-toggle-checkbox" id="sk-toggle-checkbox">
+    <label id="sk-sidemenu-toggle" class="sk-btn-toggle-toc btn sk-btn-primary" for="sk-toggle-checkbox">Toggle Menu</label>
+    <div id="sk-sidebar-wrapper" class="border-right">
+      <div class="sk-sidebar-toc-wrapper">
+        <div class="btn-group w-100 mb-2" role="group" aria-label="rellinks">
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Prev</a><a href="../../index.html" role="button" class="btn sk-btn-rellink py-1" sk-rellink-tooltip="Module code">Up</a>
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Next</a>
+        </div>
+        <div class="alert alert-warning p-1 mb-2" role="alert">
+          <p class="text-center mb-0">
+          <strong>LangChain 0.0.349</strong><br/>
+          </p>
+        </div>
+            <div class="sk-sidebar-toc">
+              
+            </div>
+      </div>
+    </div>
+    <div id="sk-page-content-wrapper">
+      <div class="sk-page-content container-fluid body px-md-3" role="main">
+        
+  <h1>Source code for langchain.embeddings.cache</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Module contains code for a cache backed embedder.</span>
+
+<span class="sd">The cache backed embedder is a wrapper around an embedder that caches</span>
+<span class="sd">embeddings in a key-value store. The cache is used to avoid recomputing</span>
+<span class="sd">embeddings for the same text.</span>
+
+<span class="sd">The text is hashed and the hash is used as the key in the cache.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span> <span class="nn">hashlib</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">uuid</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">cast</span>
+
+<span class="kn">from</span> <span class="nn">langchain_core.embeddings</span> <span class="kn">import</span> <span class="n">Embeddings</span>
+<span class="kn">from</span> <span class="nn">langchain_core.stores</span> <span class="kn">import</span> <span class="n">BaseStore</span><span class="p">,</span> <span class="n">ByteStore</span>
+
+<span class="kn">from</span> <span class="nn">langchain.storage.encoder_backed</span> <span class="kn">import</span> <span class="n">EncoderBackedStore</span>
+
+<span class="n">NAMESPACE_UUID</span> <span class="o">=</span> <span class="n">uuid</span><span class="o">.</span><span class="n">UUID</span><span class="p">(</span><span class="nb">int</span><span class="o">=</span><span class="mi">1985</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_hash_string_to_uuid</span><span class="p">(</span><span class="n">input_string</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">uuid</span><span class="o">.</span><span class="n">UUID</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Hash a string and returns the corresponding UUID.&quot;&quot;&quot;</span>
+    <span class="n">hash_value</span> <span class="o">=</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">sha1</span><span class="p">(</span><span class="n">input_string</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">uuid</span><span class="o">.</span><span class="n">uuid5</span><span class="p">(</span><span class="n">NAMESPACE_UUID</span><span class="p">,</span> <span class="n">hash_value</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_key_encoder</span><span class="p">(</span><span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">namespace</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Encode a key.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">namespace</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">_hash_string_to_uuid</span><span class="p">(</span><span class="n">key</span><span class="p">))</span>
+
+
+<span class="k">def</span> <span class="nf">_create_key_encoder</span><span class="p">(</span><span class="n">namespace</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create an encoder for a key.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">partial</span><span class="p">(</span><span class="n">_key_encoder</span><span class="p">,</span> <span class="n">namespace</span><span class="o">=</span><span class="n">namespace</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_value_serializer</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Serialize a value.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">()</span>
+
+
+<span class="k">def</span> <span class="nf">_value_deserializer</span><span class="p">(</span><span class="n">serialized_value</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Deserialize a value.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">cast</span><span class="p">(</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">serialized_value</span><span class="o">.</span><span class="n">decode</span><span class="p">()))</span>
+
+
+<div class="viewcode-block" id="CacheBackedEmbeddings"><a class="viewcode-back" href="../../../embeddings/langchain.embeddings.cache.CacheBackedEmbeddings.html#langchain.embeddings.cache.CacheBackedEmbeddings">[docs]</a><span class="k">class</span> <span class="nc">CacheBackedEmbeddings</span><span class="p">(</span><span class="n">Embeddings</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Interface for caching results from embedding models.</span>
+
+<span class="sd">    The interface allows works with any store that implements</span>
+<span class="sd">    the abstract store interface accepting keys of type str and values of list of</span>
+<span class="sd">    floats.</span>
+
+<span class="sd">    If need be, the interface can be extended to accept other implementations</span>
+<span class="sd">    of the value serializer and deserializer, as well as the key encoder.</span>
+
+<span class="sd">    Examples:</span>
+
+<span class="sd">        .. code-block: python</span>
+
+<span class="sd">            from langchain.embeddings import CacheBackedEmbeddings, OpenAIEmbeddings</span>
+<span class="sd">            from langchain.storage import LocalFileStore</span>
+
+<span class="sd">            store = LocalFileStore(&#39;./my_cache&#39;)</span>
+
+<span class="sd">            underlying_embedder = OpenAIEmbeddings()</span>
+<span class="sd">            embedder = CacheBackedEmbeddings.from_bytes_store(</span>
+<span class="sd">                underlying_embedder, store, namespace=underlying_embedder.model</span>
+<span class="sd">            )</span>
+
+<span class="sd">            # Embedding is computed and cached</span>
+<span class="sd">            embeddings = embedder.embed_documents([&quot;hello&quot;, &quot;goodbye&quot;])</span>
+
+<span class="sd">            # Embeddings are retrieved from the cache, no computation is done</span>
+<span class="sd">            embeddings = embedder.embed_documents([&quot;hello&quot;, &quot;goodbye&quot;])</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="CacheBackedEmbeddings.__init__"><a class="viewcode-back" href="../../../embeddings/langchain.embeddings.cache.CacheBackedEmbeddings.html#langchain.embeddings.cache.CacheBackedEmbeddings.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">underlying_embeddings</span><span class="p">:</span> <span class="n">Embeddings</span><span class="p">,</span>
+        <span class="n">document_embedding_store</span><span class="p">:</span> <span class="n">BaseStore</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the embedder.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            underlying_embeddings: the embedder to use for computing embeddings.</span>
+<span class="sd">            document_embedding_store: The store to use for caching document embeddings.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">document_embedding_store</span> <span class="o">=</span> <span class="n">document_embedding_store</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">underlying_embeddings</span> <span class="o">=</span> <span class="n">underlying_embeddings</span></div>
+
+<div class="viewcode-block" id="CacheBackedEmbeddings.embed_documents"><a class="viewcode-back" href="../../../embeddings/langchain.embeddings.cache.CacheBackedEmbeddings.html#langchain.embeddings.cache.CacheBackedEmbeddings.embed_documents">[docs]</a>    <span class="k">def</span> <span class="nf">embed_documents</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">texts</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Embed a list of texts.</span>
+
+<span class="sd">        The method first checks the cache for the embeddings.</span>
+<span class="sd">        If the embeddings are not found, the method uses the underlying embedder</span>
+<span class="sd">        to embed the documents and stores the results in the cache.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            texts: A list of texts to embed.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A list of embeddings for the given texts.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">vectors</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="kc">None</span><span class="p">]]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">document_embedding_store</span><span class="o">.</span><span class="n">mget</span><span class="p">(</span>
+            <span class="n">texts</span>
+        <span class="p">)</span>
+        <span class="n">missing_indices</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">vector</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">vectors</span><span class="p">)</span> <span class="k">if</span> <span class="n">vector</span> <span class="ow">is</span> <span class="kc">None</span>
+        <span class="p">]</span>
+        <span class="n">missing_texts</span> <span class="o">=</span> <span class="p">[</span><span class="n">texts</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">missing_indices</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">missing_texts</span><span class="p">:</span>
+            <span class="n">missing_vectors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">underlying_embeddings</span><span class="o">.</span><span class="n">embed_documents</span><span class="p">(</span><span class="n">missing_texts</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">document_embedding_store</span><span class="o">.</span><span class="n">mset</span><span class="p">(</span>
+                <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">missing_texts</span><span class="p">,</span> <span class="n">missing_vectors</span><span class="p">))</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">updated_vector</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">missing_indices</span><span class="p">,</span> <span class="n">missing_vectors</span><span class="p">):</span>
+                <span class="n">vectors</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="n">updated_vector</span>
+
+        <span class="k">return</span> <span class="n">cast</span><span class="p">(</span>
+            <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]],</span> <span class="n">vectors</span>
+        <span class="p">)</span>  <span class="c1"># Nones should have been resolved by now</span></div>
+
+<div class="viewcode-block" id="CacheBackedEmbeddings.embed_query"><a class="viewcode-back" href="../../../embeddings/langchain.embeddings.cache.CacheBackedEmbeddings.html#langchain.embeddings.cache.CacheBackedEmbeddings.embed_query">[docs]</a>    <span class="k">def</span> <span class="nf">embed_query</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Embed query text.</span>
+
+<span class="sd">        This method does not support caching at the moment.</span>
+
+<span class="sd">        Support for caching queries is easily to implement, but might make</span>
+<span class="sd">        sense to hold off to see the most common patterns.</span>
+
+<span class="sd">        If the cache has an eviction policy, we may need to be a bit more careful</span>
+<span class="sd">        about sharing the cache between documents and queries. Generally,</span>
+<span class="sd">        one is OK evicting query caches, but document caches should be kept.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            text: The text to embed.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The embedding for the given text.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">underlying_embeddings</span><span class="o">.</span><span class="n">embed_query</span><span class="p">(</span><span class="n">text</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CacheBackedEmbeddings.from_bytes_store"><a class="viewcode-back" href="../../../embeddings/langchain.embeddings.cache.CacheBackedEmbeddings.html#langchain.embeddings.cache.CacheBackedEmbeddings.from_bytes_store">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_bytes_store</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">underlying_embeddings</span><span class="p">:</span> <span class="n">Embeddings</span><span class="p">,</span>
+        <span class="n">document_embedding_cache</span><span class="p">:</span> <span class="n">ByteStore</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">namespace</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CacheBackedEmbeddings</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;On-ramp that adds the necessary serialization and encoding to the store.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            underlying_embeddings: The embedder to use for embedding.</span>
+<span class="sd">            document_embedding_cache: The cache to use for storing document embeddings.</span>
+<span class="sd">            *,</span>
+<span class="sd">            namespace: The namespace to use for document cache.</span>
+<span class="sd">                       This namespace is used to avoid collisions with other caches.</span>
+<span class="sd">                       For example, set it to the name of the embedding model used.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">namespace</span> <span class="o">=</span> <span class="n">namespace</span>
+        <span class="n">key_encoder</span> <span class="o">=</span> <span class="n">_create_key_encoder</span><span class="p">(</span><span class="n">namespace</span><span class="p">)</span>
+        <span class="n">encoder_backed_store</span> <span class="o">=</span> <span class="n">EncoderBackedStore</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]](</span>
+            <span class="n">document_embedding_cache</span><span class="p">,</span>
+            <span class="n">key_encoder</span><span class="p">,</span>
+            <span class="n">_value_serializer</span><span class="p">,</span>
+            <span class="n">_value_deserializer</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">underlying_embeddings</span><span class="p">,</span> <span class="n">encoder_backed_store</span><span class="p">)</span></div></div>
+</pre></div>
+
+      </div>
+    <div class="container">
+      <footer class="sk-content-footer">
+            &copy; 2023, Harrison Chase.
+          Last updated on Dec 14, 2023.
+      </footer>
+    </div>
+  </div>
+</div>
+<script src="../../../_static/js/vendor/bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    /* Add a [>>>] button on the top-right corner of code samples to hide
+     * the >>> and ... prompts and the output and thus make the code
+     * copyable. */
+    var div = $('.highlight-python .highlight,' +
+                '.highlight-python3 .highlight,' +
+                '.highlight-pycon .highlight,' +
+		'.highlight-default .highlight')
+    var pre = div.find('pre');
+
+    // get the styles from the current theme
+    pre.parent().parent().css('position', 'relative');
+    var hide_text = 'Hide prompts and outputs';
+    var show_text = 'Show prompts and outputs';
+
+    // create and add the button to all the code blocks that contain >>>
+    div.each(function(index) {
+        var jthis = $(this);
+        if (jthis.find('.gp').length > 0) {
+            var button = $('<span class="copybutton">&gt;&gt;&gt;</span>');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+            jthis.prepend(button);
+        }
+        // tracebacks (.gt) contain bare text elements that need to be
+        // wrapped in a span to work with .nextUntil() (see later)
+        jthis.find('pre:has(.gt)').contents().filter(function() {
+            return ((this.nodeType == 3) && (this.data.trim().length > 0));
+        }).wrap('<span>');
+    });
+
+    // define the behavior of the button when it's clicked
+    $('.copybutton').click(function(e){
+        e.preventDefault();
+        var button = $(this);
+        if (button.data('hidden') === 'false') {
+            // hide the code output
+            button.parent().find('.go, .gp, .gt').hide();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'hidden');
+            button.css('text-decoration', 'line-through');
+            button.attr('title', show_text);
+            button.data('hidden', 'true');
+        } else {
+            // show the code output
+            button.parent().find('.go, .gp, .gt').show();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'visible');
+            button.css('text-decoration', 'none');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+        }
+    });
+
+	/*** Add permalink buttons next to glossary terms ***/
+	$('dl.glossary > dt[id]').append(function() {
+		return ('<a class="headerlink" href="#' +
+			    this.getAttribute('id') +
+			    '" title="Permalink to this term">¶</a>');
+	});
+});
+
+</script>
+    
+</body>
+</html>

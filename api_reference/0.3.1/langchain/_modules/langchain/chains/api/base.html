@@ -1,0 +1,415 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>langchain.chains.api.base &mdash; 🦜🔗 LangChain 0.0.349</title>
+  
+  <link rel="canonical" href="https://api.python.langchain.com/en/latest/_modules/langchain/chains/api/base.html" />
+
+  
+
+  <link rel="stylesheet" href="../../../../_static/css/vendor/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/autodoc_pydantic.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/panels-bootstrap.5fd3999ee7762ccc51105388f4a9d115.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/css/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+<script id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+<script src="../../../../_static/jquery.js"></script> 
+</head>
+<body>
+
+
+<nav id="navbar" class="sk-docs-navbar navbar navbar-expand-md navbar-light bg-light py-0">
+  <div class="container-fluid sk-docs-container px-0">
+    <button
+      id="sk-navbar-toggler"
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="sk-navbar-collapse collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../../api_reference.html">API</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../../core_api_reference.html">Core</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../../community_api_reference.html">Community</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../../experimental_api_reference.html">Experimental</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" target="_blank" rel="noopener noreferrer" href="https://python.langchain.com/">Python Docs</a>
+        </li>
+      </ul>
+      <div id="searchbox" role="search">
+          <div class="searchformwrapper">
+          <form class="search" action="../../../../search.html" method="get">
+            <input class="sk-search-text-input" type="text" name="q" aria-labelledby="searchlabel" />
+            <input class="sk-search-text-btn" type="submit" value="Go" />
+          </form>
+          </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="d-flex" id="sk-doc-wrapper">
+    <input type="checkbox" name="sk-toggle-checkbox" id="sk-toggle-checkbox">
+    <label id="sk-sidemenu-toggle" class="sk-btn-toggle-toc btn sk-btn-primary" for="sk-toggle-checkbox">Toggle Menu</label>
+    <div id="sk-sidebar-wrapper" class="border-right">
+      <div class="sk-sidebar-toc-wrapper">
+        <div class="btn-group w-100 mb-2" role="group" aria-label="rellinks">
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Prev</a><a href="../../../index.html" role="button" class="btn sk-btn-rellink py-1" sk-rellink-tooltip="Module code">Up</a>
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Next</a>
+        </div>
+        <div class="alert alert-warning p-1 mb-2" role="alert">
+          <p class="text-center mb-0">
+          <strong>LangChain 0.0.349</strong><br/>
+          </p>
+        </div>
+            <div class="sk-sidebar-toc">
+              
+            </div>
+      </div>
+    </div>
+    <div id="sk-page-content-wrapper">
+      <div class="sk-page-content container-fluid body px-md-3" role="main">
+        
+  <h1>Source code for langchain.chains.api.base</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Chain that makes API calls and summarizes the responses to answer a question.&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Tuple</span>
+<span class="kn">from</span> <span class="nn">urllib.parse</span> <span class="kn">import</span> <span class="n">urlparse</span>
+
+<span class="kn">from</span> <span class="nn">langchain_core.language_models</span> <span class="kn">import</span> <span class="n">BaseLanguageModel</span>
+<span class="kn">from</span> <span class="nn">langchain_core.prompts</span> <span class="kn">import</span> <span class="n">BasePromptTemplate</span>
+<span class="kn">from</span> <span class="nn">langchain_core.pydantic_v1</span> <span class="kn">import</span> <span class="n">Field</span><span class="p">,</span> <span class="n">root_validator</span>
+
+<span class="kn">from</span> <span class="nn">langchain.callbacks.manager</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AsyncCallbackManagerForChainRun</span><span class="p">,</span>
+    <span class="n">CallbackManagerForChainRun</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">langchain.chains.api.prompt</span> <span class="kn">import</span> <span class="n">API_RESPONSE_PROMPT</span><span class="p">,</span> <span class="n">API_URL_PROMPT</span>
+<span class="kn">from</span> <span class="nn">langchain.chains.base</span> <span class="kn">import</span> <span class="n">Chain</span>
+<span class="kn">from</span> <span class="nn">langchain.chains.llm</span> <span class="kn">import</span> <span class="n">LLMChain</span>
+<span class="kn">from</span> <span class="nn">langchain.utilities.requests</span> <span class="kn">import</span> <span class="n">TextRequestsWrapper</span>
+
+
+<span class="k">def</span> <span class="nf">_extract_scheme_and_domain</span><span class="p">(</span><span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Extract the scheme + domain from a given URL.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        url (str): The input URL.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        return a 2-tuple of scheme and domain</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">parsed_uri</span> <span class="o">=</span> <span class="n">urlparse</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">parsed_uri</span><span class="o">.</span><span class="n">scheme</span><span class="p">,</span> <span class="n">parsed_uri</span><span class="o">.</span><span class="n">netloc</span>
+
+
+<span class="k">def</span> <span class="nf">_check_in_allowed_domain</span><span class="p">(</span><span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">limit_to_domains</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check if a URL is in the allowed domains.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        url (str): The input URL.</span>
+<span class="sd">        limit_to_domains (Sequence[str]): The allowed domains.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        bool: True if the URL is in the allowed domains, False otherwise.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">scheme</span><span class="p">,</span> <span class="n">domain</span> <span class="o">=</span> <span class="n">_extract_scheme_and_domain</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">allowed_domain</span> <span class="ow">in</span> <span class="n">limit_to_domains</span><span class="p">:</span>
+        <span class="n">allowed_scheme</span><span class="p">,</span> <span class="n">allowed_domain</span> <span class="o">=</span> <span class="n">_extract_scheme_and_domain</span><span class="p">(</span><span class="n">allowed_domain</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">scheme</span> <span class="o">==</span> <span class="n">allowed_scheme</span> <span class="ow">and</span> <span class="n">domain</span> <span class="o">==</span> <span class="n">allowed_domain</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">return</span> <span class="kc">False</span>
+
+
+<div class="viewcode-block" id="APIChain"><a class="viewcode-back" href="../../../../chains/langchain.chains.api.base.APIChain.html#langchain.chains.api.base.APIChain">[docs]</a><span class="k">class</span> <span class="nc">APIChain</span><span class="p">(</span><span class="n">Chain</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Chain that makes API calls and summarizes the responses to answer a question.</span>
+
+<span class="sd">    *Security Note*: This API chain uses the requests toolkit</span>
+<span class="sd">        to make GET, POST, PATCH, PUT, and DELETE requests to an API.</span>
+
+<span class="sd">        Exercise care in who is allowed to use this chain. If exposing</span>
+<span class="sd">        to end users, consider that users will be able to make arbitrary</span>
+<span class="sd">        requests on behalf of the server hosting the code. For example,</span>
+<span class="sd">        users could ask the server to make a request to a private API</span>
+<span class="sd">        that is only accessible from the server.</span>
+
+<span class="sd">        Control access to who can submit issue requests using this toolkit and</span>
+<span class="sd">        what network access it has.</span>
+
+<span class="sd">        See https://python.langchain.com/docs/security for more information.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">api_request_chain</span><span class="p">:</span> <span class="n">LLMChain</span>
+    <span class="n">api_answer_chain</span><span class="p">:</span> <span class="n">LLMChain</span>
+    <span class="n">requests_wrapper</span><span class="p">:</span> <span class="n">TextRequestsWrapper</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">exclude</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">api_docs</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">question_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;question&quot;</span>  <span class="c1">#: :meta private:</span>
+    <span class="n">output_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;output&quot;</span>  <span class="c1">#: :meta private:</span>
+    <span class="n">limit_to_domains</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Use to limit the domains that can be accessed by the API chain.</span>
+<span class="sd">    </span>
+<span class="sd">    * For example, to limit to just the domain `https://www.example.com`, set</span>
+<span class="sd">        `limit_to_domains=[&quot;https://www.example.com&quot;]`.</span>
+<span class="sd">        </span>
+<span class="sd">    * The default value is an empty tuple, which means that no domains are</span>
+<span class="sd">      allowed by default. By design this will raise an error on instantiation.</span>
+<span class="sd">    * Use a None if you want to allow all domains by default -- this is not</span>
+<span class="sd">      recommended for security reasons, as it would allow malicious users to</span>
+<span class="sd">      make requests to arbitrary URLS including internal APIs accessible from</span>
+<span class="sd">      the server.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">input_keys</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Expect input key.</span>
+
+<span class="sd">        :meta private:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">question_key</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">output_keys</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Expect output key.</span>
+
+<span class="sd">        :meta private:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">output_key</span><span class="p">]</span>
+
+    <span class="nd">@root_validator</span><span class="p">(</span><span class="n">pre</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">validate_api_request_prompt</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check that api request prompt expects the right variables.&quot;&quot;&quot;</span>
+        <span class="n">input_vars</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;api_request_chain&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">prompt</span><span class="o">.</span><span class="n">input_variables</span>
+        <span class="n">expected_vars</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;question&quot;</span><span class="p">,</span> <span class="s2">&quot;api_docs&quot;</span><span class="p">}</span>
+        <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">input_vars</span><span class="p">)</span> <span class="o">!=</span> <span class="n">expected_vars</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Input variables should be </span><span class="si">{</span><span class="n">expected_vars</span><span class="si">}</span><span class="s2">, got </span><span class="si">{</span><span class="n">input_vars</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">values</span>
+
+    <span class="nd">@root_validator</span><span class="p">(</span><span class="n">pre</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">validate_limit_to_domains</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check that allowed domains are valid.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="s2">&quot;limit_to_domains&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">values</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;You must specify a list of domains to limit access using &quot;</span>
+                <span class="s2">&quot;`limit_to_domains`&quot;</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;limit_to_domains&quot;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;limit_to_domains&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Please provide a list of domains to limit access using &quot;</span>
+                <span class="s2">&quot;`limit_to_domains`.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">values</span>
+
+    <span class="nd">@root_validator</span><span class="p">(</span><span class="n">pre</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">validate_api_answer_prompt</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check that api answer prompt expects the right variables.&quot;&quot;&quot;</span>
+        <span class="n">input_vars</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;api_answer_chain&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">prompt</span><span class="o">.</span><span class="n">input_variables</span>
+        <span class="n">expected_vars</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;question&quot;</span><span class="p">,</span> <span class="s2">&quot;api_docs&quot;</span><span class="p">,</span> <span class="s2">&quot;api_url&quot;</span><span class="p">,</span> <span class="s2">&quot;api_response&quot;</span><span class="p">}</span>
+        <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">input_vars</span><span class="p">)</span> <span class="o">!=</span> <span class="n">expected_vars</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Input variables should be </span><span class="si">{</span><span class="n">expected_vars</span><span class="si">}</span><span class="s2">, got </span><span class="si">{</span><span class="n">input_vars</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">values</span>
+
+    <span class="k">def</span> <span class="nf">_call</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">inputs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+        <span class="n">run_manager</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">CallbackManagerForChainRun</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+        <span class="n">_run_manager</span> <span class="o">=</span> <span class="n">run_manager</span> <span class="ow">or</span> <span class="n">CallbackManagerForChainRun</span><span class="o">.</span><span class="n">get_noop_manager</span><span class="p">()</span>
+        <span class="n">question</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">question_key</span><span class="p">]</span>
+        <span class="n">api_url</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">api_request_chain</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
+            <span class="n">question</span><span class="o">=</span><span class="n">question</span><span class="p">,</span>
+            <span class="n">api_docs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">api_docs</span><span class="p">,</span>
+            <span class="n">callbacks</span><span class="o">=</span><span class="n">_run_manager</span><span class="o">.</span><span class="n">get_child</span><span class="p">(),</span>
+        <span class="p">)</span>
+        <span class="n">_run_manager</span><span class="o">.</span><span class="n">on_text</span><span class="p">(</span><span class="n">api_url</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;green&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>
+        <span class="n">api_url</span> <span class="o">=</span> <span class="n">api_url</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">limit_to_domains</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">_check_in_allowed_domain</span><span class="p">(</span>
+            <span class="n">api_url</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">limit_to_domains</span>
+        <span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">api_url</span><span class="si">}</span><span class="s2"> is not in the allowed domains: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">limit_to_domains</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="n">api_response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">requests_wrapper</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">api_url</span><span class="p">)</span>
+        <span class="n">_run_manager</span><span class="o">.</span><span class="n">on_text</span><span class="p">(</span>
+            <span class="n">api_response</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;yellow&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verbose</span>
+        <span class="p">)</span>
+        <span class="n">answer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">api_answer_chain</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
+            <span class="n">question</span><span class="o">=</span><span class="n">question</span><span class="p">,</span>
+            <span class="n">api_docs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">api_docs</span><span class="p">,</span>
+            <span class="n">api_url</span><span class="o">=</span><span class="n">api_url</span><span class="p">,</span>
+            <span class="n">api_response</span><span class="o">=</span><span class="n">api_response</span><span class="p">,</span>
+            <span class="n">callbacks</span><span class="o">=</span><span class="n">_run_manager</span><span class="o">.</span><span class="n">get_child</span><span class="p">(),</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">output_key</span><span class="p">:</span> <span class="n">answer</span><span class="p">}</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_acall</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">inputs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+        <span class="n">run_manager</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AsyncCallbackManagerForChainRun</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+        <span class="n">_run_manager</span> <span class="o">=</span> <span class="n">run_manager</span> <span class="ow">or</span> <span class="n">AsyncCallbackManagerForChainRun</span><span class="o">.</span><span class="n">get_noop_manager</span><span class="p">()</span>
+        <span class="n">question</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">question_key</span><span class="p">]</span>
+        <span class="n">api_url</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">api_request_chain</span><span class="o">.</span><span class="n">apredict</span><span class="p">(</span>
+            <span class="n">question</span><span class="o">=</span><span class="n">question</span><span class="p">,</span>
+            <span class="n">api_docs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">api_docs</span><span class="p">,</span>
+            <span class="n">callbacks</span><span class="o">=</span><span class="n">_run_manager</span><span class="o">.</span><span class="n">get_child</span><span class="p">(),</span>
+        <span class="p">)</span>
+        <span class="k">await</span> <span class="n">_run_manager</span><span class="o">.</span><span class="n">on_text</span><span class="p">(</span>
+            <span class="n">api_url</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;green&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verbose</span>
+        <span class="p">)</span>
+        <span class="n">api_url</span> <span class="o">=</span> <span class="n">api_url</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">limit_to_domains</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">_check_in_allowed_domain</span><span class="p">(</span>
+            <span class="n">api_url</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">limit_to_domains</span>
+        <span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">api_url</span><span class="si">}</span><span class="s2"> is not in the allowed domains: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">limit_to_domains</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="n">api_response</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">requests_wrapper</span><span class="o">.</span><span class="n">aget</span><span class="p">(</span><span class="n">api_url</span><span class="p">)</span>
+        <span class="k">await</span> <span class="n">_run_manager</span><span class="o">.</span><span class="n">on_text</span><span class="p">(</span>
+            <span class="n">api_response</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;yellow&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verbose</span>
+        <span class="p">)</span>
+        <span class="n">answer</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">api_answer_chain</span><span class="o">.</span><span class="n">apredict</span><span class="p">(</span>
+            <span class="n">question</span><span class="o">=</span><span class="n">question</span><span class="p">,</span>
+            <span class="n">api_docs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">api_docs</span><span class="p">,</span>
+            <span class="n">api_url</span><span class="o">=</span><span class="n">api_url</span><span class="p">,</span>
+            <span class="n">api_response</span><span class="o">=</span><span class="n">api_response</span><span class="p">,</span>
+            <span class="n">callbacks</span><span class="o">=</span><span class="n">_run_manager</span><span class="o">.</span><span class="n">get_child</span><span class="p">(),</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">output_key</span><span class="p">:</span> <span class="n">answer</span><span class="p">}</span>
+
+<div class="viewcode-block" id="APIChain.from_llm_and_api_docs"><a class="viewcode-back" href="../../../../chains/langchain.chains.api.base.APIChain.html#langchain.chains.api.base.APIChain.from_llm_and_api_docs">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_llm_and_api_docs</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">llm</span><span class="p">:</span> <span class="n">BaseLanguageModel</span><span class="p">,</span>
+        <span class="n">api_docs</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">headers</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">api_url_prompt</span><span class="p">:</span> <span class="n">BasePromptTemplate</span> <span class="o">=</span> <span class="n">API_URL_PROMPT</span><span class="p">,</span>
+        <span class="n">api_response_prompt</span><span class="p">:</span> <span class="n">BasePromptTemplate</span> <span class="o">=</span> <span class="n">API_RESPONSE_PROMPT</span><span class="p">,</span>
+        <span class="n">limit_to_domains</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(),</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">APIChain</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load chain from just an LLM and the api docs.&quot;&quot;&quot;</span>
+        <span class="n">get_request_chain</span> <span class="o">=</span> <span class="n">LLMChain</span><span class="p">(</span><span class="n">llm</span><span class="o">=</span><span class="n">llm</span><span class="p">,</span> <span class="n">prompt</span><span class="o">=</span><span class="n">api_url_prompt</span><span class="p">)</span>
+        <span class="n">requests_wrapper</span> <span class="o">=</span> <span class="n">TextRequestsWrapper</span><span class="p">(</span><span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">)</span>
+        <span class="n">get_answer_chain</span> <span class="o">=</span> <span class="n">LLMChain</span><span class="p">(</span><span class="n">llm</span><span class="o">=</span><span class="n">llm</span><span class="p">,</span> <span class="n">prompt</span><span class="o">=</span><span class="n">api_response_prompt</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="n">api_request_chain</span><span class="o">=</span><span class="n">get_request_chain</span><span class="p">,</span>
+            <span class="n">api_answer_chain</span><span class="o">=</span><span class="n">get_answer_chain</span><span class="p">,</span>
+            <span class="n">requests_wrapper</span><span class="o">=</span><span class="n">requests_wrapper</span><span class="p">,</span>
+            <span class="n">api_docs</span><span class="o">=</span><span class="n">api_docs</span><span class="p">,</span>
+            <span class="n">limit_to_domains</span><span class="o">=</span><span class="n">limit_to_domains</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_chain_type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;api_chain&quot;</span></div>
+</pre></div>
+
+      </div>
+    <div class="container">
+      <footer class="sk-content-footer">
+            &copy; 2023, Harrison Chase.
+          Last updated on Dec 14, 2023.
+      </footer>
+    </div>
+  </div>
+</div>
+<script src="../../../../_static/js/vendor/bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    /* Add a [>>>] button on the top-right corner of code samples to hide
+     * the >>> and ... prompts and the output and thus make the code
+     * copyable. */
+    var div = $('.highlight-python .highlight,' +
+                '.highlight-python3 .highlight,' +
+                '.highlight-pycon .highlight,' +
+		'.highlight-default .highlight')
+    var pre = div.find('pre');
+
+    // get the styles from the current theme
+    pre.parent().parent().css('position', 'relative');
+    var hide_text = 'Hide prompts and outputs';
+    var show_text = 'Show prompts and outputs';
+
+    // create and add the button to all the code blocks that contain >>>
+    div.each(function(index) {
+        var jthis = $(this);
+        if (jthis.find('.gp').length > 0) {
+            var button = $('<span class="copybutton">&gt;&gt;&gt;</span>');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+            jthis.prepend(button);
+        }
+        // tracebacks (.gt) contain bare text elements that need to be
+        // wrapped in a span to work with .nextUntil() (see later)
+        jthis.find('pre:has(.gt)').contents().filter(function() {
+            return ((this.nodeType == 3) && (this.data.trim().length > 0));
+        }).wrap('<span>');
+    });
+
+    // define the behavior of the button when it's clicked
+    $('.copybutton').click(function(e){
+        e.preventDefault();
+        var button = $(this);
+        if (button.data('hidden') === 'false') {
+            // hide the code output
+            button.parent().find('.go, .gp, .gt').hide();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'hidden');
+            button.css('text-decoration', 'line-through');
+            button.attr('title', show_text);
+            button.data('hidden', 'true');
+        } else {
+            // show the code output
+            button.parent().find('.go, .gp, .gt').show();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'visible');
+            button.css('text-decoration', 'none');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+        }
+    });
+
+	/*** Add permalink buttons next to glossary terms ***/
+	$('dl.glossary > dt[id]').append(function() {
+		return ('<a class="headerlink" href="#' +
+			    this.getAttribute('id') +
+			    '" title="Permalink to this term">¶</a>');
+	});
+});
+
+</script>
+    
+</body>
+</html>
