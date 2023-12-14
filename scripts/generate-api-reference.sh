@@ -23,7 +23,7 @@ install_requirements() {
 build_docs() {
   make api_docs_build
 }
-#clone_lc
+clone_lc
 cd /tmp/lc
 install_requirements
 build_docs
