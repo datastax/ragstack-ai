@@ -9,8 +9,7 @@ if [ -z "$ragstack_version" ]; then
   exit 1
 fi
 
-
-langchain_version=$(curl -Ls "https://pypi.org/pypi/ragstack-ai/${ragstack_version}/json" | jq -r '.info.requires_dist[] | select(. | startswith("langchain")) | . | split(" ") | .[1]' | sed 's/[()=]//g')
+langchain_version=$(curl -Ls "https://pypi.org/pypi/ragstack-ai/${ragstack_version}/json" | jq -r '.info.requires_dist[] | select((. | startswith("langchain")) and (. | startswith("langchain-") | not)) | . | split(" ") | .[1]' | sed 's/[()=]//g')
 echo "langchain_version: $langchain_version"
 
 clone_lc() {
@@ -34,5 +33,4 @@ mkdir -p $here/dist
 mkdir -p $here/dist/api_reference
 mkdir -p $here/dist/api_reference/$ragstack_version
 mkdir -p $here/dist/api_reference/$ragstack_version/langchain
-mkdir -p $here/dist/api_reference/$ragstack_version/langchain/$langchain_version
-cp -r /tmp/lc/docs/api_reference/_build/html/* $here/dist/api_reference/$ragstack_version/langchain/$langchain_version
+cp -r /tmp/lc/docs/api_reference/_build/html/* $here/dist/api_reference/$ragstack_version/langchain
