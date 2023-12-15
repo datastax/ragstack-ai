@@ -204,7 +204,7 @@ def _run_test(vector_store, embedding, llm):
     vector_store = vector_store(embedding_dimensions)
     llm_name, llm = llm
     set_current_test_info(
-        "llama_index_retrieve",
+        "llama_index::rag",
         f"{llm_name},{embedding_name},{vector_store_name}",
     )
     storage_context = StorageContext.from_defaults(vector_store=vector_store)
