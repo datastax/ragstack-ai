@@ -19,9 +19,9 @@ runs:
       run: |
         set -e
         ./scripts/generate-api-reference.sh "${{ inputs.ragstack-version }}"
-        mv dist/api_reference/ /tmp/api_reference
+        mv dist/api_reference /tmp/api_reference
         git checkout gh-pages
-        mv /tmp/api_reference api_reference
+        mv /tmp/api_reference/${{ inputs.ragstack-version }}/langchain api_reference/${{ inputs.ragstack-version }}/langchain
         if [ -z "$(git status --porcelain)" ]; then
           echo "Git directory is clean, nothing changed"
           git status
