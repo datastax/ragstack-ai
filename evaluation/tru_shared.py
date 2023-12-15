@@ -32,7 +32,6 @@ load_dotenv()
 
 temperature = 0
 
-
 class Framework(Enum):
     LANG_CHAIN = "langChain"
     LLAMA_INDEX = "llamaIndex"
