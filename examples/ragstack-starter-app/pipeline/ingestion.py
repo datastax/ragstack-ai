@@ -1,8 +1,8 @@
 import os
 
 from typing import Optional
-from langchain.schema import Document
-from langchain.document_loaders import (
+from langchain_core.documents import Document
+from langchain_community.document_loaders import (
     BSHTMLLoader,
     DirectoryLoader,
     TextLoader,

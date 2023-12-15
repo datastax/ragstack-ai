@@ -6,8 +6,10 @@ from langchain.schema.output_parser import StrOutputParser
 from langchain_core.vectorstores import VectorStoreRetriever
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain.memory import ConversationBufferMemory
-from langchain.chains import ConversationChain
+from langchain.chains.conversational_retrieval.base import ConversationalRetrievalChain
 from langchain.prompts.prompt import PromptTemplate
+from langchain_core.prompts import PromptTemplate
+from langchain.prompts import SystemMessagePromptTemplate
 
 CHAT_PROMPT_TEMPLATE = """
 \n
@@ -22,6 +24,9 @@ CONVERSATION_PROMPT_TEMPLATE = """
 \n
 Current conversation:
 {history}
+
+Context:
+{context}
 
 Human: 
 {input}
@@ -71,18 +76,29 @@ def basic_chat(retriever: VectorStoreRetriever, llm: BaseChatModel, prompt: str)
 def basic_chat_with_memory(
     retriever: VectorStoreRetriever, llm: BaseChatModel, prompt: str
 ):
-    # TODO: Where is the retriever...
-    chat_prompt = prompt + CONVERSATION_PROMPT_TEMPLATE
-    chat_prompt_template = PromptTemplate(
-        input_variables=["history", "input"], template=chat_prompt
+    memory = ConversationBufferMemory(
+        memory_key="chat_history",
+        return_messages=True,
+        input_key="question",
+        output_key="answer",
     )
-    conversation = ConversationChain(
-        prompt=chat_prompt_template,
+
+    qa_prompt = PromptTemplate(
+        input_variables=["chat_history", "question", "context"], template=prompt
+    )
+
+    chain = ConversationalRetrievalChain.from_llm(
         llm=llm,
-        verbose=True,
-        memory=ConversationBufferMemory(ai_prefix="AI Assistant", return_messages=True),
+        retriever=retriever,
+        memory=memory,
+        get_chat_history=lambda h: h,
+        output_key="answer",
+        combine_docs_chain_kwargs={"prompt": qa_prompt},
+        # verbose=True,
+        # return_source_documents=True,
     )
-    return conversation
+
+    return chain
 
 
 # TODO: Move this to models.py?

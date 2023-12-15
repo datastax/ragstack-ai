@@ -1,13 +1,12 @@
 import os
 from dotenv import load_dotenv
 
-from langchain.schema import Document
-
 from ingestion import load_dataset, load_from_url, load_from_file
 from chunking import token_text_split
 from storage import open_ai_embeddings, initialize_astra_db
 from retrieval import as_retriever
 from generation import basic_chat, basic_chat_with_memory, open_ai_model
+from langchain_core.documents import Document
 
 
 def basic_astra_qa_model():
@@ -98,9 +97,17 @@ def basic_astra_conversation_model():
     # Your answers must be concise and to the point, and refrain from answering about other topics than philosophy.
     # """
     prompt = """
-    You are an expert storyteller with amazing insight. However, you only know the story that 
-    has been provided to you (The Story of the Weird Dog). Use the provided context as the basis for your answers and do not 
-    answer any questions unrelated to the provided context.
+    You are a very rude assistant that only knows about the provided context. Do not answer
+    any questions that are not related to the context. You are also very rude, so you can be
+    sarcastic and mean to the user.
+
+    CHAT_HISTORY: {chat_history}
+
+    CONTEXT: {context}
+    
+    QUESTION: {question}
+    
+    YOUR ANSWER:
     """
 
     model = open_ai_model()
