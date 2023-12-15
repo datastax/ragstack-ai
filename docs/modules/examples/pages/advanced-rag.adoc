@@ -1,12 +1,12 @@
-= Advanced RAG
+= Advanced RAG: MultiQuery and ParentDocument
 
 image::https://colab.research.google.com/assets/colab-badge.svg[align="left",link="https://colab.research.google.com/github/datastax/ragstack-ai/blob/main/examples/notebooks/advancedRAG.ipynb"]
 
-This doc describes two different advanced RAG techniques: MultiQueryRAG and ParentDocumentRAG.
+This page demonstrates two different advanced RAG techniques: MultiQueryRAG and ParentDocumentRAG.
 
 In *MultiQueryRAG*, an LLM is used to automate the process of prompt tuning, to generate multiple queries from different perspectives for a given user input question.
 
-In *ParentDocumentRAG*, documents are split first into larger "parent" chunks, and then into smaller "child" chunks so that their embeddings can more accurately reflect their meaning. Then between retrieval and inference, each smaller "child" chunk is replaced with its larger "parent" chunk. This provides more context to the model to answer the question.
+In *ParentDocumentRAG*, documents are split first into larger "parent" chunks, and then into smaller "child" chunks so that their embeddings can more accurately reflect their meaning. Between the LLM retrieval and inference steps, each smaller "child" chunk is then replaced with its larger "parent" chunk. This provides more context to the model to answer the question.
 
 While both of these techniques can increase the response accuracy, they also can have some drawbacks. Often they take longer to execute, and they can cost more due to increased LLM invocations and/or increased token usage.
 
@@ -41,6 +41,9 @@ from langchain.storage import InMemoryStore
 from langchain.text_splitter import TokenTextSplitter
 from langchain.vectorstores.astradb import AstraDB
 ----
++
+. The two advanced RAG techniques require different dependencies.
+Their imports are shown in their respective sections.
 
 == Helper functions
 
@@ -65,7 +68,7 @@ def pprint_result(result):
 curl https://raw.githubusercontent.com/CassioML/cassio-website/main/docs/frameworks/langchain/texts/amontillado.txt --output amontillado.txt
 input = "amontillado.txt"
 ----
-. Loop through each file and load it into our vector store.
+. Loop through each file and load it into the vector store.
 You loaded `amontillado.txt` in the previous step, but this processor can also process PDFs.
 +
 `SAMPLEDATA = []` clears the list so the same files aren't processed twice.
@@ -96,6 +99,7 @@ print(f"\nProcessing done.")
 ----
 +
 . Build a simple prompt with a set of questions to ask.
+You'll use this prompt to gauge the effectiveness of the different RAG techniques.
 +
 [source,python]
 ----
@@ -116,7 +120,8 @@ questions = [
 ]
 ----
 +
-. Create a helper method to iterate over the questions.
+. Create one more helper method to iterate over the questions.
+You won't ask any questions just yet.
 +
 [source,python]
 ----
@@ -131,7 +136,7 @@ def do_retrieval(chain):
 
 == Document embedding and loading
 
-For the purpose of this example, you will use a method that is compatible with the advanged ParentDocumentRAG technique.
+For the purpose of this example, you will use a method that is compatible with the advanced ParentDocumentRAG technique.
 If you aren't going to use this technique, you can review the xref:ROOT:quickstart.adoc[] example for a simpler document insertion method.
 
 You will create 2 splitters: a parent splitter, and a child splitter.
@@ -145,13 +150,6 @@ In a production system, the parent documents should be stored in a database.
 . Create embeddings for the documents and insert them into the Astra DB vector store.
 [source,python]
 ----
-from langchain.chat_models import ChatOpenAI
-from langchain.embeddings import OpenAIEmbeddings
-from langchain.retrievers import ParentDocumentRetriever
-from langchain.storage import InMemoryStore
-from langchain.text_splitter import TokenTextSplitter
-from langchain.vectorstores.astradb import AstraDB
-
 # Initialize the models
 model = ChatOpenAI(openai_api_key=openai_api_key, model_name="gpt-3.5-turbo", temperature=0.1)
 embedding = OpenAIEmbeddings(openai_api_key=openai_api_key)
@@ -269,9 +267,9 @@ Total Tokens: 974
 +
 . We see some of the questions were answered well, and others were not.
 Note that `I don't know the answer.` should be considered a positive result, because it is better than a hallucination.
-
++
 One nice thing with standard RAG is that the number of tokens used is quite low. This keeps costs down.
-
++
 . To dig deeper, examine the context used to answer the third question:
 +
 [tabs]
@@ -335,13 +333,19 @@ gait of my friend was unsteady, and the bells upon his cap jingled
 
 == MultiQueryRAG
 
-Now try the advanced MultiQueryRAG technique.
+Next, try the advanced MultiQueryRAG technique.
 
 When the MultiQueryRetriever module is used, an additional LLM call is made before retrieval. This call generates multiple versions of the initial question from different perspectives, then retrieval is performed on this set of questions.
+
+[NOTE]
+====
+This technique requires an additional dependency.
+====
+
+. Build the multi-query retriever:
 +
 [source,python]
 ----
-# Build the MultiQueryRAG chain
 from langchain.retrievers.multi_query import MultiQueryRetriever
 
 # Note that this retriever depends on the base_retriever
@@ -501,12 +505,12 @@ The model might benefit from the extra context provided when answering the quest
 == ParentDocumentRAG
 
 The second advanced technique uses the `ParentDocumentRetriever` defined above.
-Remember that this will perform a post-processing step between retrieval and inference to replace the child documents with their parents. After this is done, any duplicate documents are removed.
+Remember that this will perform a post-processing step between retrieval and inference to replace the child documents with their parent documents. After this is done, any duplicate documents are removed.
 
 . Build the ParentDocumentRAG chain:
++
 [source,python]
 ----
-# Build the ParentDocumentRAG chain
 parent_chain = (
     {"context": parent_retriever, "question": RunnablePassthrough()}
     | prompt
@@ -514,8 +518,8 @@ parent_chain = (
     | StrOutputParser()
 )
 ----
-
-. Run the ParentDocumentRRAG chain over the questions:
++
+. Run the ParentDocumentRAG chain over the questions:
 +
 [tabs]
 ======
@@ -586,10 +590,9 @@ Total Tokens: 2342
 ======
 +
 . With ParentDocumentRAG, you get decent answers for all 5 questions.
-
 The number of tokens used has gone up significantly, but the response time is similar to standard RAG.
 The extra cost might be worth the improvement in results.
-
++
 Again, you can dig deeper by looking at the context used to answer the 3rd question:
 +
 [tabs]
@@ -702,7 +705,6 @@ The additional context helps the LLM generate a good answer for the question.
 == Combined Techniques
 
 Finally, you can combine both the MultiQuery and ParentDocument techniques, as shown below.
-+
 [tabs]
 ======
 Python::
@@ -786,9 +788,11 @@ This is by far the most expensive technique, but perhaps returns the best result
 
 == Cleanup
 
-Astra has a maximum number of collections per DB. Delete the collection after you are done exploring this example.
+Astra has a maximum number of collections per DB.
+Delete the collection after you are done exploring this example.
+
+If this call returns a timeout, wait a few seconds and try again.
 [source,python]
 ----
-# Delete the collection - if this call returns a timeout, wait a few seconds and try again
 vstore.delete_collection()
 ----
