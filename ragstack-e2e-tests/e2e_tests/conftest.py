@@ -146,9 +146,11 @@ def dump_report():
         + str(tests_stats["skipped"])
         + "\n"
     )
+    all_report_lines.sort()
     with open("all-tests-report.txt", "w") as f:
         f.write(stats_str + "\n")
         f.write("\n".join(all_report_lines))
+    failed_report_lines.sort()
     with open("failed-tests-report.txt", "w") as f:
         f.write(stats_str + "\n")
         f.write("\n".join(failed_report_lines))

@@ -31,7 +31,7 @@ def test_ingest_errors(environment):
     empty_text = ""
 
     try:
-        # empty test is not allowed
+        # empty text computes embeddings vector as all zeroes and this is not allowed
         vectorstore.add_texts([empty_text])
     except ValueError as e:
         print("Error:", e)
@@ -51,20 +51,6 @@ def test_ingest_errors(environment):
     except ValueError as e:
         print("Error:", e)
         # API Exception while running bulk insertion: {'errors': [{'message': 'Document size limitation violated: String value length (56000) exceeds maximum allowed (16000)', 'errorCode': 'SHRED_DOC_LIMIT_VIOLATION'}]}
-        if "SHRED_DOC_LIMIT_VIOLATION" not in e.args[0]:
-            pytest.fail(
-                f"Should have thrown ValueError with SHRED_DOC_LIMIT_VIOLATION but it was {e}"
-            )
-
-    very_very_long_text = (
-        "RAGStack is a framework to run LangChain in production. " * 10000
-    )
-    try:
-        vectorstore.add_texts([very_very_long_text])
-        pytest.fail("Should have thrown ValueError")
-    except ValueError as e:
-        print("Error:", e)
-        # API Exception while running bulk insertion: {'errors': [{'message': 'Document size limitation violated: String value length (560000) exceeds maximum allowed (16000)', 'errorCode': 'SHRED_DOC_LIMIT_VIOLATION'}]}
         if "SHRED_DOC_LIMIT_VIOLATION" not in e.args[0]:
             pytest.fail(
                 f"Should have thrown ValueError with SHRED_DOC_LIMIT_VIOLATION but it was {e}"

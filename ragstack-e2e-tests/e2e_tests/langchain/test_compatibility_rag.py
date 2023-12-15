@@ -11,7 +11,7 @@ from e2e_tests.conftest import (
     delete_all_astra_collections_with_client,
     delete_astra_collection,
 )
-from e2e_tests.langchain.chat_application import (
+from e2e_tests.langchain.rag_application import (
     run_rag_custom_chain,
     run_conversational_rag,
 )
@@ -228,7 +228,7 @@ def _run_test(test_case: str, vector_store, embedding, llm):
     vector_store = vector_store(embedding)
     llm_name, llm = llm
     set_current_test_info(
-        test_case,
+        "langchain::" + test_case,
         f"{llm_name},{embedding_name},{vector_store_name}",
     )
     if test_case == "rag_custom_chain":
