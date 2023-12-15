@@ -1,0 +1,794 @@
+= Advanced RAG
+
+image::https://colab.research.google.com/assets/colab-badge.svg[align="left",link="https://colab.research.google.com/github/datastax/ragstack-ai/blob/main/examples/notebooks/advancedRAG.ipynb"]
+
+This doc describes two different advanced RAG techniques: MultiQueryRAG and ParentDocumentRAG.
+
+In *MultiQueryRAG*, an LLM is used to automate the process of prompt tuning, to generate multiple queries from different perspectives for a given user input question.
+
+In *ParentDocumentRAG*, documents are split first into larger "parent" chunks, and then into smaller "child" chunks so that their embeddings can more accurately reflect their meaning. Then between retrieval and inference, each smaller "child" chunk is replaced with its larger "parent" chunk. This provides more context to the model to answer the question.
+
+While both of these techniques can increase the response accuracy, they also can have some drawbacks. Often they take longer to execute, and they can cost more due to increased LLM invocations and/or increased token usage.
+
+include::examples:partial$prerequisites.adoc[]
+
+== Setup
+
+`ragstack-ai` includes all the packages you need to build a FLARE pipeline.
+
+. Install the following libraries.
++
+[source,shell]
+----
+pip install ragstack-ai
+----
++
+. Import dependencies.
++
+[source,python]
+----
+import os
+from langchain.document_loaders import TextLoader
+from langchain.document_loaders import PyPDFLoader
+from langchain.prompts import ChatPromptTemplate
+from langchain.schema.output_parser import StrOutputParser
+from langchain.schema.runnable import RunnableLambda, RunnablePassthrough
+from langchain.callbacks import get_openai_callback
+from langchain.chat_models import ChatOpenAI
+from langchain.embeddings import OpenAIEmbeddings
+from langchain.retrievers import ParentDocumentRetriever
+from langchain.storage import InMemoryStore
+from langchain.text_splitter import TokenTextSplitter
+from langchain.vectorstores.astradb import AstraDB
+----
+
+== Helper functions
+
+Create some helper methods for printing docs and results:
+[source,python]
+----
+import textwrap
+
+def pprint_docs(docs):
+    print(f"\n{'-' * 70}\n".join([f"Document {i+1}:\n\n" + "\n".join(textwrap.wrap(d.page_content)) for i, d in enumerate(docs)]))
+
+def pprint_result(result):
+    print("Answer: " + "\n".join(textwrap.wrap(result)))
+----
+
+== Index sample data
+
+. Retrieve the text of a short story that will be indexed in the vector store:
++
+[source,python]
+----
+curl https://raw.githubusercontent.com/CassioML/cassio-website/main/docs/frameworks/langchain/texts/amontillado.txt --output amontillado.txt
+input = "amontillado.txt"
+----
+. Loop through each file and load it into our vector store.
+You loaded `amontillado.txt` in the previous step, but this processor can also process PDFs.
++
+`SAMPLEDATA = []` clears the list so the same files aren't processed twice.
++
+[source,python]
+----
+documents = []
+for filename in SAMPLEDATA:
+    path = os.path.join(os.getcwd(), filename)
+
+    if filename.endswith(".pdf"):
+        loader = PyPDFLoader(path)
+        new_docs = loader.load_and_split()
+        print(f"Processed pdf file: {filename}")
+    elif filename.endswith(".txt"):
+        loader = TextLoader(path)
+        new_docs = loader.load_and_split()
+        print(f"Processed txt file: {filename}")
+    else:
+        print(f"Unsupported file type: {filename}")
+
+    if len(new_docs) > 0:
+        documents.extend(new_docs)
+
+SAMPLEDATA = []
+
+print(f"\nProcessing done.")
+----
++
+. Build a simple prompt with a set of questions to ask.
++
+[source,python]
+----
+prompt_template = """
+Answer the question based only on the supplied context. If you don't know the answer, say you don't know the answer.
+Context: {context}
+Question: {question}
+Your answer:
+"""
+prompt = ChatPromptTemplate.from_template(prompt_template)
+
+questions = [
+    "What motivates the narrator, Montresor, to seek revenge against Fortunato?",
+    "What are the major themes in this story?",
+    "What is the significance of the story taking place during the carnival season?",
+    "How is vivid and descriptive language used in the story?",
+    "Is there any foreshadowing in the story? If yes, how is it used in the story?"
+]
+----
++
+. Create a helper method to iterate over the questions.
++
+[source,python]
+----
+def do_retrieval(chain):
+    for i in range(len(questions)):
+        print("-" * 40)
+        print(f"Question: {questions[i]}\n")
+        with get_openai_callback() as cb:
+            pprint_result(chain.invoke(questions[i]))
+            print(f'\nTotal Tokens: {cb.total_tokens}\n')
+----
+
+== Document embedding and loading
+
+For the purpose of this example, you will use a method that is compatible with the advanged ParentDocumentRAG technique.
+If you aren't going to use this technique, you can review the xref:ROOT:quickstart.adoc[] example for a simpler document insertion method.
+
+You will create 2 splitters: a parent splitter, and a child splitter.
+The parent splitter will split your documents into 512-token documents. The child splitter will split the parent documents into 128-token documents.
+
+Embeddings for the child documents are generated and stored in the vector store.
+
+For this example demo, the parent documents will only be stored in-memory.
+In a production system, the parent documents should be stored in a database.
+
+. Create embeddings for the documents and insert them into the Astra DB vector store.
+[source,python]
+----
+from langchain.chat_models import ChatOpenAI
+from langchain.embeddings import OpenAIEmbeddings
+from langchain.retrievers import ParentDocumentRetriever
+from langchain.storage import InMemoryStore
+from langchain.text_splitter import TokenTextSplitter
+from langchain.vectorstores.astradb import AstraDB
+
+# Initialize the models
+model = ChatOpenAI(openai_api_key=openai_api_key, model_name="gpt-3.5-turbo", temperature=0.1)
+embedding = OpenAIEmbeddings(openai_api_key=openai_api_key)
+
+# Initialize a vector store for storing the child chunks
+vstore = AstraDB(
+    collection_name=collection_name,
+    embedding=embedding,
+    token=astra_token,
+    api_endpoint=astra_endpoint
+)
+
+# Initialize in-memory storage for the parent chunks
+parent_store = InMemoryStore()
+
+# Create a splitter for the parent documents
+parent_splitter = TokenTextSplitter(chunk_size=512, chunk_overlap=0)
+
+# Create a splitter for the child documents
+# Note: child documents should be smaller than parent documents
+child_splitter = TokenTextSplitter(chunk_size=128, chunk_overlap=0)
+
+# Create a parent document retriever
+parent_retriever = ParentDocumentRetriever(
+    vectorstore=vstore,
+    docstore=parent_store,
+    child_splitter=child_splitter,
+    parent_splitter=parent_splitter,
+)
+# Split and load the documents into the vector and parent stores
+parent_retriever.add_documents(docs)
+----
+
+== Base Retriever
+
+. As a control, first make a standard RAG pipeline.
++
+[source,python]
+----
+# Standard RAG, nothing fancy
+base_retriever = vstore.as_retriever()
+
+base_chain = (
+    {"context": base_retriever, "question": RunnablePassthrough()}
+    | prompt
+    | model
+    | StrOutputParser()
+)
+----
++
+. Run the queries on the `base_chain`:
++
+[tabs]
+======
+Python::
++
+[source,bash]
+----
+do_retrieval(base_chain)
+----
+
+Result::
++
+[source,console]
+----
+----------------------------------------
+Question: What motivates the narrator, Montresor, to seek revenge against Fortunato?
+
+Answer: The narrator, Montresor, seeks revenge against Fortunato because of
+the insults and injuries he has endured from him.
+
+Total Tokens: 852
+
+----------------------------------------
+Question: What are the major themes in this story?
+
+Answer: I don't know the answer.
+
+Total Tokens: 818
+
+----------------------------------------
+Question: What is the significance of the story taking place during the carnival season?
+
+Answer: The significance of the story taking place during the carnival season
+is not clear from the given context.
+
+Total Tokens: 832
+
+----------------------------------------
+Question: How is vivid and descriptive language used in the story?
+
+Answer: Vivid and descriptive language is used in the story to create a sense
+of atmosphere and to convey the intense emotions and actions of the
+characters.
+
+Total Tokens: 842
+
+----------------------------------------
+Question: Is there any foreshadowing in the story? If yes, how is it used in the story?
+
+Answer: Yes, there is foreshadowing in the story. The foreshadowing is used to
+hint at the fate of Fortunato and the revenge that the narrator plans
+to take. The mention of the "low moaning cry" from the depth of the
+recess and the "furious vibrations of the chain" suggest that
+something ominous and dangerous is happening to Fortunato. This
+foreshadows his eventual entrapment and demise in the catacombs.
+Additionally, the narrator's mention of wanting to "punish with
+impunity" and the idea of a wrong being unredressed when retribution
+overtakes its redresser foreshadow the narrator's plan to seek revenge
+on Fortunato without facing any consequences.
+
+Total Tokens: 974
+----
+======
++
+. We see some of the questions were answered well, and others were not.
+Note that `I don't know the answer.` should be considered a positive result, because it is better than a hallucination.
+
+One nice thing with standard RAG is that the number of tokens used is quite low. This keeps costs down.
+
+. To dig deeper, examine the context used to answer the third question:
++
+[tabs]
+======
+Python::
++
+[source,bash]
+----
+pprint_docs(base_retriever.get_relevant_documents(questions[2]))
+----
+
+Result::
++
+[source,console]
+----
+----------------------------------------
+Document 1:
+
+ during the supreme madness of the carnival season, that I encountered
+my friend.  He accosted me with excessive warmth, for he had been
+drinking much.  The man wore motley. He had on a tight-fitting parti-
+striped dress, and his head was surmounted by the conical cap and
+bells.  I was so pleased to see him, that I thought I should never
+have done wringing his hand.  I said to him--"My dear Fortunato, you
+are luckily met.  How remarkably well you are looking to-day!
+----------------------------------------------------------------------
+Document 2:
+
+ado."  Thus speaking, Fortunato possessed himself of my arm. Putting
+on a mask of black silk, and drawing a _roquelaire_ closely about my
+person, I suffered him to hurry me to my palazzo.  There were no
+attendants at home; they had absconded to make merry in honour of the
+time.  I had told them that I should not return until the morning, and
+had given them explicit orders not to stir from the house. These
+orders were sufficient, I well knew, to insure their immediate
+disappearance, one and all
+----------------------------------------------------------------------
+Document 3:
+
+connoisseurship in wine.  Few Italians have the true virtuoso spirit.
+For the most part their enthusiasm is adopted to suit the time and
+opportunity--to practise imposture upon the British and Austrian
+_millionaires_.  In painting and gemmary, Fortunato, like his
+countrymen, was a quack--but in the matter of old wines he was
+sincere.  In this respect I did not differ from him materially: I was
+skillful in the Italian vintages myself, and bought largely whenever I
+could.  It was about dusk, one evening
+----------------------------------------------------------------------
+Document 4:
+
+, as soon as my back was turned.  I took from their sconces two
+flambeaux, and giving one to Fortunato, bowed him through several
+suites of rooms to the archway that led into the vaults.  I passed
+down a long and winding staircase, requesting him to be cautious as he
+followed. We came at length to the foot of the descent, and stood
+together on the damp ground of the catacombs of the Montresors.  The
+gait of my friend was unsteady, and the bells upon his cap jingled
+
+----
+======
+
+== MultiQueryRAG
+
+Now try the advanced MultiQueryRAG technique.
+
+When the MultiQueryRetriever module is used, an additional LLM call is made before retrieval. This call generates multiple versions of the initial question from different perspectives, then retrieval is performed on this set of questions.
++
+[source,python]
+----
+# Build the MultiQueryRAG chain
+from langchain.retrievers.multi_query import MultiQueryRetriever
+
+# Note that this retriever depends on the base_retriever
+multi_retriever = MultiQueryRetriever.from_llm(
+    retriever=base_retriever, llm=model
+)
+
+multi_chain = (
+    {"context": multi_retriever, "question": RunnablePassthrough()}
+    | prompt
+    | model
+    | StrOutputParser()
+)
+----
++
+. Run the queries on the `multi_chain`:
++
+[tabs]
+======
+Python::
++
+[source,bash]
+----
+do_retrieval(multi_chain)
+----
+
+Result::
++
+[source,console]
+----
+----------------------------------------
+Question: What motivates the narrator, Montresor, to seek revenge against Fortunato?
+
+Answer: The narrator, Montresor, seeks revenge against Fortunato because of
+the insults and injuries he has endured from him.
+
+Total Tokens: 1209
+
+----------------------------------------
+Question: What are the major themes in this story?
+
+Answer: I don't know the answer.
+
+Total Tokens: 1531
+
+----------------------------------------
+Question: What is the significance of the story taking place during the carnival season?
+
+Answer: The significance of the story taking place during the carnival season
+is not clear from the given context.
+
+Total Tokens: 1176
+
+----------------------------------------
+Question: How is vivid and descriptive language used in the story?
+
+Answer: Vivid and descriptive language is used in the story to create a
+detailed and immersive atmosphere. It helps to paint a clear picture
+of the setting, such as the crypt and the catacombs, and to convey the
+emotions and actions of the characters.
+
+Total Tokens: 1195
+
+----------------------------------------
+Question: Is there any foreshadowing in the story? If yes, how is it used in the story?
+
+Answer: Yes, there is foreshadowing in the story. The narrator's mention of
+seeking revenge and punishing with impunity foreshadows the events
+that unfold later in the story, where the narrator walls up Fortunato
+in the catacombs. Additionally, the mention of the "furious vibrations
+of the chain" hints at the impending danger and violence that
+Fortunato will face.
+
+Total Tokens: 1472
+----
+======
++
+. The results using MultiQueryRAG are different.
+It is unclear if they are better or not.
+The number of tokens used has increased, and the responsiveness has gone down due to the extra LLM call.
++
+. To dig deeper, examine the context used to answer the 3rd question:
++
+[tabs]
+======
+Python::
++
+[source,python]
+----
+pprint_docs(multi_retriever.get_relevant_documents(questions[2]))
+----
+
+Result::
++
+[source,console]
+----
+----------------------------------------
+Document 1:
+
+ during the supreme madness of the carnival season, that I encountered
+my friend.  He accosted me with excessive warmth, for he had been
+drinking much.  The man wore motley. He had on a tight-fitting parti-
+striped dress, and his head was surmounted by the conical cap and
+bells.  I was so pleased to see him, that I thought I should never
+have done wringing his hand.  I said to him--"My dear Fortunato, you
+are luckily met.  How remarkably well you are looking to-day!
+----------------------------------------------------------------------
+Document 2:
+
+ado."  Thus speaking, Fortunato possessed himself of my arm. Putting
+on a mask of black silk, and drawing a _roquelaire_ closely about my
+person, I suffered him to hurry me to my palazzo.  There were no
+attendants at home; they had absconded to make merry in honour of the
+time.  I had told them that I should not return until the morning, and
+had given them explicit orders not to stir from the house. These
+orders were sufficient, I well knew, to insure their immediate
+disappearance, one and all
+----------------------------------------------------------------------
+Document 3:
+
+ and with the aid of my trowel, I began vigorously to wall up the
+entrance of the niche.  I had scarcely laid the first tier of the
+masonry when I discovered that the intoxication of Fortunato had in a
+great measure worn off. The earliest indication I had of this was a
+low moaning cry from the depth of the recess.  It was _not_ the cry of
+a drunken man. There was then a long and obstinate silence.  I laid
+the second tier, and the third, and the fourth; and then I heard the
+furious vibrations of the chain.
+----------------------------------------------------------------------
+Document 4:
+
+connoisseurship in wine.  Few Italians have the true virtuoso spirit.
+For the most part their enthusiasm is adopted to suit the time and
+opportunity--to practise imposture upon the British and Austrian
+_millionaires_.  In painting and gemmary, Fortunato, like his
+countrymen, was a quack--but in the matter of old wines he was
+sincere.  In this respect I did not differ from him materially: I was
+skillful in the Italian vintages myself, and bought largely whenever I
+could.  It was about dusk, one evening
+----------------------------------------------------------------------
+Document 5:
+
+, as soon as my back was turned.  I took from their sconces two
+flambeaux, and giving one to Fortunato, bowed him through several
+suites of rooms to the archway that led into the vaults.  I passed
+down a long and winding staircase, requesting him to be cautious as he
+followed. We came at length to the foot of the descent, and stood
+together on the damp ground of the catacombs of the Montresors.  The
+gait of my friend was unsteady, and the bells upon his cap jingled
+
+----
+======
++
+There are 5 documents of size 128 tokens.
+The model might benefit from the extra context provided when answering the question.
+
+== ParentDocumentRAG
+
+The second advanced technique uses the `ParentDocumentRetriever` defined above.
+Remember that this will perform a post-processing step between retrieval and inference to replace the child documents with their parents. After this is done, any duplicate documents are removed.
+
+. Build the ParentDocumentRAG chain:
+[source,python]
+----
+# Build the ParentDocumentRAG chain
+parent_chain = (
+    {"context": parent_retriever, "question": RunnablePassthrough()}
+    | prompt
+    | model
+    | StrOutputParser()
+)
+----
+
+. Run the ParentDocumentRRAG chain over the questions:
++
+[tabs]
+======
+Python::
++
+[source,bash]
+----
+do_retrieval(parent_chain)
+----
+
+Result::
++
+[source,console]
+----
+----------------------------------------
+Question: What motivates the narrator, Montresor, to seek revenge against Fortunato?
+
+Answer: The narrator, Montresor, seeks revenge against Fortunato because
+Fortunato insulted him.
+
+Total Tokens: 1708
+
+----------------------------------------
+Question: What are the major themes in this story?
+
+Answer: The major themes in this story are revenge, deception, and the power
+of manipulation.
+
+Total Tokens: 1695
+
+----------------------------------------
+Question: What is the significance of the story taking place during the carnival season?
+
+Answer: The significance of the story taking place during the carnival season
+is that it provides a chaotic and festive atmosphere, which allows the
+narrator to carry out his revenge plot without arousing suspicion.
+
+Total Tokens: 1719
+
+----------------------------------------
+Question: How is vivid and descriptive language used in the story?
+
+Answer: Vivid and descriptive language is used in the story to create a sense
+of atmosphere and to paint a detailed picture of the setting and
+events. The language is used to describe the dank and damp catacombs,
+the chains and padlock that bind the protagonist, and the construction
+of the wall that seals the niche. It also describes the sounds and
+actions of the characters, such as the moaning cry from the recess and
+the low laugh that comes from the niche. Overall, the vivid and
+descriptive language helps to immerse the reader in the story and
+enhance the suspense and horror elements.
+
+Total Tokens: 1803
+
+----------------------------------------
+Question: Is there any foreshadowing in the story? If yes, how is it used in the story?
+
+Answer: Yes, there is foreshadowing in the story. The foreshadowing is used to
+hint at the fate of Fortunato and the narrator's plan for revenge. The
+mention of the chains, padlock, and walling up the entrance of the
+niche all foreshadow the narrator's intention to trap and bury
+Fortunato alive. Additionally, the mention of the Amontillado wine and
+the narrator's comment about Fortunato's cough hint at the means by
+which the narrator will carry out his revenge.
+
+Total Tokens: 2342
+----
+======
++
+. With ParentDocumentRAG, you get decent answers for all 5 questions.
+
+The number of tokens used has gone up significantly, but the response time is similar to standard RAG.
+The extra cost might be worth the improvement in results.
+
+Again, you can dig deeper by looking at the context used to answer the 3rd question:
++
+[tabs]
+======
+Python::
++
+[source,bash]
+----
+pprint_docs(parent_retriever.get_relevant_documents(questions[2]))
+----
+
+Result::
++
+[source,console]
+----
+Document 1:
+
+The thousand injuries of Fortunato I had borne as I best could, but
+when he ventured upon insult, I vowed revenge.  You, who so well know
+the nature of my soul, will not suppose, however, that I gave
+utterance to a threat.  _At length_ I would be avenged; this was a
+point definitely settled--but the very definitiveness with which it
+was resolved, precluded the idea of risk.  I must not only punish, but
+punish with impunity.  A wrong is unredressed when retribution
+overtakes its redresser.  It is equally unredressed when the avenger
+fails to make himself felt as such to him who has done the wrong.  It
+must be understood that neither by word nor deed had I given Fortunato
+cause to doubt my good will.  I continued, as was my wont, to smile in
+his face, and he did not perceive that my smile _now_ was at the
+thought of his immolation.  He had a weak point--this Fortunato--
+although in other regards he was a man to be respected and even
+feared.  He prided himself on his connoisseurship in wine.  Few
+Italians have the true virtuoso spirit. For the most part their
+enthusiasm is adopted to suit the time and opportunity--to practise
+imposture upon the British and Austrian _millionaires_.  In painting
+and gemmary, Fortunato, like his countrymen, was a quack--but in the
+matter of old wines he was sincere.  In this respect I did not differ
+from him materially: I was skillful in the Italian vintages myself,
+and bought largely whenever I could.  It was about dusk, one evening
+during the supreme madness of the carnival season, that I encountered
+my friend.  He accosted me with excessive warmth, for he had been
+drinking much.  The man wore motley. He had on a tight-fitting parti-
+striped dress, and his head was surmounted by the conical cap and
+bells.  I was so pleased to see him, that I thought I should never
+have done wringing his hand.  I said to him--"My dear Fortunato, you
+are luckily met.  How remarkably well you are looking to-day!
+----------------------------------------------------------------------
+Document 2:
+
+  But I have received a pipe of what passes for Amontillado, and I
+have my doubts."  "How?" said he.  "Amontillado?  A pipe?  Impossible!
+And in the middle of the carnival!"  "I have my doubts," I replied;
+"and I was silly enough to pay the full Amontillado price without
+consulting you in the matter. You were not to be found, and I was
+fearful of losing a bargain."  "Amontillado!"  "I have my doubts."
+"Amontillado!"  "And I must satisfy them."  "Amontillado!"  "As you
+are engaged, I am on my way to Luchesi.  If any one has a critical
+turn, it is he.  He will tell me--"  "Luchesi cannot tell Amontillado
+from Sherry."  "And yet some fools will have it that his taste is a
+match for your own."  "Come, let us go."  "Whither?"  "To your
+vaults."  "My friend, no; I will not impose upon your good nature.  I
+perceive you have an engagement.  Luchesi--"  "I have no
+engagement;--come."  "My friend, no.  It is not the engagement, but
+the severe cold with which I perceive you are afflicted.  The vaults
+are insufferably damp. They are encrusted with nitre."  "Let us go,
+nevertheless.  The cold is merely nothing. Amontillado! You have been
+imposed upon.  And as for Luchesi, he cannot distinguish Sherry from
+Amontillado."  Thus speaking, Fortunato possessed himself of my arm.
+Putting on a mask of black silk, and drawing a _roquelaire_ closely
+about my person, I suffered him to hurry me to my palazzo.  There were
+no attendants at home; they had absconded to make merry in honour of
+the time.  I had told them that I should not return until the morning,
+and had given them explicit orders not to stir from the house. These
+orders were sufficient, I well knew, to insure their immediate
+disappearance, one and all
+----------------------------------------------------------------------
+Document 3:
+
+, as soon as my back was turned.  I took from their sconces two
+flambeaux, and giving one to Fortunato, bowed him through several
+suites of rooms to the archway that led into the vaults.  I passed
+down a long and winding staircase, requesting him to be cautious as he
+followed. We came at length to the foot of the descent, and stood
+together on the damp ground of the catacombs of the Montresors.  The
+gait of my friend was unsteady, and the bells upon his cap jingled as
+he strode.  "The pipe," said he.  "It is farther on," said I; "but
+observe the white web-work which gleams from these cavern walls."  He
+turned towards me, and looked into my eyes with two filmy orbs that
+distilled the rheum of intoxication.  "Nitre?" he asked, at length.
+"Nitre," I replied.  "How long have you had that cough?"  "Ugh! ugh!
+ugh!--ugh! ugh! ugh!--ugh! ugh! ugh!--ugh! ugh! ugh!--ugh! ugh! ugh!"
+My poor friend found it impossible to reply for many minutes.  "It is
+nothing," he said, at last.  "Come," I said, with decision, "we will
+go back; your health is precious.  You are rich, respected, admired,
+beloved; you are happy, as once I was.  You are a man to be missed.
+For me it is no matter.  We will go back; you will be ill, and I
+cannot be responsible.  Besides, there is Luchesi--"  "Enough," he
+said; "the cough is a mere nothing; it will not kill me. I shall not
+die of a cough."  "True--true," I replied; "and, indeed, I had no
+intention of alarming you unnecessarily--but you should use all proper
+caution. A draught of this Medoc will defend us from the damps."  Here
+I knocked off the neck of a bottle which I drew from a long row of its
+fellows that lay upon the mould.  "Drink," I said, presenting him the
+----
+======
++
+There are 3 documents that are 512 tokens in size.
+The additional context helps the LLM generate a good answer for the question.
+
+== Combined Techniques
+
+Finally, you can combine both the MultiQuery and ParentDocument techniques, as shown below.
++
+[tabs]
+======
+Python::
++
+[source,python]
+----
+multi_parent_retriever = MultiQueryRetriever.from_llm(
+    retriever=parent_retriever, llm=model
+)
+
+multi_parent_chain = (
+    {"context": multi_parent_retriever, "question": RunnablePassthrough()}
+    | prompt
+    | model
+    | StrOutputParser()
+)
+
+# run the queries
+do_retrieval(multi_parent_chain)
+----
+
+Result::
++
+[source,console]
+----
+----------------------------------------
+Question: What motivates the narrator, Montresor, to seek revenge against Fortunato?
+
+Answer: The narrator, Montresor, seeks revenge against Fortunato because
+Fortunato insulted him.
+
+Total Tokens: 1880
+
+----------------------------------------
+Question: What are the major themes in this story?
+
+Answer: The major themes in this story are revenge, deception, and the power
+of manipulation.
+
+Total Tokens: 2373
+
+----------------------------------------
+Question: What is the significance of the story taking place during the carnival season?
+
+Answer: The significance of the story taking place during the carnival season
+is that it provides a chaotic and festive atmosphere, which allows the
+narrator to carry out his revenge plot without arousing suspicion.
+
+Total Tokens: 2417
+
+----------------------------------------
+Question: How is vivid and descriptive language used in the story?
+
+Answer: Vivid and descriptive language is used in the story to create a
+detailed and immersive atmosphere. It helps to paint a clear picture
+of the setting, such as the granite walls, iron staples, and chains.
+The language also conveys the emotions and actions of the characters,
+such as the protagonist's astounded and implored tone, and the
+friend's moaning cry and furious vibrations. Additionally, the
+language describes the construction of the wall and the appearance of
+the interior recess, adding to the suspense and tension of the story.
+
+Total Tokens: 1394
+
+----------------------------------------
+Question: Is there any foreshadowing in the story? If yes, how is it used in the story?
+
+Answer: Yes, there is foreshadowing in the story. The foreshadowing is used to
+hint at the fate of Fortunato and the narrator's plan for revenge. The
+mention of the chains, padlock, and walling up the entrance of the
+niche all foreshadow the narrator's intention to trap and bury
+Fortunato alive. Additionally, the mention of the Amontillado wine and
+the narrator's comment about Fortunato's cough hint at the method of
+Fortunato's demise.
+
+Total Tokens: 2546
+----
+======
+
+This is by far the most expensive technique, but perhaps returns the best results.
+
+== Cleanup
+
+Astra has a maximum number of collections per DB. Delete the collection after you are done exploring this example.
+[source,python]
+----
+# Delete the collection - if this call returns a timeout, wait a few seconds and try again
+vstore.delete_collection()
+----
