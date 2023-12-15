@@ -8,7 +8,7 @@ from langchain.document_loaders import CSVLoader, WebBaseLoader
 
 
 def set_current_test_info_document_loader(doc_loader: str):
-    set_current_test_info("document_loader", doc_loader)
+    set_current_test_info("langchain::document_loader", doc_loader)
 
 
 def test_csv_loader():

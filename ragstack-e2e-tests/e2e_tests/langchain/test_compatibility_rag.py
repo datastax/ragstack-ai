@@ -27,6 +27,7 @@ from langchain.llms.huggingface_hub import HuggingFaceHub
 from langchain.memory import AstraDBChatMessageHistory
 from langchain.vectorstores import AstraDB, Cassandra
 from astrapy.db import AstraDB as AstraDBClient
+from langchain_google_genai import ChatGoogleGenerativeAI
 
 
 def astra_db_client():
@@ -40,6 +41,7 @@ def astra_db_client():
 @pytest.fixture
 def astra_db():
     astra_ref = get_astra_ref()
+    print(str(astra_ref))
     client = astra_db_client()
     delete_all_astra_collections_with_client(astra_db_client())
     session_id = "test_session_id" + str(random.randint(0, 1000000))
@@ -123,6 +125,7 @@ def azure_openai_embedding():
 @pytest.fixture
 def vertex_llm():
     return "vertex-ai", ChatVertexAI()
+
 
 
 @pytest.fixture
@@ -228,7 +231,7 @@ def _run_test(test_case: str, vector_store, embedding, llm):
     vector_store = vector_store(embedding)
     llm_name, llm = llm
     set_current_test_info(
-        test_case,
+        "langchain::" + test_case,
         f"{llm_name},{embedding_name},{vector_store_name}",
     )
     if test_case == "rag_custom_chain":
