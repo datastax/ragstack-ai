@@ -44,27 +44,16 @@ def test_ingest_errors(environment):
                 f"Should have thrown ValueError with Zero vectors cannot be indexed or queried with cosine similarity but it was {e}"
             )
 
+    # with Llama Index this is not an error because the document is automatically split into chunks (nodes)
     very_long_text = "RAGStack is a framework to run LangChain in production. " * 1000
+    vectorstore.add_texts([very_long_text])
+
     try:
         vectorstore.add_texts([very_long_text])
         pytest.fail("Should have thrown ValueError")
     except ValueError as e:
         print("Error:", e)
         # API Exception while running bulk insertion: {'errors': [{'message': 'Document size limitation violated: String value length (56000) exceeds maximum allowed (16000)', 'errorCode': 'SHRED_DOC_LIMIT_VIOLATION'}]}
-        if "SHRED_DOC_LIMIT_VIOLATION" not in e.args[0]:
-            pytest.fail(
-                f"Should have thrown ValueError with SHRED_DOC_LIMIT_VIOLATION but it was {e}"
-            )
-
-    very_very_long_text = (
-        "RAGStack is a framework to run LangChain in production. " * 10000
-    )
-    try:
-        vectorstore.add_texts([very_very_long_text])
-        pytest.fail("Should have thrown ValueError")
-    except ValueError as e:
-        print("Error:", e)
-        # API Exception while running bulk insertion: {'errors': [{'message': 'Document size limitation violated: String value length (560000) exceeds maximum allowed (16000)', 'errorCode': 'SHRED_DOC_LIMIT_VIOLATION'}]}
         if "SHRED_DOC_LIMIT_VIOLATION" not in e.args[0]:
             pytest.fail(
                 f"Should have thrown ValueError with SHRED_DOC_LIMIT_VIOLATION but it was {e}"

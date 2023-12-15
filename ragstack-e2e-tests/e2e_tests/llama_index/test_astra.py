@@ -6,7 +6,6 @@ import pytest
 from httpx import ConnectError
 from e2e_tests.conftest import get_required_env, get_astra_ref
 from llama_index import (
-    OpenAIEmbedding,
     ServiceContext,
     StorageContext,
     VectorStoreIndex,
@@ -14,6 +13,7 @@ from llama_index import (
 )
 from llama_index.embeddings import BaseEmbedding
 from llama_index.llms import OpenAI, LLM
+from llama_index.node_parser import SimpleNodeParser
 from llama_index.vector_stores import AstraDBVectorStore
 
 
@@ -35,7 +35,7 @@ def test_basic_vector_search(environment):
 
 
 def test_ingest_errors(environment):
-    print("Running test_ingestion")
+    print("Running test_ingest_errors")
 
     empty_text = ""
 
@@ -60,13 +60,24 @@ def test_ingest_errors(environment):
             )
 
     very_long_text = "RAGStack is a framework to run LangChain in production. " * 1000
+
+    # with the default set of transformations this write succeeds because LI automatically does text splitting
+    documents = [Document(text=very_long_text)]
+    VectorStoreIndex.from_documents(
+        documents,
+        storage_context=environment.storage_context,
+        service_context=environment.service_context,
+    )
+
+    # if we disable text splitting, this write fails because the document is too long
+    very_long_text = "RAGStack is a framework to run LangChain in production. " * 1000
     try:
         documents = [Document(text=very_long_text)]
 
         VectorStoreIndex.from_documents(
             documents,
             storage_context=environment.storage_context,
-            service_context=environment.service_context,
+            service_context=environment.service_context_no_splitting,
         )
         pytest.fail("Should have thrown ValueError")
     except ValueError as e:
@@ -76,30 +87,6 @@ def test_ingest_errors(environment):
             pytest.fail(
                 f"Should have thrown ValueError with SHRED_DOC_LIMIT_VIOLATION but it was {e}"
             )
-
-    # This test is commented because VectorStoreIndex.from_documents is not failing as expected,
-    # it is swallowing the exception
-
-
-#    very_very_long_text = (
-#        "RAGStack is a framework to run LangChain in production. " * 10000
-#    )
-#    try:
-#        documents = [Document(text=very_very_long_text)]
-#
-#        VectorStoreIndex.from_documents(
-#            documents,
-#            storage_context=environment.storage_context,
-#            service_context=environment.service_context,
-#       )
-#        pytest.fail("Should have thrown ValueError")
-#    except ValueError as e:
-#        print("Error:", e)
-#        # API Exception while running bulk insertion: {'errors': [{'message': 'Document size limitation violated: String value length (560000) exceeds maximum allowed (16000)', 'errorCode': 'SHRED_DOC_LIMIT_VIOLATION'}]}
-#        if "SHRED_DOC_LIMIT_VIOLATION" not in e.args[0]:
-#            pytest.fail(
-#                f"Should have thrown ValueError with SHRED_DOC_LIMIT_VIOLATION but it was {e}"
-#            )
 
 
 def test_wrong_connection_parameters():
@@ -170,9 +157,16 @@ class Environment:
         self.vectorstore = vectorstore
         self.llm = llm
         self.embedding = embedding
-        self.service_context = ServiceContext.from_defaults()
         self.service_context = ServiceContext.from_defaults(
             embed_model=self.embedding, llm=self.llm
+        )
+        basic_node_parser = SimpleNodeParser.from_defaults(
+            chunk_size=100000000, include_prev_next_rel=False, include_metadata=True
+        )
+        self.service_context_no_splitting = ServiceContext.from_defaults(
+            embed_model=self.embedding,
+            llm=self.llm,
+            transformations=[basic_node_parser],
         )
         self.storage_context = StorageContext.from_defaults(vector_store=vectorstore)
 
