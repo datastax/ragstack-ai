@@ -41,7 +41,6 @@ def astra_db_client():
 @pytest.fixture
 def astra_db():
     astra_ref = get_astra_ref()
-    print(str(astra_ref))
     client = astra_db_client()
     delete_all_astra_collections_with_client(astra_db_client())
     session_id = "test_session_id" + str(random.randint(0, 1000000))
