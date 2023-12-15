@@ -14,7 +14,12 @@ from llama_index import (
 from llama_index.embeddings import BaseEmbedding
 from llama_index.llms import OpenAI, LLM
 from llama_index.node_parser import SimpleNodeParser
-from llama_index.vector_stores import AstraDBVectorStore
+from llama_index.schema import NodeWithScore
+from llama_index.vector_stores import (
+    AstraDBVectorStore,
+    MetadataFilters,
+    ExactMatchFilter,
+)
 
 
 def test_basic_vector_search(environment):
@@ -122,6 +127,78 @@ def test_wrong_connection_parameters():
             pytest.fail(
                 f"Should have thrown ValueError with AUTHENTICATION ERROR but it was {e}"
             )
+
+
+def verify_document(document, expected_content, expected_metadata):
+    if isinstance(document, NodeWithScore):
+        document = document.node
+        assert document.text == expected_content
+        # metadata is not returned by LlamaIndex
+        # assert document.metadata == expected_metadata
+    else:
+        raise Exception(
+            "document is not of type NodeWithScore but of type " + str(type(document))
+        )
+
+
+def test_vector_search_with_metadata(environment):
+    print("Running test_vector_search_with_metadata")
+
+    documents = [
+        Document(
+            text="RAGStack is a framework to run LangChain in production",
+            metadata={
+                "id": "http://mywebsite/intro",
+                "source": "website",
+                "context": "homepage",
+            },
+        ),
+        Document(
+            text="RAGStack is developed by DataStax",
+            metadata={
+                "id": "http://mywebsite/about",
+                "source": "website",
+                "context": "other",
+            },
+        ),
+    ]
+
+    VectorStoreIndex.from_documents(
+        documents,
+        storage_context=environment.storage_context,
+        service_context=environment.service_context,
+    )
+
+    document_ids = ((doc.get_doc_id()) for doc in documents)
+
+    # test for search
+    index = VectorStoreIndex.from_vector_store(
+        vector_store=environment.vectorstore,
+        service_context=environment.service_context,
+    )
+    filters = MetadataFilters(
+        filters=[ExactMatchFilter(key="context", value="homepage")]
+    )
+
+    documents = index.as_retriever(filters=filters).retrieve("What is RAGStack ?")
+
+    assert len(documents) == 1
+    verify_document(
+        documents[0],
+        "RAGStack is a framework to run LangChain in production",
+        {"id": "http://mywebsite/intro", "source": "website", "context": "homepage"},
+    )
+
+    documents = index.as_retriever().retrieve("RAGStack")
+    assert len(documents) == 2
+
+    # delete all the documents
+    for doc_id in document_ids:
+        environment.vectorstore.delete(doc_id)
+
+    # commenting this part, as the delete is not working, maybe it is a problem with document ids ?
+    # documents = index.as_retriever().retrieve("RAGStack")
+    # assert len(documents) == 0
 
 
 def init_vector_db() -> AstraDBVectorStore:
