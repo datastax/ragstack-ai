@@ -44,10 +44,7 @@ def test_ingest_errors(environment):
                 f"Should have thrown ValueError with Zero vectors cannot be indexed or queried with cosine similarity but it was {e}"
             )
 
-    # with Llama Index this is not an error because the document is automatically split into chunks (nodes)
     very_long_text = "RAGStack is a framework to run LangChain in production. " * 1000
-    vectorstore.add_texts([very_long_text])
-
     try:
         vectorstore.add_texts([very_long_text])
         pytest.fail("Should have thrown ValueError")
