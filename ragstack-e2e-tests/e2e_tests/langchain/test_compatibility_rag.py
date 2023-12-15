@@ -27,7 +27,6 @@ from langchain.llms.huggingface_hub import HuggingFaceHub
 from langchain.memory import AstraDBChatMessageHistory
 from langchain.vectorstores import AstraDB, Cassandra
 from astrapy.db import AstraDB as AstraDBClient
-from langchain_google_genai import ChatGoogleGenerativeAI
 
 
 def astra_db_client():
@@ -124,7 +123,6 @@ def azure_openai_embedding():
 @pytest.fixture
 def vertex_llm():
     return "vertex-ai", ChatVertexAI()
-
 
 
 @pytest.fixture
