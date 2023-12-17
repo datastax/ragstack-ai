@@ -61,6 +61,16 @@ AI Assistant:
 ###
 
 
+### TODO:
+### Move stuff into correct folders
+### Get some prompts out for the examples
+### Make some general prompts
+###
+### Get it into a PR - squash old commits, delete the history, etc.
+###
+### Try CookieCutter
+
+
 def basic_chat(retriever: VectorStoreRetriever, llm: BaseChatModel, prompt: str):
     chat_prompt = prompt + CHAT_PROMPT_TEMPLATE
     chat_prompt_template = ChatPromptTemplate.from_template(chat_prompt)
@@ -78,12 +88,12 @@ def basic_chat_with_memory(
 ):
     memory = ConversationBufferMemory(
         memory_key="chat_history",
-        return_messages=True,
         input_key="question",
         output_key="answer",
+        return_messages=True,
     )
 
-    qa_prompt = PromptTemplate(
+    prompt_template = PromptTemplate(
         input_variables=["chat_history", "question", "context"], template=prompt
     )
 
@@ -93,7 +103,7 @@ def basic_chat_with_memory(
         memory=memory,
         get_chat_history=lambda h: h,
         output_key="answer",
-        combine_docs_chain_kwargs={"prompt": qa_prompt},
+        combine_docs_chain_kwargs={"prompt": prompt_template},
         # verbose=True,
         # return_source_documents=True,
     )

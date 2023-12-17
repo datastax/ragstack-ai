@@ -65,12 +65,9 @@ def basic_astra_conversation_model():
     #     metadata = {"author": entry["author"]}
     #     doc = Document(page_content=entry["quote"], metadata=metadata)
     #     documents.append(doc)
-    # documents = load_from_url(
-    #     "https://raw.githubusercontent.com/CassioML/cassio-website/main/docs/frameworks/langchain/texts/amontillado.txt",
-    #     "fraz_data/amontillado.txt",
-    # )
-    documents = load_from_file(
-        "fraz_data/the_weird_dog.txt",
+    documents = load_from_url(
+        "https://raw.githubusercontent.com/CassioML/cassio-website/main/docs/frameworks/langchain/texts/amontillado.txt",
+        "data/amontillado.txt",
     )
 
     # Chunking
