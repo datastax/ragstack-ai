@@ -21,14 +21,13 @@ runs:
       shell: bash
       run: |
         set -e
-        file="${{ inputs.target }}"
-        mkdir -p $(dirname $file) 
-        touch $file || true
         cat ${{ inputs.input }} > /tmp/report
         
         git clone --depth 1 --branch gh-pages https://github.com/datastax/ragstack-ai.git /tmp/ragstack-ai
-        
         cd /tmp/ragstack-ai
+        file="${{ inputs.target }}"
+        mkdir -p $(dirname $file) 
+        touch $file || true
         cat $file >> /tmp/report
         cp /tmp/report $file
         if [ -z "$(git status --porcelain)" ]; then
