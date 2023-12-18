@@ -25,13 +25,9 @@ runs:
       
       echo -n '{"content": "' > ${{ inputs.output-file }}
       if [ -f "${{ inputs.from-report-file }}" ]; then
-        {
-          cat ${{ inputs.from-report-file }} | sed 's/"/\\"/g' | while IFS= read -r line; do
-            echo -n "$line\n"
-          done
-        } >> ${{ inputs.output-file }}
         echo "Report found"
         cat ${{ inputs.from-report-file }}
+        sed 's/"/\\"/g' ${{ inputs.from-report-file }} >> ${{ inputs.output-file }}
       else
         echo "Report NOT found"
         pwd

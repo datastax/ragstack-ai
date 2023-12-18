@@ -1,0 +1,47 @@
+name: Deploy tests report to Github Pages
+description: Deploy tests report to Github Pages
+
+inputs:
+  target:
+    required: true
+    description: 'Directory and filename to upload reports to'
+  input:
+    required: true
+    description: 'File to read the report from'
+runs:
+  using: "composite"
+  steps:
+    - name: Configure Git
+      shell: bash
+      run: |
+        git config user.name "$GITHUB_ACTOR"
+        git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+
+    - name: Copy report files and commit
+      shell: bash
+      run: |
+        set -e
+        file="${{ inputs.target }}"
+        mkdir -p $(dirname $file) 
+        touch $file || true
+        
+        cat ${{ inputs.input }} > /tmp/report
+        git stash
+        git checkout gh-pages
+        
+        # prepend the new report to the existing one
+        /tmp/report >> $file
+        cp /tmp/report $file
+        if [ -z "$(git status --porcelain)" ]; then
+          echo "Git directory is clean, nothing changed"
+          git status
+          git checkout ${{ github.ref }}
+          git stash pop
+          exit 0
+        fi
+        git add $file
+        git commit -m "Update api reference"
+        git pull --rebase origin gh-pages
+        git push origin gh-pages
+        git checkout ${{ github.ref }}
+        git stash pop
