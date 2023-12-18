@@ -102,7 +102,7 @@ def pytest_runtest_makereport(item, call):
         total_time = round((time.perf_counter_ns() - start_time) / 1e9)
         logging.info(f"Test {info} took: {total_time} seconds")
         info = os.getenv("RAGSTACK_E2E_TESTS_TEST_INFO", "")
-        paths = item.path.split(os.sep)
+        paths = str(item.path).split(os.sep)
         is_langchain = False
         is_llamaindex = False
         if "langchain" in paths:
