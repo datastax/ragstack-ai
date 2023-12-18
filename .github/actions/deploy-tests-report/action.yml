@@ -23,8 +23,9 @@ runs:
         set -e
         cat ${{ inputs.input }} > /tmp/report
         
-        git clone --depth 1 --branch gh-pages https://github.com/datastax/ragstack-ai.git /tmp/ragstack-ai
-        cd /tmp/ragstack-ai
+        git stash
+        git fetch origin gh-pages
+        git checkout gh-pages
         file="${{ inputs.target }}"
         mkdir -p $(dirname $file) 
         touch $file || true
@@ -33,9 +34,14 @@ runs:
         if [ -z "$(git status --porcelain)" ]; then
           echo "Git directory is clean, nothing changed"
           git status
+          git checkout "${{ github.ref }}"
+          git stash pop
           exit 0
         fi
         git add $file
         git commit -m "Update tests report"
         git pull --rebase origin gh-pages
         git push origin gh-pages
+        
+        git checkout "${{ github.ref }}"
+        git stash pop
