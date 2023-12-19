@@ -1,0 +1,110 @@
+name: RAGStack latest daily
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: '0 4,16 * * *'
+
+jobs:
+  ragstack-latest:
+    name: "Tests using RAGStack latest release (${{ matrix.name }})"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Astra PROD
+            astra_token_secret: E2E_TESTS_ASTRA_PROD_DB_TOKEN
+            env: PROD
+            region: us-east-2
+            cloud: aws
+#          - name: Astra DEV
+#            astra_token_secret: E2E_TESTS_ASTRA_DEV_DB_TOKEN
+#            env: DEV
+#            region: us-west-2
+#            cloud: aws
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v3
+
+      - name: 'Setup: Python 3.11'
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install tox
+
+      - name: Setup AstraDB
+        uses: ./.github/actions/setup-astra-db
+        id: astra-db
+        with:
+          astra-token: ${{ secrets[matrix.astra_token_secret] }}
+          db-name: ${{ github.run_id }}
+          env: ${{ matrix.env }}
+          region: ${{ matrix.region }}
+          cloud: ${{ matrix.cloud }}
+
+      - name: Run E2E tests
+        id: e2e-tests
+        env:
+          ASTRA_DB_TOKEN: "${{ secrets[matrix.astra_token_secret] }}"
+          ASTRA_DB_ENDPOINT: "${{ steps.astra-db.outputs.db_endpoint }}"
+          ASTRA_DB_ID: "${{ steps.astra-db.outputs.db_id }}"
+          OPEN_AI_KEY: "${{ secrets.E2E_TESTS_OPEN_AI_KEY }}"
+          AZURE_OPEN_AI_KEY: "${{ secrets.E2E_TESTS_AZURE_OPEN_AI_KEY }}"
+          AZURE_OPEN_AI_ENDPOINT: "${{ secrets.E2E_TESTS_AZURE_OPEN_AI_ENDPOINT }}"
+          GCLOUD_ACCOUNT_KEY_JSON: "${{ secrets.E2E_TESTS_GCLOUD_ACCOUNT_KEY_JSON }}"
+          AWS_ACCESS_KEY_ID: "${{ secrets.E2E_TESTS_AWS_ACCESS_KEY_ID }}"
+          AWS_SECRET_ACCESS_KEY: "${{ secrets.E2E_TESTS_AWS_SECRET_ACCESS_KEY }}"
+          BEDROCK_AWS_REGION: "${{ secrets.E2E_TESTS_BEDROCK_AWS_REGION }}"
+          HUGGINGFACE_HUB_KEY: "${{ secrets.E2E_TESTS_HUGGINGFACE_HUB_KEY }}"
+        run: |
+          tox -c ragstack-e2e-tests -e ragstack-ai-latest
+
+      - name: Dump report on Github Summary
+        if: always()
+        uses: ./.github/actions/add-report-to-github-summary
+
+      - name: Compute version
+        if: always()
+        id: ragstack-ai-version
+        run: |
+          echo "ragstack-ai-version=$(poetry run python -c 'from importlib.metadata import version; print(version("ragstack-ai"))')" >> $GITHUB_OUTPUT
+
+      - name: Prepare report for Slack
+        if: always()
+        uses: ./.github/actions/generate-slack-report
+        with:
+          from-report-file: "ragstack-e2e-tests/failed-tests-report.txt"
+          output-file: slack-report.json
+          type: "Tests using latest RAGStack released version (${{ steps.ragstack-ai-version.outputs.ragstack-ai-version }}) - (${{ matrix.name }})"
+          outcome: ${{ steps.e2e-tests.outcome }}
+          commit-url: "https://pypi.org/project/ragstack-ai/${{ steps.ragstack-ai-version.outputs.ragstack-ai-version }}/"
+
+      - name: Dump report on Slack
+        if: always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          payload-file-path: "./slack-report.json"
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Upload report to Github Pages
+        if: always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+        uses: ./.github/actions/deploy-tests-report
+        with:
+          target: "reports/tests/ragstack-ai/latest-release.html"
+          git-ref: "${{ steps.ragstack-ai-version.outputs.ragstack-ai-version }}"
+          commit-url: "https://pypi.org/project/ragstack-ai/${{ steps.ragstack-ai-version.outputs.ragstack-ai-version }}/"
+          input: "ragstack-e2e-tests/all-tests-report.txt"
+
+      - name: Cleanup AstraDB
+        uses: ./.github/actions/cleanup-astra-db
+        if: always()
+        with:
+          astra-token: ${{ secrets[matrix.astra_token_secret] }}
+          db-name: ${{ github.run_id }}
+          env: ${{ matrix.env }}
