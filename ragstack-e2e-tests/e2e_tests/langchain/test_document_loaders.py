@@ -1,10 +1,14 @@
+import io
 import tempfile
+import uuid
+from urllib.parse import urlparse
 
+import boto3
 from e2e_tests.conftest import (
     set_current_test_info,
 )
 
-from langchain.document_loaders import CSVLoader, WebBaseLoader
+from langchain.document_loaders import CSVLoader, WebBaseLoader, S3DirectoryLoader
 
 
 def set_current_test_info_document_loader(doc_loader: str):
@@ -57,3 +61,28 @@ def test_web_based_loader():
         "description": "Frequently Asked Questions",
         "language": "en",
     }
+
+
+def test_s3_loader():
+    set_current_test_info_document_loader("s3")
+    aws_region = "us-east-1"
+    bucket_name = f"ragstack-ci-{uuid.uuid4()}"
+
+    bucket = boto3.resource("s3", region_name=aws_region).Bucket(bucket_name)
+
+    bucket.create(CreateBucketConfiguration={"LocationConstraint": aws_region})
+    s3_obj = bucket.Object("data.txt")
+
+    try:
+        data = io.BytesIO(b"test data")
+        s3_obj.upload_fileobj(data)
+
+        loader = S3DirectoryLoader(bucket_name, region_name=aws_region)
+        docs = loader.load()
+
+        for doc in docs:
+            assert doc.page_content == "test data"
+            assert urlparse(doc.metadata["source"]).path.lstrip("/") == "data.txt"
+    finally:
+        s3_obj.delete()
+        bucket.delete()
