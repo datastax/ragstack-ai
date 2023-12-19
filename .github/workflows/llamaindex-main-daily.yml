@@ -72,13 +72,7 @@ jobs:
 
       - name: Dump report on Github Summary
         if: always()
-        run: |
-          if [ -f "ragstack-e2e-tests/all-tests-report.txt" ]; then
-            echo "$(cat ragstack-e2e-tests/all-tests-report.txt)" >> $GITHUB_STEP_SUMMARY
-            echo "Report added to the summary"
-          else
-            echo "Report not found"
-          fi
+        uses: ./.github/actions/add-report-to-github-summary
 
       - name: Compute commit URL
         if: always()
@@ -102,6 +96,15 @@ jobs:
           payload-file-path: "./slack-report.json"
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Upload report to Github Pages
+        if: always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+        uses: ./.github/actions/deploy-tests-report
+        with:
+          target: "reports/tests/llamaindex.html"
+          git-ref: "${{ steps.commit-ref.outputs.commit-ref }}"
+          commit-url: "https://github.com/run-llama/llama_index/commits/${{ steps.commit-ref.outputs.commit-ref }}"
+          input: "ragstack-e2e-tests/llamaindex-tests-report.txt"
 
       - name: Cleanup AstraDB
         uses: ./.github/actions/cleanup-astra-db
