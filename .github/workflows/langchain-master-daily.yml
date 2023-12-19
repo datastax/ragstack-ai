@@ -97,20 +97,14 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
-      - name: Prepare report for Github Pages
-        if: always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
-        run: |
-          echo "<h3 class='title'><a href=\"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\">$(date '+%Y-%m-%d')</a></h3>" > report-file.html
-          echo "<p class='info'>Commit: <a href=\"https://github.com/langchain-ai/langchain/commits/${{ steps.commit-ref.outputs.commit-ref }}\">${{ steps.commit-ref.outputs.commit-ref }}</a></p>" >> report-file.html
-          echo "<br>" >> report-file.html
-          sed 's/$/<br>/' ragstack-e2e-tests/langchain-tests-report.txt >> report-file.html
-
       - name: Upload report to Github Pages
         if: always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
         uses: ./.github/actions/deploy-tests-report
         with:
           target: "reports/tests/langchain.html"
-          input: "report-file.html"
+          git-ref: "${{ steps.commit-ref.outputs.commit-ref }}"
+          commit-url: "https://github.com/langchain-ai/langchain/commits/${{ steps.commit-ref.outputs.commit-ref }}"
+          input: "ragstack-e2e-tests/langchain-tests-report.txt"
 
       - name: Cleanup AstraDB
         uses: ./.github/actions/cleanup-astra-db

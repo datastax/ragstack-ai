@@ -5,12 +5,26 @@ inputs:
   target:
     required: true
     description: 'Directory and filename to upload reports to'
+  git-ref:
+    required: true
+    description: 'Git ref to use for the commit'
+  commit-url:
+    required: true
+    description: 'Github commit url'
   input:
     required: true
     description: 'File to read the report from'
 runs:
   using: "composite"
   steps:
+    - name: Generate HTML report
+      shell: bash
+      run: |
+        echo "<h3 class='title'><a href=\"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\">${{ github.run_id }} ($(date '+%Y-%m-%d %H:%M'))</a></h3>" > report-file.html
+        echo "<p class='info'>Commit: <a href=\"${{ inputs.commit-ref }}\">${{ inputs.git-ref }}</a></p>" >> report-file.html
+        echo "<br>" >> report-file.html
+        sed 's/$/<br>/' ${{ inputs.input }} >> report-file.html
+
     - name: Configure Git
       shell: bash
       run: |
@@ -21,7 +35,7 @@ runs:
       shell: bash
       run: |
         set -e
-        cat ${{ inputs.input }} > /tmp/report
+        cat report-file.html > /tmp/report
         
         git stash
         git fetch origin gh-pages
