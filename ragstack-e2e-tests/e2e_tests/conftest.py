@@ -81,6 +81,8 @@ def delete_astra_collection(astra_ref: AstraRef) -> None:
 
 failed_report_lines = []
 all_report_lines = []
+langchain_report_lines = []
+llamaindex_report_lines = []
 tests_stats = {
     "passed": 0,
     "failed": 0,
@@ -100,6 +102,14 @@ def pytest_runtest_makereport(item, call):
         total_time = round((time.perf_counter_ns() - start_time) / 1e9)
         logging.info(f"Test {info} took: {total_time} seconds")
         info = os.getenv("RAGSTACK_E2E_TESTS_TEST_INFO", "")
+        paths = str(item.path).split(os.sep)
+        is_langchain = False
+        is_llamaindex = False
+        if "langchain" in paths:
+            is_langchain = True
+        elif "llama_index" in paths:
+            is_llamaindex = True
+
         if not info:
             info = os.path.basename(item.path) + "::" + item.name
         if rep.outcome == "failed":
@@ -120,6 +130,10 @@ def pytest_runtest_makereport(item, call):
             # also keep skipped tests in the report
             failed_report_lines.append(report_line)
         all_report_lines.append(report_line)
+        if is_langchain:
+            langchain_report_lines.append(report_line)
+        elif is_llamaindex:
+            llamaindex_report_lines.append(report_line)
         os.environ["RAGSTACK_E2E_TESTS_TEST_INFO"] = ""
     else:
         os.environ["RAGSTACK_E2E_TESTS_TEST_START"] = str(time.perf_counter_ns())
@@ -146,14 +160,19 @@ def dump_report():
         + str(tests_stats["skipped"])
         + "\n"
     )
-    all_report_lines.sort()
-    with open("all-tests-report.txt", "w") as f:
-        f.write(stats_str + "\n")
-        f.write("\n".join(all_report_lines))
-    failed_report_lines.sort()
-    with open("failed-tests-report.txt", "w") as f:
-        f.write(stats_str + "\n")
-        f.write("\n".join(failed_report_lines))
+    _report_to_file(stats_str, "all-tests-report.txt", all_report_lines)
+    _report_to_file(stats_str, "failed-tests-report.txt", failed_report_lines)
+
+    _report_to_file("", "langchain-tests-report.txt", langchain_report_lines)
+    _report_to_file("", "llamaindex-tests-report.txt", llamaindex_report_lines)
+
+
+def _report_to_file(stats_str: str, filename: str, report_lines: list):
+    report_lines.sort()
+    with open(filename, "w") as f:
+        if stats_str:
+            f.write(stats_str + "\n")
+        f.write("\n".join(report_lines))
 
 
 # astra

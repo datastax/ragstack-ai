@@ -1,0 +1,61 @@
+name: Deploy tests report to Github Pages
+description: Deploy tests report to Github Pages
+
+inputs:
+  target:
+    required: true
+    description: 'Directory and filename to upload reports to'
+  git-ref:
+    required: true
+    description: 'Git ref to use for the commit'
+  commit-url:
+    required: true
+    description: 'Github commit url'
+  input:
+    required: true
+    description: 'File to read the report from'
+runs:
+  using: "composite"
+  steps:
+    - name: Generate HTML report
+      shell: bash
+      run: |
+        echo "<h3 class='title'><a href=\"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\">${{ github.run_id }} ($(date '+%Y-%m-%d %H:%M'))</a></h3>" > report-file.html
+        echo "<p class='info'>Reference: <a href=\"${{ inputs.commit-url }}\">${{ inputs.git-ref }}</a></p>" >> report-file.html
+        echo "<br>" >> report-file.html
+        sed 's/$/<br>/' ${{ inputs.input }} >> report-file.html
+
+    - name: Configure Git
+      shell: bash
+      run: |
+        git config user.name "$GITHUB_ACTOR"
+        git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+
+    - name: Copy report files and commit
+      shell: bash
+      run: |
+        set -e
+        cat report-file.html > /tmp/report
+        
+        git stash
+        git fetch origin gh-pages
+        git checkout gh-pages
+        file="${{ inputs.target }}"
+        mkdir -p $(dirname $file) 
+        touch $file || true
+        cat $file >> /tmp/report
+        cp /tmp/report $file
+        if [ -z "$(git status --porcelain)" ]; then
+          echo "Git directory is clean, nothing changed"
+          git status
+          git checkout "${{ github.ref }}"
+          git stash pop
+          exit 0
+        fi
+        git add $file
+        git commit -m "Update tests report"
+        git pull --rebase origin gh-pages
+        git push origin gh-pages
+        
+        git checkout "${{ github.ref }}"
+        git stash pop || true

@@ -22,26 +22,26 @@ runs:
   steps:
   - shell: bash
     run: |
-      
-      echo -n '{"content": "' > ${{ inputs.output-file }}
-      if [ -f "${{ inputs.from-report-file }}" ]; then
-        {
-          cat ${{ inputs.from-report-file }} | sed 's/"/\\"/g' | while IFS= read -r line; do
-            echo -n "$line\n"
-          done
-        } >> ${{ inputs.output-file }}
+      from_file=${{ inputs.from-report-file }}
+      if [ -f "$from_file" ]; then
         echo "Report found"
-        cat ${{ inputs.from-report-file }}
       else
         echo "Report NOT found"
         pwd
         ls -la .
+        touch $from_file 
       fi
       if [ "${{ inputs.outcome }}" != "success" ]; then
         summary="FAILED ❌"
       else
         summary="PASSED ✅"
       fi
-      echo "\",\"summary\":\"$summary\",\"commit\":\"${{ inputs.commit-url }}\",\"url\":\"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\",\"type\":\"${{ inputs.type }}\"}" >> ${{ inputs.output-file }}
+      jq \
+        --arg content "$(cat $from_file)" \
+        --arg summary "$summary" \
+        --arg commit "${{ inputs.commit-url }}" \
+        --arg url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+        --arg type "${{ inputs.type }}" \
+        -n '{"content": $content, "summary": $summary, "commit": $commit, "url": $url, "type": $type}'  > ${{ inputs.output-file }}
       echo "Slack report generated to ${{ inputs.output-file }}"
       cat ${{ inputs.output-file }}

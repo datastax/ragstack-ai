@@ -1,18 +1,12 @@
-name: Daily Llama-Index main
+name: RAGStack latest daily
 on:
   workflow_dispatch: {}
   schedule:
-    - cron: '30 */2 * * *'
-#  pull_request:
-#    paths:
-#      - '.github/**'
-#      - 'ragstack-e2e-tests/**'
-#    branches:
-#      - main
+    - cron: '0 4,16 * * *'
 
 jobs:
-  llamaindex-tests:
-    name: "Tests using Llama-Index main branch (${{ matrix.name }})"
+  ragstack-latest:
+    name: "Tests using RAGStack latest release (${{ matrix.name }})"
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -68,16 +62,17 @@ jobs:
           BEDROCK_AWS_REGION: "${{ secrets.E2E_TESTS_BEDROCK_AWS_REGION }}"
           HUGGINGFACE_HUB_KEY: "${{ secrets.E2E_TESTS_HUGGINGFACE_HUB_KEY }}"
         run: |
-          tox -c ragstack-e2e-tests -e llamaindex
+          tox -c ragstack-e2e-tests -e ragstack-ai-latest
 
       - name: Dump report on Github Summary
         if: always()
         uses: ./.github/actions/add-report-to-github-summary
 
-      - name: Compute commit URL
+      - name: Compute version
         if: always()
-        id: commit-ref
-        run: echo "commit-ref=$(grep resolved_reference ragstack-e2e-tests/poetry.lock | awk -F'"' '{print $2}' | head -1)" >> $GITHUB_OUTPUT
+        id: ragstack-ai-version
+        run: |
+          echo "ragstack-ai-version=$(poetry run python -c 'from importlib.metadata import version; print(version("ragstack-ai"))')" >> $GITHUB_OUTPUT
 
       - name: Prepare report for Slack
         if: always()
@@ -85,9 +80,9 @@ jobs:
         with:
           from-report-file: "ragstack-e2e-tests/failed-tests-report.txt"
           output-file: slack-report.json
-          type: "Tests using Llama-Index main branch (${{ matrix.name }})"
+          type: "Tests using latest RAGStack released version (${{ steps.ragstack-ai-version.outputs.ragstack-ai-version }}) - (${{ matrix.name }})"
           outcome: ${{ steps.e2e-tests.outcome }}
-          commit-url: "https://github.com/run-llama/llama_index/commits/${{ steps.commit-ref.outputs.commit-ref }}"
+          commit-url: "https://pypi.org/project/ragstack-ai/${{ steps.ragstack-ai-version.outputs.ragstack-ai-version }}/"
 
       - name: Dump report on Slack
         if: always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
@@ -101,10 +96,10 @@ jobs:
         if: always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
         uses: ./.github/actions/deploy-tests-report
         with:
-          target: "reports/tests/llamaindex.html"
-          git-ref: "${{ steps.commit-ref.outputs.commit-ref }}"
-          commit-url: "https://github.com/run-llama/llama_index/commits/${{ steps.commit-ref.outputs.commit-ref }}"
-          input: "ragstack-e2e-tests/llamaindex-tests-report.txt"
+          target: "reports/tests/ragstack-ai/latest-release.html"
+          git-ref: "${{ steps.ragstack-ai-version.outputs.ragstack-ai-version }}"
+          commit-url: "https://pypi.org/project/ragstack-ai/${{ steps.ragstack-ai-version.outputs.ragstack-ai-version }}/"
+          input: "ragstack-e2e-tests/all-tests-report.txt"
 
       - name: Cleanup AstraDB
         uses: ./.github/actions/cleanup-astra-db

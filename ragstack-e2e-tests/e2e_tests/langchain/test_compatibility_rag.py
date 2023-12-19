@@ -199,6 +199,10 @@ def huggingface_hub_embedding():
     ],
 )
 def test_rag(test_case, vector_store, embedding, llm, request):
+    set_current_test_info(
+        "langchain::" + test_case,
+        f"{llm},{embedding},{vector_store}",
+    )
     start = time.perf_counter_ns()
     resolved_vector_store = request.getfixturevalue(vector_store)
     logging.info(
@@ -227,10 +231,6 @@ def _run_test(test_case: str, vector_store, embedding, llm):
     vector_store_name, vector_store, chat_memory = vector_store
     vector_store = vector_store(embedding)
     llm_name, llm = llm
-    set_current_test_info(
-        "langchain::" + test_case,
-        f"{llm_name},{embedding_name},{vector_store_name}",
-    )
     if test_case == "rag_custom_chain":
         run_rag_custom_chain(
             vector_store=vector_store,
