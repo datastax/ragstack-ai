@@ -21,6 +21,8 @@ runs:
         ./scripts/generate-api-reference.sh "${{ inputs.ragstack-version }}"
         mv dist/api_reference /tmp/api_reference
         git checkout gh-pages
+        ls -la /tmp/api_reference/${{ inputs.ragstack-version }}/langchain
+        mkdir -p api_reference/${{ inputs.ragstack-version }}
         mv /tmp/api_reference/${{ inputs.ragstack-version }}/langchain api_reference/${{ inputs.ragstack-version }}/langchain
         if [ -z "$(git status --porcelain)" ]; then
           echo "Git directory is clean, nothing changed"
