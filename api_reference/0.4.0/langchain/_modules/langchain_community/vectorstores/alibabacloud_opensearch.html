@@ -1,0 +1,709 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>langchain_community.vectorstores.alibabacloud_opensearch &mdash; 🦜🔗 LangChain 0.0.350</title>
+  
+  <link rel="canonical" href="https://api.python.langchain.com/en/latest/_modules/langchain_community/vectorstores/alibabacloud_opensearch.html" />
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/vendor/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/autodoc_pydantic.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/panels-bootstrap.5fd3999ee7762ccc51105388f4a9d115.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+<script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+<script src="../../../_static/jquery.js"></script> 
+</head>
+<body>
+
+
+<nav id="navbar" class="sk-docs-navbar navbar navbar-expand-md navbar-light bg-light py-0">
+  <div class="container-fluid sk-docs-container px-0">
+    <button
+      id="sk-navbar-toggler"
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="sk-navbar-collapse collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../api_reference.html">API</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../core_api_reference.html">Core</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../community_api_reference.html">Community</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../experimental_api_reference.html">Experimental</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" target="_blank" rel="noopener noreferrer" href="https://python.langchain.com/">Python Docs</a>
+        </li>
+      </ul>
+      <div id="searchbox" role="search">
+          <div class="searchformwrapper">
+          <form class="search" action="../../../search.html" method="get">
+            <input class="sk-search-text-input" type="text" name="q" aria-labelledby="searchlabel" />
+            <input class="sk-search-text-btn" type="submit" value="Go" />
+          </form>
+          </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="d-flex" id="sk-doc-wrapper">
+    <input type="checkbox" name="sk-toggle-checkbox" id="sk-toggle-checkbox">
+    <label id="sk-sidemenu-toggle" class="sk-btn-toggle-toc btn sk-btn-primary" for="sk-toggle-checkbox">Toggle Menu</label>
+    <div id="sk-sidebar-wrapper" class="border-right">
+      <div class="sk-sidebar-toc-wrapper">
+        <div class="btn-group w-100 mb-2" role="group" aria-label="rellinks">
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Prev</a><a href="../../index.html" role="button" class="btn sk-btn-rellink py-1" sk-rellink-tooltip="Module code">Up</a>
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Next</a>
+        </div>
+        <div class="alert alert-warning p-1 mb-2" role="alert">
+          <p class="text-center mb-0">
+          <strong>LangChain 0.0.350</strong><br/>
+          </p>
+        </div>
+            <div class="sk-sidebar-toc">
+              
+            </div>
+      </div>
+    </div>
+    <div id="sk-page-content-wrapper">
+      <div class="sk-page-content container-fluid body px-md-3" role="main">
+        
+  <h1>Source code for langchain_community.vectorstores.alibabacloud_opensearch</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">numbers</span>
+<span class="kn">from</span> <span class="nn">hashlib</span> <span class="kn">import</span> <span class="n">sha1</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span>
+
+<span class="kn">from</span> <span class="nn">langchain_core.documents</span> <span class="kn">import</span> <span class="n">Document</span>
+<span class="kn">from</span> <span class="nn">langchain_core.embeddings</span> <span class="kn">import</span> <span class="n">Embeddings</span>
+<span class="kn">from</span> <span class="nn">langchain_core.vectorstores</span> <span class="kn">import</span> <span class="n">VectorStore</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span>
+
+
+<div class="viewcode-block" id="AlibabaCloudOpenSearchSettings"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.alibabacloud_opensearch.AlibabaCloudOpenSearchSettings.html#langchain_community.vectorstores.alibabacloud_opensearch.AlibabaCloudOpenSearchSettings">[docs]</a><span class="k">class</span> <span class="nc">AlibabaCloudOpenSearchSettings</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Alibaba Cloud Opensearch` client configuration.</span>
+
+<span class="sd">    Attribute:</span>
+<span class="sd">        endpoint (str) : The endpoint of opensearch instance, You can find it</span>
+<span class="sd">         from the console of Alibaba Cloud OpenSearch.</span>
+<span class="sd">        instance_id (str) : The identify of opensearch instance, You can find</span>
+<span class="sd">         it from the console of Alibaba Cloud OpenSearch.</span>
+<span class="sd">        username (str) : The username specified when purchasing the instance.</span>
+<span class="sd">        password (str) : The password specified when purchasing the instance，</span>
+<span class="sd">          After the instance is created, you can modify it on the console.</span>
+<span class="sd">        tablename (str): The table name specified during instance configuration.</span>
+<span class="sd">        field_name_mapping (Dict) : Using field name mapping between opensearch</span>
+<span class="sd">          vector store and opensearch instance configuration table field names:</span>
+<span class="sd">        {</span>
+<span class="sd">            &#39;id&#39;: &#39;The id field name map of index document.&#39;,</span>
+<span class="sd">            &#39;document&#39;: &#39;The text field name map of index document.&#39;,</span>
+<span class="sd">            &#39;embedding&#39;: &#39;In the embedding field of the opensearch instance,</span>
+<span class="sd">              the values must be in float type and separated by separator,</span>
+<span class="sd">              default is comma.&#39;,</span>
+<span class="sd">            &#39;metadata_field_x&#39;: &#39;Metadata field mapping includes the mapped</span>
+<span class="sd">             field name and operator in the mapping value, separated by a comma</span>
+<span class="sd">             between the mapped field name and the operator.&#39;,</span>
+<span class="sd">        }</span>
+<span class="sd">        protocol (str): Communication Protocol between SDK and Server, default is http.</span>
+<span class="sd">        namespace (str) : The instance data will be partitioned based on the &quot;namespace&quot;</span>
+<span class="sd">         field,If the namespace is enabled, you need to specify the namespace field</span>
+<span class="sd">         name during initialization, Otherwise, the queries cannot be executed</span>
+<span class="sd">         correctly.</span>
+<span class="sd">        embedding_field_separator(str): Delimiter specified for writing vector</span>
+<span class="sd">         field data, default is comma.</span>
+<span class="sd">        output_fields: Specify the field list returned when invoking OpenSearch,</span>
+<span class="sd">         by default it is the value list of the field mapping field.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="AlibabaCloudOpenSearchSettings.__init__"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.alibabacloud_opensearch.AlibabaCloudOpenSearchSettings.html#langchain_community.vectorstores.alibabacloud_opensearch.AlibabaCloudOpenSearchSettings.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">endpoint</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">instance_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">password</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">table_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">field_name_mapping</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
+        <span class="n">protocol</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;http&quot;</span><span class="p">,</span>
+        <span class="n">namespace</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">embedding_field_separator</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;,&quot;</span><span class="p">,</span>
+        <span class="n">output_fields</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">endpoint</span> <span class="o">=</span> <span class="n">endpoint</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">instance_id</span> <span class="o">=</span> <span class="n">instance_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">protocol</span> <span class="o">=</span> <span class="n">protocol</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">username</span> <span class="o">=</span> <span class="n">username</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">password</span> <span class="o">=</span> <span class="n">password</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">namespace</span> <span class="o">=</span> <span class="n">namespace</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">table_name</span> <span class="o">=</span> <span class="n">table_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">opt_table_name</span> <span class="o">=</span> <span class="s2">&quot;_&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">instance_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">table_name</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">field_name_mapping</span> <span class="o">=</span> <span class="n">field_name_mapping</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">embedding_field_separator</span> <span class="o">=</span> <span class="n">embedding_field_separator</span>
+        <span class="k">if</span> <span class="n">output_fields</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">output_fields</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">field</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">field_name_mapping</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+            <span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inverse_field_name_mapping</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">field_name_mapping</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">inverse_field_name_mapping</span><span class="p">[</span><span class="n">value</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="n">key</span></div>
+
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="create_metadata"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.alibabacloud_opensearch.create_metadata.html#langchain_community.vectorstores.alibabacloud_opensearch.create_metadata">[docs]</a><span class="k">def</span> <span class="nf">create_metadata</span><span class="p">(</span><span class="n">fields</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create metadata from fields.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        fields: The fields of the document. The fields must be a dict.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        metadata: The metadata of the document. The metadata must be a dict.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">metadata</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">fields</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;id&quot;</span> <span class="ow">or</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;document&quot;</span> <span class="ow">or</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;embedding&quot;</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">metadata</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+    <span class="k">return</span> <span class="n">metadata</span></div>
+
+
+<div class="viewcode-block" id="AlibabaCloudOpenSearch"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.alibabacloud_opensearch.AlibabaCloudOpenSearch.html#langchain_community.vectorstores.alibabacloud_opensearch.AlibabaCloudOpenSearch">[docs]</a><span class="k">class</span> <span class="nc">AlibabaCloudOpenSearch</span><span class="p">(</span><span class="n">VectorStore</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;`Alibaba Cloud OpenSearch` vector store.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="AlibabaCloudOpenSearch.__init__"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.alibabacloud_opensearch.AlibabaCloudOpenSearch.html#langchain_community.vectorstores.alibabacloud_opensearch.AlibabaCloudOpenSearch.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">embedding</span><span class="p">:</span> <span class="n">Embeddings</span><span class="p">,</span>
+        <span class="n">config</span><span class="p">:</span> <span class="n">AlibabaCloudOpenSearchSettings</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">alibabacloud_ha3engine_vector</span> <span class="kn">import</span> <span class="n">client</span><span class="p">,</span> <span class="n">models</span>
+            <span class="kn">from</span> <span class="nn">alibabacloud_tea_util</span> <span class="kn">import</span> <span class="n">models</span> <span class="k">as</span> <span class="n">util_models</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+                <span class="s2">&quot;Could not import alibaba cloud opensearch python package. &quot;</span>
+                <span class="s2">&quot;Please install it with `pip install alibabacloud-ha3engine-vector`.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">config</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">embedding</span> <span class="o">=</span> <span class="n">embedding</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">runtime</span> <span class="o">=</span> <span class="n">util_models</span><span class="o">.</span><span class="n">RuntimeOptions</span><span class="p">(</span>
+            <span class="n">connect_timeout</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span>
+            <span class="n">read_timeout</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span>
+            <span class="n">autoretry</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">ignore_ssl</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">max_idle_conns</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ha3_engine_client</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">Client</span><span class="p">(</span>
+            <span class="n">models</span><span class="o">.</span><span class="n">Config</span><span class="p">(</span>
+                <span class="n">endpoint</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">endpoint</span><span class="p">,</span>
+                <span class="n">instance_id</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">instance_id</span><span class="p">,</span>
+                <span class="n">protocol</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">protocol</span><span class="p">,</span>
+                <span class="n">access_user_name</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">username</span><span class="p">,</span>
+                <span class="n">access_pass_word</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">password</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">options_headers</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span></div>
+
+<div class="viewcode-block" id="AlibabaCloudOpenSearch.add_texts"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.alibabacloud_opensearch.AlibabaCloudOpenSearch.html#langchain_community.vectorstores.alibabacloud_opensearch.AlibabaCloudOpenSearch.add_texts">[docs]</a>    <span class="k">def</span> <span class="nf">add_texts</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">texts</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">metadatas</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Insert documents into the instance..</span>
+<span class="sd">        Args:</span>
+<span class="sd">            texts: The text segments to be inserted into the vector storage,</span>
+<span class="sd">             should not be empty.</span>
+<span class="sd">            metadatas: Metadata information.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            id_list: List of document IDs.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">def</span> <span class="nf">_upsert</span><span class="p">(</span><span class="n">push_doc_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">push_doc_list</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">push_doc_list</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">[]</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">push_request</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">PushDocumentsRequest</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">options_headers</span><span class="p">,</span> <span class="n">push_doc_list</span>
+                <span class="p">)</span>
+                <span class="n">push_response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ha3_engine_client</span><span class="o">.</span><span class="n">push_documents</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">opt_table_name</span><span class="p">,</span> <span class="n">field_name_map</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">],</span> <span class="n">push_request</span>
+                <span class="p">)</span>
+                <span class="n">json_response</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">push_response</span><span class="o">.</span><span class="n">body</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">json_response</span><span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;OK&quot;</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="p">[</span>
+                        <span class="n">push_doc</span><span class="p">[</span><span class="s2">&quot;fields&quot;</span><span class="p">][</span><span class="n">field_name_map</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]]</span>
+                        <span class="k">for</span> <span class="n">push_doc</span> <span class="ow">in</span> <span class="n">push_doc_list</span>
+                    <span class="p">]</span>
+                <span class="k">return</span> <span class="p">[]</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;add doc to endpoint:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">endpoint</span><span class="si">}</span><span class="s2"> &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;instance_id:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">instance_id</span><span class="si">}</span><span class="s2"> failed.&quot;</span><span class="p">,</span>
+                    <span class="n">e</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="k">raise</span> <span class="n">e</span>
+
+        <span class="kn">from</span> <span class="nn">alibabacloud_ha3engine_vector</span> <span class="kn">import</span> <span class="n">models</span>
+
+        <span class="n">id_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">sha1</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">texts</span><span class="p">]</span>
+        <span class="n">embeddings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">embedding</span><span class="o">.</span><span class="n">embed_documents</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">texts</span><span class="p">))</span>
+        <span class="n">metadatas</span> <span class="o">=</span> <span class="n">metadatas</span> <span class="ow">or</span> <span class="p">[{}</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">texts</span><span class="p">]</span>
+        <span class="n">field_name_map</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">field_name_mapping</span>
+        <span class="n">add_doc_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">text_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">texts</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">doc_id</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">id_list</span><span class="p">):</span>
+            <span class="n">embedding</span> <span class="o">=</span> <span class="n">embeddings</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="k">if</span> <span class="n">idx</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">embeddings</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
+            <span class="n">metadata</span> <span class="o">=</span> <span class="n">metadatas</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="k">if</span> <span class="n">idx</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">metadatas</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="n">text_list</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="k">if</span> <span class="n">idx</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">text_list</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
+            <span class="n">add_doc</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+            <span class="n">add_doc_fields</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+            <span class="n">add_doc_fields</span><span class="o">.</span><span class="fm">__setitem__</span><span class="p">(</span><span class="n">field_name_map</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">],</span> <span class="n">doc_id</span><span class="p">)</span>
+            <span class="n">add_doc_fields</span><span class="o">.</span><span class="fm">__setitem__</span><span class="p">(</span><span class="n">field_name_map</span><span class="p">[</span><span class="s2">&quot;document&quot;</span><span class="p">],</span> <span class="n">text</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">embedding</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">add_doc_fields</span><span class="o">.</span><span class="fm">__setitem__</span><span class="p">(</span>
+                    <span class="n">field_name_map</span><span class="p">[</span><span class="s2">&quot;embedding&quot;</span><span class="p">],</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">embedding_field_separator</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                        <span class="nb">str</span><span class="p">(</span><span class="n">unit</span><span class="p">)</span> <span class="k">for</span> <span class="n">unit</span> <span class="ow">in</span> <span class="n">embedding</span>
+                    <span class="p">),</span>
+                <span class="p">)</span>
+            <span class="k">if</span> <span class="n">metadata</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">md_key</span><span class="p">,</span> <span class="n">md_value</span> <span class="ow">in</span> <span class="n">metadata</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="n">add_doc_fields</span><span class="o">.</span><span class="fm">__setitem__</span><span class="p">(</span>
+                        <span class="n">field_name_map</span><span class="p">[</span><span class="n">md_key</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="n">md_value</span>
+                    <span class="p">)</span>
+            <span class="n">add_doc</span><span class="o">.</span><span class="fm">__setitem__</span><span class="p">(</span><span class="s2">&quot;fields&quot;</span><span class="p">,</span> <span class="n">add_doc_fields</span><span class="p">)</span>
+            <span class="n">add_doc</span><span class="o">.</span><span class="fm">__setitem__</span><span class="p">(</span><span class="s2">&quot;cmd&quot;</span><span class="p">,</span> <span class="s2">&quot;add&quot;</span><span class="p">)</span>
+            <span class="n">add_doc_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">add_doc</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_upsert</span><span class="p">(</span><span class="n">add_doc_list</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AlibabaCloudOpenSearch.similarity_search"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.alibabacloud_opensearch.AlibabaCloudOpenSearch.html#langchain_community.vectorstores.alibabacloud_opensearch.AlibabaCloudOpenSearch.similarity_search">[docs]</a>    <span class="k">def</span> <span class="nf">similarity_search</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+        <span class="n">search_filter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Perform similarity retrieval based on text.</span>
+<span class="sd">        Args:</span>
+<span class="sd">            query: Vectorize text for retrieval.，should not be empty.</span>
+<span class="sd">            k: top n.</span>
+<span class="sd">            search_filter: Additional filtering conditions.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            document_list: List of documents.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">embedding</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">embedding</span><span class="o">.</span><span class="n">embed_query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_results</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">inner_embedding_query</span><span class="p">(</span>
+                <span class="n">embedding</span><span class="o">=</span><span class="n">embedding</span><span class="p">,</span> <span class="n">search_filter</span><span class="o">=</span><span class="n">search_filter</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">k</span>
+            <span class="p">)</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="AlibabaCloudOpenSearch.similarity_search_with_relevance_scores"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.alibabacloud_opensearch.AlibabaCloudOpenSearch.html#langchain_community.vectorstores.alibabacloud_opensearch.AlibabaCloudOpenSearch.similarity_search_with_relevance_scores">[docs]</a>    <span class="k">def</span> <span class="nf">similarity_search_with_relevance_scores</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+        <span class="n">search_filter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Document</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Perform similarity retrieval based on text with scores.</span>
+<span class="sd">        Args:</span>
+<span class="sd">            query: Vectorize text for retrieval.，should not be empty.</span>
+<span class="sd">            k: top n.</span>
+<span class="sd">            search_filter: Additional filtering conditions.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            document_list: List of documents.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">embedding</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">embedding</span><span class="o">.</span><span class="n">embed_query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_results_with_score</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">inner_embedding_query</span><span class="p">(</span>
+                <span class="n">embedding</span><span class="o">=</span><span class="n">embedding</span><span class="p">,</span> <span class="n">search_filter</span><span class="o">=</span><span class="n">search_filter</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">k</span>
+            <span class="p">)</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="AlibabaCloudOpenSearch.similarity_search_by_vector"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.alibabacloud_opensearch.AlibabaCloudOpenSearch.html#langchain_community.vectorstores.alibabacloud_opensearch.AlibabaCloudOpenSearch.similarity_search_by_vector">[docs]</a>    <span class="k">def</span> <span class="nf">similarity_search_by_vector</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">embedding</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+        <span class="n">k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+        <span class="n">search_filter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Perform retrieval directly using vectors.</span>
+<span class="sd">        Args:</span>
+<span class="sd">            embedding: vectors.</span>
+<span class="sd">            k: top n.</span>
+<span class="sd">            search_filter: Additional filtering conditions.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            document_list: List of documents.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_results</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">inner_embedding_query</span><span class="p">(</span>
+                <span class="n">embedding</span><span class="o">=</span><span class="n">embedding</span><span class="p">,</span> <span class="n">search_filter</span><span class="o">=</span><span class="n">search_filter</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">k</span>
+            <span class="p">)</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="AlibabaCloudOpenSearch.inner_embedding_query"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.alibabacloud_opensearch.AlibabaCloudOpenSearch.html#langchain_community.vectorstores.alibabacloud_opensearch.AlibabaCloudOpenSearch.inner_embedding_query">[docs]</a>    <span class="k">def</span> <span class="nf">inner_embedding_query</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">embedding</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+        <span class="n">search_filter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+        <span class="k">def</span> <span class="nf">generate_filter_query</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">search_filter</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="s2">&quot;&quot;</span>
+            <span class="n">filter_clause</span> <span class="o">=</span> <span class="s2">&quot; AND &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="n">create_filter</span><span class="p">(</span><span class="n">md_key</span><span class="p">,</span> <span class="n">md_value</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">md_key</span><span class="p">,</span> <span class="n">md_value</span> <span class="ow">in</span> <span class="n">search_filter</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+                <span class="p">]</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="n">filter_clause</span>
+
+        <span class="k">def</span> <span class="nf">create_filter</span><span class="p">(</span><span class="n">md_key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">md_value</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+            <span class="n">md_filter_expr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">field_name_mapping</span><span class="p">[</span><span class="n">md_key</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">md_filter_expr</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="s2">&quot;&quot;</span>
+            <span class="n">expr</span> <span class="o">=</span> <span class="n">md_filter_expr</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">expr</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;filter </span><span class="si">{</span><span class="n">md_filter_expr</span><span class="si">}</span><span class="s2"> express is not correct, &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;must contain mapping field and operator.&quot;</span>
+                <span class="p">)</span>
+                <span class="k">return</span> <span class="s2">&quot;&quot;</span>
+            <span class="n">md_filter_key</span> <span class="o">=</span> <span class="n">expr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="n">md_filter_operator</span> <span class="o">=</span> <span class="n">expr</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">md_value</span><span class="p">,</span> <span class="n">numbers</span><span class="o">.</span><span class="n">Number</span><span class="p">):</span>
+                <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">md_filter_key</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">md_filter_operator</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">md_value</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">md_filter_key</span><span class="si">}{</span><span class="n">md_filter_operator</span><span class="si">}</span><span class="s1">&quot;</span><span class="si">{</span><span class="n">md_value</span><span class="si">}</span><span class="s1">&quot;&#39;</span>
+
+        <span class="k">def</span> <span class="nf">search_data</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+            <span class="n">request</span> <span class="o">=</span> <span class="n">QueryRequest</span><span class="p">(</span>
+                <span class="n">table_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">table_name</span><span class="p">,</span>
+                <span class="n">namespace</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">namespace</span><span class="p">,</span>
+                <span class="n">vector</span><span class="o">=</span><span class="n">embedding</span><span class="p">,</span>
+                <span class="n">include_vector</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">output_fields</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">output_fields</span><span class="p">,</span>
+                <span class="nb">filter</span><span class="o">=</span><span class="n">generate_filter_query</span><span class="p">(),</span>
+                <span class="n">top_k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="n">query_result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ha3_engine_client</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">query_result</span><span class="o">.</span><span class="n">body</span><span class="p">)</span>
+
+        <span class="kn">from</span> <span class="nn">alibabacloud_ha3engine_vector.models</span> <span class="kn">import</span> <span class="n">QueryRequest</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">json_response</span> <span class="o">=</span> <span class="n">search_data</span><span class="p">()</span>
+            <span class="k">if</span> <span class="p">(</span>
+                <span class="s2">&quot;errorCode&quot;</span> <span class="ow">in</span> <span class="n">json_response</span>
+                <span class="ow">and</span> <span class="s2">&quot;errorMsg&quot;</span> <span class="ow">in</span> <span class="n">json_response</span>
+                <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">json_response</span><span class="p">[</span><span class="s2">&quot;errorMsg&quot;</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">0</span>
+            <span class="p">):</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;query </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">endpoint</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">instance_id</span><span class="si">}</span><span class="s2"> &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;failed:</span><span class="si">{</span><span class="n">json_response</span><span class="p">[</span><span class="s1">&#39;errorMsg&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">.&quot;</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">json_response</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;query instance endpoint:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">endpoint</span><span class="si">}</span><span class="s2"> &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;instance_id:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">instance_id</span><span class="si">}</span><span class="s2"> failed.&quot;</span><span class="p">,</span>
+                <span class="n">e</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="p">{}</span></div>
+
+<div class="viewcode-block" id="AlibabaCloudOpenSearch.create_results"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.alibabacloud_opensearch.AlibabaCloudOpenSearch.html#langchain_community.vectorstores.alibabacloud_opensearch.AlibabaCloudOpenSearch.create_results">[docs]</a>    <span class="k">def</span> <span class="nf">create_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">json_result</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Assemble documents.&quot;&quot;&quot;</span>
+        <span class="n">items</span> <span class="o">=</span> <span class="n">json_result</span><span class="p">[</span><span class="s2">&quot;result&quot;</span><span class="p">]</span>
+        <span class="n">query_result_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span>
+                <span class="s2">&quot;fields&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">item</span>
+                <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">field_name_mapping</span><span class="p">[</span><span class="s2">&quot;document&quot;</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;fields&quot;</span><span class="p">]</span>
+            <span class="p">):</span>
+                <span class="n">query_result_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Document</span><span class="p">())</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">fields</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;fields&quot;</span><span class="p">]</span>
+                <span class="n">query_result_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="n">Document</span><span class="p">(</span>
+                        <span class="n">page_content</span><span class="o">=</span><span class="n">fields</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">field_name_mapping</span><span class="p">[</span><span class="s2">&quot;document&quot;</span><span class="p">]],</span>
+                        <span class="n">metadata</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">create_inverse_metadata</span><span class="p">(</span><span class="n">fields</span><span class="p">),</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+        <span class="k">return</span> <span class="n">query_result_list</span></div>
+
+<div class="viewcode-block" id="AlibabaCloudOpenSearch.create_inverse_metadata"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.alibabacloud_opensearch.AlibabaCloudOpenSearch.html#langchain_community.vectorstores.alibabacloud_opensearch.AlibabaCloudOpenSearch.create_inverse_metadata">[docs]</a>    <span class="k">def</span> <span class="nf">create_inverse_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fields</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create metadata from fields.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            fields: The fields of the document. The fields must be a dict.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            metadata: The metadata of the document. The metadata must be a dict.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">metadata</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">fields</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;id&quot;</span> <span class="ow">or</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;document&quot;</span> <span class="ow">or</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;embedding&quot;</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">metadata</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">inverse_field_name_mapping</span><span class="p">[</span><span class="n">key</span><span class="p">]]</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">return</span> <span class="n">metadata</span></div>
+
+<div class="viewcode-block" id="AlibabaCloudOpenSearch.create_results_with_score"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.alibabacloud_opensearch.AlibabaCloudOpenSearch.html#langchain_community.vectorstores.alibabacloud_opensearch.AlibabaCloudOpenSearch.create_results_with_score">[docs]</a>    <span class="k">def</span> <span class="nf">create_results_with_score</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">json_result</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Document</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Parsing the returned results with scores.</span>
+<span class="sd">        Args:</span>
+<span class="sd">            json_result: Results from OpenSearch query.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            query_result_list: Results with scores.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">items</span> <span class="o">=</span> <span class="n">json_result</span><span class="p">[</span><span class="s2">&quot;result&quot;</span><span class="p">]</span>
+        <span class="n">query_result_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Document</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span><span class="p">:</span>
+            <span class="n">fields</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;fields&quot;</span><span class="p">]</span>
+            <span class="n">query_result_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="p">(</span>
+                    <span class="n">Document</span><span class="p">(</span>
+                        <span class="n">page_content</span><span class="o">=</span><span class="n">fields</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">field_name_mapping</span><span class="p">[</span><span class="s2">&quot;document&quot;</span><span class="p">]],</span>
+                        <span class="n">metadata</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">create_inverse_metadata</span><span class="p">(</span><span class="n">fields</span><span class="p">),</span>
+                    <span class="p">),</span>
+                    <span class="nb">float</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="s2">&quot;score&quot;</span><span class="p">]),</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">query_result_list</span></div>
+
+<div class="viewcode-block" id="AlibabaCloudOpenSearch.delete_documents_with_texts"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.alibabacloud_opensearch.AlibabaCloudOpenSearch.html#langchain_community.vectorstores.alibabacloud_opensearch.AlibabaCloudOpenSearch.delete_documents_with_texts">[docs]</a>    <span class="k">def</span> <span class="nf">delete_documents_with_texts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">texts</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Delete documents based on their page content.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            texts: List of document page content.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">           Whether the deletion was successful or not.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">id_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">sha1</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">texts</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">delete_documents_with_document_id</span><span class="p">(</span><span class="n">id_list</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AlibabaCloudOpenSearch.delete_documents_with_document_id"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.alibabacloud_opensearch.AlibabaCloudOpenSearch.html#langchain_community.vectorstores.alibabacloud_opensearch.AlibabaCloudOpenSearch.delete_documents_with_document_id">[docs]</a>    <span class="k">def</span> <span class="nf">delete_documents_with_document_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">id_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Delete documents based on their IDs.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            id_list: List of document IDs.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Whether the deletion was successful or not.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">id_list</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">id_list</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+
+        <span class="kn">from</span> <span class="nn">alibabacloud_ha3engine_vector</span> <span class="kn">import</span> <span class="n">models</span>
+
+        <span class="n">delete_doc_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">doc_id</span> <span class="ow">in</span> <span class="n">id_list</span><span class="p">:</span>
+            <span class="n">delete_doc_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="p">{</span>
+                    <span class="s2">&quot;fields&quot;</span><span class="p">:</span> <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">field_name_mapping</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]:</span> <span class="n">doc_id</span><span class="p">},</span>
+                    <span class="s2">&quot;cmd&quot;</span><span class="p">:</span> <span class="s2">&quot;delete&quot;</span><span class="p">,</span>
+                <span class="p">}</span>
+            <span class="p">)</span>
+
+        <span class="n">delete_request</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">PushDocumentsRequest</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">options_headers</span><span class="p">,</span> <span class="n">delete_doc_list</span>
+        <span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">delete_response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ha3_engine_client</span><span class="o">.</span><span class="n">push_documents</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">opt_table_name</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">field_name_mapping</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">],</span>
+                <span class="n">delete_request</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">json_response</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">delete_response</span><span class="o">.</span><span class="n">body</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">json_response</span><span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;OK&quot;</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;delete doc from :</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">endpoint</span><span class="si">}</span><span class="s2"> &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;instance_id:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">instance_id</span><span class="si">}</span><span class="s2"> failed.&quot;</span><span class="p">,</span>
+                <span class="n">e</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">raise</span> <span class="n">e</span></div>
+
+<div class="viewcode-block" id="AlibabaCloudOpenSearch.from_texts"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.alibabacloud_opensearch.AlibabaCloudOpenSearch.html#langchain_community.vectorstores.alibabacloud_opensearch.AlibabaCloudOpenSearch.from_texts">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_texts</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">texts</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">embedding</span><span class="p">:</span> <span class="n">Embeddings</span><span class="p">,</span>
+        <span class="n">metadatas</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AlibabaCloudOpenSearchSettings</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;AlibabaCloudOpenSearch&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create alibaba cloud opensearch vector store instance.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            texts: The text segments to be inserted into the vector storage,</span>
+<span class="sd">             should not be empty.</span>
+<span class="sd">            embedding: Embedding function, Embedding function.</span>
+<span class="sd">            config: Alibaba OpenSearch instance configuration.</span>
+<span class="sd">            metadatas: Metadata information.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            AlibabaCloudOpenSearch: Alibaba cloud opensearch vector store instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">texts</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">texts</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;the inserted text segments, should not be empty.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">embedding</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;the embeddings should not be empty.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">config</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;config should not be none.&quot;</span><span class="p">)</span>
+
+        <span class="n">ctx</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">embedding</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">ctx</span><span class="o">.</span><span class="n">add_texts</span><span class="p">(</span><span class="n">texts</span><span class="o">=</span><span class="n">texts</span><span class="p">,</span> <span class="n">metadatas</span><span class="o">=</span><span class="n">metadatas</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ctx</span></div>
+
+<div class="viewcode-block" id="AlibabaCloudOpenSearch.from_documents"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.alibabacloud_opensearch.AlibabaCloudOpenSearch.html#langchain_community.vectorstores.alibabacloud_opensearch.AlibabaCloudOpenSearch.from_documents">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_documents</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">documents</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">],</span>
+        <span class="n">embedding</span><span class="p">:</span> <span class="n">Embeddings</span><span class="p">,</span>
+        <span class="n">config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AlibabaCloudOpenSearchSettings</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;AlibabaCloudOpenSearch&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create alibaba cloud opensearch vector store instance.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            documents: Documents to be inserted into the vector storage,</span>
+<span class="sd">             should not be empty.</span>
+<span class="sd">            embedding: Embedding function, Embedding function.</span>
+<span class="sd">            config: Alibaba OpenSearch instance configuration.</span>
+<span class="sd">            ids: Specify the ID for the inserted document. If left empty, the ID will be</span>
+<span class="sd">             automatically generated based on the text content.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            AlibabaCloudOpenSearch: Alibaba cloud opensearch vector store instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">documents</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">documents</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;the inserted documents, should not be empty.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">embedding</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;the embeddings should not be empty.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">config</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;config can&#39;t be none&quot;</span><span class="p">)</span>
+
+        <span class="n">texts</span> <span class="o">=</span> <span class="p">[</span><span class="n">d</span><span class="o">.</span><span class="n">page_content</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">documents</span><span class="p">]</span>
+        <span class="n">metadatas</span> <span class="o">=</span> <span class="p">[</span><span class="n">d</span><span class="o">.</span><span class="n">metadata</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">documents</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">from_texts</span><span class="p">(</span>
+            <span class="n">texts</span><span class="o">=</span><span class="n">texts</span><span class="p">,</span>
+            <span class="n">embedding</span><span class="o">=</span><span class="n">embedding</span><span class="p">,</span>
+            <span class="n">metadatas</span><span class="o">=</span><span class="n">metadatas</span><span class="p">,</span>
+            <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span></div></div>
+</pre></div>
+
+      </div>
+    <div class="container">
+      <footer class="sk-content-footer">
+            &copy; 2023, Harrison Chase.
+          Last updated on Dec 19, 2023.
+      </footer>
+    </div>
+  </div>
+</div>
+<script src="../../../_static/js/vendor/bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    /* Add a [>>>] button on the top-right corner of code samples to hide
+     * the >>> and ... prompts and the output and thus make the code
+     * copyable. */
+    var div = $('.highlight-python .highlight,' +
+                '.highlight-python3 .highlight,' +
+                '.highlight-pycon .highlight,' +
+		'.highlight-default .highlight')
+    var pre = div.find('pre');
+
+    // get the styles from the current theme
+    pre.parent().parent().css('position', 'relative');
+    var hide_text = 'Hide prompts and outputs';
+    var show_text = 'Show prompts and outputs';
+
+    // create and add the button to all the code blocks that contain >>>
+    div.each(function(index) {
+        var jthis = $(this);
+        if (jthis.find('.gp').length > 0) {
+            var button = $('<span class="copybutton">&gt;&gt;&gt;</span>');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+            jthis.prepend(button);
+        }
+        // tracebacks (.gt) contain bare text elements that need to be
+        // wrapped in a span to work with .nextUntil() (see later)
+        jthis.find('pre:has(.gt)').contents().filter(function() {
+            return ((this.nodeType == 3) && (this.data.trim().length > 0));
+        }).wrap('<span>');
+    });
+
+    // define the behavior of the button when it's clicked
+    $('.copybutton').click(function(e){
+        e.preventDefault();
+        var button = $(this);
+        if (button.data('hidden') === 'false') {
+            // hide the code output
+            button.parent().find('.go, .gp, .gt').hide();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'hidden');
+            button.css('text-decoration', 'line-through');
+            button.attr('title', show_text);
+            button.data('hidden', 'true');
+        } else {
+            // show the code output
+            button.parent().find('.go, .gp, .gt').show();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'visible');
+            button.css('text-decoration', 'none');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+        }
+    });
+
+	/*** Add permalink buttons next to glossary terms ***/
+	$('dl.glossary > dt[id]').append(function() {
+		return ('<a class="headerlink" href="#' +
+			    this.getAttribute('id') +
+			    '" title="Permalink to this term">¶</a>');
+	});
+});
+
+</script>
+    
+</body>
+</html>

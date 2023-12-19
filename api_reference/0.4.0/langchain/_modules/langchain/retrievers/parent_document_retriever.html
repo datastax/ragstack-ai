@@ -1,0 +1,292 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>langchain.retrievers.parent_document_retriever &mdash; 🦜🔗 LangChain 0.0.350</title>
+  
+  <link rel="canonical" href="https://api.python.langchain.com/en/latest/_modules/langchain/retrievers/parent_document_retriever.html" />
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/vendor/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/autodoc_pydantic.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/panels-bootstrap.5fd3999ee7762ccc51105388f4a9d115.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+<script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+<script src="../../../_static/jquery.js"></script> 
+</head>
+<body>
+
+
+<nav id="navbar" class="sk-docs-navbar navbar navbar-expand-md navbar-light bg-light py-0">
+  <div class="container-fluid sk-docs-container px-0">
+    <button
+      id="sk-navbar-toggler"
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="sk-navbar-collapse collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../api_reference.html">API</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../core_api_reference.html">Core</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../community_api_reference.html">Community</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../experimental_api_reference.html">Experimental</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" target="_blank" rel="noopener noreferrer" href="https://python.langchain.com/">Python Docs</a>
+        </li>
+      </ul>
+      <div id="searchbox" role="search">
+          <div class="searchformwrapper">
+          <form class="search" action="../../../search.html" method="get">
+            <input class="sk-search-text-input" type="text" name="q" aria-labelledby="searchlabel" />
+            <input class="sk-search-text-btn" type="submit" value="Go" />
+          </form>
+          </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="d-flex" id="sk-doc-wrapper">
+    <input type="checkbox" name="sk-toggle-checkbox" id="sk-toggle-checkbox">
+    <label id="sk-sidemenu-toggle" class="sk-btn-toggle-toc btn sk-btn-primary" for="sk-toggle-checkbox">Toggle Menu</label>
+    <div id="sk-sidebar-wrapper" class="border-right">
+      <div class="sk-sidebar-toc-wrapper">
+        <div class="btn-group w-100 mb-2" role="group" aria-label="rellinks">
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Prev</a><a href="../../index.html" role="button" class="btn sk-btn-rellink py-1" sk-rellink-tooltip="Module code">Up</a>
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Next</a>
+        </div>
+        <div class="alert alert-warning p-1 mb-2" role="alert">
+          <p class="text-center mb-0">
+          <strong>LangChain 0.0.350</strong><br/>
+          </p>
+        </div>
+            <div class="sk-sidebar-toc">
+              
+            </div>
+      </div>
+    </div>
+    <div id="sk-page-content-wrapper">
+      <div class="sk-page-content container-fluid body px-md-3" role="main">
+        
+  <h1>Source code for langchain.retrievers.parent_document_retriever</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">uuid</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="kn">from</span> <span class="nn">langchain_core.documents</span> <span class="kn">import</span> <span class="n">Document</span>
+
+<span class="kn">from</span> <span class="nn">langchain.retrievers</span> <span class="kn">import</span> <span class="n">MultiVectorRetriever</span>
+<span class="kn">from</span> <span class="nn">langchain.text_splitter</span> <span class="kn">import</span> <span class="n">TextSplitter</span>
+
+
+<div class="viewcode-block" id="ParentDocumentRetriever"><a class="viewcode-back" href="../../../retrievers/langchain.retrievers.parent_document_retriever.ParentDocumentRetriever.html#langchain.retrievers.parent_document_retriever.ParentDocumentRetriever">[docs]</a><span class="k">class</span> <span class="nc">ParentDocumentRetriever</span><span class="p">(</span><span class="n">MultiVectorRetriever</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Retrieve small chunks then retrieve their parent documents.</span>
+
+<span class="sd">    When splitting documents for retrieval, there are often conflicting desires:</span>
+
+<span class="sd">    1. You may want to have small documents, so that their embeddings can most</span>
+<span class="sd">        accurately reflect their meaning. If too long, then the embeddings can</span>
+<span class="sd">        lose meaning.</span>
+<span class="sd">    2. You want to have long enough documents that the context of each chunk is</span>
+<span class="sd">        retained.</span>
+
+<span class="sd">    The ParentDocumentRetriever strikes that balance by splitting and storing</span>
+<span class="sd">    small chunks of data. During retrieval, it first fetches the small chunks</span>
+<span class="sd">    but then looks up the parent ids for those chunks and returns those larger</span>
+<span class="sd">    documents.</span>
+
+<span class="sd">    Note that &quot;parent document&quot; refers to the document that a small chunk</span>
+<span class="sd">    originated from. This can either be the whole raw document OR a larger</span>
+<span class="sd">    chunk.</span>
+
+<span class="sd">    Examples:</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            # Imports</span>
+<span class="sd">            from langchain.vectorstores import Chroma</span>
+<span class="sd">            from langchain.embeddings import OpenAIEmbeddings</span>
+<span class="sd">            from langchain.text_splitter import RecursiveCharacterTextSplitter</span>
+<span class="sd">            from langchain.storage import InMemoryStore</span>
+
+<span class="sd">            # This text splitter is used to create the parent documents</span>
+<span class="sd">            parent_splitter = RecursiveCharacterTextSplitter(chunk_size=2000)</span>
+<span class="sd">            # This text splitter is used to create the child documents</span>
+<span class="sd">            # It should create documents smaller than the parent</span>
+<span class="sd">            child_splitter = RecursiveCharacterTextSplitter(chunk_size=400)</span>
+<span class="sd">            # The vectorstore to use to index the child chunks</span>
+<span class="sd">            vectorstore = Chroma(embedding_function=OpenAIEmbeddings())</span>
+<span class="sd">            # The storage layer for the parent documents</span>
+<span class="sd">            store = InMemoryStore()</span>
+
+<span class="sd">            # Initialize the retriever</span>
+<span class="sd">            retriever = ParentDocumentRetriever(</span>
+<span class="sd">                vectorstore=vectorstore,</span>
+<span class="sd">                docstore=store,</span>
+<span class="sd">                child_splitter=child_splitter,</span>
+<span class="sd">                parent_splitter=parent_splitter,</span>
+<span class="sd">            )</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">child_splitter</span><span class="p">:</span> <span class="n">TextSplitter</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The text splitter to use to create child documents.&quot;&quot;&quot;</span>
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The key to use to track the parent id. This will be stored in the</span>
+<span class="sd">    metadata of child documents.&quot;&quot;&quot;</span>
+    <span class="n">parent_splitter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TextSplitter</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The text splitter to use to create parent documents.</span>
+<span class="sd">    If none, then the parent documents will be the raw documents passed in.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ParentDocumentRetriever.add_documents"><a class="viewcode-back" href="../../../retrievers/langchain.retrievers.parent_document_retriever.ParentDocumentRetriever.html#langchain.retrievers.parent_document_retriever.ParentDocumentRetriever.add_documents">[docs]</a>    <span class="k">def</span> <span class="nf">add_documents</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">documents</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">],</span>
+        <span class="n">ids</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">add_to_docstore</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Adds documents to the docstore and vectorstores.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            documents: List of documents to add</span>
+<span class="sd">            ids: Optional list of ids for documents. If provided should be the same</span>
+<span class="sd">                length as the list of documents. Can provided if parent documents</span>
+<span class="sd">                are already in the document store and you don&#39;t want to re-add</span>
+<span class="sd">                to the docstore. If not provided, random UUIDs will be used as</span>
+<span class="sd">                ids.</span>
+<span class="sd">            add_to_docstore: Boolean of whether to add documents to docstore.</span>
+<span class="sd">                This can be false if and only if `ids` are provided. You may want</span>
+<span class="sd">                to set this to False if the documents are already in the docstore</span>
+<span class="sd">                and you don&#39;t want to re-add them.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent_splitter</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">documents</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent_splitter</span><span class="o">.</span><span class="n">split_documents</span><span class="p">(</span><span class="n">documents</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">ids</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">doc_ids</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">())</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">documents</span><span class="p">]</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">add_to_docstore</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;If ids are not passed in, `add_to_docstore` MUST be True&quot;</span>
+                <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">documents</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ids</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;Got uneven list of documents and ids. &quot;</span>
+                    <span class="s2">&quot;If `ids` is provided, should be same length as `documents`.&quot;</span>
+                <span class="p">)</span>
+            <span class="n">doc_ids</span> <span class="o">=</span> <span class="n">ids</span>
+
+        <span class="n">docs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">full_docs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">doc</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">documents</span><span class="p">):</span>
+            <span class="n">_id</span> <span class="o">=</span> <span class="n">doc_ids</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">sub_docs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">child_splitter</span><span class="o">.</span><span class="n">split_documents</span><span class="p">([</span><span class="n">doc</span><span class="p">])</span>
+            <span class="k">for</span> <span class="n">_doc</span> <span class="ow">in</span> <span class="n">sub_docs</span><span class="p">:</span>
+                <span class="n">_doc</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">id_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">_id</span>
+            <span class="n">docs</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">sub_docs</span><span class="p">)</span>
+            <span class="n">full_docs</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">_id</span><span class="p">,</span> <span class="n">doc</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vectorstore</span><span class="o">.</span><span class="n">add_documents</span><span class="p">(</span><span class="n">docs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">add_to_docstore</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">docstore</span><span class="o">.</span><span class="n">mset</span><span class="p">(</span><span class="n">full_docs</span><span class="p">)</span></div></div>
+</pre></div>
+
+      </div>
+    <div class="container">
+      <footer class="sk-content-footer">
+            &copy; 2023, Harrison Chase.
+          Last updated on Dec 19, 2023.
+      </footer>
+    </div>
+  </div>
+</div>
+<script src="../../../_static/js/vendor/bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    /* Add a [>>>] button on the top-right corner of code samples to hide
+     * the >>> and ... prompts and the output and thus make the code
+     * copyable. */
+    var div = $('.highlight-python .highlight,' +
+                '.highlight-python3 .highlight,' +
+                '.highlight-pycon .highlight,' +
+		'.highlight-default .highlight')
+    var pre = div.find('pre');
+
+    // get the styles from the current theme
+    pre.parent().parent().css('position', 'relative');
+    var hide_text = 'Hide prompts and outputs';
+    var show_text = 'Show prompts and outputs';
+
+    // create and add the button to all the code blocks that contain >>>
+    div.each(function(index) {
+        var jthis = $(this);
+        if (jthis.find('.gp').length > 0) {
+            var button = $('<span class="copybutton">&gt;&gt;&gt;</span>');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+            jthis.prepend(button);
+        }
+        // tracebacks (.gt) contain bare text elements that need to be
+        // wrapped in a span to work with .nextUntil() (see later)
+        jthis.find('pre:has(.gt)').contents().filter(function() {
+            return ((this.nodeType == 3) && (this.data.trim().length > 0));
+        }).wrap('<span>');
+    });
+
+    // define the behavior of the button when it's clicked
+    $('.copybutton').click(function(e){
+        e.preventDefault();
+        var button = $(this);
+        if (button.data('hidden') === 'false') {
+            // hide the code output
+            button.parent().find('.go, .gp, .gt').hide();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'hidden');
+            button.css('text-decoration', 'line-through');
+            button.attr('title', show_text);
+            button.data('hidden', 'true');
+        } else {
+            // show the code output
+            button.parent().find('.go, .gp, .gt').show();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'visible');
+            button.css('text-decoration', 'none');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+        }
+    });
+
+	/*** Add permalink buttons next to glossary terms ***/
+	$('dl.glossary > dt[id]').append(function() {
+		return ('<a class="headerlink" href="#' +
+			    this.getAttribute('id') +
+			    '" title="Permalink to this term">¶</a>');
+	});
+});
+
+</script>
+    
+</body>
+</html>

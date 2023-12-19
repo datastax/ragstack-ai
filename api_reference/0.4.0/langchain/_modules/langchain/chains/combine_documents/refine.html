@@ -1,0 +1,391 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>langchain.chains.combine_documents.refine &mdash; 🦜🔗 LangChain 0.0.350</title>
+  
+  <link rel="canonical" href="https://api.python.langchain.com/en/latest/_modules/langchain/chains/combine_documents/refine.html" />
+
+  
+
+  <link rel="stylesheet" href="../../../../_static/css/vendor/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/autodoc_pydantic.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/panels-bootstrap.5fd3999ee7762ccc51105388f4a9d115.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/css/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+<script id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+<script src="../../../../_static/jquery.js"></script> 
+</head>
+<body>
+
+
+<nav id="navbar" class="sk-docs-navbar navbar navbar-expand-md navbar-light bg-light py-0">
+  <div class="container-fluid sk-docs-container px-0">
+    <button
+      id="sk-navbar-toggler"
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="sk-navbar-collapse collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../../api_reference.html">API</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../../core_api_reference.html">Core</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../../community_api_reference.html">Community</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../../experimental_api_reference.html">Experimental</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" target="_blank" rel="noopener noreferrer" href="https://python.langchain.com/">Python Docs</a>
+        </li>
+      </ul>
+      <div id="searchbox" role="search">
+          <div class="searchformwrapper">
+          <form class="search" action="../../../../search.html" method="get">
+            <input class="sk-search-text-input" type="text" name="q" aria-labelledby="searchlabel" />
+            <input class="sk-search-text-btn" type="submit" value="Go" />
+          </form>
+          </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="d-flex" id="sk-doc-wrapper">
+    <input type="checkbox" name="sk-toggle-checkbox" id="sk-toggle-checkbox">
+    <label id="sk-sidemenu-toggle" class="sk-btn-toggle-toc btn sk-btn-primary" for="sk-toggle-checkbox">Toggle Menu</label>
+    <div id="sk-sidebar-wrapper" class="border-right">
+      <div class="sk-sidebar-toc-wrapper">
+        <div class="btn-group w-100 mb-2" role="group" aria-label="rellinks">
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Prev</a><a href="../../../index.html" role="button" class="btn sk-btn-rellink py-1" sk-rellink-tooltip="Module code">Up</a>
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Next</a>
+        </div>
+        <div class="alert alert-warning p-1 mb-2" role="alert">
+          <p class="text-center mb-0">
+          <strong>LangChain 0.0.350</strong><br/>
+          </p>
+        </div>
+            <div class="sk-sidebar-toc">
+              
+            </div>
+      </div>
+    </div>
+    <div id="sk-page-content-wrapper">
+      <div class="sk-page-content container-fluid body px-md-3" role="main">
+        
+  <h1>Source code for langchain.chains.combine_documents.refine</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Combine documents by doing a first pass and then refining on more documents.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span>
+
+<span class="kn">from</span> <span class="nn">langchain_core.documents</span> <span class="kn">import</span> <span class="n">Document</span>
+<span class="kn">from</span> <span class="nn">langchain_core.prompts</span> <span class="kn">import</span> <span class="n">BasePromptTemplate</span><span class="p">,</span> <span class="n">format_document</span>
+<span class="kn">from</span> <span class="nn">langchain_core.prompts.prompt</span> <span class="kn">import</span> <span class="n">PromptTemplate</span>
+<span class="kn">from</span> <span class="nn">langchain_core.pydantic_v1</span> <span class="kn">import</span> <span class="n">Extra</span><span class="p">,</span> <span class="n">Field</span><span class="p">,</span> <span class="n">root_validator</span>
+
+<span class="kn">from</span> <span class="nn">langchain.callbacks.manager</span> <span class="kn">import</span> <span class="n">Callbacks</span>
+<span class="kn">from</span> <span class="nn">langchain.chains.combine_documents.base</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">BaseCombineDocumentsChain</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">langchain.chains.llm</span> <span class="kn">import</span> <span class="n">LLMChain</span>
+
+
+<span class="k">def</span> <span class="nf">_get_default_document_prompt</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">PromptTemplate</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">PromptTemplate</span><span class="p">(</span><span class="n">input_variables</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;page_content&quot;</span><span class="p">],</span> <span class="n">template</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">{page_content}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="RefineDocumentsChain"><a class="viewcode-back" href="../../../../chains/langchain.chains.combine_documents.refine.RefineDocumentsChain.html#langchain.chains.combine_documents.refine.RefineDocumentsChain">[docs]</a><span class="k">class</span> <span class="nc">RefineDocumentsChain</span><span class="p">(</span><span class="n">BaseCombineDocumentsChain</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Combine documents by doing a first pass and then refining on more documents.</span>
+
+<span class="sd">    This algorithm first calls `initial_llm_chain` on the first document, passing</span>
+<span class="sd">    that first document in with the variable name `document_variable_name`, and</span>
+<span class="sd">    produces a new variable with the variable name `initial_response_name`.</span>
+
+<span class="sd">    Then, it loops over every remaining document. This is called the &quot;refine&quot; step.</span>
+<span class="sd">    It calls `refine_llm_chain`,</span>
+<span class="sd">    passing in that document with the variable name `document_variable_name`</span>
+<span class="sd">    as well as the previous response with the variable name `initial_response_name`.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            from langchain.chains import RefineDocumentsChain, LLMChain</span>
+<span class="sd">            from langchain_core.prompts import PromptTemplate</span>
+<span class="sd">            from langchain.llms import OpenAI</span>
+
+<span class="sd">            # This controls how each document will be formatted. Specifically,</span>
+<span class="sd">            # it will be passed to `format_document` - see that function for more</span>
+<span class="sd">            # details.</span>
+<span class="sd">            document_prompt = PromptTemplate(</span>
+<span class="sd">                input_variables=[&quot;page_content&quot;],</span>
+<span class="sd">                 template=&quot;{page_content}&quot;</span>
+<span class="sd">            )</span>
+<span class="sd">            document_variable_name = &quot;context&quot;</span>
+<span class="sd">            llm = OpenAI()</span>
+<span class="sd">            # The prompt here should take as an input variable the</span>
+<span class="sd">            # `document_variable_name`</span>
+<span class="sd">            prompt = PromptTemplate.from_template(</span>
+<span class="sd">                &quot;Summarize this content: {context}&quot;</span>
+<span class="sd">            )</span>
+<span class="sd">            initial_llm_chain = LLMChain(llm=llm, prompt=prompt)</span>
+<span class="sd">            initial_response_name = &quot;prev_response&quot;</span>
+<span class="sd">            # The prompt here should take as an input variable the</span>
+<span class="sd">            # `document_variable_name` as well as `initial_response_name`</span>
+<span class="sd">            prompt_refine = PromptTemplate.from_template(</span>
+<span class="sd">                &quot;Here&#39;s your first summary: {prev_response}. &quot;</span>
+<span class="sd">                &quot;Now add to it based on the following context: {context}&quot;</span>
+<span class="sd">            )</span>
+<span class="sd">            refine_llm_chain = LLMChain(llm=llm, prompt=prompt_refine)</span>
+<span class="sd">            chain = RefineDocumentsChain(</span>
+<span class="sd">                initial_llm_chain=initial_llm_chain,</span>
+<span class="sd">                refine_llm_chain=refine_llm_chain,</span>
+<span class="sd">                document_prompt=document_prompt,</span>
+<span class="sd">                document_variable_name=document_variable_name,</span>
+<span class="sd">                initial_response_name=initial_response_name,</span>
+<span class="sd">            )</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">initial_llm_chain</span><span class="p">:</span> <span class="n">LLMChain</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;LLM chain to use on initial document.&quot;&quot;&quot;</span>
+    <span class="n">refine_llm_chain</span><span class="p">:</span> <span class="n">LLMChain</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;LLM chain to use when refining.&quot;&quot;&quot;</span>
+    <span class="n">document_variable_name</span><span class="p">:</span> <span class="nb">str</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The variable name in the initial_llm_chain to put the documents in.</span>
+<span class="sd">    If only one variable in the initial_llm_chain, this need not be provided.&quot;&quot;&quot;</span>
+    <span class="n">initial_response_name</span><span class="p">:</span> <span class="nb">str</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The variable name to format the initial response in when refining.&quot;&quot;&quot;</span>
+    <span class="n">document_prompt</span><span class="p">:</span> <span class="n">BasePromptTemplate</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="n">default_factory</span><span class="o">=</span><span class="n">_get_default_document_prompt</span>
+    <span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Prompt to use to format each document, gets passed to `format_document`.&quot;&quot;&quot;</span>
+    <span class="n">return_intermediate_steps</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the results of the refine steps in the output.&quot;&quot;&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">output_keys</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Expect input key.</span>
+
+<span class="sd">        :meta private:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">_output_keys</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">output_keys</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">return_intermediate_steps</span><span class="p">:</span>
+            <span class="n">_output_keys</span> <span class="o">=</span> <span class="n">_output_keys</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;intermediate_steps&quot;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">_output_keys</span>
+
+    <span class="k">class</span> <span class="nc">Config</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Configuration for this pydantic object.&quot;&quot;&quot;</span>
+
+        <span class="n">extra</span> <span class="o">=</span> <span class="n">Extra</span><span class="o">.</span><span class="n">forbid</span>
+        <span class="n">arbitrary_types_allowed</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="nd">@root_validator</span><span class="p">(</span><span class="n">pre</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">get_return_intermediate_steps</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;For backwards compatibility.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="s2">&quot;return_refine_steps&quot;</span> <span class="ow">in</span> <span class="n">values</span><span class="p">:</span>
+            <span class="n">values</span><span class="p">[</span><span class="s2">&quot;return_intermediate_steps&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;return_refine_steps&quot;</span><span class="p">]</span>
+            <span class="k">del</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;return_refine_steps&quot;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">values</span>
+
+    <span class="nd">@root_validator</span><span class="p">(</span><span class="n">pre</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">get_default_document_variable_name</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get default document variable name, if not provided.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="s2">&quot;document_variable_name&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">values</span><span class="p">:</span>
+            <span class="n">llm_chain_variables</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;initial_llm_chain&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">prompt</span><span class="o">.</span><span class="n">input_variables</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">llm_chain_variables</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">values</span><span class="p">[</span><span class="s2">&quot;document_variable_name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">llm_chain_variables</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;document_variable_name must be provided if there are &quot;</span>
+                    <span class="s2">&quot;multiple llm_chain input_variables&quot;</span>
+                <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">llm_chain_variables</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;initial_llm_chain&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">prompt</span><span class="o">.</span><span class="n">input_variables</span>
+            <span class="k">if</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;document_variable_name&quot;</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">llm_chain_variables</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;document_variable_name </span><span class="si">{</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;document_variable_name&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> was &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;not found in llm_chain input_variables: </span><span class="si">{</span><span class="n">llm_chain_variables</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+        <span class="k">return</span> <span class="n">values</span>
+
+<div class="viewcode-block" id="RefineDocumentsChain.combine_docs"><a class="viewcode-back" href="../../../../chains/langchain.chains.combine_documents.refine.RefineDocumentsChain.html#langchain.chains.combine_documents.refine.RefineDocumentsChain.combine_docs">[docs]</a>    <span class="k">def</span> <span class="nf">combine_docs</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">docs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">],</span> <span class="n">callbacks</span><span class="p">:</span> <span class="n">Callbacks</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Combine by mapping first chain over all, then stuffing into final chain.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            docs: List of documents to combine</span>
+<span class="sd">            callbacks: Callbacks to be passed through</span>
+<span class="sd">            **kwargs: additional parameters to be passed to LLM calls (like other</span>
+<span class="sd">                input variables besides the documents)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The first element returned is the single string output. The second</span>
+<span class="sd">            element returned is a dictionary of other keys to return.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">inputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_construct_initial_inputs</span><span class="p">(</span><span class="n">docs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_llm_chain</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">callbacks</span><span class="o">=</span><span class="n">callbacks</span><span class="p">,</span> <span class="o">**</span><span class="n">inputs</span><span class="p">)</span>
+        <span class="n">refine_steps</span> <span class="o">=</span> <span class="p">[</span><span class="n">res</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="n">docs</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+            <span class="n">base_inputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_construct_refine_inputs</span><span class="p">(</span><span class="n">doc</span><span class="p">,</span> <span class="n">res</span><span class="p">)</span>
+            <span class="n">inputs</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="n">base_inputs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">}</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">refine_llm_chain</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">callbacks</span><span class="o">=</span><span class="n">callbacks</span><span class="p">,</span> <span class="o">**</span><span class="n">inputs</span><span class="p">)</span>
+            <span class="n">refine_steps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_construct_result</span><span class="p">(</span><span class="n">refine_steps</span><span class="p">,</span> <span class="n">res</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="RefineDocumentsChain.acombine_docs"><a class="viewcode-back" href="../../../../chains/langchain.chains.combine_documents.refine.RefineDocumentsChain.html#langchain.chains.combine_documents.refine.RefineDocumentsChain.acombine_docs">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">acombine_docs</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">docs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">],</span> <span class="n">callbacks</span><span class="p">:</span> <span class="n">Callbacks</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Async combine by mapping a first chain over all, then stuffing</span>
+<span class="sd">         into a final chain.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            docs: List of documents to combine</span>
+<span class="sd">            callbacks: Callbacks to be passed through</span>
+<span class="sd">            **kwargs: additional parameters to be passed to LLM calls (like other</span>
+<span class="sd">                input variables besides the documents)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The first element returned is the single string output. The second</span>
+<span class="sd">            element returned is a dictionary of other keys to return.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">inputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_construct_initial_inputs</span><span class="p">(</span><span class="n">docs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_llm_chain</span><span class="o">.</span><span class="n">apredict</span><span class="p">(</span><span class="n">callbacks</span><span class="o">=</span><span class="n">callbacks</span><span class="p">,</span> <span class="o">**</span><span class="n">inputs</span><span class="p">)</span>
+        <span class="n">refine_steps</span> <span class="o">=</span> <span class="p">[</span><span class="n">res</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="n">docs</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+            <span class="n">base_inputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_construct_refine_inputs</span><span class="p">(</span><span class="n">doc</span><span class="p">,</span> <span class="n">res</span><span class="p">)</span>
+            <span class="n">inputs</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="n">base_inputs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">}</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">refine_llm_chain</span><span class="o">.</span><span class="n">apredict</span><span class="p">(</span><span class="n">callbacks</span><span class="o">=</span><span class="n">callbacks</span><span class="p">,</span> <span class="o">**</span><span class="n">inputs</span><span class="p">)</span>
+            <span class="n">refine_steps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_construct_result</span><span class="p">(</span><span class="n">refine_steps</span><span class="p">,</span> <span class="n">res</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_construct_result</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">refine_steps</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">res</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">return_intermediate_steps</span><span class="p">:</span>
+            <span class="n">extra_return_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;intermediate_steps&quot;</span><span class="p">:</span> <span class="n">refine_steps</span><span class="p">}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">extra_return_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">return</span> <span class="n">res</span><span class="p">,</span> <span class="n">extra_return_dict</span>
+
+    <span class="k">def</span> <span class="nf">_construct_refine_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">doc</span><span class="p">:</span> <span class="n">Document</span><span class="p">,</span> <span class="n">res</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">document_variable_name</span><span class="p">:</span> <span class="n">format_document</span><span class="p">(</span><span class="n">doc</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">document_prompt</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">initial_response_name</span><span class="p">:</span> <span class="n">res</span><span class="p">,</span>
+        <span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">_construct_initial_inputs</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">docs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+        <span class="n">base_info</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;page_content&quot;</span><span class="p">:</span> <span class="n">docs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">page_content</span><span class="p">}</span>
+        <span class="n">base_info</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">docs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">metadata</span><span class="p">)</span>
+        <span class="n">document_info</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">base_info</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">document_prompt</span><span class="o">.</span><span class="n">input_variables</span><span class="p">}</span>
+        <span class="n">base_inputs</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">document_variable_name</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">document_prompt</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">**</span><span class="n">document_info</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="n">inputs</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="n">base_inputs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">}</span>
+        <span class="k">return</span> <span class="n">inputs</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_chain_type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;refine_documents_chain&quot;</span></div>
+</pre></div>
+
+      </div>
+    <div class="container">
+      <footer class="sk-content-footer">
+            &copy; 2023, Harrison Chase.
+          Last updated on Dec 19, 2023.
+      </footer>
+    </div>
+  </div>
+</div>
+<script src="../../../../_static/js/vendor/bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    /* Add a [>>>] button on the top-right corner of code samples to hide
+     * the >>> and ... prompts and the output and thus make the code
+     * copyable. */
+    var div = $('.highlight-python .highlight,' +
+                '.highlight-python3 .highlight,' +
+                '.highlight-pycon .highlight,' +
+		'.highlight-default .highlight')
+    var pre = div.find('pre');
+
+    // get the styles from the current theme
+    pre.parent().parent().css('position', 'relative');
+    var hide_text = 'Hide prompts and outputs';
+    var show_text = 'Show prompts and outputs';
+
+    // create and add the button to all the code blocks that contain >>>
+    div.each(function(index) {
+        var jthis = $(this);
+        if (jthis.find('.gp').length > 0) {
+            var button = $('<span class="copybutton">&gt;&gt;&gt;</span>');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+            jthis.prepend(button);
+        }
+        // tracebacks (.gt) contain bare text elements that need to be
+        // wrapped in a span to work with .nextUntil() (see later)
+        jthis.find('pre:has(.gt)').contents().filter(function() {
+            return ((this.nodeType == 3) && (this.data.trim().length > 0));
+        }).wrap('<span>');
+    });
+
+    // define the behavior of the button when it's clicked
+    $('.copybutton').click(function(e){
+        e.preventDefault();
+        var button = $(this);
+        if (button.data('hidden') === 'false') {
+            // hide the code output
+            button.parent().find('.go, .gp, .gt').hide();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'hidden');
+            button.css('text-decoration', 'line-through');
+            button.attr('title', show_text);
+            button.data('hidden', 'true');
+        } else {
+            // show the code output
+            button.parent().find('.go, .gp, .gt').show();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'visible');
+            button.css('text-decoration', 'none');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+        }
+    });
+
+	/*** Add permalink buttons next to glossary terms ***/
+	$('dl.glossary > dt[id]').append(function() {
+		return ('<a class="headerlink" href="#' +
+			    this.getAttribute('id') +
+			    '" title="Permalink to this term">¶</a>');
+	});
+});
+
+</script>
+    
+</body>
+</html>

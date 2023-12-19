@@ -1,0 +1,479 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>langchain.chains.openai_functions.openapi &mdash; 🦜🔗 LangChain 0.0.350</title>
+  
+  <link rel="canonical" href="https://api.python.langchain.com/en/latest/_modules/langchain/chains/openai_functions/openapi.html" />
+
+  
+
+  <link rel="stylesheet" href="../../../../_static/css/vendor/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/autodoc_pydantic.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/panels-bootstrap.5fd3999ee7762ccc51105388f4a9d115.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/css/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+<script id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+<script src="../../../../_static/jquery.js"></script> 
+</head>
+<body>
+
+
+<nav id="navbar" class="sk-docs-navbar navbar navbar-expand-md navbar-light bg-light py-0">
+  <div class="container-fluid sk-docs-container px-0">
+    <button
+      id="sk-navbar-toggler"
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="sk-navbar-collapse collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../../api_reference.html">API</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../../core_api_reference.html">Core</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../../community_api_reference.html">Community</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../../experimental_api_reference.html">Experimental</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" target="_blank" rel="noopener noreferrer" href="https://python.langchain.com/">Python Docs</a>
+        </li>
+      </ul>
+      <div id="searchbox" role="search">
+          <div class="searchformwrapper">
+          <form class="search" action="../../../../search.html" method="get">
+            <input class="sk-search-text-input" type="text" name="q" aria-labelledby="searchlabel" />
+            <input class="sk-search-text-btn" type="submit" value="Go" />
+          </form>
+          </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="d-flex" id="sk-doc-wrapper">
+    <input type="checkbox" name="sk-toggle-checkbox" id="sk-toggle-checkbox">
+    <label id="sk-sidemenu-toggle" class="sk-btn-toggle-toc btn sk-btn-primary" for="sk-toggle-checkbox">Toggle Menu</label>
+    <div id="sk-sidebar-wrapper" class="border-right">
+      <div class="sk-sidebar-toc-wrapper">
+        <div class="btn-group w-100 mb-2" role="group" aria-label="rellinks">
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Prev</a><a href="../../../index.html" role="button" class="btn sk-btn-rellink py-1" sk-rellink-tooltip="Module code">Up</a>
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Next</a>
+        </div>
+        <div class="alert alert-warning p-1 mb-2" role="alert">
+          <p class="text-center mb-0">
+          <strong>LangChain 0.0.350</strong><br/>
+          </p>
+        </div>
+            <div class="sk-sidebar-toc">
+              
+            </div>
+      </div>
+    </div>
+    <div id="sk-page-content-wrapper">
+      <div class="sk-page-content container-fluid body px-md-3" role="main">
+        
+  <h1>Source code for langchain.chains.openai_functions.openapi</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">from</span> <span class="nn">langchain_core.language_models</span> <span class="kn">import</span> <span class="n">BaseLanguageModel</span>
+<span class="kn">from</span> <span class="nn">langchain_core.prompts</span> <span class="kn">import</span> <span class="n">BasePromptTemplate</span><span class="p">,</span> <span class="n">ChatPromptTemplate</span>
+<span class="kn">from</span> <span class="nn">langchain_core.utils.input</span> <span class="kn">import</span> <span class="n">get_colored_text</span>
+<span class="kn">from</span> <span class="nn">requests</span> <span class="kn">import</span> <span class="n">Response</span>
+
+<span class="kn">from</span> <span class="nn">langchain.callbacks.manager</span> <span class="kn">import</span> <span class="n">CallbackManagerForChainRun</span>
+<span class="kn">from</span> <span class="nn">langchain.chains.base</span> <span class="kn">import</span> <span class="n">Chain</span>
+<span class="kn">from</span> <span class="nn">langchain.chains.llm</span> <span class="kn">import</span> <span class="n">LLMChain</span>
+<span class="kn">from</span> <span class="nn">langchain.chains.sequential</span> <span class="kn">import</span> <span class="n">SequentialChain</span>
+<span class="kn">from</span> <span class="nn">langchain.chat_models</span> <span class="kn">import</span> <span class="n">ChatOpenAI</span>
+<span class="kn">from</span> <span class="nn">langchain.output_parsers.openai_functions</span> <span class="kn">import</span> <span class="n">JsonOutputFunctionsParser</span>
+<span class="kn">from</span> <span class="nn">langchain.tools</span> <span class="kn">import</span> <span class="n">APIOperation</span>
+<span class="kn">from</span> <span class="nn">langchain.utilities.openapi</span> <span class="kn">import</span> <span class="n">OpenAPISpec</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">openapi_pydantic</span> <span class="kn">import</span> <span class="n">Parameter</span>
+
+
+<span class="k">def</span> <span class="nf">_get_description</span><span class="p">(</span><span class="n">o</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">prefer_short</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="n">summary</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="s2">&quot;summary&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">description</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">prefer_short</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">summary</span> <span class="ow">or</span> <span class="n">description</span>
+    <span class="k">return</span> <span class="n">description</span> <span class="ow">or</span> <span class="n">summary</span>
+
+
+<span class="k">def</span> <span class="nf">_format_url</span><span class="p">(</span><span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">path_params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="n">expected_path_param</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;{(.*?)}&quot;</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span>
+    <span class="n">new_params</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">expected_path_param</span><span class="p">:</span>
+        <span class="n">clean_param</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s2">&quot;.;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">&quot;*&quot;</span><span class="p">)</span>
+        <span class="n">val</span> <span class="o">=</span> <span class="n">path_params</span><span class="p">[</span><span class="n">clean_param</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">param</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;.&quot;</span><span class="p">:</span>
+                <span class="n">sep</span> <span class="o">=</span> <span class="s2">&quot;.&quot;</span> <span class="k">if</span> <span class="n">param</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;*&quot;</span> <span class="k">else</span> <span class="s2">&quot;,&quot;</span>
+                <span class="n">new_val</span> <span class="o">=</span> <span class="s2">&quot;.&quot;</span> <span class="o">+</span> <span class="n">sep</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">param</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;;&quot;</span><span class="p">:</span>
+                <span class="n">sep</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">clean_param</span><span class="si">}</span><span class="s2">=&quot;</span> <span class="k">if</span> <span class="n">param</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;*&quot;</span> <span class="k">else</span> <span class="s2">&quot;,&quot;</span>
+                <span class="n">new_val</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">clean_param</span><span class="si">}</span><span class="s2">=&quot;</span> <span class="o">+</span> <span class="n">sep</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">new_val</span> <span class="o">=</span> <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">kv_sep</span> <span class="o">=</span> <span class="s2">&quot;=&quot;</span> <span class="k">if</span> <span class="n">param</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;*&quot;</span> <span class="k">else</span> <span class="s2">&quot;,&quot;</span>
+            <span class="n">kv_strs</span> <span class="o">=</span> <span class="p">[</span><span class="n">kv_sep</span><span class="o">.</span><span class="n">join</span><span class="p">((</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">val</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
+            <span class="k">if</span> <span class="n">param</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;.&quot;</span><span class="p">:</span>
+                <span class="n">sep</span> <span class="o">=</span> <span class="s2">&quot;.&quot;</span>
+                <span class="n">new_val</span> <span class="o">=</span> <span class="s2">&quot;.&quot;</span>
+            <span class="k">elif</span> <span class="n">param</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;;&quot;</span><span class="p">:</span>
+                <span class="n">sep</span> <span class="o">=</span> <span class="s2">&quot;;&quot;</span>
+                <span class="n">new_val</span> <span class="o">=</span> <span class="s2">&quot;;&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">sep</span> <span class="o">=</span> <span class="s2">&quot;,&quot;</span>
+                <span class="n">new_val</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+            <span class="n">new_val</span> <span class="o">+=</span> <span class="n">sep</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">kv_strs</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">param</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;.&quot;</span><span class="p">:</span>
+                <span class="n">new_val</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;.</span><span class="si">{</span><span class="n">val</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">elif</span> <span class="n">param</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;;&quot;</span><span class="p">:</span>
+                <span class="n">new_val</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;;</span><span class="si">{</span><span class="n">clean_param</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="n">val</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">new_val</span> <span class="o">=</span> <span class="n">val</span>
+        <span class="n">new_params</span><span class="p">[</span><span class="n">param</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_val</span>
+    <span class="k">return</span> <span class="n">url</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">**</span><span class="n">new_params</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_openapi_params_to_json_schema</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Parameter</span><span class="p">],</span> <span class="n">spec</span><span class="p">:</span> <span class="n">OpenAPISpec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+    <span class="n">properties</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">required</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">params</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">param_schema</span><span class="p">:</span>
+            <span class="n">schema</span> <span class="o">=</span> <span class="n">spec</span><span class="o">.</span><span class="n">get_schema</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">param_schema</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">media_type_schema</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">content</span><span class="o">.</span><span class="n">values</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">media_type_schema</span>  <span class="c1"># type: ignore  # noqa: E501</span>
+            <span class="n">schema</span> <span class="o">=</span> <span class="n">spec</span><span class="o">.</span><span class="n">get_schema</span><span class="p">(</span><span class="n">media_type_schema</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">description</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">schema</span><span class="o">.</span><span class="n">description</span><span class="p">:</span>
+            <span class="n">schema</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">description</span>
+        <span class="n">properties</span><span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">schema</span><span class="o">.</span><span class="n">json</span><span class="p">(</span><span class="n">exclude_none</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">required</span><span class="p">:</span>
+            <span class="n">required</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span> <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="n">properties</span><span class="p">,</span> <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="n">required</span><span class="p">}</span>
+
+
+<div class="viewcode-block" id="openapi_spec_to_openai_fn"><a class="viewcode-back" href="../../../../chains/langchain.chains.openai_functions.openapi.openapi_spec_to_openai_fn.html#langchain.chains.openai_functions.openapi.openapi_spec_to_openai_fn">[docs]</a><span class="k">def</span> <span class="nf">openapi_spec_to_openai_fn</span><span class="p">(</span>
+    <span class="n">spec</span><span class="p">:</span> <span class="n">OpenAPISpec</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]],</span> <span class="n">Callable</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert a valid OpenAPI spec to the JSON Schema format expected for OpenAI</span>
+<span class="sd">        functions.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        spec: OpenAPI spec to convert.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Tuple of the OpenAI functions JSON schema and a default function for executing</span>
+<span class="sd">            a request based on the OpenAI function schema.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">spec</span><span class="o">.</span><span class="n">paths</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[],</span> <span class="k">lambda</span><span class="p">:</span> <span class="kc">None</span>
+    <span class="n">functions</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">_name_to_call_map</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">spec</span><span class="o">.</span><span class="n">paths</span><span class="p">:</span>
+        <span class="n">path_params</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">param_in</span><span class="p">):</span> <span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">spec</span><span class="o">.</span><span class="n">get_parameters_for_path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="k">for</span> <span class="n">method</span> <span class="ow">in</span> <span class="n">spec</span><span class="o">.</span><span class="n">get_methods_for_path</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+            <span class="n">request_args</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">op</span> <span class="o">=</span> <span class="n">spec</span><span class="o">.</span><span class="n">get_operation</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">method</span><span class="p">)</span>
+            <span class="n">op_params</span> <span class="o">=</span> <span class="n">path_params</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">spec</span><span class="o">.</span><span class="n">get_parameters_for_operation</span><span class="p">(</span><span class="n">op</span><span class="p">):</span>
+                <span class="n">op_params</span><span class="p">[(</span><span class="n">param</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">param</span><span class="o">.</span><span class="n">param_in</span><span class="p">)]</span> <span class="o">=</span> <span class="n">param</span>
+            <span class="n">params_by_type</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">name_loc</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">op_params</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">params_by_type</span><span class="p">[</span><span class="n">name_loc</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+            <span class="n">param_loc_to_arg_name</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="s2">&quot;params&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;header&quot;</span><span class="p">:</span> <span class="s2">&quot;headers&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;cookie&quot;</span><span class="p">:</span> <span class="s2">&quot;cookies&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="s2">&quot;path_params&quot;</span><span class="p">,</span>
+            <span class="p">}</span>
+            <span class="k">for</span> <span class="n">param_loc</span><span class="p">,</span> <span class="n">arg_name</span> <span class="ow">in</span> <span class="n">param_loc_to_arg_name</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">params_by_type</span><span class="p">[</span><span class="n">param_loc</span><span class="p">]:</span>
+                    <span class="n">request_args</span><span class="p">[</span><span class="n">arg_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">_openapi_params_to_json_schema</span><span class="p">(</span>
+                        <span class="n">params_by_type</span><span class="p">[</span><span class="n">param_loc</span><span class="p">],</span> <span class="n">spec</span>
+                    <span class="p">)</span>
+            <span class="n">request_body</span> <span class="o">=</span> <span class="n">spec</span><span class="o">.</span><span class="n">get_request_body_for_operation</span><span class="p">(</span><span class="n">op</span><span class="p">)</span>
+            <span class="c1"># TODO: Support more MIME types.</span>
+            <span class="k">if</span> <span class="n">request_body</span> <span class="ow">and</span> <span class="n">request_body</span><span class="o">.</span><span class="n">content</span><span class="p">:</span>
+                <span class="n">media_types</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="k">for</span> <span class="n">media_type</span><span class="p">,</span> <span class="n">media_type_object</span> <span class="ow">in</span> <span class="n">request_body</span><span class="o">.</span><span class="n">content</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="n">media_type_object</span><span class="o">.</span><span class="n">media_type_schema</span><span class="p">:</span>
+                        <span class="n">schema</span> <span class="o">=</span> <span class="n">spec</span><span class="o">.</span><span class="n">get_schema</span><span class="p">(</span><span class="n">media_type_object</span><span class="o">.</span><span class="n">media_type_schema</span><span class="p">)</span>
+                        <span class="n">media_types</span><span class="p">[</span><span class="n">media_type</span><span class="p">]</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span>
+                            <span class="n">schema</span><span class="o">.</span><span class="n">json</span><span class="p">(</span><span class="n">exclude_none</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                        <span class="p">)</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">media_types</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">media_type</span><span class="p">,</span> <span class="n">schema_dict</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">media_types</span><span class="o">.</span><span class="n">items</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="n">key</span> <span class="o">=</span> <span class="s2">&quot;json&quot;</span> <span class="k">if</span> <span class="n">media_type</span> <span class="o">==</span> <span class="s2">&quot;application/json&quot;</span> <span class="k">else</span> <span class="s2">&quot;data&quot;</span>
+                    <span class="n">request_args</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">schema_dict</span>
+                <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">media_types</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">request_args</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;anyOf&quot;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">media_types</span><span class="o">.</span><span class="n">values</span><span class="p">())}</span>
+
+            <span class="n">api_op</span> <span class="o">=</span> <span class="n">APIOperation</span><span class="o">.</span><span class="n">from_openapi_spec</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">method</span><span class="p">)</span>
+            <span class="n">fn</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">api_op</span><span class="o">.</span><span class="n">operation_id</span><span class="p">,</span>
+                <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="n">api_op</span><span class="o">.</span><span class="n">description</span><span class="p">,</span>
+                <span class="s2">&quot;parameters&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="n">request_args</span><span class="p">,</span>
+                <span class="p">},</span>
+            <span class="p">}</span>
+            <span class="n">functions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span>
+            <span class="n">_name_to_call_map</span><span class="p">[</span><span class="n">fn</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="n">method</span><span class="p">,</span>
+                <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="n">api_op</span><span class="o">.</span><span class="n">base_url</span> <span class="o">+</span> <span class="n">api_op</span><span class="o">.</span><span class="n">path</span><span class="p">,</span>
+            <span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">default_call_api</span><span class="p">(</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">fn_args</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+        <span class="n">headers</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">params</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+        <span class="n">method</span> <span class="o">=</span> <span class="n">_name_to_call_map</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;method&quot;</span><span class="p">]</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">_name_to_call_map</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;url&quot;</span><span class="p">]</span>
+        <span class="n">path_params</span> <span class="o">=</span> <span class="n">fn_args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;path_params&quot;</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">_format_url</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">path_params</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">&quot;data&quot;</span> <span class="ow">in</span> <span class="n">fn_args</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fn_args</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">],</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">fn_args</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">fn_args</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">])</span>
+        <span class="n">_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="n">fn_args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">}</span>
+        <span class="k">if</span> <span class="n">headers</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;headers&quot;</span> <span class="ow">in</span> <span class="n">_kwargs</span><span class="p">:</span>
+                <span class="n">_kwargs</span><span class="p">[</span><span class="s2">&quot;headers&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">headers</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">_kwargs</span><span class="p">[</span><span class="s2">&quot;headers&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">headers</span>
+        <span class="k">if</span> <span class="n">params</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;params&quot;</span> <span class="ow">in</span> <span class="n">_kwargs</span><span class="p">:</span>
+                <span class="n">_kwargs</span><span class="p">[</span><span class="s2">&quot;params&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">_kwargs</span><span class="p">[</span><span class="s2">&quot;params&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">params</span>
+        <span class="k">return</span> <span class="n">requests</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="n">method</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="o">**</span><span class="n">_kwargs</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">functions</span><span class="p">,</span> <span class="n">default_call_api</span></div>
+
+
+<div class="viewcode-block" id="SimpleRequestChain"><a class="viewcode-back" href="../../../../chains/langchain.chains.openai_functions.openapi.SimpleRequestChain.html#langchain.chains.openai_functions.openapi.SimpleRequestChain">[docs]</a><span class="k">class</span> <span class="nc">SimpleRequestChain</span><span class="p">(</span><span class="n">Chain</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Chain for making a simple request to an API endpoint.&quot;&quot;&quot;</span>
+
+    <span class="n">request_method</span><span class="p">:</span> <span class="n">Callable</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Method to use for making the request.&quot;&quot;&quot;</span>
+    <span class="n">output_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;response&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Key to use for the output of the request.&quot;&quot;&quot;</span>
+    <span class="n">input_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;function&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Key to use for the input of the request.&quot;&quot;&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">input_keys</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">input_key</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">output_keys</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">output_key</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_call</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">inputs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+        <span class="n">run_manager</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">CallbackManagerForChainRun</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run the logic of this chain and return the output.&quot;&quot;&quot;</span>
+        <span class="n">_run_manager</span> <span class="o">=</span> <span class="n">run_manager</span> <span class="ow">or</span> <span class="n">CallbackManagerForChainRun</span><span class="o">.</span><span class="n">get_noop_manager</span><span class="p">()</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">input_key</span><span class="p">]</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">)</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">input_key</span><span class="p">]</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;arguments&quot;</span><span class="p">)</span>
+        <span class="n">_pretty_name</span> <span class="o">=</span> <span class="n">get_colored_text</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="s2">&quot;green&quot;</span><span class="p">)</span>
+        <span class="n">_pretty_args</span> <span class="o">=</span> <span class="n">get_colored_text</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span> <span class="s2">&quot;green&quot;</span><span class="p">)</span>
+        <span class="n">_text</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Calling endpoint </span><span class="si">{</span><span class="n">_pretty_name</span><span class="si">}</span><span class="s2"> with arguments:</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">_pretty_args</span>
+        <span class="n">_run_manager</span><span class="o">.</span><span class="n">on_text</span><span class="p">(</span><span class="n">_text</span><span class="p">)</span>
+        <span class="n">api_response</span><span class="p">:</span> <span class="n">Response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request_method</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">api_response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">!=</span> <span class="mi">200</span><span class="p">:</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">api_response</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">api_response</span><span class="o">.</span><span class="n">reason</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">For </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> &quot;</span>
+                <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;Called with args: </span><span class="si">{</span><span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;params&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">response</span> <span class="o">=</span> <span class="n">api_response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>  <span class="c1"># noqa: E722</span>
+                <span class="n">response</span> <span class="o">=</span> <span class="n">api_response</span><span class="o">.</span><span class="n">text</span>
+        <span class="k">return</span> <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">output_key</span><span class="p">:</span> <span class="n">response</span><span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="get_openapi_chain"><a class="viewcode-back" href="../../../../chains/langchain.chains.openai_functions.openapi.get_openapi_chain.html#langchain.chains.openai_functions.openapi.get_openapi_chain">[docs]</a><span class="k">def</span> <span class="nf">get_openapi_chain</span><span class="p">(</span>
+    <span class="n">spec</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">OpenAPISpec</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
+    <span class="n">llm</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">BaseLanguageModel</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">prompt</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">BasePromptTemplate</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">request_chain</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Chain</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">llm_chain_kwargs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">headers</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">params</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SequentialChain</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a chain for querying an API from a OpenAPI spec.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        spec: OpenAPISpec or url/file/text string corresponding to one.</span>
+<span class="sd">        llm: language model, should be an OpenAI function-calling model, e.g.</span>
+<span class="sd">            `ChatOpenAI(model=&quot;gpt-3.5-turbo-0613&quot;)`.</span>
+<span class="sd">        prompt: Main prompt template to use.</span>
+<span class="sd">        request_chain: Chain for taking the functions output and executing the request.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">conversion</span> <span class="ow">in</span> <span class="p">(</span>
+            <span class="n">OpenAPISpec</span><span class="o">.</span><span class="n">from_url</span><span class="p">,</span>
+            <span class="n">OpenAPISpec</span><span class="o">.</span><span class="n">from_file</span><span class="p">,</span>
+            <span class="n">OpenAPISpec</span><span class="o">.</span><span class="n">from_text</span><span class="p">,</span>
+        <span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">spec</span> <span class="o">=</span> <span class="n">conversion</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span>  <span class="c1"># type: ignore[arg-type]</span>
+                <span class="k">break</span>
+            <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">e</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>  <span class="c1"># noqa: E722</span>
+                <span class="k">pass</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unable to parse spec from source </span><span class="si">{</span><span class="n">spec</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">openai_fns</span><span class="p">,</span> <span class="n">call_api_fn</span> <span class="o">=</span> <span class="n">openapi_spec_to_openai_fn</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span>
+    <span class="n">llm</span> <span class="o">=</span> <span class="n">llm</span> <span class="ow">or</span> <span class="n">ChatOpenAI</span><span class="p">(</span>
+        <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-3.5-turbo-0613&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">prompt</span> <span class="o">=</span> <span class="n">prompt</span> <span class="ow">or</span> <span class="n">ChatPromptTemplate</span><span class="o">.</span><span class="n">from_template</span><span class="p">(</span>
+        <span class="s2">&quot;Use the provided API&#39;s to respond to this user query:</span><span class="se">\n\n</span><span class="si">{query}</span><span class="s2">&quot;</span>
+    <span class="p">)</span>
+    <span class="n">llm_chain</span> <span class="o">=</span> <span class="n">LLMChain</span><span class="p">(</span>
+        <span class="n">llm</span><span class="o">=</span><span class="n">llm</span><span class="p">,</span>
+        <span class="n">prompt</span><span class="o">=</span><span class="n">prompt</span><span class="p">,</span>
+        <span class="n">llm_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;functions&quot;</span><span class="p">:</span> <span class="n">openai_fns</span><span class="p">},</span>
+        <span class="n">output_parser</span><span class="o">=</span><span class="n">JsonOutputFunctionsParser</span><span class="p">(</span><span class="n">args_only</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+        <span class="n">output_key</span><span class="o">=</span><span class="s2">&quot;function&quot;</span><span class="p">,</span>
+        <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
+        <span class="o">**</span><span class="p">(</span><span class="n">llm_chain_kwargs</span> <span class="ow">or</span> <span class="p">{}),</span>
+    <span class="p">)</span>
+    <span class="n">request_chain</span> <span class="o">=</span> <span class="n">request_chain</span> <span class="ow">or</span> <span class="n">SimpleRequestChain</span><span class="p">(</span>
+        <span class="n">request_method</span><span class="o">=</span><span class="k">lambda</span> <span class="n">name</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="n">call_api_fn</span><span class="p">(</span>
+            <span class="n">name</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span>
+        <span class="p">),</span>
+        <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">SequentialChain</span><span class="p">(</span>
+        <span class="n">chains</span><span class="o">=</span><span class="p">[</span><span class="n">llm_chain</span><span class="p">,</span> <span class="n">request_chain</span><span class="p">],</span>
+        <span class="n">input_variables</span><span class="o">=</span><span class="n">llm_chain</span><span class="o">.</span><span class="n">input_keys</span><span class="p">,</span>
+        <span class="n">output_variables</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;response&quot;</span><span class="p">],</span>
+        <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span></div>
+</pre></div>
+
+      </div>
+    <div class="container">
+      <footer class="sk-content-footer">
+            &copy; 2023, Harrison Chase.
+          Last updated on Dec 19, 2023.
+      </footer>
+    </div>
+  </div>
+</div>
+<script src="../../../../_static/js/vendor/bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    /* Add a [>>>] button on the top-right corner of code samples to hide
+     * the >>> and ... prompts and the output and thus make the code
+     * copyable. */
+    var div = $('.highlight-python .highlight,' +
+                '.highlight-python3 .highlight,' +
+                '.highlight-pycon .highlight,' +
+		'.highlight-default .highlight')
+    var pre = div.find('pre');
+
+    // get the styles from the current theme
+    pre.parent().parent().css('position', 'relative');
+    var hide_text = 'Hide prompts and outputs';
+    var show_text = 'Show prompts and outputs';
+
+    // create and add the button to all the code blocks that contain >>>
+    div.each(function(index) {
+        var jthis = $(this);
+        if (jthis.find('.gp').length > 0) {
+            var button = $('<span class="copybutton">&gt;&gt;&gt;</span>');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+            jthis.prepend(button);
+        }
+        // tracebacks (.gt) contain bare text elements that need to be
+        // wrapped in a span to work with .nextUntil() (see later)
+        jthis.find('pre:has(.gt)').contents().filter(function() {
+            return ((this.nodeType == 3) && (this.data.trim().length > 0));
+        }).wrap('<span>');
+    });
+
+    // define the behavior of the button when it's clicked
+    $('.copybutton').click(function(e){
+        e.preventDefault();
+        var button = $(this);
+        if (button.data('hidden') === 'false') {
+            // hide the code output
+            button.parent().find('.go, .gp, .gt').hide();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'hidden');
+            button.css('text-decoration', 'line-through');
+            button.attr('title', show_text);
+            button.data('hidden', 'true');
+        } else {
+            // show the code output
+            button.parent().find('.go, .gp, .gt').show();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'visible');
+            button.css('text-decoration', 'none');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+        }
+    });
+
+	/*** Add permalink buttons next to glossary terms ***/
+	$('dl.glossary > dt[id]').append(function() {
+		return ('<a class="headerlink" href="#' +
+			    this.getAttribute('id') +
+			    '" title="Permalink to this term">¶</a>');
+	});
+});
+
+</script>
+    
+</body>
+</html>

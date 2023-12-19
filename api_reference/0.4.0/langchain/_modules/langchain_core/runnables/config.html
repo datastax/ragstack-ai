@@ -1,0 +1,578 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>langchain_core.runnables.config &mdash; 🦜🔗 LangChain 0.0.350</title>
+  
+  <link rel="canonical" href="https://api.python.langchain.com/en/latest/_modules/langchain_core/runnables/config.html" />
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/vendor/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/autodoc_pydantic.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/panels-bootstrap.5fd3999ee7762ccc51105388f4a9d115.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+<script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+<script src="../../../_static/jquery.js"></script> 
+</head>
+<body>
+
+
+<nav id="navbar" class="sk-docs-navbar navbar navbar-expand-md navbar-light bg-light py-0">
+  <div class="container-fluid sk-docs-container px-0">
+    <button
+      id="sk-navbar-toggler"
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="sk-navbar-collapse collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../api_reference.html">API</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../core_api_reference.html">Core</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../community_api_reference.html">Community</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../experimental_api_reference.html">Experimental</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" target="_blank" rel="noopener noreferrer" href="https://python.langchain.com/">Python Docs</a>
+        </li>
+      </ul>
+      <div id="searchbox" role="search">
+          <div class="searchformwrapper">
+          <form class="search" action="../../../search.html" method="get">
+            <input class="sk-search-text-input" type="text" name="q" aria-labelledby="searchlabel" />
+            <input class="sk-search-text-btn" type="submit" value="Go" />
+          </form>
+          </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="d-flex" id="sk-doc-wrapper">
+    <input type="checkbox" name="sk-toggle-checkbox" id="sk-toggle-checkbox">
+    <label id="sk-sidemenu-toggle" class="sk-btn-toggle-toc btn sk-btn-primary" for="sk-toggle-checkbox">Toggle Menu</label>
+    <div id="sk-sidebar-wrapper" class="border-right">
+      <div class="sk-sidebar-toc-wrapper">
+        <div class="btn-group w-100 mb-2" role="group" aria-label="rellinks">
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Prev</a><a href="../../index.html" role="button" class="btn sk-btn-rellink py-1" sk-rellink-tooltip="Module code">Up</a>
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Next</a>
+        </div>
+        <div class="alert alert-warning p-1 mb-2" role="alert">
+          <p class="text-center mb-0">
+          <strong>LangChain 0.0.350</strong><br/>
+          </p>
+        </div>
+            <div class="sk-sidebar-toc">
+              
+            </div>
+      </div>
+    </div>
+    <div id="sk-page-content-wrapper">
+      <div class="sk-page-content container-fluid body px-md-3" role="main">
+        
+  <h1>Source code for langchain_core.runnables.config</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">from</span> <span class="nn">concurrent.futures</span> <span class="kn">import</span> <span class="n">Executor</span><span class="p">,</span> <span class="n">ThreadPoolExecutor</span>
+<span class="kn">from</span> <span class="nn">contextlib</span> <span class="kn">import</span> <span class="n">contextmanager</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">TYPE_CHECKING</span><span class="p">,</span>
+    <span class="n">Any</span><span class="p">,</span>
+    <span class="n">Awaitable</span><span class="p">,</span>
+    <span class="n">Callable</span><span class="p">,</span>
+    <span class="n">Dict</span><span class="p">,</span>
+    <span class="n">Generator</span><span class="p">,</span>
+    <span class="n">List</span><span class="p">,</span>
+    <span class="n">Optional</span><span class="p">,</span>
+    <span class="n">Union</span><span class="p">,</span>
+    <span class="n">cast</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">typing_extensions</span> <span class="kn">import</span> <span class="n">TypedDict</span>
+
+<span class="kn">from</span> <span class="nn">langchain_core.runnables.utils</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Input</span><span class="p">,</span>
+    <span class="n">Output</span><span class="p">,</span>
+    <span class="n">accepts_config</span><span class="p">,</span>
+    <span class="n">accepts_run_manager</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">langchain_core.callbacks.base</span> <span class="kn">import</span> <span class="n">BaseCallbackManager</span><span class="p">,</span> <span class="n">Callbacks</span>
+    <span class="kn">from</span> <span class="nn">langchain_core.callbacks.manager</span> <span class="kn">import</span> <span class="p">(</span>
+        <span class="n">AsyncCallbackManager</span><span class="p">,</span>
+        <span class="n">AsyncCallbackManagerForChainRun</span><span class="p">,</span>
+        <span class="n">CallbackManager</span><span class="p">,</span>
+        <span class="n">CallbackManagerForChainRun</span><span class="p">,</span>
+    <span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="c1"># Pydantic validates through typed dicts, but</span>
+    <span class="c1"># the callbacks need forward refs updated</span>
+    <span class="n">Callbacks</span> <span class="o">=</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span>
+
+
+<div class="viewcode-block" id="EmptyDict"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.config.EmptyDict.html#langchain_core.runnables.config.EmptyDict">[docs]</a><span class="k">class</span> <span class="nc">EmptyDict</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">,</span> <span class="n">total</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Empty dict type.&quot;&quot;&quot;</span>
+
+    <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="RunnableConfig"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.config.RunnableConfig.html#langchain_core.runnables.config.RunnableConfig">[docs]</a><span class="k">class</span> <span class="nc">RunnableConfig</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">,</span> <span class="n">total</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Configuration for a Runnable.&quot;&quot;&quot;</span>
+
+    <span class="n">tags</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Tags for this call and any sub-calls (eg. a Chain calling an LLM).</span>
+<span class="sd">    You can use these to filter calls.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">metadata</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Metadata for this call and any sub-calls (eg. a Chain calling an LLM).</span>
+<span class="sd">    Keys should be strings, values should be JSON-serializable.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">callbacks</span><span class="p">:</span> <span class="n">Callbacks</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Callbacks for this call and any sub-calls (eg. a Chain calling an LLM).</span>
+<span class="sd">    Tags are passed to all callbacks, metadata is passed to handle*Start callbacks.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">run_name</span><span class="p">:</span> <span class="nb">str</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Name for the tracer run for this call. Defaults to the name of the class.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">max_concurrency</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Maximum number of parallel calls to make. If not provided, defaults to </span>
+<span class="sd">    ThreadPoolExecutor&#39;s default.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">recursion_limit</span><span class="p">:</span> <span class="nb">int</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Maximum number of times a call can recurse. If not provided, defaults to 25.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">configurable</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Runtime values for attributes previously made configurable on this Runnable,</span>
+<span class="sd">    or sub-Runnables, through .configurable_fields() or .configurable_alternatives().</span>
+<span class="sd">    Check .output_schema() for a description of the attributes that have been made </span>
+<span class="sd">    configurable.</span>
+<span class="sd">    &quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="ensure_config"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.config.ensure_config.html#langchain_core.runnables.config.ensure_config">[docs]</a><span class="k">def</span> <span class="nf">ensure_config</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">RunnableConfig</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RunnableConfig</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Ensure that a config is a dict with all keys present.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        config (Optional[RunnableConfig], optional): The config to ensure.</span>
+<span class="sd">          Defaults to None.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        RunnableConfig: The ensured config.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">empty</span> <span class="o">=</span> <span class="n">RunnableConfig</span><span class="p">(</span>
+        <span class="n">tags</span><span class="o">=</span><span class="p">[],</span>
+        <span class="n">metadata</span><span class="o">=</span><span class="p">{},</span>
+        <span class="n">callbacks</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">recursion_limit</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">config</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">empty</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="n">cast</span><span class="p">(</span><span class="n">RunnableConfig</span><span class="p">,</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">})</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">empty</span></div>
+
+
+<div class="viewcode-block" id="get_config_list"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.config.get_config_list.html#langchain_core.runnables.config.get_config_list">[docs]</a><span class="k">def</span> <span class="nf">get_config_list</span><span class="p">(</span>
+    <span class="n">config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">RunnableConfig</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">RunnableConfig</span><span class="p">]]],</span> <span class="n">length</span><span class="p">:</span> <span class="nb">int</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">RunnableConfig</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get a list of configs from a single config or a list of configs.</span>
+
+<span class="sd">     It is useful for subclasses overriding batch() or abatch().</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        config (Optional[Union[RunnableConfig, List[RunnableConfig]]]):</span>
+<span class="sd">          The config or list of configs.</span>
+<span class="sd">        length (int): The length of the list.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        List[RunnableConfig]: The list of configs.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: If the length of the list is not equal to the length of the inputs.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">length</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;length must be &gt;= 0, but got </span><span class="si">{</span><span class="n">length</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">config</span><span class="p">)</span> <span class="o">!=</span> <span class="n">length</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;config must be a list of the same length as inputs, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;but got </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">config</span><span class="p">)</span><span class="si">}</span><span class="s2"> configs for </span><span class="si">{</span><span class="n">length</span><span class="si">}</span><span class="s2"> inputs&quot;</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">ensure_config</span><span class="p">,</span> <span class="n">config</span><span class="p">))</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span>
+        <span class="k">else</span> <span class="p">[</span><span class="n">ensure_config</span><span class="p">(</span><span class="n">config</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">length</span><span class="p">)]</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="patch_config"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.config.patch_config.html#langchain_core.runnables.config.patch_config">[docs]</a><span class="k">def</span> <span class="nf">patch_config</span><span class="p">(</span>
+    <span class="n">config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">RunnableConfig</span><span class="p">],</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">callbacks</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">BaseCallbackManager</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">recursion_limit</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">max_concurrency</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">run_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">configurable</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RunnableConfig</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Patch a config with new values.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        config (Optional[RunnableConfig]): The config to patch.</span>
+<span class="sd">        copy_locals (bool, optional): Whether to copy locals. Defaults to False.</span>
+<span class="sd">        callbacks (Optional[BaseCallbackManager], optional): The callbacks to set.</span>
+<span class="sd">          Defaults to None.</span>
+<span class="sd">        recursion_limit (Optional[int], optional): The recursion limit to set.</span>
+<span class="sd">          Defaults to None.</span>
+<span class="sd">        max_concurrency (Optional[int], optional): The max concurrency to set.</span>
+<span class="sd">          Defaults to None.</span>
+<span class="sd">        run_name (Optional[str], optional): The run name to set. Defaults to None.</span>
+<span class="sd">        configurable (Optional[Dict[str, Any]], optional): The configurable to set.</span>
+<span class="sd">          Defaults to None.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        RunnableConfig: The patched config.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="n">ensure_config</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">callbacks</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># If we&#39;re replacing callbacks, we need to unset run_name</span>
+        <span class="c1"># As that should apply only to the same run as the original callbacks</span>
+        <span class="n">config</span><span class="p">[</span><span class="s2">&quot;callbacks&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">callbacks</span>
+        <span class="k">if</span> <span class="s2">&quot;run_name&quot;</span> <span class="ow">in</span> <span class="n">config</span><span class="p">:</span>
+            <span class="k">del</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;run_name&quot;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">recursion_limit</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">config</span><span class="p">[</span><span class="s2">&quot;recursion_limit&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">recursion_limit</span>
+    <span class="k">if</span> <span class="n">max_concurrency</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">config</span><span class="p">[</span><span class="s2">&quot;max_concurrency&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">max_concurrency</span>
+    <span class="k">if</span> <span class="n">run_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">config</span><span class="p">[</span><span class="s2">&quot;run_name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">run_name</span>
+    <span class="k">if</span> <span class="n">configurable</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">config</span><span class="p">[</span><span class="s2">&quot;configurable&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;configurable&quot;</span><span class="p">,</span> <span class="p">{}),</span> <span class="o">**</span><span class="n">configurable</span><span class="p">}</span>
+    <span class="k">return</span> <span class="n">config</span></div>
+
+
+<div class="viewcode-block" id="merge_configs"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.config.merge_configs.html#langchain_core.runnables.config.merge_configs">[docs]</a><span class="k">def</span> <span class="nf">merge_configs</span><span class="p">(</span><span class="o">*</span><span class="n">configs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">RunnableConfig</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">RunnableConfig</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Merge multiple configs into one.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        *configs (Optional[RunnableConfig]): The configs to merge.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        RunnableConfig: The merged config.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">base</span><span class="p">:</span> <span class="n">RunnableConfig</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="c1"># Even though the keys aren&#39;t literals, this is correct</span>
+    <span class="c1"># because both dicts are the same type</span>
+    <span class="k">for</span> <span class="n">config</span> <span class="ow">in</span> <span class="p">(</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">configs</span> <span class="k">if</span> <span class="n">c</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">config</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;metadata&quot;</span><span class="p">:</span>
+                <span class="n">base</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>  <span class="c1"># type: ignore</span>
+                    <span class="o">**</span><span class="n">base</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="p">{}),</span>  <span class="c1"># type: ignore</span>
+                    <span class="o">**</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}),</span>  <span class="c1"># type: ignore</span>
+                <span class="p">}</span>
+            <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;tags&quot;</span><span class="p">:</span>
+                <span class="n">base</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>  <span class="c1"># type: ignore</span>
+                    <span class="nb">set</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="p">[])</span> <span class="o">+</span> <span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="ow">or</span> <span class="p">[])),</span>  <span class="c1"># type: ignore</span>
+                <span class="p">)</span>
+            <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;configurable&quot;</span><span class="p">:</span>
+                <span class="n">base</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>  <span class="c1"># type: ignore</span>
+                    <span class="o">**</span><span class="n">base</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="p">{}),</span>  <span class="c1"># type: ignore</span>
+                    <span class="o">**</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}),</span>  <span class="c1"># type: ignore</span>
+                <span class="p">}</span>
+            <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;callbacks&quot;</span><span class="p">:</span>
+                <span class="n">base_callbacks</span> <span class="o">=</span> <span class="n">base</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;callbacks&quot;</span><span class="p">)</span>
+                <span class="n">these_callbacks</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;callbacks&quot;</span><span class="p">]</span>
+                <span class="c1"># callbacks can be either None, list[handler] or manager</span>
+                <span class="c1"># so merging two callbacks values has 6 cases</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">these_callbacks</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">base_callbacks</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">base</span><span class="p">[</span><span class="s2">&quot;callbacks&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">these_callbacks</span>
+                    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">base_callbacks</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                        <span class="n">base</span><span class="p">[</span><span class="s2">&quot;callbacks&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">base_callbacks</span> <span class="o">+</span> <span class="n">these_callbacks</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="c1"># base_callbacks is a manager</span>
+                        <span class="n">mngr</span> <span class="o">=</span> <span class="n">base_callbacks</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+                        <span class="k">for</span> <span class="n">callback</span> <span class="ow">in</span> <span class="n">these_callbacks</span><span class="p">:</span>
+                            <span class="n">mngr</span><span class="o">.</span><span class="n">add_handler</span><span class="p">(</span><span class="n">callback</span><span class="p">,</span> <span class="n">inherit</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                        <span class="n">base</span><span class="p">[</span><span class="s2">&quot;callbacks&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mngr</span>
+                <span class="k">elif</span> <span class="n">these_callbacks</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="c1"># these_callbacks is a manager</span>
+                    <span class="k">if</span> <span class="n">base_callbacks</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">base</span><span class="p">[</span><span class="s2">&quot;callbacks&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">these_callbacks</span>
+                    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">base_callbacks</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                        <span class="n">mngr</span> <span class="o">=</span> <span class="n">these_callbacks</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+                        <span class="k">for</span> <span class="n">callback</span> <span class="ow">in</span> <span class="n">base_callbacks</span><span class="p">:</span>
+                            <span class="n">mngr</span><span class="o">.</span><span class="n">add_handler</span><span class="p">(</span><span class="n">callback</span><span class="p">,</span> <span class="n">inherit</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                        <span class="n">base</span><span class="p">[</span><span class="s2">&quot;callbacks&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mngr</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="c1"># base_callbacks is also a manager</span>
+                        <span class="n">base</span><span class="p">[</span><span class="s2">&quot;callbacks&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">base_callbacks</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span>
+                            <span class="n">parent_run_id</span><span class="o">=</span><span class="n">base_callbacks</span><span class="o">.</span><span class="n">parent_run_id</span>
+                            <span class="ow">or</span> <span class="n">these_callbacks</span><span class="o">.</span><span class="n">parent_run_id</span><span class="p">,</span>
+                            <span class="n">handlers</span><span class="o">=</span><span class="n">base_callbacks</span><span class="o">.</span><span class="n">handlers</span> <span class="o">+</span> <span class="n">these_callbacks</span><span class="o">.</span><span class="n">handlers</span><span class="p">,</span>
+                            <span class="n">inheritable_handlers</span><span class="o">=</span><span class="n">base_callbacks</span><span class="o">.</span><span class="n">inheritable_handlers</span>
+                            <span class="o">+</span> <span class="n">these_callbacks</span><span class="o">.</span><span class="n">inheritable_handlers</span><span class="p">,</span>
+                            <span class="n">tags</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">base_callbacks</span><span class="o">.</span><span class="n">tags</span> <span class="o">+</span> <span class="n">these_callbacks</span><span class="o">.</span><span class="n">tags</span><span class="p">)),</span>
+                            <span class="n">inheritable_tags</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span>
+                                <span class="nb">set</span><span class="p">(</span>
+                                    <span class="n">base_callbacks</span><span class="o">.</span><span class="n">inheritable_tags</span>
+                                    <span class="o">+</span> <span class="n">these_callbacks</span><span class="o">.</span><span class="n">inheritable_tags</span>
+                                <span class="p">)</span>
+                            <span class="p">),</span>
+                            <span class="n">metadata</span><span class="o">=</span><span class="p">{</span>
+                                <span class="o">**</span><span class="n">base_callbacks</span><span class="o">.</span><span class="n">metadata</span><span class="p">,</span>
+                                <span class="o">**</span><span class="n">these_callbacks</span><span class="o">.</span><span class="n">metadata</span><span class="p">,</span>
+                            <span class="p">},</span>
+                        <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">base</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="ow">or</span> <span class="n">base</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+    <span class="k">return</span> <span class="n">base</span></div>
+
+
+<div class="viewcode-block" id="call_func_with_variable_args"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.config.call_func_with_variable_args.html#langchain_core.runnables.config.call_func_with_variable_args">[docs]</a><span class="k">def</span> <span class="nf">call_func_with_variable_args</span><span class="p">(</span>
+    <span class="n">func</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span>
+        <span class="n">Callable</span><span class="p">[[</span><span class="n">Input</span><span class="p">],</span> <span class="n">Output</span><span class="p">],</span>
+        <span class="n">Callable</span><span class="p">[[</span><span class="n">Input</span><span class="p">,</span> <span class="n">RunnableConfig</span><span class="p">],</span> <span class="n">Output</span><span class="p">],</span>
+        <span class="n">Callable</span><span class="p">[[</span><span class="n">Input</span><span class="p">,</span> <span class="n">CallbackManagerForChainRun</span><span class="p">],</span> <span class="n">Output</span><span class="p">],</span>
+        <span class="n">Callable</span><span class="p">[[</span><span class="n">Input</span><span class="p">,</span> <span class="n">CallbackManagerForChainRun</span><span class="p">,</span> <span class="n">RunnableConfig</span><span class="p">],</span> <span class="n">Output</span><span class="p">],</span>
+    <span class="p">],</span>
+    <span class="nb">input</span><span class="p">:</span> <span class="n">Input</span><span class="p">,</span>
+    <span class="n">config</span><span class="p">:</span> <span class="n">RunnableConfig</span><span class="p">,</span>
+    <span class="n">run_manager</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">CallbackManagerForChainRun</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Output</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Call function that may optionally accept a run_manager and/or config.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        func (Union[Callable[[Input], Output],</span>
+<span class="sd">          Callable[[Input, CallbackManagerForChainRun], Output],</span>
+<span class="sd">          Callable[[Input, CallbackManagerForChainRun, RunnableConfig], Output]]):</span>
+<span class="sd">           The function to call.</span>
+<span class="sd">        input (Input): The input to the function.</span>
+<span class="sd">        run_manager (CallbackManagerForChainRun): The run manager to</span>
+<span class="sd">          pass to the function.</span>
+<span class="sd">        config (RunnableConfig): The config to pass to the function.</span>
+<span class="sd">        **kwargs (Any): The keyword arguments to pass to the function.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Output: The output of the function.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">accepts_config</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">run_manager</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;config&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">patch_config</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">callbacks</span><span class="o">=</span><span class="n">run_manager</span><span class="o">.</span><span class="n">get_child</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;config&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">config</span>
+    <span class="k">if</span> <span class="n">run_manager</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">accepts_run_manager</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;run_manager&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">run_manager</span>
+    <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>  <span class="c1"># type: ignore[call-arg]</span></div>
+
+
+<div class="viewcode-block" id="acall_func_with_variable_args"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.config.acall_func_with_variable_args.html#langchain_core.runnables.config.acall_func_with_variable_args">[docs]</a><span class="k">async</span> <span class="k">def</span> <span class="nf">acall_func_with_variable_args</span><span class="p">(</span>
+    <span class="n">func</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span>
+        <span class="n">Callable</span><span class="p">[[</span><span class="n">Input</span><span class="p">],</span> <span class="n">Awaitable</span><span class="p">[</span><span class="n">Output</span><span class="p">]],</span>
+        <span class="n">Callable</span><span class="p">[[</span><span class="n">Input</span><span class="p">,</span> <span class="n">RunnableConfig</span><span class="p">],</span> <span class="n">Awaitable</span><span class="p">[</span><span class="n">Output</span><span class="p">]],</span>
+        <span class="n">Callable</span><span class="p">[[</span><span class="n">Input</span><span class="p">,</span> <span class="n">AsyncCallbackManagerForChainRun</span><span class="p">],</span> <span class="n">Awaitable</span><span class="p">[</span><span class="n">Output</span><span class="p">]],</span>
+        <span class="n">Callable</span><span class="p">[</span>
+            <span class="p">[</span><span class="n">Input</span><span class="p">,</span> <span class="n">AsyncCallbackManagerForChainRun</span><span class="p">,</span> <span class="n">RunnableConfig</span><span class="p">],</span>
+            <span class="n">Awaitable</span><span class="p">[</span><span class="n">Output</span><span class="p">],</span>
+        <span class="p">],</span>
+    <span class="p">],</span>
+    <span class="nb">input</span><span class="p">:</span> <span class="n">Input</span><span class="p">,</span>
+    <span class="n">config</span><span class="p">:</span> <span class="n">RunnableConfig</span><span class="p">,</span>
+    <span class="n">run_manager</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AsyncCallbackManagerForChainRun</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Output</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Call function that may optionally accept a run_manager and/or config.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        func (Union[Callable[[Input], Awaitable[Output]], Callable[[Input,</span>
+<span class="sd">            AsyncCallbackManagerForChainRun], Awaitable[Output]], Callable[[Input,</span>
+<span class="sd">            AsyncCallbackManagerForChainRun, RunnableConfig], Awaitable[Output]]]):</span>
+<span class="sd">            The function to call.</span>
+<span class="sd">        input (Input): The input to the function.</span>
+<span class="sd">        run_manager (AsyncCallbackManagerForChainRun): The run manager</span>
+<span class="sd">          to pass to the function.</span>
+<span class="sd">        config (RunnableConfig): The config to pass to the function.</span>
+<span class="sd">        **kwargs (Any): The keyword arguments to pass to the function.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Output: The output of the function.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">accepts_config</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">run_manager</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;config&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">patch_config</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">callbacks</span><span class="o">=</span><span class="n">run_manager</span><span class="o">.</span><span class="n">get_child</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;config&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">config</span>
+    <span class="k">if</span> <span class="n">run_manager</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">accepts_run_manager</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;run_manager&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">run_manager</span>
+    <span class="k">return</span> <span class="k">await</span> <span class="n">func</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>  <span class="c1"># type: ignore[call-arg]</span></div>
+
+
+<div class="viewcode-block" id="get_callback_manager_for_config"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.config.get_callback_manager_for_config.html#langchain_core.runnables.config.get_callback_manager_for_config">[docs]</a><span class="k">def</span> <span class="nf">get_callback_manager_for_config</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="n">RunnableConfig</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CallbackManager</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get a callback manager for a config.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        config (RunnableConfig): The config.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        CallbackManager: The callback manager.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">langchain_core.callbacks.manager</span> <span class="kn">import</span> <span class="n">CallbackManager</span>
+
+    <span class="k">return</span> <span class="n">CallbackManager</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span>
+        <span class="n">inheritable_callbacks</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;callbacks&quot;</span><span class="p">),</span>
+        <span class="n">inheritable_tags</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;tags&quot;</span><span class="p">),</span>
+        <span class="n">inheritable_metadata</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;metadata&quot;</span><span class="p">),</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_async_callback_manager_for_config"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.config.get_async_callback_manager_for_config.html#langchain_core.runnables.config.get_async_callback_manager_for_config">[docs]</a><span class="k">def</span> <span class="nf">get_async_callback_manager_for_config</span><span class="p">(</span>
+    <span class="n">config</span><span class="p">:</span> <span class="n">RunnableConfig</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncCallbackManager</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get an async callback manager for a config.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        config (RunnableConfig): The config.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        AsyncCallbackManager: The async callback manager.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">langchain_core.callbacks.manager</span> <span class="kn">import</span> <span class="n">AsyncCallbackManager</span>
+
+    <span class="k">return</span> <span class="n">AsyncCallbackManager</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span>
+        <span class="n">inheritable_callbacks</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;callbacks&quot;</span><span class="p">),</span>
+        <span class="n">inheritable_tags</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;tags&quot;</span><span class="p">),</span>
+        <span class="n">inheritable_metadata</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;metadata&quot;</span><span class="p">),</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_executor_for_config"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.config.get_executor_for_config.html#langchain_core.runnables.config.get_executor_for_config">[docs]</a><span class="nd">@contextmanager</span>
+<span class="k">def</span> <span class="nf">get_executor_for_config</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="n">RunnableConfig</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">Executor</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get an executor for a config.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        config (RunnableConfig): The config.</span>
+
+<span class="sd">    Yields:</span>
+<span class="sd">        Generator[Executor, None, None]: The executor.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="n">ThreadPoolExecutor</span><span class="p">(</span><span class="n">max_workers</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;max_concurrency&quot;</span><span class="p">))</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="n">executor</span></div>
+</pre></div>
+
+      </div>
+    <div class="container">
+      <footer class="sk-content-footer">
+            &copy; 2023, Harrison Chase.
+          Last updated on Dec 19, 2023.
+      </footer>
+    </div>
+  </div>
+</div>
+<script src="../../../_static/js/vendor/bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    /* Add a [>>>] button on the top-right corner of code samples to hide
+     * the >>> and ... prompts and the output and thus make the code
+     * copyable. */
+    var div = $('.highlight-python .highlight,' +
+                '.highlight-python3 .highlight,' +
+                '.highlight-pycon .highlight,' +
+		'.highlight-default .highlight')
+    var pre = div.find('pre');
+
+    // get the styles from the current theme
+    pre.parent().parent().css('position', 'relative');
+    var hide_text = 'Hide prompts and outputs';
+    var show_text = 'Show prompts and outputs';
+
+    // create and add the button to all the code blocks that contain >>>
+    div.each(function(index) {
+        var jthis = $(this);
+        if (jthis.find('.gp').length > 0) {
+            var button = $('<span class="copybutton">&gt;&gt;&gt;</span>');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+            jthis.prepend(button);
+        }
+        // tracebacks (.gt) contain bare text elements that need to be
+        // wrapped in a span to work with .nextUntil() (see later)
+        jthis.find('pre:has(.gt)').contents().filter(function() {
+            return ((this.nodeType == 3) && (this.data.trim().length > 0));
+        }).wrap('<span>');
+    });
+
+    // define the behavior of the button when it's clicked
+    $('.copybutton').click(function(e){
+        e.preventDefault();
+        var button = $(this);
+        if (button.data('hidden') === 'false') {
+            // hide the code output
+            button.parent().find('.go, .gp, .gt').hide();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'hidden');
+            button.css('text-decoration', 'line-through');
+            button.attr('title', show_text);
+            button.data('hidden', 'true');
+        } else {
+            // show the code output
+            button.parent().find('.go, .gp, .gt').show();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'visible');
+            button.css('text-decoration', 'none');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+        }
+    });
+
+	/*** Add permalink buttons next to glossary terms ***/
+	$('dl.glossary > dt[id]').append(function() {
+		return ('<a class="headerlink" href="#' +
+			    this.getAttribute('id') +
+			    '" title="Permalink to this term">¶</a>');
+	});
+});
+
+</script>
+    
+</body>
+</html>

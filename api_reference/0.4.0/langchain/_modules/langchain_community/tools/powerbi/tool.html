@@ -1,0 +1,453 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>langchain_community.tools.powerbi.tool &mdash; 🦜🔗 LangChain 0.0.350</title>
+  
+  <link rel="canonical" href="https://api.python.langchain.com/en/latest/_modules/langchain_community/tools/powerbi/tool.html" />
+
+  
+
+  <link rel="stylesheet" href="../../../../_static/css/vendor/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/autodoc_pydantic.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/panels-bootstrap.5fd3999ee7762ccc51105388f4a9d115.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/css/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+<script id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+<script src="../../../../_static/jquery.js"></script> 
+</head>
+<body>
+
+
+<nav id="navbar" class="sk-docs-navbar navbar navbar-expand-md navbar-light bg-light py-0">
+  <div class="container-fluid sk-docs-container px-0">
+    <button
+      id="sk-navbar-toggler"
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="sk-navbar-collapse collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../../api_reference.html">API</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../../core_api_reference.html">Core</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../../community_api_reference.html">Community</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../../experimental_api_reference.html">Experimental</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" target="_blank" rel="noopener noreferrer" href="https://python.langchain.com/">Python Docs</a>
+        </li>
+      </ul>
+      <div id="searchbox" role="search">
+          <div class="searchformwrapper">
+          <form class="search" action="../../../../search.html" method="get">
+            <input class="sk-search-text-input" type="text" name="q" aria-labelledby="searchlabel" />
+            <input class="sk-search-text-btn" type="submit" value="Go" />
+          </form>
+          </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="d-flex" id="sk-doc-wrapper">
+    <input type="checkbox" name="sk-toggle-checkbox" id="sk-toggle-checkbox">
+    <label id="sk-sidemenu-toggle" class="sk-btn-toggle-toc btn sk-btn-primary" for="sk-toggle-checkbox">Toggle Menu</label>
+    <div id="sk-sidebar-wrapper" class="border-right">
+      <div class="sk-sidebar-toc-wrapper">
+        <div class="btn-group w-100 mb-2" role="group" aria-label="rellinks">
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Prev</a><a href="../../../index.html" role="button" class="btn sk-btn-rellink py-1" sk-rellink-tooltip="Module code">Up</a>
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Next</a>
+        </div>
+        <div class="alert alert-warning p-1 mb-2" role="alert">
+          <p class="text-center mb-0">
+          <strong>LangChain 0.0.350</strong><br/>
+          </p>
+        </div>
+            <div class="sk-sidebar-toc">
+              
+            </div>
+      </div>
+    </div>
+    <div id="sk-page-content-wrapper">
+      <div class="sk-page-content container-fluid body px-md-3" role="main">
+        
+  <h1>Source code for langchain_community.tools.powerbi.tool</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Tools for interacting with a Power BI dataset.&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">perf_counter</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span>
+
+<span class="kn">from</span> <span class="nn">langchain_core.callbacks</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AsyncCallbackManagerForToolRun</span><span class="p">,</span>
+    <span class="n">CallbackManagerForToolRun</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">langchain_core.pydantic_v1</span> <span class="kn">import</span> <span class="n">Field</span><span class="p">,</span> <span class="n">validator</span>
+<span class="kn">from</span> <span class="nn">langchain_core.tools</span> <span class="kn">import</span> <span class="n">BaseTool</span>
+
+<span class="kn">from</span> <span class="nn">langchain_community.chat_models.openai</span> <span class="kn">import</span> <span class="n">_import_tiktoken</span>
+<span class="kn">from</span> <span class="nn">langchain_community.tools.powerbi.prompt</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">BAD_REQUEST_RESPONSE</span><span class="p">,</span>
+    <span class="n">DEFAULT_FEWSHOT_EXAMPLES</span><span class="p">,</span>
+    <span class="n">RETRY_RESPONSE</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">langchain_community.utilities.powerbi</span> <span class="kn">import</span> <span class="n">PowerBIDataset</span><span class="p">,</span> <span class="n">json_to_md</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="QueryPowerBITool"><a class="viewcode-back" href="../../../../tools/langchain_community.tools.powerbi.tool.QueryPowerBITool.html#langchain_community.tools.powerbi.tool.QueryPowerBITool">[docs]</a><span class="k">class</span> <span class="nc">QueryPowerBITool</span><span class="p">(</span><span class="n">BaseTool</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Tool for querying a Power BI Dataset.&quot;&quot;&quot;</span>
+
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;query_powerbi&quot;</span>
+    <span class="n">description</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    Input to this tool is a detailed question about the dataset, output is a result from the dataset. It will try to answer the question using the dataset, and if it cannot, it will ask for clarification.</span>
+
+<span class="s2">    Example Input: &quot;How many rows are in table1?&quot;</span>
+<span class="s2">    &quot;&quot;&quot;</span>  <span class="c1"># noqa: E501</span>
+    <span class="n">llm_chain</span><span class="p">:</span> <span class="n">Any</span>
+    <span class="n">powerbi</span><span class="p">:</span> <span class="n">PowerBIDataset</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">exclude</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">examples</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">DEFAULT_FEWSHOT_EXAMPLES</span>
+    <span class="n">session_cache</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">,</span> <span class="n">exclude</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">max_iterations</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">output_token_limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4000</span>
+    <span class="n">tiktoken_model_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># &quot;cl100k_base&quot;</span>
+
+    <span class="k">class</span> <span class="nc">Config</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Configuration for this pydantic object.&quot;&quot;&quot;</span>
+
+        <span class="n">arbitrary_types_allowed</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="nd">@validator</span><span class="p">(</span><span class="s2">&quot;llm_chain&quot;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">validate_llm_chain_input_variables</span><span class="p">(</span>  <span class="c1"># pylint: disable=E0213</span>
+        <span class="bp">cls</span><span class="p">,</span> <span class="n">llm_chain</span><span class="p">:</span> <span class="n">Any</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Make sure the LLM chain has the correct input variables.&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">llm_chain</span><span class="o">.</span><span class="n">prompt</span><span class="o">.</span><span class="n">input_variables</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">var</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;tool_input&quot;</span><span class="p">,</span> <span class="s2">&quot;tables&quot;</span><span class="p">,</span> <span class="s2">&quot;schemas&quot;</span><span class="p">,</span> <span class="s2">&quot;examples&quot;</span><span class="p">]:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;LLM chain for QueryPowerBITool must have input variables [&#39;tool_input&#39;, &#39;tables&#39;, &#39;schemas&#39;, &#39;examples&#39;], found </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>  <span class="c1"># noqa: C0301 E501 # pylint: disable=C0301</span>
+                    <span class="n">llm_chain</span><span class="o">.</span><span class="n">prompt</span><span class="o">.</span><span class="n">input_variables</span><span class="p">,</span>
+                <span class="p">)</span>
+        <span class="k">return</span> <span class="n">llm_chain</span>
+
+    <span class="k">def</span> <span class="nf">_check_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tool_input</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if the input is present in the cache.</span>
+
+<span class="sd">        If the value is a bad request, overwrite with the escalated version,</span>
+<span class="sd">        if not present return None.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">tool_input</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_cache</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_cache</span><span class="p">[</span><span class="n">tool_input</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_run</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">tool_input</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">run_manager</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">CallbackManagerForToolRun</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Execute the query, return the results or an error message.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">cache</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_cache</span><span class="p">(</span><span class="n">tool_input</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Found cached result for </span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">tool_input</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">cache</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Running PBI Query Tool with input: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">tool_input</span><span class="p">)</span>
+            <span class="n">query</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">llm_chain</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
+                <span class="n">tool_input</span><span class="o">=</span><span class="n">tool_input</span><span class="p">,</span>
+                <span class="n">tables</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">powerbi</span><span class="o">.</span><span class="n">get_table_names</span><span class="p">(),</span>
+                <span class="n">schemas</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">powerbi</span><span class="o">.</span><span class="n">get_schemas</span><span class="p">(),</span>
+                <span class="n">examples</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">examples</span><span class="p">,</span>
+                <span class="n">callbacks</span><span class="o">=</span><span class="n">run_manager</span><span class="o">.</span><span class="n">get_child</span><span class="p">()</span> <span class="k">if</span> <span class="n">run_manager</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>  <span class="c1"># pylint: disable=broad-except</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session_cache</span><span class="p">[</span><span class="n">tool_input</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Error on call to LLM: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_cache</span><span class="p">[</span><span class="n">tool_input</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">query</span> <span class="o">==</span> <span class="s2">&quot;I cannot answer this&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session_cache</span><span class="p">[</span><span class="n">tool_input</span><span class="p">]</span> <span class="o">=</span> <span class="n">query</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_cache</span><span class="p">[</span><span class="n">tool_input</span><span class="p">]</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;PBI Query:</span><span class="se">\n</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">query</span><span class="p">)</span>
+        <span class="n">start_time</span> <span class="o">=</span> <span class="n">perf_counter</span><span class="p">()</span>
+        <span class="n">pbi_result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">powerbi</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">command</span><span class="o">=</span><span class="n">query</span><span class="p">)</span>
+        <span class="n">end_time</span> <span class="o">=</span> <span class="n">perf_counter</span><span class="p">()</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;PBI Result: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">pbi_result</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;PBI Query duration: </span><span class="si">{</span><span class="n">end_time</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">start_time</span><span class="si">:</span><span class="s2">0.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">result</span><span class="p">,</span> <span class="n">error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_output</span><span class="p">(</span><span class="n">pbi_result</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">error</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="s2">&quot;TokenExpired&quot;</span> <span class="ow">in</span> <span class="n">error</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session_cache</span><span class="p">[</span>
+                <span class="n">tool_input</span>
+            <span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Authentication token expired or invalid, please try reauthenticate.&quot;</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_cache</span><span class="p">[</span><span class="n">tool_input</span><span class="p">]</span>
+
+        <span class="n">iterations</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;iterations&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">error</span> <span class="ow">and</span> <span class="n">iterations</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_iterations</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run</span><span class="p">(</span>
+                <span class="n">tool_input</span><span class="o">=</span><span class="n">RETRY_RESPONSE</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">tool_input</span><span class="o">=</span><span class="n">tool_input</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="n">query</span><span class="p">,</span> <span class="n">error</span><span class="o">=</span><span class="n">error</span>
+                <span class="p">),</span>
+                <span class="n">run_manager</span><span class="o">=</span><span class="n">run_manager</span><span class="p">,</span>
+                <span class="n">iterations</span><span class="o">=</span><span class="n">iterations</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">session_cache</span><span class="p">[</span><span class="n">tool_input</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">result</span> <span class="k">if</span> <span class="n">result</span> <span class="k">else</span> <span class="n">BAD_REQUEST_RESPONSE</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">error</span><span class="o">=</span><span class="n">error</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_cache</span><span class="p">[</span><span class="n">tool_input</span><span class="p">]</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_arun</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">tool_input</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">run_manager</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AsyncCallbackManagerForToolRun</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Execute the query, return the results or an error message.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">cache</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_cache</span><span class="p">(</span><span class="n">tool_input</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Found cached result for </span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">tool_input</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">cache</span><span class="si">}</span><span class="s2">, from cache, you have already asked this question.&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Running PBI Query Tool with input: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">tool_input</span><span class="p">)</span>
+            <span class="n">query</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">llm_chain</span><span class="o">.</span><span class="n">apredict</span><span class="p">(</span>
+                <span class="n">tool_input</span><span class="o">=</span><span class="n">tool_input</span><span class="p">,</span>
+                <span class="n">tables</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">powerbi</span><span class="o">.</span><span class="n">get_table_names</span><span class="p">(),</span>
+                <span class="n">schemas</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">powerbi</span><span class="o">.</span><span class="n">get_schemas</span><span class="p">(),</span>
+                <span class="n">examples</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">examples</span><span class="p">,</span>
+                <span class="n">callbacks</span><span class="o">=</span><span class="n">run_manager</span><span class="o">.</span><span class="n">get_child</span><span class="p">()</span> <span class="k">if</span> <span class="n">run_manager</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>  <span class="c1"># pylint: disable=broad-except</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session_cache</span><span class="p">[</span><span class="n">tool_input</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Error on call to LLM: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_cache</span><span class="p">[</span><span class="n">tool_input</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">query</span> <span class="o">==</span> <span class="s2">&quot;I cannot answer this&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session_cache</span><span class="p">[</span><span class="n">tool_input</span><span class="p">]</span> <span class="o">=</span> <span class="n">query</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_cache</span><span class="p">[</span><span class="n">tool_input</span><span class="p">]</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;PBI Query: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">query</span><span class="p">)</span>
+        <span class="n">start_time</span> <span class="o">=</span> <span class="n">perf_counter</span><span class="p">()</span>
+        <span class="n">pbi_result</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">powerbi</span><span class="o">.</span><span class="n">arun</span><span class="p">(</span><span class="n">command</span><span class="o">=</span><span class="n">query</span><span class="p">)</span>
+        <span class="n">end_time</span> <span class="o">=</span> <span class="n">perf_counter</span><span class="p">()</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;PBI Result: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">pbi_result</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;PBI Query duration: </span><span class="si">{</span><span class="n">end_time</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">start_time</span><span class="si">:</span><span class="s2">0.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">result</span><span class="p">,</span> <span class="n">error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_output</span><span class="p">(</span><span class="n">pbi_result</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">error</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="p">(</span><span class="s2">&quot;TokenExpired&quot;</span> <span class="ow">in</span> <span class="n">error</span> <span class="ow">or</span> <span class="s2">&quot;TokenError&quot;</span> <span class="ow">in</span> <span class="n">error</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session_cache</span><span class="p">[</span>
+                <span class="n">tool_input</span>
+            <span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Authentication token expired or invalid, please try to reauthenticate or check the scope of the credential.&quot;</span>  <span class="c1"># noqa: E501</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_cache</span><span class="p">[</span><span class="n">tool_input</span><span class="p">]</span>
+
+        <span class="n">iterations</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;iterations&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">error</span> <span class="ow">and</span> <span class="n">iterations</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_iterations</span><span class="p">:</span>
+            <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_arun</span><span class="p">(</span>
+                <span class="n">tool_input</span><span class="o">=</span><span class="n">RETRY_RESPONSE</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">tool_input</span><span class="o">=</span><span class="n">tool_input</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="n">query</span><span class="p">,</span> <span class="n">error</span><span class="o">=</span><span class="n">error</span>
+                <span class="p">),</span>
+                <span class="n">run_manager</span><span class="o">=</span><span class="n">run_manager</span><span class="p">,</span>
+                <span class="n">iterations</span><span class="o">=</span><span class="n">iterations</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">session_cache</span><span class="p">[</span><span class="n">tool_input</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">result</span> <span class="k">if</span> <span class="n">result</span> <span class="k">else</span> <span class="n">BAD_REQUEST_RESPONSE</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">error</span><span class="o">=</span><span class="n">error</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_cache</span><span class="p">[</span><span class="n">tool_input</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_parse_output</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">pbi_result</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Parse the output of the query to a markdown table.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="s2">&quot;results&quot;</span> <span class="ow">in</span> <span class="n">pbi_result</span><span class="p">:</span>
+            <span class="n">rows</span> <span class="o">=</span> <span class="n">pbi_result</span><span class="p">[</span><span class="s2">&quot;results&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;tables&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;rows&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;0 records in result, query was valid.&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="p">(</span>
+                    <span class="kc">None</span><span class="p">,</span>
+                    <span class="s2">&quot;0 rows returned, this might be correct, but please validate if all filter values were correct?&quot;</span><span class="p">,</span>  <span class="c1"># noqa: E501</span>
+                <span class="p">)</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">json_to_md</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span>
+            <span class="n">too_long</span><span class="p">,</span> <span class="n">length</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_result_too_large</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">too_long</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Result too large, please try to be more specific or use the `TOPN` function. The result is </span><span class="si">{</span><span class="n">length</span><span class="si">}</span><span class="s2"> tokens long, the limit is </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">output_token_limit</span><span class="si">}</span><span class="s2"> tokens.&quot;</span><span class="p">,</span>  <span class="c1"># noqa: E501</span>
+                    <span class="kc">None</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="k">return</span> <span class="n">result</span><span class="p">,</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="s2">&quot;error&quot;</span> <span class="ow">in</span> <span class="n">pbi_result</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span>
+                <span class="s2">&quot;pbi.error&quot;</span> <span class="ow">in</span> <span class="n">pbi_result</span><span class="p">[</span><span class="s2">&quot;error&quot;</span><span class="p">]</span>
+                <span class="ow">and</span> <span class="s2">&quot;details&quot;</span> <span class="ow">in</span> <span class="n">pbi_result</span><span class="p">[</span><span class="s2">&quot;error&quot;</span><span class="p">][</span><span class="s2">&quot;pbi.error&quot;</span><span class="p">]</span>
+            <span class="p">):</span>
+                <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="n">pbi_result</span><span class="p">[</span><span class="s2">&quot;error&quot;</span><span class="p">][</span><span class="s2">&quot;pbi.error&quot;</span><span class="p">][</span><span class="s2">&quot;details&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;detail&quot;</span><span class="p">]</span>
+            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="n">pbi_result</span><span class="p">[</span><span class="s2">&quot;error&quot;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="n">pbi_result</span>
+
+    <span class="k">def</span> <span class="nf">_result_too_large</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Tokenize the output of the query.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tiktoken_model_name</span><span class="p">:</span>
+            <span class="n">tiktoken_</span> <span class="o">=</span> <span class="n">_import_tiktoken</span><span class="p">()</span>
+            <span class="n">encoding</span> <span class="o">=</span> <span class="n">tiktoken_</span><span class="o">.</span><span class="n">encoding_for_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tiktoken_model_name</span><span class="p">)</span>
+            <span class="n">length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">encoding</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">result</span><span class="p">))</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Result length: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">length</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">length</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_token_limit</span><span class="p">,</span> <span class="n">length</span>
+        <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="mi">0</span></div>
+
+
+<div class="viewcode-block" id="InfoPowerBITool"><a class="viewcode-back" href="../../../../tools/langchain_community.tools.powerbi.tool.InfoPowerBITool.html#langchain_community.tools.powerbi.tool.InfoPowerBITool">[docs]</a><span class="k">class</span> <span class="nc">InfoPowerBITool</span><span class="p">(</span><span class="n">BaseTool</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Tool for getting metadata about a PowerBI Dataset.&quot;&quot;&quot;</span>
+
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;schema_powerbi&quot;</span>
+    <span class="n">description</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    Input to this tool is a comma-separated list of tables, output is the schema and sample rows for those tables.</span>
+<span class="s2">    Be sure that the tables actually exist by calling list_tables_powerbi first!</span>
+
+<span class="s2">    Example Input: &quot;table1, table2, table3&quot;</span>
+<span class="s2">    &quot;&quot;&quot;</span>  <span class="c1"># noqa: E501</span>
+    <span class="n">powerbi</span><span class="p">:</span> <span class="n">PowerBIDataset</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">exclude</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">class</span> <span class="nc">Config</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Configuration for this pydantic object.&quot;&quot;&quot;</span>
+
+        <span class="n">arbitrary_types_allowed</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="k">def</span> <span class="nf">_run</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">tool_input</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">run_manager</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">CallbackManagerForToolRun</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the schema for tables in a comma-separated list.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">powerbi</span><span class="o">.</span><span class="n">get_table_info</span><span class="p">(</span><span class="n">tool_input</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;, &quot;</span><span class="p">))</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_arun</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">tool_input</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">run_manager</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AsyncCallbackManagerForToolRun</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">powerbi</span><span class="o">.</span><span class="n">aget_table_info</span><span class="p">(</span><span class="n">tool_input</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;, &quot;</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="ListPowerBITool"><a class="viewcode-back" href="../../../../tools/langchain_community.tools.powerbi.tool.ListPowerBITool.html#langchain_community.tools.powerbi.tool.ListPowerBITool">[docs]</a><span class="k">class</span> <span class="nc">ListPowerBITool</span><span class="p">(</span><span class="n">BaseTool</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Tool for getting tables names.&quot;&quot;&quot;</span>
+
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;list_tables_powerbi&quot;</span>
+    <span class="n">description</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Input is an empty string, output is a comma separated list of tables in the database.&quot;</span>  <span class="c1"># noqa: E501 # pylint: disable=C0301</span>
+    <span class="n">powerbi</span><span class="p">:</span> <span class="n">PowerBIDataset</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">exclude</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">class</span> <span class="nc">Config</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Configuration for this pydantic object.&quot;&quot;&quot;</span>
+
+        <span class="n">arbitrary_types_allowed</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="k">def</span> <span class="nf">_run</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">tool_input</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">run_manager</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">CallbackManagerForToolRun</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the names of the tables.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">powerbi</span><span class="o">.</span><span class="n">get_table_names</span><span class="p">())</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_arun</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">tool_input</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">run_manager</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AsyncCallbackManagerForToolRun</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the names of the tables.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">powerbi</span><span class="o">.</span><span class="n">get_table_names</span><span class="p">())</span></div>
+</pre></div>
+
+      </div>
+    <div class="container">
+      <footer class="sk-content-footer">
+            &copy; 2023, Harrison Chase.
+          Last updated on Dec 19, 2023.
+      </footer>
+    </div>
+  </div>
+</div>
+<script src="../../../../_static/js/vendor/bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    /* Add a [>>>] button on the top-right corner of code samples to hide
+     * the >>> and ... prompts and the output and thus make the code
+     * copyable. */
+    var div = $('.highlight-python .highlight,' +
+                '.highlight-python3 .highlight,' +
+                '.highlight-pycon .highlight,' +
+		'.highlight-default .highlight')
+    var pre = div.find('pre');
+
+    // get the styles from the current theme
+    pre.parent().parent().css('position', 'relative');
+    var hide_text = 'Hide prompts and outputs';
+    var show_text = 'Show prompts and outputs';
+
+    // create and add the button to all the code blocks that contain >>>
+    div.each(function(index) {
+        var jthis = $(this);
+        if (jthis.find('.gp').length > 0) {
+            var button = $('<span class="copybutton">&gt;&gt;&gt;</span>');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+            jthis.prepend(button);
+        }
+        // tracebacks (.gt) contain bare text elements that need to be
+        // wrapped in a span to work with .nextUntil() (see later)
+        jthis.find('pre:has(.gt)').contents().filter(function() {
+            return ((this.nodeType == 3) && (this.data.trim().length > 0));
+        }).wrap('<span>');
+    });
+
+    // define the behavior of the button when it's clicked
+    $('.copybutton').click(function(e){
+        e.preventDefault();
+        var button = $(this);
+        if (button.data('hidden') === 'false') {
+            // hide the code output
+            button.parent().find('.go, .gp, .gt').hide();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'hidden');
+            button.css('text-decoration', 'line-through');
+            button.attr('title', show_text);
+            button.data('hidden', 'true');
+        } else {
+            // show the code output
+            button.parent().find('.go, .gp, .gt').show();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'visible');
+            button.css('text-decoration', 'none');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+        }
+    });
+
+	/*** Add permalink buttons next to glossary terms ***/
+	$('dl.glossary > dt[id]').append(function() {
+		return ('<a class="headerlink" href="#' +
+			    this.getAttribute('id') +
+			    '" title="Permalink to this term">¶</a>');
+	});
+});
+
+</script>
+    
+</body>
+</html>

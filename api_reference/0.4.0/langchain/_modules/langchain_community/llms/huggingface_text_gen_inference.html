@@ -1,0 +1,478 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>langchain_community.llms.huggingface_text_gen_inference &mdash; 🦜🔗 LangChain 0.0.350</title>
+  
+  <link rel="canonical" href="https://api.python.langchain.com/en/latest/_modules/langchain_community/llms/huggingface_text_gen_inference.html" />
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/vendor/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/autodoc_pydantic.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/panels-bootstrap.5fd3999ee7762ccc51105388f4a9d115.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+<script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+<script src="../../../_static/jquery.js"></script> 
+</head>
+<body>
+
+
+<nav id="navbar" class="sk-docs-navbar navbar navbar-expand-md navbar-light bg-light py-0">
+  <div class="container-fluid sk-docs-container px-0">
+    <button
+      id="sk-navbar-toggler"
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="sk-navbar-collapse collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../api_reference.html">API</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../core_api_reference.html">Core</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../community_api_reference.html">Community</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../experimental_api_reference.html">Experimental</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" target="_blank" rel="noopener noreferrer" href="https://python.langchain.com/">Python Docs</a>
+        </li>
+      </ul>
+      <div id="searchbox" role="search">
+          <div class="searchformwrapper">
+          <form class="search" action="../../../search.html" method="get">
+            <input class="sk-search-text-input" type="text" name="q" aria-labelledby="searchlabel" />
+            <input class="sk-search-text-btn" type="submit" value="Go" />
+          </form>
+          </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="d-flex" id="sk-doc-wrapper">
+    <input type="checkbox" name="sk-toggle-checkbox" id="sk-toggle-checkbox">
+    <label id="sk-sidemenu-toggle" class="sk-btn-toggle-toc btn sk-btn-primary" for="sk-toggle-checkbox">Toggle Menu</label>
+    <div id="sk-sidebar-wrapper" class="border-right">
+      <div class="sk-sidebar-toc-wrapper">
+        <div class="btn-group w-100 mb-2" role="group" aria-label="rellinks">
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Prev</a><a href="../../index.html" role="button" class="btn sk-btn-rellink py-1" sk-rellink-tooltip="Module code">Up</a>
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Next</a>
+        </div>
+        <div class="alert alert-warning p-1 mb-2" role="alert">
+          <p class="text-center mb-0">
+          <strong>LangChain 0.0.350</strong><br/>
+          </p>
+        </div>
+            <div class="sk-sidebar-toc">
+              
+            </div>
+      </div>
+    </div>
+    <div id="sk-page-content-wrapper">
+      <div class="sk-page-content container-fluid body px-md-3" role="main">
+        
+  <h1>Source code for langchain_community.llms.huggingface_text_gen_inference</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">AsyncIterator</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="kn">from</span> <span class="nn">langchain_core.callbacks</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AsyncCallbackManagerForLLMRun</span><span class="p">,</span>
+    <span class="n">CallbackManagerForLLMRun</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">langchain_core.language_models.llms</span> <span class="kn">import</span> <span class="n">LLM</span>
+<span class="kn">from</span> <span class="nn">langchain_core.outputs</span> <span class="kn">import</span> <span class="n">GenerationChunk</span>
+<span class="kn">from</span> <span class="nn">langchain_core.pydantic_v1</span> <span class="kn">import</span> <span class="n">Extra</span><span class="p">,</span> <span class="n">Field</span><span class="p">,</span> <span class="n">root_validator</span>
+<span class="kn">from</span> <span class="nn">langchain_core.utils</span> <span class="kn">import</span> <span class="n">get_pydantic_field_names</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="HuggingFaceTextGenInference"><a class="viewcode-back" href="../../../llms/langchain_community.llms.huggingface_text_gen_inference.HuggingFaceTextGenInference.html#langchain_community.llms.huggingface_text_gen_inference.HuggingFaceTextGenInference">[docs]</a><span class="k">class</span> <span class="nc">HuggingFaceTextGenInference</span><span class="p">(</span><span class="n">LLM</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    HuggingFace text generation API.</span>
+
+<span class="sd">    To use, you should have the `text-generation` python package installed and</span>
+<span class="sd">    a text-generation server running.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            # Basic Example (no streaming)</span>
+<span class="sd">            llm = HuggingFaceTextGenInference(</span>
+<span class="sd">                inference_server_url=&quot;http://localhost:8010/&quot;,</span>
+<span class="sd">                max_new_tokens=512,</span>
+<span class="sd">                top_k=10,</span>
+<span class="sd">                top_p=0.95,</span>
+<span class="sd">                typical_p=0.95,</span>
+<span class="sd">                temperature=0.01,</span>
+<span class="sd">                repetition_penalty=1.03,</span>
+<span class="sd">            )</span>
+<span class="sd">            print(llm(&quot;What is Deep Learning?&quot;))</span>
+
+<span class="sd">            # Streaming response example</span>
+<span class="sd">            from langchain_community.callbacks import streaming_stdout</span>
+
+<span class="sd">            callbacks = [streaming_stdout.StreamingStdOutCallbackHandler()]</span>
+<span class="sd">            llm = HuggingFaceTextGenInference(</span>
+<span class="sd">                inference_server_url=&quot;http://localhost:8010/&quot;,</span>
+<span class="sd">                max_new_tokens=512,</span>
+<span class="sd">                top_k=10,</span>
+<span class="sd">                top_p=0.95,</span>
+<span class="sd">                typical_p=0.95,</span>
+<span class="sd">                temperature=0.01,</span>
+<span class="sd">                repetition_penalty=1.03,</span>
+<span class="sd">                callbacks=callbacks,</span>
+<span class="sd">                streaming=True</span>
+<span class="sd">            )</span>
+<span class="sd">            print(llm(&quot;What is Deep Learning?&quot;))</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">max_new_tokens</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">512</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Maximum number of generated tokens&quot;&quot;&quot;</span>
+    <span class="n">top_k</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The number of highest probability vocabulary tokens to keep for</span>
+<span class="sd">    top-k-filtering.&quot;&quot;&quot;</span>
+    <span class="n">top_p</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.95</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;If set to &lt; 1, only the smallest set of most probable tokens with probabilities</span>
+<span class="sd">    that add up to `top_p` or higher are kept for generation.&quot;&quot;&quot;</span>
+    <span class="n">typical_p</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.95</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Typical Decoding mass. See [Typical Decoding for Natural Language</span>
+<span class="sd">    Generation](https://arxiv.org/abs/2202.00666) for more information.&quot;&quot;&quot;</span>
+    <span class="n">temperature</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.8</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The value used to module the logits distribution.&quot;&quot;&quot;</span>
+    <span class="n">repetition_penalty</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The parameter for repetition penalty. 1.0 means no penalty.</span>
+<span class="sd">    See [this paper](https://arxiv.org/pdf/1909.05858.pdf) for more details.&quot;&quot;&quot;</span>
+    <span class="n">return_full_text</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Whether to prepend the prompt to the generated text&quot;&quot;&quot;</span>
+    <span class="n">truncate</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Truncate inputs tokens to the given size&quot;&quot;&quot;</span>
+    <span class="n">stop_sequences</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Stop generating tokens if a member of `stop_sequences` is generated&quot;&quot;&quot;</span>
+    <span class="n">seed</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Random sampling seed&quot;&quot;&quot;</span>
+    <span class="n">inference_server_url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;text-generation-inference instance base url&quot;&quot;&quot;</span>
+    <span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">120</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Timeout in seconds&quot;&quot;&quot;</span>
+    <span class="n">streaming</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Whether to generate a stream of tokens asynchronously&quot;&quot;&quot;</span>
+    <span class="n">do_sample</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Activate logits sampling&quot;&quot;&quot;</span>
+    <span class="n">watermark</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Watermarking with [A Watermark for Large Language Models]</span>
+<span class="sd">    (https://arxiv.org/abs/2301.10226)&quot;&quot;&quot;</span>
+    <span class="n">server_kwargs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Holds any text-generation-inference server parameters not explicitly specified&quot;&quot;&quot;</span>
+    <span class="n">model_kwargs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Holds any model parameters valid for `call` not explicitly specified&quot;&quot;&quot;</span>
+    <span class="n">client</span><span class="p">:</span> <span class="n">Any</span>
+    <span class="n">async_client</span><span class="p">:</span> <span class="n">Any</span>
+
+    <span class="k">class</span> <span class="nc">Config</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Configuration for this pydantic object.&quot;&quot;&quot;</span>
+
+        <span class="n">extra</span> <span class="o">=</span> <span class="n">Extra</span><span class="o">.</span><span class="n">forbid</span>
+
+    <span class="nd">@root_validator</span><span class="p">(</span><span class="n">pre</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">build_extra</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Build extra kwargs from additional params that were passed in.&quot;&quot;&quot;</span>
+        <span class="n">all_required_field_names</span> <span class="o">=</span> <span class="n">get_pydantic_field_names</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
+        <span class="n">extra</span> <span class="o">=</span> <span class="n">values</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;model_kwargs&quot;</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="k">for</span> <span class="n">field_name</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">values</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">field_name</span> <span class="ow">in</span> <span class="n">extra</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found </span><span class="si">{</span><span class="n">field_name</span><span class="si">}</span><span class="s2"> supplied twice.&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">field_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">all_required_field_names</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;&quot;&quot;WARNING! </span><span class="si">{</span><span class="n">field_name</span><span class="si">}</span><span class="s2"> is not default parameter.</span>
+<span class="s2">                    </span><span class="si">{</span><span class="n">field_name</span><span class="si">}</span><span class="s2"> was transferred to model_kwargs.</span>
+<span class="s2">                    Please confirm that </span><span class="si">{</span><span class="n">field_name</span><span class="si">}</span><span class="s2"> is what you intended.&quot;&quot;&quot;</span>
+                <span class="p">)</span>
+                <span class="n">extra</span><span class="p">[</span><span class="n">field_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">values</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">field_name</span><span class="p">)</span>
+
+        <span class="n">invalid_model_kwargs</span> <span class="o">=</span> <span class="n">all_required_field_names</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">extra</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="k">if</span> <span class="n">invalid_model_kwargs</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Parameters </span><span class="si">{</span><span class="n">invalid_model_kwargs</span><span class="si">}</span><span class="s2"> should be specified explicitly. &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Instead they were passed in as part of `model_kwargs` parameter.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="n">values</span><span class="p">[</span><span class="s2">&quot;model_kwargs&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">extra</span>
+        <span class="k">return</span> <span class="n">values</span>
+
+    <span class="nd">@root_validator</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">validate_environment</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Validate that python package exists in environment.&quot;&quot;&quot;</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">import</span> <span class="nn">text_generation</span>
+
+            <span class="n">values</span><span class="p">[</span><span class="s2">&quot;client&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">text_generation</span><span class="o">.</span><span class="n">Client</span><span class="p">(</span>
+                <span class="n">values</span><span class="p">[</span><span class="s2">&quot;inference_server_url&quot;</span><span class="p">],</span>
+                <span class="n">timeout</span><span class="o">=</span><span class="n">values</span><span class="p">[</span><span class="s2">&quot;timeout&quot;</span><span class="p">],</span>
+                <span class="o">**</span><span class="n">values</span><span class="p">[</span><span class="s2">&quot;server_kwargs&quot;</span><span class="p">],</span>
+            <span class="p">)</span>
+            <span class="n">values</span><span class="p">[</span><span class="s2">&quot;async_client&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">text_generation</span><span class="o">.</span><span class="n">AsyncClient</span><span class="p">(</span>
+                <span class="n">values</span><span class="p">[</span><span class="s2">&quot;inference_server_url&quot;</span><span class="p">],</span>
+                <span class="n">timeout</span><span class="o">=</span><span class="n">values</span><span class="p">[</span><span class="s2">&quot;timeout&quot;</span><span class="p">],</span>
+                <span class="o">**</span><span class="n">values</span><span class="p">[</span><span class="s2">&quot;server_kwargs&quot;</span><span class="p">],</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+                <span class="s2">&quot;Could not import text_generation python package. &quot;</span>
+                <span class="s2">&quot;Please install it with `pip install text_generation`.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">values</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_llm_type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return type of llm.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s2">&quot;huggingface_textgen_inference&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_default_params</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the default parameters for calling text generation inference API.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;max_new_tokens&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_new_tokens</span><span class="p">,</span>
+            <span class="s2">&quot;top_k&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">top_k</span><span class="p">,</span>
+            <span class="s2">&quot;top_p&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">top_p</span><span class="p">,</span>
+            <span class="s2">&quot;typical_p&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">typical_p</span><span class="p">,</span>
+            <span class="s2">&quot;temperature&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">temperature</span><span class="p">,</span>
+            <span class="s2">&quot;repetition_penalty&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">repetition_penalty</span><span class="p">,</span>
+            <span class="s2">&quot;return_full_text&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">return_full_text</span><span class="p">,</span>
+            <span class="s2">&quot;truncate&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">truncate</span><span class="p">,</span>
+            <span class="s2">&quot;stop_sequences&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop_sequences</span><span class="p">,</span>
+            <span class="s2">&quot;seed&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">seed</span><span class="p">,</span>
+            <span class="s2">&quot;do_sample&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">do_sample</span><span class="p">,</span>
+            <span class="s2">&quot;watermark&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">watermark</span><span class="p">,</span>
+            <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">model_kwargs</span><span class="p">,</span>
+        <span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">_invocation_params</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">runtime_stop</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_default_params</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">}</span>
+        <span class="n">params</span><span class="p">[</span><span class="s2">&quot;stop_sequences&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s2">&quot;stop_sequences&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">runtime_stop</span> <span class="ow">or</span> <span class="p">[])</span>
+        <span class="k">return</span> <span class="n">params</span>
+
+    <span class="k">def</span> <span class="nf">_call</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">stop</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">run_manager</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">CallbackManagerForLLMRun</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">streaming</span><span class="p">:</span>
+            <span class="n">completion</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+            <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stream</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">run_manager</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+                <span class="n">completion</span> <span class="o">+=</span> <span class="n">chunk</span><span class="o">.</span><span class="n">text</span>
+            <span class="k">return</span> <span class="n">completion</span>
+
+        <span class="n">invocation_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_invocation_params</span><span class="p">(</span><span class="n">stop</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span> <span class="o">**</span><span class="n">invocation_params</span><span class="p">)</span>
+        <span class="c1"># remove stop sequences from the end of the generated text</span>
+        <span class="k">for</span> <span class="n">stop_seq</span> <span class="ow">in</span> <span class="n">invocation_params</span><span class="p">[</span><span class="s2">&quot;stop_sequences&quot;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">stop_seq</span> <span class="ow">in</span> <span class="n">res</span><span class="o">.</span><span class="n">generated_text</span><span class="p">:</span>
+                <span class="n">res</span><span class="o">.</span><span class="n">generated_text</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">generated_text</span><span class="p">[</span>
+                    <span class="p">:</span> <span class="n">res</span><span class="o">.</span><span class="n">generated_text</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">stop_seq</span><span class="p">)</span>
+                <span class="p">]</span>
+        <span class="k">return</span> <span class="n">res</span><span class="o">.</span><span class="n">generated_text</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_acall</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">stop</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">run_manager</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AsyncCallbackManagerForLLMRun</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">streaming</span><span class="p">:</span>
+            <span class="n">completion</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+            <span class="k">async</span> <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_astream</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">run_manager</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+                <span class="n">completion</span> <span class="o">+=</span> <span class="n">chunk</span><span class="o">.</span><span class="n">text</span>
+            <span class="k">return</span> <span class="n">completion</span>
+
+        <span class="n">invocation_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_invocation_params</span><span class="p">(</span><span class="n">stop</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">async_client</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span> <span class="o">**</span><span class="n">invocation_params</span><span class="p">)</span>
+        <span class="c1"># remove stop sequences from the end of the generated text</span>
+        <span class="k">for</span> <span class="n">stop_seq</span> <span class="ow">in</span> <span class="n">invocation_params</span><span class="p">[</span><span class="s2">&quot;stop_sequences&quot;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">stop_seq</span> <span class="ow">in</span> <span class="n">res</span><span class="o">.</span><span class="n">generated_text</span><span class="p">:</span>
+                <span class="n">res</span><span class="o">.</span><span class="n">generated_text</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">generated_text</span><span class="p">[</span>
+                    <span class="p">:</span> <span class="n">res</span><span class="o">.</span><span class="n">generated_text</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">stop_seq</span><span class="p">)</span>
+                <span class="p">]</span>
+        <span class="k">return</span> <span class="n">res</span><span class="o">.</span><span class="n">generated_text</span>
+
+    <span class="k">def</span> <span class="nf">_stream</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">stop</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">run_manager</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">CallbackManagerForLLMRun</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">GenerationChunk</span><span class="p">]:</span>
+        <span class="n">invocation_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_invocation_params</span><span class="p">(</span><span class="n">stop</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">res</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">generate_stream</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span> <span class="o">**</span><span class="n">invocation_params</span><span class="p">):</span>
+            <span class="c1"># identify stop sequence in generated text, if any</span>
+            <span class="n">stop_seq_found</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">for</span> <span class="n">stop_seq</span> <span class="ow">in</span> <span class="n">invocation_params</span><span class="p">[</span><span class="s2">&quot;stop_sequences&quot;</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="n">stop_seq</span> <span class="ow">in</span> <span class="n">res</span><span class="o">.</span><span class="n">token</span><span class="o">.</span><span class="n">text</span><span class="p">:</span>
+                    <span class="n">stop_seq_found</span> <span class="o">=</span> <span class="n">stop_seq</span>
+
+            <span class="c1"># identify text to yield</span>
+            <span class="n">text</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="n">res</span><span class="o">.</span><span class="n">token</span><span class="o">.</span><span class="n">special</span><span class="p">:</span>
+                <span class="n">text</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">elif</span> <span class="n">stop_seq_found</span><span class="p">:</span>
+                <span class="n">text</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">token</span><span class="o">.</span><span class="n">text</span><span class="p">[:</span> <span class="n">res</span><span class="o">.</span><span class="n">token</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">stop_seq_found</span><span class="p">)]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">text</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">token</span><span class="o">.</span><span class="n">text</span>
+
+            <span class="c1"># yield text, if any</span>
+            <span class="k">if</span> <span class="n">text</span><span class="p">:</span>
+                <span class="n">chunk</span> <span class="o">=</span> <span class="n">GenerationChunk</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="n">text</span><span class="p">)</span>
+                <span class="k">yield</span> <span class="n">chunk</span>
+                <span class="k">if</span> <span class="n">run_manager</span><span class="p">:</span>
+                    <span class="n">run_manager</span><span class="o">.</span><span class="n">on_llm_new_token</span><span class="p">(</span><span class="n">chunk</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+
+            <span class="c1"># break if stop sequence found</span>
+            <span class="k">if</span> <span class="n">stop_seq_found</span><span class="p">:</span>
+                <span class="k">break</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_astream</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">stop</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">run_manager</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AsyncCallbackManagerForLLMRun</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">GenerationChunk</span><span class="p">]:</span>
+        <span class="n">invocation_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_invocation_params</span><span class="p">(</span><span class="n">stop</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="k">async</span> <span class="k">for</span> <span class="n">res</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">async_client</span><span class="o">.</span><span class="n">generate_stream</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span> <span class="o">**</span><span class="n">invocation_params</span><span class="p">):</span>
+            <span class="c1"># identify stop sequence in generated text, if any</span>
+            <span class="n">stop_seq_found</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">for</span> <span class="n">stop_seq</span> <span class="ow">in</span> <span class="n">invocation_params</span><span class="p">[</span><span class="s2">&quot;stop_sequences&quot;</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="n">stop_seq</span> <span class="ow">in</span> <span class="n">res</span><span class="o">.</span><span class="n">token</span><span class="o">.</span><span class="n">text</span><span class="p">:</span>
+                    <span class="n">stop_seq_found</span> <span class="o">=</span> <span class="n">stop_seq</span>
+
+            <span class="c1"># identify text to yield</span>
+            <span class="n">text</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="n">res</span><span class="o">.</span><span class="n">token</span><span class="o">.</span><span class="n">special</span><span class="p">:</span>
+                <span class="n">text</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">elif</span> <span class="n">stop_seq_found</span><span class="p">:</span>
+                <span class="n">text</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">token</span><span class="o">.</span><span class="n">text</span><span class="p">[:</span> <span class="n">res</span><span class="o">.</span><span class="n">token</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">stop_seq_found</span><span class="p">)]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">text</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">token</span><span class="o">.</span><span class="n">text</span>
+
+            <span class="c1"># yield text, if any</span>
+            <span class="k">if</span> <span class="n">text</span><span class="p">:</span>
+                <span class="n">chunk</span> <span class="o">=</span> <span class="n">GenerationChunk</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="n">text</span><span class="p">)</span>
+                <span class="k">yield</span> <span class="n">chunk</span>
+                <span class="k">if</span> <span class="n">run_manager</span><span class="p">:</span>
+                    <span class="k">await</span> <span class="n">run_manager</span><span class="o">.</span><span class="n">on_llm_new_token</span><span class="p">(</span><span class="n">chunk</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+
+            <span class="c1"># break if stop sequence found</span>
+            <span class="k">if</span> <span class="n">stop_seq_found</span><span class="p">:</span>
+                <span class="k">break</span></div>
+</pre></div>
+
+      </div>
+    <div class="container">
+      <footer class="sk-content-footer">
+            &copy; 2023, Harrison Chase.
+          Last updated on Dec 19, 2023.
+      </footer>
+    </div>
+  </div>
+</div>
+<script src="../../../_static/js/vendor/bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    /* Add a [>>>] button on the top-right corner of code samples to hide
+     * the >>> and ... prompts and the output and thus make the code
+     * copyable. */
+    var div = $('.highlight-python .highlight,' +
+                '.highlight-python3 .highlight,' +
+                '.highlight-pycon .highlight,' +
+		'.highlight-default .highlight')
+    var pre = div.find('pre');
+
+    // get the styles from the current theme
+    pre.parent().parent().css('position', 'relative');
+    var hide_text = 'Hide prompts and outputs';
+    var show_text = 'Show prompts and outputs';
+
+    // create and add the button to all the code blocks that contain >>>
+    div.each(function(index) {
+        var jthis = $(this);
+        if (jthis.find('.gp').length > 0) {
+            var button = $('<span class="copybutton">&gt;&gt;&gt;</span>');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+            jthis.prepend(button);
+        }
+        // tracebacks (.gt) contain bare text elements that need to be
+        // wrapped in a span to work with .nextUntil() (see later)
+        jthis.find('pre:has(.gt)').contents().filter(function() {
+            return ((this.nodeType == 3) && (this.data.trim().length > 0));
+        }).wrap('<span>');
+    });
+
+    // define the behavior of the button when it's clicked
+    $('.copybutton').click(function(e){
+        e.preventDefault();
+        var button = $(this);
+        if (button.data('hidden') === 'false') {
+            // hide the code output
+            button.parent().find('.go, .gp, .gt').hide();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'hidden');
+            button.css('text-decoration', 'line-through');
+            button.attr('title', show_text);
+            button.data('hidden', 'true');
+        } else {
+            // show the code output
+            button.parent().find('.go, .gp, .gt').show();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'visible');
+            button.css('text-decoration', 'none');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+        }
+    });
+
+	/*** Add permalink buttons next to glossary terms ***/
+	$('dl.glossary > dt[id]').append(function() {
+		return ('<a class="headerlink" href="#' +
+			    this.getAttribute('id') +
+			    '" title="Permalink to this term">¶</a>');
+	});
+});
+
+</script>
+    
+</body>
+</html>

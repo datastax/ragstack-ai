@@ -1,0 +1,573 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>langchain.agents.openai_assistant.base &mdash; 🦜🔗 LangChain 0.0.350</title>
+  
+  <link rel="canonical" href="https://api.python.langchain.com/en/latest/_modules/langchain/agents/openai_assistant/base.html" />
+
+  
+
+  <link rel="stylesheet" href="../../../../_static/css/vendor/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/autodoc_pydantic.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/panels-bootstrap.5fd3999ee7762ccc51105388f4a9d115.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/css/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+<script id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+<script src="../../../../_static/jquery.js"></script> 
+</head>
+<body>
+
+
+<nav id="navbar" class="sk-docs-navbar navbar navbar-expand-md navbar-light bg-light py-0">
+  <div class="container-fluid sk-docs-container px-0">
+    <button
+      id="sk-navbar-toggler"
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="sk-navbar-collapse collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../../api_reference.html">API</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../../core_api_reference.html">Core</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../../community_api_reference.html">Community</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../../experimental_api_reference.html">Experimental</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" target="_blank" rel="noopener noreferrer" href="https://python.langchain.com/">Python Docs</a>
+        </li>
+      </ul>
+      <div id="searchbox" role="search">
+          <div class="searchformwrapper">
+          <form class="search" action="../../../../search.html" method="get">
+            <input class="sk-search-text-input" type="text" name="q" aria-labelledby="searchlabel" />
+            <input class="sk-search-text-btn" type="submit" value="Go" />
+          </form>
+          </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="d-flex" id="sk-doc-wrapper">
+    <input type="checkbox" name="sk-toggle-checkbox" id="sk-toggle-checkbox">
+    <label id="sk-sidemenu-toggle" class="sk-btn-toggle-toc btn sk-btn-primary" for="sk-toggle-checkbox">Toggle Menu</label>
+    <div id="sk-sidebar-wrapper" class="border-right">
+      <div class="sk-sidebar-toc-wrapper">
+        <div class="btn-group w-100 mb-2" role="group" aria-label="rellinks">
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Prev</a><a href="../../../index.html" role="button" class="btn sk-btn-rellink py-1" sk-rellink-tooltip="Module code">Up</a>
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Next</a>
+        </div>
+        <div class="alert alert-warning p-1 mb-2" role="alert">
+          <p class="text-center mb-0">
+          <strong>LangChain 0.0.350</strong><br/>
+          </p>
+        </div>
+            <div class="sk-sidebar-toc">
+              
+            </div>
+      </div>
+    </div>
+    <div id="sk-page-content-wrapper">
+      <div class="sk-page-content container-fluid body px-md-3" role="main">
+        
+  <h1>Source code for langchain.agents.openai_assistant.base</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">from</span> <span class="nn">json</span> <span class="kn">import</span> <span class="n">JSONDecodeError</span>
+<span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">sleep</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">from</span> <span class="nn">langchain_core.agents</span> <span class="kn">import</span> <span class="n">AgentAction</span><span class="p">,</span> <span class="n">AgentFinish</span>
+<span class="kn">from</span> <span class="nn">langchain_core.load</span> <span class="kn">import</span> <span class="n">dumpd</span>
+<span class="kn">from</span> <span class="nn">langchain_core.pydantic_v1</span> <span class="kn">import</span> <span class="n">Field</span>
+<span class="kn">from</span> <span class="nn">langchain_core.runnables</span> <span class="kn">import</span> <span class="n">RunnableConfig</span><span class="p">,</span> <span class="n">RunnableSerializable</span>
+<span class="kn">from</span> <span class="nn">langchain_core.tools</span> <span class="kn">import</span> <span class="n">BaseTool</span>
+
+<span class="kn">from</span> <span class="nn">langchain.callbacks.manager</span> <span class="kn">import</span> <span class="n">CallbackManager</span>
+<span class="kn">from</span> <span class="nn">langchain.tools.render</span> <span class="kn">import</span> <span class="n">format_tool_to_openai_tool</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">openai</span>
+    <span class="kn">from</span> <span class="nn">openai.types.beta.threads</span> <span class="kn">import</span> <span class="n">ThreadMessage</span>
+    <span class="kn">from</span> <span class="nn">openai.types.beta.threads.required_action_function_tool_call</span> <span class="kn">import</span> <span class="p">(</span>
+        <span class="n">RequiredActionFunctionToolCall</span><span class="p">,</span>
+    <span class="p">)</span>
+
+
+<div class="viewcode-block" id="OpenAIAssistantFinish"><a class="viewcode-back" href="../../../../agents/langchain.agents.openai_assistant.base.OpenAIAssistantFinish.html#langchain.agents.openai_assistant.base.OpenAIAssistantFinish">[docs]</a><span class="k">class</span> <span class="nc">OpenAIAssistantFinish</span><span class="p">(</span><span class="n">AgentFinish</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;AgentFinish with run and thread metadata.&quot;&quot;&quot;</span>
+
+    <span class="n">run_id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">thread_id</span><span class="p">:</span> <span class="nb">str</span>
+
+<div class="viewcode-block" id="OpenAIAssistantFinish.is_lc_serializable"><a class="viewcode-back" href="../../../../agents/langchain.agents.openai_assistant.base.OpenAIAssistantFinish.html#langchain.agents.openai_assistant.base.OpenAIAssistantFinish.is_lc_serializable">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">is_lc_serializable</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span></div></div>
+
+
+<div class="viewcode-block" id="OpenAIAssistantAction"><a class="viewcode-back" href="../../../../agents/langchain.agents.openai_assistant.base.OpenAIAssistantAction.html#langchain.agents.openai_assistant.base.OpenAIAssistantAction">[docs]</a><span class="k">class</span> <span class="nc">OpenAIAssistantAction</span><span class="p">(</span><span class="n">AgentAction</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;AgentAction with info needed to submit custom tool output to existing run.&quot;&quot;&quot;</span>
+
+    <span class="n">tool_call_id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">run_id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">thread_id</span><span class="p">:</span> <span class="nb">str</span>
+
+<div class="viewcode-block" id="OpenAIAssistantAction.is_lc_serializable"><a class="viewcode-back" href="../../../../agents/langchain.agents.openai_assistant.base.OpenAIAssistantAction.html#langchain.agents.openai_assistant.base.OpenAIAssistantAction.is_lc_serializable">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">is_lc_serializable</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span></div></div>
+
+
+<span class="k">def</span> <span class="nf">_get_openai_client</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">openai</span><span class="o">.</span><span class="n">OpenAI</span><span class="p">:</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">import</span> <span class="nn">openai</span>
+
+        <span class="k">return</span> <span class="n">openai</span><span class="o">.</span><span class="n">OpenAI</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+            <span class="s2">&quot;Unable to import openai, please install with `pip install openai`.&quot;</span>
+        <span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>
+    <span class="k">except</span> <span class="ne">AttributeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span>
+            <span class="s2">&quot;Please make sure you are using a v1.1-compatible version of openai. You &quot;</span>
+            <span class="s1">&#39;can install with `pip install &quot;openai&gt;=1.1&quot;`.&#39;</span>
+        <span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>
+
+
+<span class="n">OutputType</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span>
+    <span class="n">List</span><span class="p">[</span><span class="n">OpenAIAssistantAction</span><span class="p">],</span>
+    <span class="n">OpenAIAssistantFinish</span><span class="p">,</span>
+    <span class="n">List</span><span class="p">[</span><span class="s2">&quot;ThreadMessage&quot;</span><span class="p">],</span>
+    <span class="n">List</span><span class="p">[</span><span class="s2">&quot;RequiredActionFunctionToolCall&quot;</span><span class="p">],</span>
+<span class="p">]</span>
+
+
+<div class="viewcode-block" id="OpenAIAssistantRunnable"><a class="viewcode-back" href="../../../../agents/langchain.agents.openai_assistant.base.OpenAIAssistantRunnable.html#langchain.agents.openai_assistant.base.OpenAIAssistantRunnable">[docs]</a><span class="k">class</span> <span class="nc">OpenAIAssistantRunnable</span><span class="p">(</span><span class="n">RunnableSerializable</span><span class="p">[</span><span class="n">Dict</span><span class="p">,</span> <span class="n">OutputType</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run an OpenAI Assistant.</span>
+
+<span class="sd">    Example using OpenAI tools:</span>
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            from langchain_experimental.openai_assistant import OpenAIAssistantRunnable</span>
+
+<span class="sd">            interpreter_assistant = OpenAIAssistantRunnable.create_assistant(</span>
+<span class="sd">                name=&quot;langchain assistant&quot;,</span>
+<span class="sd">                instructions=&quot;You are a personal math tutor. Write and run code to answer math questions.&quot;,</span>
+<span class="sd">                tools=[{&quot;type&quot;: &quot;code_interpreter&quot;}],</span>
+<span class="sd">                model=&quot;gpt-4-1106-preview&quot;</span>
+<span class="sd">            )</span>
+<span class="sd">            output = interpreter_assistant.invoke({&quot;content&quot;: &quot;What&#39;s 10 - 4 raised to the 2.7&quot;})</span>
+
+<span class="sd">    Example using custom tools and AgentExecutor:</span>
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            from langchain_experimental.openai_assistant import OpenAIAssistantRunnable</span>
+<span class="sd">            from langchain.agents import AgentExecutor</span>
+<span class="sd">            from langchain.tools import E2BDataAnalysisTool</span>
+
+
+<span class="sd">            tools = [E2BDataAnalysisTool(api_key=&quot;...&quot;)]</span>
+<span class="sd">            agent = OpenAIAssistantRunnable.create_assistant(</span>
+<span class="sd">                name=&quot;langchain assistant e2b tool&quot;,</span>
+<span class="sd">                instructions=&quot;You are a personal math tutor. Write and run code to answer math questions.&quot;,</span>
+<span class="sd">                tools=tools,</span>
+<span class="sd">                model=&quot;gpt-4-1106-preview&quot;,</span>
+<span class="sd">                as_agent=True</span>
+<span class="sd">            )</span>
+
+<span class="sd">            agent_executor = AgentExecutor(agent=agent, tools=tools)</span>
+<span class="sd">            agent_executor.invoke({&quot;content&quot;: &quot;What&#39;s 10 - 4 raised to the 2.7&quot;})</span>
+
+
+<span class="sd">    Example using custom tools and custom execution:</span>
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            from langchain_experimental.openai_assistant import OpenAIAssistantRunnable</span>
+<span class="sd">            from langchain.agents import AgentExecutor</span>
+<span class="sd">            from langchain_core.agents import AgentFinish</span>
+<span class="sd">            from langchain.tools import E2BDataAnalysisTool</span>
+
+
+<span class="sd">            tools = [E2BDataAnalysisTool(api_key=&quot;...&quot;)]</span>
+<span class="sd">            agent = OpenAIAssistantRunnable.create_assistant(</span>
+<span class="sd">                name=&quot;langchain assistant e2b tool&quot;,</span>
+<span class="sd">                instructions=&quot;You are a personal math tutor. Write and run code to answer math questions.&quot;,</span>
+<span class="sd">                tools=tools,</span>
+<span class="sd">                model=&quot;gpt-4-1106-preview&quot;,</span>
+<span class="sd">                as_agent=True</span>
+<span class="sd">            )</span>
+
+<span class="sd">            def execute_agent(agent, tools, input):</span>
+<span class="sd">                tool_map = {tool.name: tool for tool in tools}</span>
+<span class="sd">                response = agent.invoke(input)</span>
+<span class="sd">                while not isinstance(response, AgentFinish):</span>
+<span class="sd">                    tool_outputs = []</span>
+<span class="sd">                    for action in response:</span>
+<span class="sd">                        tool_output = tool_map[action.tool].invoke(action.tool_input)</span>
+<span class="sd">                        tool_outputs.append({&quot;output&quot;: tool_output, &quot;tool_call_id&quot;: action.tool_call_id})</span>
+<span class="sd">                    response = agent.invoke(</span>
+<span class="sd">                        {</span>
+<span class="sd">                            &quot;tool_outputs&quot;: tool_outputs,</span>
+<span class="sd">                            &quot;run_id&quot;: action.run_id,</span>
+<span class="sd">                            &quot;thread_id&quot;: action.thread_id</span>
+<span class="sd">                        }</span>
+<span class="sd">                    )</span>
+
+<span class="sd">                return response</span>
+
+<span class="sd">            response = execute_agent(agent, tools, {&quot;content&quot;: &quot;What&#39;s 10 - 4 raised to the 2.7&quot;})</span>
+<span class="sd">            next_response = execute_agent(agent, tools, {&quot;content&quot;: &quot;now add 17.241&quot;, &quot;thread_id&quot;: response.thread_id})</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>  <span class="c1"># noqa: E501</span>
+
+    <span class="n">client</span><span class="p">:</span> <span class="n">openai</span><span class="o">.</span><span class="n">OpenAI</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">_get_openai_client</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;OpenAI client.&quot;&quot;&quot;</span>
+    <span class="n">assistant_id</span><span class="p">:</span> <span class="nb">str</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;OpenAI assistant id.&quot;&quot;&quot;</span>
+    <span class="n">check_every_ms</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1_000.0</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Frequency with which to check run progress in ms.&quot;&quot;&quot;</span>
+    <span class="n">as_agent</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Use as a LangChain agent, compatible with the AgentExecutor.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="OpenAIAssistantRunnable.create_assistant"><a class="viewcode-back" href="../../../../agents/langchain.agents.openai_assistant.base.OpenAIAssistantRunnable.html#langchain.agents.openai_assistant.base.OpenAIAssistantRunnable.create_assistant">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">create_assistant</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">instructions</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">tools</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">BaseTool</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]],</span>
+        <span class="n">model</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">client</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">openai</span><span class="o">.</span><span class="n">OpenAI</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OpenAIAssistantRunnable</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create an OpenAI Assistant and instantiate the Runnable.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name: Assistant name.</span>
+<span class="sd">            instructions: Assistant instructions.</span>
+<span class="sd">            tools: Assistant tools. Can be passed in in OpenAI format or as BaseTools.</span>
+<span class="sd">            model: Assistant model to use.</span>
+<span class="sd">            client: OpenAI client. Will create default client if not specified.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            OpenAIAssistantRunnable configured to run using the created assistant.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">client</span> <span class="o">=</span> <span class="n">client</span> <span class="ow">or</span> <span class="n">_get_openai_client</span><span class="p">()</span>
+        <span class="n">openai_tools</span><span class="p">:</span> <span class="n">List</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">tool</span> <span class="ow">in</span> <span class="n">tools</span><span class="p">:</span>
+            <span class="n">oai_tool</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">tool</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tool</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="k">else</span> <span class="n">format_tool_to_openai_tool</span><span class="p">(</span><span class="n">tool</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">openai_tools</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">oai_tool</span><span class="p">)</span>
+        <span class="n">assistant</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">beta</span><span class="o">.</span><span class="n">assistants</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">instructions</span><span class="o">=</span><span class="n">instructions</span><span class="p">,</span>
+            <span class="n">tools</span><span class="o">=</span><span class="n">openai_tools</span><span class="p">,</span>
+            <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">assistant_id</span><span class="o">=</span><span class="n">assistant</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="OpenAIAssistantRunnable.invoke"><a class="viewcode-back" href="../../../../agents/langchain.agents.openai_assistant.base.OpenAIAssistantRunnable.html#langchain.agents.openai_assistant.base.OpenAIAssistantRunnable.invoke">[docs]</a>    <span class="k">def</span> <span class="nf">invoke</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">RunnableConfig</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OutputType</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Invoke assistant.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            input: Runnable input dict that can have:</span>
+<span class="sd">                content: User message when starting a new run.</span>
+<span class="sd">                thread_id: Existing thread to use.</span>
+<span class="sd">                run_id: Existing run to use. Should only be supplied when providing</span>
+<span class="sd">                    the tool output for a required action after an initial invocation.</span>
+<span class="sd">                file_ids: File ids to include in new run. Used for retrieval.</span>
+<span class="sd">                message_metadata: Metadata to associate with new message.</span>
+<span class="sd">                thread_metadata: Metadata to associate with new thread. Only relevant</span>
+<span class="sd">                    when new thread being created.</span>
+<span class="sd">                instructions: Additional run instructions.</span>
+<span class="sd">                model: Override Assistant model for this run.</span>
+<span class="sd">                tools: Override Assistant tools for this run.</span>
+<span class="sd">                run_metadata: Metadata to associate with new run.</span>
+<span class="sd">            config: Runnable config:</span>
+
+<span class="sd">        Return:</span>
+<span class="sd">            If self.as_agent, will return</span>
+<span class="sd">                Union[List[OpenAIAssistantAction], OpenAIAssistantFinish]. Otherwise</span>
+<span class="sd">                will return OpenAI types</span>
+<span class="sd">                Union[List[ThreadMessage], List[RequiredActionFunctionToolCall]].</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">config</span> <span class="o">=</span> <span class="n">config</span> <span class="ow">or</span> <span class="p">{}</span>
+        <span class="n">callback_manager</span> <span class="o">=</span> <span class="n">CallbackManager</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span>
+            <span class="n">inheritable_callbacks</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;callbacks&quot;</span><span class="p">),</span>
+            <span class="n">inheritable_tags</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;tags&quot;</span><span class="p">),</span>
+            <span class="n">inheritable_metadata</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;metadata&quot;</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="n">run_manager</span> <span class="o">=</span> <span class="n">callback_manager</span><span class="o">.</span><span class="n">on_chain_start</span><span class="p">(</span>
+            <span class="n">dumpd</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span> <span class="nb">input</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;run_name&quot;</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Being run within AgentExecutor and there are tool outputs to submit.</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">as_agent</span> <span class="ow">and</span> <span class="nb">input</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;intermediate_steps&quot;</span><span class="p">):</span>
+                <span class="n">tool_outputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_intermediate_steps</span><span class="p">(</span>
+                    <span class="nb">input</span><span class="p">[</span><span class="s2">&quot;intermediate_steps&quot;</span><span class="p">]</span>
+                <span class="p">)</span>
+                <span class="n">run</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">beta</span><span class="o">.</span><span class="n">threads</span><span class="o">.</span><span class="n">runs</span><span class="o">.</span><span class="n">submit_tool_outputs</span><span class="p">(</span><span class="o">**</span><span class="n">tool_outputs</span><span class="p">)</span>
+            <span class="c1"># Starting a new thread and a new run.</span>
+            <span class="k">elif</span> <span class="s2">&quot;thread_id&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">input</span><span class="p">:</span>
+                <span class="n">thread</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s2">&quot;messages&quot;</span><span class="p">:</span> <span class="p">[</span>
+                        <span class="p">{</span>
+                            <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="nb">input</span><span class="p">[</span><span class="s2">&quot;content&quot;</span><span class="p">],</span>
+                            <span class="s2">&quot;file_ids&quot;</span><span class="p">:</span> <span class="nb">input</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;file_ids&quot;</span><span class="p">,</span> <span class="p">[]),</span>
+                            <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="nb">input</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;message_metadata&quot;</span><span class="p">),</span>
+                        <span class="p">}</span>
+                    <span class="p">],</span>
+                    <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="nb">input</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;thread_metadata&quot;</span><span class="p">),</span>
+                <span class="p">}</span>
+                <span class="n">run</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_thread_and_run</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">thread</span><span class="p">)</span>
+            <span class="c1"># Starting a new run in an existing thread.</span>
+            <span class="k">elif</span> <span class="s2">&quot;run_id&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">input</span><span class="p">:</span>
+                <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">beta</span><span class="o">.</span><span class="n">threads</span><span class="o">.</span><span class="n">messages</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+                    <span class="nb">input</span><span class="p">[</span><span class="s2">&quot;thread_id&quot;</span><span class="p">],</span>
+                    <span class="n">content</span><span class="o">=</span><span class="nb">input</span><span class="p">[</span><span class="s2">&quot;content&quot;</span><span class="p">],</span>
+                    <span class="n">role</span><span class="o">=</span><span class="s2">&quot;user&quot;</span><span class="p">,</span>
+                    <span class="n">file_ids</span><span class="o">=</span><span class="nb">input</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;file_ids&quot;</span><span class="p">,</span> <span class="p">[]),</span>
+                    <span class="n">metadata</span><span class="o">=</span><span class="nb">input</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;message_metadata&quot;</span><span class="p">),</span>
+                <span class="p">)</span>
+                <span class="n">run</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_run</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+            <span class="c1"># Submitting tool outputs to an existing run, outside the AgentExecutor</span>
+            <span class="c1"># framework.</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">run</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">beta</span><span class="o">.</span><span class="n">threads</span><span class="o">.</span><span class="n">runs</span><span class="o">.</span><span class="n">submit_tool_outputs</span><span class="p">(</span><span class="o">**</span><span class="nb">input</span><span class="p">)</span>
+            <span class="n">run</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_wait_for_run</span><span class="p">(</span><span class="n">run</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">run</span><span class="o">.</span><span class="n">thread_id</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">BaseException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">run_manager</span><span class="o">.</span><span class="n">on_chain_error</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">e</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_response</span><span class="p">(</span><span class="n">run</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">BaseException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">run_manager</span><span class="o">.</span><span class="n">on_chain_error</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="n">run</span><span class="o">.</span><span class="n">dict</span><span class="p">())</span>
+            <span class="k">raise</span> <span class="n">e</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">run_manager</span><span class="o">.</span><span class="n">on_chain_end</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">response</span></div>
+
+    <span class="k">def</span> <span class="nf">_parse_intermediate_steps</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">intermediate_steps</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">OpenAIAssistantAction</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="n">last_action</span><span class="p">,</span> <span class="n">last_output</span> <span class="o">=</span> <span class="n">intermediate_steps</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">run</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_wait_for_run</span><span class="p">(</span><span class="n">last_action</span><span class="o">.</span><span class="n">run_id</span><span class="p">,</span> <span class="n">last_action</span><span class="o">.</span><span class="n">thread_id</span><span class="p">)</span>
+        <span class="n">required_tool_call_ids</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">tc</span><span class="o">.</span><span class="n">id</span> <span class="k">for</span> <span class="n">tc</span> <span class="ow">in</span> <span class="n">run</span><span class="o">.</span><span class="n">required_action</span><span class="o">.</span><span class="n">submit_tool_outputs</span><span class="o">.</span><span class="n">tool_calls</span>
+        <span class="p">}</span>
+        <span class="n">tool_outputs</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">{</span><span class="s2">&quot;output&quot;</span><span class="p">:</span> <span class="n">output</span><span class="p">,</span> <span class="s2">&quot;tool_call_id&quot;</span><span class="p">:</span> <span class="n">action</span><span class="o">.</span><span class="n">tool_call_id</span><span class="p">}</span>
+            <span class="k">for</span> <span class="n">action</span><span class="p">,</span> <span class="n">output</span> <span class="ow">in</span> <span class="n">intermediate_steps</span>
+            <span class="k">if</span> <span class="n">action</span><span class="o">.</span><span class="n">tool_call_id</span> <span class="ow">in</span> <span class="n">required_tool_call_ids</span>
+        <span class="p">]</span>
+        <span class="n">submit_tool_outputs</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;tool_outputs&quot;</span><span class="p">:</span> <span class="n">tool_outputs</span><span class="p">,</span>
+            <span class="s2">&quot;run_id&quot;</span><span class="p">:</span> <span class="n">last_action</span><span class="o">.</span><span class="n">run_id</span><span class="p">,</span>
+            <span class="s2">&quot;thread_id&quot;</span><span class="p">:</span> <span class="n">last_action</span><span class="o">.</span><span class="n">thread_id</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">submit_tool_outputs</span>
+
+    <span class="k">def</span> <span class="nf">_create_run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">k</span><span class="p">:</span> <span class="n">v</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">input</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;instructions&quot;</span><span class="p">,</span> <span class="s2">&quot;model&quot;</span><span class="p">,</span> <span class="s2">&quot;tools&quot;</span><span class="p">,</span> <span class="s2">&quot;run_metadata&quot;</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">beta</span><span class="o">.</span><span class="n">threads</span><span class="o">.</span><span class="n">runs</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+            <span class="nb">input</span><span class="p">[</span><span class="s2">&quot;thread_id&quot;</span><span class="p">],</span>
+            <span class="n">assistant_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">assistant_id</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">params</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_create_thread_and_run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">thread</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">k</span><span class="p">:</span> <span class="n">v</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">input</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;instructions&quot;</span><span class="p">,</span> <span class="s2">&quot;model&quot;</span><span class="p">,</span> <span class="s2">&quot;tools&quot;</span><span class="p">,</span> <span class="s2">&quot;run_metadata&quot;</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="n">run</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">beta</span><span class="o">.</span><span class="n">threads</span><span class="o">.</span><span class="n">create_and_run</span><span class="p">(</span>
+            <span class="n">assistant_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">assistant_id</span><span class="p">,</span>
+            <span class="n">thread</span><span class="o">=</span><span class="n">thread</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">params</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">run</span>
+
+    <span class="k">def</span> <span class="nf">_get_response</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">run</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+        <span class="c1"># TODO: Pagination</span>
+
+        <span class="k">if</span> <span class="n">run</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="s2">&quot;completed&quot;</span><span class="p">:</span>
+            <span class="kn">import</span> <span class="nn">openai</span>
+
+            <span class="n">messages</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">beta</span><span class="o">.</span><span class="n">threads</span><span class="o">.</span><span class="n">messages</span><span class="o">.</span><span class="n">list</span><span class="p">(</span>
+                <span class="n">run</span><span class="o">.</span><span class="n">thread_id</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;asc&quot;</span>
+            <span class="p">)</span>
+            <span class="n">new_messages</span> <span class="o">=</span> <span class="p">[</span><span class="n">msg</span> <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">messages</span> <span class="k">if</span> <span class="n">msg</span><span class="o">.</span><span class="n">run_id</span> <span class="o">==</span> <span class="n">run</span><span class="o">.</span><span class="n">id</span><span class="p">]</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">as_agent</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">new_messages</span>
+            <span class="n">answer</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">msg_content</span> <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">new_messages</span> <span class="k">for</span> <span class="n">msg_content</span> <span class="ow">in</span> <span class="n">msg</span><span class="o">.</span><span class="n">content</span>
+            <span class="p">]</span>
+            <span class="k">if</span> <span class="nb">all</span><span class="p">(</span>
+                <span class="nb">isinstance</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="n">openai</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">beta</span><span class="o">.</span><span class="n">threads</span><span class="o">.</span><span class="n">MessageContentText</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">content</span> <span class="ow">in</span> <span class="n">answer</span>
+            <span class="p">):</span>
+                <span class="n">answer</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">content</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">value</span> <span class="k">for</span> <span class="n">content</span> <span class="ow">in</span> <span class="n">answer</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">OpenAIAssistantFinish</span><span class="p">(</span>
+                <span class="n">return_values</span><span class="o">=</span><span class="p">{</span>
+                    <span class="s2">&quot;output&quot;</span><span class="p">:</span> <span class="n">answer</span><span class="p">,</span>
+                    <span class="s2">&quot;thread_id&quot;</span><span class="p">:</span> <span class="n">run</span><span class="o">.</span><span class="n">thread_id</span><span class="p">,</span>
+                    <span class="s2">&quot;run_id&quot;</span><span class="p">:</span> <span class="n">run</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                <span class="p">},</span>
+                <span class="n">log</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+                <span class="n">run_id</span><span class="o">=</span><span class="n">run</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                <span class="n">thread_id</span><span class="o">=</span><span class="n">run</span><span class="o">.</span><span class="n">thread_id</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">run</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="s2">&quot;requires_action&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">as_agent</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">run</span><span class="o">.</span><span class="n">required_action</span><span class="o">.</span><span class="n">submit_tool_outputs</span><span class="o">.</span><span class="n">tool_calls</span>
+            <span class="n">actions</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">tool_call</span> <span class="ow">in</span> <span class="n">run</span><span class="o">.</span><span class="n">required_action</span><span class="o">.</span><span class="n">submit_tool_outputs</span><span class="o">.</span><span class="n">tool_calls</span><span class="p">:</span>
+                <span class="n">function</span> <span class="o">=</span> <span class="n">tool_call</span><span class="o">.</span><span class="n">function</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">args</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">function</span><span class="o">.</span><span class="n">arguments</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                <span class="k">except</span> <span class="n">JSONDecodeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;Received invalid JSON function arguments: &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">function</span><span class="o">.</span><span class="n">arguments</span><span class="si">}</span><span class="s2"> for function </span><span class="si">{</span><span class="n">function</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="s2">&quot;__arg1&quot;</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
+                    <span class="n">args</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="s2">&quot;__arg1&quot;</span><span class="p">]</span>
+                <span class="n">actions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="n">OpenAIAssistantAction</span><span class="p">(</span>
+                        <span class="n">tool</span><span class="o">=</span><span class="n">function</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                        <span class="n">tool_input</span><span class="o">=</span><span class="n">args</span><span class="p">,</span>
+                        <span class="n">tool_call_id</span><span class="o">=</span><span class="n">tool_call</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                        <span class="n">log</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+                        <span class="n">run_id</span><span class="o">=</span><span class="n">run</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                        <span class="n">thread_id</span><span class="o">=</span><span class="n">run</span><span class="o">.</span><span class="n">thread_id</span><span class="p">,</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+            <span class="k">return</span> <span class="n">actions</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">run_info</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">run</span><span class="o">.</span><span class="n">dict</span><span class="p">(),</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Unexpected run status: </span><span class="si">{</span><span class="n">run</span><span class="o">.</span><span class="n">status</span><span class="si">}</span><span class="s2">. Full run info:</span><span class="se">\n\n</span><span class="si">{</span><span class="n">run_info</span><span class="si">}</span><span class="s2">)&quot;</span>
+            <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_wait_for_run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">run_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">thread_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+        <span class="n">in_progress</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">while</span> <span class="n">in_progress</span><span class="p">:</span>
+            <span class="n">run</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">beta</span><span class="o">.</span><span class="n">threads</span><span class="o">.</span><span class="n">runs</span><span class="o">.</span><span class="n">retrieve</span><span class="p">(</span><span class="n">run_id</span><span class="p">,</span> <span class="n">thread_id</span><span class="o">=</span><span class="n">thread_id</span><span class="p">)</span>
+            <span class="n">in_progress</span> <span class="o">=</span> <span class="n">run</span><span class="o">.</span><span class="n">status</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;in_progress&quot;</span><span class="p">,</span> <span class="s2">&quot;queued&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">in_progress</span><span class="p">:</span>
+                <span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">check_every_ms</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">run</span></div>
+</pre></div>
+
+      </div>
+    <div class="container">
+      <footer class="sk-content-footer">
+            &copy; 2023, Harrison Chase.
+          Last updated on Dec 19, 2023.
+      </footer>
+    </div>
+  </div>
+</div>
+<script src="../../../../_static/js/vendor/bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    /* Add a [>>>] button on the top-right corner of code samples to hide
+     * the >>> and ... prompts and the output and thus make the code
+     * copyable. */
+    var div = $('.highlight-python .highlight,' +
+                '.highlight-python3 .highlight,' +
+                '.highlight-pycon .highlight,' +
+		'.highlight-default .highlight')
+    var pre = div.find('pre');
+
+    // get the styles from the current theme
+    pre.parent().parent().css('position', 'relative');
+    var hide_text = 'Hide prompts and outputs';
+    var show_text = 'Show prompts and outputs';
+
+    // create and add the button to all the code blocks that contain >>>
+    div.each(function(index) {
+        var jthis = $(this);
+        if (jthis.find('.gp').length > 0) {
+            var button = $('<span class="copybutton">&gt;&gt;&gt;</span>');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+            jthis.prepend(button);
+        }
+        // tracebacks (.gt) contain bare text elements that need to be
+        // wrapped in a span to work with .nextUntil() (see later)
+        jthis.find('pre:has(.gt)').contents().filter(function() {
+            return ((this.nodeType == 3) && (this.data.trim().length > 0));
+        }).wrap('<span>');
+    });
+
+    // define the behavior of the button when it's clicked
+    $('.copybutton').click(function(e){
+        e.preventDefault();
+        var button = $(this);
+        if (button.data('hidden') === 'false') {
+            // hide the code output
+            button.parent().find('.go, .gp, .gt').hide();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'hidden');
+            button.css('text-decoration', 'line-through');
+            button.attr('title', show_text);
+            button.data('hidden', 'true');
+        } else {
+            // show the code output
+            button.parent().find('.go, .gp, .gt').show();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'visible');
+            button.css('text-decoration', 'none');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+        }
+    });
+
+	/*** Add permalink buttons next to glossary terms ***/
+	$('dl.glossary > dt[id]').append(function() {
+		return ('<a class="headerlink" href="#' +
+			    this.getAttribute('id') +
+			    '" title="Permalink to this term">¶</a>');
+	});
+});
+
+</script>
+    
+</body>
+</html>

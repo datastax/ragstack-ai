@@ -1,0 +1,569 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>langchain.agents.agent_iterator &mdash; 🦜🔗 LangChain 0.0.350</title>
+  
+  <link rel="canonical" href="https://api.python.langchain.com/en/latest/_modules/langchain/agents/agent_iterator.html" />
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/vendor/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/autodoc_pydantic.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/panels-bootstrap.5fd3999ee7762ccc51105388f4a9d115.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+<script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+<script src="../../../_static/jquery.js"></script> 
+</head>
+<body>
+
+
+<nav id="navbar" class="sk-docs-navbar navbar navbar-expand-md navbar-light bg-light py-0">
+  <div class="container-fluid sk-docs-container px-0">
+    <button
+      id="sk-navbar-toggler"
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="sk-navbar-collapse collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../api_reference.html">API</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../core_api_reference.html">Core</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../community_api_reference.html">Community</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../experimental_api_reference.html">Experimental</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" target="_blank" rel="noopener noreferrer" href="https://python.langchain.com/">Python Docs</a>
+        </li>
+      </ul>
+      <div id="searchbox" role="search">
+          <div class="searchformwrapper">
+          <form class="search" action="../../../search.html" method="get">
+            <input class="sk-search-text-input" type="text" name="q" aria-labelledby="searchlabel" />
+            <input class="sk-search-text-btn" type="submit" value="Go" />
+          </form>
+          </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="d-flex" id="sk-doc-wrapper">
+    <input type="checkbox" name="sk-toggle-checkbox" id="sk-toggle-checkbox">
+    <label id="sk-sidemenu-toggle" class="sk-btn-toggle-toc btn sk-btn-primary" for="sk-toggle-checkbox">Toggle Menu</label>
+    <div id="sk-sidebar-wrapper" class="border-right">
+      <div class="sk-sidebar-toc-wrapper">
+        <div class="btn-group w-100 mb-2" role="group" aria-label="rellinks">
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Prev</a><a href="../../index.html" role="button" class="btn sk-btn-rellink py-1" sk-rellink-tooltip="Module code">Up</a>
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Next</a>
+        </div>
+        <div class="alert alert-warning p-1 mb-2" role="alert">
+          <p class="text-center mb-0">
+          <strong>LangChain 0.0.350</strong><br/>
+          </p>
+        </div>
+            <div class="sk-sidebar-toc">
+              
+            </div>
+      </div>
+    </div>
+    <div id="sk-page-content-wrapper">
+      <div class="sk-page-content container-fluid body px-md-3" role="main">
+        
+  <h1>Source code for langchain.agents.agent_iterator</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span> <span class="nn">asyncio</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">TYPE_CHECKING</span><span class="p">,</span>
+    <span class="n">Any</span><span class="p">,</span>
+    <span class="n">AsyncIterator</span><span class="p">,</span>
+    <span class="n">Dict</span><span class="p">,</span>
+    <span class="n">Iterator</span><span class="p">,</span>
+    <span class="n">List</span><span class="p">,</span>
+    <span class="n">Optional</span><span class="p">,</span>
+    <span class="n">Tuple</span><span class="p">,</span>
+    <span class="n">Union</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">langchain_core.agents</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AgentAction</span><span class="p">,</span>
+    <span class="n">AgentFinish</span><span class="p">,</span>
+    <span class="n">AgentStep</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">langchain_core.load.dump</span> <span class="kn">import</span> <span class="n">dumpd</span>
+<span class="kn">from</span> <span class="nn">langchain_core.outputs</span> <span class="kn">import</span> <span class="n">RunInfo</span>
+<span class="kn">from</span> <span class="nn">langchain_core.runnables.utils</span> <span class="kn">import</span> <span class="n">AddableDict</span>
+<span class="kn">from</span> <span class="nn">langchain_core.utils.input</span> <span class="kn">import</span> <span class="n">get_color_mapping</span>
+
+<span class="kn">from</span> <span class="nn">langchain.callbacks.manager</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AsyncCallbackManager</span><span class="p">,</span>
+    <span class="n">AsyncCallbackManagerForChainRun</span><span class="p">,</span>
+    <span class="n">CallbackManager</span><span class="p">,</span>
+    <span class="n">CallbackManagerForChainRun</span><span class="p">,</span>
+    <span class="n">Callbacks</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">langchain.schema</span> <span class="kn">import</span> <span class="n">RUN_KEY</span>
+<span class="kn">from</span> <span class="nn">langchain.tools</span> <span class="kn">import</span> <span class="n">BaseTool</span>
+<span class="kn">from</span> <span class="nn">langchain.utilities.asyncio</span> <span class="kn">import</span> <span class="n">asyncio_timeout</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">langchain.agents.agent</span> <span class="kn">import</span> <span class="n">AgentExecutor</span><span class="p">,</span> <span class="n">NextStepOutput</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="AgentExecutorIterator"><a class="viewcode-back" href="../../../agents/langchain.agents.agent_iterator.AgentExecutorIterator.html#langchain.agents.agent_iterator.AgentExecutorIterator">[docs]</a><span class="k">class</span> <span class="nc">AgentExecutorIterator</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Iterator for AgentExecutor.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="AgentExecutorIterator.__init__"><a class="viewcode-back" href="../../../agents/langchain.agents.agent_iterator.AgentExecutorIterator.html#langchain.agents.agent_iterator.AgentExecutorIterator.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">agent_executor</span><span class="p">:</span> <span class="n">AgentExecutor</span><span class="p">,</span>
+        <span class="n">inputs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+        <span class="n">callbacks</span><span class="p">:</span> <span class="n">Callbacks</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">tags</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">metadata</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">run_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">include_run_info</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">yield_actions</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize the AgentExecutorIterator with the given AgentExecutor,</span>
+<span class="sd">        inputs, and optional callbacks.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_agent_executor</span> <span class="o">=</span> <span class="n">agent_executor</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span> <span class="o">=</span> <span class="n">inputs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">callbacks</span> <span class="o">=</span> <span class="n">callbacks</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tags</span> <span class="o">=</span> <span class="n">tags</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span> <span class="o">=</span> <span class="n">metadata</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">run_name</span> <span class="o">=</span> <span class="n">run_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">include_run_info</span> <span class="o">=</span> <span class="n">include_run_info</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">yield_actions</span> <span class="o">=</span> <span class="n">yield_actions</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span></div>
+
+    <span class="n">_inputs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span>
+    <span class="n">callbacks</span><span class="p">:</span> <span class="n">Callbacks</span>
+    <span class="n">tags</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
+    <span class="n">metadata</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span>
+    <span class="n">run_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">include_run_info</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">yield_actions</span><span class="p">:</span> <span class="nb">bool</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inputs</span>
+
+    <span class="nd">@inputs</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_inputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">agent_executor</span><span class="o">.</span><span class="n">prep_inputs</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">agent_executor</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AgentExecutor</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_agent_executor</span>
+
+    <span class="nd">@agent_executor</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">agent_executor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">agent_executor</span><span class="p">:</span> <span class="n">AgentExecutor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_agent_executor</span> <span class="o">=</span> <span class="n">agent_executor</span>
+        <span class="c1"># force re-prep inputs in case agent_executor&#39;s prep_inputs fn changed</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">name_to_tool_map</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">BaseTool</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">tool</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="n">tool</span> <span class="k">for</span> <span class="n">tool</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">agent_executor</span><span class="o">.</span><span class="n">tools</span><span class="p">}</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">color_mapping</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="n">get_color_mapping</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">tool</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">tool</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">agent_executor</span><span class="o">.</span><span class="n">tools</span><span class="p">],</span>
+            <span class="n">excluded_colors</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;green&quot;</span><span class="p">,</span> <span class="s2">&quot;red&quot;</span><span class="p">],</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="AgentExecutorIterator.reset"><a class="viewcode-back" href="../../../agents/langchain.agents.agent_iterator.AgentExecutorIterator.html#langchain.agents.agent_iterator.AgentExecutorIterator.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Reset the iterator to its initial state, clearing intermediate steps,</span>
+<span class="sd">        iterations, and time elapsed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;(Re)setting AgentExecutorIterator to fresh state&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">intermediate_steps</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">AgentAction</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">iterations</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="c1"># maybe better to start these on the first __anext__ call?</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_elapsed</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="AgentExecutorIterator.update_iterations"><a class="viewcode-back" href="../../../agents/langchain.agents.agent_iterator.AgentExecutorIterator.html#langchain.agents.agent_iterator.AgentExecutorIterator.update_iterations">[docs]</a>    <span class="k">def</span> <span class="nf">update_iterations</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Increment the number of iterations and update the time elapsed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">iterations</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_elapsed</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Agent Iterations: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">iterations</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">time_elapsed</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">s elapsed)&quot;</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="AgentExecutorIterator.make_final_outputs"><a class="viewcode-back" href="../../../agents/langchain.agents.agent_iterator.AgentExecutorIterator.html#langchain.agents.agent_iterator.AgentExecutorIterator.make_final_outputs">[docs]</a>    <span class="k">def</span> <span class="nf">make_final_outputs</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">outputs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+        <span class="n">run_manager</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">CallbackManagerForChainRun</span><span class="p">,</span> <span class="n">AsyncCallbackManagerForChainRun</span><span class="p">],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AddableDict</span><span class="p">:</span>
+        <span class="c1"># have access to intermediate steps by design in iterator,</span>
+        <span class="c1"># so return only outputs may as well always be true.</span>
+
+        <span class="n">prepared_outputs</span> <span class="o">=</span> <span class="n">AddableDict</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">agent_executor</span><span class="o">.</span><span class="n">prep_outputs</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="p">,</span> <span class="n">outputs</span><span class="p">,</span> <span class="n">return_only_outputs</span><span class="o">=</span><span class="kc">True</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">include_run_info</span><span class="p">:</span>
+            <span class="n">prepared_outputs</span><span class="p">[</span><span class="n">RUN_KEY</span><span class="p">]</span> <span class="o">=</span> <span class="n">RunInfo</span><span class="p">(</span><span class="n">run_id</span><span class="o">=</span><span class="n">run_manager</span><span class="o">.</span><span class="n">run_id</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">prepared_outputs</span></div>
+
+    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="s2">&quot;AgentExecutorIterator&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">AddableDict</span><span class="p">]:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Initialising AgentExecutorIterator&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+        <span class="n">callback_manager</span> <span class="o">=</span> <span class="n">CallbackManager</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">callbacks</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">agent_executor</span><span class="o">.</span><span class="n">callbacks</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">agent_executor</span><span class="o">.</span><span class="n">verbose</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tags</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">agent_executor</span><span class="o">.</span><span class="n">tags</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">agent_executor</span><span class="o">.</span><span class="n">metadata</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">run_manager</span> <span class="o">=</span> <span class="n">callback_manager</span><span class="o">.</span><span class="n">on_chain_start</span><span class="p">(</span>
+            <span class="n">dumpd</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">agent_executor</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">run_name</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">agent_executor</span><span class="o">.</span><span class="n">_should_continue</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">iterations</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_elapsed</span>
+            <span class="p">):</span>
+                <span class="c1"># take the next step: this plans next action, executes it,</span>
+                <span class="c1"># yielding action and observation as they are generated</span>
+                <span class="n">next_step_seq</span><span class="p">:</span> <span class="n">NextStepOutput</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">agent_executor</span><span class="o">.</span><span class="n">_iter_next_step</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">name_to_tool_map</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">color_mapping</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">intermediate_steps</span><span class="p">,</span>
+                    <span class="n">run_manager</span><span class="p">,</span>
+                <span class="p">):</span>
+                    <span class="n">next_step_seq</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
+                    <span class="c1"># if we&#39;re yielding actions, yield them as they come</span>
+                    <span class="c1"># do not yield AgentFinish, which will be handled below</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">yield_actions</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">chunk</span><span class="p">,</span> <span class="n">AgentAction</span><span class="p">):</span>
+                            <span class="k">yield</span> <span class="n">AddableDict</span><span class="p">(</span><span class="n">actions</span><span class="o">=</span><span class="p">[</span><span class="n">chunk</span><span class="p">],</span> <span class="n">messages</span><span class="o">=</span><span class="n">chunk</span><span class="o">.</span><span class="n">messages</span><span class="p">)</span>
+                        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">chunk</span><span class="p">,</span> <span class="n">AgentStep</span><span class="p">):</span>
+                            <span class="k">yield</span> <span class="n">AddableDict</span><span class="p">(</span><span class="n">steps</span><span class="o">=</span><span class="p">[</span><span class="n">chunk</span><span class="p">],</span> <span class="n">messages</span><span class="o">=</span><span class="n">chunk</span><span class="o">.</span><span class="n">messages</span><span class="p">)</span>
+
+                <span class="c1"># convert iterator output to format handled by _process_next_step_output</span>
+                <span class="n">next_step</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">agent_executor</span><span class="o">.</span><span class="n">_consume_next_step</span><span class="p">(</span><span class="n">next_step_seq</span><span class="p">)</span>
+                <span class="c1"># update iterations and time elapsed</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">update_iterations</span><span class="p">()</span>
+                <span class="c1"># decide if this is the final output</span>
+                <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_process_next_step_output</span><span class="p">(</span><span class="n">next_step</span><span class="p">,</span> <span class="n">run_manager</span><span class="p">)</span>
+                <span class="n">is_final</span> <span class="o">=</span> <span class="s2">&quot;intermediate_step&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">output</span>
+                <span class="c1"># yield the final output always</span>
+                <span class="c1"># for backwards compat, yield int. output if not yielding actions</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">yield_actions</span> <span class="ow">or</span> <span class="n">is_final</span><span class="p">:</span>
+                    <span class="k">yield</span> <span class="n">output</span>
+                <span class="c1"># if final output reached, stop iteration</span>
+                <span class="k">if</span> <span class="n">is_final</span><span class="p">:</span>
+                    <span class="k">return</span>
+        <span class="k">except</span> <span class="ne">BaseException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">run_manager</span><span class="o">.</span><span class="n">on_chain_error</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="k">raise</span>
+
+        <span class="c1"># if we got here means we exhausted iterations or time</span>
+        <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop</span><span class="p">(</span><span class="n">run_manager</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="fm">__aiter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">AddableDict</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        N.B. __aiter__ must be a normal method, so need to initialise async run manager</span>
+<span class="sd">        on first __anext__ call where we can await it</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Initialising AgentExecutorIterator (async)&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+        <span class="n">callback_manager</span> <span class="o">=</span> <span class="n">AsyncCallbackManager</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">callbacks</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">agent_executor</span><span class="o">.</span><span class="n">callbacks</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">agent_executor</span><span class="o">.</span><span class="n">verbose</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tags</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">agent_executor</span><span class="o">.</span><span class="n">tags</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">agent_executor</span><span class="o">.</span><span class="n">metadata</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">run_manager</span> <span class="o">=</span> <span class="k">await</span> <span class="n">callback_manager</span><span class="o">.</span><span class="n">on_chain_start</span><span class="p">(</span>
+            <span class="n">dumpd</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">agent_executor</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">run_name</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">async</span> <span class="k">with</span> <span class="n">asyncio_timeout</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">agent_executor</span><span class="o">.</span><span class="n">max_execution_time</span><span class="p">):</span>
+                <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">agent_executor</span><span class="o">.</span><span class="n">_should_continue</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">iterations</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_elapsed</span>
+                <span class="p">):</span>
+                    <span class="c1"># take the next step: this plans next action, executes it,</span>
+                    <span class="c1"># yielding action and observation as they are generated</span>
+                    <span class="n">next_step_seq</span><span class="p">:</span> <span class="n">NextStepOutput</span> <span class="o">=</span> <span class="p">[]</span>
+                    <span class="k">async</span> <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">agent_executor</span><span class="o">.</span><span class="n">_aiter_next_step</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">name_to_tool_map</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">color_mapping</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">intermediate_steps</span><span class="p">,</span>
+                        <span class="n">run_manager</span><span class="p">,</span>
+                    <span class="p">):</span>
+                        <span class="n">next_step_seq</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
+                        <span class="c1"># if we&#39;re yielding actions, yield them as they come</span>
+                        <span class="c1"># do not yield AgentFinish, which will be handled below</span>
+                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">yield_actions</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">chunk</span><span class="p">,</span> <span class="n">AgentAction</span><span class="p">):</span>
+                                <span class="k">yield</span> <span class="n">AddableDict</span><span class="p">(</span>
+                                    <span class="n">actions</span><span class="o">=</span><span class="p">[</span><span class="n">chunk</span><span class="p">],</span> <span class="n">messages</span><span class="o">=</span><span class="n">chunk</span><span class="o">.</span><span class="n">messages</span>
+                                <span class="p">)</span>
+                            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">chunk</span><span class="p">,</span> <span class="n">AgentStep</span><span class="p">):</span>
+                                <span class="k">yield</span> <span class="n">AddableDict</span><span class="p">(</span>
+                                    <span class="n">steps</span><span class="o">=</span><span class="p">[</span><span class="n">chunk</span><span class="p">],</span> <span class="n">messages</span><span class="o">=</span><span class="n">chunk</span><span class="o">.</span><span class="n">messages</span>
+                                <span class="p">)</span>
+
+                    <span class="c1"># convert iterator output to format handled by _process_next_step</span>
+                    <span class="n">next_step</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">agent_executor</span><span class="o">.</span><span class="n">_consume_next_step</span><span class="p">(</span><span class="n">next_step_seq</span><span class="p">)</span>
+                    <span class="c1"># update iterations and time elapsed</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">update_iterations</span><span class="p">()</span>
+                    <span class="c1"># decide if this is the final output</span>
+                    <span class="n">output</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_aprocess_next_step_output</span><span class="p">(</span>
+                        <span class="n">next_step</span><span class="p">,</span> <span class="n">run_manager</span>
+                    <span class="p">)</span>
+                    <span class="n">is_final</span> <span class="o">=</span> <span class="s2">&quot;intermediate_step&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">output</span>
+                    <span class="c1"># yield the final output always</span>
+                    <span class="c1"># for backwards compat, yield int. output if not yielding actions</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">yield_actions</span> <span class="ow">or</span> <span class="n">is_final</span><span class="p">:</span>
+                        <span class="k">yield</span> <span class="n">output</span>
+                    <span class="c1"># if final output reached, stop iteration</span>
+                    <span class="k">if</span> <span class="n">is_final</span><span class="p">:</span>
+                        <span class="k">return</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">TimeoutError</span><span class="p">,</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">TimeoutError</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_astop</span><span class="p">(</span><span class="n">run_manager</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="k">except</span> <span class="ne">BaseException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">await</span> <span class="n">run_manager</span><span class="o">.</span><span class="n">on_chain_error</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="k">raise</span>
+
+        <span class="c1"># if we got here means we exhausted iterations or time</span>
+        <span class="k">yield</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_astop</span><span class="p">(</span><span class="n">run_manager</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_process_next_step_output</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">next_step_output</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">AgentFinish</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">AgentAction</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]],</span>
+        <span class="n">run_manager</span><span class="p">:</span> <span class="n">CallbackManagerForChainRun</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AddableDict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Process the output of the next step,</span>
+<span class="sd">        handling AgentFinish and tool return cases.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Processing output of Agent loop step&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">next_step_output</span><span class="p">,</span> <span class="n">AgentFinish</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                <span class="s2">&quot;Hit AgentFinish: _return -&gt; on_chain_end -&gt; run final output logic&quot;</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_return</span><span class="p">(</span><span class="n">next_step_output</span><span class="p">,</span> <span class="n">run_manager</span><span class="o">=</span><span class="n">run_manager</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">intermediate_steps</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">next_step_output</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Updated intermediate_steps with step output&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Check for tool return</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">next_step_output</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">next_step_action</span> <span class="o">=</span> <span class="n">next_step_output</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">tool_return</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">agent_executor</span><span class="o">.</span><span class="n">_get_tool_return</span><span class="p">(</span><span class="n">next_step_action</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">tool_return</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_return</span><span class="p">(</span><span class="n">tool_return</span><span class="p">,</span> <span class="n">run_manager</span><span class="o">=</span><span class="n">run_manager</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">AddableDict</span><span class="p">(</span><span class="n">intermediate_step</span><span class="o">=</span><span class="n">next_step_output</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_aprocess_next_step_output</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">next_step_output</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">AgentFinish</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">AgentAction</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]],</span>
+        <span class="n">run_manager</span><span class="p">:</span> <span class="n">AsyncCallbackManagerForChainRun</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AddableDict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Process the output of the next async step,</span>
+<span class="sd">        handling AgentFinish and tool return cases.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Processing output of async Agent loop step&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">next_step_output</span><span class="p">,</span> <span class="n">AgentFinish</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                <span class="s2">&quot;Hit AgentFinish: _areturn -&gt; on_chain_end -&gt; run final output logic&quot;</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_areturn</span><span class="p">(</span><span class="n">next_step_output</span><span class="p">,</span> <span class="n">run_manager</span><span class="o">=</span><span class="n">run_manager</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">intermediate_steps</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">next_step_output</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Updated intermediate_steps with step output&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Check for tool return</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">next_step_output</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">next_step_action</span> <span class="o">=</span> <span class="n">next_step_output</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">tool_return</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">agent_executor</span><span class="o">.</span><span class="n">_get_tool_return</span><span class="p">(</span><span class="n">next_step_action</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">tool_return</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_areturn</span><span class="p">(</span><span class="n">tool_return</span><span class="p">,</span> <span class="n">run_manager</span><span class="o">=</span><span class="n">run_manager</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">AddableDict</span><span class="p">(</span><span class="n">intermediate_step</span><span class="o">=</span><span class="n">next_step_output</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_stop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">run_manager</span><span class="p">:</span> <span class="n">CallbackManagerForChainRun</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AddableDict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Stop the iterator and raise a StopIteration exception with the stopped response.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Stopping agent prematurely due to triggering stop condition&quot;</span><span class="p">)</span>
+        <span class="c1"># this manually constructs agent finish with output key</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">agent_executor</span><span class="o">.</span><span class="n">agent</span><span class="o">.</span><span class="n">return_stopped_response</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">agent_executor</span><span class="o">.</span><span class="n">early_stopping_method</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">intermediate_steps</span><span class="p">,</span>
+            <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_return</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">run_manager</span><span class="o">=</span><span class="n">run_manager</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_astop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">run_manager</span><span class="p">:</span> <span class="n">AsyncCallbackManagerForChainRun</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AddableDict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Stop the async iterator and raise a StopAsyncIteration exception with</span>
+<span class="sd">        the stopped response.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Stopping agent prematurely due to triggering stop condition&quot;</span><span class="p">)</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">agent_executor</span><span class="o">.</span><span class="n">agent</span><span class="o">.</span><span class="n">return_stopped_response</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">agent_executor</span><span class="o">.</span><span class="n">early_stopping_method</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">intermediate_steps</span><span class="p">,</span>
+            <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_areturn</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">run_manager</span><span class="o">=</span><span class="n">run_manager</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_return</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">output</span><span class="p">:</span> <span class="n">AgentFinish</span><span class="p">,</span> <span class="n">run_manager</span><span class="p">:</span> <span class="n">CallbackManagerForChainRun</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AddableDict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the final output of the iterator.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">returned_output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">agent_executor</span><span class="o">.</span><span class="n">_return</span><span class="p">(</span>
+            <span class="n">output</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">intermediate_steps</span><span class="p">,</span> <span class="n">run_manager</span><span class="o">=</span><span class="n">run_manager</span>
+        <span class="p">)</span>
+        <span class="n">returned_output</span><span class="p">[</span><span class="s2">&quot;messages&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">messages</span>
+        <span class="n">run_manager</span><span class="o">.</span><span class="n">on_chain_end</span><span class="p">(</span><span class="n">returned_output</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_final_outputs</span><span class="p">(</span><span class="n">returned_output</span><span class="p">,</span> <span class="n">run_manager</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_areturn</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">output</span><span class="p">:</span> <span class="n">AgentFinish</span><span class="p">,</span> <span class="n">run_manager</span><span class="p">:</span> <span class="n">AsyncCallbackManagerForChainRun</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AddableDict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the final output of the async iterator.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">returned_output</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">agent_executor</span><span class="o">.</span><span class="n">_areturn</span><span class="p">(</span>
+            <span class="n">output</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">intermediate_steps</span><span class="p">,</span> <span class="n">run_manager</span><span class="o">=</span><span class="n">run_manager</span>
+        <span class="p">)</span>
+        <span class="n">returned_output</span><span class="p">[</span><span class="s2">&quot;messages&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">messages</span>
+        <span class="k">await</span> <span class="n">run_manager</span><span class="o">.</span><span class="n">on_chain_end</span><span class="p">(</span><span class="n">returned_output</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_final_outputs</span><span class="p">(</span><span class="n">returned_output</span><span class="p">,</span> <span class="n">run_manager</span><span class="p">)</span></div>
+</pre></div>
+
+      </div>
+    <div class="container">
+      <footer class="sk-content-footer">
+            &copy; 2023, Harrison Chase.
+          Last updated on Dec 19, 2023.
+      </footer>
+    </div>
+  </div>
+</div>
+<script src="../../../_static/js/vendor/bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    /* Add a [>>>] button on the top-right corner of code samples to hide
+     * the >>> and ... prompts and the output and thus make the code
+     * copyable. */
+    var div = $('.highlight-python .highlight,' +
+                '.highlight-python3 .highlight,' +
+                '.highlight-pycon .highlight,' +
+		'.highlight-default .highlight')
+    var pre = div.find('pre');
+
+    // get the styles from the current theme
+    pre.parent().parent().css('position', 'relative');
+    var hide_text = 'Hide prompts and outputs';
+    var show_text = 'Show prompts and outputs';
+
+    // create and add the button to all the code blocks that contain >>>
+    div.each(function(index) {
+        var jthis = $(this);
+        if (jthis.find('.gp').length > 0) {
+            var button = $('<span class="copybutton">&gt;&gt;&gt;</span>');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+            jthis.prepend(button);
+        }
+        // tracebacks (.gt) contain bare text elements that need to be
+        // wrapped in a span to work with .nextUntil() (see later)
+        jthis.find('pre:has(.gt)').contents().filter(function() {
+            return ((this.nodeType == 3) && (this.data.trim().length > 0));
+        }).wrap('<span>');
+    });
+
+    // define the behavior of the button when it's clicked
+    $('.copybutton').click(function(e){
+        e.preventDefault();
+        var button = $(this);
+        if (button.data('hidden') === 'false') {
+            // hide the code output
+            button.parent().find('.go, .gp, .gt').hide();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'hidden');
+            button.css('text-decoration', 'line-through');
+            button.attr('title', show_text);
+            button.data('hidden', 'true');
+        } else {
+            // show the code output
+            button.parent().find('.go, .gp, .gt').show();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'visible');
+            button.css('text-decoration', 'none');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+        }
+    });
+
+	/*** Add permalink buttons next to glossary terms ***/
+	$('dl.glossary > dt[id]').append(function() {
+		return ('<a class="headerlink" href="#' +
+			    this.getAttribute('id') +
+			    '" title="Permalink to this term">¶</a>');
+	});
+});
+
+</script>
+    
+</body>
+</html>
