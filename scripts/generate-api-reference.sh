@@ -17,12 +17,18 @@ clone_lc() {
   git clone https://github.com/langchain-ai/langchain.git --branch v${langchain_version} --depth 1 /tmp/lc
 }
 install_requirements() {
+  # remove experimental up 0.0.350
+  sed -i '' '/-e libs\/experimental/d' docs/api_reference/requirements.txt || sed -i '/-e libs\/experimental/d' docs/api_reference/requirements.txt
+  cat docs/api_reference/requirements.txt
+  sed -i '' '/_build_rst_file(package_name="experimental")/d' docs/api_reference/create_api_rst.py || sed -i '' '/_build_rst_file(package_name="experimental")/d' docs/api_reference/create_api_rst.py
+  # remove experimental 0.0.351 onwards
+  rm -rf libs/experimental
   poetry run pip install -r docs/api_reference/requirements.txt
 }
 build_docs() {
   make api_docs_build
 }
-clone_lc
+#clone_lc
 cd /tmp/lc
 install_requirements
 build_docs
