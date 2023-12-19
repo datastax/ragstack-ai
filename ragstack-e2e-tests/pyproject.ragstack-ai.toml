@@ -1,0 +1,36 @@
+[tool.poetry]
+name = "ragstack-e2e-tests"
+version = "0.1.0"
+description = "RAGStack tests"
+license = ""
+authors = ["DataStax"]
+
+[tool.poetry.dependencies]
+python = ">=3.9,<3.12"
+
+[tool.poetry.group.test.dependencies]
+pytest = "*"
+black = "*"
+ruff = "*"
+google-cloud-aiplatform = "^1.36.4"
+langchain-google-genai = "^0.0.4"
+boto3 = "^1.29.6"
+huggingface-hub = "^0.19.4"
+
+# From LangChain optional deps, needed by WebBaseLoader
+beautifulsoup4 = "^4"
+
+ragstack-ai = "*"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+line-length = 250
+
+[tool.pytest.ini_options]
+log_cli = true
+log_cli_level = "INFO"
+log_cli_format = "%(asctime)s [%(levelname)8s] %(message)s (%(filename)s:%(lineno)s)"
+log_cli_date_format = "%Y-%m-%d %H:%M:%S"
