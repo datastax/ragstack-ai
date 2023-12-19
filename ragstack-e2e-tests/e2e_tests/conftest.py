@@ -163,13 +163,15 @@ def dump_report():
     _report_to_file(stats_str, "all-tests-report.txt", all_report_lines)
     _report_to_file(stats_str, "failed-tests-report.txt", failed_report_lines)
 
-    _report_to_file(stats_str, "langchain-tests-report.txt", langchain_report_lines)
-    _report_to_file(stats_str, "llamaindex-tests-report.txt", llamaindex_report_lines)
+    _report_to_file("", "langchain-tests-report.txt", langchain_report_lines)
+    _report_to_file("", "llamaindex-tests-report.txt", llamaindex_report_lines)
+
 
 def _report_to_file(stats_str: str, filename: str, report_lines: list):
     report_lines.sort()
     with open(filename, "w") as f:
-        f.write(stats_str + "\n")
+        if stats_str:
+            f.write(stats_str + "\n")
         f.write("\n".join(report_lines))
 
 
