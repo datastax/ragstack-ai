@@ -4,7 +4,7 @@ from typing import List
 
 from astrapy.db import AstraDB as LibAstraDB
 import pytest
-from httpx import ConnectError
+from httpx import ConnectError, HTTPStatusError
 
 from langchain.schema.embeddings import Embeddings
 from langchain.vectorstores import AstraDB
@@ -84,9 +84,9 @@ def test_wrong_connection_parameters():
             api_endpoint=api_endpoint,
         )
         pytest.fail("Should have thrown exception")
-    except ValueError as e:
+    except HTTPStatusError as e:
         print("Error:", e)
-        if "UNAUTHENTICATED" not in e.args[0]:
+        if "UNAUTHENTICATED" not in e.response.text:
             pytest.fail(
                 f"Should have thrown ValueError with UNAUTHENTICATED but it was {e}"
             )
