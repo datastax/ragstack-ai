@@ -1,6 +1,9 @@
 import logging
+import os
+import pathlib
 import random
 import time
+from typing import List
 
 import cassio
 import pytest
@@ -27,6 +30,9 @@ from langchain.llms.huggingface_hub import HuggingFaceHub
 from langchain.memory import AstraDBChatMessageHistory
 from langchain.vectorstores import AstraDB, Cassandra
 from astrapy.db import AstraDB as AstraDBClient
+from langchain_core.embeddings import Embeddings
+from langchain_core.messages import HumanMessage
+from vertexai.vision_models import MultiModalEmbeddingModel, Image
 
 
 def astra_db_client():
@@ -242,3 +248,84 @@ def _run_test(test_case: str, vector_store, embedding, llm):
         )
     else:
         raise ValueError(f"Unknown test case: {test_case}")
+
+
+@pytest.fixture
+def vertex_gemini_multimodal_embedding():
+    return "gemini-multimodalembedding@001", MultiModalEmbeddingModel.from_pretrained("multimodalembedding@001"), 1408
+
+
+@pytest.fixture
+def vertex_gemini_pro_vision():
+    return "gemini-pro-vision", ChatVertexAI(model_name="gemini-pro-vision")
+
+
+@pytest.mark.parametrize(
+    "vector_store",
+    [
+        "astra_db",
+        "cassandra"
+    ],
+)
+@pytest.mark.parametrize(
+    "embedding,llm",
+    [
+        ("vertex_gemini_multimodal_embedding", "vertex_gemini_pro_vision"),
+    ],
+)
+def test_multimodal(vector_store, embedding, llm, request):
+    set_current_test_info(
+        "langchain::multimodal",
+        f"{llm},{embedding},{vector_store}",
+    )
+
+    _, resolved_embedding, embedding_size = request.getfixturevalue(embedding)
+
+    class FakeEmbeddings(Embeddings):
+
+        def embed_documents(self, texts: List[str]) -> List[List[float]]:
+            return [[0.0] * embedding_size] * len(texts)
+
+        def embed_query(self, text: str) -> List[float]:
+            return [0.0] * embedding_size
+
+    resolved_vector_store = request.getfixturevalue(vector_store)
+    resolved_vector_store = resolved_vector_store[1]
+    resolved_vector_store = resolved_vector_store(FakeEmbeddings())
+    _, resolved_llm = request.getfixturevalue(llm)
+
+    products = [
+        {"name": "Coffee Machine Ultra Cool", "image": (pathlib.Path(__file__).parent / 'coffee_machine.jpeg').name},
+        {"name": "Tree", "image": (pathlib.Path(__file__).parent / 'tree.jpeg').name},
+        {"name": "Another Tree", "image": (pathlib.Path(__file__).parent / 'tree.jpeg').name},
+        {"name": "Another Tree 2", "image": (pathlib.Path(__file__).parent / 'tree.jpeg').name},
+        {"name": "Another Tree 3", "image": (pathlib.Path(__file__).parent / 'tree.jpeg').name},
+    ]
+
+    for p in products:
+        img = Image.load_from_file(p["image"])
+        embeddings = resolved_embedding.get_embeddings(image=img, contextual_text=p["name"])
+        p["$vector"] = embeddings.image_embedding
+
+    resolved_vector_store.collection.insert_many(products)
+
+    query_image_path = (pathlib.Path(__file__).parent / 'coffee_maker_part.png').name
+    img = Image.load_from_file(query_image_path)
+    embeddings = resolved_embedding.get_embeddings(image=img, contextual_text="Coffee Maker Part")
+
+    documents = resolved_vector_store.collection.vector_find(
+        embeddings.image_embedding,
+        limit=3,
+    )
+
+    image_message = {
+        "type": "image_url",
+        "image_url": {"url": query_image_path},
+    }
+    text_message = {
+        "type": "text",
+        "text": f"What is this image? Tell me which one of these products it is part of: {', '.join([p['name'] for p in documents])}"
+    }
+    message = HumanMessage(content=[text_message, image_message])
+    response = resolved_llm([message])
+    assert "Coffee Machine Ultra Cool" in response.content

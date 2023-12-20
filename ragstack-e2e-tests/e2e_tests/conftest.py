@@ -183,6 +183,7 @@ os.environ["AZURE_OPEN_AI_CHAT_MODEL_DEPLOYMENT"] = "gpt-35-turbo"
 os.environ["AZURE_OPEN_AI_EMBEDDINGS_MODEL_DEPLOYMENT"] = "text-embedding-ada-002"
 
 # vertex-ai
-with open("/tmp/gcloud-account-key.json", "w") as f:
-    f.write(os.getenv("GCLOUD_ACCOUNT_KEY_JSON", ""))
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/tmp/gcloud-account-key.json"
+if "GOOGLE_APPLICATION_CREDENTIALS" not in os.environ:
+    with open("/tmp/gcloud-account-key.json", "w") as f:
+        f.write(os.getenv("GCLOUD_ACCOUNT_KEY_JSON", ""))
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/tmp/gcloud-account-key.json"
