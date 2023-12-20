@@ -68,9 +68,10 @@ def test_s3_loader():
     aws_region = "us-east-1"
     bucket_name = f"ragstack-ci-{uuid.uuid4()}"
 
-    bucket = boto3.resource("s3", region_name=aws_region).Bucket(bucket_name)
+    bucket = boto3.resource("s3", region_name=aws_region).create_bucket(
+        Bucket=bucket_name
+    )
 
-    bucket.create()
     s3_obj = bucket.Object("data.txt")
 
     try:
