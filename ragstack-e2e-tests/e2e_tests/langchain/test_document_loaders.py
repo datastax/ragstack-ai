@@ -70,7 +70,7 @@ def test_s3_loader():
 
     bucket = boto3.resource("s3", region_name=aws_region).Bucket(bucket_name)
 
-    bucket.create(CreateBucketConfiguration={"LocationConstraint": aws_region})
+    bucket.create(CreateBucketConfiguration={})
     s3_obj = bucket.Object("data.txt")
 
     try:
