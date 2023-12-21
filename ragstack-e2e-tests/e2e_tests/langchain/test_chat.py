@@ -19,15 +19,14 @@ def vertex_gemini():
 
 @pytest.fixture
 def gemini():
-    return ChatGoogleGenerativeAI(model="gemini-pro", google_api_key=get_required_env("GOOGLE_API_KEY"))
+    return ChatGoogleGenerativeAI(
+        model="gemini-pro", google_api_key=get_required_env("GOOGLE_API_KEY")
+    )
 
 
 @pytest.mark.parametrize(
     "chat",
-    [
-        "vertex_gemini",
-        "gemini"
-    ],
+    ["vertex_gemini", "gemini"],
 )
 def test_chat(chat, request):
     set_test_info(chat)
