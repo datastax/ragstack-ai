@@ -161,19 +161,17 @@ class AstraDBVectorStoreWrapper(VectorStoreWrapper):
 @pytest.fixture
 def astra_db():
     astra_ref = get_astra_ref()
-    client = astra_db_client()
-    delete_all_astra_collections_with_client(client)
+    delete_all_astra_collections_with_client(astra_db_client())
     yield AstraDBVectorStoreWrapper(astra_ref)
-    delete_all_astra_collections_with_client(client)
+    delete_all_astra_collections_with_client(astra_db_client())
 
 
 @pytest.fixture
 def cassandra():
     astra_ref = get_astra_ref()
-    client = astra_db_client()
-    delete_all_astra_collections_with_client(client)
+    delete_all_astra_collections_with_client(astra_db_client())
     yield CassandraVectorStoreWrapper(astra_ref)
-    delete_all_astra_collections_with_client(client)
+    delete_all_astra_collections_with_client(astra_db_client())
 
 
 @pytest.fixture
