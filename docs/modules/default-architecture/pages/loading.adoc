@@ -1,0 +1,188 @@
+= Loading
+
+Start with LangChain for loading your data instead of manually coding your own pipeline.
+The chances are good that LangChain already provides the functionalities you need.
+
+The examples use Astra {db-vector} database for the vector store and assume you have one available. If not, see xref:ROOT:prerequisites.adoc[].
+
+== Load PDF from file
+
+. Use the PyPDFLoader to load PDFs as an array of `Document` objects.
+Each `Document` object contains the page content and metadata - in this case, the page number.
++
+[source,python]
+----
+from langchain.document_loaders import PyPDFLoader
+
+loader = PyPDFLoader("example-data/example-paper.pdf")
+docs = loader.load()
+
+print(docs[0])
+----
++
+. This will print the first page of your PDF and its associated metadata, `metadata={'source': 'example-data/example-paper.pdf', 'page': 0}`.
+
+Try changing the page number in print(docs[0]) and see how the metadata tracks to your PDF pages.
+
+=== Load multiple PDFs from a directory
+
+To load a directory containing multiple pdfs, use the `PyPDFDirectoryLoader` class:
+[source,python]
+----
+from langchain.document_loaders import PyPDFDirectoryLoader
+
+loader = PyPDFDirectoryLoader("./example-data/")
+docs = loader.load()
+
+print(docs[0])
+----
+
+== Load local JSON file
+
+JSONLoader uses the jq library to parse JSON files. If you're familiar with jq, you'll probably find this loader very familiar.
+
+. Install `jq` with `pip install jq`.
+. Load a local JSON file of HTTP responses as an array of `Document` objects.
++
+[tabs]
+======
+Python::
++
+[source,python]
+----
+from langchain.document_loaders import JSONLoader
+import json
+from pathlib import Path
+from pprint import pprint
+
+file_path='./response.json'
+data = json.loads(Path(file_path).read_text())
+
+pprint(data)
+----
+
+Result::
++
+[source,console]
+----
+[{'event': {'id': 0, 'url': 'https://httpbin.org/stream/3'},
+  'metadata': {'location': 'New York, USA',
+               'source': 'WebApplication',
+               'tags': ['streaming', 'data'],
+               'timestamp': '2023-12-20T12:00:00Z',
+               'userID': 'user001'}},
+ {'event': {'id': 1, 'url': 'https://httpbin.org/stream/3'},
+  'metadata': {'location': 'New York, USA',
+               'source': 'WebApplication',
+               'tags': ['streaming', 'data'],
+               'timestamp': '2023-12-20T12:05:00Z',
+               'userID': 'user002'}},
+ {'event': {'id': 2, 'url': 'https://httpbin.org/stream/3'},
+  'metadata': {'location': 'New York, USA',
+               'source': 'WebApplication',
+               'tags': ['streaming', 'data'],
+               'timestamp': '2023-12-20T12:10:00Z',
+               'userID': 'user003'}}]
+----
+======
+
+=== Extract values to page_content
+
+. Extract the values from the `url` field within the `event` key of the JSON data.
+This will include the `url` values in the `page_content` of the `Document` object.
++
+[tabs]
+======
+Python::
++
+[source,python]
+----
+from langchain.document_loaders import JSONLoader
+import json
+from pathlib import Path
+from pprint import pprint
+
+loader = JSONLoader(
+    file_path='./response.json',
+    jq_schema='.[].event.url',
+    text_content=False)
+
+data = loader.load()
+
+pprint(data)
+----
+
+Result::
++
+[source,console]
+----
+[Document(page_content='https://httpbin.org/stream/3', metadata={'source': '/response.json', 'seq_num': 1}),
+ Document(page_content='https://httpbin.org/stream/3', metadata={'source': '/response.json', 'seq_num': 2}),
+ Document(page_content='https://httpbin.org/stream/3', metadata={'source': '/response.json', 'seq_num': 3})]
+----
+======
++
+. You can see that the `page_content` of each `Document` object now contains the `url` values.
+
+=== Extract metadata
+
+`metadata_func` is responsible for identifying which values should be included in the `Document` object's metadata. Modifying its behavior allows you to enrich your `Document` objects with additional information from the source data.
+
+. Instruct `metadata_func` to extract values of `event_id` and `event_url` for each `event` record and add them to your Document metadata.
+In this case, you want to include both the `event_id` and `event_url` in the metadata.
++
+[tabs]
+======
+Python::
++
+[source,python]
+----
+from langchain.document_loaders import JSONLoader
+import json
+from pathlib import Path
+from pprint import pprint
+
+def metadata_func(record: dict, metadata: dict) -> dict:
+
+    metadata["event_id"] = record.get("id")
+    metadata["event_url"] = record.get("url")
+
+    return metadata
+
+loader = JSONLoader(
+    file_path='./response.json',
+    jq_schema='.[].event',
+    metadata_func=metadata_func,
+    text_content=False
+)
+
+data = loader.load()
+
+pprint(data)
+----
+
+Result::
++
+[source,console]
+----
+[Document(page_content='{"url": "https://httpbin.org/stream/3", "id": 0}', metadata={'source': 'response.json', 'seq_num': 1, 'event_id': 0, 'event_url': 'https://httpbin.org/stream/3'}),
+ Document(page_content='{"url": "https://httpbin.org/stream/3", "id": 1}', metadata={'source': 'response.json', 'seq_num': 2, 'event_id': 1, 'event_url': 'https://httpbin.org/stream/3'}),
+ Document(page_content='{"url": "https://httpbin.org/stream/3", "id": 2}', metadata={'source': 'response.json', 'seq_num': 3, 'event_id': 2, 'event_url': 'https://httpbin.org/stream/3'})]
+----
+======
++
+. You can see that both `event_id` and `event_url` are now included in the metadata of each `Document` object.
+
+== Alternatives
+
+=== I want to load HTML
+
+See the https://python.langchain.com/docs/modules/data_connection/document_loaders/html[LangChain HTMLLoader] for loading HTML documents.
+
+=== I want to load from S3
+
+See the https://python.langchain.com/docs/integrations/document_loaders/aws_s3_file[LangChain S3 loader] for loading Document objects from an AWS S3 file bucket.
+
+=== I want to load from Google Cloud Storage
+
+See the https://python.langchain.com/docs/integrations/document_loaders/google_cloud_storage_file[LangChain Google Cloud Storage file loader] for loading Document objects from a Google Cloud Storage file object.
