@@ -45,3 +45,5 @@ for size in chunk_sizes:
     vstores[name] = AstraDB(collection_name=name, embedding=embeddings, token=os.getenv(
         "ASTRA_DB_TOKEN"), api_endpoint=os.getenv("ASTRA_DB_ENDPOINT"))
     splitters[name] = TokenTextSplitter(chunk_size=size, chunk_overlap=0)
+
+print("ALL DONE! YAY!")

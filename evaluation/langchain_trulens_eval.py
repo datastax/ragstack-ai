@@ -196,9 +196,12 @@ for name in datasets:
     tru_recorder = TruChain(
         rag_chain,
         app_id=project,
-        feedbacks=[f_answer_relevance, f_context_relevance, f_groundedness, f_answer_correctness]
+        feedbacks=[f_answer_relevance, f_context_relevance, f_groundedness, f_answer_correctness],
+        feedback_mode="deferred",
     )
     for query in datasets[name]:
         time.sleep(5)
         with tru_recorder as recording:
             rag_chain.invoke(query)
+
+print("ALL DONE! YAY!")
