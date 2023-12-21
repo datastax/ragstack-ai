@@ -1,4 +1,4 @@
-# run with: nohup python3 eval.py &
+# run with: nohup python3 768.py > open_ai_768.log 2>&1 &
 
 collection_name = "open_ai_256"
 
@@ -148,7 +148,7 @@ context_rel_chain = RagasEvaluatorChain(metric=context_relevancy)
 context_rec_chain = RagasEvaluatorChain(metric=context_recall)
 
 # create a method to run evaluation on a dataset
-def run_evaluation(dataset_name, project_metadata: Dict[str, Any]) -> Dict[str, Any]:
+def run_evaluation(dataset_name, project_metadata: Dict[str, Any], project_name: str) -> Dict[str, Any]:
     evaluation_config = RunEvalConfig(
         custom_evaluators=[
             context_rec_chain,
@@ -166,6 +166,7 @@ def run_evaluation(dataset_name, project_metadata: Dict[str, Any]) -> Dict[str, 
         create_qa_chain,
         evaluation=evaluation_config,
         project_metadata=project_metadata,
+        project_name=project_name,
         input_mapper=lambda x: x
     )
 
