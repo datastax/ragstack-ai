@@ -176,3 +176,5 @@ for name in datasets:
         project_name = f"col:{collection_name} eval:gpt-3.5-turbo dataset:{name} run:{i}"
         print(f"Starting: {metadata}")
         result = run_evaluation(dataset_name=name, project_metadata=metadata, project_name=project_name)
+
+print("ALL DONE! YAY!")
