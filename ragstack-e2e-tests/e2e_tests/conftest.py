@@ -140,6 +140,7 @@ def pytest_runtest_makereport(item, call):
 
 
 def set_current_test_info(test_name: str, test_info: str):
+    test_info = test_info.replace("_", "-")
     os.environ["RAGSTACK_E2E_TESTS_TEST_INFO"] = f"{test_name}::{test_info}"
 
 

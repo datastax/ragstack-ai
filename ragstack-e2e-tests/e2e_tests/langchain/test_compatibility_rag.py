@@ -342,16 +342,12 @@ def _run_test(test_case: str, vector_store_wrapper, embedding, llm):
 
 @pytest.fixture
 def vertex_gemini_multimodal_embedding():
-    return (
-        "gemini-multimodalembedding@001",
-        MultiModalEmbeddingModel.from_pretrained("multimodalembedding@001"),
-        1408,
-    )
+    return MultiModalEmbeddingModel.from_pretrained("multimodalembedding@001"), 1408
 
 
 @pytest.fixture
 def vertex_gemini_pro_vision():
-    return "gemini-pro-vision", ChatVertexAI(model_name="gemini-pro-vision")
+    return ChatVertexAI(model_name="gemini-pro-vision")
 
 
 @pytest.mark.parametrize(
