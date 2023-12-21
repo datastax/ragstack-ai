@@ -12,6 +12,7 @@ from e2e_tests.conftest import (
     get_required_env,
     get_astra_ref,
     delete_all_astra_collections_with_client,
+    delete_astra_collection,
     AstraRef,
 )
 from e2e_tests.langchain.rag_application import (
@@ -163,6 +164,7 @@ def astra_db():
     astra_ref = get_astra_ref()
     delete_all_astra_collections_with_client(astra_db_client())
     yield AstraDBVectorStoreWrapper(astra_ref)
+    delete_astra_collection(astra_ref)
     delete_all_astra_collections_with_client(astra_db_client())
 
 
@@ -171,6 +173,7 @@ def cassandra():
     astra_ref = get_astra_ref()
     delete_all_astra_collections_with_client(astra_db_client())
     yield CassandraVectorStoreWrapper(astra_ref)
+    delete_astra_collection(astra_ref)
     delete_all_astra_collections_with_client(astra_db_client())
 
 
