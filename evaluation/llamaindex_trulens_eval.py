@@ -1,24 +1,29 @@
 # run with: nohup python3 llama_512.py > llama_512.log 2>&1 &
 
+import time
+import json
+import os
+import numpy as np
+from trulens_eval import TruLlama, Feedback
+from trulens_eval.app import App
+from trulens_eval.feedback import Groundedness, GroundTruthAgreement
+from trulens_eval.feedback.provider import AzureOpenAI as TruAzureOpenAI
+from dotenv import load_dotenv
+from trulens_eval import Tru
+from llama_index.postprocessor import SimilarityPostprocessor
+from llama_index.query_engine import RetrieverQueryEngine
+from llama_index.retrievers import VectorIndexRetriever
+from llama_index import get_response_synthesizer
+from llama_index import VectorStoreIndex, StorageContext, ServiceContext
+from llama_index.embeddings import AzureOpenAIEmbedding
+from llama_index.llms import AzureOpenAI
+from llama_index.vector_stores import AstraDBVectorStore
 collection_name = "llama_512"
 
-from llama_index.vector_stores import AstraDBVectorStore
-from llama_index.llms import AzureOpenAI
-from llama_index.embeddings import AzureOpenAIEmbedding
-from llama_index import  VectorStoreIndex, StorageContext, ServiceContext
-from llama_index import get_response_synthesizer
-from llama_index.retrievers import VectorIndexRetriever
-from llama_index.query_engine import RetrieverQueryEngine
-from llama_index.postprocessor import SimilarityPostprocessor
-
-from trulens_eval import Tru
-
-from dotenv import load_dotenv
-import os, json, time
 
 load_dotenv()
 
-## init astraDB vector store
+# init astraDB vector store
 
 astra_db_store = AstraDBVectorStore(
     collection_name=collection_name,
@@ -27,7 +32,7 @@ astra_db_store = AstraDBVectorStore(
     embedding_dimension=1536,
 )
 
-## setup azure LLMs
+# setup azure LLMs
 
 temperature = 0.0
 
@@ -75,7 +80,7 @@ embed_model = AzureOpenAIEmbedding(
     temperature=temperature,
 )
 
-## setup query engine
+# setup query engine
 
 service_context = ServiceContext.from_defaults(
     llm=gpt_35_turbo,
@@ -109,11 +114,11 @@ query_engine = RetrieverQueryEngine(
     # node_postprocessors=[SimilarityPostprocessor(similarity_cutoff=0.7)],
 )
 
-## Setup TruLens
+# Setup TruLens
 
 tru = Tru(database_url=os.getenv("TRULENS_DB_CONN_STRING"))
 
-## Load Datasets
+# Load Datasets
 
 base_path = "./data/"
 
@@ -133,56 +138,39 @@ for name in os.listdir(base_path):
                 })
             print("Loaded dataset: ", name)
 
-## expose Tru AzureOpenAI class
 
-from trulens_eval.feedback.provider import OpenAI
-from trulens_eval.feedback.provider.endpoint.openai import OpenAIClient
-import openai as oai
-
-# note that this is a name change from AzureOpenAI to not collide with the llamaindex AzureOpenAI model
-class TruAzureOpenAI(OpenAI):
-    def __init__(self, endpoint=None, deployment_name="gpt-35-turbo", **kwargs):
-        kwargs["client"] = OpenAIClient(client=oai.AzureOpenAI(**kwargs))
-        super().__init__(
-            endpoint=endpoint, model_engine=deployment_name, **kwargs
-        )  # need to include pydantic.BaseModel.__init__
-
-    def _create_chat_completion(self, *args, **kwargs):
-        return super()._create_chat_completion(*args, **kwargs)
-
-## init feedback functions
+# init feedback functions
 
 # this class isn't exposed yet :(, so use copy above for now :)
 # from trulens_eval.feedback.provider import AzureOpenAI as TruAzureOpenAI
-from trulens_eval.feedback import Groundedness, GroundTruthAgreement
-from trulens_eval import Select, TruLlama, Feedback
-import numpy as np
 # Initialize provider class
 truAzureOpenAI = TruAzureOpenAI(deployment_name="gpt-35-turbo")
 
-context_selection = TruLlama.select_source_nodes().node.text
+context = App.select_context(query_engine)
 
 grounded = Groundedness(groundedness_provider=truAzureOpenAI)
 # Define a groundedness feedback function
 f_groundedness = (
     Feedback(grounded.groundedness_measure_with_cot_reasons)
-    .on(context_selection)
+    .on(context.collect())
     .on_output()
     .aggregate(grounded.grounded_statements_aggregator)
 )
 
 # Question/answer relevance between overall question and answer.
-f_answer_relevance = Feedback(truAzureOpenAI.relevance_with_cot_reasons).on_input_output()
+f_answer_relevance = Feedback(
+    truAzureOpenAI.relevance_with_cot_reasons).on_input_output()
 # Question/statement relevance between question and each context chunk.
 f_context_relevance = (
     Feedback(truAzureOpenAI.qs_relevance_with_cot_reasons)
     .on_input()
-    .on(context_selection)
+    .on(context)
     .aggregate(np.mean)
 )
 
 # GroundTruth for comparing the Answer to the Ground-Truth Answer
-ground_truth_collection = GroundTruthAgreement(golden_set, provider=truAzureOpenAI)
+ground_truth_collection = GroundTruthAgreement(
+    golden_set, provider=truAzureOpenAI)
 f_answer_correctness = (
     Feedback(ground_truth_collection.agreement_measure)
     .on_input_output()
@@ -196,7 +184,9 @@ for name in datasets:
     tru_recorder = TruLlama(
         query_engine,
         app_id=app,
-        feedbacks=[f_answer_relevance, f_context_relevance, f_groundedness, f_answer_correctness]
+        feedbacks=[f_answer_relevance, f_context_relevance,
+                   f_groundedness, f_answer_correctness],
+        feedback_mode="deferred",
     )
     for query in datasets[name]:
         time.sleep(10)
