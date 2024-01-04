@@ -4,7 +4,7 @@ from typing import List
 
 from astrapy.db import AstraDB as LibAstraDB
 import pytest
-from httpx import ConnectError
+from httpx import ConnectError, HTTPStatusError
 
 from langchain.schema.embeddings import Embeddings
 from langchain.vectorstores import AstraDB
@@ -84,9 +84,9 @@ def test_wrong_connection_parameters():
             api_endpoint=api_endpoint,
         )
         pytest.fail("Should have thrown exception")
-    except ValueError as e:
+    except HTTPStatusError as e:
         print("Error:", e)
-        if "AUTHENTICATION ERROR" not in e.args[0]:
+        if "AUTHENTICATION ERROR" not in e.response.text:
             pytest.fail(
                 f"Should have thrown ValueError with AUTHENTICATION ERROR but it was {e}"
             )
@@ -166,14 +166,14 @@ def test_basic_metadata_filtering_no_vector(environment):
         pytest.fail("Should have thrown ValueError")
     except ValueError as e:
         print("Error:", e)
-        if "UNSUPPORTED_FILTER_OPERATION" not in e.args[0]:
-            pytest.fail(
-                f"Should have thrown ValueError with UNSUPPORTED_FILTER_OPERATION but it was {e}"  # noqa: E501
-            )
 
-        # This looks very ugly, but it's the only way to get the error message
-        # reference ticket on Astrapy https://github.com/datastax/astrapy/issues/126
-        errors = json.loads(e.args[0])
+        # Parse the error message
+        errors = json.loads(e.response.text)
+
+        # Check that the errors field has been properly retrieved
+        assert "errors" in errors
+        errors = errors["errors"]
+
         if len(errors) == 1:
             error = errors[0]
             assert error.get("errorCode") == "UNSUPPORTED_FILTER_OPERATION"

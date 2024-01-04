@@ -3,7 +3,7 @@ from typing import List
 
 from astrapy.db import AstraDB as LibAstraDB
 import pytest
-from httpx import ConnectError
+from httpx import ConnectError, HTTPStatusError
 from e2e_tests.conftest import get_required_env, get_astra_ref
 from llama_index import (
     ServiceContext,
@@ -121,9 +121,9 @@ def test_wrong_connection_parameters():
             embedding_dimension=1536,
         )
         pytest.fail("Should have thrown exception")
-    except ValueError as e:
+    except HTTPStatusError as e:
         print("Error:", e)
-        if "AUTHENTICATION ERROR" not in e.args[0]:
+        if "AUTHENTICATION ERROR" not in e.response.text:
             pytest.fail(
                 f"Should have thrown ValueError with AUTHENTICATION ERROR but it was {e}"
             )
