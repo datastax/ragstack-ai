@@ -123,9 +123,9 @@ def test_wrong_connection_parameters():
         pytest.fail("Should have thrown exception")
     except ValueError as e:
         print("Error:", e)
-        if "AUTHENTICATION ERROR" not in e.args[0]:
+        if "UNAUTHENTICATED" not in e.args[0]:
             pytest.fail(
-                f"Should have thrown ValueError with AUTHENTICATION ERROR but it was {e}"
+                f"Should have thrown ValueError with UNAUTHENTICATED but it was {e}"
             )
 
 
