@@ -35,7 +35,7 @@ pipeline = (
 
 tru = tru_shared.initTru()
 
-feedbacks = tru_shared.getFeedbackFunctions(pipeline)
+feedbacks = tru_shared.getFeedbackFunctions(pipeline, golden_set)
 
 shortUuid = str(uuid.uuid4())[9:13]
 
@@ -45,10 +45,8 @@ for name in datasets:
         pipeline,
         app_id=app,
         feedbacks=feedbacks,
+        feedback_mode="deferred",
     )
-    index = 0
     for query in datasets[name]:
         with tru_recorder as recording:
             pipeline.invoke(query)
-        tru_shared.waitForResults(tru, app, index)
-        index +=1
