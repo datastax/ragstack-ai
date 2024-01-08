@@ -25,6 +25,7 @@ from llama_index.llms import (
     HuggingFaceInferenceAPI,
     ChatMessage,
 )
+from llama_index.schema import TextNode
 from llama_index.vector_stores import AstraDBVectorStore, CassandraVectorStore
 
 from e2e_tests.conftest import (
@@ -35,7 +36,7 @@ from e2e_tests.conftest import (
     delete_astra_collection,
     AstraRef,
 )
-from llama_index.vector_stores.types import VectorStore
+from llama_index.vector_stores.types import VectorStore, VectorStoreQuery
 from sqlalchemy import Float
 from vertexai.vision_models import MultiModalEmbeddingModel, Image
 
@@ -81,17 +82,16 @@ class CassandraVectorStoreWrapper(VectorStoreWrapper):
     def put(
         self, doc_id: str, document: str, metadata: dict, vector: List[Float]
     ) -> None:
-        self.vector_store.table.table.put(
-            row_id=doc_id,
-            body_blob=document,
-            vector=vector,
-            metadata=metadata or {},
+        self.vector_store.add(
+            [TextNode(text=document, metadata=metadata, id_=doc_id, embedding=vector)]
         )
 
     def search(self, vector: List[float], limit: int) -> List[str]:
         return map(
-            lambda doc: doc["document"],
-            self.vector_store.table.search(embedding_vector=vector, top_k=limit),
+            lambda doc: doc,
+            self.vector_store.query(
+                VectorStoreQuery(query_embedding=vector, similarity_top_k=limit)
+            ).ids,
         )
 
 
