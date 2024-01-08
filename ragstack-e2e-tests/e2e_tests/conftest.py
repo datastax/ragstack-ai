@@ -96,10 +96,15 @@ def pytest_runtest_makereport(item, call):
 
     outcome = yield
     rep = outcome.get_result()
-    if rep.when == "call":
-        start_time = int(os.environ["RAGSTACK_E2E_TESTS_TEST_START"])
+    # also get the setup phase if failed
+    if rep.outcome != "passed" or rep.when == "call":
+        if "RAGSTACK_E2E_TESTS_TEST_START" not in os.environ or not os.environ["RAGSTACK_E2E_TESTS_TEST_START"]:
+            total_time = "?"
+        else:
+            start_time = int(os.environ["RAGSTACK_E2E_TESTS_TEST_START"])
+            total_time = round((time.perf_counter_ns() - start_time) / 1e9)
+
         os.environ["RAGSTACK_E2E_TESTS_TEST_START"] = ""
-        total_time = round((time.perf_counter_ns() - start_time) / 1e9)
         logging.info(f"Test {info} took: {total_time} seconds")
         info = os.getenv("RAGSTACK_E2E_TESTS_TEST_INFO", "")
         paths = str(item.path).split(os.sep)
@@ -135,7 +140,8 @@ def pytest_runtest_makereport(item, call):
         elif is_llamaindex:
             llamaindex_report_lines.append(report_line)
         os.environ["RAGSTACK_E2E_TESTS_TEST_INFO"] = ""
-    else:
+
+    if rep.when == "call":
         os.environ["RAGSTACK_E2E_TESTS_TEST_START"] = str(time.perf_counter_ns())
 
 
