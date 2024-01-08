@@ -92,7 +92,13 @@ tests_stats = {
 
 @pytest.hookimpl(tryfirst=True, hookwrapper=True)
 def pytest_runtest_makereport(item, call):
-    info = os.path.dirname(item.path) + "::" + os.path.basename(item.path) + "::" + item.name
+    info = (
+        os.path.dirname(item.path)
+        + "::"
+        + os.path.basename(item.path)
+        + "::"
+        + item.name
+    )
 
     outcome = yield
     rep = outcome.get_result()

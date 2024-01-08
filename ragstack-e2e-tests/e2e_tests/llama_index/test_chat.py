@@ -1,4 +1,3 @@
-import pytest
 from e2e_tests.conftest import (
     set_current_test_info,
 )
