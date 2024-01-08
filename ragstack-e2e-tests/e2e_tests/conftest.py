@@ -1,5 +1,6 @@
 import logging
 import os
+import pathlib
 import time
 import uuid
 from dataclasses import dataclass
@@ -109,13 +110,8 @@ def pytest_runtest_makereport(item, call):
 
         info = os.getenv("RAGSTACK_E2E_TESTS_TEST_INFO", "")
         if not info:
-            info = (
-                os.path.dirname(item.path)
-                + "::"
-                + os.path.basename(item.path)
-                + "::"
-                + item.name
-            )
+            test_path = pathlib.PurePath(item.path)
+            info = test_path.parent.name + "::" + test_path.name + "::" + item.name
         logging.info(f"Test {info} took: {total_time} seconds")
         paths = str(item.path).split(os.sep)
         is_langchain = False
