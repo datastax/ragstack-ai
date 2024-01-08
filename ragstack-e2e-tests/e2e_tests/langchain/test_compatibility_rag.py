@@ -276,6 +276,22 @@ def huggingface_hub_embedding():
     )
 
 
+@pytest.fixture
+def nvidia_embedding():
+    get_required_env("NVIDIA_API_KEY")
+    from langchain_nvidia_ai_endpoints import NVIDIAEmbeddings
+
+    return NVIDIAEmbeddings(model="nvolveqa_40k")
+
+
+@pytest.fixture
+def nvidia_mixtral_llm():
+    get_required_env("NVIDIA_API_KEY")
+    from langchain_nvidia_ai_endpoints import ChatNVIDIA
+
+    return ChatNVIDIA(model="mixtral_8x7b")
+
+
 @pytest.mark.parametrize(
     "test_case",
     ["rag_custom_chain", "conversational_rag"],
@@ -293,6 +309,7 @@ def huggingface_hub_embedding():
         ("bedrock_titan_embedding", "bedrock_anthropic_llm"),
         ("bedrock_cohere_embedding", "bedrock_meta_llm"),
         ("huggingface_hub_embedding", "huggingface_hub_llm"),
+        ("nvidia_embedding", "nvidia_mixtral_llm"),
     ],
 )
 def test_rag(test_case, vector_store, embedding, llm, request):
