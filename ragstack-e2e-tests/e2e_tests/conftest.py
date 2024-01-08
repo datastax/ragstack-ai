@@ -92,13 +92,7 @@ tests_stats = {
 
 @pytest.hookimpl(tryfirst=True, hookwrapper=True)
 def pytest_runtest_makereport(item, call):
-    info = (
-        os.path.dirname(item.path)
-        + "::"
-        + os.path.basename(item.path)
-        + "::"
-        + item.name
-    )
+
 
     outcome = yield
     rep = outcome.get_result()
@@ -114,8 +108,17 @@ def pytest_runtest_makereport(item, call):
             total_time = round((time.perf_counter_ns() - start_time) / 1e9)
 
         os.environ["RAGSTACK_E2E_TESTS_TEST_START"] = ""
+
+        info = os.getenv("RAGSTACK_E2E_TESTS_TEST_INFO", "")
+        if not info:
+            info = (
+                    os.path.dirname(item.path)
+                    + "::"
+                    + os.path.basename(item.path)
+                    + "::"
+                    + item.name
+            )
         logging.info(f"Test {info} took: {total_time} seconds")
-        info = os.getenv("RAGSTACK_E2E_TESTS_TEST_INFO", info)
         paths = str(item.path).split(os.sep)
         is_langchain = False
         is_llamaindex = False
