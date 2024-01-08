@@ -115,7 +115,7 @@ def pytest_runtest_makereport(item, call):
 
         os.environ["RAGSTACK_E2E_TESTS_TEST_START"] = ""
         logging.info(f"Test {info} took: {total_time} seconds")
-        info = os.getenv("RAGSTACK_E2E_TESTS_TEST_INFO", "")
+        info = os.getenv("RAGSTACK_E2E_TESTS_TEST_INFO", info)
         paths = str(item.path).split(os.sep)
         is_langchain = False
         is_llamaindex = False
@@ -124,8 +124,6 @@ def pytest_runtest_makereport(item, call):
         elif "llama_index" in paths:
             is_llamaindex = True
 
-        if not info:
-            info = os.path.basename(item.path) + "::" + item.name
         if rep.outcome == "failed":
             test_outcome = "❌"
             tests_stats["failed"] += 1
