@@ -440,4 +440,5 @@ def test_multimodal(vector_store, embedding, llm, request):
 
 def get_local_resource_path(filename: str):
     dirname = os.path.dirname(__file__)
-    return os.path.join(dirname, filename)
+    e2e_tests_dir = os.path.dirname(dirname)
+    return os.path.join(e2e_tests_dir, "resources", filename)
