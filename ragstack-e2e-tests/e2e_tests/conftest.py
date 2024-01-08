@@ -92,8 +92,6 @@ tests_stats = {
 
 @pytest.hookimpl(tryfirst=True, hookwrapper=True)
 def pytest_runtest_makereport(item, call):
-
-
     outcome = yield
     rep = outcome.get_result()
     # also get the setup phase if failed
@@ -112,11 +110,11 @@ def pytest_runtest_makereport(item, call):
         info = os.getenv("RAGSTACK_E2E_TESTS_TEST_INFO", "")
         if not info:
             info = (
-                    os.path.dirname(item.path)
-                    + "::"
-                    + os.path.basename(item.path)
-                    + "::"
-                    + item.name
+                os.path.dirname(item.path)
+                + "::"
+                + os.path.basename(item.path)
+                + "::"
+                + item.name
             )
         logging.info(f"Test {info} took: {total_time} seconds")
         paths = str(item.path).split(os.sep)
