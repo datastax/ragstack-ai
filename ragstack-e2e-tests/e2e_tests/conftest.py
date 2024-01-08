@@ -98,7 +98,10 @@ def pytest_runtest_makereport(item, call):
     rep = outcome.get_result()
     # also get the setup phase if failed
     if rep.outcome != "passed" or rep.when == "call":
-        if "RAGSTACK_E2E_TESTS_TEST_START" not in os.environ or not os.environ["RAGSTACK_E2E_TESTS_TEST_START"]:
+        if (
+            "RAGSTACK_E2E_TESTS_TEST_START" not in os.environ
+            or not os.environ["RAGSTACK_E2E_TESTS_TEST_START"]
+        ):
             total_time = "?"
         else:
             start_time = int(os.environ["RAGSTACK_E2E_TESTS_TEST_START"])
