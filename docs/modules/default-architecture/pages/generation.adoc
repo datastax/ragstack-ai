@@ -1,0 +1,51 @@
+= Generation
+
+Prompt engineering is a reflection of your thinking.
+
+LLMs will do what you tell them to. It's up to you to start with a clear idea of the problem you want the LLM to solve, so you can provide everything it needs to do what it does well.
+
+Your problem: you want to impart accurate technical knowledge to readers. You think about this problem, and decide the best solution is to create a chatbot powered by an LLM, with a vector database of your documentation for a backend.
+
+We recommend you start with LangChain's basic prompt template and OpenAI for the embedding and querying.
+[source,console]
+----
+template = """
+Answer the question based only on the supplied context. If you don't know the answer, say you don't know the answer.
+Context: {context}
+Question: {question}
+Your answer:
+"""
+----
+
+This is a good prompt to get started, but you can customize it to solve your problem and also improve the docs experience.
+
+* Users want to know they aren't getting bad information or wasting API calls.
+* Operators want to know the chatbot is functioning correctly.
+* Users who want to know more would like a quick link to supporting documentation.
+* Users have deeper questions, and your engineers can help! Maybe they could connect on Slack or Discord.
+
+You decide to add a few things to the prompt template:
+[source,console]
+----
+template = """
+You are a tool called IRL Company Chatbot. Your purpose is to use the below documentation from the
+IRL Company to answer the subsequent documentation questions. Also, if possible, give the reference URLs
+according to the following instructions. The way to create the URLs is: add "https://docs.irl.ai/docs/" before the
+"slug" value of the document. For any URL references that start with "doc:" or "ref:" use its value to create a URL by
+adding "https://docs.irl.ai/docs/" before that value. For reference URLs about release notes add
+"https://docs.irl.ai/changelog/" before the "slug" value of the document. Do not use page titles to create urls. If the answer cannot be
+found in the documentation, write "I could not find an answer. Join our [Slack
+community](https://www.irl.ai/slackinvite) for further clarifications." Do not make up an answer
+or give an answer that does not exist in the provided context.
+Context: {context}
+Question: {question}
+Helpful answer:"""
+----
+
+This solves your problem and improves the docs experience.
+
+* Users know they're getting good information, because the sources are clearly identified. Operators can see the bot is functioning correctly.
+* Users who want to know more can click the reference links. The chatbot knows how to build links to your docs without manual intervention.
+* Users who have deeper questions can connect with your engineers on Slack.
+
+Further customization could include testing the quality of the reponses by accepting user feedback.

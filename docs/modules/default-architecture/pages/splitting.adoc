@@ -1,0 +1,86 @@
+= Splitting
+
+Splitting documents is a fine art, where you must navigate the tradeoff between splitting too much and splitting too little. Splitting too much will result in a large number of documents, which will increase cost. Splitting too little will result in a smaller number of documents, which will save money but also decrease the model's accuracy.
+
+For the best price and performance ratio, we recommend the use of LangChain's TokenTextSplitter.
+
+Splitting by token ensures that each split is smaller than the designated `chunk_size`. This is important because if a split is larger than the `chunk_size`, meaning can be lost and the accuracy of your model decreases.
+Splitting by token count also allows you to most efficiently use LLM calls by staying under the LLM's token limit.
+Loading TokenTextSplitter from LangChain also means one less dependency to install.
+
+[NOTE]
+====
+Need a large text file to experiment with?
+Download Edgar Allan Poe's "The Cask of Amontillado" from our repository.
+[source,bash]
+----
+curl https://raw.githubusercontent.com/CassioML/cassio-website/main/docs/frameworks/langchain/texts/amontillado.txt --output amontillado.txt
+----
+====
+
+== TokenTextSplitter
+
+. Split a large text file into smaller chunks with TokenTextSplitter.
++
+[tabs]
+======
+Python::
++
+[source,python]
+----
+from langchain.text_splitter import TokenTextSplitter
+
+with open("./amontillado.txt") as textfile:
+    amontillado = textfile.read()
+
+text_splitter = TokenTextSplitter(chunk_size=10, chunk_overlap=0)
+
+texts = text_splitter.split_text(amontillado)
+
+print(texts[0])
+----
+
+Result::
++
+[source,console]
+----
+The thousand injuries of Fortunato I had borne
+----
+======
++
+. This prints the first chunk (`chunk_size=10`) of the text.
+
+=== Split and append metadata
+
+Add the following code to the example above to append metadata to each chunk.
+[tabs]
+======
+Python::
++
+[source,python]
+----
+from langchain.schema import Document
+
+docs = []
+for i, chunk in enumerate(text_splitter.split_text(amontillado)):
+  metadata = {
+      "source": "amontillado.txt",
+      "chunk_index": i,
+  }
+  docs.append(Document(page_content=chunk, metadata=metadata))
+
+total_docs = len(docs)
+print(f"Total number of documents: {total_docs}")
+print(docs[0])
+----
+
+Result::
++
+[source,console]
+----
+The thousand injuries of Fortunato I had borne
+Total number of documents: 371
+page_content='The thousand injuries of Fortunato I had borne' metadata={'source': <_io.TextIOWrapper name='./amontillado.txt' mode='r' encoding='UTF-8'>, 'chunk_index': 0}
+----
+======
+
