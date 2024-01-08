@@ -419,11 +419,11 @@ def test_multimodal(vector_store, embedding, llm, request):
     vector_store_wrapper.init(embedding=FakeEmbeddings())
     resolved_llm = request.getfixturevalue(llm)
 
-    tree_image = get_local_resource_path("../resources/tree.jpeg")
+    tree_image = get_local_resource_path("tree.jpeg")
     products = [
         {
             "name": "Coffee Machine Ultra Cool",
-            "image": get_local_resource_path("../resources/coffee_machine.jpeg"),
+            "image": get_local_resource_path("coffee_machine.jpeg"),
         },
         {"name": "Tree", "image": tree_image},
         {"name": "Another Tree", "image": tree_image},
@@ -440,7 +440,7 @@ def test_multimodal(vector_store, embedding, llm, request):
 
         vector_store_wrapper.put(p["name"], p["name"], {}, embeddings.image_embedding)
 
-    query_image_path = get_local_resource_path("../resources/coffee_maker_part.png")
+    query_image_path = get_local_resource_path("coffee_maker_part.png")
     img = Image.load_from_file(query_image_path)
     embeddings = resolved_embedding.get_embeddings(
         image=img, contextual_text="Coffee Maker Part"
