@@ -104,8 +104,10 @@ jobs:
 
       - name: Push result to Testspace server
         if: always()
+        env:
+            TESTSPACE_TOKEN: ${{ secrets.TESTSPACE_TOKEN }}
         run: |
-            testspace results.xml
+            testspace results.xml "$TESTSPACE_TOKEN@nicoloboschi.testspace.com/ragstack-ai-stand/latest-ragstack"
 
 #      - name: Upload report to Github Pages
 #        if: always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
