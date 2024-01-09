@@ -57,6 +57,7 @@ jobs:
           AZURE_OPEN_AI_KEY: "${{ secrets.E2E_TESTS_AZURE_OPEN_AI_KEY }}"
           AZURE_OPEN_AI_ENDPOINT: "${{ secrets.E2E_TESTS_AZURE_OPEN_AI_ENDPOINT }}"
           GCLOUD_ACCOUNT_KEY_JSON: "${{ secrets.E2E_TESTS_GCLOUD_ACCOUNT_KEY_JSON }}"
+          GOOGLE_API_KEY: "${{ secrets.E2E_TESTS_GOOGLE_API_KEY }}"
           AWS_ACCESS_KEY_ID: "${{ secrets.E2E_TESTS_AWS_ACCESS_KEY_ID }}"
           AWS_SECRET_ACCESS_KEY: "${{ secrets.E2E_TESTS_AWS_SECRET_ACCESS_KEY }}"
           BEDROCK_AWS_REGION: "${{ secrets.E2E_TESTS_BEDROCK_AWS_REGION }}"
@@ -72,7 +73,10 @@ jobs:
         if: always()
         id: ragstack-ai-version
         run: |
-          echo "ragstack-ai-version=$(poetry run python -c 'from importlib.metadata import version; print(version("ragstack-ai"))')" >> $GITHUB_OUTPUT
+          set +x 
+          (tox run -c ragstack-e2e-tests -e get-latest-ragstack-ai-version -q) | tail -3 | head -n 1 > /tmp/ragstack-ai-version
+          cat /tmp/ragstack-ai-version  
+          echo "ragstack-ai-version=$(cat /tmp/ragstack-ai-version)" >> $GITHUB_OUTPUT
 
       - name: Prepare report for Slack
         if: always()
@@ -97,8 +101,8 @@ jobs:
         uses: ./.github/actions/deploy-tests-report
         with:
           target: "reports/tests/ragstack-ai/latest-release.html"
-          git-ref: "${{ steps.ragstack-ai-version.outputs.ragstack-ai-version }}"
-          commit-url: "https://pypi.org/project/ragstack-ai/${{ steps.ragstack-ai-version.outputs.ragstack-ai-version }}/"
+          reference: "${{ steps.ragstack-ai-version.outputs.ragstack-ai-version }}"
+          reference-link: "https://pypi.org/project/ragstack-ai/${{ steps.ragstack-ai-version.outputs.ragstack-ai-version }}/"
           input: "ragstack-e2e-tests/all-tests-report.txt"
 
       - name: Cleanup AstraDB

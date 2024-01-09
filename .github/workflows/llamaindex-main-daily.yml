@@ -63,10 +63,12 @@ jobs:
           AZURE_OPEN_AI_KEY: "${{ secrets.E2E_TESTS_AZURE_OPEN_AI_KEY }}"
           AZURE_OPEN_AI_ENDPOINT: "${{ secrets.E2E_TESTS_AZURE_OPEN_AI_ENDPOINT }}"
           GCLOUD_ACCOUNT_KEY_JSON: "${{ secrets.E2E_TESTS_GCLOUD_ACCOUNT_KEY_JSON }}"
+          GOOGLE_API_KEY: "${{ secrets.E2E_TESTS_GOOGLE_API_KEY }}"
           AWS_ACCESS_KEY_ID: "${{ secrets.E2E_TESTS_AWS_ACCESS_KEY_ID }}"
           AWS_SECRET_ACCESS_KEY: "${{ secrets.E2E_TESTS_AWS_SECRET_ACCESS_KEY }}"
           BEDROCK_AWS_REGION: "${{ secrets.E2E_TESTS_BEDROCK_AWS_REGION }}"
           HUGGINGFACE_HUB_KEY: "${{ secrets.E2E_TESTS_HUGGINGFACE_HUB_KEY }}"
+          NVIDIA_API_KEY: "${{ secrets.E2E_TESTS_NVIDIA_API_KEY }}"
         run: |
           tox -c ragstack-e2e-tests -e llamaindex
 
@@ -102,8 +104,8 @@ jobs:
         uses: ./.github/actions/deploy-tests-report
         with:
           target: "reports/tests/llamaindex.html"
-          git-ref: "${{ steps.commit-ref.outputs.commit-ref }}"
-          commit-url: "https://github.com/run-llama/llama_index/commits/${{ steps.commit-ref.outputs.commit-ref }}"
+          reference: "${{ steps.commit-ref.outputs.commit-ref }}"
+          reference-link: "https://github.com/run-llama/llama_index/commits/${{ steps.commit-ref.outputs.commit-ref }}"
           input: "ragstack-e2e-tests/llamaindex-tests-report.txt"
 
       - name: Cleanup AstraDB

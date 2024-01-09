@@ -86,9 +86,9 @@ def test_wrong_connection_parameters():
         pytest.fail("Should have thrown exception")
     except ValueError as e:
         print("Error:", e)
-        if "AUTHENTICATION ERROR" not in e.args[0]:
+        if "UNAUTHENTICATED" not in e.args[0]:
             pytest.fail(
-                f"Should have thrown ValueError with AUTHENTICATION ERROR but it was {e}"
+                f"Should have thrown ValueError with UNAUTHENTICATED but it was {e}"
             )
 
 
@@ -162,7 +162,7 @@ def test_basic_metadata_filtering_no_vector(environment):
     )
 
     try:
-        collection.find_one(filter={"metadata.chunks": {"$gt": 2}})
+        collection.find_one(filter={"metadata.chunks": {"$invalid": 2}})
         pytest.fail("Should have thrown ValueError")
     except ValueError as e:
         print("Error:", e)
