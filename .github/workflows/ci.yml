@@ -159,6 +159,14 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
+      - name: Testspace deploy report
+        uses: ./.github/actions/deploy-testspace-report
+        if: always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+        with:
+          token: ${{ secrets.TESTSPACE_TOKEN }}
+          report-file: ragstack-e2e-tests/results.xml
+          space: ragstack-ai-main-branch
+
       - name: Cleanup AstraDB
         uses: ./.github/actions/cleanup-astra-db
         if: always()

@@ -73,9 +73,9 @@ jobs:
         if: always()
         id: ragstack-ai-version
         run: |
-          set +x 
+          set +x
           (tox run -c ragstack-e2e-tests -e get-latest-ragstack-ai-version -q) | tail -3 | head -n 1 > /tmp/ragstack-ai-version
-          cat /tmp/ragstack-ai-version  
+          cat /tmp/ragstack-ai-version
           echo "ragstack-ai-version=$(cat /tmp/ragstack-ai-version)" >> $GITHUB_OUTPUT
 
       - name: Prepare report for Slack
@@ -89,15 +89,23 @@ jobs:
           commit-url: "https://pypi.org/project/ragstack-ai/${{ steps.ragstack-ai-version.outputs.ragstack-ai-version }}/"
 
       - name: Dump report on Slack
-        if: always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+        if: always()
         uses: slackapi/slack-github-action@v1.24.0
         with:
           payload-file-path: "./slack-report.json"
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
+      - name: Testspace deploy report
+        uses: ./.github/actions/deploy-testspace-report
+        if: always()
+        with:
+          token: ${{ secrets.TESTSPACE_TOKEN }}
+          report-file: ragstack-e2e-tests/results.xml
+          space: ragstack-ai-latest-release
+
       - name: Upload report to Github Pages
-        if: always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+        if: always()
         uses: ./.github/actions/deploy-tests-report
         with:
           target: "reports/tests/ragstack-ai/latest-release.html"
