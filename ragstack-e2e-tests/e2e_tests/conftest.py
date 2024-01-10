@@ -1,5 +1,6 @@
 import logging
 import os
+import pathlib
 import time
 import uuid
 from dataclasses import dataclass
@@ -92,16 +93,26 @@ tests_stats = {
 
 @pytest.hookimpl(tryfirst=True, hookwrapper=True)
 def pytest_runtest_makereport(item, call):
-    info = os.path.basename(item.path) + "::" + item.name
-
     outcome = yield
     rep = outcome.get_result()
-    if rep.when == "call":
-        start_time = int(os.environ["RAGSTACK_E2E_TESTS_TEST_START"])
+    # also get the setup phase if failed
+    if rep.outcome != "passed" or rep.when == "call":
+        if (
+            "RAGSTACK_E2E_TESTS_TEST_START" not in os.environ
+            or not os.environ["RAGSTACK_E2E_TESTS_TEST_START"]
+        ):
+            total_time = "?"
+        else:
+            start_time = int(os.environ["RAGSTACK_E2E_TESTS_TEST_START"])
+            total_time = round((time.perf_counter_ns() - start_time) / 1e9)
+
         os.environ["RAGSTACK_E2E_TESTS_TEST_START"] = ""
-        total_time = round((time.perf_counter_ns() - start_time) / 1e9)
-        logging.info(f"Test {info} took: {total_time} seconds")
+
         info = os.getenv("RAGSTACK_E2E_TESTS_TEST_INFO", "")
+        if not info:
+            test_path = pathlib.PurePath(item.path)
+            info = test_path.parent.name + "::" + test_path.name + "::" + item.name
+        logging.info(f"Test {info} took: {total_time} seconds")
         paths = str(item.path).split(os.sep)
         is_langchain = False
         is_llamaindex = False
@@ -110,8 +121,6 @@ def pytest_runtest_makereport(item, call):
         elif "llama_index" in paths:
             is_llamaindex = True
 
-        if not info:
-            info = os.path.basename(item.path) + "::" + item.name
         if rep.outcome == "failed":
             test_outcome = "❌"
             tests_stats["failed"] += 1
@@ -135,11 +144,13 @@ def pytest_runtest_makereport(item, call):
         elif is_llamaindex:
             llamaindex_report_lines.append(report_line)
         os.environ["RAGSTACK_E2E_TESTS_TEST_INFO"] = ""
-    else:
+
+    if rep.when == "call":
         os.environ["RAGSTACK_E2E_TESTS_TEST_START"] = str(time.perf_counter_ns())
 
 
 def set_current_test_info(test_name: str, test_info: str):
+    test_info = test_info.replace("_", "-")
     os.environ["RAGSTACK_E2E_TESTS_TEST_INFO"] = f"{test_name}::{test_info}"
 
 
@@ -183,6 +194,7 @@ os.environ["AZURE_OPEN_AI_CHAT_MODEL_DEPLOYMENT"] = "gpt-35-turbo"
 os.environ["AZURE_OPEN_AI_EMBEDDINGS_MODEL_DEPLOYMENT"] = "text-embedding-ada-002"
 
 # vertex-ai
-with open("/tmp/gcloud-account-key.json", "w") as f:
-    f.write(os.getenv("GCLOUD_ACCOUNT_KEY_JSON", ""))
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/tmp/gcloud-account-key.json"
+if "GOOGLE_APPLICATION_CREDENTIALS" not in os.environ:
+    with open("/tmp/gcloud-account-key.json", "w") as f:
+        f.write(os.getenv("GCLOUD_ACCOUNT_KEY_JSON", ""))
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/tmp/gcloud-account-key.json"

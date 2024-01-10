@@ -123,9 +123,9 @@ def test_wrong_connection_parameters():
         pytest.fail("Should have thrown exception")
     except HTTPStatusError as e:
         print("Error:", e)
-        if "AUTHENTICATION ERROR" not in e.response.text:
+        if "UNAUTHENTICATED" not in e.response.text:
             pytest.fail(
-                f"Should have thrown ValueError with AUTHENTICATION ERROR but it was {e}"
+                f"Should have thrown ValueError with UNAUTHENTICATED but it was {e}"
             )
 
 
@@ -278,7 +278,7 @@ class MockEmbeddings(BaseEmbedding):
     @staticmethod
     def mock_embedding(text: str):
         res = [len(text) / 2, len(text) / 5, len(text) / 10]
-        logging.info("mock_embedding for " + text + " : " + str(res))
+        logging.debug("mock_embedding for " + text + " : " + str(res))
         return res
 
 

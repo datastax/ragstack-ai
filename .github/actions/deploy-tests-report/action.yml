@@ -5,12 +5,12 @@ inputs:
   target:
     required: true
     description: 'Directory and filename to upload reports to'
-  git-ref:
+  reference:
     required: true
-    description: 'Git ref to use for the commit'
-  commit-url:
+    description: 'Title reference'
+  reference-link:
     required: true
-    description: 'Github commit url'
+    description: 'Title reference link'
   input:
     required: true
     description: 'File to read the report from'
@@ -20,7 +20,10 @@ runs:
     - name: Generate HTML report
       shell: bash
       run: |
-        echo "<h3 class='title'><a href=\"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\">${{ github.run_id }} ($(date '+%Y-%m-%d %H:%M'))</a></h3>" > report-file.html
+        echo "<h3 class='title'>" > report-file.html
+        echo "<a href=\"${{ inputs.reference-link }}\">${{ inputs.reference }}</a>" >> report-file.html
+        echo "(<a href=\"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\">${{ github.run_id }} ($(date '+%Y-%m-%d %H:%M'))</a>)" >> report-file.html
+        echo "</h3>" >> report-file.html
         echo "<p class='info'>Reference: <a href=\"${{ inputs.commit-url }}\">${{ inputs.git-ref }}</a></p>" >> report-file.html
         echo "<br>" >> report-file.html
         sed 's/$/<br>/' ${{ inputs.input }} >> report-file.html
