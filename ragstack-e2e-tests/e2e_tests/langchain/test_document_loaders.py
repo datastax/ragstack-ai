@@ -1,14 +1,18 @@
 import io
+import os
 import tempfile
 import uuid
 from urllib.parse import urlparse
 
 import boto3
+from azure.storage.blob import ContainerClient
 from e2e_tests.conftest import (
     set_current_test_info,
+    get_required_env
 )
 
 from langchain.document_loaders import CSVLoader, WebBaseLoader, S3DirectoryLoader
+from langchain_community.document_loaders import AzureBlobStorageContainerLoader
 
 
 def set_current_test_info_document_loader(doc_loader: str):
@@ -87,3 +91,34 @@ def test_s3_loader():
     finally:
         s3_obj.delete()
         bucket.delete()
+
+
+def test_azure_blob_doc_loader():
+    set_current_test_info_document_loader("azure")
+    from azure.storage.blob import BlobClient
+
+    connection_string = get_required_env("AZURE_BLOB_STORAGE_CONNECTION_STRING")
+    container_name = f"ragstack-ci-{uuid.uuid4()}"
+    blob_name = "data.txt"
+
+    container_client = ContainerClient.from_connection_string(conn_str=connection_string, container_name=container_name)
+    try:
+        container_client.create_container()
+
+        blob_client = BlobClient.from_connection_string(conn_str=connection_string, container_name=container_name,
+                                                        blob_name=blob_name)
+
+        try:
+            blob_client.upload_blob(io.BytesIO(b"test data"))
+            loader = AzureBlobStorageContainerLoader(conn_str=connection_string, container=container_name)
+            docs = loader.load()
+
+            for doc in docs:
+                assert doc.page_content == "test data"
+                print("got..")
+                print(doc.metadata)
+                assert os.path.basename(doc.metadata["source"]) == "data.txt"
+        finally:
+            blob_client.delete_blob()
+    finally:
+        container_client.delete_container()
