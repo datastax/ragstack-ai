@@ -1,12 +1,10 @@
 = Splitting
 
-Splitting documents requires negotiating the tradeoff between splitting too much and splitting too little. Splitting too much will result in a large number of documents, which can increase cost. Splitting too little will result in a smaller number of documents, which can decrease cost but also decrease the model's accuracy.
-
 For the best price and performance ratio, we recommend the use of LangChain's https://datastax.github.io/ragstack-ai/api_reference/latest/langchain/text_splitter/langchain.text_splitter.TokenTextSplitter.html#langchain.text_splitter.TokenTextSplitter[TokenTextSplitter].
 
 Splitting documents into smaller segments called chunks is an essential step when embedding your data into a vector store. RAG pipelines will retrieve relevant chunks to serve as context for the LLM to pull from when generating responses, which makes it important that the retrieved chunks provide the right amount of contextual information to answer the question, and no more than that.
 
-The difficulty here is in selecting a chunk size. Smaller chunk sizes may result in lower retrieval / generation cost by providing fewer tokens to the context window, but the embedding may miss out on broader contextual information. Larger chunk sizes include that contextual information but may have diluted responses due to unnecessary information being included in the context.
+The difficulty here is in selecting a chunk size. Smaller chunk sizes may result in lower retrieval and generation cost by providing fewer tokens to the context window, but the embedding may miss out on broader contextual information. Larger chunk sizes include that contextual information but may produce diluted responses due to unnecessary information being included in the context.
 
 [NOTE]
 ====
@@ -52,6 +50,7 @@ The thousand injuries of Fortunato I had borne
 
 === Split and append metadata
 
+Appending metadata to each chunk is not necessary, but can provide additional information for the vector store to retrieve more relevant results.
 Add the following code to the example above to append metadata to each chunk.
 [tabs]
 ======
@@ -84,3 +83,4 @@ page_content='The thousand injuries of Fortunato I had borne' metadata={'source'
 ----
 ======
 
+`page_content` now includes metadata that the LLM can use to reason and produce more relevant results.
