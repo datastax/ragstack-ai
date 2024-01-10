@@ -371,9 +371,21 @@ def vertex_gemini_pro_vision_llm():
 
 
 @pytest.fixture
+def vertex_gemini_pro_llm():
+    return ChatVertexAI(model_name="gemini-pro")
+
+
+@pytest.fixture
 def gemini_pro_vision_llm():
     return ChatGoogleGenerativeAI(
         model="gemini-pro-vision", google_api_key=get_required_env("GOOGLE_API_KEY")
+    )
+
+
+@pytest.fixture
+def gemini_pro_llm():
+    return ChatGoogleGenerativeAI(
+        model="gemini-pro", google_api_key=get_required_env("GOOGLE_API_KEY")
     )
 
 
@@ -455,7 +467,7 @@ def get_local_resource_path(filename: str):
 
 @pytest.mark.parametrize(
     "chat",
-    ["vertex_gemini_pro_vision_llm", "gemini_pro_vision_llm"],
+    ["vertex_gemini_pro_llm", "gemini_pro_llm"],
 )
 def test_chat(chat, request):
     set_current_test_info(
