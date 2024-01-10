@@ -30,8 +30,6 @@ pip install ragstack-ai
 
 [Examples](https://docs.datastax.com/en/ragstack/docs/examples/index.html)
 
-[What is RAG?](https://docs.datastax.com/en/ragstack/docs/intro-to-rag/index.html)
-
 ## Contributing and building locally
 
 1. Clone this repo:
