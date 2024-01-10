@@ -1,0 +1,167 @@
+= Retrieval
+
+We recommend LangChain's OpenAIEmbeddings class to embed queries and retrieve documents from Astra {db-vector}.
+
+== Basic retrieval
+
+. This retriever uses the OpenAIEmbeddings class to embed the query and retrieve the ten most similar documents from the Astra vector store.
+The `(search_kwargs={'k': 10})` parameter means that when a query is performed against the database, the retriever will return the top 10 closest matches based on the vector embeddings.
++
+[tabs]
+[%collapsible%open]
+======
+Python::
++
+[source,python]
+----
+import os
+from dotenv import load_dotenv
+from langchain_community.vectorstores import AstraDB
+from langchain_openai import OpenAIEmbeddings
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.runnables import RunnablePassthrough
+from langchain_openai import ChatOpenAI
+from langchain.output_parsers import StrOutputParser
+
+load_dotenv()
+
+OPEN_AI_API_KEY = os.environ["OPENAI_API_KEY"]
+
+vstore = AstraDB(
+    embedding=OpenAIEmbeddings(openai_api_key=OPEN_AI_API_KEY),
+    collection_name="test",
+    token=os.environ["ASTRA_DB_APPLICATION_TOKEN"],
+    api_endpoint=os.environ["ASTRA_DB_API_ENDPOINT"],
+)
+retriever = vstore.as_retriever(search_kwargs={'k': 10})
+
+prompt_template = """
+Answer the question based only on the supplied context. If you don't know the answer, say you don't know the answer.
+Context: {context}
+Question: {question}
+Your answer:
+"""
+prompt = ChatPromptTemplate.from_template(prompt_template)
+model = ChatOpenAI(openai_api_key=OPEN_AI_API_KEY, model_name="gpt-3.5-turbo", temperature=0.1)
+
+chain = (
+    {"context": retriever, "question": RunnablePassthrough()}
+    | prompt
+    | model
+    | StrOutputParser()
+)
+
+response = chain.invoke("Can you summarize the given context?")
+print(response)
+----
+
+Result::
++
+[source,console]
+----
+The context is a passage from the story "The Cask of Amontillado" by Edgar Allan Poe. The narrator, who has been insulted by a man named Fortunato, seeks revenge. He lures Fortunato into a catacomb under the pretense of tasting a rare wine called Amontillado. Once they are deep in the catacombs, the narrator chains Fortunato to a wall and walls him up alive. The narrator then describes how he finishes the wall and leaves Fortunato to die. The passage also mentions the narrator's motivation for revenge and his expertise in wine.
+----
+======
+
+== Retrieval with multiple questions
+
+Build an iterative retriever to ask multiple questions.
+
+. Create a basic prompt template and a set of questions.
++
+[source,python]
+----
+prompt_template = """
+Answer the question based only on the supplied context. If you don't know the answer, say you don't know the answer.
+Context: {context}
+Question: {question}
+Your answer:
+"""
+
+prompt = ChatPromptTemplate.from_template(prompt_template)
+
+questions = [
+    "What motivates the narrator, Montresor, to seek revenge against Fortunato?",
+    "What are the major themes in this story?",
+    "What is the significance of the story taking place during the carnival season?",
+    "How is vivid and descriptive language used in the story?",
+    "Is there any foreshadowing in the story? If yes, how is it used in the story?"
+]
+----
++
+. Create a helper method to iterate over the questions.
++
+[source,python]
+----
+def do_retrieval(chain):
+    for i in range(len(questions)):
+        print("-" * 40)
+        print(f"Question: {questions[i]}\n")
+        with get_openai_callback() as cb:
+            pprint_result(chain.invoke(questions[i]))
+            print(f'\nTotal Tokens: {cb.total_tokens}\n')
+----
++
+. Run the retrieval against your vector store.
++
+[tabs]
+[%collapsible%open]
+======
+Python::
++
+[source,python]
+----
+base_retriever = vstore.as_retriever(search_kwargs={'k': 10})
+model = ChatOpenAI(openai_api_key=OPEN_AI_API_KEY, model_name="gpt-3.5-turbo", temperature=0.1)
+
+base_chain = (
+    {"context": base_retriever, "question": RunnablePassthrough()}
+    | prompt
+    | model
+    | StrOutputParser()
+)
+
+do_retrieval(base_chain)
+----
+
+Result::
++
+[source,console]
+----
+----------------------------------------
+Question: What motivates the narrator, Montresor, to seek revenge against Fortunato?
+
+The narrator, Montresor, seeks revenge against Fortunato because Fortunato insulted him.
+
+Total Tokens: 2206
+
+----------------------------------------
+Question: What are the major themes in this story?
+
+The major themes in this story are revenge, deception, and the consequences of one's actions.
+
+Total Tokens: 1807
+
+----------------------------------------
+Question: What is the significance of the story taking place during the carnival season?
+
+The significance of the story taking place during the carnival season is not explicitly stated in the given context.
+
+Total Tokens: 2201
+
+----------------------------------------
+Question: How is vivid and descriptive language used in the story?
+
+Vivid and descriptive language is used in the story to create a sense of atmosphere and to immerse the reader in the events taking place. The language paints a detailed picture of the setting, such as the granite walls, the iron staples, and the bones in the recess. It also conveys the emotions and actions of the characters, such as the protagonist's astounded reaction and the chained form's low moaning cry. The language is used to evoke a sense of suspense and horror, as well as to emphasize the intensity of the events unfolding.
+
+Total Tokens: 2288
+
+----------------------------------------
+Question: Is there any foreshadowing in the story? If yes, how is it used in the story?
+
+Yes, there is foreshadowing in the story. The narrator's mention of the "supreme madness of the carnival season" and the fact that he encounters Fortunato during this time hints at the chaotic and unpredictable nature of the events that will unfold. Additionally, the repeated references to the Amontillado wine and the narrator's insistence on taking Fortunato to see it foreshadow the trap that the narrator has set for Fortunato in the catacombs.
+
+Total Tokens: 2287
+----
+======
+

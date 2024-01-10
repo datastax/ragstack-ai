@@ -1,0 +1,86 @@
+= Splitting
+
+For the best price and performance ratio, we recommend the use of LangChain's https://datastax.github.io/ragstack-ai/api_reference/latest/langchain/text_splitter/langchain.text_splitter.TokenTextSplitter.html#langchain.text_splitter.TokenTextSplitter[TokenTextSplitter].
+
+Splitting documents into smaller segments called chunks is an essential step when embedding your data into a vector store. RAG pipelines will retrieve relevant chunks to serve as context for the LLM to pull from when generating responses, which makes it important that the retrieved chunks provide the right amount of contextual information to answer the question, and no more than that.
+
+The difficulty here is in selecting a chunk size. Smaller chunk sizes may result in lower retrieval and generation cost by providing fewer tokens to the context window, but the embedding may miss out on broader contextual information. Larger chunk sizes include that contextual information but may produce diluted responses due to unnecessary information being included in the context.
+
+[NOTE]
+====
+Need a large text file to experiment with?
+Download Edgar Allan Poe's "The Cask of Amontillado" from our repository.
+[source,bash]
+----
+curl https://raw.githubusercontent.com/CassioML/cassio-website/main/docs/frameworks/langchain/texts/amontillado.txt --output amontillado.txt
+----
+====
+
+== TokenTextSplitter
+
+. Split a large text file into smaller chunks with TokenTextSplitter.
++
+[tabs]
+======
+Python::
++
+[source,python]
+----
+from langchain.text_splitter import TokenTextSplitter
+
+with open("./amontillado.txt") as textfile:
+    amontillado = textfile.read()
+
+text_splitter = TokenTextSplitter(chunk_size=10, chunk_overlap=0)
+
+texts = text_splitter.split_text(amontillado)
+
+print(texts[0])
+----
+
+Result::
++
+[source,console]
+----
+The thousand injuries of Fortunato I had borne
+----
+======
++
+. This prints the first chunk (`chunk_size=10`) of the text.
+
+=== Split and append metadata
+
+Appending metadata to each chunk is not necessary, but can provide additional information for the vector store to retrieve more relevant results.
+Add the following code to the example above to append metadata to each chunk.
+[tabs]
+======
+Python::
++
+[source,python]
+----
+from langchain_core.documents import Document
+
+docs = []
+for i, chunk in enumerate(text_splitter.split_text(amontillado)):
+  metadata = {
+      "source": "amontillado.txt",
+      "chunk_index": i,
+  }
+  docs.append(Document(page_content=chunk, metadata=metadata))
+
+total_docs = len(docs)
+print(f"Total number of documents: {total_docs}")
+print(docs[0])
+----
+
+Result::
++
+[source,console]
+----
+The thousand injuries of Fortunato I had borne
+Total number of documents: 371
+page_content='The thousand injuries of Fortunato I had borne' metadata={'source': <_io.TextIOWrapper name='./amontillado.txt' mode='r' encoding='UTF-8'>, 'chunk_index': 0}
+----
+======
+
+`page_content` now includes metadata that the LLM can use to reason and produce more relevant results.
