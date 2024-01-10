@@ -1,14 +1,14 @@
 = Loading
 
 Start with LangChain for loading your data instead of manually coding your own pipeline.
-The chances are good that LangChain already provides the functionalities you need.
+LangChain likely already provides the functionalities you need.
 
 The examples use Astra {db-vector} database for the vector store and assume you have one available. If not, see xref:ROOT:prerequisites.adoc[].
 
 == Load PDF from file
 
-. Use the PyPDFLoader to load PDFs as an array of `Document` objects.
-Each `Document` object contains the page content and metadata - in this case, the page number.
+. Use PyPDFLoader to load PDFs as an array of Document objects.
+Each Document object contains the page content and metadata - in this case, the page number.
 +
 [source,python]
 ----
@@ -22,11 +22,11 @@ print(docs[0])
 +
 . This will print the first page of your PDF and its associated metadata, `metadata={'source': 'example-data/example-paper.pdf', 'page': 0}`.
 
-Try changing the page number in print(docs[0]) and see how the metadata tracks to your PDF pages.
+Try changing the page number in `print(docs[0])` and see how the metadata tracks to your PDF pages.
 
 === Load multiple PDFs from a directory
 
-To load a directory containing multiple pdfs, use the `PyPDFDirectoryLoader` class:
+To load a directory containing multiple pdfs, use the PyPDFDirectoryLoader class:
 [source,python]
 ----
 from langchain.document_loaders import PyPDFDirectoryLoader
@@ -41,8 +41,8 @@ print(docs[0])
 
 JSONLoader uses the jq library to parse JSON files. If you're familiar with jq, you'll probably find this loader very familiar.
 
-. Install `jq` with `pip install jq`.
-. Load a local JSON file of HTTP responses as an array of `Document` objects.
+. Install jq with `pip install jq`.
+. Load a local JSON file of HTTP responses as an array of Document objects.
 +
 [tabs]
 ======
@@ -89,7 +89,7 @@ Result::
 === Extract values to page_content
 
 . Extract the values from the `url` field within the `event` key of the JSON data.
-This will include the `url` values in the `page_content` of the `Document` object.
+This will include the `url` values in the `page_content` of the Document object.
 +
 [tabs]
 ======
@@ -122,11 +122,11 @@ Result::
 ----
 ======
 +
-. You can see that the `page_content` of each `Document` object now contains the `url` values.
+. You can see that the `page_content` of each Document object now contains the `url` values.
 
 === Extract metadata
 
-`metadata_func` is responsible for identifying which values should be included in the `Document` object's metadata. Modifying its behavior allows you to enrich your `Document` objects with additional information from the source data.
+`metadata_func` is responsible for identifying which values should be included in the Document object's metadata. Modifying its behavior allows you to enrich your Document objects with additional information from the source data.
 
 . Instruct `metadata_func` to extract values of `event_id` and `event_url` for each `event` record and add them to your Document metadata.
 In this case, you want to include both the `event_id` and `event_url` in the metadata.
@@ -171,7 +171,7 @@ Result::
 ----
 ======
 +
-. You can see that both `event_id` and `event_url` are now included in the metadata of each `Document` object.
+. You can see that both `event_id` and `event_url` are now included in the metadata of each Document object.
 
 == Alternatives
 

@@ -25,10 +25,7 @@ from langchain_core.output_parsers import StrOutputParser
 
 load_dotenv()
 
-ASTRA_DB_APPLICATION_TOKEN = os.environ.get("ASTRA_DB_APPLICATION_TOKEN")
-ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
-OPEN_AI_API_KEY = os.environ.get("OPENAI_API_KEY")
-ASTRA_DB_COLLECTION = os.environ.get("ASTRA_DB_COLLECTION")
+OPEN_AI_API_KEY = os.environ["OPENAI_API_KEY"]
 
 vstore = AstraDB(
     embedding=OpenAIEmbeddings(openai_api_key=OPEN_AI_API_KEY),
@@ -165,80 +162,6 @@ Question: Is there any foreshadowing in the story? If yes, how is it used in the
 Yes, there is foreshadowing in the story. The narrator's mention of the "supreme madness of the carnival season" and the fact that he encounters Fortunato during this time hints at the chaotic and unpredictable nature of the events that will unfold. Additionally, the repeated references to the Amontillado wine and the narrator's insistence on taking Fortunato to see it foreshadow the trap that the narrator has set for Fortunato in the catacombs.
 
 Total Tokens: 2287
-
-(loadervenv) (base) ➜  122023-tests python3 retriever.py
-----------------------------------------
-Question: What motivates the narrator, Montresor, to seek revenge against Fortunato?
-
-The narrator, Montresor, seeks revenge against Fortunato because Fortunato insulted him.
-
-Total Tokens: 2206
-
-----------------------------------------
-Question: What are the major themes in this story?
-
-The major themes in this story are revenge, deception, and the consequences of one's actions.
-
-Total Tokens: 1807
-
-----------------------------------------
-Question: What is the significance of the story taking place during the carnival season?
-
-The significance of the story taking place during the carnival season is not explicitly stated in the given context.
-
-Total Tokens: 2201
-
-----------------------------------------
-Question: How is vivid and descriptive language used in the story?
-
-Vivid and descriptive language is used in the story to create a sense of atmosphere and to engage the reader's senses. The author uses detailed descriptions of the setting, such as the dampness of the walls and the piles of bones, to create a dark and eerie mood. The language also helps to build suspense and tension, particularly in the scene where the protagonist walls up the entrance of the niche and the chained form inside begins to react. The use of vivid and descriptive language adds depth and richness to the story, immersing the reader in the events and emotions of the narrative.
-
-Total Tokens: 2295
-
-----------------------------------------
-Question: Is there any foreshadowing in the story? If yes, how is it used in the story?
-
-Yes, there is foreshadowing in the story. It is used to hint at the narrator's plan for revenge against Fortunato. The narrator mentions his vow for revenge and his desire to punish with impunity. He also mentions the thought of Fortunato's immolation and his reference to the Amontillado. These hints foreshadow the narrator's intention to trap and kill Fortunato in the catacombs.
-
-Total Tokens: 2277
-----
-======
-
-== Search by similarity score
-
-Similarity score is a numeric value that represents how similar the retrieved content is to the provided query string.
-The top 10 most relevant pieces of content are retrieved, along with their respective similarity scores and metadata.
-[tabs]
-======
-Python::
-+
-[source,python]
-----
-results = vstore.similarity_search_with_score("For the love of God", k=10)
-for res, score in results:
-    print(f"* [SIM={score:3f}] {res.page_content} [{res.metadata}]")
-----
-
-Result::
-+
-[source,console]
-----
-* [SIM=0.878733]
-
-"_For the love of God, Montresor!_"
-
-"Yes," I said, "for the love of God!"
-
-But to these words I hearkened in vain for a reply.  I grew impatient.
-I called aloud--
-
-"Fortunato!"
-
-No answer.  I called again--
-
-"Fortunato--"
-
-No answer still.  I [{'source': 'amontillado.txt', 'chunk_index': 6}]
 ----
 ======
 
