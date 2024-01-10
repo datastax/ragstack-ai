@@ -308,8 +308,6 @@ def nvidia_mixtral_llm():
         ("openai_embedding", "openai_llm"),
         ("azure_openai_embedding", "azure_openai_llm"),
         ("vertex_embedding", "vertex_llm"),
-        ("vertex_embedding", "vertex_gemini_pro_vision_llm"),
-        ("vertex_embedding", "gemini_pro_vision_llm"),
         ("bedrock_titan_embedding", "bedrock_anthropic_llm"),
         ("bedrock_cohere_embedding", "bedrock_meta_llm"),
         ("huggingface_hub_embedding", "huggingface_hub_llm"),
@@ -375,7 +373,7 @@ def vertex_gemini_pro_vision_llm():
 @pytest.fixture
 def gemini_pro_vision_llm():
     return ChatGoogleGenerativeAI(
-        model="gemini-pro", google_api_key=get_required_env("GOOGLE_API_KEY")
+        model="gemini-pro-vision", google_api_key=get_required_env("GOOGLE_API_KEY")
     )
 
 
