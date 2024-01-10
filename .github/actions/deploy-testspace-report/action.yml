@@ -1,4 +1,4 @@
-name: 'Testspace Setup CLI'
+name: 'Testspace deploy'
 description: 'Setup Testspace client to publish CI results from workflow to Dashboard; report flaky tests, metrics, graphs, and analytics'
 branding:
   color: green
@@ -22,36 +22,36 @@ inputs:
 
 runs:
     using: 'composite'
-  steps:
-    - run: |
-        base_url=https://testspace-client.s3.amazonaws.com
-        version=""
-        case `uname -s` in
-          Linux)
-            folder=$HOME/bin
-            mkdir -p $folder
-            arch=`uname -m`
-            if [ "$arch" != "x86_64" ]; then version="-${arch}${version}"; fi
-            curl -fsSL ${base_url}/testspace-linux${version}.tgz | tar -zxvf- -C $RUNNER_TEMP
-            cp -f -p -u $RUNNER_TEMP/testspace $folder
-            ;;
-          Darwin)
-            folder=$HOME/bin
-            mkdir -p $folder
-            curl -fsSL ${base_url}/testspace-darwin${version}.tgz | tar -zxvf- -C $RUNNER_TEMP
-            rsync -t -u $RUNNER_TEMP/testspace $folder
-            ;;
-          *) # Windows
-            folder=$LOCALAPPDATA\Programs\testspace
-            mkdir -p "$folder"
-            curl -OsSL ${base_url}/testspace-windows${version}.zip
-            unzip -q -o testspace-windows${version}.zip -d $RUNNER_TEMP
-            rm testspace-windows${version}.zip
-            cp -f -p -u $RUNNER_TEMP/testspace.exe "$folder"
-            ;;
-        esac
-        echo "$folder" >> $GITHUB_PATH
-      shell: bash
-    - run: |
-        testspace "${{ inputs.report-file }}" "${{ inputs.token }}@${{ inputs.repository }}.testspace.com/${{ inputs.project }}/${{ inputs.space }}"
-      shell: bash
+    steps:
+      - run: |
+          base_url=https://testspace-client.s3.amazonaws.com
+          version=""
+          case `uname -s` in
+            Linux)
+              folder=$HOME/bin
+              mkdir -p $folder
+              arch=`uname -m`
+              if [ "$arch" != "x86_64" ]; then version="-${arch}${version}"; fi
+              curl -fsSL ${base_url}/testspace-linux${version}.tgz | tar -zxvf- -C $RUNNER_TEMP
+              cp -f -p -u $RUNNER_TEMP/testspace $folder
+              ;;
+            Darwin)
+              folder=$HOME/bin
+              mkdir -p $folder
+              curl -fsSL ${base_url}/testspace-darwin${version}.tgz | tar -zxvf- -C $RUNNER_TEMP
+              rsync -t -u $RUNNER_TEMP/testspace $folder
+              ;;
+            *) # Windows
+              folder=$LOCALAPPDATA\Programs\testspace
+              mkdir -p "$folder"
+              curl -OsSL ${base_url}/testspace-windows${version}.zip
+              unzip -q -o testspace-windows${version}.zip -d $RUNNER_TEMP
+              rm testspace-windows${version}.zip
+              cp -f -p -u $RUNNER_TEMP/testspace.exe "$folder"
+              ;;
+          esac
+          echo "$folder" >> $GITHUB_PATH
+        shell: bash
+      - run: |
+          testspace "${{ inputs.report-file }}" "${{ inputs.token }}@${{ inputs.repository }}.testspace.com/${{ inputs.project }}/${{ inputs.space }}"
+        shell: bash
