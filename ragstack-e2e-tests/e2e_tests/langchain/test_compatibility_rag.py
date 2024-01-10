@@ -371,12 +371,12 @@ def vertex_gemini_multimodal_embedding():
 def vertex_gemini_pro_vision_llm():
     return ChatVertexAI(model_name="gemini-pro-vision")
 
+
 @pytest.fixture
 def gemini_pro_vision_llm():
     return ChatGoogleGenerativeAI(
         model="gemini-pro", google_api_key=get_required_env("GOOGLE_API_KEY")
     )
-
 
 
 @pytest.mark.parametrize(
@@ -471,4 +471,3 @@ def test_chat(chat, request):
     chain = prompt | chat_model
     response = chain.invoke({})
     assert "Syracuse" in response.content
-
