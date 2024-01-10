@@ -25,9 +25,12 @@ pip install ragstack-ai
 ## Documentation
 
 [DataStax RAGStack Documentation](https://docs.datastax.com/en/ragstack/docs/index.html)
-* [Quickstart](https://docs.datastax.com/en/ragstack/docs/quickstart.html)
-* [Examples](https://docs.datastax.com/en/ragstack/docs/examples/index.html)
-* [What is RAG?](https://docs.datastax.com/en/ragstack/docs/intro-to-rag/index.html)
+
+[Quickstart](https://docs.datastax.com/en/ragstack/docs/quickstart.html)
+
+[Examples](https://docs.datastax.com/en/ragstack/docs/examples/index.html)
+
+[What is RAG?](https://docs.datastax.com/en/ragstack/docs/intro-to-rag/index.html)
 
 ## Contributing and building locally
 
