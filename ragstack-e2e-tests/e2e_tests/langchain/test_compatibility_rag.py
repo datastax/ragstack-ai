@@ -34,7 +34,9 @@ from astrapy.db import AstraDB as AstraDBClient
 from langchain_core.chat_history import BaseChatMessageHistory
 from langchain_core.embeddings import Embeddings
 from langchain_core.messages import HumanMessage
+from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.vectorstores import VectorStore
+from langchain_google_genai import ChatGoogleGenerativeAI
 from sqlalchemy import Float
 from vertexai.vision_models import MultiModalEmbeddingModel, Image
 
@@ -306,6 +308,8 @@ def nvidia_mixtral_llm():
         ("openai_embedding", "openai_llm"),
         ("azure_openai_embedding", "azure_openai_llm"),
         ("vertex_embedding", "vertex_llm"),
+        ("vertex_embedding", "vertex_gemini_pro_vision_llm"),
+        ("vertex_embedding", "gemini_pro_vision_llm"),
         ("bedrock_titan_embedding", "bedrock_anthropic_llm"),
         ("bedrock_cohere_embedding", "bedrock_meta_llm"),
         ("huggingface_hub_embedding", "huggingface_hub_llm"),
@@ -364,8 +368,15 @@ def vertex_gemini_multimodal_embedding():
 
 
 @pytest.fixture
-def vertex_gemini_pro_vision():
+def vertex_gemini_pro_vision_llm():
     return ChatVertexAI(model_name="gemini-pro-vision")
+
+@pytest.fixture
+def gemini_pro_vision_llm():
+    return ChatGoogleGenerativeAI(
+        model="gemini-pro", google_api_key=get_required_env("GOOGLE_API_KEY")
+    )
+
 
 
 @pytest.mark.parametrize(
@@ -375,12 +386,13 @@ def vertex_gemini_pro_vision():
 @pytest.mark.parametrize(
     "embedding,llm",
     [
-        ("vertex_gemini_multimodal_embedding", "vertex_gemini_pro_vision"),
+        ("vertex_gemini_multimodal_embedding", "vertex_gemini_pro_vision_llm"),
+        ("vertex_gemini_multimodal_embedding", "gemini_pro_vision_llm"),
     ],
 )
 def test_multimodal(vector_store, embedding, llm, request):
     set_current_test_info(
-        "langchain::multimodal",
+        "langchain::multimodal_rag",
         f"{llm},{embedding},{vector_store}",
     )
 
@@ -441,3 +453,22 @@ def test_multimodal(vector_store, embedding, llm, request):
 def get_local_resource_path(filename: str):
     dirname = os.path.dirname(__file__)
     return os.path.join(dirname, filename)
+
+
+@pytest.mark.parametrize(
+    "chat",
+    ["vertex_gemini_pro_vision_llm", "gemini_pro_vision_llm"],
+)
+def test_chat(chat, request):
+    set_current_test_info(
+        "langchain::chat",
+        chat,
+    )
+    chat_model = request.getfixturevalue(chat)
+    prompt = ChatPromptTemplate.from_messages(
+        [("human", "Hello! Where Archimede was born?")]
+    )
+    chain = prompt | chat_model
+    response = chain.invoke({})
+    assert "Syracuse" in response.content
+
