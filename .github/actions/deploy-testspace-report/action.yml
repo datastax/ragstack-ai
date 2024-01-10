@@ -3,8 +3,25 @@ description: 'Setup Testspace client to publish CI results from workflow to Dash
 branding:
   color: green
   icon: terminal
+inputs:
+    token:
+        required: true
+        description: "Testspace token"
+    space:
+        required: true
+        description: "Testspace project's space"
+    report-file:
+        required: true
+        description: "Report to upload"
+    repository:
+        default: "nicoloboschi"
+        description: "Testspace repository"
+    project:
+        default: "ragstack-ai-stand"
+        description: "Testspace project"
+
 runs:
-  using: 'composite'
+    using: 'composite'
   steps:
     - run: |
         base_url=https://testspace-client.s3.amazonaws.com
@@ -34,4 +51,7 @@ runs:
             ;;
         esac
         echo "$folder" >> $GITHUB_PATH
+      shell: bash
+    - run: |
+        testspace "${{ inputs.report-file }}" "${{ inputs.token }}@${{ inputs.repository }}.testspace.com/${{ inputs.project }}/${{ inputs.space }}"
       shell: bash

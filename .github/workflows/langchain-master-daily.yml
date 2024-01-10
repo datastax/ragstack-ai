@@ -99,6 +99,14 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
+      - name: Testspace Setup CLI
+        uses: ./.github/actions/deploy-testspace-report
+        if: always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+        with:
+          token: ${{ secrets.TESTSPACE_TOKEN }}
+          report-file: ragstack-e2e-tests/results.xml
+          space: langchain-master-branch
+
       - name: Upload report to Github Pages
         if: always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
         uses: ./.github/actions/deploy-tests-report

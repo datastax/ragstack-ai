@@ -69,54 +69,49 @@ jobs:
         if: always()
         uses: ./.github/actions/add-report-to-github-summary
 
-#      - name: Compute version
-#        if: always()
-#        id: ragstack-ai-version
-#        run: |
-#          set +x
-#          (tox run -c ragstack-e2e-tests -e get-latest-ragstack-ai-version -q) | tail -3 | head -n 1 > /tmp/ragstack-ai-version
-#          cat /tmp/ragstack-ai-version
-#          echo "ragstack-ai-version=$(cat /tmp/ragstack-ai-version)" >> $GITHUB_OUTPUT
+      - name: Compute version
+        if: always()
+        id: ragstack-ai-version
+        run: |
+          set +x
+          (tox run -c ragstack-e2e-tests -e get-latest-ragstack-ai-version -q) | tail -3 | head -n 1 > /tmp/ragstack-ai-version
+          cat /tmp/ragstack-ai-version
+          echo "ragstack-ai-version=$(cat /tmp/ragstack-ai-version)" >> $GITHUB_OUTPUT
 
-#      - name: Prepare report for Slack
-#        if: always()
-#        uses: ./.github/actions/generate-slack-report
-#        with:
-#          from-report-file: "ragstack-e2e-tests/failed-tests-report.txt"
-#          output-file: slack-report.json
-#          type: "Tests using latest RAGStack released version (${{ steps.ragstack-ai-version.outputs.ragstack-ai-version }}) - (${{ matrix.name }})"
-#          outcome: ${{ steps.e2e-tests.outcome }}
-#          commit-url: "https://pypi.org/project/ragstack-ai/${{ steps.ragstack-ai-version.outputs.ragstack-ai-version }}/"
-#
-#      - name: Dump report on Slack
-#        if: always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
-#        uses: slackapi/slack-github-action@v1.24.0
-#        with:
-#          payload-file-path: "./slack-report.json"
-#        env:
-#          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      - name: Prepare report for Slack
+        if: always()
+        uses: ./.github/actions/generate-slack-report
+        with:
+          from-report-file: "ragstack-e2e-tests/failed-tests-report.txt"
+          output-file: slack-report.json
+          type: "Tests using latest RAGStack released version (${{ steps.ragstack-ai-version.outputs.ragstack-ai-version }}) - (${{ matrix.name }})"
+          outcome: ${{ steps.e2e-tests.outcome }}
+          commit-url: "https://pypi.org/project/ragstack-ai/${{ steps.ragstack-ai-version.outputs.ragstack-ai-version }}/"
+
+      - name: Dump report on Slack
+        if: always()
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          payload-file-path: "./slack-report.json"
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
       - name: Testspace Setup CLI
-        uses: ./.github/actions/setup-testspace-client
+        uses: ./.github/actions/deploy-testspace-report
         if: always()
+        with:
+          token: ${{ secrets.TESTSPACE_TOKEN }}
+          report-file: ragstack-e2e-tests/results.xml
+          space: ragstack-ai-latest-release
 
-      - name: Push result to Testspace server
+      - name: Upload report to Github Pages
         if: always()
-        env:
-            TESTSPACE_TOKEN: ${{ secrets.TESTSPACE_TOKEN }}
-        run: |
-            ls -la .
-            ls -la ragstack-e2e-tests
-            testspace ragstack-e2e-tests/results.xml "$TESTSPACE_TOKEN@nicoloboschi.testspace.com/ragstack-ai-stand/latest-ragstack"
-
-#      - name: Upload report to Github Pages
-#        if: always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
-#        uses: ./.github/actions/deploy-tests-report
-#        with:
-#          target: "reports/tests/ragstack-ai/latest-release.html"
-#          reference: "${{ steps.ragstack-ai-version.outputs.ragstack-ai-version }}"
-#          reference-link: "https://pypi.org/project/ragstack-ai/${{ steps.ragstack-ai-version.outputs.ragstack-ai-version }}/"
-#          input: "ragstack-e2e-tests/all-tests-report.txt"
+        uses: ./.github/actions/deploy-tests-report
+        with:
+          target: "reports/tests/ragstack-ai/latest-release.html"
+          reference: "${{ steps.ragstack-ai-version.outputs.ragstack-ai-version }}"
+          reference-link: "https://pypi.org/project/ragstack-ai/${{ steps.ragstack-ai-version.outputs.ragstack-ai-version }}/"
+          input: "ragstack-e2e-tests/all-tests-report.txt"
 
       - name: Cleanup AstraDB
         uses: ./.github/actions/cleanup-astra-db
