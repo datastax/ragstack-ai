@@ -23,7 +23,8 @@ from llama_index.llms import (
     Vertex,
     Bedrock,
     HuggingFaceInferenceAPI,
-    ChatMessage, Gemini,
+    ChatMessage,
+    Gemini,
 )
 from llama_index.multi_modal_llms import GeminiMultiModal
 from llama_index.schema import TextNode
@@ -53,7 +54,7 @@ class VectorStoreWrapper:
 
     @abstractmethod
     def put(
-            self, doc_id: str, document: str, metadata: dict, vector: List[Float]
+        self, doc_id: str, document: str, metadata: dict, vector: List[Float]
     ) -> None:
         pass
 
@@ -81,7 +82,7 @@ class CassandraVectorStoreWrapper(VectorStoreWrapper):
         return self.vector_store
 
     def put(
-            self, doc_id: str, document: str, metadata: dict, vector: List[Float]
+        self, doc_id: str, document: str, metadata: dict, vector: List[Float]
     ) -> None:
         self.vector_store.add(
             [TextNode(text=document, metadata=metadata, id_=doc_id, embedding=vector)]
@@ -114,7 +115,7 @@ class AstraDBVectorStoreWrapper(VectorStoreWrapper):
         return self.vector_store
 
     def put(
-            self, doc_id: str, document: str, metadata: dict, vector: List[Float]
+        self, doc_id: str, document: str, metadata: dict, vector: List[Float]
     ) -> None:
         self.vector_store.client.insert_one(
             {
@@ -343,7 +344,9 @@ def gemini_pro_llm():
 
 @pytest.fixture
 def gemini_pro_vision_llm():
-    return GeminiMultiModal(api_key=get_required_env("GOOGLE_API_KEY"), model_name="gemini-pro-vision")
+    return GeminiMultiModal(
+        api_key=get_required_env("GOOGLE_API_KEY"), model_name="gemini-pro-vision"
+    )
 
 
 @pytest.mark.parametrize(
@@ -425,9 +428,7 @@ def get_local_resource_path(filename: str):
 
 @pytest.mark.parametrize(
     "chat",
-    [
-        "gemini_pro_llm", "vertex_gemini_pro_llm"
-    ],
+    ["gemini_pro_llm", "vertex_gemini_pro_llm"],
 )
 def test_chat(chat, request):
     set_current_test_info("llama_index::chat", chat)
