@@ -339,13 +339,16 @@ def vertex_gemini_pro_vision_llm():
 
 @pytest.fixture
 def gemini_pro_llm():
-    return Gemini(api_key=get_required_env("GOOGLE_API_KEY"), model_name="gemini-pro")
+    return Gemini(
+        api_key=get_required_env("GOOGLE_API_KEY"), model_name="models/gemini-pro"
+    )
 
 
 @pytest.fixture
 def gemini_pro_vision_llm():
     return GeminiMultiModal(
-        api_key=get_required_env("GOOGLE_API_KEY"), model_name="gemini-pro-vision"
+        api_key=get_required_env("GOOGLE_API_KEY"),
+        model_name="models/gemini-pro-vision",
     )
 
 
