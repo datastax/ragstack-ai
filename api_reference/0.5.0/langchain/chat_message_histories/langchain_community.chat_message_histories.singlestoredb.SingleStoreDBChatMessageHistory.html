@@ -1,0 +1,482 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>langchain_community.chat_message_histories.singlestoredb.SingleStoreDBChatMessageHistory &mdash; 🦜🔗 LangChain 0.0.354</title>
+  
+  <link rel="canonical" href="https://api.python.langchain.com/en/latest/chat_message_histories/langchain_community.chat_message_histories.singlestoredb.SingleStoreDBChatMessageHistory.html" />
+
+  
+
+  <link rel="stylesheet" href="../_static/css/vendor/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/autodoc_pydantic.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/panels-bootstrap.5fd3999ee7762ccc51105388f4a9d115.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+<script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+<script src="../_static/jquery.js"></script> 
+</head>
+<body>
+
+
+<nav id="navbar" class="sk-docs-navbar navbar navbar-expand-md navbar-light bg-light py-0">
+  <div class="container-fluid sk-docs-container px-0">
+    <button
+      id="sk-navbar-toggler"
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="sk-navbar-collapse collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../langchain_api_reference.html">LangChain</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../core_api_reference.html">Core</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../community_api_reference.html">Community</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../experimental_api_reference.html">Experimental</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../nvidia_trt_api_reference.html">nvidia-trt</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../google_genai_api_reference.html">google-genai</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../anthropic_api_reference.html">anthropic</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../together_api_reference.html">together</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../nvidia_ai_endpoints_api_reference.html">nvidia-ai-endpoints</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../mistralai_api_reference.html">mistralai</a>
+        </li>
+        <li class="nav-item dropdown nav-more-item-dropdown">
+          <a class="sk-nav-link nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Partner libs</a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+              <a class="sk-nav-dropdown-item dropdown-item" href="../nvidia_trt_api_reference.html">nvidia-trt</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../google_genai_api_reference.html">google-genai</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../anthropic_api_reference.html">anthropic</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../together_api_reference.html">together</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../nvidia_ai_endpoints_api_reference.html">nvidia-ai-endpoints</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../mistralai_api_reference.html">mistralai</a>
+          </div>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" target="_blank" rel="noopener noreferrer" href="https://python.langchain.com/">Docs</a>
+        </li>
+      </ul>
+      <div id="searchbox" role="search">
+          <div class="searchformwrapper">
+          <form class="search" action="../search.html" method="get">
+            <input class="sk-search-text-input" type="text" name="q" aria-labelledby="searchlabel" />
+            <input class="sk-search-text-btn" type="submit" value="Go" />
+          </form>
+          </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="d-flex" id="sk-doc-wrapper">
+    <input type="checkbox" name="sk-toggle-checkbox" id="sk-toggle-checkbox">
+    <label id="sk-sidemenu-toggle" class="sk-btn-toggle-toc btn sk-btn-primary" for="sk-toggle-checkbox">Toggle Menu</label>
+    <div id="sk-sidebar-wrapper" class="border-right">
+      <div class="sk-sidebar-toc-wrapper">
+        <div class="btn-group w-100 mb-2" role="group" aria-label="rellinks">
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Prev</a>
+            <a href="#" role="button" class="btn sk-btn-rellink disabled py-1">Up</a>
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Next</a>
+        </div>
+            <div class="sk-sidebar-toc">
+              <ul>
+<li><a class="reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">langchain_community.chat_message_histories.singlestoredb</span></code>.SingleStoreDBChatMessageHistory</a></li>
+</ul>
+
+            </div>
+      </div>
+    </div>
+    <div id="sk-page-content-wrapper">
+      <div class="sk-page-content container-fluid body px-md-3" role="main">
+        
+  <section id="langchain-community-chat-message-histories-singlestoredb-singlestoredbchatmessagehistory">
+<h1><code class="xref py py-mod docutils literal notranslate"><span class="pre">langchain_community.chat_message_histories.singlestoredb</span></code>.SingleStoreDBChatMessageHistory<a class="headerlink" href="#langchain-community-chat-message-histories-singlestoredb-singlestoredbchatmessagehistory" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="langchain_community.chat_message_histories.singlestoredb.SingleStoreDBChatMessageHistory">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">langchain_community.chat_message_histories.singlestoredb.</span></span><span class="sig-name descname"><span class="pre">SingleStoreDBChatMessageHistory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">session_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'message_store'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id_field</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'id'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">session_id_field</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'session_id'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">message_field</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'message'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pool_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_overflow</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">30</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/langchain_community/chat_message_histories/singlestoredb.html#SingleStoreDBChatMessageHistory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain_community.chat_message_histories.singlestoredb.SingleStoreDBChatMessageHistory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Chat message history stored in a SingleStoreDB database.</p>
+<p>Initialize with necessary components.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>table_name</strong> (<em>str</em><em>, </em><em>optional</em>) – Specifies the name of the table in use.
+Defaults to “message_store”.</p></li>
+<li><p><strong>id_field</strong> (<em>str</em><em>, </em><em>optional</em>) – Specifies the name of the id field in the table.
+Defaults to “id”.</p></li>
+<li><p><strong>session_id_field</strong> (<em>str</em><em>, </em><em>optional</em>) – Specifies the name of the session_id
+field in the table. Defaults to “session_id”.</p></li>
+<li><p><strong>message_field</strong> (<em>str</em><em>, </em><em>optional</em>) – Specifies the name of the message field
+in the table. Defaults to “message”.</p></li>
+<li><p><strong>pool</strong> (<em>Following arguments pertain to the connection</em>) – </p></li>
+<li><p><strong>pool_size</strong> (<em>int</em><em>, </em><em>optional</em>) – Determines the number of active connections in
+the pool. Defaults to 5.</p></li>
+<li><p><strong>max_overflow</strong> (<em>int</em><em>, </em><em>optional</em>) – Determines the maximum number of connections
+allowed beyond the pool_size. Defaults to 10.</p></li>
+<li><p><strong>timeout</strong> (<em>float</em><em>, </em><em>optional</em>) – Specifies the maximum wait time in seconds for
+establishing a connection. Defaults to 30.</p></li>
+<li><p><strong>connection</strong> (<em>database</em>) – </p></li>
+<li><p><strong>host</strong> (<em>str</em><em>, </em><em>optional</em>) – Specifies the hostname, IP address, or URL for the
+database connection. The default scheme is “mysql”.</p></li>
+<li><p><strong>user</strong> (<em>str</em><em>, </em><em>optional</em>) – Database username.</p></li>
+<li><p><strong>password</strong> (<em>str</em><em>, </em><em>optional</em>) – Database password.</p></li>
+<li><p><strong>port</strong> (<em>int</em><em>, </em><em>optional</em>) – Database port. Defaults to 3306 for non-HTTP
+connections, 80 for HTTP connections, and 443 for HTTPS connections.</p></li>
+<li><p><strong>database</strong> (<em>str</em><em>, </em><em>optional</em>) – Database name.</p></li>
+<li><p><strong>the</strong> (<em>Additional optional arguments provide further customization over</em>) – </p></li>
+<li><p><strong>connection</strong> – </p></li>
+<li><p><strong>pure_python</strong> (<em>bool</em><em>, </em><em>optional</em>) – Toggles the connector mode. If True,
+operates in pure Python mode.</p></li>
+<li><p><strong>local_infile</strong> (<em>bool</em><em>, </em><em>optional</em>) – Allows local file uploads.</p></li>
+<li><p><strong>charset</strong> (<em>str</em><em>, </em><em>optional</em>) – Specifies the character set for string values.</p></li>
+<li><p><strong>ssl_key</strong> (<em>str</em><em>, </em><em>optional</em>) – Specifies the path of the file containing the SSL
+key.</p></li>
+<li><p><strong>ssl_cert</strong> (<em>str</em><em>, </em><em>optional</em>) – Specifies the path of the file containing the SSL
+certificate.</p></li>
+<li><p><strong>ssl_ca</strong> (<em>str</em><em>, </em><em>optional</em>) – Specifies the path of the file containing the SSL
+certificate authority.</p></li>
+<li><p><strong>ssl_cipher</strong> (<em>str</em><em>, </em><em>optional</em>) – Sets the SSL cipher list.</p></li>
+<li><p><strong>ssl_disabled</strong> (<em>bool</em><em>, </em><em>optional</em>) – Disables SSL usage.</p></li>
+<li><p><strong>ssl_verify_cert</strong> (<em>bool</em><em>, </em><em>optional</em>) – Verifies the server’s certificate.
+Automatically enabled if <code class="docutils literal notranslate"><span class="pre">ssl_ca</span></code> is specified.</p></li>
+<li><p><strong>ssl_verify_identity</strong> (<em>bool</em><em>, </em><em>optional</em>) – Verifies the server’s identity.</p></li>
+<li><p><strong>conv</strong> (<em>dict</em><em>[</em><em>int</em><em>, </em><em>Callable</em><em>]</em><em>, </em><em>optional</em>) – A dictionary of data conversion
+functions.</p></li>
+<li><p><strong>credential_type</strong> (<em>str</em><em>, </em><em>optional</em>) – Specifies the type of authentication to
+use: auth.PASSWORD, auth.JWT, or auth.BROWSER_SSO.</p></li>
+<li><p><strong>autocommit</strong> (<em>bool</em><em>, </em><em>optional</em>) – Enables autocommits.</p></li>
+<li><p><strong>results_type</strong> (<em>str</em><em>, </em><em>optional</em>) – Determines the structure of the query results:
+tuples, namedtuples, dicts.</p></li>
+<li><p><strong>results_format</strong> (<em>str</em><em>, </em><em>optional</em>) – Deprecated. This option has been renamed to
+results_type.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>Basic Usage:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">langchain_community.chat_message_histories</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">SingleStoreDBChatMessageHistory</span>
+<span class="p">)</span>
+
+<span class="n">message_history</span> <span class="o">=</span> <span class="n">SingleStoreDBChatMessageHistory</span><span class="p">(</span>
+    <span class="n">session_id</span><span class="o">=</span><span class="s2">&quot;my-session&quot;</span><span class="p">,</span>
+    <span class="n">host</span><span class="o">=</span><span class="s2">&quot;https://user:password@127.0.0.1:3306/database&quot;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Advanced Usage:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">langchain_community.chat_message_histories</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">SingleStoreDBChatMessageHistory</span>
+<span class="p">)</span>
+
+<span class="n">message_history</span> <span class="o">=</span> <span class="n">SingleStoreDBChatMessageHistory</span><span class="p">(</span>
+    <span class="n">session_id</span><span class="o">=</span><span class="s2">&quot;my-session&quot;</span><span class="p">,</span>
+    <span class="n">host</span><span class="o">=</span><span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span>
+    <span class="n">port</span><span class="o">=</span><span class="mi">3306</span><span class="p">,</span>
+    <span class="n">user</span><span class="o">=</span><span class="s2">&quot;user&quot;</span><span class="p">,</span>
+    <span class="n">password</span><span class="o">=</span><span class="s2">&quot;password&quot;</span><span class="p">,</span>
+    <span class="n">database</span><span class="o">=</span><span class="s2">&quot;db&quot;</span><span class="p">,</span>
+    <span class="n">table_name</span><span class="o">=</span><span class="s2">&quot;my_custom_table&quot;</span><span class="p">,</span>
+    <span class="n">pool_size</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">timeout</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Using environment variables:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">langchain_community.chat_message_histories</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">SingleStoreDBChatMessageHistory</span>
+<span class="p">)</span>
+
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;SINGLESTOREDB_URL&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;me:p455w0rd@s2-host.com/my_db&#39;</span>
+<span class="n">message_history</span> <span class="o">=</span> <span class="n">SingleStoreDBChatMessageHistory</span><span class="p">(</span><span class="s2">&quot;my-session&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="rubric">Attributes</p>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">messages</span></code></p></td>
+<td><p>Retrieve the messages from SingleStoreDB</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#langchain_community.chat_message_histories.singlestoredb.SingleStoreDBChatMessageHistory.__init__" title="langchain_community.chat_message_histories.singlestoredb.SingleStoreDBChatMessageHistory.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(session_id, *[, table_name, ...])</p></td>
+<td><p>Initialize with necessary components.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#langchain_community.chat_message_histories.singlestoredb.SingleStoreDBChatMessageHistory.add_ai_message" title="langchain_community.chat_message_histories.singlestoredb.SingleStoreDBChatMessageHistory.add_ai_message"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_ai_message</span></code></a>(message)</p></td>
+<td><p>Convenience method for adding an AI message string to the store.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#langchain_community.chat_message_histories.singlestoredb.SingleStoreDBChatMessageHistory.add_message" title="langchain_community.chat_message_histories.singlestoredb.SingleStoreDBChatMessageHistory.add_message"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_message</span></code></a>(message)</p></td>
+<td><p>Append the message to the record in SingleStoreDB</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#langchain_community.chat_message_histories.singlestoredb.SingleStoreDBChatMessageHistory.add_user_message" title="langchain_community.chat_message_histories.singlestoredb.SingleStoreDBChatMessageHistory.add_user_message"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_user_message</span></code></a>(message)</p></td>
+<td><p>Convenience method for adding a human message string to the store.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#langchain_community.chat_message_histories.singlestoredb.SingleStoreDBChatMessageHistory.clear" title="langchain_community.chat_message_histories.singlestoredb.SingleStoreDBChatMessageHistory.clear"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clear</span></code></a>()</p></td>
+<td><p>Clear session memory from SingleStoreDB</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.chat_message_histories.singlestoredb.SingleStoreDBChatMessageHistory.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">session_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'message_store'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id_field</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'id'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">session_id_field</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'session_id'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">message_field</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'message'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pool_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_overflow</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">30</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/langchain_community/chat_message_histories/singlestoredb.html#SingleStoreDBChatMessageHistory.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain_community.chat_message_histories.singlestoredb.SingleStoreDBChatMessageHistory.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize with necessary components.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>table_name</strong> (<em>str</em><em>, </em><em>optional</em>) – Specifies the name of the table in use.
+Defaults to “message_store”.</p></li>
+<li><p><strong>id_field</strong> (<em>str</em><em>, </em><em>optional</em>) – Specifies the name of the id field in the table.
+Defaults to “id”.</p></li>
+<li><p><strong>session_id_field</strong> (<em>str</em><em>, </em><em>optional</em>) – Specifies the name of the session_id
+field in the table. Defaults to “session_id”.</p></li>
+<li><p><strong>message_field</strong> (<em>str</em><em>, </em><em>optional</em>) – Specifies the name of the message field
+in the table. Defaults to “message”.</p></li>
+<li><p><strong>pool</strong> (<em>Following arguments pertain to the connection</em>) – </p></li>
+<li><p><strong>pool_size</strong> (<em>int</em><em>, </em><em>optional</em>) – Determines the number of active connections in
+the pool. Defaults to 5.</p></li>
+<li><p><strong>max_overflow</strong> (<em>int</em><em>, </em><em>optional</em>) – Determines the maximum number of connections
+allowed beyond the pool_size. Defaults to 10.</p></li>
+<li><p><strong>timeout</strong> (<em>float</em><em>, </em><em>optional</em>) – Specifies the maximum wait time in seconds for
+establishing a connection. Defaults to 30.</p></li>
+<li><p><strong>connection</strong> (<em>database</em>) – </p></li>
+<li><p><strong>host</strong> (<em>str</em><em>, </em><em>optional</em>) – Specifies the hostname, IP address, or URL for the
+database connection. The default scheme is “mysql”.</p></li>
+<li><p><strong>user</strong> (<em>str</em><em>, </em><em>optional</em>) – Database username.</p></li>
+<li><p><strong>password</strong> (<em>str</em><em>, </em><em>optional</em>) – Database password.</p></li>
+<li><p><strong>port</strong> (<em>int</em><em>, </em><em>optional</em>) – Database port. Defaults to 3306 for non-HTTP
+connections, 80 for HTTP connections, and 443 for HTTPS connections.</p></li>
+<li><p><strong>database</strong> (<em>str</em><em>, </em><em>optional</em>) – Database name.</p></li>
+<li><p><strong>the</strong> (<em>Additional optional arguments provide further customization over</em>) – </p></li>
+<li><p><strong>connection</strong> – </p></li>
+<li><p><strong>pure_python</strong> (<em>bool</em><em>, </em><em>optional</em>) – Toggles the connector mode. If True,
+operates in pure Python mode.</p></li>
+<li><p><strong>local_infile</strong> (<em>bool</em><em>, </em><em>optional</em>) – Allows local file uploads.</p></li>
+<li><p><strong>charset</strong> (<em>str</em><em>, </em><em>optional</em>) – Specifies the character set for string values.</p></li>
+<li><p><strong>ssl_key</strong> (<em>str</em><em>, </em><em>optional</em>) – Specifies the path of the file containing the SSL
+key.</p></li>
+<li><p><strong>ssl_cert</strong> (<em>str</em><em>, </em><em>optional</em>) – Specifies the path of the file containing the SSL
+certificate.</p></li>
+<li><p><strong>ssl_ca</strong> (<em>str</em><em>, </em><em>optional</em>) – Specifies the path of the file containing the SSL
+certificate authority.</p></li>
+<li><p><strong>ssl_cipher</strong> (<em>str</em><em>, </em><em>optional</em>) – Sets the SSL cipher list.</p></li>
+<li><p><strong>ssl_disabled</strong> (<em>bool</em><em>, </em><em>optional</em>) – Disables SSL usage.</p></li>
+<li><p><strong>ssl_verify_cert</strong> (<em>bool</em><em>, </em><em>optional</em>) – Verifies the server’s certificate.
+Automatically enabled if <code class="docutils literal notranslate"><span class="pre">ssl_ca</span></code> is specified.</p></li>
+<li><p><strong>ssl_verify_identity</strong> (<em>bool</em><em>, </em><em>optional</em>) – Verifies the server’s identity.</p></li>
+<li><p><strong>conv</strong> (<em>dict</em><em>[</em><em>int</em><em>, </em><em>Callable</em><em>]</em><em>, </em><em>optional</em>) – A dictionary of data conversion
+functions.</p></li>
+<li><p><strong>credential_type</strong> (<em>str</em><em>, </em><em>optional</em>) – Specifies the type of authentication to
+use: auth.PASSWORD, auth.JWT, or auth.BROWSER_SSO.</p></li>
+<li><p><strong>autocommit</strong> (<em>bool</em><em>, </em><em>optional</em>) – Enables autocommits.</p></li>
+<li><p><strong>results_type</strong> (<em>str</em><em>, </em><em>optional</em>) – Determines the structure of the query results:
+tuples, namedtuples, dicts.</p></li>
+<li><p><strong>results_format</strong> (<em>str</em><em>, </em><em>optional</em>) – Deprecated. This option has been renamed to
+results_type.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>Basic Usage:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">langchain_community.chat_message_histories</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">SingleStoreDBChatMessageHistory</span>
+<span class="p">)</span>
+
+<span class="n">message_history</span> <span class="o">=</span> <span class="n">SingleStoreDBChatMessageHistory</span><span class="p">(</span>
+    <span class="n">session_id</span><span class="o">=</span><span class="s2">&quot;my-session&quot;</span><span class="p">,</span>
+    <span class="n">host</span><span class="o">=</span><span class="s2">&quot;https://user:password@127.0.0.1:3306/database&quot;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Advanced Usage:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">langchain_community.chat_message_histories</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">SingleStoreDBChatMessageHistory</span>
+<span class="p">)</span>
+
+<span class="n">message_history</span> <span class="o">=</span> <span class="n">SingleStoreDBChatMessageHistory</span><span class="p">(</span>
+    <span class="n">session_id</span><span class="o">=</span><span class="s2">&quot;my-session&quot;</span><span class="p">,</span>
+    <span class="n">host</span><span class="o">=</span><span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span>
+    <span class="n">port</span><span class="o">=</span><span class="mi">3306</span><span class="p">,</span>
+    <span class="n">user</span><span class="o">=</span><span class="s2">&quot;user&quot;</span><span class="p">,</span>
+    <span class="n">password</span><span class="o">=</span><span class="s2">&quot;password&quot;</span><span class="p">,</span>
+    <span class="n">database</span><span class="o">=</span><span class="s2">&quot;db&quot;</span><span class="p">,</span>
+    <span class="n">table_name</span><span class="o">=</span><span class="s2">&quot;my_custom_table&quot;</span><span class="p">,</span>
+    <span class="n">pool_size</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">timeout</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Using environment variables:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">langchain_community.chat_message_histories</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">SingleStoreDBChatMessageHistory</span>
+<span class="p">)</span>
+
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;SINGLESTOREDB_URL&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;me:p455w0rd@s2-host.com/my_db&#39;</span>
+<span class="n">message_history</span> <span class="o">=</span> <span class="n">SingleStoreDBChatMessageHistory</span><span class="p">(</span><span class="s2">&quot;my-session&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.chat_message_histories.singlestoredb.SingleStoreDBChatMessageHistory.add_ai_message">
+<span class="sig-name descname"><span class="pre">add_ai_message</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../messages/langchain_core.messages.ai.AIMessage.html#langchain_core.messages.ai.AIMessage" title="langchain_core.messages.ai.AIMessage"><span class="pre">AIMessage</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#langchain_community.chat_message_histories.singlestoredb.SingleStoreDBChatMessageHistory.add_ai_message" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convenience method for adding an AI message string to the store.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>message</strong> – The AI message to add.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.chat_message_histories.singlestoredb.SingleStoreDBChatMessageHistory.add_message">
+<span class="sig-name descname"><span class="pre">add_message</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../messages/langchain_core.messages.base.BaseMessage.html#langchain_core.messages.base.BaseMessage" title="langchain_core.messages.base.BaseMessage"><span class="pre">BaseMessage</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/langchain_community/chat_message_histories/singlestoredb.html#SingleStoreDBChatMessageHistory.add_message"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain_community.chat_message_histories.singlestoredb.SingleStoreDBChatMessageHistory.add_message" title="Permalink to this definition">¶</a></dt>
+<dd><p>Append the message to the record in SingleStoreDB</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.chat_message_histories.singlestoredb.SingleStoreDBChatMessageHistory.add_user_message">
+<span class="sig-name descname"><span class="pre">add_user_message</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../messages/langchain_core.messages.human.HumanMessage.html#langchain_core.messages.human.HumanMessage" title="langchain_core.messages.human.HumanMessage"><span class="pre">HumanMessage</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#langchain_community.chat_message_histories.singlestoredb.SingleStoreDBChatMessageHistory.add_user_message" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convenience method for adding a human message string to the store.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>message</strong> – The human message to add</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.chat_message_histories.singlestoredb.SingleStoreDBChatMessageHistory.clear">
+<span class="sig-name descname"><span class="pre">clear</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/langchain_community/chat_message_histories/singlestoredb.html#SingleStoreDBChatMessageHistory.clear"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain_community.chat_message_histories.singlestoredb.SingleStoreDBChatMessageHistory.clear" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clear session memory from SingleStoreDB</p>
+</dd></dl>
+
+</dd></dl>
+
+<ul class="simple">
+</ul>
+</section>
+
+
+      </div>
+    <div class="container">
+      <footer class="sk-content-footer">
+            &copy; 2023, LangChain, Inc..
+          Last updated on Jan 11, 2024.
+          <a href="../_sources/chat_message_histories/langchain_community.chat_message_histories.singlestoredb.SingleStoreDBChatMessageHistory.rst.txt" rel="nofollow">Show this page source</a>
+      </footer>
+    </div>
+  </div>
+</div>
+<script src="../_static/js/vendor/bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    /* Add a [>>>] button on the top-right corner of code samples to hide
+     * the >>> and ... prompts and the output and thus make the code
+     * copyable. */
+    var div = $('.highlight-python .highlight,' +
+                '.highlight-python3 .highlight,' +
+                '.highlight-pycon .highlight,' +
+		'.highlight-default .highlight')
+    var pre = div.find('pre');
+
+    // get the styles from the current theme
+    pre.parent().parent().css('position', 'relative');
+    var hide_text = 'Hide prompts and outputs';
+    var show_text = 'Show prompts and outputs';
+
+    // create and add the button to all the code blocks that contain >>>
+    div.each(function(index) {
+        var jthis = $(this);
+        if (jthis.find('.gp').length > 0) {
+            var button = $('<span class="copybutton">&gt;&gt;&gt;</span>');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+            jthis.prepend(button);
+        }
+        // tracebacks (.gt) contain bare text elements that need to be
+        // wrapped in a span to work with .nextUntil() (see later)
+        jthis.find('pre:has(.gt)').contents().filter(function() {
+            return ((this.nodeType == 3) && (this.data.trim().length > 0));
+        }).wrap('<span>');
+    });
+
+    // define the behavior of the button when it's clicked
+    $('.copybutton').click(function(e){
+        e.preventDefault();
+        var button = $(this);
+        if (button.data('hidden') === 'false') {
+            // hide the code output
+            button.parent().find('.go, .gp, .gt').hide();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'hidden');
+            button.css('text-decoration', 'line-through');
+            button.attr('title', show_text);
+            button.data('hidden', 'true');
+        } else {
+            // show the code output
+            button.parent().find('.go, .gp, .gt').show();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'visible');
+            button.css('text-decoration', 'none');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+        }
+    });
+
+	/*** Add permalink buttons next to glossary terms ***/
+	$('dl.glossary > dt[id]').append(function() {
+		return ('<a class="headerlink" href="#' +
+			    this.getAttribute('id') +
+			    '" title="Permalink to this term">¶</a>');
+	});
+});
+
+</script>
+    
+</body>
+</html>

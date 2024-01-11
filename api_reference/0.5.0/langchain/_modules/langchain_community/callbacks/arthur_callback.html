@@ -1,0 +1,497 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>langchain_community.callbacks.arthur_callback &mdash; 🦜🔗 LangChain 0.0.354</title>
+  
+  <link rel="canonical" href="https://api.python.langchain.com/en/latest/_modules/langchain_community/callbacks/arthur_callback.html" />
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/vendor/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/autodoc_pydantic.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/panels-bootstrap.5fd3999ee7762ccc51105388f4a9d115.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+<script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+<script src="../../../_static/jquery.js"></script> 
+</head>
+<body>
+
+
+<nav id="navbar" class="sk-docs-navbar navbar navbar-expand-md navbar-light bg-light py-0">
+  <div class="container-fluid sk-docs-container px-0">
+    <button
+      id="sk-navbar-toggler"
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="sk-navbar-collapse collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../langchain_api_reference.html">LangChain</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../core_api_reference.html">Core</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../community_api_reference.html">Community</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../experimental_api_reference.html">Experimental</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../../../nvidia_trt_api_reference.html">nvidia-trt</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../../../google_genai_api_reference.html">google-genai</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../../../anthropic_api_reference.html">anthropic</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../../../together_api_reference.html">together</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../../../nvidia_ai_endpoints_api_reference.html">nvidia-ai-endpoints</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../../../mistralai_api_reference.html">mistralai</a>
+        </li>
+        <li class="nav-item dropdown nav-more-item-dropdown">
+          <a class="sk-nav-link nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Partner libs</a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+              <a class="sk-nav-dropdown-item dropdown-item" href="../../../nvidia_trt_api_reference.html">nvidia-trt</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../../../google_genai_api_reference.html">google-genai</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../../../anthropic_api_reference.html">anthropic</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../../../together_api_reference.html">together</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../../../nvidia_ai_endpoints_api_reference.html">nvidia-ai-endpoints</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../../../mistralai_api_reference.html">mistralai</a>
+          </div>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" target="_blank" rel="noopener noreferrer" href="https://python.langchain.com/">Docs</a>
+        </li>
+      </ul>
+      <div id="searchbox" role="search">
+          <div class="searchformwrapper">
+          <form class="search" action="../../../search.html" method="get">
+            <input class="sk-search-text-input" type="text" name="q" aria-labelledby="searchlabel" />
+            <input class="sk-search-text-btn" type="submit" value="Go" />
+          </form>
+          </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="d-flex" id="sk-doc-wrapper">
+    <input type="checkbox" name="sk-toggle-checkbox" id="sk-toggle-checkbox">
+    <label id="sk-sidemenu-toggle" class="sk-btn-toggle-toc btn sk-btn-primary" for="sk-toggle-checkbox">Toggle Menu</label>
+    <div id="sk-sidebar-wrapper" class="border-right">
+      <div class="sk-sidebar-toc-wrapper">
+        <div class="btn-group w-100 mb-2" role="group" aria-label="rellinks">
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Prev</a><a href="../../index.html" role="button" class="btn sk-btn-rellink py-1" sk-rellink-tooltip="Module code">Up</a>
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Next</a>
+        </div>
+            <div class="sk-sidebar-toc">
+              
+            </div>
+      </div>
+    </div>
+    <div id="sk-page-content-wrapper">
+      <div class="sk-page-content container-fluid body px-md-3" role="main">
+        
+  <h1>Source code for langchain_community.callbacks.arthur_callback</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;ArthurAI&#39;s Callback Handler.&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">uuid</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">time</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">DefaultDict</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">langchain_core.agents</span> <span class="kn">import</span> <span class="n">AgentAction</span><span class="p">,</span> <span class="n">AgentFinish</span>
+<span class="kn">from</span> <span class="nn">langchain_core.callbacks</span> <span class="kn">import</span> <span class="n">BaseCallbackHandler</span>
+<span class="kn">from</span> <span class="nn">langchain_core.outputs</span> <span class="kn">import</span> <span class="n">LLMResult</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">arthurai</span>
+    <span class="kn">from</span> <span class="nn">arthurai.core.models</span> <span class="kn">import</span> <span class="n">ArthurModel</span>
+
+<span class="n">PROMPT_TOKENS</span> <span class="o">=</span> <span class="s2">&quot;prompt_tokens&quot;</span>
+<span class="n">COMPLETION_TOKENS</span> <span class="o">=</span> <span class="s2">&quot;completion_tokens&quot;</span>
+<span class="n">TOKEN_USAGE</span> <span class="o">=</span> <span class="s2">&quot;token_usage&quot;</span>
+<span class="n">FINISH_REASON</span> <span class="o">=</span> <span class="s2">&quot;finish_reason&quot;</span>
+<span class="n">DURATION</span> <span class="o">=</span> <span class="s2">&quot;duration&quot;</span>
+
+
+<span class="k">def</span> <span class="nf">_lazy_load_arthur</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">arthurai</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Lazy load Arthur.&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">import</span> <span class="nn">arthurai</span>
+    <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+            <span class="s2">&quot;To use the ArthurCallbackHandler you need the&quot;</span>
+            <span class="s2">&quot; `arthurai` package. Please install it with&quot;</span>
+            <span class="s2">&quot; `pip install arthurai`.&quot;</span><span class="p">,</span>
+            <span class="n">e</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">arthurai</span>
+
+
+<div class="viewcode-block" id="ArthurCallbackHandler"><a class="viewcode-back" href="../../../callbacks/langchain_community.callbacks.arthur_callback.ArthurCallbackHandler.html#langchain_community.callbacks.arthur_callback.ArthurCallbackHandler">[docs]</a><span class="k">class</span> <span class="nc">ArthurCallbackHandler</span><span class="p">(</span><span class="n">BaseCallbackHandler</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Callback Handler that logs to Arthur platform.</span>
+
+<span class="sd">    Arthur helps enterprise teams optimize model operations</span>
+<span class="sd">    and performance at scale. The Arthur API tracks model</span>
+<span class="sd">    performance, explainability, and fairness across tabular,</span>
+<span class="sd">    NLP, and CV models. Our API is model- and platform-agnostic,</span>
+<span class="sd">    and continuously scales with complex and dynamic enterprise needs.</span>
+<span class="sd">    To learn more about Arthur, visit our website at</span>
+<span class="sd">    https://www.arthur.ai/ or read the Arthur docs at</span>
+<span class="sd">    https://docs.arthur.ai/</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ArthurCallbackHandler.__init__"><a class="viewcode-back" href="../../../callbacks/langchain_community.callbacks.arthur_callback.ArthurCallbackHandler.html#langchain_community.callbacks.arthur_callback.ArthurCallbackHandler.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">arthur_model</span><span class="p">:</span> <span class="n">ArthurModel</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize callback handler.&quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="n">arthurai</span> <span class="o">=</span> <span class="n">_lazy_load_arthur</span><span class="p">()</span>
+        <span class="n">Stage</span> <span class="o">=</span> <span class="n">arthurai</span><span class="o">.</span><span class="n">common</span><span class="o">.</span><span class="n">constants</span><span class="o">.</span><span class="n">Stage</span>
+        <span class="n">ValueType</span> <span class="o">=</span> <span class="n">arthurai</span><span class="o">.</span><span class="n">common</span><span class="o">.</span><span class="n">constants</span><span class="o">.</span><span class="n">ValueType</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">arthur_model</span> <span class="o">=</span> <span class="n">arthur_model</span>
+        <span class="c1"># save the attributes of this model to be used when preparing</span>
+        <span class="c1"># inferences to log to Arthur in on_llm_end()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">attr_names</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">a</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">arthur_model</span><span class="o">.</span><span class="n">get_attributes</span><span class="p">()])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">input_attr</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">x</span>
+            <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">arthur_model</span><span class="o">.</span><span class="n">get_attributes</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">stage</span> <span class="o">==</span> <span class="n">Stage</span><span class="o">.</span><span class="n">ModelPipelineInput</span>
+            <span class="ow">and</span> <span class="n">x</span><span class="o">.</span><span class="n">value_type</span> <span class="o">==</span> <span class="n">ValueType</span><span class="o">.</span><span class="n">Unstructured_Text</span>
+        <span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_attr</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">x</span>
+            <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">arthur_model</span><span class="o">.</span><span class="n">get_attributes</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">stage</span> <span class="o">==</span> <span class="n">Stage</span><span class="o">.</span><span class="n">PredictedValue</span>
+            <span class="ow">and</span> <span class="n">x</span><span class="o">.</span><span class="n">value_type</span> <span class="o">==</span> <span class="n">ValueType</span><span class="o">.</span><span class="n">Unstructured_Text</span>
+        <span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">token_likelihood_attr</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="nb">len</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="n">x</span>
+                    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">arthur_model</span><span class="o">.</span><span class="n">get_attributes</span><span class="p">()</span>
+                    <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">value_type</span> <span class="o">==</span> <span class="n">ValueType</span><span class="o">.</span><span class="n">TokenLikelihoods</span>
+                <span class="p">]</span>
+            <span class="p">)</span>
+            <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">token_likelihood_attr</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">x</span>
+                <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">arthur_model</span><span class="o">.</span><span class="n">get_attributes</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">value_type</span> <span class="o">==</span> <span class="n">ValueType</span><span class="o">.</span><span class="n">TokenLikelihoods</span>
+            <span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">run_map</span><span class="p">:</span> <span class="n">DefaultDict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ArthurCallbackHandler.from_credentials"><a class="viewcode-back" href="../../../callbacks/langchain_community.callbacks.arthur_callback.ArthurCallbackHandler.html#langchain_community.callbacks.arthur_callback.ArthurCallbackHandler.from_credentials">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_credentials</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">model_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">arthur_url</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;https://app.arthur.ai&quot;</span><span class="p">,</span>
+        <span class="n">arthur_login</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">arthur_password</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ArthurCallbackHandler</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize callback handler from Arthur credentials.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            model_id (str): The ID of the arthur model to log to.</span>
+<span class="sd">            arthur_url (str, optional): The URL of the Arthur instance to log to.</span>
+<span class="sd">                Defaults to &quot;https://app.arthur.ai&quot;.</span>
+<span class="sd">            arthur_login (str, optional): The login to use to connect to Arthur.</span>
+<span class="sd">                Defaults to None.</span>
+<span class="sd">            arthur_password (str, optional): The password to use to connect to</span>
+<span class="sd">                Arthur. Defaults to None.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ArthurCallbackHandler: The initialized callback handler.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">arthurai</span> <span class="o">=</span> <span class="n">_lazy_load_arthur</span><span class="p">()</span>
+        <span class="n">ArthurAI</span> <span class="o">=</span> <span class="n">arthurai</span><span class="o">.</span><span class="n">ArthurAI</span>
+        <span class="n">ResponseClientError</span> <span class="o">=</span> <span class="n">arthurai</span><span class="o">.</span><span class="n">common</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">ResponseClientError</span>
+
+        <span class="c1"># connect to Arthur</span>
+        <span class="k">if</span> <span class="n">arthur_login</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">arthur_api_key</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;ARTHUR_API_KEY&quot;</span><span class="p">]</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;No Arthur authentication provided. Either give&quot;</span>
+                    <span class="s2">&quot; a login to the ArthurCallbackHandler&quot;</span>
+                    <span class="s2">&quot; or set an ARTHUR_API_KEY as an environment variable.&quot;</span>
+                <span class="p">)</span>
+            <span class="n">arthur</span> <span class="o">=</span> <span class="n">ArthurAI</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="n">arthur_url</span><span class="p">,</span> <span class="n">access_key</span><span class="o">=</span><span class="n">arthur_api_key</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">arthur_password</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">arthur</span> <span class="o">=</span> <span class="n">ArthurAI</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="n">arthur_url</span><span class="p">,</span> <span class="n">login</span><span class="o">=</span><span class="n">arthur_login</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">arthur</span> <span class="o">=</span> <span class="n">ArthurAI</span><span class="p">(</span>
+                    <span class="n">url</span><span class="o">=</span><span class="n">arthur_url</span><span class="p">,</span> <span class="n">login</span><span class="o">=</span><span class="n">arthur_login</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="n">arthur_password</span>
+                <span class="p">)</span>
+        <span class="c1"># get model from Arthur by the provided model ID</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">arthur_model</span> <span class="o">=</span> <span class="n">arthur</span><span class="o">.</span><span class="n">get_model</span><span class="p">(</span><span class="n">model_id</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">ResponseClientError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Was unable to retrieve model with id </span><span class="si">{</span><span class="n">model_id</span><span class="si">}</span><span class="s2"> from Arthur.&quot;</span>
+                <span class="s2">&quot; Make sure the ID corresponds to a model that is currently&quot;</span>
+                <span class="s2">&quot; registered with your Arthur account.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">arthur_model</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ArthurCallbackHandler.on_llm_start"><a class="viewcode-back" href="../../../callbacks/langchain_community.callbacks.arthur_callback.ArthurCallbackHandler.html#langchain_community.callbacks.arthur_callback.ArthurCallbackHandler.on_llm_start">[docs]</a>    <span class="k">def</span> <span class="nf">on_llm_start</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">serialized</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">prompts</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;On LLM start, save the input prompts&quot;&quot;&quot;</span>
+        <span class="n">run_id</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;run_id&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">run_map</span><span class="p">[</span><span class="n">run_id</span><span class="p">][</span><span class="s2">&quot;input_texts&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">prompts</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">run_map</span><span class="p">[</span><span class="n">run_id</span><span class="p">][</span><span class="s2">&quot;start_time&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="ArthurCallbackHandler.on_llm_end"><a class="viewcode-back" href="../../../callbacks/langchain_community.callbacks.arthur_callback.ArthurCallbackHandler.html#langchain_community.callbacks.arthur_callback.ArthurCallbackHandler.on_llm_end">[docs]</a>    <span class="k">def</span> <span class="nf">on_llm_end</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">:</span> <span class="n">LLMResult</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;On LLM end, send data to Arthur.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">import</span> <span class="nn">pytz</span>  <span class="c1"># type: ignore[import]</span>
+        <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+                <span class="s2">&quot;Could not import pytz. Please install it with &#39;pip install pytz&#39;.&quot;</span>
+            <span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>
+
+        <span class="n">run_id</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;run_id&quot;</span><span class="p">]</span>
+
+        <span class="c1"># get the run params from this run ID,</span>
+        <span class="c1"># or raise an error if this run ID has no corresponding metadata in self.run_map</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">run_map_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_map</span><span class="p">[</span><span class="n">run_id</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span>
+                <span class="s2">&quot;This function has been called with a run_id&quot;</span>
+                <span class="s2">&quot; that was never registered in on_llm_start().&quot;</span>
+                <span class="s2">&quot; Restart and try running the LLM again&quot;</span>
+            <span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>
+
+        <span class="c1"># mark the duration time between on_llm_start() and on_llm_end()</span>
+        <span class="n">time_from_start_to_end</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">run_map_data</span><span class="p">[</span><span class="s2">&quot;start_time&quot;</span><span class="p">]</span>
+
+        <span class="c1"># create inferences to log to Arthur</span>
+        <span class="n">inferences</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">generations</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">generations</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">generation</span> <span class="ow">in</span> <span class="n">generations</span><span class="p">:</span>
+                <span class="n">inference</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s2">&quot;partner_inference_id&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()),</span>
+                    <span class="s2">&quot;inference_timestamp&quot;</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">tz</span><span class="o">=</span><span class="n">pytz</span><span class="o">.</span><span class="n">UTC</span><span class="p">),</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">input_attr</span><span class="p">:</span> <span class="n">run_map_data</span><span class="p">[</span><span class="s2">&quot;input_texts&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">],</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">output_attr</span><span class="p">:</span> <span class="n">generation</span><span class="o">.</span><span class="n">text</span><span class="p">,</span>
+                <span class="p">}</span>
+
+                <span class="k">if</span> <span class="n">generation</span><span class="o">.</span><span class="n">generation_info</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="c1"># add finish reason to the inference</span>
+                    <span class="c1"># if generation info contains a finish reason and</span>
+                    <span class="c1"># if the ArthurModel was registered to monitor finish_reason</span>
+                    <span class="k">if</span> <span class="p">(</span>
+                        <span class="n">FINISH_REASON</span> <span class="ow">in</span> <span class="n">generation</span><span class="o">.</span><span class="n">generation_info</span>
+                        <span class="ow">and</span> <span class="n">FINISH_REASON</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">attr_names</span>
+                    <span class="p">):</span>
+                        <span class="n">inference</span><span class="p">[</span><span class="n">FINISH_REASON</span><span class="p">]</span> <span class="o">=</span> <span class="n">generation</span><span class="o">.</span><span class="n">generation_info</span><span class="p">[</span>
+                            <span class="n">FINISH_REASON</span>
+                        <span class="p">]</span>
+
+                    <span class="c1"># add token likelihoods data to the inference if the ArthurModel</span>
+                    <span class="c1"># was registered to monitor token likelihoods</span>
+                    <span class="n">logprobs_data</span> <span class="o">=</span> <span class="n">generation</span><span class="o">.</span><span class="n">generation_info</span><span class="p">[</span><span class="s2">&quot;logprobs&quot;</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="p">(</span>
+                        <span class="n">logprobs_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                        <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">token_likelihood_attr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                    <span class="p">):</span>
+                        <span class="n">logprobs</span> <span class="o">=</span> <span class="n">logprobs_data</span><span class="p">[</span><span class="s2">&quot;top_logprobs&quot;</span><span class="p">]</span>
+                        <span class="n">likelihoods</span> <span class="o">=</span> <span class="p">[</span>
+                            <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">logprobs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+                            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">logprobs</span><span class="p">))</span>
+                        <span class="p">]</span>
+                        <span class="n">inference</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">token_likelihood_attr</span><span class="p">]</span> <span class="o">=</span> <span class="n">likelihoods</span>
+
+                <span class="c1"># add token usage counts to the inference if the</span>
+                <span class="c1"># ArthurModel was registered to monitor token usage</span>
+                <span class="k">if</span> <span class="p">(</span>
+                    <span class="nb">isinstance</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">llm_output</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span>
+                    <span class="ow">and</span> <span class="n">TOKEN_USAGE</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">llm_output</span>
+                <span class="p">):</span>
+                    <span class="n">token_usage</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">llm_output</span><span class="p">[</span><span class="n">TOKEN_USAGE</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="p">(</span>
+                        <span class="n">PROMPT_TOKENS</span> <span class="ow">in</span> <span class="n">token_usage</span>
+                        <span class="ow">and</span> <span class="n">PROMPT_TOKENS</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">attr_names</span>
+                    <span class="p">):</span>
+                        <span class="n">inference</span><span class="p">[</span><span class="n">PROMPT_TOKENS</span><span class="p">]</span> <span class="o">=</span> <span class="n">token_usage</span><span class="p">[</span><span class="n">PROMPT_TOKENS</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="p">(</span>
+                        <span class="n">COMPLETION_TOKENS</span> <span class="ow">in</span> <span class="n">token_usage</span>
+                        <span class="ow">and</span> <span class="n">COMPLETION_TOKENS</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">attr_names</span>
+                    <span class="p">):</span>
+                        <span class="n">inference</span><span class="p">[</span><span class="n">COMPLETION_TOKENS</span><span class="p">]</span> <span class="o">=</span> <span class="n">token_usage</span><span class="p">[</span><span class="n">COMPLETION_TOKENS</span><span class="p">]</span>
+
+                <span class="c1"># add inference duration to the inference if the ArthurModel</span>
+                <span class="c1"># was registered to monitor inference duration</span>
+                <span class="k">if</span> <span class="n">DURATION</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">attr_names</span><span class="p">:</span>
+                    <span class="n">inference</span><span class="p">[</span><span class="n">DURATION</span><span class="p">]</span> <span class="o">=</span> <span class="n">time_from_start_to_end</span>
+
+                <span class="n">inferences</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">inference</span><span class="p">)</span>
+
+        <span class="c1"># send inferences to arthur</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">arthur_model</span><span class="o">.</span><span class="n">send_inferences</span><span class="p">(</span><span class="n">inferences</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ArthurCallbackHandler.on_chain_start"><a class="viewcode-back" href="../../../callbacks/langchain_community.callbacks.arthur_callback.ArthurCallbackHandler.html#langchain_community.callbacks.arthur_callback.ArthurCallbackHandler.on_chain_start">[docs]</a>    <span class="k">def</span> <span class="nf">on_chain_start</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">serialized</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;On chain start, do nothing.&quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="ArthurCallbackHandler.on_chain_end"><a class="viewcode-back" href="../../../callbacks/langchain_community.callbacks.arthur_callback.ArthurCallbackHandler.html#langchain_community.callbacks.arthur_callback.ArthurCallbackHandler.on_chain_end">[docs]</a>    <span class="k">def</span> <span class="nf">on_chain_end</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">outputs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;On chain end, do nothing.&quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="ArthurCallbackHandler.on_llm_error"><a class="viewcode-back" href="../../../callbacks/langchain_community.callbacks.arthur_callback.ArthurCallbackHandler.html#langchain_community.callbacks.arthur_callback.ArthurCallbackHandler.on_llm_error">[docs]</a>    <span class="k">def</span> <span class="nf">on_llm_error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">error</span><span class="p">:</span> <span class="ne">BaseException</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Do nothing when LLM outputs an error.&quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="ArthurCallbackHandler.on_llm_new_token"><a class="viewcode-back" href="../../../callbacks/langchain_community.callbacks.arthur_callback.ArthurCallbackHandler.html#langchain_community.callbacks.arthur_callback.ArthurCallbackHandler.on_llm_new_token">[docs]</a>    <span class="k">def</span> <span class="nf">on_llm_new_token</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">token</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;On new token, pass.&quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="ArthurCallbackHandler.on_chain_error"><a class="viewcode-back" href="../../../callbacks/langchain_community.callbacks.arthur_callback.ArthurCallbackHandler.html#langchain_community.callbacks.arthur_callback.ArthurCallbackHandler.on_chain_error">[docs]</a>    <span class="k">def</span> <span class="nf">on_chain_error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">error</span><span class="p">:</span> <span class="ne">BaseException</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Do nothing when LLM chain outputs an error.&quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="ArthurCallbackHandler.on_tool_start"><a class="viewcode-back" href="../../../callbacks/langchain_community.callbacks.arthur_callback.ArthurCallbackHandler.html#langchain_community.callbacks.arthur_callback.ArthurCallbackHandler.on_tool_start">[docs]</a>    <span class="k">def</span> <span class="nf">on_tool_start</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">serialized</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+        <span class="n">input_str</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Do nothing when tool starts.&quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="ArthurCallbackHandler.on_agent_action"><a class="viewcode-back" href="../../../callbacks/langchain_community.callbacks.arthur_callback.ArthurCallbackHandler.html#langchain_community.callbacks.arthur_callback.ArthurCallbackHandler.on_agent_action">[docs]</a>    <span class="k">def</span> <span class="nf">on_agent_action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">AgentAction</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Do nothing when agent takes a specific action.&quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="ArthurCallbackHandler.on_tool_end"><a class="viewcode-back" href="../../../callbacks/langchain_community.callbacks.arthur_callback.ArthurCallbackHandler.html#langchain_community.callbacks.arthur_callback.ArthurCallbackHandler.on_tool_end">[docs]</a>    <span class="k">def</span> <span class="nf">on_tool_end</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">output</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">observation_prefix</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">llm_prefix</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Do nothing when tool ends.&quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="ArthurCallbackHandler.on_tool_error"><a class="viewcode-back" href="../../../callbacks/langchain_community.callbacks.arthur_callback.ArthurCallbackHandler.html#langchain_community.callbacks.arthur_callback.ArthurCallbackHandler.on_tool_error">[docs]</a>    <span class="k">def</span> <span class="nf">on_tool_error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">error</span><span class="p">:</span> <span class="ne">BaseException</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Do nothing when tool outputs an error.&quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="ArthurCallbackHandler.on_text"><a class="viewcode-back" href="../../../callbacks/langchain_community.callbacks.arthur_callback.ArthurCallbackHandler.html#langchain_community.callbacks.arthur_callback.ArthurCallbackHandler.on_text">[docs]</a>    <span class="k">def</span> <span class="nf">on_text</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Do nothing&quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="ArthurCallbackHandler.on_agent_finish"><a class="viewcode-back" href="../../../callbacks/langchain_community.callbacks.arthur_callback.ArthurCallbackHandler.html#langchain_community.callbacks.arthur_callback.ArthurCallbackHandler.on_agent_finish">[docs]</a>    <span class="k">def</span> <span class="nf">on_agent_finish</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">finish</span><span class="p">:</span> <span class="n">AgentFinish</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Do nothing&quot;&quot;&quot;</span></div></div>
+</pre></div>
+
+      </div>
+    <div class="container">
+      <footer class="sk-content-footer">
+            &copy; 2023, LangChain, Inc..
+          Last updated on Jan 11, 2024.
+      </footer>
+    </div>
+  </div>
+</div>
+<script src="../../../_static/js/vendor/bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    /* Add a [>>>] button on the top-right corner of code samples to hide
+     * the >>> and ... prompts and the output and thus make the code
+     * copyable. */
+    var div = $('.highlight-python .highlight,' +
+                '.highlight-python3 .highlight,' +
+                '.highlight-pycon .highlight,' +
+		'.highlight-default .highlight')
+    var pre = div.find('pre');
+
+    // get the styles from the current theme
+    pre.parent().parent().css('position', 'relative');
+    var hide_text = 'Hide prompts and outputs';
+    var show_text = 'Show prompts and outputs';
+
+    // create and add the button to all the code blocks that contain >>>
+    div.each(function(index) {
+        var jthis = $(this);
+        if (jthis.find('.gp').length > 0) {
+            var button = $('<span class="copybutton">&gt;&gt;&gt;</span>');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+            jthis.prepend(button);
+        }
+        // tracebacks (.gt) contain bare text elements that need to be
+        // wrapped in a span to work with .nextUntil() (see later)
+        jthis.find('pre:has(.gt)').contents().filter(function() {
+            return ((this.nodeType == 3) && (this.data.trim().length > 0));
+        }).wrap('<span>');
+    });
+
+    // define the behavior of the button when it's clicked
+    $('.copybutton').click(function(e){
+        e.preventDefault();
+        var button = $(this);
+        if (button.data('hidden') === 'false') {
+            // hide the code output
+            button.parent().find('.go, .gp, .gt').hide();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'hidden');
+            button.css('text-decoration', 'line-through');
+            button.attr('title', show_text);
+            button.data('hidden', 'true');
+        } else {
+            // show the code output
+            button.parent().find('.go, .gp, .gt').show();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'visible');
+            button.css('text-decoration', 'none');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+        }
+    });
+
+	/*** Add permalink buttons next to glossary terms ***/
+	$('dl.glossary > dt[id]').append(function() {
+		return ('<a class="headerlink" href="#' +
+			    this.getAttribute('id') +
+			    '" title="Permalink to this term">¶</a>');
+	});
+});
+
+</script>
+    
+</body>
+</html>

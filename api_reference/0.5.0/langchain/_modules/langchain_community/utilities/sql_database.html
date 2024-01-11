@@ -1,0 +1,689 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>langchain_community.utilities.sql_database &mdash; 🦜🔗 LangChain 0.0.354</title>
+  
+  <link rel="canonical" href="https://api.python.langchain.com/en/latest/_modules/langchain_community/utilities/sql_database.html" />
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/vendor/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/autodoc_pydantic.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/panels-bootstrap.5fd3999ee7762ccc51105388f4a9d115.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+<script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+<script src="../../../_static/jquery.js"></script> 
+</head>
+<body>
+
+
+<nav id="navbar" class="sk-docs-navbar navbar navbar-expand-md navbar-light bg-light py-0">
+  <div class="container-fluid sk-docs-container px-0">
+    <button
+      id="sk-navbar-toggler"
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="sk-navbar-collapse collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../langchain_api_reference.html">LangChain</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../core_api_reference.html">Core</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../community_api_reference.html">Community</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../experimental_api_reference.html">Experimental</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../../../nvidia_trt_api_reference.html">nvidia-trt</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../../../google_genai_api_reference.html">google-genai</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../../../anthropic_api_reference.html">anthropic</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../../../together_api_reference.html">together</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../../../nvidia_ai_endpoints_api_reference.html">nvidia-ai-endpoints</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../../../mistralai_api_reference.html">mistralai</a>
+        </li>
+        <li class="nav-item dropdown nav-more-item-dropdown">
+          <a class="sk-nav-link nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Partner libs</a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+              <a class="sk-nav-dropdown-item dropdown-item" href="../../../nvidia_trt_api_reference.html">nvidia-trt</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../../../google_genai_api_reference.html">google-genai</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../../../anthropic_api_reference.html">anthropic</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../../../together_api_reference.html">together</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../../../nvidia_ai_endpoints_api_reference.html">nvidia-ai-endpoints</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../../../mistralai_api_reference.html">mistralai</a>
+          </div>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" target="_blank" rel="noopener noreferrer" href="https://python.langchain.com/">Docs</a>
+        </li>
+      </ul>
+      <div id="searchbox" role="search">
+          <div class="searchformwrapper">
+          <form class="search" action="../../../search.html" method="get">
+            <input class="sk-search-text-input" type="text" name="q" aria-labelledby="searchlabel" />
+            <input class="sk-search-text-btn" type="submit" value="Go" />
+          </form>
+          </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="d-flex" id="sk-doc-wrapper">
+    <input type="checkbox" name="sk-toggle-checkbox" id="sk-toggle-checkbox">
+    <label id="sk-sidemenu-toggle" class="sk-btn-toggle-toc btn sk-btn-primary" for="sk-toggle-checkbox">Toggle Menu</label>
+    <div id="sk-sidebar-wrapper" class="border-right">
+      <div class="sk-sidebar-toc-wrapper">
+        <div class="btn-group w-100 mb-2" role="group" aria-label="rellinks">
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Prev</a><a href="../../index.html" role="button" class="btn sk-btn-rellink py-1" sk-rellink-tooltip="Module code">Up</a>
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Next</a>
+        </div>
+            <div class="sk-sidebar-toc">
+              
+            </div>
+      </div>
+    </div>
+    <div id="sk-page-content-wrapper">
+      <div class="sk-page-content container-fluid body px-md-3" role="main">
+        
+  <h1>Source code for langchain_community.utilities.sql_database</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;SQLAlchemy wrapper around a database.&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Sequence</span>
+
+<span class="kn">import</span> <span class="nn">sqlalchemy</span>
+<span class="kn">from</span> <span class="nn">langchain_core.utils</span> <span class="kn">import</span> <span class="n">get_from_env</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">MetaData</span><span class="p">,</span> <span class="n">Table</span><span class="p">,</span> <span class="n">create_engine</span><span class="p">,</span> <span class="n">inspect</span><span class="p">,</span> <span class="n">select</span><span class="p">,</span> <span class="n">text</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy.engine</span> <span class="kn">import</span> <span class="n">Engine</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy.exc</span> <span class="kn">import</span> <span class="n">ProgrammingError</span><span class="p">,</span> <span class="n">SQLAlchemyError</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy.schema</span> <span class="kn">import</span> <span class="n">CreateTable</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy.types</span> <span class="kn">import</span> <span class="n">NullType</span>
+
+
+<span class="k">def</span> <span class="nf">_format_index</span><span class="p">(</span><span class="n">index</span><span class="p">:</span> <span class="n">sqlalchemy</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">interfaces</span><span class="o">.</span><span class="n">ReflectedIndex</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="sa">f</span><span class="s1">&#39;Name: </span><span class="si">{</span><span class="n">index</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">, Unique: </span><span class="si">{</span><span class="n">index</span><span class="p">[</span><span class="s2">&quot;unique&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">,&#39;</span>
+        <span class="sa">f</span><span class="s1">&#39; Columns: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">index</span><span class="p">[</span><span class="s2">&quot;column_names&quot;</span><span class="p">])</span><span class="si">}</span><span class="s1">&#39;</span>
+    <span class="p">)</span>
+
+
+<div class="viewcode-block" id="truncate_word"><a class="viewcode-back" href="../../../utilities/langchain_community.utilities.sql_database.truncate_word.html#langchain_community.utilities.sql_database.truncate_word">[docs]</a><span class="k">def</span> <span class="nf">truncate_word</span><span class="p">(</span><span class="n">content</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">length</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">suffix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;...&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Truncate a string to a certain number of words, based on the max string</span>
+<span class="sd">    length.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">or</span> <span class="n">length</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">content</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">content</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">length</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">content</span>
+
+    <span class="k">return</span> <span class="n">content</span><span class="p">[:</span> <span class="n">length</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">suffix</span><span class="p">)]</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">suffix</span></div>
+
+
+<div class="viewcode-block" id="SQLDatabase"><a class="viewcode-back" href="../../../utilities/langchain_community.utilities.sql_database.SQLDatabase.html#langchain_community.utilities.sql_database.SQLDatabase">[docs]</a><span class="k">class</span> <span class="nc">SQLDatabase</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;SQLAlchemy wrapper around a database.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="SQLDatabase.__init__"><a class="viewcode-back" href="../../../utilities/langchain_community.utilities.sql_database.SQLDatabase.html#langchain_community.utilities.sql_database.SQLDatabase.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">engine</span><span class="p">:</span> <span class="n">Engine</span><span class="p">,</span>
+        <span class="n">schema</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">metadata</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">MetaData</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">ignore_tables</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">include_tables</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">sample_rows_in_table_info</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+        <span class="n">indexes_in_table_info</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">custom_table_info</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">view_support</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">max_string_length</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">300</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create engine from database URI.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_engine</span> <span class="o">=</span> <span class="n">engine</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_schema</span> <span class="o">=</span> <span class="n">schema</span>
+        <span class="k">if</span> <span class="n">include_tables</span> <span class="ow">and</span> <span class="n">ignore_tables</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Cannot specify both include_tables and ignore_tables&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_inspector</span> <span class="o">=</span> <span class="n">inspect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_engine</span><span class="p">)</span>
+
+        <span class="c1"># including view support by adding the views as well as tables to the all</span>
+        <span class="c1"># tables list if view_support is True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_all_tables</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_inspector</span><span class="o">.</span><span class="n">get_table_names</span><span class="p">(</span><span class="n">schema</span><span class="o">=</span><span class="n">schema</span><span class="p">)</span>
+            <span class="o">+</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_inspector</span><span class="o">.</span><span class="n">get_view_names</span><span class="p">(</span><span class="n">schema</span><span class="o">=</span><span class="n">schema</span><span class="p">)</span> <span class="k">if</span> <span class="n">view_support</span> <span class="k">else</span> <span class="p">[])</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_include_tables</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">include_tables</span><span class="p">)</span> <span class="k">if</span> <span class="n">include_tables</span> <span class="k">else</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_include_tables</span><span class="p">:</span>
+            <span class="n">missing_tables</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_include_tables</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_all_tables</span>
+            <span class="k">if</span> <span class="n">missing_tables</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;include_tables </span><span class="si">{</span><span class="n">missing_tables</span><span class="si">}</span><span class="s2"> not found in database&quot;</span>
+                <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ignore_tables</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">ignore_tables</span><span class="p">)</span> <span class="k">if</span> <span class="n">ignore_tables</span> <span class="k">else</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ignore_tables</span><span class="p">:</span>
+            <span class="n">missing_tables</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ignore_tables</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_all_tables</span>
+            <span class="k">if</span> <span class="n">missing_tables</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;ignore_tables </span><span class="si">{</span><span class="n">missing_tables</span><span class="si">}</span><span class="s2"> not found in database&quot;</span>
+                <span class="p">)</span>
+        <span class="n">usable_tables</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_usable_table_names</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_usable_tables</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">usable_tables</span><span class="p">)</span> <span class="k">if</span> <span class="n">usable_tables</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">_all_tables</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sample_rows_in_table_info</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;sample_rows_in_table_info must be an integer&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sample_rows_in_table_info</span> <span class="o">=</span> <span class="n">sample_rows_in_table_info</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_indexes_in_table_info</span> <span class="o">=</span> <span class="n">indexes_in_table_info</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_custom_table_info</span> <span class="o">=</span> <span class="n">custom_table_info</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_custom_table_info</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_custom_table_info</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                    <span class="s2">&quot;table_info must be a dictionary with table names as keys and the &quot;</span>
+                    <span class="s2">&quot;desired table info as values&quot;</span>
+                <span class="p">)</span>
+            <span class="c1"># only keep the tables that are also present in the database</span>
+            <span class="n">intersection</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_custom_table_info</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_all_tables</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_custom_table_info</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+                <span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_custom_table_info</span><span class="p">[</span><span class="n">table</span><span class="p">])</span>
+                <span class="k">for</span> <span class="n">table</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_custom_table_info</span>
+                <span class="k">if</span> <span class="n">table</span> <span class="ow">in</span> <span class="n">intersection</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_max_string_length</span> <span class="o">=</span> <span class="n">max_string_length</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span> <span class="o">=</span> <span class="n">metadata</span> <span class="ow">or</span> <span class="n">MetaData</span><span class="p">()</span>
+        <span class="c1"># including view support if view_support = true</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span><span class="o">.</span><span class="n">reflect</span><span class="p">(</span>
+            <span class="n">views</span><span class="o">=</span><span class="n">view_support</span><span class="p">,</span>
+            <span class="n">bind</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_engine</span><span class="p">,</span>
+            <span class="n">only</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_usable_tables</span><span class="p">),</span>
+            <span class="n">schema</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_schema</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="SQLDatabase.from_uri"><a class="viewcode-back" href="../../../utilities/langchain_community.utilities.sql_database.SQLDatabase.html#langchain_community.utilities.sql_database.SQLDatabase.from_uri">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_uri</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span> <span class="n">database_uri</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">engine_args</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SQLDatabase</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct a SQLAlchemy engine from URI.&quot;&quot;&quot;</span>
+        <span class="n">_engine_args</span> <span class="o">=</span> <span class="n">engine_args</span> <span class="ow">or</span> <span class="p">{}</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">create_engine</span><span class="p">(</span><span class="n">database_uri</span><span class="p">,</span> <span class="o">**</span><span class="n">_engine_args</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SQLDatabase.from_databricks"><a class="viewcode-back" href="../../../utilities/langchain_community.utilities.sql_database.SQLDatabase.html#langchain_community.utilities.sql_database.SQLDatabase.from_databricks">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_databricks</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">catalog</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">schema</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">host</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">api_token</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">warehouse_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">cluster_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">engine_args</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SQLDatabase</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Class method to create an SQLDatabase instance from a Databricks connection.</span>
+<span class="sd">        This method requires the &#39;databricks-sql-connector&#39; package. If not installed,</span>
+<span class="sd">        it can be added using `pip install databricks-sql-connector`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            catalog (str): The catalog name in the Databricks database.</span>
+<span class="sd">            schema (str): The schema name in the catalog.</span>
+<span class="sd">            host (Optional[str]): The Databricks workspace hostname, excluding</span>
+<span class="sd">                &#39;https://&#39; part. If not provided, it attempts to fetch from the</span>
+<span class="sd">                environment variable &#39;DATABRICKS_HOST&#39;. If still unavailable and if</span>
+<span class="sd">                running in a Databricks notebook, it defaults to the current workspace</span>
+<span class="sd">                hostname. Defaults to None.</span>
+<span class="sd">            api_token (Optional[str]): The Databricks personal access token for</span>
+<span class="sd">                accessing the Databricks SQL warehouse or the cluster. If not provided,</span>
+<span class="sd">                it attempts to fetch from &#39;DATABRICKS_TOKEN&#39;. If still unavailable</span>
+<span class="sd">                and running in a Databricks notebook, a temporary token for the current</span>
+<span class="sd">                user is generated. Defaults to None.</span>
+<span class="sd">            warehouse_id (Optional[str]): The warehouse ID in the Databricks SQL. If</span>
+<span class="sd">                provided, the method configures the connection to use this warehouse.</span>
+<span class="sd">                Cannot be used with &#39;cluster_id&#39;. Defaults to None.</span>
+<span class="sd">            cluster_id (Optional[str]): The cluster ID in the Databricks Runtime. If</span>
+<span class="sd">                provided, the method configures the connection to use this cluster.</span>
+<span class="sd">                Cannot be used with &#39;warehouse_id&#39;. If running in a Databricks notebook</span>
+<span class="sd">                and both &#39;warehouse_id&#39; and &#39;cluster_id&#39; are None, it uses the ID of the</span>
+<span class="sd">                cluster the notebook is attached to. Defaults to None.</span>
+<span class="sd">            engine_args (Optional[dict]): The arguments to be used when connecting</span>
+<span class="sd">                Databricks. Defaults to None.</span>
+<span class="sd">            **kwargs (Any): Additional keyword arguments for the `from_uri` method.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            SQLDatabase: An instance of SQLDatabase configured with the provided</span>
+<span class="sd">                Databricks connection details.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If &#39;databricks-sql-connector&#39; is not found, or if both</span>
+<span class="sd">                &#39;warehouse_id&#39; and &#39;cluster_id&#39; are provided, or if neither</span>
+<span class="sd">                &#39;warehouse_id&#39; nor &#39;cluster_id&#39; are provided and it&#39;s not executing</span>
+<span class="sd">                inside a Databricks notebook.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">databricks</span> <span class="kn">import</span> <span class="n">sql</span>  <span class="c1"># noqa: F401</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;databricks-sql-connector package not found, please install with&quot;</span>
+                <span class="s2">&quot; `pip install databricks-sql-connector`&quot;</span>
+            <span class="p">)</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">dbruntime.databricks_repl_context</span> <span class="kn">import</span> <span class="n">get_context</span>
+
+            <span class="n">context</span> <span class="o">=</span> <span class="n">get_context</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+        <span class="n">default_host</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">browserHostName</span> <span class="k">if</span> <span class="n">context</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">host</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">host</span> <span class="o">=</span> <span class="n">get_from_env</span><span class="p">(</span><span class="s2">&quot;host&quot;</span><span class="p">,</span> <span class="s2">&quot;DATABRICKS_HOST&quot;</span><span class="p">,</span> <span class="n">default_host</span><span class="p">)</span>
+
+        <span class="n">default_api_token</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">apiToken</span> <span class="k">if</span> <span class="n">context</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">api_token</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">api_token</span> <span class="o">=</span> <span class="n">get_from_env</span><span class="p">(</span><span class="s2">&quot;api_token&quot;</span><span class="p">,</span> <span class="s2">&quot;DATABRICKS_TOKEN&quot;</span><span class="p">,</span> <span class="n">default_api_token</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">warehouse_id</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">cluster_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">context</span><span class="p">:</span>
+                <span class="n">cluster_id</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">clusterId</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;Need to provide either &#39;warehouse_id&#39; or &#39;cluster_id&#39;.&quot;</span>
+                <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">warehouse_id</span> <span class="ow">and</span> <span class="n">cluster_id</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Can&#39;t have both &#39;warehouse_id&#39; or &#39;cluster_id&#39;.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">warehouse_id</span><span class="p">:</span>
+            <span class="n">http_path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;/sql/1.0/warehouses/</span><span class="si">{</span><span class="n">warehouse_id</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">http_path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;/sql/protocolv1/o/0/</span><span class="si">{</span><span class="n">cluster_id</span><span class="si">}</span><span class="s2">&quot;</span>
+
+        <span class="n">uri</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;databricks://token:</span><span class="si">{</span><span class="n">api_token</span><span class="si">}</span><span class="s2">@</span><span class="si">{</span><span class="n">host</span><span class="si">}</span><span class="s2">?&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;http_path=</span><span class="si">{</span><span class="n">http_path</span><span class="si">}</span><span class="s2">&amp;catalog=</span><span class="si">{</span><span class="n">catalog</span><span class="si">}</span><span class="s2">&amp;schema=</span><span class="si">{</span><span class="n">schema</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">from_uri</span><span class="p">(</span><span class="n">database_uri</span><span class="o">=</span><span class="n">uri</span><span class="p">,</span> <span class="n">engine_args</span><span class="o">=</span><span class="n">engine_args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SQLDatabase.from_cnosdb"><a class="viewcode-back" href="../../../utilities/langchain_community.utilities.sql_database.SQLDatabase.html#langchain_community.utilities.sql_database.SQLDatabase.from_cnosdb">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_cnosdb</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;127.0.0.1:8902&quot;</span><span class="p">,</span>
+        <span class="n">user</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;root&quot;</span><span class="p">,</span>
+        <span class="n">password</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">tenant</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;cnosdb&quot;</span><span class="p">,</span>
+        <span class="n">database</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;public&quot;</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SQLDatabase</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Class method to create an SQLDatabase instance from a CnosDB connection.</span>
+<span class="sd">        This method requires the &#39;cnos-connector&#39; package. If not installed, it</span>
+<span class="sd">        can be added using `pip install cnos-connector`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            url (str): The HTTP connection host name and port number of the CnosDB</span>
+<span class="sd">                service, excluding &quot;http://&quot; or &quot;https://&quot;, with a default value</span>
+<span class="sd">                of &quot;127.0.0.1:8902&quot;.</span>
+<span class="sd">            user (str): The username used to connect to the CnosDB service, with a</span>
+<span class="sd">                default value of &quot;root&quot;.</span>
+<span class="sd">            password (str): The password of the user connecting to the CnosDB service,</span>
+<span class="sd">                with a default value of &quot;&quot;.</span>
+<span class="sd">            tenant (str): The name of the tenant used to connect to the CnosDB service,</span>
+<span class="sd">                with a default value of &quot;cnosdb&quot;.</span>
+<span class="sd">            database (str): The name of the database in the CnosDB tenant.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            SQLDatabase: An instance of SQLDatabase configured with the provided</span>
+<span class="sd">            CnosDB connection details.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">cnosdb_connector</span> <span class="kn">import</span> <span class="n">make_cnosdb_langchain_uri</span>
+
+            <span class="n">uri</span> <span class="o">=</span> <span class="n">make_cnosdb_langchain_uri</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">password</span><span class="p">,</span> <span class="n">tenant</span><span class="p">,</span> <span class="n">database</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">from_uri</span><span class="p">(</span><span class="n">database_uri</span><span class="o">=</span><span class="n">uri</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;cnos-connector package not found, please install with&quot;</span>
+                <span class="s2">&quot; `pip install cnos-connector`&quot;</span>
+            <span class="p">)</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">dialect</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return string representation of dialect to use.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_engine</span><span class="o">.</span><span class="n">dialect</span><span class="o">.</span><span class="n">name</span>
+
+<div class="viewcode-block" id="SQLDatabase.get_usable_table_names"><a class="viewcode-back" href="../../../utilities/langchain_community.utilities.sql_database.SQLDatabase.html#langchain_community.utilities.sql_database.SQLDatabase.get_usable_table_names">[docs]</a>    <span class="k">def</span> <span class="nf">get_usable_table_names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get names of tables available.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_include_tables</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_include_tables</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_all_tables</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ignore_tables</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SQLDatabase.get_table_names"><a class="viewcode-back" href="../../../utilities/langchain_community.utilities.sql_database.SQLDatabase.html#langchain_community.utilities.sql_database.SQLDatabase.get_table_names">[docs]</a>    <span class="k">def</span> <span class="nf">get_table_names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get names of tables available.&quot;&quot;&quot;</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="s2">&quot;This method is deprecated - please use `get_usable_table_names`.&quot;</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_usable_table_names</span><span class="p">()</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">table_info</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Information about all tables in the database.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_table_info</span><span class="p">()</span>
+
+<div class="viewcode-block" id="SQLDatabase.get_table_info"><a class="viewcode-back" href="../../../utilities/langchain_community.utilities.sql_database.SQLDatabase.html#langchain_community.utilities.sql_database.SQLDatabase.get_table_info">[docs]</a>    <span class="k">def</span> <span class="nf">get_table_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_names</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get information about specified tables.</span>
+
+<span class="sd">        Follows best practices as specified in: Rajkumar et al, 2022</span>
+<span class="sd">        (https://arxiv.org/abs/2204.00498)</span>
+
+<span class="sd">        If `sample_rows_in_table_info`, the specified number of sample rows will be</span>
+<span class="sd">        appended to each table description. This can increase performance as</span>
+<span class="sd">        demonstrated in the paper.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">all_table_names</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_usable_table_names</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">table_names</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">missing_tables</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">table_names</span><span class="p">)</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="n">all_table_names</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">missing_tables</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;table_names </span><span class="si">{</span><span class="n">missing_tables</span><span class="si">}</span><span class="s2"> not found in database&quot;</span><span class="p">)</span>
+            <span class="n">all_table_names</span> <span class="o">=</span> <span class="n">table_names</span>
+
+        <span class="n">meta_tables</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">tbl</span>
+            <span class="k">for</span> <span class="n">tbl</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span><span class="o">.</span><span class="n">sorted_tables</span>
+            <span class="k">if</span> <span class="n">tbl</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="nb">set</span><span class="p">(</span><span class="n">all_table_names</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="ow">not</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dialect</span> <span class="o">==</span> <span class="s2">&quot;sqlite&quot;</span> <span class="ow">and</span> <span class="n">tbl</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;sqlite_&quot;</span><span class="p">))</span>
+        <span class="p">]</span>
+
+        <span class="n">tables</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">table</span> <span class="ow">in</span> <span class="n">meta_tables</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_custom_table_info</span> <span class="ow">and</span> <span class="n">table</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_custom_table_info</span><span class="p">:</span>
+                <span class="n">tables</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_custom_table_info</span><span class="p">[</span><span class="n">table</span><span class="o">.</span><span class="n">name</span><span class="p">])</span>
+                <span class="k">continue</span>
+
+            <span class="c1"># Ignore JSON datatyped columns</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">table</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">type</span><span class="p">)</span> <span class="ow">is</span> <span class="n">NullType</span><span class="p">:</span>
+                    <span class="n">table</span><span class="o">.</span><span class="n">_columns</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+
+            <span class="c1"># add create table command</span>
+            <span class="n">create_table</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">CreateTable</span><span class="p">(</span><span class="n">table</span><span class="p">)</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_engine</span><span class="p">))</span>
+            <span class="n">table_info</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">create_table</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">has_extra_info</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_indexes_in_table_info</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sample_rows_in_table_info</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">has_extra_info</span><span class="p">:</span>
+                <span class="n">table_info</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">/*&quot;</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_indexes_in_table_info</span><span class="p">:</span>
+                <span class="n">table_info</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_table_indexes</span><span class="p">(</span><span class="n">table</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sample_rows_in_table_info</span><span class="p">:</span>
+                <span class="n">table_info</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_sample_rows</span><span class="p">(</span><span class="n">table</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="k">if</span> <span class="n">has_extra_info</span><span class="p">:</span>
+                <span class="n">table_info</span> <span class="o">+=</span> <span class="s2">&quot;*/&quot;</span>
+            <span class="n">tables</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">table_info</span><span class="p">)</span>
+        <span class="n">tables</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+        <span class="n">final_str</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tables</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">final_str</span></div>
+
+    <span class="k">def</span> <span class="nf">_get_table_indexes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">:</span> <span class="n">Table</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">indexes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inspector</span><span class="o">.</span><span class="n">get_indexes</span><span class="p">(</span><span class="n">table</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">indexes_formatted</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">_format_index</span><span class="p">,</span> <span class="n">indexes</span><span class="p">))</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Table Indexes:</span><span class="se">\n</span><span class="si">{</span><span class="n">indexes_formatted</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="k">def</span> <span class="nf">_get_sample_rows</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">:</span> <span class="n">Table</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="c1"># build the select command</span>
+        <span class="n">command</span> <span class="o">=</span> <span class="n">select</span><span class="p">(</span><span class="n">table</span><span class="p">)</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sample_rows_in_table_info</span><span class="p">)</span>
+
+        <span class="c1"># save the columns in string format</span>
+        <span class="n">columns_str</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">col</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">table</span><span class="o">.</span><span class="n">columns</span><span class="p">])</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># get the sample rows</span>
+            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_engine</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span> <span class="k">as</span> <span class="n">connection</span><span class="p">:</span>
+                <span class="n">sample_rows_result</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">command</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+                <span class="c1"># shorten values in the sample rows</span>
+                <span class="n">sample_rows</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+                    <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">ls</span><span class="p">:</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)[:</span><span class="mi">100</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">ls</span><span class="p">],</span> <span class="n">sample_rows_result</span><span class="p">)</span>
+                <span class="p">)</span>
+
+            <span class="c1"># save the sample rows in string format</span>
+            <span class="n">sample_rows_str</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">row</span><span class="p">)</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">sample_rows</span><span class="p">])</span>
+
+        <span class="c1"># in some dialects when there are no rows in the table a</span>
+        <span class="c1"># &#39;ProgrammingError&#39; is returned</span>
+        <span class="k">except</span> <span class="n">ProgrammingError</span><span class="p">:</span>
+            <span class="n">sample_rows_str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_sample_rows_in_table_info</span><span class="si">}</span><span class="s2"> rows from </span><span class="si">{</span><span class="n">table</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> table:</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">columns_str</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">sample_rows_str</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_execute</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">command</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">fetch</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;all&quot;</span><span class="p">,</span> <span class="s2">&quot;one&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;all&quot;</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Executes SQL command through underlying engine.</span>
+
+<span class="sd">        If the statement returns no rows, an empty list is returned.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_engine</span><span class="o">.</span><span class="n">begin</span><span class="p">()</span> <span class="k">as</span> <span class="n">connection</span><span class="p">:</span>  <span class="c1"># type: Connection</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_schema</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dialect</span> <span class="o">==</span> <span class="s2">&quot;snowflake&quot;</span><span class="p">:</span>
+                    <span class="n">connection</span><span class="o">.</span><span class="n">exec_driver_sql</span><span class="p">(</span>
+                        <span class="s2">&quot;ALTER SESSION SET search_path = </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_schema</span><span class="p">,)</span>
+                    <span class="p">)</span>
+                <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">dialect</span> <span class="o">==</span> <span class="s2">&quot;bigquery&quot;</span><span class="p">:</span>
+                    <span class="n">connection</span><span class="o">.</span><span class="n">exec_driver_sql</span><span class="p">(</span><span class="s2">&quot;SET @@dataset_id=?&quot;</span><span class="p">,</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_schema</span><span class="p">,))</span>
+                <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">dialect</span> <span class="o">==</span> <span class="s2">&quot;mssql&quot;</span><span class="p">:</span>
+                    <span class="k">pass</span>
+                <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">dialect</span> <span class="o">==</span> <span class="s2">&quot;trino&quot;</span><span class="p">:</span>
+                    <span class="n">connection</span><span class="o">.</span><span class="n">exec_driver_sql</span><span class="p">(</span><span class="s2">&quot;USE ?&quot;</span><span class="p">,</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_schema</span><span class="p">,))</span>
+                <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">dialect</span> <span class="o">==</span> <span class="s2">&quot;duckdb&quot;</span><span class="p">:</span>
+                    <span class="c1"># Unclear which parameterized argument syntax duckdb supports.</span>
+                    <span class="c1"># The docs for the duckdb client say they support multiple,</span>
+                    <span class="c1"># but `duckdb_engine` seemed to struggle with all of them:</span>
+                    <span class="c1"># https://github.com/Mause/duckdb_engine/issues/796</span>
+                    <span class="n">connection</span><span class="o">.</span><span class="n">exec_driver_sql</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;SET search_path TO </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_schema</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">dialect</span> <span class="o">==</span> <span class="s2">&quot;oracle&quot;</span><span class="p">:</span>
+                    <span class="n">connection</span><span class="o">.</span><span class="n">exec_driver_sql</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;ALTER SESSION SET CURRENT_SCHEMA = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_schema</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="p">)</span>
+                <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">dialect</span> <span class="o">==</span> <span class="s2">&quot;sqlany&quot;</span><span class="p">:</span>
+                    <span class="c1"># If anybody using Sybase SQL anywhere database then it should not</span>
+                    <span class="c1"># go to else condition. It should be same as mssql.</span>
+                    <span class="k">pass</span>
+                <span class="k">else</span><span class="p">:</span>  <span class="c1"># postgresql and other compatible dialects</span>
+                    <span class="n">connection</span><span class="o">.</span><span class="n">exec_driver_sql</span><span class="p">(</span><span class="s2">&quot;SET search_path TO </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_schema</span><span class="p">,))</span>
+            <span class="n">cursor</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">text</span><span class="p">(</span><span class="n">command</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">cursor</span><span class="o">.</span><span class="n">returns_rows</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">fetch</span> <span class="o">==</span> <span class="s2">&quot;all&quot;</span><span class="p">:</span>
+                    <span class="n">result</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">_asdict</span><span class="p">()</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()]</span>
+                <span class="k">elif</span> <span class="n">fetch</span> <span class="o">==</span> <span class="s2">&quot;one&quot;</span><span class="p">:</span>
+                    <span class="n">first_result</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()</span>
+                    <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span> <span class="k">if</span> <span class="n">first_result</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">[</span><span class="n">first_result</span><span class="o">.</span><span class="n">_asdict</span><span class="p">()]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Fetch parameter must be either &#39;one&#39; or &#39;all&#39;&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">result</span>
+        <span class="k">return</span> <span class="p">[]</span>
+
+<div class="viewcode-block" id="SQLDatabase.run"><a class="viewcode-back" href="../../../utilities/langchain_community.utilities.sql_database.SQLDatabase.html#langchain_community.utilities.sql_database.SQLDatabase.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">command</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">fetch</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;all&quot;</span><span class="p">,</span> <span class="s2">&quot;one&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;all&quot;</span><span class="p">,</span>
+        <span class="n">include_columns</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Execute a SQL command and return a string representing the results.</span>
+
+<span class="sd">        If the statement returns rows, a string of the results is returned.</span>
+<span class="sd">        If the statement returns no rows, an empty string is returned.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_execute</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">fetch</span><span class="p">)</span>
+
+        <span class="n">res</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">{</span>
+                <span class="n">column</span><span class="p">:</span> <span class="n">truncate_word</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_max_string_length</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">column</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">r</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="p">}</span>
+            <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">result</span>
+        <span class="p">]</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">include_columns</span><span class="p">:</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">res</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">res</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">res</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SQLDatabase.get_table_info_no_throw"><a class="viewcode-back" href="../../../utilities/langchain_community.utilities.sql_database.SQLDatabase.html#langchain_community.utilities.sql_database.SQLDatabase.get_table_info_no_throw">[docs]</a>    <span class="k">def</span> <span class="nf">get_table_info_no_throw</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_names</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get information about specified tables.</span>
+
+<span class="sd">        Follows best practices as specified in: Rajkumar et al, 2022</span>
+<span class="sd">        (https://arxiv.org/abs/2204.00498)</span>
+
+<span class="sd">        If `sample_rows_in_table_info`, the specified number of sample rows will be</span>
+<span class="sd">        appended to each table description. This can increase performance as</span>
+<span class="sd">        demonstrated in the paper.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_table_info</span><span class="p">(</span><span class="n">table_names</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Format the error message&quot;&quot;&quot;</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Error: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span></div>
+
+<div class="viewcode-block" id="SQLDatabase.run_no_throw"><a class="viewcode-back" href="../../../utilities/langchain_community.utilities.sql_database.SQLDatabase.html#langchain_community.utilities.sql_database.SQLDatabase.run_no_throw">[docs]</a>    <span class="k">def</span> <span class="nf">run_no_throw</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">command</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">fetch</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;all&quot;</span><span class="p">,</span> <span class="s2">&quot;one&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;all&quot;</span><span class="p">,</span>
+        <span class="n">include_columns</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Execute a SQL command and return a string representing the results.</span>
+
+<span class="sd">        If the statement returns rows, a string of the results is returned.</span>
+<span class="sd">        If the statement returns no rows, an empty string is returned.</span>
+
+<span class="sd">        If the statement throws an error, the error message is returned.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">fetch</span><span class="p">,</span> <span class="n">include_columns</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">SQLAlchemyError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Format the error message&quot;&quot;&quot;</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Error: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span></div></div>
+</pre></div>
+
+      </div>
+    <div class="container">
+      <footer class="sk-content-footer">
+            &copy; 2023, LangChain, Inc..
+          Last updated on Jan 11, 2024.
+      </footer>
+    </div>
+  </div>
+</div>
+<script src="../../../_static/js/vendor/bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    /* Add a [>>>] button on the top-right corner of code samples to hide
+     * the >>> and ... prompts and the output and thus make the code
+     * copyable. */
+    var div = $('.highlight-python .highlight,' +
+                '.highlight-python3 .highlight,' +
+                '.highlight-pycon .highlight,' +
+		'.highlight-default .highlight')
+    var pre = div.find('pre');
+
+    // get the styles from the current theme
+    pre.parent().parent().css('position', 'relative');
+    var hide_text = 'Hide prompts and outputs';
+    var show_text = 'Show prompts and outputs';
+
+    // create and add the button to all the code blocks that contain >>>
+    div.each(function(index) {
+        var jthis = $(this);
+        if (jthis.find('.gp').length > 0) {
+            var button = $('<span class="copybutton">&gt;&gt;&gt;</span>');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+            jthis.prepend(button);
+        }
+        // tracebacks (.gt) contain bare text elements that need to be
+        // wrapped in a span to work with .nextUntil() (see later)
+        jthis.find('pre:has(.gt)').contents().filter(function() {
+            return ((this.nodeType == 3) && (this.data.trim().length > 0));
+        }).wrap('<span>');
+    });
+
+    // define the behavior of the button when it's clicked
+    $('.copybutton').click(function(e){
+        e.preventDefault();
+        var button = $(this);
+        if (button.data('hidden') === 'false') {
+            // hide the code output
+            button.parent().find('.go, .gp, .gt').hide();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'hidden');
+            button.css('text-decoration', 'line-through');
+            button.attr('title', show_text);
+            button.data('hidden', 'true');
+        } else {
+            // show the code output
+            button.parent().find('.go, .gp, .gt').show();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'visible');
+            button.css('text-decoration', 'none');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+        }
+    });
+
+	/*** Add permalink buttons next to glossary terms ***/
+	$('dl.glossary > dt[id]').append(function() {
+		return ('<a class="headerlink" href="#' +
+			    this.getAttribute('id') +
+			    '" title="Permalink to this term">¶</a>');
+	});
+});
+
+</script>
+    
+</body>
+</html>

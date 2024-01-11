@@ -1,0 +1,388 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>langchain.evaluation.loading &mdash; 🦜🔗 LangChain 0.0.354</title>
+  
+  <link rel="canonical" href="https://api.python.langchain.com/en/latest/_modules/langchain/evaluation/loading.html" />
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/vendor/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/autodoc_pydantic.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/panels-bootstrap.5fd3999ee7762ccc51105388f4a9d115.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+<script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+<script src="../../../_static/jquery.js"></script> 
+</head>
+<body>
+
+
+<nav id="navbar" class="sk-docs-navbar navbar navbar-expand-md navbar-light bg-light py-0">
+  <div class="container-fluid sk-docs-container px-0">
+    <button
+      id="sk-navbar-toggler"
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="sk-navbar-collapse collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../langchain_api_reference.html">LangChain</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../core_api_reference.html">Core</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../community_api_reference.html">Community</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../experimental_api_reference.html">Experimental</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../../../nvidia_trt_api_reference.html">nvidia-trt</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../../../google_genai_api_reference.html">google-genai</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../../../anthropic_api_reference.html">anthropic</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../../../together_api_reference.html">together</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../../../nvidia_ai_endpoints_api_reference.html">nvidia-ai-endpoints</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../../../mistralai_api_reference.html">mistralai</a>
+        </li>
+        <li class="nav-item dropdown nav-more-item-dropdown">
+          <a class="sk-nav-link nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Partner libs</a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+              <a class="sk-nav-dropdown-item dropdown-item" href="../../../nvidia_trt_api_reference.html">nvidia-trt</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../../../google_genai_api_reference.html">google-genai</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../../../anthropic_api_reference.html">anthropic</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../../../together_api_reference.html">together</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../../../nvidia_ai_endpoints_api_reference.html">nvidia-ai-endpoints</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../../../mistralai_api_reference.html">mistralai</a>
+          </div>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" target="_blank" rel="noopener noreferrer" href="https://python.langchain.com/">Docs</a>
+        </li>
+      </ul>
+      <div id="searchbox" role="search">
+          <div class="searchformwrapper">
+          <form class="search" action="../../../search.html" method="get">
+            <input class="sk-search-text-input" type="text" name="q" aria-labelledby="searchlabel" />
+            <input class="sk-search-text-btn" type="submit" value="Go" />
+          </form>
+          </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="d-flex" id="sk-doc-wrapper">
+    <input type="checkbox" name="sk-toggle-checkbox" id="sk-toggle-checkbox">
+    <label id="sk-sidemenu-toggle" class="sk-btn-toggle-toc btn sk-btn-primary" for="sk-toggle-checkbox">Toggle Menu</label>
+    <div id="sk-sidebar-wrapper" class="border-right">
+      <div class="sk-sidebar-toc-wrapper">
+        <div class="btn-group w-100 mb-2" role="group" aria-label="rellinks">
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Prev</a><a href="../../index.html" role="button" class="btn sk-btn-rellink py-1" sk-rellink-tooltip="Module code">Up</a>
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Next</a>
+        </div>
+            <div class="sk-sidebar-toc">
+              
+            </div>
+      </div>
+    </div>
+    <div id="sk-page-content-wrapper">
+      <div class="sk-page-content container-fluid body px-md-3" role="main">
+        
+  <h1>Source code for langchain.evaluation.loading</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Loading datasets and evaluators.&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">from</span> <span class="nn">langchain_community.chat_models.openai</span> <span class="kn">import</span> <span class="n">ChatOpenAI</span>
+<span class="kn">from</span> <span class="nn">langchain_core.language_models</span> <span class="kn">import</span> <span class="n">BaseLanguageModel</span>
+
+<span class="kn">from</span> <span class="nn">langchain.chains.base</span> <span class="kn">import</span> <span class="n">Chain</span>
+<span class="kn">from</span> <span class="nn">langchain.evaluation.agents.trajectory_eval_chain</span> <span class="kn">import</span> <span class="n">TrajectoryEvalChain</span>
+<span class="kn">from</span> <span class="nn">langchain.evaluation.comparison</span> <span class="kn">import</span> <span class="n">PairwiseStringEvalChain</span>
+<span class="kn">from</span> <span class="nn">langchain.evaluation.comparison.eval_chain</span> <span class="kn">import</span> <span class="n">LabeledPairwiseStringEvalChain</span>
+<span class="kn">from</span> <span class="nn">langchain.evaluation.criteria.eval_chain</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">CriteriaEvalChain</span><span class="p">,</span>
+    <span class="n">LabeledCriteriaEvalChain</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">langchain.evaluation.embedding_distance.base</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">EmbeddingDistanceEvalChain</span><span class="p">,</span>
+    <span class="n">PairwiseEmbeddingDistanceEvalChain</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">langchain.evaluation.exact_match.base</span> <span class="kn">import</span> <span class="n">ExactMatchStringEvaluator</span>
+<span class="kn">from</span> <span class="nn">langchain.evaluation.parsing.base</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">JsonEqualityEvaluator</span><span class="p">,</span>
+    <span class="n">JsonValidityEvaluator</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">langchain.evaluation.parsing.json_distance</span> <span class="kn">import</span> <span class="n">JsonEditDistanceEvaluator</span>
+<span class="kn">from</span> <span class="nn">langchain.evaluation.parsing.json_schema</span> <span class="kn">import</span> <span class="n">JsonSchemaEvaluator</span>
+<span class="kn">from</span> <span class="nn">langchain.evaluation.qa</span> <span class="kn">import</span> <span class="n">ContextQAEvalChain</span><span class="p">,</span> <span class="n">CotQAEvalChain</span><span class="p">,</span> <span class="n">QAEvalChain</span>
+<span class="kn">from</span> <span class="nn">langchain.evaluation.regex_match.base</span> <span class="kn">import</span> <span class="n">RegexMatchStringEvaluator</span>
+<span class="kn">from</span> <span class="nn">langchain.evaluation.schema</span> <span class="kn">import</span> <span class="n">EvaluatorType</span><span class="p">,</span> <span class="n">LLMEvalChain</span><span class="p">,</span> <span class="n">StringEvaluator</span>
+<span class="kn">from</span> <span class="nn">langchain.evaluation.scoring.eval_chain</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">LabeledScoreStringEvalChain</span><span class="p">,</span>
+    <span class="n">ScoreStringEvalChain</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">langchain.evaluation.string_distance.base</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">PairwiseStringDistanceEvalChain</span><span class="p">,</span>
+    <span class="n">StringDistanceEvalChain</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="load_dataset"><a class="viewcode-back" href="../../../evaluation/langchain.evaluation.loading.load_dataset.html#langchain.evaluation.loading.load_dataset">[docs]</a><span class="k">def</span> <span class="nf">load_dataset</span><span class="p">(</span><span class="n">uri</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Load a dataset from the `LangChainDatasets on HuggingFace &lt;https://huggingface.co/LangChainDatasets&gt;`_.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        uri: The uri of the dataset to load.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A list of dictionaries, each representing a row in the dataset.</span>
+
+<span class="sd">    **Prerequisites**</span>
+
+<span class="sd">    .. code-block:: shell</span>
+
+<span class="sd">        pip install datasets</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        from langchain.evaluation import load_dataset</span>
+<span class="sd">        ds = load_dataset(&quot;llm-math&quot;)</span>
+<span class="sd">    &quot;&quot;&quot;</span>  <span class="c1"># noqa: E501</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">datasets</span> <span class="kn">import</span> <span class="n">load_dataset</span>
+    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+            <span class="s2">&quot;load_dataset requires the `datasets` package.&quot;</span>
+            <span class="s2">&quot; Please install with `pip install datasets`&quot;</span>
+        <span class="p">)</span>
+
+    <span class="n">dataset</span> <span class="o">=</span> <span class="n">load_dataset</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;LangChainDatasets/</span><span class="si">{</span><span class="n">uri</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">d</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">[</span><span class="s2">&quot;train&quot;</span><span class="p">]]</span></div>
+
+
+<span class="n">_EVALUATOR_MAP</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span>
+    <span class="n">EvaluatorType</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="n">Type</span><span class="p">[</span><span class="n">LLMEvalChain</span><span class="p">],</span> <span class="n">Type</span><span class="p">[</span><span class="n">Chain</span><span class="p">],</span> <span class="n">Type</span><span class="p">[</span><span class="n">StringEvaluator</span><span class="p">]]</span>
+<span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="n">EvaluatorType</span><span class="o">.</span><span class="n">QA</span><span class="p">:</span> <span class="n">QAEvalChain</span><span class="p">,</span>
+    <span class="n">EvaluatorType</span><span class="o">.</span><span class="n">COT_QA</span><span class="p">:</span> <span class="n">CotQAEvalChain</span><span class="p">,</span>
+    <span class="n">EvaluatorType</span><span class="o">.</span><span class="n">CONTEXT_QA</span><span class="p">:</span> <span class="n">ContextQAEvalChain</span><span class="p">,</span>
+    <span class="n">EvaluatorType</span><span class="o">.</span><span class="n">PAIRWISE_STRING</span><span class="p">:</span> <span class="n">PairwiseStringEvalChain</span><span class="p">,</span>
+    <span class="n">EvaluatorType</span><span class="o">.</span><span class="n">SCORE_STRING</span><span class="p">:</span> <span class="n">ScoreStringEvalChain</span><span class="p">,</span>
+    <span class="n">EvaluatorType</span><span class="o">.</span><span class="n">LABELED_PAIRWISE_STRING</span><span class="p">:</span> <span class="n">LabeledPairwiseStringEvalChain</span><span class="p">,</span>
+    <span class="n">EvaluatorType</span><span class="o">.</span><span class="n">LABELED_SCORE_STRING</span><span class="p">:</span> <span class="n">LabeledScoreStringEvalChain</span><span class="p">,</span>
+    <span class="n">EvaluatorType</span><span class="o">.</span><span class="n">AGENT_TRAJECTORY</span><span class="p">:</span> <span class="n">TrajectoryEvalChain</span><span class="p">,</span>
+    <span class="n">EvaluatorType</span><span class="o">.</span><span class="n">CRITERIA</span><span class="p">:</span> <span class="n">CriteriaEvalChain</span><span class="p">,</span>
+    <span class="n">EvaluatorType</span><span class="o">.</span><span class="n">LABELED_CRITERIA</span><span class="p">:</span> <span class="n">LabeledCriteriaEvalChain</span><span class="p">,</span>
+    <span class="n">EvaluatorType</span><span class="o">.</span><span class="n">STRING_DISTANCE</span><span class="p">:</span> <span class="n">StringDistanceEvalChain</span><span class="p">,</span>
+    <span class="n">EvaluatorType</span><span class="o">.</span><span class="n">PAIRWISE_STRING_DISTANCE</span><span class="p">:</span> <span class="n">PairwiseStringDistanceEvalChain</span><span class="p">,</span>
+    <span class="n">EvaluatorType</span><span class="o">.</span><span class="n">EMBEDDING_DISTANCE</span><span class="p">:</span> <span class="n">EmbeddingDistanceEvalChain</span><span class="p">,</span>
+    <span class="n">EvaluatorType</span><span class="o">.</span><span class="n">PAIRWISE_EMBEDDING_DISTANCE</span><span class="p">:</span> <span class="n">PairwiseEmbeddingDistanceEvalChain</span><span class="p">,</span>
+    <span class="n">EvaluatorType</span><span class="o">.</span><span class="n">JSON_VALIDITY</span><span class="p">:</span> <span class="n">JsonValidityEvaluator</span><span class="p">,</span>
+    <span class="n">EvaluatorType</span><span class="o">.</span><span class="n">JSON_EQUALITY</span><span class="p">:</span> <span class="n">JsonEqualityEvaluator</span><span class="p">,</span>
+    <span class="n">EvaluatorType</span><span class="o">.</span><span class="n">JSON_EDIT_DISTANCE</span><span class="p">:</span> <span class="n">JsonEditDistanceEvaluator</span><span class="p">,</span>
+    <span class="n">EvaluatorType</span><span class="o">.</span><span class="n">JSON_SCHEMA_VALIDATION</span><span class="p">:</span> <span class="n">JsonSchemaEvaluator</span><span class="p">,</span>
+    <span class="n">EvaluatorType</span><span class="o">.</span><span class="n">REGEX_MATCH</span><span class="p">:</span> <span class="n">RegexMatchStringEvaluator</span><span class="p">,</span>
+    <span class="n">EvaluatorType</span><span class="o">.</span><span class="n">EXACT_MATCH</span><span class="p">:</span> <span class="n">ExactMatchStringEvaluator</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<div class="viewcode-block" id="load_evaluator"><a class="viewcode-back" href="../../../evaluation/langchain.evaluation.loading.load_evaluator.html#langchain.evaluation.loading.load_evaluator">[docs]</a><span class="k">def</span> <span class="nf">load_evaluator</span><span class="p">(</span>
+    <span class="n">evaluator</span><span class="p">:</span> <span class="n">EvaluatorType</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">llm</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">BaseLanguageModel</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">Chain</span><span class="p">,</span> <span class="n">StringEvaluator</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Load the requested evaluation chain specified by a string.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    evaluator : EvaluatorType</span>
+<span class="sd">        The type of evaluator to load.</span>
+<span class="sd">    llm : BaseLanguageModel, optional</span>
+<span class="sd">        The language model to use for evaluation, by default None</span>
+<span class="sd">    **kwargs : Any</span>
+<span class="sd">        Additional keyword arguments to pass to the evaluator.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Chain</span>
+<span class="sd">        The loaded evaluation chain.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; from langchain.evaluation import load_evaluator, EvaluatorType</span>
+<span class="sd">    &gt;&gt;&gt; evaluator = load_evaluator(EvaluatorType.QA)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">evaluator</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_EVALUATOR_MAP</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Unknown evaluator type: </span><span class="si">{</span><span class="n">evaluator</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Valid types are: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">_EVALUATOR_MAP</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+    <span class="n">evaluator_cls</span> <span class="o">=</span> <span class="n">_EVALUATOR_MAP</span><span class="p">[</span><span class="n">evaluator</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">evaluator_cls</span><span class="p">,</span> <span class="n">LLMEvalChain</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">llm</span> <span class="o">=</span> <span class="n">llm</span> <span class="ow">or</span> <span class="n">ChatOpenAI</span><span class="p">(</span>
+                <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4&quot;</span><span class="p">,</span> <span class="n">model_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;seed&quot;</span><span class="p">:</span> <span class="mi">42</span><span class="p">},</span> <span class="n">temperature</span><span class="o">=</span><span class="mi">0</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Evaluation with the </span><span class="si">{</span><span class="n">evaluator_cls</span><span class="si">}</span><span class="s2"> requires a &quot;</span>
+                <span class="s2">&quot;language model to function.&quot;</span>
+                <span class="s2">&quot; Failed to create the default &#39;gpt-4&#39; model.&quot;</span>
+                <span class="s2">&quot; Please manually provide an evaluation LLM&quot;</span>
+                <span class="s2">&quot; or check your openai credentials.&quot;</span>
+            <span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>
+        <span class="k">return</span> <span class="n">evaluator_cls</span><span class="o">.</span><span class="n">from_llm</span><span class="p">(</span><span class="n">llm</span><span class="o">=</span><span class="n">llm</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">evaluator_cls</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="load_evaluators"><a class="viewcode-back" href="../../../evaluation/langchain.evaluation.loading.load_evaluators.html#langchain.evaluation.loading.load_evaluators">[docs]</a><span class="k">def</span> <span class="nf">load_evaluators</span><span class="p">(</span>
+    <span class="n">evaluators</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">EvaluatorType</span><span class="p">],</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">llm</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">BaseLanguageModel</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Chain</span><span class="p">,</span> <span class="n">StringEvaluator</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Load evaluators specified by a list of evaluator types.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    evaluators : Sequence[EvaluatorType]</span>
+<span class="sd">        The list of evaluator types to load.</span>
+<span class="sd">    llm : BaseLanguageModel, optional</span>
+<span class="sd">        The language model to use for evaluation, if none is provided, a default</span>
+<span class="sd">        ChatOpenAI gpt-4 model will be used.</span>
+<span class="sd">    config : dict, optional</span>
+<span class="sd">        A dictionary mapping evaluator types to additional keyword arguments,</span>
+<span class="sd">        by default None</span>
+<span class="sd">    **kwargs : Any</span>
+<span class="sd">        Additional keyword arguments to pass to all evaluators.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    List[Chain]</span>
+<span class="sd">        The loaded evaluators.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; from langchain.evaluation import load_evaluators, EvaluatorType</span>
+<span class="sd">    &gt;&gt;&gt; evaluators = [EvaluatorType.QA, EvaluatorType.CRITERIA]</span>
+<span class="sd">    &gt;&gt;&gt; loaded_evaluators = load_evaluators(evaluators, criteria=&quot;helpfulness&quot;)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">loaded</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">evaluator</span> <span class="ow">in</span> <span class="n">evaluators</span><span class="p">:</span>
+        <span class="n">_kwargs</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">evaluator</span><span class="p">,</span> <span class="p">{})</span> <span class="k">if</span> <span class="n">config</span> <span class="k">else</span> <span class="p">{}</span>
+        <span class="n">loaded</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">load_evaluator</span><span class="p">(</span><span class="n">evaluator</span><span class="p">,</span> <span class="n">llm</span><span class="o">=</span><span class="n">llm</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="o">**</span><span class="n">_kwargs</span><span class="p">}))</span>
+    <span class="k">return</span> <span class="n">loaded</span></div>
+</pre></div>
+
+      </div>
+    <div class="container">
+      <footer class="sk-content-footer">
+            &copy; 2023, LangChain, Inc..
+          Last updated on Jan 11, 2024.
+      </footer>
+    </div>
+  </div>
+</div>
+<script src="../../../_static/js/vendor/bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    /* Add a [>>>] button on the top-right corner of code samples to hide
+     * the >>> and ... prompts and the output and thus make the code
+     * copyable. */
+    var div = $('.highlight-python .highlight,' +
+                '.highlight-python3 .highlight,' +
+                '.highlight-pycon .highlight,' +
+		'.highlight-default .highlight')
+    var pre = div.find('pre');
+
+    // get the styles from the current theme
+    pre.parent().parent().css('position', 'relative');
+    var hide_text = 'Hide prompts and outputs';
+    var show_text = 'Show prompts and outputs';
+
+    // create and add the button to all the code blocks that contain >>>
+    div.each(function(index) {
+        var jthis = $(this);
+        if (jthis.find('.gp').length > 0) {
+            var button = $('<span class="copybutton">&gt;&gt;&gt;</span>');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+            jthis.prepend(button);
+        }
+        // tracebacks (.gt) contain bare text elements that need to be
+        // wrapped in a span to work with .nextUntil() (see later)
+        jthis.find('pre:has(.gt)').contents().filter(function() {
+            return ((this.nodeType == 3) && (this.data.trim().length > 0));
+        }).wrap('<span>');
+    });
+
+    // define the behavior of the button when it's clicked
+    $('.copybutton').click(function(e){
+        e.preventDefault();
+        var button = $(this);
+        if (button.data('hidden') === 'false') {
+            // hide the code output
+            button.parent().find('.go, .gp, .gt').hide();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'hidden');
+            button.css('text-decoration', 'line-through');
+            button.attr('title', show_text);
+            button.data('hidden', 'true');
+        } else {
+            // show the code output
+            button.parent().find('.go, .gp, .gt').show();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'visible');
+            button.css('text-decoration', 'none');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+        }
+    });
+
+	/*** Add permalink buttons next to glossary terms ***/
+	$('dl.glossary > dt[id]').append(function() {
+		return ('<a class="headerlink" href="#' +
+			    this.getAttribute('id') +
+			    '" title="Permalink to this term">¶</a>');
+	});
+});
+
+</script>
+    
+</body>
+</html>
