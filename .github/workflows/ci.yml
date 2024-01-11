@@ -32,6 +32,25 @@ jobs:
         id: filter
         with:
           filters: ./.github/changes-filter.yaml
+  build-example-docker:
+    name: Build example Docker image
+    needs: ["preconditions"]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v3
+
+      - name: Build a basic image
+        run: |
+          docker --version
+          cd docker/basic
+          sudo docker build -t ragstack-basic .
+      - name: Build a multistage image
+        run: |
+          docker --version
+          cd ../multistage
+          sudo docker build -t ragstack-multistage .
+
   unit-tests:
     name: Unit Tests
     runs-on: ubuntu-latest
