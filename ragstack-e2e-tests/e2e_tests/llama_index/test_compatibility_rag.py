@@ -23,8 +23,9 @@ from llama_index.llms import (
     Vertex,
     Bedrock,
     HuggingFaceInferenceAPI,
-    ChatMessage,
+    ChatMessage, Gemini,
 )
+from llama_index.multi_modal_llms import GeminiMultiModal
 from llama_index.schema import TextNode
 from llama_index.vector_stores import AstraDBVectorStore, CassandraVectorStore
 
@@ -52,7 +53,7 @@ class VectorStoreWrapper:
 
     @abstractmethod
     def put(
-        self, doc_id: str, document: str, metadata: dict, vector: List[Float]
+            self, doc_id: str, document: str, metadata: dict, vector: List[Float]
     ) -> None:
         pass
 
@@ -80,7 +81,7 @@ class CassandraVectorStoreWrapper(VectorStoreWrapper):
         return self.vector_store
 
     def put(
-        self, doc_id: str, document: str, metadata: dict, vector: List[Float]
+            self, doc_id: str, document: str, metadata: dict, vector: List[Float]
     ) -> None:
         self.vector_store.add(
             [TextNode(text=document, metadata=metadata, id_=doc_id, embedding=vector)]
@@ -113,7 +114,7 @@ class AstraDBVectorStoreWrapper(VectorStoreWrapper):
         return self.vector_store
 
     def put(
-        self, doc_id: str, document: str, metadata: dict, vector: List[Float]
+            self, doc_id: str, document: str, metadata: dict, vector: List[Float]
     ) -> None:
         self.vector_store.client.insert_one(
             {
@@ -293,13 +294,16 @@ def test_rag(vector_store, embedding, llm, request):
 
     documents = [
         Document(
-            text="MyFakeProductForTesting is a versatile testing tool designed to streamline the testing process for software developers, quality assurance professionals, and product testers. It provides a comprehensive solution for testing various aspects of applications and systems, ensuring robust performance and functionality."  # noqa: E501
+            text="MyFakeProductForTesting is a versatile testing tool designed to streamline the testing process for software developers, quality assurance professionals, and product testers. It provides a comprehensive solution for testing various aspects of applications and systems, ensuring robust performance and functionality."
+            # noqa: E501
         ),
         Document(
-            text="MyFakeProductForTesting comes equipped with an advanced dynamic test scenario generator. This feature allows users to create realistic test scenarios by simulating various user interactions, system inputs, and environmental conditions. The dynamic nature of the generator ensures that tests are not only diverse but also adaptive to changes in the application under test."  # noqa: E501
+            text="MyFakeProductForTesting comes equipped with an advanced dynamic test scenario generator. This feature allows users to create realistic test scenarios by simulating various user interactions, system inputs, and environmental conditions. The dynamic nature of the generator ensures that tests are not only diverse but also adaptive to changes in the application under test."
+            # noqa: E501
         ),
         Document(
-            text="The product includes an intelligent bug detection and analysis module. It not only identifies bugs and issues but also provides in-depth analysis and insights into the root causes. The system utilizes machine learning algorithms to categorize and prioritize bugs, making it easier for developers and testers to address critical issues first."  # noqa: E501
+            text="The product includes an intelligent bug detection and analysis module. It not only identifies bugs and issues but also provides in-depth analysis and insights into the root causes. The system utilizes machine learning algorithms to categorize and prioritize bugs, making it easier for developers and testers to address critical issues first."
+            # noqa: E501
         ),
         Document(text="MyFakeProductForTesting first release happened in June 2020."),
     ]
@@ -323,8 +327,23 @@ def vertex_gemini_multimodal_embedding():
 
 
 @pytest.fixture
-def vertex_gemini_pro_vision():
+def vertex_gemini_pro_llm():
+    return Vertex(model="gemini-pro")
+
+
+@pytest.fixture
+def vertex_gemini_pro_vision_llm():
     return Vertex(model="gemini-pro-vision")
+
+
+@pytest.fixture
+def gemini_pro_llm():
+    return Gemini(api_key=get_required_env("GOOGLE_API_KEY"), model_name="gemini-pro")
+
+
+@pytest.fixture
+def gemini_pro_vision_llm():
+    return GeminiMultiModal(api_key=get_required_env("GOOGLE_API_KEY"), model_name="gemini-pro-vision")
 
 
 @pytest.mark.parametrize(
@@ -334,7 +353,8 @@ def vertex_gemini_pro_vision():
 @pytest.mark.parametrize(
     "embedding,llm",
     [
-        ("vertex_gemini_multimodal_embedding", "vertex_gemini_pro_vision"),
+        ("vertex_gemini_multimodal_embedding", "vertex_gemini_pro_vision_llm"),
+        ("vertex_gemini_multimodal_embedding", "gemini_pro_vision_llm"),
     ],
 )
 def test_multimodal(vector_store, embedding, llm, request):
@@ -401,3 +421,16 @@ def get_local_resource_path(filename: str):
     dirname = os.path.dirname(__file__)
     e2e_tests_dir = os.path.dirname(dirname)
     return os.path.join(e2e_tests_dir, "resources", filename)
+
+
+@pytest.mark.parametrize(
+    "chat",
+    [
+        "gemini_pro_llm", "vertex_gemini_pro_llm"
+    ],
+)
+def test_chat(chat, request):
+    set_current_test_info("llama_index::chat", chat)
+    chat_model = request.getfixturevalue(chat)
+    response = chat_model.complete("Hello! Where Archimede was born?")
+    assert "Syracuse" in response.text
