@@ -55,14 +55,8 @@ def test_ingest_errors(environment):
         )
     except ValueError as e:
         print("Error:", e)
-        # API Exception while running bulk insertion: [{'message': "Failed to insert document with _id 'b388435404254c17b720816ee9e0ddc4': Zero vectors cannot be indexed or queried with cosine similarity"}]
-        if (
-            "Zero vectors cannot be indexed or queried with cosine similarity"
-            not in e.args[0]
-        ):
-            pytest.fail(
-                f"Should have thrown ValueError with Zero vectors cannot be indexed or queried with cosine similarity but it was {e}"
-            )
+        if "Cannot build index from nodes with no content. " not in e.args[0]:
+            pytest.fail(f"LLama-index should have thrown an error but it was {e}")
 
     very_long_text = "RAGStack is a framework to run LangChain in production. " * 1000
 
