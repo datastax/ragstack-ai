@@ -27,7 +27,7 @@ from llama_index.llms import (
     Gemini,
 )
 from llama_index.multi_modal_llms import GeminiMultiModal
-from llama_index.schema import TextNode
+from llama_index.schema import TextNode, ImageNode
 from llama_index.vector_stores import AstraDBVectorStore, CassandraVectorStore
 
 from e2e_tests.conftest import (
@@ -332,9 +332,28 @@ def vertex_gemini_pro_llm():
     return Vertex(model="gemini-pro")
 
 
+def _complete_multimodal_vertex(llm, prompt, image_path):
+    history = [
+        ChatMessage(
+            role="user",
+            content=[
+                {
+                    "type": "text",
+                    "text": prompt,
+                },
+                {
+                    "type": "image_url",
+                    "image_url": image_path,
+                },
+            ],
+        ),
+    ]
+    return llm.chat(history).message.content
+
+
 @pytest.fixture
 def vertex_gemini_pro_vision_llm():
-    return Vertex(model="gemini-pro-vision")
+    return Vertex(model="gemini-pro-vision"), _complete_multimodal_vertex
 
 
 @pytest.fixture
@@ -349,6 +368,8 @@ def gemini_pro_vision_llm():
     return GeminiMultiModal(
         api_key=get_required_env("GOOGLE_API_KEY"),
         model_name="models/gemini-pro-vision",
+    ), lambda llm, prompt, image_path: llm.complete(
+        prompt=prompt, image_documents=[ImageNode(image_path=image_path)]
     )
 
 
@@ -373,7 +394,7 @@ def test_multimodal(vector_store, embedding, llm, request):
 
     vector_store_wrapper = request.getfixturevalue(vector_store)
     vector_store_wrapper.init(embedding_dimension=embedding_size)
-    resolved_llm = request.getfixturevalue(llm)
+    resolved_llm, llm_complete_fn = request.getfixturevalue(llm)
 
     tree_image = get_local_resource_path("tree.jpeg")
     products = [
@@ -403,23 +424,11 @@ def test_multimodal(vector_store, embedding, llm, request):
     )
 
     documents = vector_store_wrapper.search(embeddings.image_embedding, 3)
-
-    history = [
-        ChatMessage(
-            role="user",
-            content=[
-                {
-                    "type": "text",
-                    "text": f"What is this image? Tell me which one of these products it is part of: {', '.join([p for p in documents])}",
-                },
-                {
-                    "type": "image_url",
-                    "image_url": query_image_path,
-                },
-            ],
-        ),
-    ]
-    response = resolved_llm.chat(history).message.content
+    response = llm_complete_fn(
+        resolved_llm,
+        f"What is this image? Tell me which one of these products it is part of: {', '.join([p for p in documents])}",
+        query_image_path,
+    )
     assert "Coffee Machine Ultra Cool" in response
 
 
