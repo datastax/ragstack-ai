@@ -6,10 +6,7 @@ from urllib.parse import urlparse
 
 import boto3
 from azure.storage.blob import ContainerClient
-from e2e_tests.conftest import (
-    set_current_test_info,
-    get_required_env
-)
+from e2e_tests.conftest import set_current_test_info, get_required_env
 
 from langchain.document_loaders import CSVLoader, WebBaseLoader, S3DirectoryLoader
 from langchain_community.document_loaders import AzureBlobStorageContainerLoader
@@ -101,16 +98,23 @@ def test_azure_blob_doc_loader():
     container_name = f"ragstack-ci-{uuid.uuid4()}"
     blob_name = "data.txt"
 
-    container_client = ContainerClient.from_connection_string(conn_str=connection_string, container_name=container_name)
+    container_client = ContainerClient.from_connection_string(
+        conn_str=connection_string, container_name=container_name
+    )
     try:
         container_client.create_container()
 
-        blob_client = BlobClient.from_connection_string(conn_str=connection_string, container_name=container_name,
-                                                        blob_name=blob_name)
+        blob_client = BlobClient.from_connection_string(
+            conn_str=connection_string,
+            container_name=container_name,
+            blob_name=blob_name,
+        )
 
         try:
             blob_client.upload_blob(io.BytesIO(b"test data"))
-            loader = AzureBlobStorageContainerLoader(conn_str=connection_string, container=container_name)
+            loader = AzureBlobStorageContainerLoader(
+                conn_str=connection_string, container=container_name
+            )
             docs = loader.load()
 
             for doc in docs:
