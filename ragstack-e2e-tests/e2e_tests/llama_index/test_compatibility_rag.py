@@ -68,7 +68,12 @@ class CassandraVectorStoreWrapper(VectorStoreWrapper):
         self.vector_store = None
 
     def init(self, embedding_dimension: int):
-        cassio.init(token=self.astra_ref.token, database_id=self.astra_ref.id)
+        if self.astra_ref.env == "dev":
+            bundle_url_template = "https://api.dev.cloud.datastax.com/v2/databases/{database_id}/secureBundleURL"
+            cassio.init(token=self.astra_ref.token, database_id=self.astra_ref.id,
+                        bundle_url_template=bundle_url_template)
+        else:
+            cassio.init(token=self.astra_ref.token, database_id=self.astra_ref.id)
         self.vector_store = CassandraVectorStore(
             embedding_dimension=embedding_dimension,
             session=None,
