@@ -370,7 +370,7 @@ def gemini_pro_vision_llm():
         model_name="models/gemini-pro-vision",
     ), lambda llm, prompt, image_path: llm.complete(
         prompt=prompt, image_documents=[ImageNode(image_path=image_path)]
-    )
+    ).text
 
 
 @pytest.mark.parametrize(
