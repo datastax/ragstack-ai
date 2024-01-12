@@ -24,8 +24,10 @@ from llama_index.llms import (
     Bedrock,
     HuggingFaceInferenceAPI,
     ChatMessage,
+    Gemini,
 )
-from llama_index.schema import TextNode
+from llama_index.multi_modal_llms import GeminiMultiModal
+from llama_index.schema import TextNode, ImageNode
 from llama_index.vector_stores import AstraDBVectorStore, CassandraVectorStore
 
 from e2e_tests.conftest import (
@@ -301,13 +303,16 @@ def test_rag(vector_store, embedding, llm, request):
 
     documents = [
         Document(
-            text="MyFakeProductForTesting is a versatile testing tool designed to streamline the testing process for software developers, quality assurance professionals, and product testers. It provides a comprehensive solution for testing various aspects of applications and systems, ensuring robust performance and functionality."  # noqa: E501
+            text="MyFakeProductForTesting is a versatile testing tool designed to streamline the testing process for software developers, quality assurance professionals, and product testers. It provides a comprehensive solution for testing various aspects of applications and systems, ensuring robust performance and functionality."
+            # noqa: E501
         ),
         Document(
-            text="MyFakeProductForTesting comes equipped with an advanced dynamic test scenario generator. This feature allows users to create realistic test scenarios by simulating various user interactions, system inputs, and environmental conditions. The dynamic nature of the generator ensures that tests are not only diverse but also adaptive to changes in the application under test."  # noqa: E501
+            text="MyFakeProductForTesting comes equipped with an advanced dynamic test scenario generator. This feature allows users to create realistic test scenarios by simulating various user interactions, system inputs, and environmental conditions. The dynamic nature of the generator ensures that tests are not only diverse but also adaptive to changes in the application under test."
+            # noqa: E501
         ),
         Document(
-            text="The product includes an intelligent bug detection and analysis module. It not only identifies bugs and issues but also provides in-depth analysis and insights into the root causes. The system utilizes machine learning algorithms to categorize and prioritize bugs, making it easier for developers and testers to address critical issues first."  # noqa: E501
+            text="The product includes an intelligent bug detection and analysis module. It not only identifies bugs and issues but also provides in-depth analysis and insights into the root causes. The system utilizes machine learning algorithms to categorize and prioritize bugs, making it easier for developers and testers to address critical issues first."
+            # noqa: E501
         ),
         Document(text="MyFakeProductForTesting first release happened in June 2020."),
     ]
@@ -331,8 +336,52 @@ def vertex_gemini_multimodal_embedding():
 
 
 @pytest.fixture
-def vertex_gemini_pro_vision():
-    return Vertex(model="gemini-pro-vision")
+def vertex_gemini_pro_llm():
+    return Vertex(model="gemini-pro")
+
+
+def _complete_multimodal_vertex(llm, prompt, image_path):
+    history = [
+        ChatMessage(
+            role="user",
+            content=[
+                {
+                    "type": "text",
+                    "text": prompt,
+                },
+                {
+                    "type": "image_url",
+                    "image_url": image_path,
+                },
+            ],
+        ),
+    ]
+    return llm.chat(history).message.content
+
+
+@pytest.fixture
+def vertex_gemini_pro_vision_llm():
+    return Vertex(model="gemini-pro-vision"), _complete_multimodal_vertex
+
+
+@pytest.fixture
+def gemini_pro_llm():
+    return Gemini(
+        api_key=get_required_env("GOOGLE_API_KEY"), model_name="models/gemini-pro"
+    )
+
+
+@pytest.fixture
+def gemini_pro_vision_llm():
+    return (
+        GeminiMultiModal(
+            api_key=get_required_env("GOOGLE_API_KEY"),
+            model_name="models/gemini-pro-vision",
+        ),
+        lambda llm, prompt, image_path: llm.complete(
+            prompt=prompt, image_documents=[ImageNode(image_path=image_path)]
+        ).text,
+    )
 
 
 @pytest.mark.parametrize(
@@ -342,7 +391,8 @@ def vertex_gemini_pro_vision():
 @pytest.mark.parametrize(
     "embedding,llm",
     [
-        ("vertex_gemini_multimodal_embedding", "vertex_gemini_pro_vision"),
+        ("vertex_gemini_multimodal_embedding", "vertex_gemini_pro_vision_llm"),
+        ("vertex_gemini_multimodal_embedding", "gemini_pro_vision_llm"),
     ],
 )
 def test_multimodal(vector_store, embedding, llm, request):
@@ -355,7 +405,7 @@ def test_multimodal(vector_store, embedding, llm, request):
 
     vector_store_wrapper = request.getfixturevalue(vector_store)
     vector_store_wrapper.init(embedding_dimension=embedding_size)
-    resolved_llm = request.getfixturevalue(llm)
+    resolved_llm, llm_complete_fn = request.getfixturevalue(llm)
 
     tree_image = get_local_resource_path("tree.jpeg")
     products = [
@@ -385,23 +435,11 @@ def test_multimodal(vector_store, embedding, llm, request):
     )
 
     documents = vector_store_wrapper.search(embeddings.image_embedding, 3)
-
-    history = [
-        ChatMessage(
-            role="user",
-            content=[
-                {
-                    "type": "text",
-                    "text": f"What is this image? Tell me which one of these products it is part of: {', '.join([p for p in documents])}",
-                },
-                {
-                    "type": "image_url",
-                    "image_url": query_image_path,
-                },
-            ],
-        ),
-    ]
-    response = resolved_llm.chat(history).message.content
+    response = llm_complete_fn(
+        resolved_llm,
+        f"What is this image? Tell me which one of these products it is part of: {', '.join([p for p in documents])}",
+        query_image_path,
+    )
     assert "Coffee Machine Ultra Cool" in response
 
 
@@ -409,3 +447,14 @@ def get_local_resource_path(filename: str):
     dirname = os.path.dirname(__file__)
     e2e_tests_dir = os.path.dirname(dirname)
     return os.path.join(e2e_tests_dir, "resources", filename)
+
+
+@pytest.mark.parametrize(
+    "chat",
+    ["gemini_pro_llm", "vertex_gemini_pro_llm"],
+)
+def test_chat(chat, request):
+    set_current_test_info("llama_index::chat", chat)
+    chat_model = request.getfixturevalue(chat)
+    response = chat_model.complete("Hello! Where Archimede was born?")
+    assert "Syracuse" in response.text
