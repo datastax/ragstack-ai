@@ -2,6 +2,7 @@ import json
 import logging
 from typing import List
 
+from astrapy.api import APIRequestError
 from astrapy.db import AstraDB as LibAstraDB
 import pytest
 from httpx import ConnectError, HTTPStatusError
@@ -164,7 +165,7 @@ def test_basic_metadata_filtering_no_vector(environment):
     try:
         collection.find_one(filter={"metadata.chunks": {"$invalid": 2}})
         pytest.fail("Should have thrown ValueError")
-    except ValueError as e:
+    except APIRequestError as e:
         print("Error:", e)
 
         # Parse the error message
