@@ -9,8 +9,7 @@ jobs:
   release:
     name: Release package
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
+    permissions: write-all
     steps:
       - name: Check out the repo
         uses: actions/checkout@v3
@@ -45,6 +44,12 @@ jobs:
         shell: bash
         run: |
             echo "release-number=$(echo ${{ github.ref }} | sed -e 's/refs\/tags\/ragstack-ai-//')" >> $GITHUB_OUTPUT
+
+      - name: Docker
+        uses: ./.github/actions/build-deploy-docker-image
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          ragstack-version: ${{ steps.release-number.outputs.release-number }}
 
       - name: Update API reference
         uses: ./.github/actions/deploy-api-reference

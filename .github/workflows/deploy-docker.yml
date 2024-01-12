@@ -1,0 +1,23 @@
+name: Build and deploy docker image
+
+on:
+  workflow_dispatch:
+    inputs:
+      ragstack-version:
+        description: 'RAGStack version (must exists on PyPI)'
+        required: true
+
+jobs:
+  docker-build-deploy:
+    name: Docker deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Docker
+        uses: ./.github/actions/build-deploy-docker-image
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          ragstack-version: ${{ steps.release-number.outputs.release-number }}

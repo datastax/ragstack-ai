@@ -1,0 +1,30 @@
+name: "Build and deploy Docker image"
+description: "Build and deploy Docker image"
+inputs:
+  github-token:
+    required: true
+    description: 'Github token'
+  ragstack-version:
+    required: true
+    description: 'Ragstack version'
+runs:
+  using: "composite"
+  steps:
+    - name: 'Login to GitHub Container Registry'
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ inputs.github-token }}
+
+    - name: Build and deploy
+      shell: bash
+      run: |
+        set -e 
+        image_name=ghcr.io/datastax/ragstack-ai
+        
+        docker build -t ${image_name}:latest --build-arg RAGSTACK_AI_VERSION=${{ inputs.ragstack-version }} -f docker/Dockerfile docker
+        docker run --rm ${image_name}:latest python -c "import langchain"
+        docker tag ${image_name}:latest ${image_name}:${{ inputs.ragstack-version }}
+        docker push ${image_name}:${{ inputs.ragstack-version }}
+        docker push ${image_name}:latest
