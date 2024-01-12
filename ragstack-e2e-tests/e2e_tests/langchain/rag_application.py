@@ -71,6 +71,13 @@ Chat History:
 Follow Up Input: {question}
 Standalone Question:"""
 
+BASIC_QA_PROMPT = """
+Answer the question based only on the supplied context. If you don't know the answer, say you don't know the answer. 
+Context: {context}
+Question: {question}
+Your answer:
+"""
+
 
 class ChatRequest(BaseModel):
     question: str

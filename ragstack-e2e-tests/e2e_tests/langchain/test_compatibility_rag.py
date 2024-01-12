@@ -15,6 +15,8 @@ from e2e_tests.langchain.rag_application import (
     run_rag_custom_chain,
     run_conversational_rag,
 )
+from e2e_tests.langchain.trulens import run_trulens_evaluation
+
 from langchain.chat_models import ChatOpenAI, AzureChatOpenAI, ChatVertexAI, BedrockChat
 from langchain.embeddings import (
     OpenAIEmbeddings,
@@ -32,7 +34,6 @@ from vertexai.vision_models import MultiModalEmbeddingModel, Image
 
 from e2e_tests.test_utils.tracing import record_langsmith_sharelink
 from e2e_tests.test_utils.vector_store_handler import VectorStoreImplementation
-
 
 @pytest.fixture
 def astra_db():
@@ -167,7 +168,8 @@ def nvidia_mixtral_llm():
 
 @pytest.mark.parametrize(
     "test_case",
-    ["rag_custom_chain", "conversational_rag"],
+    # ["rag_custom_chain", "conversational_rag", "trulens"],
+    ["trulens"],
 )
 @pytest.mark.parametrize("vector_store", ["astra_db", "cassandra"])
 @pytest.mark.parametrize(
@@ -224,6 +226,8 @@ def _run_test(test_case: str, vector_store_context, embedding, llm, record_prope
             chat_memory=vector_store_context.new_langchain_chat_memory(),
             record_property=record_property,
         )
+    elif test_case == "trulens":
+        run_trulens_evaluation(vector_store=vector_store, llm=llm)
     else:
         raise ValueError(f"Unknown test case: {test_case}")
 
