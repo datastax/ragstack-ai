@@ -49,7 +49,7 @@ def get_astra_ref() -> AstraRef:
         api_endpoint=get_required_env("ASTRA_DB_ENDPOINT"),
         collection=get_required_env("ASTRA_TABLE_NAME"),
         id=get_required_env("ASTRA_DB_ID"),
-        env=env
+        env=env,
     )
 
 
