@@ -60,7 +60,7 @@ class DeleteCollectionHandler:
         Blocks until all ongoing deletions are completed.
         """
         while self.semaphore._value != self.max_workers:
-            logging.info(
+            logging.debug(
                 f"{self.max_workers - self.semaphore._value} deletions still running, waiting to complete"
             )
             time.sleep(1)

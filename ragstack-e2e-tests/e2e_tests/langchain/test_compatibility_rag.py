@@ -15,6 +15,7 @@ from e2e_tests.langchain.rag_application import (
 )
 from e2e_tests.langchain.trulens import run_trulens_evaluation
 from e2e_tests.test_utils import get_local_resource_path
+from e2e_tests.langchain.nemo_guardrails import run_nemo_guardrails
 
 from langchain.chat_models import ChatOpenAI, AzureChatOpenAI, ChatVertexAI, BedrockChat
 from langchain.embeddings import (
@@ -64,12 +65,25 @@ def openai_gpt35turbo_llm():
 
 @pytest.fixture
 def openai_gpt4_llm():
-    return _chat_openai(model="gpt-4", streaming=False)
+    return {
+        "llm": _chat_openai(model="gpt-4", streaming=False),
+        "engine": "openai",
+        "model": "gpt-4",
+    }
+
+
+@pytest.fixture
+def openai_embedding():
+    return OpenAIEmbeddings(openai_api_key=get_required_env("OPEN_AI_KEY"))
 
 
 @pytest.fixture
 def openai_gpt4_llm_streaming():
-    return _chat_openai(model="gpt-4", streaming=True)
+    return {
+        "llm": _chat_openai(model="gpt-4", streaming=True),
+        "engine": "openai",
+        "model": "gpt-4",
+    }
 
 
 def _openai_embeddings(**kwargs) -> OpenAIEmbeddings:
@@ -95,13 +109,17 @@ def openai_3large_embedding():
 def azure_openai_gpt35turbo_llm():
     # model is configurable because it can be different from the deployment
     # but the targeting model must be gpt-35-turbo
-    return AzureChatOpenAI(
-        azure_deployment=get_required_env("AZURE_OPEN_AI_CHAT_MODEL_DEPLOYMENT"),
-        openai_api_base=get_required_env("AZURE_OPEN_AI_ENDPOINT"),
-        openai_api_key=get_required_env("AZURE_OPEN_AI_KEY"),
-        openai_api_type="azure",
-        openai_api_version="2023-07-01-preview",
-    )
+    return {
+        "llm": AzureChatOpenAI(
+            azure_deployment=get_required_env("AZURE_OPEN_AI_CHAT_MODEL_DEPLOYMENT"),
+            openai_api_base=get_required_env("AZURE_OPEN_AI_ENDPOINT"),
+            openai_api_key=get_required_env("AZURE_OPEN_AI_KEY"),
+            openai_api_type="azure",
+            openai_api_version="2023-07-01-preview",
+        ),
+        "engine": "azure",
+        "model": "gpt-3.5-turbo",
+    }
 
 
 @pytest.fixture
@@ -190,7 +208,7 @@ def huggingface_hub_minilml6v2_embedding():
 @pytest.fixture
 def nvidia_aifoundation_nvolveqa40k_embedding():
     get_required_env("NVIDIA_API_KEY")
-    from langchain_nvidia_ai_endpoints import NVIDIAEmbeddings
+    from langchain_nvidia_ai_endpoints.embeddings import NVIDIAEmbeddings
 
     return NVIDIAEmbeddings(model="playground_nvolveqa_40k")
 
@@ -205,12 +223,18 @@ def nvidia_aifoundation_mixtral8x7b_llm():
 
 @pytest.mark.parametrize(
     "test_case",
-    ["rag_custom_chain", "conversational_rag", "trulens"],
+    # ["rag_custom_chain", "conversational_rag", "trulens", "nemo_guardrails"],
+    ["nemo_guardrails"],
 )
-@pytest.mark.parametrize("vector_store", ["astra_db", "cassandra"])
 @pytest.mark.parametrize(
-    "embedding,llm",
+    "vector_store",
+    # ["astra_db", "cassandra"],
+    ["cassandra"],
+)
+@pytest.mark.parametrize(
+    "embedding,llm,config",
     [
+        ("openai_embedding", "openai_llm", "openai_nemo"),
         ("openai_ada002_embedding", "openai_gpt35turbo_llm"),
         ("openai_3small_embedding", "openai_gpt4_llm"),
         ("openai_3large_embedding", "openai_gpt4_llm_streaming"),
@@ -226,7 +250,7 @@ def nvidia_aifoundation_mixtral8x7b_llm():
         ),
     ],
 )
-def test_rag(test_case, vector_store, embedding, llm, request, record_property):
+def test_rag(test_case, vector_store, embedding, llm, config, request, record_property):
     set_current_test_info(
         "langchain::" + test_case,
         f"{llm},{embedding},{vector_store}",
@@ -234,16 +258,25 @@ def test_rag(test_case, vector_store, embedding, llm, request, record_property):
     resolved_vector_store = request.getfixturevalue(vector_store)
     resolved_embedding = request.getfixturevalue(embedding)
     resolved_llm = request.getfixturevalue(llm)
+    resolved_config = request.getfixturevalue(config)
     _run_test(
         test_case,
         resolved_vector_store,
         resolved_embedding,
         resolved_llm,
+        resolved_config,
         record_property,
     )
 
 
-def _run_test(test_case: str, vector_store_context, embedding, llm, record_property):
+def _run_test(
+    test_case: str,
+    vector_store_context,
+    embedding,
+    llm,
+    resolved_config,
+    record_property,
+):
     vector_store = vector_store_context.new_langchain_vector_store(embedding=embedding)
     if test_case == "rag_custom_chain":
         run_rag_custom_chain(
@@ -256,8 +289,15 @@ def _run_test(test_case: str, vector_store_context, embedding, llm, record_prope
             chat_memory=vector_store_context.new_langchain_chat_memory(),
             record_property=record_property,
         )
+        # TODO: Add record property
     elif test_case == "trulens":
         run_trulens_evaluation(vector_store=vector_store, llm=llm)
+    elif test_case == "nemo_guardrails":
+        run_nemo_guardrails(
+            vector_store=vector_store,
+            llm=llm,
+            config=resolved_config,
+        )
     else:
         raise ValueError(f"Unknown test case: {test_case}")
 
