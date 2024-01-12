@@ -20,6 +20,8 @@ from e2e_tests.langchain.rag_application import (
     run_rag_custom_chain,
     run_conversational_rag,
 )
+from e2e_tests.langchain.trulens import run_trulens_evaluation
+
 from langchain.chat_models import ChatOpenAI, AzureChatOpenAI, ChatVertexAI, BedrockChat
 from langchain.embeddings import (
     OpenAIEmbeddings,
@@ -40,6 +42,8 @@ from langchain_core.vectorstores import VectorStore
 from langchain_google_genai import ChatGoogleGenerativeAI
 from sqlalchemy import Float
 from vertexai.vision_models import MultiModalEmbeddingModel, Image
+
+from trulens_eval.feedback.provider.langchain import Langchain as TrulensLangchain
 
 
 def astra_db_client():
@@ -319,7 +323,8 @@ def nvidia_mixtral_llm():
 
 @pytest.mark.parametrize(
     "test_case",
-    ["rag_custom_chain", "conversational_rag"],
+    # ["rag_custom_chain", "conversational_rag", "trulens"],
+    ["trulens"],
 )
 @pytest.mark.parametrize(
     "vector_store",
@@ -379,6 +384,8 @@ def _run_test(test_case: str, vector_store_wrapper, embedding, llm):
             llm=llm,
             chat_memory=vector_store_wrapper.create_chat_history(),
         )
+    elif test_case == "trulens":
+        run_trulens_evaluation(vector_store=vector_store, llm=llm)
     else:
         raise ValueError(f"Unknown test case: {test_case}")
 
@@ -505,3 +512,47 @@ def test_chat(chat, request):
     chain = prompt | chat_model
     response = chain.invoke({})
     assert "Syracuse" in response.content
+
+
+@pytest.mark.parametrize(
+    "vector_store",
+    ["astra_db", "cassandra"],
+)
+@pytest.mark.parametrize(
+    "embedding,llm",
+    [
+        ("openai_embedding", "openai_llm"),
+        ("azure_openai_embedding", "azure_openai_llm"),
+        ("vertex_embedding", "vertex_llm"),
+        ("bedrock_titan_embedding", "bedrock_anthropic_llm"),
+        ("bedrock_cohere_embedding", "bedrock_meta_llm"),
+        ("huggingface_hub_embedding", "huggingface_hub_llm"),
+        ("nvidia_embedding", "nvidia_mixtral_llm"),
+    ],
+)
+def test_rag(test_case, vector_store, embedding, llm, request):
+    set_current_test_info(
+        "langchain::" + test_case,
+        f"{llm},{embedding},{vector_store}",
+    )
+    start = time.perf_counter_ns()
+    resolved_vector_store = request.getfixturevalue(vector_store)
+    logging.info(
+        "Vector store initialized in %s seconds", (time.perf_counter_ns() - start) / 1e9
+    )
+    start = time.perf_counter_ns()
+    resolved_embedding = request.getfixturevalue(embedding)
+    logging.info(
+        "Embedding initialized in %s seconds", (time.perf_counter_ns() - start) / 1e9
+    )
+    start = time.perf_counter_ns()
+    resolved_llm = request.getfixturevalue(llm)
+    logging.info(
+        "LLM initialized in %s seconds", (time.perf_counter_ns() - start) / 1e9
+    )
+    _run_test(
+        test_case,
+        resolved_vector_store,
+        resolved_embedding,
+        resolved_llm,
+    )
