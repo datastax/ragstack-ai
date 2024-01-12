@@ -365,12 +365,15 @@ def gemini_pro_llm():
 
 @pytest.fixture
 def gemini_pro_vision_llm():
-    return GeminiMultiModal(
-        api_key=get_required_env("GOOGLE_API_KEY"),
-        model_name="models/gemini-pro-vision",
-    ), lambda llm, prompt, image_path: llm.complete(
-        prompt=prompt, image_documents=[ImageNode(image_path=image_path)]
-    ).text
+    return (
+        GeminiMultiModal(
+            api_key=get_required_env("GOOGLE_API_KEY"),
+            model_name="models/gemini-pro-vision",
+        ),
+        lambda llm, prompt, image_path: llm.complete(
+            prompt=prompt, image_documents=[ImageNode(image_path=image_path)]
+        ).text,
+    )
 
 
 @pytest.mark.parametrize(
