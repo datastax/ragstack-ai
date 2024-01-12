@@ -39,14 +39,17 @@ class AstraRef:
     api_endpoint: str
     collection: str
     id: str
+    env: str
 
 
 def get_astra_ref() -> AstraRef:
+    env = os.environ.get("ASTRA_DB_ENV", "prod").lower()
     return AstraRef(
         token=get_required_env("ASTRA_DB_TOKEN"),
         api_endpoint=get_required_env("ASTRA_DB_ENDPOINT"),
         collection=get_required_env("ASTRA_TABLE_NAME"),
         id=get_required_env("ASTRA_DB_ID"),
+        env=env,
     )
 
 

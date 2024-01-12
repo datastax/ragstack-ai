@@ -32,6 +32,25 @@ jobs:
         id: filter
         with:
           filters: ./.github/changes-filter.yaml
+  build-example-docker:
+    name: Build example Docker image
+    needs: ["preconditions"]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v3
+
+      - name: Build a basic image
+        run: |
+          docker --version
+          cd docker/basic
+          sudo docker build -t ragstack-basic .
+      - name: Build a multistage image
+        run: |
+          docker --version
+          cd docker/multistage
+          sudo docker build -t ragstack-multistage .
+
   unit-tests:
     name: Unit Tests
     runs-on: ubuntu-latest
@@ -68,11 +87,11 @@ jobs:
             env: PROD
             region: eu-west-1
             cloud: aws
-#          - name: Astra DEV
-#            astra_token_secret: E2E_TESTS_ASTRA_DEV_DB_TOKEN
-#            env: DEV
-#            region: us-west-2
-#            cloud: aws
+          - name: Astra DEV
+            astra_token_secret: E2E_TESTS_ASTRA_DEV_DB_TOKEN
+            env: DEV
+            region: us-west-2
+            cloud: aws
 
     steps:
       - name: Check out the repo
@@ -100,7 +119,8 @@ jobs:
           cloud: ${{ matrix.cloud }}
 
       - name: Run notebook tests
-        if: needs.preconditions.outputs.notebooks == 'true' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        # we run notebook tests only on PROD env since we CassIO need different parameters for DEV, and we don't want to dirty the notebook
+        if: matrix.env == 'PROD' && (needs.preconditions.outputs.notebooks == 'true' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
         env:
           ASTRA_DB_APPLICATION_TOKEN: "${{ secrets[matrix.astra_token_secret] }}"
           ASTRA_DB_API_ENDPOINT: "${{ steps.astra-db.outputs.db_endpoint }}"
@@ -117,6 +137,7 @@ jobs:
           ASTRA_DB_TOKEN: "${{ secrets[matrix.astra_token_secret] }}"
           ASTRA_DB_ENDPOINT: "${{ steps.astra-db.outputs.db_endpoint }}"
           ASTRA_DB_ID: "${{ steps.astra-db.outputs.db_id }}"
+          ASTRA_DB_ENV: "${{ matrix.env }}"
           OPEN_AI_KEY: "${{ secrets.E2E_TESTS_OPEN_AI_KEY }}"
           AZURE_OPEN_AI_KEY: "${{ secrets.E2E_TESTS_AZURE_OPEN_AI_KEY }}"
           AZURE_OPEN_AI_ENDPOINT: "${{ secrets.E2E_TESTS_AZURE_OPEN_AI_ENDPOINT }}"
