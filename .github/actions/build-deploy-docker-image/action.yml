@@ -1,0 +1,43 @@
+name: "Build and deploy Docker image"
+description: "Build and deploy Docker image"
+inputs:
+  github-token:
+    required: true
+    description: 'Github token'
+  ragstack-version:
+    required: true
+    description: 'Ragstack version'
+  dry-run:
+    required: false
+    default: "true"
+    description: 'Whether to push the image or not'
+runs:
+  using: "composite"
+  steps:
+    - name: 'Login to GitHub Container Registry'
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ inputs.github-token }}
+
+    - name: Build and deploy
+      shell: bash
+      run: |
+        set -ex
+        image_name=ghcr.io/datastax/ragstack-ai
+        full_image_name_with_latest=${image_name}:latest
+        full_image_name_with_version=${image_name}:${{ inputs.ragstack-version }}
+        
+        docker build -t $full_image_name_with_latest --build-arg RAGSTACK_AI_VERSION=${{ inputs.ragstack-version }} -f docker/Dockerfile docker
+        docker run --rm $full_image_name_with_latest python -c "import langchain"
+        docker images
+        if [[ "${{ inputs.dry-run }}" == "true" ]]; then
+          echo "Dry run, would have pushed the followings images:"
+          echo "${full_image_name_with_latest}"
+          echo "${full_image_name_with_version}"
+        else
+          docker tag $full_image_name_with_latest $full_image_name_with_version
+          docker push ${full_image_name_with_version}
+          docker push ${full_image_name_with_latest}
+        fi
