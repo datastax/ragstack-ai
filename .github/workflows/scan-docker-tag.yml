@@ -1,0 +1,26 @@
+name: Scan existing docker image
+
+on:
+  workflow_dispatch:
+    inputs:
+      ragstack-version:
+        description: 'RAGStack version (docker tag must exists)'
+        default: "latest"
+  schedule:
+    - cron: '0 0 * * *'
+
+jobs:
+  docker-build-deploy:
+    name: Docker deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Scan docker image
+        uses: ./.github/actions/scan-docker-image
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+          docker-tag: "${{ github.event.inputs.ragstack-version }}"
+          snyk-token: "${{ secrets.SNYK_TOKEN }}"

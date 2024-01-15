@@ -32,8 +32,8 @@ jobs:
         id: filter
         with:
           filters: ./.github/changes-filter.yaml
-  build-example-docker:
-    name: Build example Docker image
+  build-docker:
+    name: Build Docker image
     needs: ["preconditions"]
     runs-on: ubuntu-latest
     steps:
@@ -45,7 +45,14 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           # we don't really care about the version here, we just want to make sure the image builds
           ragstack-version: "0.*"
-          dry-run: "true"
+          docker-tag: latest-dev
+          push: "false"
+      - name: Scan docker image
+        uses: ./.github/actions/scan-docker-image
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          docker-tag: "latest"
+          snyk-token: ${{ secrets.SNYK_TOKEN }}
 
       - name: Docker examples - basic
         run: |
