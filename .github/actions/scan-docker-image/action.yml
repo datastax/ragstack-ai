@@ -1,0 +1,36 @@
+name: "Scan Docker image"
+description: "Scan Docker image"
+inputs:
+  github-token:
+    required: true
+    description: 'Github token'
+  docker-tag:
+    required: true
+    description: 'Docker tag'
+  snyk-token:
+    required: true
+    description: 'Snyk token'
+runs:
+  using: "composite"
+  steps:
+    - name: 'Login to GitHub Container Registry'
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ inputs.github-token }}
+
+    - name: Scan Docker image
+      uses: snyk/actions/docker@master
+      continue-on-error: true
+      with:
+        image: ghcr.io/datastax/ragstack-ai:${{ inputs.docker-tag }}
+        args: --severity-threshold=high --sarif-file-output=snyk.sarif
+      env:
+        SNYK_TOKEN: ${{ inputs.snyk-token }}
+
+    - name: Upload Snyk report as sarif 📦
+      uses: github/codeql-action/upload-sarif@v2
+      with:
+        # note that the upload will be contextual to the current branch/tag. Ensure checking out the correct ref before running this action
+        sarif_file: snyk.sarif
