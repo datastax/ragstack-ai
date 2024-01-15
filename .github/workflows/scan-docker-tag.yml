@@ -1,0 +1,25 @@
+name: Scan existing docker image
+
+on:
+  workflow_dispatch:
+    inputs:
+      ragstack-version:
+        description: 'RAGStack version (docker image must exists)'
+        required: true
+
+jobs:
+  docker-build-deploy:
+    name: Docker deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: "ragstack-ai-${{ github.event.inputs.ragstack-version }}"
+          fetch-depth: 0
+
+      - name: Docker
+        uses: ./.github/actions/scan-docker-image
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+          docker-tag: "${{ github.event.inputs.ragstack-version }}"
+          snyk-token: "${{ secrets.SNYK_TOKEN }}"
