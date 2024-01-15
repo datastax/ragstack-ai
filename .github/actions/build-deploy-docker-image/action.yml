@@ -25,38 +25,35 @@ runs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 
-    - name: Build Docker image
+    - name: Build Docker image for testing
       uses: docker/build-push-action@v5
       with:
         # this is required for being able to get the images later
         load: true
         context: docker
         file: docker/Dockerfile
-        # We can only build for the intersection of platforms supported by
-        # QEMU and base python image, for now build only for
-        # linux/amd64 and linux/arm64
-        platforms: linux/amd64,linux/arm64
+        platforms: linux/amd64
         build-args: |
           RAGSTACK_AI_VERSION=${{ inputs.ragstack-version }}
-        tags: ghcr.io/datastax/ragstack-ai:latest
+        tags: ghcr.io/datastax/ragstack-ai:test
         push: false
 
-    - name: Test and push Docker images
+    - name: Test docker image
       shell: bash
       run: |
         set -e
-        docker images
-        image_name=ghcr.io/datastax/ragstack-ai
-        full_image_name_with_latest=${image_name}:latest
-        full_image_name_with_version=${image_name}:${{ inputs.ragstack-version }}
-        docker run --rm $full_image_name_with_latest python -c "import langchain"
-        
-        if [[ "${{ inputs.dry-run }}" == "true" ]]; then
-          echo "Dry run, would have pushed the followings images:"
-          echo "${full_image_name_with_latest}"
-          echo "${full_image_name_with_version}"
-        else
-          docker tag $full_image_name_with_latest $full_image_name_with_version
-          docker push ${full_image_name_with_version}
-          docker push ${full_image_name_with_latest}
-        fi
+        docker run --rm ghcr.io/datastax/ragstack-ai:test python -c "import langchain"
+
+    - name: Build Docker image and deploy
+      uses: docker/build-push-action@v5
+      with:
+        context: docker
+        file: docker/Dockerfile
+        # We can only build for the intersection of platforms supported by
+        # QEMU and base python image, for now build only for
+        # linux/amd64 and linux/arm64
+        platforms: linux/amd64
+        build-args: |
+          RAGSTACK_AI_VERSION=${{ inputs.ragstack-version }}
+        tags: ghcr.io/datastax/ragstack-ai:latest,ghcr.io/datastax/ragstack-ai:${{ inputs.ragstack-version }}
+        push: true
