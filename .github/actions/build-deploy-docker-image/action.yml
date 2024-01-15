@@ -7,6 +7,9 @@ inputs:
   ragstack-version:
     required: true
     description: 'Ragstack version'
+  docker-tag:
+    required: false
+    description: 'Docker tag to use'
   push:
     default: "false"
     description: 'Whether to push the image or not'
@@ -54,5 +57,5 @@ runs:
         platforms: linux/amd64,linux/arm64
         build-args: |
           RAGSTACK_AI_VERSION=${{ inputs.ragstack-version }}
-        tags: ghcr.io/datastax/ragstack-ai:latest,ghcr.io/datastax/ragstack-ai:${{ inputs.ragstack-version }}
+        tags: ghcr.io/datastax/ragstack-ai:latest,ghcr.io/datastax/ragstack-ai:${{ inputs.docker-tag || inputs.ragstack-version }}
         push: "${{ inputs.push }}"
