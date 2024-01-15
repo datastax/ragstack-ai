@@ -31,13 +31,13 @@ runs:
         
         docker build -t $full_image_name_with_latest --build-arg RAGSTACK_AI_VERSION=${{ inputs.ragstack-version }} -f docker/Dockerfile docker
         docker run --rm $full_image_name_with_latest python -c "import langchain"
-        docker tag $full_image_name_with_latest $full_image_name_with_version
         docker images
         if [[ "${{ inputs.dry-run }}" == "true" ]]; then
           echo "Dry run, would have pushed the followings images:"
           echo "${full_image_name_with_latest}"
           echo "${full_image_name_with_version}"
         else
+          docker tag $full_image_name_with_latest $full_image_name_with_version
           docker push ${full_image_name_with_version}
           docker push ${full_image_name_with_latest}
         fi
