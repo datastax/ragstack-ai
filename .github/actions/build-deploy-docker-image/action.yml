@@ -20,18 +20,35 @@ runs:
         registry: ghcr.io
         username: ${{ github.actor }}
         password: ${{ inputs.github-token }}
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v3
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
 
-    - name: Build and deploy
+    - name: Build Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: docker
+        file: docker/Dockerfile
+        # We can only build for the intersection of platforms supported by
+        # QEMU and base python image, for now build only for
+        # linux/amd64 and linux/arm64
+        platforms: linux/amd64,linux/arm64
+        build-args: |
+          RAGSTACK_AI_VERSION=${{ inputs.ragstack-version }}
+        tags: ghcr.io/datastax/ragstack-ai:latest
+        push: false
+
+    - name: Test and push Docker images
       shell: bash
       run: |
-        set -ex
+        set -e
+        docker images
         image_name=ghcr.io/datastax/ragstack-ai
         full_image_name_with_latest=${image_name}:latest
         full_image_name_with_version=${image_name}:${{ inputs.ragstack-version }}
-        
-        docker build -t $full_image_name_with_latest --build-arg RAGSTACK_AI_VERSION=${{ inputs.ragstack-version }} -f docker/Dockerfile docker
         docker run --rm $full_image_name_with_latest python -c "import langchain"
-        docker images
+        
         if [[ "${{ inputs.dry-run }}" == "true" ]]; then
           echo "Dry run, would have pushed the followings images:"
           echo "${full_image_name_with_latest}"
