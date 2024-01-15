@@ -10,12 +10,6 @@ inputs:
   snyk-token:
     required: true
     description: 'Snyk token'
-  github-ref:
-    required: true
-    description: 'Github ref for the upload-sarif action'
-  github-sha:
-    required: true
-    description: 'Github sha for the upload-sarif action'
 runs:
   using: "composite"
   steps:
@@ -28,17 +22,8 @@ runs:
 
     - name: Scan Docker image
       uses: snyk/actions/docker@master
-      continue-on-error: true
       with:
         image: ghcr.io/datastax/ragstack-ai:${{ inputs.docker-tag }}
-        args: --severity-threshold=high --sarif-file-output=snyk.sarif
+        args: --severity-threshold=high
       env:
         SNYK_TOKEN: ${{ inputs.snyk-token }}
-
-    - name: Upload Snyk report as sarif 📦
-      uses: github/codeql-action/upload-sarif@v2
-      with:
-        # note that the upload will be contextual to the current branch/tag. Ensure checking out the correct ref before running this action
-        sarif_file: snyk.sarif
-        ref: ${{ inputs.github-ref }}
-        sha: ${{ inputs.github-sha }}
