@@ -12,14 +12,28 @@ jobs:
     name: Docker deploy
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          path: main
+
+      - uses: actions/checkout@v4
         with:
           ref: "ragstack-ai-${{ github.event.inputs.ragstack-version }}"
           fetch-depth: 0
+          path: release
+
+      - name: Compute commit URL
+        id: commit-sha
+        run: |
+          cd release
+          echo "commit-sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
 
       - name: Docker
-        uses: ./.github/actions/scan-docker-image
+        uses: ./main/.github/actions/scan-docker-image
         with:
           github-token: "${{ secrets.GITHUB_TOKEN }}"
           docker-tag: "${{ github.event.inputs.ragstack-version }}"
           snyk-token: "${{ secrets.SNYK_TOKEN }}"
+          github-ref: "refs/tags/ragstack-ai-${{ github.event.inputs.ragstack-version }}"
+          github-sha: "${{ steps.commit-sha.outputs.commit-sha }}"
