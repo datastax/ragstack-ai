@@ -6,6 +6,9 @@ on:
       ragstack-version:
         description: 'RAGStack version (must exists on PyPI)'
         required: true
+      dry-run:
+        description: 'Dry run (do not push the image)'
+        default: "true"
 
 jobs:
   docker-build-deploy:
@@ -21,3 +24,4 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           ragstack-version: ${{ steps.release-number.outputs.release-number }}
+          dry-run: "${{ github.event.inputs.dry-run }}"

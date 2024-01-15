@@ -39,13 +39,19 @@ jobs:
     steps:
       - name: Check out the repo
         uses: actions/checkout@v3
+      - name: Build docker image
+        uses: ./.github/actions/build-deploy-docker-image
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          ragstack-version: "ci-snapshot"
+          dry-run: "true"
 
-      - name: Build a basic image
+      - name: Docker examples - basic
         run: |
           docker --version
           cd docker/examples/basic
           sudo docker build -t ragstack-basic .
-      - name: Build a multistage image
+      - name: Docker examples - multistage
         run: |
           docker --version
           cd docker/examples/multistage
