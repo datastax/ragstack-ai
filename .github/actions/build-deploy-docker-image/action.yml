@@ -7,9 +7,8 @@ inputs:
   ragstack-version:
     required: true
     description: 'Ragstack version'
-  dry-run:
-    required: false
-    default: "true"
+  push:
+    default: "false"
     description: 'Whether to push the image or not'
 runs:
   using: "composite"
@@ -52,8 +51,8 @@ runs:
         # We can only build for the intersection of platforms supported by
         # QEMU and base python image, for now build only for
         # linux/amd64 and linux/arm64
-        platforms: linux/amd64
+        platforms: linux/amd64,linux/arm64
         build-args: |
           RAGSTACK_AI_VERSION=${{ inputs.ragstack-version }}
         tags: ghcr.io/datastax/ragstack-ai:latest,ghcr.io/datastax/ragstack-ai:${{ inputs.ragstack-version }}
-        push: false
+        push: "${{ inputs.push }}"
