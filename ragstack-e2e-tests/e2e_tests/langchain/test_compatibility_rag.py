@@ -56,6 +56,16 @@ def openai_llm():
     return ChatOpenAI(
         openai_api_key=get_required_env("OPEN_AI_KEY"),
         model="gpt-3.5-turbo-16k",
+        streaming=False,
+        temperature=0,
+    )
+
+
+@pytest.fixture
+def openai_llm_streaming():
+    return ChatOpenAI(
+        openai_api_key=get_required_env("OPEN_AI_KEY"),
+        model="gpt-3.5-turbo-16k",
         streaming=True,
         temperature=0,
     )
@@ -168,14 +178,14 @@ def nvidia_mixtral_llm():
 
 @pytest.mark.parametrize(
     "test_case",
-    # ["rag_custom_chain", "conversational_rag", "trulens"],
-    ["trulens"],
+    ["rag_custom_chain", "conversational_rag", "trulens"],
 )
 @pytest.mark.parametrize("vector_store", ["astra_db", "cassandra"])
 @pytest.mark.parametrize(
     "embedding,llm",
     [
         ("openai_embedding", "openai_llm"),
+        ("openai_embedding", "openai_llm_streaming"),
         ("azure_openai_embedding", "azure_openai_llm"),
         ("vertex_embedding", "vertex_llm"),
         ("bedrock_titan_embedding", "bedrock_anthropic_llm"),

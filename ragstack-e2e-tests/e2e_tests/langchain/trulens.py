@@ -1,30 +1,26 @@
-from trulens_eval import TruChain, Feedback, Tru, Select
+from trulens_eval import TruChain, Feedback, Tru
 from trulens_eval.feedback.provider import Langchain
-from trulens_eval.feedback import Groundedness, GroundTruthAgreement
+from trulens_eval.feedback import Groundedness
 from trulens_eval.app import App
+from trulens_eval.schema import FeedbackResult
 
 from langchain.schema.vectorstore import VectorStore
-from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain.schema import Document
 from langchain.schema.language_model import BaseLanguageModel
-from langchain.schema.messages import AIMessage, HumanMessage
 from langchain.schema.output_parser import StrOutputParser
-from langchain.schema.retriever import BaseRetriever
 from langchain.schema.runnable import Runnable
-from pydantic import BaseModel
-
 from langchain.prompts import PromptTemplate
 from langchain_core.runnables import RunnablePassthrough
+from langchain_core.vectorstores import VectorStoreRetriever
 
-from e2e_tests.langchain.rag_application import format_docs
+from e2e_tests.langchain.rag_application import BASIC_QA_PROMPT, SAMPLE_DATA, format_docs
 
 import numpy as np
+from concurrent.futures import as_completed
 
 def _feedback_functions(chain: Runnable, llm: BaseLanguageModel) -> list[Feedback]:
     provider = Langchain(chain=llm)
     context = App.select_context(chain)
 
-    # Groundedness is how well the answer is supported by the context.
     grounded = Groundedness(groundedness_provider=provider)
     f_groundedness = (
         Feedback(grounded.groundedness_measure_with_cot_reasons)
@@ -32,19 +28,7 @@ def _feedback_functions(chain: Runnable, llm: BaseLanguageModel) -> list[Feedbac
         .on_output()
         .aggregate(grounded.grounded_statements_aggregator)
     )
-
-    # QA relevance is how relevant the answer is to the question.
     f_qa_relevance = Feedback(provider.relevance_with_cot_reasons).on_input_output()
-
-    # Ground truth is how well the answer matches the ground truth from the dataset.
-    # f_ground_truth = Feedback(
-    #     GroundTruthAgreement(
-    #         ground_truth=golden_set, provider=openai
-    #     ).agreement_measure,
-    #     name="Ground Truth",
-    # ).on_input_output()
-
-    # Context relevance is how relevant the retrieved context is to the question.
     f_context_relevance = (
         Feedback(provider.qs_relevance_with_cot_reasons)
         .on_input()
@@ -55,35 +39,48 @@ def _feedback_functions(chain: Runnable, llm: BaseLanguageModel) -> list[Feedbac
 
 
 def _initialize_tru() -> Tru:
-    # We can use the default db url, then ensure it's reset before each run.
+    # We can use the default db url and reset before each run.
     tru = Tru()
     tru.reset_database()
     return tru
 
-def create_chain(llm: BaseLanguageModel, retriever: BaseRetriever) -> Runnable:
-    prompt = PromptTemplate.from_template(PROMPT)
+def _create_chain(retriever: VectorStoreRetriever, llm: BaseLanguageModel) -> Runnable:
+    prompt = PromptTemplate.from_template(BASIC_QA_PROMPT)
     chain = (
         {"context": retriever | format_docs, "question": RunnablePassthrough()}
         | prompt
         | llm
-        | StrOutputParser(),
+        | StrOutputParser()
     )
     return chain
 
 
 def run_trulens_evaluation(vector_store: VectorStore, llm: BaseLanguageModel):
-    tru = _initialize_tru()
-    chain = create_chain(vector_store, llm)
+    """
+    Executes the TruLens evaluation process.
+    """
+    vector_store.add_texts(SAMPLE_DATA)
+    _initialize_tru()
+    retriever = vector_store.as_retriever()
+    chain = _create_chain(retriever=retriever, llm=llm)
 
-    feedback_functions = _feedback_functions(chain, llm)
+    feedback_functions = _feedback_functions(chain=chain, llm=llm)
     tru_recorder = TruChain(
         chain,
+        app_id="test",
         feedbacks=feedback_functions,
     )
 
     with tru_recorder as recording:
-        chain("When was MyFakeProductForTesting released for the first time?")
+        chain.invoke("When was MyFakeProductForTesting released for the first time?")
 
-    tru_record = recording.records[0]
-    print(tru_record)
-    # TODO: FRAZ - theoretically..test this now on a subset of llms.
+    tru_record = recording.get()
+
+    # Wait for the feedback results to complete
+    for feedback_future in as_completed(tru_record.feedback_results):
+        _, feedback_result = feedback_future.result()
+
+        feedback_result: FeedbackResult
+
+        # basic verification that feedback results were computed
+        assert feedback_result.result > 0.0
