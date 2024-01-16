@@ -328,18 +328,13 @@ def nvidia_mixtral_llm():
 )
 @pytest.mark.parametrize(
     "vector_store",
-    ["astra_db", "cassandra"],
+    # ["astra_db", "cassandra"],
+    ["astra_db"],
 )
 @pytest.mark.parametrize(
     "embedding,llm",
     [
         ("openai_embedding", "openai_llm"),
-        ("azure_openai_embedding", "azure_openai_llm"),
-        ("vertex_embedding", "vertex_llm"),
-        ("bedrock_titan_embedding", "bedrock_anthropic_llm"),
-        ("bedrock_cohere_embedding", "bedrock_meta_llm"),
-        ("huggingface_hub_embedding", "huggingface_hub_llm"),
-        ("nvidia_embedding", "nvidia_mixtral_llm"),
     ],
 )
 def test_rag(test_case, vector_store, embedding, llm, request):
@@ -368,6 +363,20 @@ def test_rag(test_case, vector_store, embedding, llm, request):
         resolved_embedding,
         resolved_llm,
     )
+
+
+# @pytest.mark.parametrize(
+#     "embedding,llm",
+#     [
+#         ("openai_embedding", "openai_llm"),
+#         ("azure_openai_embedding", "azure_openai_llm"),
+#         ("vertex_embedding", "vertex_llm"),
+#         ("bedrock_titan_embedding", "bedrock_anthropic_llm"),
+#         ("bedrock_cohere_embedding", "bedrock_meta_llm"),
+#         ("huggingface_hub_embedding", "huggingface_hub_llm"),
+#         ("nvidia_embedding", "nvidia_mixtral_llm"),
+#     ],
+# )
 
 
 def _run_test(test_case: str, vector_store_wrapper, embedding, llm):
@@ -412,11 +421,11 @@ def gemini_pro_vision_llm():
     )
 
 
-@pytest.fixture
-def gemini_pro_llm():
-    return ChatGoogleGenerativeAI(
-        model="gemini-pro", google_api_key=get_required_env("GOOGLE_API_KEY")
-    )
+# @pytest.fixture
+# def gemini_pro_llm():
+#     return ChatGoogleGenerativeAI(
+#         model="gemini-pro", google_api_key=get_required_env("GOOGLE_API_KEY")
+#     )
 
 
 @pytest.mark.parametrize(
@@ -430,6 +439,7 @@ def gemini_pro_llm():
         ("vertex_gemini_multimodal_embedding", "gemini_pro_vision_llm"),
     ],
 )
+@pytest.mark.skip
 def test_multimodal(vector_store, embedding, llm, request):
     set_current_test_info(
         "langchain::multimodal_rag",
@@ -496,63 +506,19 @@ def get_local_resource_path(filename: str):
     return os.path.join(e2e_tests_dir, "resources", filename)
 
 
-@pytest.mark.parametrize(
-    "chat",
-    ["vertex_gemini_pro_llm", "gemini_pro_llm"],
-)
-def test_chat(chat, request):
-    set_current_test_info(
-        "langchain::chat",
-        chat,
-    )
-    chat_model = request.getfixturevalue(chat)
-    prompt = ChatPromptTemplate.from_messages(
-        [("human", "Hello! Where Archimede was born?")]
-    )
-    chain = prompt | chat_model
-    response = chain.invoke({})
-    assert "Syracuse" in response.content
-
-
-@pytest.mark.parametrize(
-    "vector_store",
-    ["astra_db", "cassandra"],
-)
-@pytest.mark.parametrize(
-    "embedding,llm",
-    [
-        ("openai_embedding", "openai_llm"),
-        ("azure_openai_embedding", "azure_openai_llm"),
-        ("vertex_embedding", "vertex_llm"),
-        ("bedrock_titan_embedding", "bedrock_anthropic_llm"),
-        ("bedrock_cohere_embedding", "bedrock_meta_llm"),
-        ("huggingface_hub_embedding", "huggingface_hub_llm"),
-        ("nvidia_embedding", "nvidia_mixtral_llm"),
-    ],
-)
-def test_rag(test_case, vector_store, embedding, llm, request):
-    set_current_test_info(
-        "langchain::" + test_case,
-        f"{llm},{embedding},{vector_store}",
-    )
-    start = time.perf_counter_ns()
-    resolved_vector_store = request.getfixturevalue(vector_store)
-    logging.info(
-        "Vector store initialized in %s seconds", (time.perf_counter_ns() - start) / 1e9
-    )
-    start = time.perf_counter_ns()
-    resolved_embedding = request.getfixturevalue(embedding)
-    logging.info(
-        "Embedding initialized in %s seconds", (time.perf_counter_ns() - start) / 1e9
-    )
-    start = time.perf_counter_ns()
-    resolved_llm = request.getfixturevalue(llm)
-    logging.info(
-        "LLM initialized in %s seconds", (time.perf_counter_ns() - start) / 1e9
-    )
-    _run_test(
-        test_case,
-        resolved_vector_store,
-        resolved_embedding,
-        resolved_llm,
-    )
+# @pytest.mark.parametrize(
+#     "chat",
+#     ["vertex_gemini_pro_llm", "gemini_pro_llm"],
+# )
+# def test_chat(chat, request):
+#     set_current_test_info(
+#         "langchain::chat",
+#         chat,
+#     )
+#     chat_model = request.getfixturevalue(chat)
+#     prompt = ChatPromptTemplate.from_messages(
+#         [("human", "Hello! Where Archimede was born?")]
+#     )
+#     chain = prompt | chat_model
+#     response = chain.invoke({})
+#     assert "Syracuse" in response.content

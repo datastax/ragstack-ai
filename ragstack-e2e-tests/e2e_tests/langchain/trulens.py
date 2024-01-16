@@ -15,8 +15,9 @@ from pydantic import BaseModel
 
 from langchain.prompts import PromptTemplate
 from langchain_core.runnables import RunnablePassthrough
+from langchain_core.vectorstores import VectorStoreRetriever
 
-from rag_application import format_docs
+from e2e_tests.langchain.rag_application import format_docs
 
 import numpy as np
 
@@ -76,30 +77,43 @@ def _initialize_tru() -> Tru:
     # "Langchain",
 
 
-def create_chain(llm: BaseLanguageModel, retriever: BaseRetriever) -> Runnable:
+def create_chain(retriever: VectorStoreRetriever, llm: BaseLanguageModel) -> Runnable:
     prompt = PromptTemplate.from_template(PROMPT)
     chain = (
-        {"context": retriever | format_docs, "question": RunnablePassThrough()}
+        {"context": retriever, "question": RunnablePassthrough()}
         | prompt
         | llm
-        | StrOutputParser(),
+        | StrOutputParser()
     )
     return chain
 
 
 def run_trulens_evaluation(vector_store: VectorStore, llm: BaseLanguageModel):
-    tru = _initialize_tru()
-    chain = create_chain(vector_store, llm)
+    vector_store.add_texts(
+        [
+            "MyFakeProductForTesting is a versatile testing tool designed to streamline the testing process for software developers, quality assurance professionals, and product testers. It provides a comprehensive solution for testing various aspects of applications and systems, ensuring robust performance and functionality.",  # noqa: E501
+            "MyFakeProductForTesting comes equipped with an advanced dynamic test scenario generator. This feature allows users to create realistic test scenarios by simulating various user interactions, system inputs, and environmental conditions. The dynamic nature of the generator ensures that tests are not only diverse but also adaptive to changes in the application under test.",  # noqa: E501
+            "The product includes an intelligent bug detection and analysis module. It not only identifies bugs and issues but also provides in-depth analysis and insights into the root causes. The system utilizes machine learning algorithms to categorize and prioritize bugs, making it easier for developers and testers to address critical issues first.",  # noqa: E501
+            "MyFakeProductForTesting first release happened in June 2020.",
+        ]
+    )
+    _initialize_tru()
+    retriever = vector_store.as_retriever()
+    chain = create_chain(retriever=retriever, llm=llm)
 
-    feedback_functions = _feedback_functions(chain, llm)
+    feedback_functions = _feedback_functions(chain=chain, llm=llm)
     tru_recorder = TruChain(
         chain,
+        app_id="test",
         feedbacks=feedback_functions,
     )
+    result = chain.invoke(
+        "when was MyFakeProductForTesting released for the first time?"
+    )
+    print(result)
 
     with tru_recorder as recording:
-        chain("When was MyFakeProductForTesting released for the first time?")
+        chain.invoke("When was MyFakeProductForTesting released for the first time?")
 
     tru_record = recording.records[0]
     print(tru_record)
-    # TODO: FRAZ - theoretically..test this now on a subset of llms.
