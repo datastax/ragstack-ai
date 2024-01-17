@@ -84,7 +84,7 @@ if __name__ == '__main__':
         prog='Benchmarks runner result visualizer',
         description='Visualize benchmarks results')
 
-    parser.add_argument('-r', '--reports-dir', type=str, required=True,
+    parser.add_argument('-r', '--reports-dir', type=str, default=os.path.join(os.path.dirname(__file__), "reports"),
                         help='Reports dir')
     parser.add_argument('--format', choices=["table", "plot"], default="table")
     parser.add_argument('-f', '--filter', type=str, default="",

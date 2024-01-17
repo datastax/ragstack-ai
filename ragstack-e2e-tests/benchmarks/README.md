@@ -5,13 +5,14 @@ This framework is used to run benchmarks on different providers, models and data
 ## Running benchmarks
 To run the benchmark, you need to add the secrets to the environment variables.
 ```
-OPENAI_API_KEY=<your key>
-NVIDIA_API_KEY=<your key>
+export OPENAI_API_KEY=<your key>
+export NVIDIA_API_KEY=<your key>
+..
 ```
 
 Then you can run the benchmark with the following command:
 ```
-poetry run python benchmarks/runner.py * 
+poetry run python benchmarks/runner.py -t * 
 ```
 
 After the run, all the reports are stored in the `reports` folder.
@@ -20,7 +21,7 @@ After the run, all the reports are stored in the `reports` folder.
 This will run all the test cases with all the providers.
 To run a specific test case, you can use the following command:
 ```
-poetry run python benchmarks/runner.py embeddings_single_doc_256
+poetry run python benchmarks/runner.py -t embeddings_single_doc_256,embeddings_single_doc_512
 ```
 Run the helper to know all the available test cases:
 ```
@@ -35,10 +36,10 @@ poetry run python benchmarks/runner.py --values openai,nvidia
 ## Visualization
 To visualize the results, you can use the following command:
 ```
-poetry run python benchmarks/visualize.py -r benchmarks/reports
+poetry run python benchmarks/visualize.py
 ```
 
-This command will compare all the results found in the  `reports` folder.
+This command will compare all the results found in the `reports` folder.
 
 By default, it generates a table sorted by P99:
 ```
@@ -54,11 +55,11 @@ By default, it generates a table sorted by P99:
 
 To filter to a specific test case or provider, or a set of those, you can use the following command:
 ```
-poetry run python benchmarks/visualize.py -r benchmarks/reports -f _50_docs_256
+poetry run python benchmarks/visualize.py -f _50_docs_256
 ```
 or to filter by provider:
 ```
-poetry run python benchmarks/visualize.py -r benchmarks/reports -f openai
+poetry run python benchmarks/visualize.py -f openai
 ```
 
 
@@ -66,3 +67,6 @@ To generate a plot you can use the following command:
 ```
 poetry run python benchmarks/visualize.py -r benchmarks/reports --format plot
 ```
+
+## Troubleshooting
+If you get an error during the run of the benchmarks, you can use check the logs file: `testcases.log`.

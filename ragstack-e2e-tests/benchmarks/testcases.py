@@ -44,8 +44,8 @@ focus on generative AI in the context of information systems, and, to this end, 
 directions for BISE research.
 """
 
-
-def _embedding_doc(embeddings: Embeddings, chunk_size: int, num_chunks: int):
+N_DOCS = 100
+def _embedding_doc(embeddings: Embeddings, chunk_size: int):
     text_splitter = CharacterTextSplitter(
         separator="\n\n",
         chunk_size=chunk_size,
@@ -55,54 +55,55 @@ def _embedding_doc(embeddings: Embeddings, chunk_size: int, num_chunks: int):
     split_texts = text_splitter.split_text(document)
     docs = []
     while True:
-        if len(docs) == num_chunks:
+        if len(docs) == N_DOCS:
             break
         for split in split_texts:
-            if len(docs) == num_chunks:
+            if len(docs) == N_DOCS:
                 break
             docs.append(split)
 
     embeddings.embed_documents(docs)
 
 
-def embeddings_single_doc_256(embeddings: Embeddings):
-    _embedding_doc(embeddings, 256, 10)
+def embeddings_batch1_chunk256(embeddings_fn):
+    _embedding_doc(embeddings_fn(1), 256)
 
 
-def embeddings_single_doc_512(embeddings: Embeddings):
-    _embedding_doc(embeddings, 512, 10)
+def embeddings_batch1_chunk512(embeddings_fn):
+    _embedding_doc(embeddings_fn(1), 512)
 
 
-def embeddings_10_docs_256(embeddings: Embeddings):
-    _embedding_doc(embeddings, 256, 10)
+def embeddings_batch10_chunk256(embeddings_fn):
+    _embedding_doc(embeddings_fn(10), 256)
 
 
-def embeddings_10_docs_512(embeddings: Embeddings):
-    _embedding_doc(embeddings, 512, 10)
+def embeddings_batch10_chunk512(embeddings_fn):
+    _embedding_doc(embeddings_fn(10), 512)
 
 
-def embeddings_50_docs_256(embeddings: Embeddings):
-    _embedding_doc(embeddings, 256, 50)
+def embeddings_batch50_chunk256(embeddings_fn):
+    _embedding_doc(embeddings_fn(50), 256)
 
 
-def embeddings_50_docs_512(embeddings: Embeddings):
-    _embedding_doc(embeddings, 512, 50)
+def embeddings_batch50_chunk512(embeddings_fn):
+    _embedding_doc(embeddings_fn(50), 512)
 
 
-def embeddings_100_docs_256(embeddings: Embeddings):
-    _embedding_doc(embeddings, 256, 100)
+def embeddings_batch100_chunk256(embeddings_fn):
+    _embedding_doc(embeddings_fn(100), 256)
 
 
-def embeddings_100_docs_512(embeddings: Embeddings):
-    _embedding_doc(embeddings, 512, 100)
+def embeddings_batch100_chunk512(embeddings_fn):
+    _embedding_doc(embeddings_fn(100), 512)
 
 
-def openai_ada002():
-    return OpenAIEmbeddings(chunk_size=999999)
+def openai_ada002(chunk_size):
+    return OpenAIEmbeddings(chunk_size=chunk_size)
 
 
-def nvidia_nvolveqa40k():
-    return NVIDIAEmbeddings(model="nvolveqa_40k", max_batch_size=999999)
+def nvidia_nvolveqa40k(chunk_size):
+    # 50 is the max supported batch size
+    return NVIDIAEmbeddings(model="nvolveqa_40k", max_batch_size=min(chunk_size, 50))
 
 
 if __name__ == "__main__":
@@ -114,7 +115,7 @@ if __name__ == "__main__":
 
         test_case = sys.argv[1]
         embeddings = sys.argv[2]
-        eval(f"{test_case}({embeddings}())")
+        eval(f"{test_case}({embeddings})")
     except Exception as e:
         logging.exception("Exception in test case")
         logging.exception(e)
