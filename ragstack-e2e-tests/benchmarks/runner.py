@@ -72,7 +72,6 @@ def run_suite(
     print("Done")
 
 
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         prog="Benchmarks runner",
@@ -129,4 +128,3 @@ if __name__ == "__main__":
             loops=INTENSITIES[args.intensity]["loops"],
             processes=INTENSITIES[args.intensity]["processes"],
         )
-
