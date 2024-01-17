@@ -85,7 +85,6 @@ def run_trulens_evaluation(vector_store: VectorStore, llm: BaseLanguageModel):
     result = chain.invoke(
         "when was MyFakeProductForTesting released for the first time?"
     )
-    print(result)
 
     with tru_recorder as recording:
         chain.invoke("When was MyFakeProductForTesting released for the first time?")
@@ -98,4 +97,5 @@ def run_trulens_evaluation(vector_store: VectorStore, llm: BaseLanguageModel):
 
         feedback_result: FeedbackResult
 
+        # basic verification that feedback results were computed
         assert feedback_result.result > 0.0
