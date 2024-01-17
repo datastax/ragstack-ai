@@ -111,14 +111,14 @@ jobs:
           report-file: ragstack-e2e-tests/results.xml
           space: llamaindex-main-branch
 
-      - name: Upload report to Github Pages
-        if: always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
-        uses: ./.github/actions/deploy-tests-report
-        with:
-          target: "reports/tests/llamaindex.html"
-          reference: "${{ steps.commit-ref.outputs.commit-ref }}"
-          reference-link: "https://github.com/run-llama/llama_index/commits/${{ steps.commit-ref.outputs.commit-ref }}"
-          input: "ragstack-e2e-tests/llamaindex-tests-report.txt"
+#      - name: Upload report to Github Pages
+#        if: always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+#        uses: ./.github/actions/deploy-tests-report
+#        with:
+#          target: "reports/tests/llamaindex.html"
+#          reference: "${{ steps.commit-ref.outputs.commit-ref }}"
+#          reference-link: "https://github.com/run-llama/llama_index/commits/${{ steps.commit-ref.outputs.commit-ref }}"
+#          input: "ragstack-e2e-tests/llamaindex-tests-report.txt"
 
       - name: Cleanup AstraDB
         uses: ./.github/actions/cleanup-astra-db
