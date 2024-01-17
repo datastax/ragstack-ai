@@ -55,7 +55,7 @@ def run_suite(test_case: str, only_values_containing=[], loops=1, processes=1, r
 
 
 def run_suite_all(test_case: str, only_values_containing: List[str], report_dir: str):
-    run_suite(test_case=test_case, only_values_containing=only_values_containing, report_dir=report_dir, loops=4,
+    run_suite(test_case=test_case, only_values_containing=only_values_containing, report_dir=report_dir, loops=1,
               processes=4)
 
 

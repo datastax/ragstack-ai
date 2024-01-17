@@ -97,13 +97,13 @@ def embeddings_batch100_chunk512(embeddings_fn):
     _embedding_doc(embeddings_fn(100), 512)
 
 
-def openai_ada002(chunk_size):
-    return OpenAIEmbeddings(chunk_size=chunk_size)
+def openai_ada002(batch_size):
+    return OpenAIEmbeddings(chunk_size=batch_size)
 
 
-def nvidia_nvolveqa40k(chunk_size):
+def nvidia_nvolveqa40k(batch_size):
     # 50 is the max supported batch size
-    return NVIDIAEmbeddings(model="nvolveqa_40k", max_batch_size=min(chunk_size, 50))
+    return NVIDIAEmbeddings(model="nvolveqa_40k", max_batch_size=min(batch_size, 50))
 
 
 if __name__ == "__main__":
