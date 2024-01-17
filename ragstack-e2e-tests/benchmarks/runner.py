@@ -2,8 +2,25 @@ import argparse
 import os
 import subprocess
 import sys
-from typing import List
 
+TEST_CASES = [
+    # "embeddings_batch1_chunk256", too slow
+    # "embeddings_batch1_chunk512", too slow
+    "embeddings_batch10_chunk256",
+    "embeddings_batch10_chunk512",
+    "embeddings_batch50_chunk256",
+    "embeddings_batch50_chunk512",
+    "embeddings_batch100_chunk256",
+    "embeddings_batch100_chunk512",
+]
+
+INTENSITIES = {
+    "1": {"processes": 1, "loops": 1},
+    "2": {"processes": 2, "loops": 2},
+    "3": {"processes": 3, "loops": 3},
+    "4": {"processes": 4, "loops": 4},
+    "5": {"processes": 10, "loops": 5},
+}
 
 PROCESSES = 1
 LOOPS_PER_PROCESS = 1
@@ -55,26 +72,6 @@ def run_suite(
     print("Done")
 
 
-def run_suite_all(test_case: str, only_values_containing: List[str], report_dir: str):
-    run_suite(
-        test_case=test_case,
-        only_values_containing=only_values_containing,
-        report_dir=report_dir,
-        loops=LOOPS_PER_PROCESS,
-        processes=PROCESSES,
-    )
-
-
-TEST_CASES = [
-    # "embeddings_batch1_chunk256",
-    # "embeddings_batch1_chunk512",
-    "embeddings_batch10_chunk256",
-    "embeddings_batch10_chunk512",
-    "embeddings_batch50_chunk256",
-    "embeddings_batch50_chunk512",
-    "embeddings_batch100_chunk256",
-    "embeddings_batch100_chunk512",
-]
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -106,6 +103,14 @@ if __name__ == "__main__":
         default=os.path.join(os.path.dirname(__file__), "reports"),
         help="Reports dir",
     )
+
+    parser.add_argument(
+        "-i",
+        "--intensity",
+        choices=["1", "2", "3", "4", "5"],
+        default="2",
+        help="Intensity of the test (1-5). The higher the number, the more iterations will be run and the more the tests will cost and take time.",
+    )
     args = parser.parse_args()
     if not os.path.exists(args.reports_dir):
         os.makedirs(args.reports_dir)
@@ -117,8 +122,11 @@ if __name__ == "__main__":
         tests_to_run = filter(None, args.test_case.split(","))
 
     for test_case in tests_to_run:
-        run_suite_all(
+        run_suite(
             test_case=test_case,
             only_values_containing=args.values.split(","),
             report_dir=args.reports_dir,
+            loops=INTENSITIES[args.intensity]["loops"],
+            processes=INTENSITIES[args.intensity]["processes"],
         )
+
