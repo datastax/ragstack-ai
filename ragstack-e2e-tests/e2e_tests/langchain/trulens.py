@@ -57,13 +57,6 @@ def _initialize_tru() -> Tru:
     tru.reset_database()
     return tru
 
-    # "OpenAI",
-    # "AzureOpenAI",
-    # "Huggingface",
-    # "LiteLLM",
-    # "Bedrock",
-    # "Langchain",
-
 
 def create_chain(retriever: VectorStoreRetriever, llm: BaseLanguageModel) -> Runnable:
     prompt = PromptTemplate.from_template(PROMPT)

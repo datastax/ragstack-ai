@@ -43,8 +43,6 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from sqlalchemy import Float
 from vertexai.vision_models import MultiModalEmbeddingModel, Image
 
-from trulens_eval.feedback.provider.langchain import Langchain as TrulensLangchain
-
 
 def astra_db_client():
     astra_ref = get_astra_ref()
@@ -323,18 +321,22 @@ def nvidia_mixtral_llm():
 
 @pytest.mark.parametrize(
     "test_case",
-    # ["rag_custom_chain", "conversational_rag", "trulens"],
-    ["trulens"],
+    ["rag_custom_chain", "conversational_rag", "trulens"],
 )
 @pytest.mark.parametrize(
     "vector_store",
-    # ["astra_db", "cassandra"],
-    ["astra_db"],
+    ["astra_db", "cassandra"],
 )
 @pytest.mark.parametrize(
     "embedding,llm",
     [
         ("openai_embedding", "openai_llm"),
+        ("azure_openai_embedding", "azure_openai_llm"),
+        ("vertex_embedding", "vertex_llm"),
+        ("bedrock_titan_embedding", "bedrock_anthropic_llm"),
+        ("bedrock_cohere_embedding", "bedrock_meta_llm"),
+        ("huggingface_hub_embedding", "huggingface_hub_llm"),
+        ("nvidia_embedding", "nvidia_mixtral_llm"),
     ],
 )
 def test_rag(test_case, vector_store, embedding, llm, request):
@@ -363,20 +365,6 @@ def test_rag(test_case, vector_store, embedding, llm, request):
         resolved_embedding,
         resolved_llm,
     )
-
-
-# @pytest.mark.parametrize(
-#     "embedding,llm",
-#     [
-#         ("openai_embedding", "openai_llm"),
-#         ("azure_openai_embedding", "azure_openai_llm"),
-#         ("vertex_embedding", "vertex_llm"),
-#         ("bedrock_titan_embedding", "bedrock_anthropic_llm"),
-#         ("bedrock_cohere_embedding", "bedrock_meta_llm"),
-#         ("huggingface_hub_embedding", "huggingface_hub_llm"),
-#         ("nvidia_embedding", "nvidia_mixtral_llm"),
-#     ],
-# )
 
 
 def _run_test(test_case: str, vector_store_wrapper, embedding, llm):
