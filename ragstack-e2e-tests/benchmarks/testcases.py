@@ -45,11 +45,11 @@ directions for BISE research.
 """
 
 N_DOCS = 100
+
+
 def _embedding_doc(embeddings: Embeddings, chunk_size: int):
     text_splitter = CharacterTextSplitter(
-        separator="\n\n",
-        chunk_size=chunk_size,
-        chunk_overlap=0
+        separator="\n\n", chunk_size=chunk_size, chunk_overlap=0
     )
 
     split_texts = text_splitter.split_text(document)
@@ -103,16 +103,17 @@ def openai_ada002(batch_size):
 
 def nvidia_nvolveqa40k(batch_size):
     # 50 is the max supported batch size
-    return NVIDIAEmbeddings(model="nvolveqa_40k", max_batch_size=min(batch_size, 50), model_type="query")
+    return NVIDIAEmbeddings(
+        model="nvolveqa_40k", max_batch_size=min(batch_size, 50), model_type="query"
+    )
 
 
 if __name__ == "__main__":
     import logging
 
-    logging.basicConfig(filename='testcases.log', encoding='utf-8', level=logging.INFO)
+    logging.basicConfig(filename="testcases.log", encoding="utf-8", level=logging.INFO)
     logging.info("Starting test case")
     try:
-
         test_case = sys.argv[1]
         embeddings = sys.argv[2]
         eval(f"{test_case}({embeddings})")

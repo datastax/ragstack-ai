@@ -2,13 +2,12 @@ import argparse
 import os
 import subprocess
 import sys
-import time
 from typing import List
 
-import pyperf
 
 PROCESSES = 1
 LOOPS_PER_PROCESS = 1
+
 
 def get_values_for_testcase(test_case):
     if test_case.startswith("embeddings"):
@@ -17,7 +16,9 @@ def get_values_for_testcase(test_case):
         raise ValueError(f"Unknown testcase: {test_case}")
 
 
-def run_suite(test_case: str, only_values_containing=[], loops=1, processes=1, report_dir="."):
+def run_suite(
+    test_case: str, only_values_containing=[], loops=1, processes=1, report_dir="."
+):
     all_values = get_values_for_testcase(test_case)
     if only_values_containing:
         for value in all_values:
@@ -39,9 +40,7 @@ def run_suite(test_case: str, only_values_containing=[], loops=1, processes=1, r
 
         command = f"{sys.executable} -m pyperf command --copy-env -p {processes} -n 1 -l {loops} -t -o {abs_filename} --verbose -- {sys.executable} {bechmarks_dir}/testcases.py {test_case} {value}"
         print(f"Running suite: {test_case} with value: {value}")
-        subprocess.run(
-            command.split(" "),
-            text=True, check=True).check_returncode()
+        subprocess.run(command.split(" "), text=True, check=True).check_returncode()
 
     if len(filenames) <= 1:
         print("Not enough files to compare")
@@ -49,16 +48,21 @@ def run_suite(test_case: str, only_values_containing=[], loops=1, processes=1, r
         print("Showing comparison:")
         filenames_str = " ".join(filenames)
 
-        comparison_command = f"{sys.executable} -m pyperf compare_to {filenames_str} --table -v -G"
-        subprocess.run(
-            comparison_command.split(" "),
-            text=True, check=True)
+        comparison_command = (
+            f"{sys.executable} -m pyperf compare_to {filenames_str} --table -v -G"
+        )
+        subprocess.run(comparison_command.split(" "), text=True, check=True)
     print("Done")
 
 
 def run_suite_all(test_case: str, only_values_containing: List[str], report_dir: str):
-    run_suite(test_case=test_case, only_values_containing=only_values_containing, report_dir=report_dir, loops=LOOPS_PER_PROCESS,
-              processes=PROCESSES)
+    run_suite(
+        test_case=test_case,
+        only_values_containing=only_values_containing,
+        report_dir=report_dir,
+        loops=LOOPS_PER_PROCESS,
+        processes=PROCESSES,
+    )
 
 
 TEST_CASES = [
@@ -73,20 +77,35 @@ TEST_CASES = [
 ]
 
 if __name__ == "__main__":
-
     parser = argparse.ArgumentParser(
-        prog='Benchmarks runner',
-        description='Run benchmarks to compare different providers and combinations')
+        prog="Benchmarks runner",
+        description="Run benchmarks to compare different providers and combinations",
+    )
 
     test_choices = ["all"]
     test_choices = test_choices + TEST_CASES
-    parser.add_argument('-t', '--test-case', choices=test_choices, required=True,
-                        help='Test case to run')
+    parser.add_argument(
+        "-t",
+        "--test-case",
+        choices=test_choices,
+        required=True,
+        help="Test case to run",
+    )
 
-    parser.add_argument('-v', '--values', type=str, default="",
-                        help='Filter values to run (comma separated). e.g. to run only openai_ada002, use: openai_')
-    parser.add_argument('-r', '--reports-dir', type=str, default=os.path.join(os.path.dirname(__file__), "reports"),
-                        help='Reports dir')
+    parser.add_argument(
+        "-v",
+        "--values",
+        type=str,
+        default="",
+        help="Filter values to run (comma separated). e.g. to run only openai_ada002, use: openai_",
+    )
+    parser.add_argument(
+        "-r",
+        "--reports-dir",
+        type=str,
+        default=os.path.join(os.path.dirname(__file__), "reports"),
+        help="Reports dir",
+    )
     args = parser.parse_args()
     if not os.path.exists(args.reports_dir):
         os.makedirs(args.reports_dir)
@@ -98,4 +117,8 @@ if __name__ == "__main__":
         tests_to_run = filter(None, args.test_case.split(","))
 
     for test_case in tests_to_run:
-        run_suite_all(test_case=test_case, only_values_containing=args.values.split(","), report_dir=args.reports_dir)
+        run_suite_all(
+            test_case=test_case,
+            only_values_containing=args.values.split(","),
+            report_dir=args.reports_dir,
+        )
