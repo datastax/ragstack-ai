@@ -1,7 +1,8 @@
-from trulens_eval import TruChain, Feedback, Tru, Select
+from trulens_eval import TruChain, Feedback, Tru
 from trulens_eval.feedback.provider import Langchain
-from trulens_eval.feedback import Groundedness, GroundTruthAgreement
+from trulens_eval.feedback import Groundedness
 from trulens_eval.app import App
+from trulens_eval.schema import FeedbackResult
 
 from langchain.schema.vectorstore import VectorStore
 from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
@@ -11,8 +12,6 @@ from langchain.schema.messages import AIMessage, HumanMessage
 from langchain.schema.output_parser import StrOutputParser
 from langchain.schema.retriever import BaseRetriever
 from langchain.schema.runnable import Runnable
-from pydantic import BaseModel
-
 from langchain.prompts import PromptTemplate
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.vectorstores import VectorStoreRetriever
@@ -20,6 +19,8 @@ from langchain_core.vectorstores import VectorStoreRetriever
 from e2e_tests.langchain.rag_application import format_docs
 
 import numpy as np
+from concurrent.futures import as_completed
+from pydantic import BaseModel
 
 PROMPT = """
 Answer the question based only on the supplied context. If you don't know the answer, say you don't know the answer.
@@ -33,7 +34,6 @@ def _feedback_functions(chain: Runnable, llm: BaseLanguageModel) -> list[Feedbac
     provider = Langchain(chain=llm)
     context = App.select_context(chain)
 
-    # Groundedness is how well the answer is supported by the context.
     grounded = Groundedness(groundedness_provider=provider)
     f_groundedness = (
         Feedback(grounded.groundedness_measure_with_cot_reasons)
@@ -41,19 +41,7 @@ def _feedback_functions(chain: Runnable, llm: BaseLanguageModel) -> list[Feedbac
         .on_output()
         .aggregate(grounded.grounded_statements_aggregator)
     )
-
-    # QA relevance is how relevant the answer is to the question.
     f_qa_relevance = Feedback(provider.relevance_with_cot_reasons).on_input_output()
-
-    # Ground truth is how well the answer matches the ground truth from the dataset.
-    # f_ground_truth = Feedback(
-    #     GroundTruthAgreement(
-    #         ground_truth=golden_set, provider=openai
-    #     ).agreement_measure,
-    #     name="Ground Truth",
-    # ).on_input_output()
-
-    # Context relevance is how relevant the retrieved context is to the question.
     f_context_relevance = (
         Feedback(provider.qs_relevance_with_cot_reasons)
         .on_input()
@@ -115,5 +103,12 @@ def run_trulens_evaluation(vector_store: VectorStore, llm: BaseLanguageModel):
     with tru_recorder as recording:
         chain.invoke("When was MyFakeProductForTesting released for the first time?")
 
-    tru_record = recording.records[0]
-    print(tru_record)
+    tru_record = recording.get()
+
+    # Wait for the feedback results to complete
+    for feedback_future in as_completed(tru_record.feedback_results):
+        _, feedback_result = feedback_future.result()
+
+        feedback_result: FeedbackResult
+
+        assert feedback_result.result > 0.0
