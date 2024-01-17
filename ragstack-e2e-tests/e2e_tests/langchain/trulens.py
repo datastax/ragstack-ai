@@ -82,9 +82,6 @@ def run_trulens_evaluation(vector_store: VectorStore, llm: BaseLanguageModel):
         app_id="test",
         feedbacks=feedback_functions,
     )
-    result = chain.invoke(
-        "when was MyFakeProductForTesting released for the first time?"
-    )
 
     with tru_recorder as recording:
         chain.invoke("When was MyFakeProductForTesting released for the first time?")
