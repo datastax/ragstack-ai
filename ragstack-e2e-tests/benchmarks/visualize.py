@@ -27,7 +27,7 @@ def scan_result_directory(directory_path, filter_by):
         if file_name.endswith(".json") and filter_by in file_name:
             file_path = os.path.join(directory_path, file_name)
             values.append(extract_values_from_result_file(file_path))
-    return values
+    return sorted(values, key=lambda v: v["values"]["p99"])
 
 
 def render_plot(values):
@@ -45,8 +45,6 @@ def render_plot(values):
 
     plt.title("All")
 
-    plt.table(cellText=cells, rowLabels=rows, colLabels=cols, loc="bottom")
-
     plt.xlabel("Percentile")
     plt.ylabel("Milliseconds")
     plt.legend(bbox_to_anchor=(0, -0.2), loc="upper left", ncol=1)
@@ -56,8 +54,7 @@ def render_plot(values):
 
 
 def render_table(values):
-    values = sorted(values, key=lambda v: v["values"]["p99"])
-    cols = ["Model"]
+    cols = ["Test Case"]
 
     from prettytable import PrettyTable
 

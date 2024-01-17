@@ -43,14 +43,22 @@ This command will compare all the results found in the `reports` folder.
 
 By default, it generates a table sorted by P99:
 ```
-+-------------------------------------------+------+------+------+------+
-|                   Model                   | p50  | p90  | p95  | p99  |
-+-------------------------------------------+------+------+------+------+
-|    embeddings_50_docs_256-openai_ada002   | 2.82 | 2.91 | 2.92 | 2.93 |
-|    embeddings_50_docs_512-openai_ada002   | 2.96 | 3.05 | 3.07 | 3.08 |
-| embeddings_50_docs_256-nvidia_nvolveqa40k | 5.43 | 5.57 | 5.59 | 5.61 |
-| embeddings_50_docs_512-nvidia_nvolveqa40k | 5.77 | 6.1  | 6.13 | 6.16 |
-+-------------------------------------------+------+------+------+------+
++-------------------------------------------------+-------+-------+-------+-------+
+|                      Model                      |  p50  |  p90  |  p95  |  p99  |
++-------------------------------------------------+-------+-------+-------+-------+
+|    embeddings_batch100_chunk256-openai_ada002   |  3.96 |  3.96 |  3.96 |  3.96 |
+|    embeddings_batch50_chunk256-openai_ada002    |  4.83 |  4.83 |  4.83 |  4.83 |
+|    embeddings_batch50_chunk512-openai_ada002    |  5.42 |  5.42 |  5.42 |  5.42 |
+|    embeddings_batch100_chunk512-openai_ada002   |  6.89 |  6.89 |  6.89 |  6.89 |
+|  embeddings_batch50_chunk512-nvidia_nvolveqa40k |  8.68 |  8.68 |  8.68 |  8.68 |
+|  embeddings_batch50_chunk256-nvidia_nvolveqa40k |  9.28 |  9.28 |  9.28 |  9.28 |
+| embeddings_batch100_chunk256-nvidia_nvolveqa40k |  9.48 |  9.48 |  9.48 |  9.48 |
+| embeddings_batch100_chunk512-nvidia_nvolveqa40k | 10.39 | 10.39 | 10.39 | 10.39 |
+|    embeddings_batch10_chunk256-openai_ada002    | 10.52 | 10.52 | 10.52 | 10.52 |
+|    embeddings_batch10_chunk512-openai_ada002    | 11.15 | 11.15 | 11.15 | 11.15 |
+|  embeddings_batch10_chunk256-nvidia_nvolveqa40k | 18.15 | 18.15 | 18.15 | 18.15 |
+|  embeddings_batch10_chunk512-nvidia_nvolveqa40k | 18.88 | 18.88 | 18.88 | 18.88 |
++-------------------------------------------------+-------+-------+-------+-------+
 ```
 
 To filter to a specific test case or provider, or a set of those, you can use the following command:
