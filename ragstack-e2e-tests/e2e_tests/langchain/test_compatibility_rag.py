@@ -409,11 +409,11 @@ def gemini_pro_vision_llm():
     )
 
 
-# @pytest.fixture
-# def gemini_pro_llm():
-#     return ChatGoogleGenerativeAI(
-#         model="gemini-pro", google_api_key=get_required_env("GOOGLE_API_KEY")
-#     )
+@pytest.fixture
+def gemini_pro_llm():
+    return ChatGoogleGenerativeAI(
+        model="gemini-pro", google_api_key=get_required_env("GOOGLE_API_KEY")
+    )
 
 
 @pytest.mark.parametrize(
@@ -427,7 +427,6 @@ def gemini_pro_vision_llm():
         ("vertex_gemini_multimodal_embedding", "gemini_pro_vision_llm"),
     ],
 )
-@pytest.mark.skip
 def test_multimodal(vector_store, embedding, llm, request):
     set_current_test_info(
         "langchain::multimodal_rag",
@@ -494,19 +493,19 @@ def get_local_resource_path(filename: str):
     return os.path.join(e2e_tests_dir, "resources", filename)
 
 
-# @pytest.mark.parametrize(
-#     "chat",
-#     ["vertex_gemini_pro_llm", "gemini_pro_llm"],
-# )
-# def test_chat(chat, request):
-#     set_current_test_info(
-#         "langchain::chat",
-#         chat,
-#     )
-#     chat_model = request.getfixturevalue(chat)
-#     prompt = ChatPromptTemplate.from_messages(
-#         [("human", "Hello! Where Archimede was born?")]
-#     )
-#     chain = prompt | chat_model
-#     response = chain.invoke({})
-#     assert "Syracuse" in response.content
+@pytest.mark.parametrize(
+    "chat",
+    ["vertex_gemini_pro_llm", "gemini_pro_llm"],
+)
+def test_chat(chat, request):
+    set_current_test_info(
+        "langchain::chat",
+        chat,
+    )
+    chat_model = request.getfixturevalue(chat)
+    prompt = ChatPromptTemplate.from_messages(
+        [("human", "Hello! Where Archimede was born?")]
+    )
+    chain = prompt | chat_model
+    response = chain.invoke({})
+    assert "Syracuse" in response.content

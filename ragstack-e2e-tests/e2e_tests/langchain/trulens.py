@@ -5,22 +5,16 @@ from trulens_eval.app import App
 from trulens_eval.schema import FeedbackResult
 
 from langchain.schema.vectorstore import VectorStore
-from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain.schema import Document
 from langchain.schema.language_model import BaseLanguageModel
-from langchain.schema.messages import AIMessage, HumanMessage
 from langchain.schema.output_parser import StrOutputParser
-from langchain.schema.retriever import BaseRetriever
 from langchain.schema.runnable import Runnable
 from langchain.prompts import PromptTemplate
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.vectorstores import VectorStoreRetriever
 
-from e2e_tests.langchain.rag_application import format_docs
 
 import numpy as np
 from concurrent.futures import as_completed
-from pydantic import BaseModel
 
 PROMPT = """
 Answer the question based only on the supplied context. If you don't know the answer, say you don't know the answer.
