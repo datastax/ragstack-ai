@@ -7,6 +7,8 @@ from typing import List
 
 import pyperf
 
+PROCESSES = 1
+LOOPS_PER_PROCESS = 1
 
 def get_values_for_testcase(test_case):
     if test_case.startswith("embeddings"):
@@ -55,8 +57,8 @@ def run_suite(test_case: str, only_values_containing=[], loops=1, processes=1, r
 
 
 def run_suite_all(test_case: str, only_values_containing: List[str], report_dir: str):
-    run_suite(test_case=test_case, only_values_containing=only_values_containing, report_dir=report_dir, loops=1,
-              processes=4)
+    run_suite(test_case=test_case, only_values_containing=only_values_containing, report_dir=report_dir, loops=LOOPS_PER_PROCESS,
+              processes=PROCESSES)
 
 
 TEST_CASES = [
