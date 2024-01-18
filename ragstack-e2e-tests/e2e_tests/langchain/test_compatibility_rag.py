@@ -7,6 +7,7 @@ from typing import List
 
 import cassio
 import pytest
+from cassio.table import MetadataVectorCassandraTable
 from e2e_tests.conftest import (
     set_current_test_info,
     get_required_env,
@@ -110,12 +111,20 @@ class CassandraVectorStoreWrapper(VectorStoreWrapper):
     def put(
         self, doc_id: str, document: str, metadata: dict, vector: List[Float]
     ) -> None:
-        self.vector_store.table.table.put(
-            row_id=doc_id,
-            body_blob=document,
-            vector=vector,
-            metadata=metadata or {},
-        )
+        if isinstance(self.vector_store.table, MetadataVectorCassandraTable):
+            self.vector_store.table.put(
+                row_id=doc_id,
+                body_blob=document,
+                vector=vector,
+                metadata=metadata or {},
+            )
+        else:
+            self.vector_store.table.table.put(
+                row_id=doc_id,
+                body_blob=document,
+                vector=vector,
+                metadata=metadata or {},
+            )
 
     def search(self, vector: List[float], limit: int) -> List[str]:
         return map(
