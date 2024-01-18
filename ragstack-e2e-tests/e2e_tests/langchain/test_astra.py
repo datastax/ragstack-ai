@@ -460,19 +460,14 @@ def environment():
 
 
 def close_vector_db(vector_store: VectorStore):
-    try_close_vector_db(vector_store)
-
-def try_close_vector_db(vector_store: VectorStore, max_attempts=5):
-    for attempt in range(max_attempts):
-        try:
-            vector_store.astra_db.delete_collection(vector_store.collection_name)
-            break
-        except requests.HTTPError as e:
-            if e.response.status_code == 504:
-                logging.error(f"Attempt {attempt+1} 504 error while deleting collection {vector_store.collection_name}: {e}")
-            else:
-                logging.error(f"Error while deleting collection {vector_store.collection_name}: {e}")
-                raise e
+    try:
+        vector_store.astra_db.delete_collection(vector_store.collection_name)
+    except requests.HTTPError as e:
+        if e.response.status_code == 504:
+            logging.error(f"Gateway 504 timeout error while deleting collection {vector_store.collection_name}: {e}")
+        else:
+            logging.error(f"Error while deleting collection {vector_store.collection_name}: {e}")
+            raise e
 
 
 def init_embeddings() -> Embeddings:
