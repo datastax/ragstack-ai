@@ -291,7 +291,7 @@ def nvidia_embedding():
     get_required_env("NVIDIA_API_KEY")
     from langchain_nvidia_ai_endpoints import NVIDIAEmbeddings
 
-    return NVIDIAEmbeddings(model="nvolveqa_40k")
+    return NVIDIAEmbeddings(model="nvolve-40k")
 
 
 @pytest.fixture
