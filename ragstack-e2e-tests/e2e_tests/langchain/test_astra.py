@@ -465,7 +465,7 @@ def close_vector_db(vector_store: VectorStore):
     raw_client = LibAstraDB(api_endpoint=api_endpoint, token=token)
     collection = vector_store.collection_name
     logging.info(f"Closing vstore; deleting collection: {collection}")
-    raw_client.delete_many(filter=[])
+    raw_client.delete_many(filter={})
     raw_client.delete_collection(collection)
 
 
