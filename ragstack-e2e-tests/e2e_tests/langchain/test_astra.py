@@ -458,7 +458,15 @@ def environment():
 
 
 def close_vector_db(vector_store: VectorStore):
-    vector_store.astra_db.delete_collection(vector_store.collection_name)
+    astra_ref = get_astra_ref()
+    token = astra_ref.token
+    api_endpoint = astra_ref.api_endpoint
+
+    raw_client = LibAstraDB(api_endpoint=api_endpoint, token=token)
+    collection = vector_store.collection_name
+    logging.info(f"Closing vstore; deleting collection: {collection}")
+    raw_client.delete_many(filter=[])
+    raw_client.delete_collection(collection)
 
 
 def init_embeddings() -> Embeddings:
