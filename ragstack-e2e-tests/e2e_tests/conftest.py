@@ -62,9 +62,12 @@ def delete_all_astra_collections_with_client(raw_client: LibAstraDB):
     """
     collections = raw_client.get_collections().get("status").get("collections")
     logging.info(f"Existing collections: {collections}")
-    for collection_info in collections:
-        logging.info(f"Deleting collection: {collection_info}")
-        raw_client.delete_collection(collection_info)
+    for collection_name in collections:
+        logging.info(f"Deleting collection: {collection_name}")
+        astra_db_collection = raw_client.collection(collection_name=collection_name)
+        astra_db_collection.delete_many(filter={})
+
+        raw_client.delete_collection(collection_name)
 
 
 def delete_all_astra_collections(astra_ref: AstraRef):
@@ -80,7 +83,13 @@ def delete_all_astra_collections(astra_ref: AstraRef):
 
 def delete_astra_collection(astra_ref: AstraRef) -> None:
     raw_client = LibAstraDB(api_endpoint=astra_ref.api_endpoint, token=astra_ref.token)
-    raw_client.delete_collection(astra_ref.collection)
+    collection_name = astra_ref.collection
+
+    logging.info(f"Deleting collection: {collection_name}")
+    astra_db_collection = raw_client.collection(collection_name=collection_name)
+    astra_db_collection.delete_many(filter={})
+
+    raw_client.delete_collection(collection_name)
 
 
 failed_report_lines = []

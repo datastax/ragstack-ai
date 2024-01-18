@@ -204,12 +204,15 @@ def init_vector_db() -> AstraDBVectorStore:
     raw_client = LibAstraDB(api_endpoint=api_endpoint, token=token)
     collections = raw_client.get_collections().get("status").get("collections")
     logging.info(f"Existing collections: {collections}")
-    for collection_info in collections:
+    for collection_name in collections:
         try:
-            logging.info(f"Deleting collection: {collection_info}")
-            raw_client.delete_collection(collection_info)
+            logging.info(f"Deleting collection: {collection_name}")
+            astra_db_collection = raw_client.collection(collection_name=collection_name)
+            astra_db_collection.delete_many(filter={})
+
+            raw_client.delete_collection(collection_name)
         except Exception as e:
-            logging.error(f"Error while deleting collection {collection_info}: {e}")
+            logging.error(f"Error while deleting collection {collection_name}: {e}")
 
     vector_db = AstraDBVectorStore(
         token=token,

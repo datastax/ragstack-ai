@@ -424,9 +424,12 @@ def init_vector_db(embedding: Embeddings) -> VectorStore:
     raw_client = LibAstraDB(api_endpoint=api_endpoint, token=token)
     collections = raw_client.get_collections().get("status").get("collections")
     logging.info(f"Existing collections: {collections}")
-    for collection_info in collections:
-        logging.info(f"Deleting collection: {collection_info}")
-        raw_client.delete_collection(collection_info)
+    for collection_name in collections:
+        logging.info(f"Deleting collection: {collection_name}")
+        astra_db_collection = raw_client.collection(collection_name=collection_name)
+        astra_db_collection.delete_many(filter={})
+
+        raw_client.delete_collection(collection_name)
 
     vector_db = AstraDB(
         collection_name=collection,
@@ -465,7 +468,10 @@ def close_vector_db(vector_store: VectorStore):
     raw_client = LibAstraDB(api_endpoint=api_endpoint, token=token)
     collection = vector_store.collection_name
     logging.info(f"Closing vstore; deleting collection: {collection}")
-    raw_client.delete_many(filter={})
+
+    astra_db_collection = raw_client.collection(collection_name=collection)
+    astra_db_collection.delete_many(filter={})
+
     raw_client.delete_collection(collection)
 
 
