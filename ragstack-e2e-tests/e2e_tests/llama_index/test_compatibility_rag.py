@@ -35,8 +35,8 @@ from e2e_tests.conftest import (
     get_required_env,
     get_astra_ref,
     delete_all_astra_collections,
-    delete_astra_collection,
     AstraRef,
+    generate_new_astra_table_name,
 )
 from llama_index.vector_stores.types import VectorStore, VectorStoreQuery
 from sqlalchemy import Float
@@ -147,18 +147,19 @@ class AstraDBVectorStoreWrapper(VectorStoreWrapper):
 @pytest.fixture
 def astra_db():
     astra_ref = get_astra_ref()
-    delete_all_astra_collections(astra_ref)
-
+    delete_all_astra_collections()
+    generate_new_astra_table_name()
     yield AstraDBVectorStoreWrapper(astra_ref)
-    delete_astra_collection(astra_ref)
+    delete_all_astra_collections()
 
 
 @pytest.fixture
 def cassandra():
     astra_ref = get_astra_ref()
-    delete_all_astra_collections(astra_ref)
+    delete_all_astra_collections()
+    generate_new_astra_table_name()
     yield CassandraVectorStoreWrapper(astra_ref)
-    delete_astra_collection(astra_ref)
+    delete_all_astra_collections()
 
 
 @pytest.fixture
