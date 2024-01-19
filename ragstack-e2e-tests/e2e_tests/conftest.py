@@ -4,7 +4,6 @@ import pathlib
 import time
 import uuid
 from dataclasses import dataclass
-from multiprocessing import Pool
 from threading import Thread
 
 import pytest
@@ -22,8 +21,6 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(message)s",
     handlers=[logging.StreamHandler()],
 )
-
-pool = Pool(processes=10)
 
 
 # Uncomment to enable debug logging on Astra calls
