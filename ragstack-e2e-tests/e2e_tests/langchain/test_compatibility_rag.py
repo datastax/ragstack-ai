@@ -12,8 +12,8 @@ from e2e_tests.conftest import (
     set_current_test_info,
     get_required_env,
     get_astra_ref,
-    delete_all_astra_collections_with_client,
-    delete_astra_collection,
+    delete_all_astra_collections,
+    generate_new_astra_table_name,
     AstraRef,
 )
 from e2e_tests.langchain.rag_application import (
@@ -187,19 +187,19 @@ class AstraDBVectorStoreWrapper(VectorStoreWrapper):
 @pytest.fixture
 def astra_db():
     astra_ref = get_astra_ref()
-    delete_all_astra_collections_with_client(astra_db_client())
+    delete_all_astra_collections()
+    generate_new_astra_table_name()
     yield AstraDBVectorStoreWrapper(astra_ref)
-    delete_astra_collection(astra_ref)
-    delete_all_astra_collections_with_client(astra_db_client())
+    delete_all_astra_collections()
 
 
 @pytest.fixture
 def cassandra():
     astra_ref = get_astra_ref()
-    delete_all_astra_collections_with_client(astra_db_client())
+    delete_all_astra_collections()
+    generate_new_astra_table_name()
     yield CassandraVectorStoreWrapper(astra_ref)
-    delete_astra_collection(astra_ref)
-    delete_all_astra_collections_with_client(astra_db_client())
+    delete_all_astra_collections()
 
 
 @pytest.fixture

@@ -4,6 +4,8 @@ import pathlib
 import time
 import uuid
 from dataclasses import dataclass
+from multiprocessing import Pool
+from threading import Thread
 
 import pytest
 from astrapy.db import AstraDB as LibAstraDB
@@ -21,6 +23,8 @@ logging.basicConfig(
     handlers=[logging.StreamHandler()],
 )
 
+pool = Pool(processes=10)
+
 
 # Uncomment to enable debug logging on Astra calls
 # logging.getLogger('astrapy.utils').setLevel(logging.DEBUG)
@@ -31,6 +35,13 @@ def get_required_env(name) -> str:
         LOGGER.warning(f"Missing required environment variable: {name}")
         pytest.skip(f"Missing required environment variable: {name}")
     return os.environ[name]
+
+
+def generate_new_astra_table_name():
+    os.environ["ASTRA_TABLE_NAME"] = f"documents_{random_string()}"
+
+
+generate_new_astra_table_name()
 
 
 @dataclass
@@ -53,34 +64,32 @@ def get_astra_ref() -> AstraRef:
     )
 
 
-def delete_all_astra_collections_with_client(raw_client: LibAstraDB):
+DEFAULT_ASTRA_REF = get_astra_ref()
+DEFAULT_ASTRA_CLIENT = LibAstraDB(api_endpoint=DEFAULT_ASTRA_REF.api_endpoint, token=DEFAULT_ASTRA_REF.token)
+
+
+def delete_all_astra_collections():
     """
     Deletes all collections.
 
     Current AstraDB has a limit of 5 collections, meaning orphaned collections
     will cause subsequent tests to fail if the limit is reached.
     """
-    collections = raw_client.get_collections().get("status").get("collections")
+    collections = DEFAULT_ASTRA_CLIENT.get_collections().get("status").get("collections")
     logging.info(f"Existing collections: {collections}")
-    for collection_info in collections:
-        logging.info(f"Deleting collection: {collection_info}")
-        raw_client.delete_collection(collection_info)
+    for collection_name in collections:
+        delete_astra_collection(collection_name)
 
 
-def delete_all_astra_collections(astra_ref: AstraRef):
-    """
-    Deletes all collections.
-
-    Current AstraDB has a limit of 5 collections, meaning orphaned collections
-    will cause subsequent tests to fail if the limit is reached.
-    """
-    raw_client = LibAstraDB(api_endpoint=astra_ref.api_endpoint, token=astra_ref.token)
-    delete_all_astra_collections_with_client(raw_client)
+def _delete_astra_collection(collection: str) -> None:
+    logging.info(f"deleting collection {collection}")
+    DEFAULT_ASTRA_CLIENT.delete_collection(collection)
+    logging.info(f"deleted collection {collection}")
 
 
-def delete_astra_collection(astra_ref: AstraRef) -> None:
-    raw_client = LibAstraDB(api_endpoint=astra_ref.api_endpoint, token=astra_ref.token)
-    raw_client.delete_collection(astra_ref.collection)
+def delete_astra_collection(collection: str) -> None:
+    thread = Thread(target=_delete_astra_collection, args=(collection,))
+    thread.start()
 
 
 failed_report_lines = []
@@ -101,8 +110,8 @@ def pytest_runtest_makereport(item, call):
     # also get the setup phase if failed
     if rep.outcome != "passed" or rep.when == "call":
         if (
-            "RAGSTACK_E2E_TESTS_TEST_START" not in os.environ
-            or not os.environ["RAGSTACK_E2E_TESTS_TEST_START"]
+                "RAGSTACK_E2E_TESTS_TEST_START" not in os.environ
+                or not os.environ["RAGSTACK_E2E_TESTS_TEST_START"]
         ):
             total_time = "?"
         else:
@@ -166,13 +175,13 @@ def dump_report():
     logging.info("\n".join(failed_report_lines))
 
     stats_str = (
-        "Tests passed: "
-        + str(tests_stats["passed"])
-        + ", failed: "
-        + str(tests_stats["failed"])
-        + ", skipped: "
-        + str(tests_stats["skipped"])
-        + "\n"
+            "Tests passed: "
+            + str(tests_stats["passed"])
+            + ", failed: "
+            + str(tests_stats["failed"])
+            + ", skipped: "
+            + str(tests_stats["skipped"])
+            + "\n"
     )
     _report_to_file(stats_str, "all-tests-report.txt", all_report_lines)
     _report_to_file(stats_str, "failed-tests-report.txt", failed_report_lines)
@@ -188,9 +197,6 @@ def _report_to_file(stats_str: str, filename: str, report_lines: list):
             f.write(stats_str + "\n")
         f.write("\n".join(report_lines))
 
-
-# astra
-os.environ["ASTRA_TABLE_NAME"] = f"documents_{random_string()}"
 
 # azure-open-ai
 os.environ["AZURE_OPEN_AI_CHAT_MODEL_DEPLOYMENT"] = "gpt-35-turbo"
