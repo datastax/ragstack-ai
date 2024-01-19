@@ -11,7 +11,7 @@ from langchain.schema.embeddings import Embeddings
 from langchain.vectorstores import AstraDB
 from langchain.chat_models import ChatOpenAI
 from langchain.schema.language_model import BaseLanguageModel
-from e2e_tests.conftest import get_required_env, get_astra_ref
+from e2e_tests.conftest import get_required_env, get_astra_ref, truncate_and_delete
 from langchain_core.documents import Document
 from langchain_core.runnables import RunnableConfig
 from langchain_core.vectorstores import VectorStore
@@ -425,11 +425,7 @@ def init_vector_db(embedding: Embeddings) -> VectorStore:
     collections = raw_client.get_collections().get("status").get("collections")
     logging.info(f"Existing collections: {collections}")
     for collection_name in collections:
-        logging.info(f"Deleting collection: {collection_name}")
-        astra_db_collection = raw_client.collection(collection_name=collection_name)
-        astra_db_collection.delete_many(filter={})
-
-        raw_client.delete_collection(collection_name)
+        truncate_and_delete(raw_client, collection_name)
 
     vector_db = AstraDB(
         collection_name=collection,
@@ -461,18 +457,12 @@ def environment():
 
 
 def close_vector_db(vector_store: VectorStore):
+    logging.info(f"Closing vector store")
     astra_ref = get_astra_ref()
-    token = astra_ref.token
-    api_endpoint = astra_ref.api_endpoint
-
-    raw_client = LibAstraDB(api_endpoint=api_endpoint, token=token)
+    raw_client = LibAstraDB(api_endpoint=astra_ref.api_endpoint, token=astra_ref.token)
     collection = vector_store.collection_name
-    logging.info(f"Closing vstore; deleting collection: {collection}")
 
-    astra_db_collection = raw_client.collection(collection_name=collection)
-    astra_db_collection.delete_many(filter={})
-
-    raw_client.delete_collection(collection)
+    truncate_and_delete(raw_client, collection)
 
 
 def init_embeddings() -> Embeddings:

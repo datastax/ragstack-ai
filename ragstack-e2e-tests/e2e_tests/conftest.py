@@ -63,11 +63,7 @@ def delete_all_astra_collections_with_client(raw_client: LibAstraDB):
     collections = raw_client.get_collections().get("status").get("collections")
     logging.info(f"Existing collections: {collections}")
     for collection_name in collections:
-        logging.info(f"Deleting collection: {collection_name}")
-        astra_db_collection = raw_client.collection(collection_name=collection_name)
-        astra_db_collection.delete_many(filter={})
-
-        raw_client.delete_collection(collection_name)
+        truncate_and_delete(raw_client, collection_name)
 
 
 def delete_all_astra_collections(astra_ref: AstraRef):
@@ -84,12 +80,7 @@ def delete_all_astra_collections(astra_ref: AstraRef):
 def delete_astra_collection(astra_ref: AstraRef) -> None:
     raw_client = LibAstraDB(api_endpoint=astra_ref.api_endpoint, token=astra_ref.token)
     collection_name = astra_ref.collection
-
-    logging.info(f"Deleting collection: {collection_name}")
-    astra_db_collection = raw_client.collection(collection_name=collection_name)
-    astra_db_collection.delete_many(filter={})
-
-    raw_client.delete_collection(collection_name)
+    truncate_and_delete(raw_client, collection_name)
 
 
 failed_report_lines = []
@@ -101,6 +92,20 @@ tests_stats = {
     "failed": 0,
     "skipped": 0,
 }
+
+
+def truncate_and_delete(client: LibAstraDB, collection: str):
+    """
+    Truncates all documents from the collection, then deletes the collection.
+
+    Attempts to alleviate the load from delete_collection, which currently experiences
+    a high rate of timeouts.
+    """
+    logging.info(f"Deleting collection: {collection}")
+    astra_db_collection = client.collection(collection_name=collection)
+    astra_db_collection.delete_many(filter={})
+
+    client.delete_collection(collection_name=collection)
 
 
 @pytest.hookimpl(tryfirst=True, hookwrapper=True)

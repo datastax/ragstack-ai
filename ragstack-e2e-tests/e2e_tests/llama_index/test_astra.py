@@ -4,7 +4,7 @@ from typing import List
 from astrapy.db import AstraDB as LibAstraDB
 import pytest
 from httpx import ConnectError, HTTPStatusError
-from e2e_tests.conftest import get_required_env, get_astra_ref
+from e2e_tests.conftest import get_required_env, get_astra_ref, truncate_and_delete
 from llama_index import (
     ServiceContext,
     StorageContext,
@@ -205,14 +205,7 @@ def init_vector_db() -> AstraDBVectorStore:
     collections = raw_client.get_collections().get("status").get("collections")
     logging.info(f"Existing collections: {collections}")
     for collection_name in collections:
-        try:
-            logging.info(f"Deleting collection: {collection_name}")
-            astra_db_collection = raw_client.collection(collection_name=collection_name)
-            astra_db_collection.delete_many(filter={})
-
-            raw_client.delete_collection(collection_name)
-        except Exception as e:
-            logging.error(f"Error while deleting collection {collection_name}: {e}")
+        truncate_and_delete(raw_client, collection_name)
 
     vector_db = AstraDBVectorStore(
         token=token,
@@ -257,9 +250,11 @@ def environment():
 
 
 def close_vector_db(vector_store: AstraDBVectorStore):
-    vector_store._astra_db.delete_collection(
-        vector_store._astra_db_collection.collection_name
-    )
+    logging.info(f"Closing vector store")
+    astra_ref = get_astra_ref()
+    raw_client = LibAstraDB(api_endpoint=astra_ref.api_endpoint, token=astra_ref.token)
+
+    truncate_and_delete(raw_client, vector_store.collection_name)
 
 
 class MockEmbeddings(BaseEmbedding):
