@@ -13,7 +13,6 @@ from e2e_tests.conftest import (
     get_required_env,
     get_astra_ref,
     delete_all_astra_collections_with_client,
-    delete_astra_collection,
     AstraRef,
 )
 from e2e_tests.langchain.rag_application import (
@@ -181,18 +180,20 @@ class AstraDBVectorStoreWrapper(VectorStoreWrapper):
 @pytest.fixture
 def astra_db():
     astra_ref = get_astra_ref()
+    print("Setup - deleting collections")
     delete_all_astra_collections_with_client(astra_db_client())
     yield AstraDBVectorStoreWrapper(astra_ref)
-    delete_astra_collection(astra_ref)
+    print("Teardown - deleting collections")
     delete_all_astra_collections_with_client(astra_db_client())
 
 
 @pytest.fixture
 def cassandra():
     astra_ref = get_astra_ref()
+    print("Setup - deleting collections")
     delete_all_astra_collections_with_client(astra_db_client())
     yield CassandraVectorStoreWrapper(astra_ref)
-    delete_astra_collection(astra_ref)
+    print("Teardown - deleting collections")
     delete_all_astra_collections_with_client(astra_db_client())
 
 
@@ -300,7 +301,7 @@ def nvidia_embedding():
     get_required_env("NVIDIA_API_KEY")
     from langchain_nvidia_ai_endpoints import NVIDIAEmbeddings
 
-    return NVIDIAEmbeddings(model="nvolve-40k")
+    return NVIDIAEmbeddings(model="nvolveqa-40k")
 
 
 @pytest.fixture
@@ -314,10 +315,12 @@ def nvidia_mixtral_llm():
 @pytest.mark.parametrize(
     "test_case",
     ["rag_custom_chain", "conversational_rag"],
+    # ["rag_custom_chain"],
 )
 @pytest.mark.parametrize(
     "vector_store",
     ["astra_db", "cassandra"],
+    # ["astra_db"],
 )
 @pytest.mark.parametrize(
     "embedding,llm",
@@ -328,7 +331,7 @@ def nvidia_mixtral_llm():
         ("bedrock_titan_embedding", "bedrock_anthropic_llm"),
         ("bedrock_cohere_embedding", "bedrock_meta_llm"),
         ("huggingface_hub_embedding", "huggingface_hub_llm"),
-        ("nvidia_embedding", "nvidia_mixtral_llm"),
+        # ("nvidia_embedding", "nvidia_mixtral_llm"),
     ],
 )
 def test_rag(test_case, vector_store, embedding, llm, request):

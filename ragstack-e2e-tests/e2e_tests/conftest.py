@@ -105,7 +105,8 @@ def truncate_and_delete(client: LibAstraDB, collection: str):
     astra_db_collection = client.collection(collection_name=collection)
     astra_db_collection.delete_many(filter={})
 
-    client.delete_collection(collection_name=collection)
+    response = client.delete_collection(collection_name=collection)
+    logging.info(f"Delete collection response: {response}")
 
 
 @pytest.hookimpl(tryfirst=True, hookwrapper=True)
