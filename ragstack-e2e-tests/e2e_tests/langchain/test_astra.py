@@ -460,9 +460,8 @@ def close_vector_db(vector_store: VectorStore):
     logging.info(f"Closing vector store")
     astra_ref = get_astra_ref()
     raw_client = LibAstraDB(api_endpoint=astra_ref.api_endpoint, token=astra_ref.token)
-    collection = vector_store.collection_name
 
-    truncate_and_delete(raw_client, collection)
+    truncate_and_delete(raw_client, vector_store.collection_name)
 
 
 def init_embeddings() -> Embeddings:
