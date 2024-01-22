@@ -8,6 +8,11 @@ from dataclasses import dataclass
 import cassio
 import pytest
 from astrapy.db import AstraDB as LibAstraDB
+from cassandra.cluster import Cluster, PlainTextAuthProvider, Session
+
+from testcontainers.core.container import DockerContainer
+from testcontainers.core.waiting_utils import wait_for_logs
+
 
 LOGGER = logging.getLogger(__name__)
 
@@ -84,10 +89,6 @@ def delete_astra_collection(astra_ref: AstraRef) -> None:
     raw_client.delete_collection(astra_ref.collection)
 
 
-from cassandra.cluster import Cluster, PlainTextAuthProvider, Session
-
-from testcontainers.core.container import DockerContainer
-from testcontainers.core.waiting_utils import wait_for_logs
 
 
 class CassandraContainer(DockerContainer):
