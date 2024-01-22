@@ -87,12 +87,17 @@ def delete_astra_collection(astra_ref: AstraRef) -> None:
 from cassandra.cluster import Cluster, PlainTextAuthProvider, Session
 
 from testcontainers.core.container import DockerContainer
-from testcontainers.core.waiting_utils import wait_container_is_ready, wait_for_logs
+from testcontainers.core.waiting_utils import wait_for_logs
 
 
 class CassandraContainer(DockerContainer):
-    def __init__(self, image: str = "docker.io/stargateio/dse-next:4.0.11-b259738f492f", port: int = 9042,
-                 keyspace: str = "default_keyspace", **kwargs) -> None:
+    def __init__(
+        self,
+        image: str = "docker.io/stargateio/dse-next:4.0.11-b259738f492f",
+        port: int = 9042,
+        keyspace: str = "default_keyspace",
+        **kwargs,
+    ) -> None:
         super(CassandraContainer, self).__init__(image=image, **kwargs)
         self.keyspace = keyspace
         self.port = port
@@ -109,11 +114,15 @@ class CassandraContainer(DockerContainer):
 
     def create_session(self) -> Session:
         actual_port = self.get_exposed_port(self.port)
-        cluster = Cluster([("127.0.0.1", actual_port)], auth_provider=PlainTextAuthProvider("cassandra", "cassandra"))
+        cluster = Cluster(
+            [("127.0.0.1", actual_port)],
+            auth_provider=PlainTextAuthProvider("cassandra", "cassandra"),
+        )
         session = cluster.connect()
         session.execute(f"DROP KEYSPACE IF EXISTS {self.keyspace}")
         session.execute(
-            f"CREATE KEYSPACE IF NOT EXISTS {self.keyspace} WITH replication = {{'class': 'SimpleStrategy', 'replication_factor': '1'}}")
+            f"CREATE KEYSPACE IF NOT EXISTS {self.keyspace} WITH replication = {{'class': 'SimpleStrategy', 'replication_factor': '1'}}"
+        )
         return session
 
 
@@ -152,8 +161,8 @@ def pytest_runtest_makereport(item, call):
     # also get the setup phase if failed
     if rep.outcome != "passed" or rep.when == "call":
         if (
-                "RAGSTACK_E2E_TESTS_TEST_START" not in os.environ
-                or not os.environ["RAGSTACK_E2E_TESTS_TEST_START"]
+            "RAGSTACK_E2E_TESTS_TEST_START" not in os.environ
+            or not os.environ["RAGSTACK_E2E_TESTS_TEST_START"]
         ):
             total_time = "?"
         else:
@@ -217,13 +226,13 @@ def dump_report():
     logging.info("\n".join(failed_report_lines))
 
     stats_str = (
-            "Tests passed: "
-            + str(tests_stats["passed"])
-            + ", failed: "
-            + str(tests_stats["failed"])
-            + ", skipped: "
-            + str(tests_stats["skipped"])
-            + "\n"
+        "Tests passed: "
+        + str(tests_stats["passed"])
+        + ", failed: "
+        + str(tests_stats["failed"])
+        + ", skipped: "
+        + str(tests_stats["skipped"])
+        + "\n"
     )
     _report_to_file(stats_str, "all-tests-report.txt", all_report_lines)
     _report_to_file(stats_str, "failed-tests-report.txt", failed_report_lines)

@@ -37,7 +37,7 @@ from e2e_tests.conftest import (
     delete_all_astra_collections,
     delete_astra_collection,
     AstraRef,
-    initialize_local_cassandra
+    initialize_local_cassandra,
 )
 from llama_index.vector_stores.types import VectorStore, VectorStoreQuery
 from sqlalchemy import Float
@@ -95,7 +95,6 @@ class CassandraVectorStoreWrapper(VectorStoreWrapper):
                 keyspace="default_keyspace",
                 table=self.astra_ref.collection,
             )
-
 
     def as_vector_store(self) -> VectorStore:
         return self.vector_store
@@ -170,6 +169,7 @@ def astra_db_cassandra():
     delete_all_astra_collections(astra_ref)
     yield CassandraVectorStoreWrapper(astra_ref)
     delete_astra_collection(astra_ref)
+
 
 @pytest.fixture
 def local_cassandra():
@@ -291,11 +291,9 @@ def huggingface_hub_embedding():
     )
 
 
-@pytest.mark.parametrize("vector_store", [
-    "astra_db_cassandra",
-    "astra_db",
-    "local_cassandra"
-])
+@pytest.mark.parametrize(
+    "vector_store", ["astra_db_cassandra", "astra_db", "local_cassandra"]
+)
 @pytest.mark.parametrize(
     "embedding,llm",
     [
