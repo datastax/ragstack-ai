@@ -428,8 +428,7 @@ def gemini_pro_llm():
 
 @pytest.mark.parametrize(
     "vector_store",
-    # ["astra_db", "cassandra", "local_cassandra"],
-    ["local_cassandra"],
+    ["astra_db", "astra_db_cassandra", "local_cassandra"],
 )
 @pytest.mark.parametrize(
     "embedding,llm",
