@@ -36,7 +36,10 @@ def get_required_env(name) -> str:
     if name not in os.environ:
         LOGGER.warning(f"Missing required environment variable: {name}")
         pytest.skip(f"Missing required environment variable: {name}")
-    return os.environ[name]
+    value = os.environ[name]
+    if not value:
+        LOGGER.warning(f"Empty required environment variable: {name}")
+        pytest.skip(f"Empty required environment variable: {name}")
 
 
 @dataclass

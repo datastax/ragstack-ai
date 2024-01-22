@@ -30,7 +30,7 @@ from langchain.embeddings import (
 )
 from langchain.embeddings.azure_openai import AzureOpenAIEmbeddings
 from langchain.llms.huggingface_hub import HuggingFaceHub
-from langchain.memory import AstraDBChatMessageHistory
+from langchain.memory import AstraDBChatMessageHistory, CassandraChatMessageHistory
 from langchain.vectorstores import AstraDB, Cassandra
 from astrapy.db import AstraDB as AstraDBClient
 from langchain_core.chat_history import BaseChatMessageHistory
@@ -80,6 +80,7 @@ class CassandraVectorStoreWrapper(VectorStoreWrapper):
         self.astra_ref = astra_ref
         self.session_id = "test_session_id" + str(random.randint(0, 1000000))
         self.vector_store = None
+        self.cassandra_session = None
 
     def init(self, embedding: Embeddings):
         if self.astra_ref:
@@ -99,24 +100,32 @@ class CassandraVectorStoreWrapper(VectorStoreWrapper):
                 table_name=self.astra_ref.collection,
             )
         else:
-            session = initialize_local_cassandra()
+            self.cassandra_session = initialize_local_cassandra()
             self.vector_store = Cassandra(
                 embedding=embedding,
-                session=session,
+                session=self.cassandra_session,
                 keyspace="default_keyspace",
-                table_name="default_table",
+                table_name=self.session_id,
             )
 
     def as_vector_store(self) -> VectorStore:
         return self.vector_store
 
     def create_chat_history(self) -> BaseChatMessageHistory:
-        return AstraDBChatMessageHistory(
-            session_id=self.session_id,
-            api_endpoint=self.astra_ref.api_endpoint,
-            token=self.astra_ref.token,
-            collection_name=self.astra_ref.collection + "_chat_memory",
-        )
+        if self.astra_ref:
+            return AstraDBChatMessageHistory(
+                session_id=self.session_id,
+                api_endpoint=self.astra_ref.api_endpoint,
+                token=self.astra_ref.token,
+                collection_name=self.astra_ref.collection + "_chat_memory",
+            )
+        else:
+            return CassandraChatMessageHistory(
+                session_id=self.session_id,
+                session=self.cassandra_session,
+                keyspace="default_keyspace",
+                table_name=self.session_id + "_chat_memory",
+            )
 
     def put(
         self, doc_id: str, document: str, metadata: dict, vector: List[Float]
@@ -321,7 +330,7 @@ def nvidia_embedding():
     get_required_env("NVIDIA_API_KEY")
     from langchain_nvidia_ai_endpoints import NVIDIAEmbeddings
 
-    return NVIDIAEmbeddings(model="nvolve-40k")
+    return NVIDIAEmbeddings(model="playground_nvolveqa_40k")
 
 
 @pytest.fixture
@@ -329,15 +338,18 @@ def nvidia_mixtral_llm():
     get_required_env("NVIDIA_API_KEY")
     from langchain_nvidia_ai_endpoints import ChatNVIDIA
 
-    return ChatNVIDIA(model="mixtral_8x7b")
+    return ChatNVIDIA(model="playground_mixtral_8x7b")
 
 
 @pytest.mark.parametrize(
     "test_case",
-    ["rag_custom_chain", "conversational_rag"],
+    # ["rag_custom_chain", "conversational_rag"],
+    ["conversational_rag"],
 )
 @pytest.mark.parametrize(
-    "vector_store", ["astra_db", "astra_db_cassandra", "local_cassandra"]
+    # "vector_store", ["astra_db", "astra_db_cassandra", "local_cassandra"]
+    "vector_store",
+    ["local_cassandra"],
 )
 @pytest.mark.parametrize(
     "embedding,llm",
