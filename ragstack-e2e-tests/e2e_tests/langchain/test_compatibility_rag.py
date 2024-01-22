@@ -3,19 +3,15 @@ import os
 import random
 import time
 from abc import abstractmethod
-from typing import List, Optional
+from typing import List
 
-import cassio
 import pytest
 from cassio.table import MetadataVectorCassandraTable
 from e2e_tests.conftest import (
     set_current_test_info,
     get_required_env,
-    get_astra_ref,
-    delete_all_astra_collections_with_client,
-    delete_astra_collection,
-    AstraRef,
-    initialize_local_cassandra,
+    get_vector_database_handler,
+    VectorDatabaseHandler,
 )
 from e2e_tests.langchain.rag_application import (
     run_rag_custom_chain,
@@ -32,7 +28,6 @@ from langchain.embeddings.azure_openai import AzureOpenAIEmbeddings
 from langchain.llms.huggingface_hub import HuggingFaceHub
 from langchain.memory import AstraDBChatMessageHistory, CassandraChatMessageHistory
 from langchain.vectorstores import AstraDB, Cassandra
-from astrapy.db import AstraDB as AstraDBClient
 from langchain_core.chat_history import BaseChatMessageHistory
 from langchain_core.embeddings import Embeddings
 from langchain_core.messages import HumanMessage
@@ -41,14 +36,6 @@ from langchain_core.vectorstores import VectorStore
 from langchain_google_genai import ChatGoogleGenerativeAI
 from sqlalchemy import Float
 from vertexai.vision_models import MultiModalEmbeddingModel, Image
-
-
-def astra_db_client():
-    astra_ref = get_astra_ref()
-    return AstraDBClient(
-        token=astra_ref.token,
-        api_endpoint=astra_ref.api_endpoint,
-    )
 
 
 class VectorStoreWrapper:
@@ -76,55 +63,39 @@ class VectorStoreWrapper:
 
 
 class CassandraVectorStoreWrapper(VectorStoreWrapper):
-    def __init__(self, astra_ref: Optional[AstraRef]):
-        self.astra_ref = astra_ref
+    def __init__(self, vector_db_handler: VectorDatabaseHandler):
+        self.vector_db_handler = vector_db_handler
         self.session_id = "test_session_id" + str(random.randint(0, 1000000))
         self.vector_store = None
-        self.cassandra_session = None
 
     def init(self, embedding: Embeddings):
-        if self.astra_ref:
-            if self.astra_ref.env == "dev":
-                bundle_url_template = "https://api.dev.cloud.datastax.com/v2/databases/{database_id}/secureBundleURL"
-                cassio.init(
-                    token=self.astra_ref.token,
-                    database_id=self.astra_ref.id,
-                    bundle_url_template=bundle_url_template,
-                )
-            else:
-                cassio.init(token=self.astra_ref.token, database_id=self.astra_ref.id)
-            self.vector_store = Cassandra(
-                embedding=embedding,
-                session=None,
-                keyspace="default_keyspace",
-                table_name=self.astra_ref.collection,
-            )
-        else:
-            self.cassandra_session = initialize_local_cassandra()
-            self.vector_store = Cassandra(
-                embedding=embedding,
-                session=self.cassandra_session,
-                keyspace="default_keyspace",
-                table_name=self.session_id,
-            )
+        self.vector_db_handler.before_test("cassandra")
+
+        self.vector_store = Cassandra(
+            embedding=embedding,
+            session=None,
+            keyspace="default_keyspace",
+            table_name=self.vector_db_handler.get_table_name(),
+        )
 
     def as_vector_store(self) -> VectorStore:
         return self.vector_store
 
     def create_chat_history(self) -> BaseChatMessageHistory:
-        if self.astra_ref:
+        if self.vector_db_handler.is_astradb():
+            astra_ref = self.vector_db_handler.get_astra_ref()
             return AstraDBChatMessageHistory(
                 session_id=self.session_id,
-                api_endpoint=self.astra_ref.api_endpoint,
-                token=self.astra_ref.token,
-                collection_name=self.astra_ref.collection + "_chat_memory",
+                api_endpoint=astra_ref.api_endpoint,
+                token=astra_ref.token,
+                collection_name=astra_ref.collection + "_chat_memory",
             )
         else:
             return CassandraChatMessageHistory(
                 session_id=self.session_id,
-                session=self.cassandra_session,
+                session=self.vector_db_handler.get_cassandra_session(),
                 keyspace="default_keyspace",
-                table_name=self.session_id + "_chat_memory",
+                table_name=self.vector_db_handler.get_table_name() + "_chat_memory",
             )
 
     def put(
@@ -159,16 +130,17 @@ class CassandraVectorStoreWrapper(VectorStoreWrapper):
 
 
 class AstraDBVectorStoreWrapper(VectorStoreWrapper):
-    def __init__(self, astra_ref: AstraRef):
-        self.astra_ref = astra_ref
+    def __init__(self, vector_database_handler: VectorDatabaseHandler):
+        self.vector_database_handler = vector_database_handler
         self.session_id = "test_session_id" + str(random.randint(0, 1000000))
         self.vector_store = None
 
     def init(self, embedding: Embeddings):
+        self.vector_database_handler.before_test("astradb")
         self.vector_store = AstraDB(
-            collection_name=self.astra_ref.collection,
+            collection_name=self.vector_database_handler.get_table_name(),
             embedding=embedding,
-            astra_db_client=astra_db_client(),
+            astra_db_client=self.vector_database_handler.get_astra_client(),
         )
 
     def as_vector_store(self) -> VectorStore:
@@ -177,8 +149,9 @@ class AstraDBVectorStoreWrapper(VectorStoreWrapper):
     def create_chat_history(self) -> BaseChatMessageHistory:
         return AstraDBChatMessageHistory(
             session_id=self.session_id,
-            astra_db_client=astra_db_client(),
-            collection_name=self.astra_ref.collection + "_chat_memory",
+            astra_db_client=self.vector_database_handler.get_astra_client(),
+            collection_name=self.vector_database_handler.get_table_name()
+            + "_chat_memory",
         )
 
     def put(
@@ -205,25 +178,16 @@ class AstraDBVectorStoreWrapper(VectorStoreWrapper):
 
 @pytest.fixture
 def astra_db():
-    astra_ref = get_astra_ref()
-    delete_all_astra_collections_with_client(astra_db_client())
-    yield AstraDBVectorStoreWrapper(astra_ref)
-    delete_astra_collection(astra_ref)
-    delete_all_astra_collections_with_client(astra_db_client())
+    handler = get_vector_database_handler()
+    yield AstraDBVectorStoreWrapper(handler)
+    handler.after_test()
 
 
 @pytest.fixture
-def astra_db_cassandra():
-    astra_ref = get_astra_ref()
-    delete_all_astra_collections_with_client(astra_db_client())
-    yield CassandraVectorStoreWrapper(astra_ref)
-    delete_astra_collection(astra_ref)
-    delete_all_astra_collections_with_client(astra_db_client())
-
-
-@pytest.fixture
-def local_cassandra():
-    yield CassandraVectorStoreWrapper(astra_ref=None)
+def cassandra():
+    handler = get_vector_database_handler()
+    yield CassandraVectorStoreWrapper(handler)
+    handler.after_test()
 
 
 @pytest.fixture
@@ -345,9 +309,7 @@ def nvidia_mixtral_llm():
     "test_case",
     ["rag_custom_chain", "conversational_rag"],
 )
-@pytest.mark.parametrize(
-    "vector_store", ["astra_db", "astra_db_cassandra", "local_cassandra"]
-)
+@pytest.mark.parametrize("vector_store", ["astra_db", "cassandra"])
 @pytest.mark.parametrize(
     "embedding,llm",
     [
@@ -437,7 +399,7 @@ def gemini_pro_llm():
 
 @pytest.mark.parametrize(
     "vector_store",
-    ["astra_db", "astra_db_cassandra", "local_cassandra"],
+    ["astra_db", "cassandra"],
 )
 @pytest.mark.parametrize(
     "embedding,llm",

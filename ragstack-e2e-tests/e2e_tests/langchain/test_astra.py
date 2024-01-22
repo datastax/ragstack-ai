@@ -1,9 +1,7 @@
 import json
-import logging
 from typing import List
 
 from astrapy.api import APIRequestError
-from astrapy.db import AstraDB as LibAstraDB
 import pytest
 from httpx import ConnectError, HTTPStatusError
 
@@ -11,7 +9,10 @@ from langchain.schema.embeddings import Embeddings
 from langchain.vectorstores import AstraDB
 from langchain.chat_models import ChatOpenAI
 from langchain.schema.language_model import BaseLanguageModel
-from e2e_tests.conftest import get_required_env, get_astra_ref
+from e2e_tests.conftest import (
+    get_required_env,
+    get_vector_database_handler,
+)
 from langchain_core.documents import Document
 from langchain_core.runnables import RunnableConfig
 from langchain_core.vectorstores import VectorStore
@@ -60,7 +61,7 @@ def test_ingest_errors(environment):
 
 def test_wrong_connection_parameters():
     # This is expected to be a valid endpoint, because we want to test an AUTHENTICATION error
-    astra_ref = get_astra_ref()
+    astra_ref = get_vector_database_handler().get_astra_ref()
     api_endpoint = astra_ref.api_endpoint
 
     try:
@@ -416,17 +417,14 @@ class MockEmbeddings(Embeddings):
 
 
 def init_vector_db(embedding: Embeddings) -> VectorStore:
-    astra_ref = get_astra_ref()
+    handler = get_vector_database_handler()
+    if not handler.is_astradb():
+        pytest.skip("Skipping test because Astra is not configured")
+    handler.before_test("astradb")
+    astra_ref = handler.get_astra_ref()
     collection = astra_ref.collection
     token = astra_ref.token
     api_endpoint = astra_ref.api_endpoint
-
-    raw_client = LibAstraDB(api_endpoint=api_endpoint, token=token)
-    collections = raw_client.get_collections().get("status").get("collections")
-    logging.info(f"Existing collections: {collections}")
-    for collection_info in collections:
-        logging.info(f"Deleting collection: {collection_info}")
-        raw_client.delete_collection(collection_info)
 
     vector_db = AstraDB(
         collection_name=collection,
@@ -454,11 +452,7 @@ def environment():
     yield Environment(
         vectorstore=vector_db_impl, llm=llm_impl, embedding=embeddings_impl
     )
-    close_vector_db(vector_db_impl)
-
-
-def close_vector_db(vector_store: VectorStore):
-    vector_store.astra_db.delete_collection(vector_store.collection_name)
+    get_vector_database_handler().after_test()
 
 
 def init_embeddings() -> Embeddings:

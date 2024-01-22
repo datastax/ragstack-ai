@@ -1,6 +1,7 @@
 import logging
 import os
 import pathlib
+import random
 import time
 import uuid
 from dataclasses import dataclass
@@ -52,15 +53,102 @@ class AstraRef:
     env: str
 
 
-def get_astra_ref() -> AstraRef:
-    env = os.environ.get("ASTRA_DB_ENV", "prod").lower()
-    return AstraRef(
-        token=get_required_env("ASTRA_DB_TOKEN"),
-        api_endpoint=get_required_env("ASTRA_DB_ENDPOINT"),
-        collection=get_required_env("ASTRA_TABLE_NAME"),
-        id=get_required_env("ASTRA_DB_ID"),
-        env=env,
-    )
+class VectorDatabaseHandler:
+    def __init__(self):
+        self.mode = os.environ.get("VECTOR_DATABASE_MODE", "astra")
+        if self.mode not in ["astra", "dse"]:
+            raise ValueError(f"Invalid VECTOR_DATABASE_MODE: {self.mode}")
+        self.test_table_name = None
+
+    def is_astradb(self) -> bool:
+        return self.mode == "astra"
+
+    def is_dse(self) -> bool:
+        return self.mode == "dse"
+
+    def get_astra_ref(self) -> AstraRef:
+        if not self.is_astradb():
+            raise ValueError("Not an AstraDB test")
+        env = os.environ.get("ASTRA_DB_ENV", "prod").lower()
+        return AstraRef(
+            token=get_required_env("ASTRA_DB_TOKEN"),
+            api_endpoint=get_required_env("ASTRA_DB_ENDPOINT"),
+            collection=get_required_env("ASTRA_TABLE_NAME"),
+            id=get_required_env("ASTRA_DB_ID"),
+            env=env,
+        )
+
+    def get_astra_client(self) -> LibAstraDB:
+        if not self.is_astradb():
+            raise ValueError("Not an AstraDB test")
+        astra_ref = self.get_astra_ref()
+        return LibAstraDB(
+            token=astra_ref.token,
+            api_endpoint=astra_ref.api_endpoint,
+        )
+
+    def get_cassandra_session(self) -> Session:
+        if not self.is_dse():
+            raise ValueError("Not running in dse mode")
+        return self.cassandra_session
+
+    def after_test(self):
+        self.test_table_name = None
+        if self.mode == "astra":
+            astra_ref = self.get_astra_ref()
+            delete_astra_collection(astra_ref)
+            delete_all_astra_collections_with_client(
+                LibAstraDB(
+                    token=astra_ref.token,
+                    api_endpoint=astra_ref.api_endpoint,
+                )
+            )
+        pass
+
+    def before_test(self, implementation):
+        if self.mode == "astra":
+            self.test_table_name = get_required_env("ASTRA_TABLE_NAME")
+            astra_ref = self.get_astra_ref()
+            astra_db_client = LibAstraDB(
+                token=astra_ref.token,
+                api_endpoint=astra_ref.api_endpoint,
+            )
+            delete_all_astra_collections_with_client(astra_db_client)
+
+            if implementation == "cassandra":
+                # to run cassandra implementation over astra
+                if astra_ref.env == "dev":
+                    bundle_url_template = "https://api.dev.cloud.datastax.com/v2/databases/{database_id}/secureBundleURL"
+                    cassio.init(
+                        token=astra_ref.token,
+                        database_id=astra_ref.id,
+                        bundle_url_template=bundle_url_template,
+                    )
+                else:
+                    cassio.init(token=astra_ref.token, database_id=astra_ref.id)
+        elif self.mode == "dse":
+            self.test_table_name = "table_" + str(random.randint(0, 1000000))
+            cassandra_container_ref = []
+            if len(cassandra_container_ref) == 0:
+                cassandra_container = CassandraContainer()
+                cassandra_container.start()
+                logging.info("Cassandra container started")
+                cassandra_container_ref.append(cassandra_container)
+            else:
+                logging.info("Cassandra container already started")
+
+            self.cassandra_session = cassandra_container_ref[0].create_session()
+            cassio.init(session=self.cassandra_session)
+
+    def get_table_name(self) -> str:
+        return self.test_table_name
+
+
+vector_database_handler = VectorDatabaseHandler()
+
+
+def get_vector_database_handler() -> VectorDatabaseHandler:
+    return vector_database_handler
 
 
 def delete_all_astra_collections_with_client(raw_client: LibAstraDB):
@@ -127,23 +215,6 @@ class CassandraContainer(DockerContainer):
             f"CREATE KEYSPACE IF NOT EXISTS {self.keyspace} WITH replication = {{'class': 'SimpleStrategy', 'replication_factor': '1'}}"
         )
         return session
-
-
-cassandra_container_ref = []
-
-
-def initialize_local_cassandra():
-    if len(cassandra_container_ref) == 0:
-        cassandra_container = CassandraContainer()
-        cassandra_container.start()
-        logging.info("Cassandra container started")
-        cassandra_container_ref.append(cassandra_container)
-    else:
-        logging.info("Cassandra container already started")
-
-    session = cassandra_container_ref[0].create_session()
-    cassio.init(session=session)
-    return session
 
 
 failed_report_lines = []
