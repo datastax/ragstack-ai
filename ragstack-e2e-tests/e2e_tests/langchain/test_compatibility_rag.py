@@ -343,13 +343,10 @@ def nvidia_mixtral_llm():
 
 @pytest.mark.parametrize(
     "test_case",
-    # ["rag_custom_chain", "conversational_rag"],
-    ["conversational_rag"],
+    ["rag_custom_chain", "conversational_rag"],
 )
 @pytest.mark.parametrize(
-    # "vector_store", ["astra_db", "astra_db_cassandra", "local_cassandra"]
-    "vector_store",
-    ["local_cassandra"],
+    "vector_store", ["astra_db", "astra_db_cassandra", "local_cassandra"]
 )
 @pytest.mark.parametrize(
     "embedding,llm",
