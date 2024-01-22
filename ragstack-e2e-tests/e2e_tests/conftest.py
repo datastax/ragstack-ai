@@ -55,8 +55,8 @@ class AstraRef:
 
 class VectorDatabaseHandler:
     def __init__(self):
-        self.mode = os.environ.get("VECTOR_DATABASE_MODE", "astra")
-        if self.mode not in ["astra", "dse"]:
+        self.mode = os.environ.get("VECTOR_DATABASE_MODE", "astradb")
+        if self.mode not in ["astradb", "dse"]:
             raise ValueError(f"Invalid VECTOR_DATABASE_MODE: {self.mode}")
         self.test_table_name = None
 
