@@ -300,7 +300,7 @@ def nvidia_embedding():
     get_required_env("NVIDIA_API_KEY")
     from langchain_nvidia_ai_endpoints import NVIDIAEmbeddings
 
-    return NVIDIAEmbeddings(model="nvolve-40k")
+    return NVIDIAEmbeddings(model="playground_nvolveqa_40k")
 
 
 @pytest.fixture
@@ -308,7 +308,7 @@ def nvidia_mixtral_llm():
     get_required_env("NVIDIA_API_KEY")
     from langchain_nvidia_ai_endpoints import ChatNVIDIA
 
-    return ChatNVIDIA(model="mixtral_8x7b")
+    return ChatNVIDIA(model="playground_mixtral_8x7b")
 
 
 @pytest.mark.parametrize(
