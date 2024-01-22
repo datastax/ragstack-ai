@@ -59,6 +59,7 @@ class VectorDatabaseHandler:
         if self.mode not in ["astradb", "dse"]:
             raise ValueError(f"Invalid VECTOR_DATABASE_MODE: {self.mode}")
         self.test_table_name = None
+        self.cassandra_container = None
 
     def is_astradb(self) -> bool:
         return self.mode == "astra"
@@ -135,16 +136,14 @@ class VectorDatabaseHandler:
                     cassio.init(token=astra_ref.token, database_id=astra_ref.id)
         elif self.mode == "dse":
             self.test_table_name = "table_" + str(random.randint(0, 1000000))
-            cassandra_container_ref = []
-            if len(cassandra_container_ref) == 0:
-                cassandra_container = CassandraContainer()
-                cassandra_container.start()
+            if self.cassandra_container is None:
+                self.cassandra_container = CassandraContainer()
+                self.cassandra_container.start()
                 logging.info("Cassandra container started")
-                cassandra_container_ref.append(cassandra_container)
             else:
                 logging.info("Cassandra container already started")
 
-            self.cassandra_session = cassandra_container_ref[0].create_session()
+            self.cassandra_session = self.cassandra_container.create_session()
             cassio.init(session=self.cassandra_session)
 
     def get_table_name(self) -> str:
