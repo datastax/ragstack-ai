@@ -1,7 +1,7 @@
 import os
 import random
 from abc import abstractmethod
-from typing import List
+from typing import List, Optional
 
 import cassio
 import pytest
@@ -37,6 +37,7 @@ from e2e_tests.conftest import (
     delete_all_astra_collections,
     delete_astra_collection,
     AstraRef,
+    initialize_local_cassandra
 )
 from llama_index.vector_stores.types import VectorStore, VectorStoreQuery
 from sqlalchemy import Float
@@ -64,27 +65,37 @@ class VectorStoreWrapper:
 
 
 class CassandraVectorStoreWrapper(VectorStoreWrapper):
-    def __init__(self, astra_ref: AstraRef):
+    def __init__(self, astra_ref: Optional[AstraRef]):
         self.astra_ref = astra_ref
         self.session_id = "test_session_id" + str(random.randint(0, 1000000))
         self.vector_store = None
 
     def init(self, embedding_dimension: int):
-        if self.astra_ref.env == "dev":
-            bundle_url_template = "https://api.dev.cloud.datastax.com/v2/databases/{database_id}/secureBundleURL"
-            cassio.init(
-                token=self.astra_ref.token,
-                database_id=self.astra_ref.id,
-                bundle_url_template=bundle_url_template,
+        if self.astra_ref:
+            if self.astra_ref.env == "dev":
+                bundle_url_template = "https://api.dev.cloud.datastax.com/v2/databases/{database_id}/secureBundleURL"
+                cassio.init(
+                    token=self.astra_ref.token,
+                    database_id=self.astra_ref.id,
+                    bundle_url_template=bundle_url_template,
+                )
+            else:
+                cassio.init(token=self.astra_ref.token, database_id=self.astra_ref.id)
+            self.vector_store = CassandraVectorStore(
+                embedding_dimension=embedding_dimension,
+                session=None,
+                keyspace="default_keyspace",
+                table=self.astra_ref.collection,
             )
         else:
-            cassio.init(token=self.astra_ref.token, database_id=self.astra_ref.id)
-        self.vector_store = CassandraVectorStore(
-            embedding_dimension=embedding_dimension,
-            session=None,
-            keyspace="default_keyspace",
-            table=self.astra_ref.collection,
-        )
+            session = initialize_local_cassandra()
+            self.vector_store = CassandraVectorStore(
+                embedding_dimension=embedding_dimension,
+                session=session,
+                keyspace="default_keyspace",
+                table=self.astra_ref.collection,
+            )
+
 
     def as_vector_store(self) -> VectorStore:
         return self.vector_store
@@ -154,11 +165,15 @@ def astra_db():
 
 
 @pytest.fixture
-def cassandra():
+def astra_db_cassandra():
     astra_ref = get_astra_ref()
     delete_all_astra_collections(astra_ref)
     yield CassandraVectorStoreWrapper(astra_ref)
     delete_astra_collection(astra_ref)
+
+@pytest.fixture
+def local_cassandra():
+    yield CassandraVectorStoreWrapper(astra_ref=None)
 
 
 @pytest.fixture
@@ -276,7 +291,11 @@ def huggingface_hub_embedding():
     )
 
 
-@pytest.mark.parametrize("vector_store", ["cassandra", "astra_db"])
+@pytest.mark.parametrize("vector_store", [
+    "astra_db_cassandra",
+    "astra_db",
+    "local_cassandra"
+])
 @pytest.mark.parametrize(
     "embedding,llm",
     [

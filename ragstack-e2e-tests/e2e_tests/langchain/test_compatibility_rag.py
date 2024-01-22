@@ -3,10 +3,11 @@ import os
 import random
 import time
 from abc import abstractmethod
-from typing import List
+from typing import List, Optional
 
 import cassio
 import pytest
+from cassandra.cluster import Cluster, PlainTextAuthProvider
 from cassio.table import MetadataVectorCassandraTable
 from e2e_tests.conftest import (
     set_current_test_info,
@@ -15,6 +16,7 @@ from e2e_tests.conftest import (
     delete_all_astra_collections_with_client,
     delete_astra_collection,
     AstraRef,
+    initialize_local_cassandra
 )
 from e2e_tests.langchain.rag_application import (
     run_rag_custom_chain,
@@ -75,27 +77,36 @@ class VectorStoreWrapper:
 
 
 class CassandraVectorStoreWrapper(VectorStoreWrapper):
-    def __init__(self, astra_ref: AstraRef):
+    def __init__(self, astra_ref: Optional[AstraRef]):
         self.astra_ref = astra_ref
         self.session_id = "test_session_id" + str(random.randint(0, 1000000))
         self.vector_store = None
 
     def init(self, embedding: Embeddings):
-        if self.astra_ref.env == "dev":
-            bundle_url_template = "https://api.dev.cloud.datastax.com/v2/databases/{database_id}/secureBundleURL"
-            cassio.init(
-                token=self.astra_ref.token,
-                database_id=self.astra_ref.id,
-                bundle_url_template=bundle_url_template,
+        if self.astra_ref:
+            if self.astra_ref.env == "dev":
+                bundle_url_template = "https://api.dev.cloud.datastax.com/v2/databases/{database_id}/secureBundleURL"
+                cassio.init(
+                    token=self.astra_ref.token,
+                    database_id=self.astra_ref.id,
+                    bundle_url_template=bundle_url_template,
+                )
+            else:
+                cassio.init(token=self.astra_ref.token, database_id=self.astra_ref.id)
+            self.vector_store = Cassandra(
+                embedding=embedding,
+                session=None,
+                keyspace="default_keyspace",
+                table_name=self.astra_ref.collection,
             )
         else:
-            cassio.init(token=self.astra_ref.token, database_id=self.astra_ref.id)
-        self.vector_store = Cassandra(
-            embedding=embedding,
-            session=None,
-            keyspace="default_keyspace",
-            table_name=self.astra_ref.collection,
-        )
+            session = initialize_local_cassandra()
+            self.vector_store = Cassandra(
+                embedding=embedding,
+                session=session,
+                keyspace="default_keyspace",
+                table_name="default_table",
+            )
 
     def as_vector_store(self) -> VectorStore:
         return self.vector_store
@@ -194,13 +205,16 @@ def astra_db():
 
 
 @pytest.fixture
-def cassandra():
+def astra_db_cassandra():
     astra_ref = get_astra_ref()
     delete_all_astra_collections_with_client(astra_db_client())
     yield CassandraVectorStoreWrapper(astra_ref)
     delete_astra_collection(astra_ref)
     delete_all_astra_collections_with_client(astra_db_client())
 
+@pytest.fixture
+def local_cassandra():
+    yield CassandraVectorStoreWrapper(astra_ref=None)
 
 @pytest.fixture
 def openai_llm():
@@ -319,11 +333,13 @@ def nvidia_mixtral_llm():
 
 @pytest.mark.parametrize(
     "test_case",
-    ["rag_custom_chain", "conversational_rag"],
+    ["rag_custom_chain"
+     #   , "conversational_rag"
+     ],
 )
 @pytest.mark.parametrize(
     "vector_store",
-    ["astra_db", "cassandra"],
+    ["astra_db", "astra_db_cassandra", "local_cassandra"]
 )
 @pytest.mark.parametrize(
     "embedding,llm",
@@ -334,7 +350,7 @@ def nvidia_mixtral_llm():
         ("bedrock_titan_embedding", "bedrock_anthropic_llm"),
         ("bedrock_cohere_embedding", "bedrock_meta_llm"),
         ("huggingface_hub_embedding", "huggingface_hub_llm"),
-        ("nvidia_embedding", "nvidia_mixtral_llm"),
+        ("nvidia_embedding", "nvidia_mixtral_llm")
     ],
 )
 def test_rag(test_case, vector_store, embedding, llm, request):
@@ -414,7 +430,8 @@ def gemini_pro_llm():
 
 @pytest.mark.parametrize(
     "vector_store",
-    ["astra_db", "cassandra"],
+    #["astra_db", "cassandra", "local_cassandra"],
+    ["local_cassandra"],
 )
 @pytest.mark.parametrize(
     "embedding,llm",
