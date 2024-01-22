@@ -127,10 +127,16 @@ class CassandraVectorStoreWrapper(VectorStoreWrapper):
             )
 
     def search(self, vector: List[float], limit: int) -> List[str]:
-        return map(
-            lambda doc: doc["document"],
-            self.vector_store.table.search(embedding_vector=vector, top_k=limit),
-        )
+        if isinstance(self.vector_store.table, MetadataVectorCassandraTable):
+            return map(
+                lambda doc: doc["body_blob"],
+                self.vector_store.table.search(embedding_vector=vector, top_k=limit),
+            )
+        else:
+            return map(
+                lambda doc: doc["document"],
+                self.vector_store.table.search(embedding_vector=vector, top_k=limit),
+            )
 
 
 class AstraDBVectorStoreWrapper(VectorStoreWrapper):
