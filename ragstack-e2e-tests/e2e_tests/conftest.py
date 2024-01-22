@@ -40,6 +40,7 @@ def get_required_env(name) -> str:
     if not value:
         LOGGER.warning(f"Empty required environment variable: {name}")
         pytest.skip(f"Empty required environment variable: {name}")
+    return value
 
 
 @dataclass
