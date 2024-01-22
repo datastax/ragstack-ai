@@ -62,7 +62,23 @@ def get_astra_ref() -> AstraRef:
 
 
 DEFAULT_ASTRA_REF = get_astra_ref()
-DEFAULT_ASTRA_CLIENT = LibAstraDB(api_endpoint=DEFAULT_ASTRA_REF.api_endpoint, token=DEFAULT_ASTRA_REF.token)
+DEFAULT_ASTRA_CLIENT = LibAstraDB(
+    api_endpoint=DEFAULT_ASTRA_REF.api_endpoint, token=DEFAULT_ASTRA_REF.token
+)
+
+
+def ensure_astra_env_clean():
+    collections = (
+        DEFAULT_ASTRA_CLIENT.get_collections().get("status").get("collections")
+    )
+    if len(collections) >= 3:
+        logging.info(
+            f"Awaiting for 2 collection slots to be available, currently there are {len(collections)} collections"
+        )
+        delete_all_astra_collections()
+        ensure_astra_env_clean()
+    else:
+        logging.info("Astra environment is clean")
 
 
 def delete_all_astra_collections():
@@ -72,7 +88,9 @@ def delete_all_astra_collections():
     Current AstraDB has a limit of 5 collections, meaning orphaned collections
     will cause subsequent tests to fail if the limit is reached.
     """
-    collections = DEFAULT_ASTRA_CLIENT.get_collections().get("status").get("collections")
+    collections = (
+        DEFAULT_ASTRA_CLIENT.get_collections().get("status").get("collections")
+    )
     logging.info(f"Existing collections: {collections}")
     for collection_name in collections:
         delete_astra_collection(collection_name)
@@ -107,8 +125,8 @@ def pytest_runtest_makereport(item, call):
     # also get the setup phase if failed
     if rep.outcome != "passed" or rep.when == "call":
         if (
-                "RAGSTACK_E2E_TESTS_TEST_START" not in os.environ
-                or not os.environ["RAGSTACK_E2E_TESTS_TEST_START"]
+            "RAGSTACK_E2E_TESTS_TEST_START" not in os.environ
+            or not os.environ["RAGSTACK_E2E_TESTS_TEST_START"]
         ):
             total_time = "?"
         else:
@@ -172,13 +190,13 @@ def dump_report():
     logging.info("\n".join(failed_report_lines))
 
     stats_str = (
-            "Tests passed: "
-            + str(tests_stats["passed"])
-            + ", failed: "
-            + str(tests_stats["failed"])
-            + ", skipped: "
-            + str(tests_stats["skipped"])
-            + "\n"
+        "Tests passed: "
+        + str(tests_stats["passed"])
+        + ", failed: "
+        + str(tests_stats["failed"])
+        + ", skipped: "
+        + str(tests_stats["skipped"])
+        + "\n"
     )
     _report_to_file(stats_str, "all-tests-report.txt", all_report_lines)
     _report_to_file(stats_str, "failed-tests-report.txt", failed_report_lines)

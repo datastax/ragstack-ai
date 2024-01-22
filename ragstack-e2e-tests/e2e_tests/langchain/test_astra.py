@@ -1,9 +1,7 @@
 import json
-import logging
 from typing import List
 
 from astrapy.api import APIRequestError
-from astrapy.db import AstraDB as LibAstraDB
 import pytest
 from httpx import ConnectError, HTTPStatusError
 
@@ -11,7 +9,7 @@ from langchain.schema.embeddings import Embeddings
 from langchain.vectorstores import AstraDB
 from langchain.chat_models import ChatOpenAI
 from langchain.schema.language_model import BaseLanguageModel
-from e2e_tests.conftest import get_required_env, get_astra_ref
+from e2e_tests.conftest import get_required_env, get_astra_ref, ensure_astra_env_clean
 from langchain_core.documents import Document
 from langchain_core.runnables import RunnableConfig
 from langchain_core.vectorstores import VectorStore
@@ -421,12 +419,7 @@ def init_vector_db(embedding: Embeddings) -> VectorStore:
     token = astra_ref.token
     api_endpoint = astra_ref.api_endpoint
 
-    raw_client = LibAstraDB(api_endpoint=api_endpoint, token=token)
-    collections = raw_client.get_collections().get("status").get("collections")
-    logging.info(f"Existing collections: {collections}")
-    for collection_info in collections:
-        logging.info(f"Deleting collection: {collection_info}")
-        raw_client.delete_collection(collection_info)
+    ensure_astra_env_clean()
 
     vector_db = AstraDB(
         collection_name=collection,
@@ -459,6 +452,7 @@ def environment():
 
 def close_vector_db(vector_store: VectorStore):
     vector_store.astra_db.delete_collection(vector_store.collection_name)
+    ensure_astra_env_clean()
 
 
 def init_embeddings() -> Embeddings:
