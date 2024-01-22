@@ -89,8 +89,6 @@ def delete_astra_collection(astra_ref: AstraRef) -> None:
     raw_client.delete_collection(astra_ref.collection)
 
 
-
-
 class CassandraContainer(DockerContainer):
     def __init__(
         self,
