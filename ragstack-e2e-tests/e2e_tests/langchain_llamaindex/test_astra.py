@@ -226,8 +226,7 @@ class Environment:
 @pytest.fixture
 def environment():
     handler = get_vector_database_handler()
-    if not handler.is_astradb():
-        pytest.skip("Skipping test because Astra is not configured")
+    handler.ensure_implements_astradb()
     handler.before_test("astradb")
     yield Environment(astra_ref=handler.get_astra_ref())
     handler.after_test()

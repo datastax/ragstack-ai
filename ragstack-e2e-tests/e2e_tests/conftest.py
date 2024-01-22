@@ -78,6 +78,13 @@ class VectorDatabaseHandler:
             env=env,
         )
 
+    def ensure_implements_astradb(self):
+        if not self.is_astradb():
+            pytest.skip("Skipping test because Astra is not configured")
+
+    def ensure_implements_cassandra(self):
+        pass
+
     def get_astra_client(self) -> LibAstraDB:
         if not self.is_astradb():
             raise ValueError("Not an AstraDB test")

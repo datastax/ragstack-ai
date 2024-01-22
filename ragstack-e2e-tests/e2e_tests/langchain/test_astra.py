@@ -418,8 +418,7 @@ class MockEmbeddings(Embeddings):
 
 def init_vector_db(embedding: Embeddings) -> VectorStore:
     handler = get_vector_database_handler()
-    if not handler.is_astradb():
-        pytest.skip("Skipping test because Astra is not configured")
+    handler.ensure_implements_astradb()
     handler.before_test("astradb")
     astra_ref = handler.get_astra_ref()
     collection = astra_ref.collection

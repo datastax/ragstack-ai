@@ -179,6 +179,7 @@ class AstraDBVectorStoreWrapper(VectorStoreWrapper):
 @pytest.fixture
 def astra_db():
     handler = get_vector_database_handler()
+    handler.ensure_implements_astradb()
     yield AstraDBVectorStoreWrapper(handler)
     handler.after_test()
 
@@ -186,6 +187,7 @@ def astra_db():
 @pytest.fixture
 def cassandra():
     handler = get_vector_database_handler()
+    handler.ensure_implements_cassandra()
     yield CassandraVectorStoreWrapper(handler)
     handler.after_test()
 
