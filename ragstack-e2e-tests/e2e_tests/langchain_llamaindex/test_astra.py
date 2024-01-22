@@ -3,7 +3,7 @@ from uuid import uuid4
 import langchain_core.documents
 import pytest
 from astrapy.db import AstraDB as LibAstraDB
-from e2e_tests.conftest import get_required_env, get_astra_ref
+from e2e_tests.conftest import get_required_env, get_astra_ref, ensure_astra_env_clean
 from langchain.chains import ConversationalRetrievalChain
 from langchain.chat_models import ChatOpenAI
 from langchain.embeddings import OpenAIEmbeddings
@@ -232,5 +232,6 @@ def delete_collection(astra_ref):
 @pytest.fixture
 def environment():
     astra_ref = get_astra_ref()
+    ensure_astra_env_clean()
     yield Environment(astra_ref=astra_ref)
     delete_collection(astra_ref)

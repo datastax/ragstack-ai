@@ -1,10 +1,9 @@
 import logging
 from typing import List
 
-from astrapy.db import AstraDB as LibAstraDB
 import pytest
 from httpx import ConnectError, HTTPStatusError
-from e2e_tests.conftest import get_required_env, get_astra_ref
+from e2e_tests.conftest import get_required_env, get_astra_ref, ensure_astra_env_clean
 from llama_index import (
     ServiceContext,
     StorageContext,
@@ -201,15 +200,7 @@ def init_vector_db() -> AstraDBVectorStore:
     token = astra_ref.token
     api_endpoint = astra_ref.api_endpoint
 
-    raw_client = LibAstraDB(api_endpoint=api_endpoint, token=token)
-    collections = raw_client.get_collections().get("status").get("collections")
-    logging.info(f"Existing collections: {collections}")
-    for collection_info in collections:
-        try:
-            logging.info(f"Deleting collection: {collection_info}")
-            raw_client.delete_collection(collection_info)
-        except Exception as e:
-            logging.error(f"Error while deleting collection {collection_info}: {e}")
+    ensure_astra_env_clean()
 
     vector_db = AstraDBVectorStore(
         token=token,
