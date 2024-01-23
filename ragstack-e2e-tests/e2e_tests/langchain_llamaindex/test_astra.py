@@ -228,6 +228,6 @@ class Environment:
 @pytest.fixture
 def environment():
     handler = get_vector_store_handler()
-    context = handler.before_test(VectorStoreImplementation.ASTRADB)
+    handler.before_test(VectorStoreImplementation.ASTRADB)
     yield Environment(astra_ref=handler.astra_ref)
     handler.after_test(VectorStoreImplementation.ASTRADB)
