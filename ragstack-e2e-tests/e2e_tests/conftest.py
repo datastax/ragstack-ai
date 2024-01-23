@@ -71,11 +71,12 @@ def ensure_astra_env_clean():
     collections = (
         DEFAULT_ASTRA_CLIENT.get_collections().get("status").get("collections")
     )
-    if len(collections) >= 3:
+    if len(collections) > 0:
         logging.info(
-            f"Awaiting for 2 collection slots to be available, currently there are {len(collections)} collections"
+            f"Astra env not clean, currently there are {len(collections)} collections"
         )
         delete_all_astra_collections()
+        time.sleep(3)
         ensure_astra_env_clean()
     else:
         logging.info("Astra environment is clean")
