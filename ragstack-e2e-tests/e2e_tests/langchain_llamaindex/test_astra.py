@@ -229,5 +229,5 @@ class Environment:
 def environment():
     handler = get_vector_store_handler()
     context = handler.before_test(VectorStoreImplementation.ASTRADB)
-    yield Environment(astra_ref=context.astra_ref)
+    yield Environment(astra_ref=handler.astra_ref)
     handler.after_test(VectorStoreImplementation.ASTRADB)

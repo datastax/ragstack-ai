@@ -186,7 +186,7 @@ def test_rag(vector_store, embedding, llm, request):
         "llama_index::rag",
         f"{llm_name},{embedding_name},{vector_store}",
     )
-    vector_store = vector_store_context.new_llama_index_vector_store(
+    vector_store = vector_store_context.new_llamaindex_vector_store(
         embedding_dimension=embedding_dimensions
     )
     storage_context = StorageContext.from_defaults(vector_store=vector_store)
@@ -295,7 +295,7 @@ def test_multimodal(vector_store, embedding, llm, request):
     resolved_embedding, embedding_size = request.getfixturevalue(embedding)
 
     vector_store_context = request.getfixturevalue(vector_store)
-    enhanced_vector_store = vector_store_context.new_llama_index_vector_store(
+    enhanced_vector_store = vector_store_context.new_llamaindex_vector_store(
         embedding_dimension=embedding_size
     )
     resolved_llm, llm_complete_fn = request.getfixturevalue(llm)

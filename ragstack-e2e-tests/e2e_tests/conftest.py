@@ -31,11 +31,11 @@ def get_required_env(name) -> str:
     return root_get_required_env(name)
 
 
-mode = os.environ.get("VECTOR_DATABASE_MODE", "astradb")
-if mode not in ["astradb", "local-cassandra"]:
-    raise ValueError(f"Invalid VECTOR_DATABASE_MODE: {mode}")
+vector_database_type = os.environ.get("VECTOR_DATABASE_TYPE", "astradb")
+if vector_database_type not in ["astradb", "local-cassandra"]:
+    raise ValueError(f"Invalid VECTOR_DATABASE_TYPE: {vector_database_type}")
 
-if mode == "astradb":
+if vector_database_type == "astradb":
     vector_store_handler = AstraDBVectorStoreHandler()
 else:
     vector_store_handler = CassandraVectorStoreHandler()

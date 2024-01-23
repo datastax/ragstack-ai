@@ -5,7 +5,6 @@ import pytest
 from httpx import ConnectError, HTTPStatusError
 from e2e_tests.conftest import (
     get_required_env,
-    get_vector_database_handler,
     get_vector_store_handler,
 )
 from llama_index import (
@@ -95,7 +94,7 @@ def test_ingest_errors(environment):
 
 def test_wrong_connection_parameters(environment):
     # This is expected to be a valid endpoint, because we want to test an AUTHENTICATION error
-    astra_ref = get_vector_database_handler().get_astra_ref()
+    astra_ref = get_vector_store_handler().astra_ref
     api_endpoint = astra_ref.api_endpoint
 
     try:

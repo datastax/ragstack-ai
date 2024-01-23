@@ -108,24 +108,24 @@ jobs:
 #            deploy_to_testspace: false
 
           - name: Astra DEV
-            vector_db_mode: "astradb"
+            type: "astradb"
             needs_astra_setup: "true"
             astra_token_secret: E2E_TESTS_ASTRA_DEV_DB_TOKEN
             env: DEV
             region: us-west-2
             cloud: aws
             run_notebooks: "false"
-            deploy_to_testspace: "false"
+            testspace_space: "ragstack-ai-main-branch"
 
           - name: DSE
-            vector_db_mode: "local-cassandra"
+            type: "local-cassandra"
             needs_astra_setup: "false"
             astra_token_secret: ""
             env: ""
             region: ""
             cloud: ""
             run_notebooks: "false"
-            deploy_to_testspace: "true"
+            testspace_space: "ragstack-ai-main-branch-DSE"
 
     steps:
       - name: Check out the repo
@@ -171,6 +171,7 @@ jobs:
         id: e2e-tests
         if: needs.preconditions.outputs.e2e_tests == 'true' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
         env:
+          VECTOR_DATABASE_TYPE: "${{ matrix.type }}"
           ASTRA_DB_TOKEN: "${{ secrets[matrix.astra_token_secret] }}"
           ASTRA_DB_ENDPOINT: "${{ steps.astra-db.outputs.db_endpoint }}"
           ASTRA_DB_ID: "${{ steps.astra-db.outputs.db_id }}"
@@ -187,7 +188,6 @@ jobs:
           HUGGINGFACE_HUB_KEY: "${{ secrets.E2E_TESTS_HUGGINGFACE_HUB_KEY }}"
           NVIDIA_API_KEY: "${{ secrets.E2E_TESTS_NVIDIA_API_KEY }}"
           LANGCHAIN_API_KEY: "${{ secrets.E2E_TESTS_LANGCHAIN_API_KEY }}"
-          VECTOR_DATABASE_MODE: "${{ matrix.vector_db_mode }}"
         run: |
           source scripts/ci-common-env.sh
           tox -c ragstack-e2e-tests
@@ -223,12 +223,12 @@ jobs:
 
       - name: Testspace deploy report
         uses: ./.github/actions/deploy-testspace-report
-        #if: always() && matrix.deploy_to_testspace == 'true' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
-        if: always() && matrix.deploy_to_testspace == 'true'
+        #if: always() && matrix.tes == 'true' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+        if: always() && matrix.testspace_space != ''
         with:
           token: ${{ secrets.TESTSPACE_TOKEN }}
           report-file: ragstack-e2e-tests/results.xml
-          space: ragstack-ai-main-branch
+          space: ${{ matrix.testspace_space }}
 
       - name: Cleanup AstraDB
         uses: ./.github/actions/cleanup-astra-db
