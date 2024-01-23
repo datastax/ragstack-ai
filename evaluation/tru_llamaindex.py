@@ -63,5 +63,8 @@ for name in datasets:
         feedback_mode="deferred",
     )
     for query in datasets[name]:
-        with tru_recorder as recording:
-            pipeline.query(query)
+        try:
+            with tru_recorder as recording:
+                pipeline.query(query)
+        except:
+            print(f"Query: '{query}' caused exception, skipping.")

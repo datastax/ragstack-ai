@@ -69,20 +69,20 @@ def getFeedbackFunctions(pipeline, golden_set):
     # Define a groundedness feedback function
     grounded = Groundedness(groundedness_provider=azureOpenAI)
     f_groundedness = (
-        Feedback(grounded.groundedness_measure_with_cot_reasons)
+        Feedback(grounded.groundedness_measure_with_cot_reasons, name="groundedness")
         .on(context.collect()).on_output()
         .aggregate(grounded.grounded_statements_aggregator)
     )
 
     # Question/answer relevance between overall question and answer.
     f_answer_relevance = (
-        Feedback(azureOpenAI.relevance_with_cot_reasons)
+        Feedback(azureOpenAI.relevance_with_cot_reasons, name="answer_relevance")
         .on_input_output()
     )
 
     # Question/statement relevance between question and each context chunk.
     f_context_relevance = (
-        Feedback(azureOpenAI.qs_relevance_with_cot_reasons)
+        Feedback(azureOpenAI.qs_relevance_with_cot_reasons, name="context_relevance")
         .on_input().on(context)
         .aggregate(np.mean)
     )
@@ -90,7 +90,7 @@ def getFeedbackFunctions(pipeline, golden_set):
     # GroundTruth for comparing the Answer to the Ground-Truth Answer
     ground_truth_collection = GroundTruthAgreement(golden_set, provider=azureOpenAI)
     f_answer_correctness = (
-        Feedback(ground_truth_collection.agreement_measure)
+        Feedback(ground_truth_collection.agreement_measure, name="answer_correctness")
         .on_input_output()
     )
     return [f_answer_relevance, f_context_relevance, f_groundedness, f_answer_correctness]
