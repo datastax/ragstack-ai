@@ -313,7 +313,7 @@ def test_multimodal(vector_store, embedding, llm, request):
         image=img, contextual_text="Coffee Maker Part"
     )
 
-    documents = enhanced_vector_store.search(embeddings.image_embedding, 3)
+    documents = enhanced_vector_store.search_documents(embeddings.image_embedding, 3)
     image_message = {
         "type": "image_url",
         "image_url": {"url": query_image_path},

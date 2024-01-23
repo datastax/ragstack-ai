@@ -329,7 +329,7 @@ def test_multimodal(vector_store, embedding, llm, request):
         image=img, contextual_text="Coffee Maker Part"
     )
 
-    documents = enhanced_vector_store.search(embeddings.image_embedding, 3)
+    documents = enhanced_vector_store.search_documents(embeddings.image_embedding, 3)
     response = llm_complete_fn(
         resolved_llm,
         f"What is this image? Tell me which one of these products it is part of: {', '.join([p for p in documents])}",

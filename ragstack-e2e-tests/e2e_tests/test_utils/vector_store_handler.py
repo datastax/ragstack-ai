@@ -18,7 +18,7 @@ class EnhancedLangChainVectorStore(LangChainVectorStore):
     ) -> None:
         raise NotImplementedError()
 
-    def search(self, vector: List[float], limit: int) -> List[str]:
+    def search_documents(self, vector: List[float], limit: int) -> List[str]:
         raise NotImplementedError()
 
 

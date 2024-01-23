@@ -76,7 +76,7 @@ class EnhancedCassandraLangChainVectorStore(EnhancedLangChainVectorStore, Cassan
                 metadata=metadata or {},
             )
 
-    def search(self, vector: List[float], limit: int) -> List[str]:
+    def search_documents(self, vector: List[float], limit: int) -> List[str]:
         results = self.table.search(embedding_vector=vector, top_k=limit)
         if isinstance(self.table, MetadataVectorCassandraTable):
             docs = []

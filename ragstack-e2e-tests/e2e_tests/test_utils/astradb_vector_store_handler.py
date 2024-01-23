@@ -108,7 +108,7 @@ class EnhancedAstraDBLangChainVectorStore(EnhancedLangChainVectorStore, AstraDB)
             }
         )
 
-    def search(self, vector: List[float], limit: int) -> List[str]:
+    def search_documents(self, vector: List[float], limit: int) -> List[str]:
         results = self.collection.vector_find(
             vector,
             limit=limit,
