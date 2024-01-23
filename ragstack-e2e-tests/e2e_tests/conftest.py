@@ -62,7 +62,7 @@ class VectorDatabaseHandler:
         self.cassandra_container = None
 
     def is_astradb(self) -> bool:
-        return self.mode == "astra"
+        return self.mode == "astradb"
 
     def is_dse(self) -> bool:
         return self.mode == "dse"
@@ -102,7 +102,7 @@ class VectorDatabaseHandler:
 
     def after_test(self):
         self.test_table_name = None
-        if self.mode == "astra":
+        if self.is_astradb():
             astra_ref = self.get_astra_ref()
             delete_astra_collection(astra_ref)
             delete_all_astra_collections_with_client(
@@ -114,7 +114,7 @@ class VectorDatabaseHandler:
         pass
 
     def before_test(self, implementation):
-        if self.mode == "astra":
+        if self.is_astradb():
             self.test_table_name = get_required_env("ASTRA_TABLE_NAME")
             astra_ref = self.get_astra_ref()
             astra_db_client = LibAstraDB(
@@ -134,7 +134,7 @@ class VectorDatabaseHandler:
                     )
                 else:
                     cassio.init(token=astra_ref.token, database_id=astra_ref.id)
-        elif self.mode == "dse":
+        elif self.is_dse():
             self.test_table_name = "table_" + str(random.randint(0, 1000000))
             if self.cassandra_container is None:
                 self.cassandra_container = CassandraContainer()

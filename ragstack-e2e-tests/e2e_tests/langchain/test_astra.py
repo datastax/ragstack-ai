@@ -59,7 +59,7 @@ def test_ingest_errors(environment):
             )
 
 
-def test_wrong_connection_parameters():
+def test_wrong_connection_parameters(environment):
     # This is expected to be a valid endpoint, because we want to test an AUTHENTICATION error
     astra_ref = get_vector_database_handler().get_astra_ref()
     api_endpoint = astra_ref.api_endpoint
