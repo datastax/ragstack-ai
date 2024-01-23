@@ -1,17 +1,13 @@
 import logging
 import os
-import random
 import time
-from abc import abstractmethod
 from typing import List
 
 import pytest
-from cassio.table import MetadataVectorCassandraTable
 from e2e_tests.conftest import (
     set_current_test_info,
     get_required_env,
-    get_vector_database_handler,
-    VectorDatabaseHandler,
+    get_vector_store_handler,
 )
 from e2e_tests.langchain.rag_application import (
     run_rag_custom_chain,
@@ -26,170 +22,29 @@ from langchain.embeddings import (
 )
 from langchain.embeddings.azure_openai import AzureOpenAIEmbeddings
 from langchain.llms.huggingface_hub import HuggingFaceHub
-from langchain.memory import AstraDBChatMessageHistory, CassandraChatMessageHistory
-from langchain.vectorstores import AstraDB, Cassandra
-from langchain_core.chat_history import BaseChatMessageHistory
 from langchain_core.embeddings import Embeddings
 from langchain_core.messages import HumanMessage
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.vectorstores import VectorStore
 from langchain_google_genai import ChatGoogleGenerativeAI
-from sqlalchemy import Float
 from vertexai.vision_models import MultiModalEmbeddingModel, Image
 
-
-class VectorStoreWrapper:
-    @abstractmethod
-    def init(self, embedding: Embeddings) -> str:
-        pass
-
-    @abstractmethod
-    def as_vector_store(self) -> VectorStore:
-        pass
-
-    @abstractmethod
-    def create_chat_history(self) -> BaseChatMessageHistory:
-        pass
-
-    @abstractmethod
-    def put(
-        self, doc_id: str, document: str, metadata: dict, vector: List[Float]
-    ) -> None:
-        pass
-
-    @abstractmethod
-    def search(self, vector: List[float], limit: int) -> List[str]:
-        pass
-
-
-class CassandraVectorStoreWrapper(VectorStoreWrapper):
-    def __init__(self, vector_db_handler: VectorDatabaseHandler):
-        self.vector_db_handler = vector_db_handler
-        self.session_id = "test_session_id" + str(random.randint(0, 1000000))
-        self.vector_store = None
-
-    def init(self, embedding: Embeddings):
-        self.vector_db_handler.before_test("cassandra")
-
-        self.vector_store = Cassandra(
-            embedding=embedding,
-            session=None,
-            keyspace="default_keyspace",
-            table_name=self.vector_db_handler.get_table_name(),
-        )
-
-    def as_vector_store(self) -> VectorStore:
-        return self.vector_store
-
-    def create_chat_history(self) -> BaseChatMessageHistory:
-        if self.vector_db_handler.is_astradb():
-            astra_ref = self.vector_db_handler.get_astra_ref()
-            return AstraDBChatMessageHistory(
-                session_id=self.session_id,
-                api_endpoint=astra_ref.api_endpoint,
-                token=astra_ref.token,
-                collection_name=astra_ref.collection + "_chat_memory",
-            )
-        else:
-            return CassandraChatMessageHistory(
-                session_id=self.session_id,
-                session=self.vector_db_handler.get_cassandra_session(),
-                keyspace="default_keyspace",
-                table_name=self.vector_db_handler.get_table_name() + "_chat_memory",
-            )
-
-    def put(
-        self, doc_id: str, document: str, metadata: dict, vector: List[Float]
-    ) -> None:
-        if isinstance(self.vector_store.table, MetadataVectorCassandraTable):
-            self.vector_store.table.put(
-                row_id=doc_id,
-                body_blob=document,
-                vector=vector,
-                metadata=metadata or {},
-            )
-        else:
-            self.vector_store.table.table.put(
-                row_id=doc_id,
-                body_blob=document,
-                vector=vector,
-                metadata=metadata or {},
-            )
-
-    def search(self, vector: List[float], limit: int) -> List[str]:
-        if isinstance(self.vector_store.table, MetadataVectorCassandraTable):
-            return map(
-                lambda doc: doc["body_blob"],
-                self.vector_store.table.search(embedding_vector=vector, top_k=limit),
-            )
-        else:
-            return map(
-                lambda doc: doc["document"],
-                self.vector_store.table.search(embedding_vector=vector, top_k=limit),
-            )
-
-
-class AstraDBVectorStoreWrapper(VectorStoreWrapper):
-    def __init__(self, vector_database_handler: VectorDatabaseHandler):
-        self.vector_database_handler = vector_database_handler
-        self.session_id = "test_session_id" + str(random.randint(0, 1000000))
-        self.vector_store = None
-
-    def init(self, embedding: Embeddings):
-        self.vector_database_handler.before_test("astradb")
-        self.vector_store = AstraDB(
-            collection_name=self.vector_database_handler.get_table_name(),
-            embedding=embedding,
-            astra_db_client=self.vector_database_handler.get_astra_client(),
-        )
-
-    def as_vector_store(self) -> VectorStore:
-        return self.vector_store
-
-    def create_chat_history(self) -> BaseChatMessageHistory:
-        return AstraDBChatMessageHistory(
-            session_id=self.session_id,
-            astra_db_client=self.vector_database_handler.get_astra_client(),
-            collection_name=self.vector_database_handler.get_table_name()
-            + "_chat_memory",
-        )
-
-    def put(
-        self, doc_id: str, document: str, metadata: dict, vector: List[Float]
-    ) -> None:
-        self.vector_store.collection.insert_one(
-            {
-                "_id": doc_id,
-                "document": document,
-                "metadata": metadata or {},
-                "$vector": vector,
-            }
-        )
-
-    def search(self, vector: List[float], limit: int) -> List[str]:
-        return map(
-            lambda doc: doc["document"],
-            self.vector_store.collection.vector_find(
-                vector,
-                limit=limit,
-            ),
-        )
+from e2e_tests.test_utils.vector_store_handler import VectorStoreImplementation
 
 
 @pytest.fixture
 def astra_db():
-    handler = get_vector_database_handler()
-    handler.ensure_implements_astradb()
-    yield AstraDBVectorStoreWrapper(handler)
-    handler.after_test()
+    handler = get_vector_store_handler()
+    context = handler.before_test(VectorStoreImplementation.ASTRADB)
+    yield context
+    handler.after_test(VectorStoreImplementation.ASTRADB)
 
 
 @pytest.fixture
 def cassandra():
-    handler = get_vector_database_handler()
-    handler.ensure_implements_cassandra()
-    yield CassandraVectorStoreWrapper(handler)
-    handler.after_test()
+    handler = get_vector_store_handler()
+    context = handler.before_test(VectorStoreImplementation.CASSANDRA)
+    yield context
+    handler.after_test(VectorStoreImplementation.CASSANDRA)
 
 
 @pytest.fixture
@@ -352,9 +207,8 @@ def test_rag(test_case, vector_store, embedding, llm, request):
     )
 
 
-def _run_test(test_case: str, vector_store_wrapper, embedding, llm):
-    vector_store_wrapper.init(embedding=embedding)
-    vector_store = vector_store_wrapper.as_vector_store()
+def _run_test(test_case: str, vector_store_context, embedding, llm):
+    vector_store = vector_store_context.new_langchain_vector_store(embedding=embedding)
     if test_case == "rag_custom_chain":
         run_rag_custom_chain(
             vector_store=vector_store,
@@ -364,7 +218,7 @@ def _run_test(test_case: str, vector_store_wrapper, embedding, llm):
         run_conversational_rag(
             vector_store=vector_store,
             llm=llm,
-            chat_memory=vector_store_wrapper.create_chat_history(),
+            chat_memory=vector_store_context.new_langchain_chat_memory(),
         )
     else:
         raise ValueError(f"Unknown test case: {test_case}")
@@ -425,8 +279,9 @@ def test_multimodal(vector_store, embedding, llm, request):
         def embed_query(self, text: str) -> List[float]:
             return [0.0] * embedding_size
 
-    vector_store_wrapper = request.getfixturevalue(vector_store)
-    vector_store_wrapper.init(embedding=FakeEmbeddings())
+    enhanced_vector_store = request.getfixturevalue(
+        vector_store
+    ).new_langchain_vector_store(embedding=FakeEmbeddings())
     resolved_llm = request.getfixturevalue(llm)
 
     tree_image = get_local_resource_path("tree.jpeg")
@@ -448,7 +303,9 @@ def test_multimodal(vector_store, embedding, llm, request):
         )
         p["$vector"] = embeddings.image_embedding
 
-        vector_store_wrapper.put(p["name"], p["name"], {}, embeddings.image_embedding)
+        enhanced_vector_store.put_document(
+            p["name"], p["name"], {}, embeddings.image_embedding
+        )
 
     query_image_path = get_local_resource_path("coffee_maker_part.png")
     img = Image.load_from_file(query_image_path)
@@ -456,7 +313,7 @@ def test_multimodal(vector_store, embedding, llm, request):
         image=img, contextual_text="Coffee Maker Part"
     )
 
-    documents = vector_store_wrapper.search(embeddings.image_embedding, 3)
+    documents = enhanced_vector_store.search(embeddings.image_embedding, 3)
     image_message = {
         "type": "image_url",
         "image_url": {"url": query_image_path},

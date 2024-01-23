@@ -2,7 +2,7 @@ from uuid import uuid4
 
 import langchain_core.documents
 import pytest
-from e2e_tests.conftest import get_required_env, get_vector_database_handler
+from e2e_tests.conftest import get_required_env, get_vector_store_handler
 from langchain.chains import ConversationalRetrievalChain
 from langchain.chat_models import ChatOpenAI
 from langchain.embeddings import OpenAIEmbeddings
@@ -20,6 +20,8 @@ from llama_index.vector_stores import (
     MetadataFilters,
     ExactMatchFilter,
 )
+
+from e2e_tests.test_utils.vector_store_handler import VectorStoreImplementation
 
 
 def test_ingest_llama_retrieve_langchain(environment):
@@ -225,8 +227,7 @@ class Environment:
 
 @pytest.fixture
 def environment():
-    handler = get_vector_database_handler()
-    handler.ensure_implements_astradb()
-    handler.before_test("astradb")
-    yield Environment(astra_ref=handler.get_astra_ref())
-    handler.after_test()
+    handler = get_vector_store_handler()
+    context = handler.before_test(VectorStoreImplementation.ASTRADB)
+    yield Environment(astra_ref=context.astra_ref)
+    handler.after_test(VectorStoreImplementation.ASTRADB)

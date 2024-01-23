@@ -1,25 +1,19 @@
 import logging
 import os
 import pathlib
-import random
 import time
-import uuid
-from dataclasses import dataclass
 
-import cassio
 import pytest
-from astrapy.db import AstraDB as LibAstraDB
-from cassandra.cluster import Cluster, PlainTextAuthProvider, Session
 
-from testcontainers.core.container import DockerContainer
-from testcontainers.core.waiting_utils import wait_for_logs
 
+from e2e_tests.test_utils.astradb_vector_store_handler import AstraDBVectorStoreHandler
+from e2e_tests.test_utils.cassandra_vector_store_handler import (
+    CassandraVectorStoreHandler,
+)
+from e2e_tests.test_utils.vector_store_handler import VectorStoreHandler
+from e2e_tests.test_utils import get_required_env as root_get_required_env
 
 LOGGER = logging.getLogger(__name__)
-
-
-def random_string():
-    return str(uuid.uuid4()).split("-")[0]
 
 
 logging.basicConfig(
@@ -34,193 +28,21 @@ logging.basicConfig(
 
 
 def get_required_env(name) -> str:
-    if name not in os.environ:
-        LOGGER.warning(f"Missing required environment variable: {name}")
-        pytest.skip(f"Missing required environment variable: {name}")
-    value = os.environ[name]
-    if not value:
-        LOGGER.warning(f"Empty required environment variable: {name}")
-        pytest.skip(f"Empty required environment variable: {name}")
-    return value
+    return root_get_required_env(name)
 
 
-@dataclass
-class AstraRef:
-    token: str
-    api_endpoint: str
-    collection: str
-    id: str
-    env: str
+mode = os.environ.get("VECTOR_DATABASE_MODE", "astradb")
+if mode not in ["astradb", "local-cassandra"]:
+    raise ValueError(f"Invalid VECTOR_DATABASE_MODE: {mode}")
+
+if mode == "astradb":
+    vector_store_handler = AstraDBVectorStoreHandler()
+else:
+    vector_store_handler = CassandraVectorStoreHandler()
 
 
-class VectorDatabaseHandler:
-    def __init__(self):
-        self.mode = os.environ.get("VECTOR_DATABASE_MODE", "astradb")
-        if self.mode not in ["astradb", "dse"]:
-            raise ValueError(f"Invalid VECTOR_DATABASE_MODE: {self.mode}")
-        self.test_table_name = None
-        self.cassandra_container = None
-
-    def is_astradb(self) -> bool:
-        return self.mode == "astradb"
-
-    def is_dse(self) -> bool:
-        return self.mode == "dse"
-
-    def get_astra_ref(self) -> AstraRef:
-        if not self.is_astradb():
-            raise ValueError("Not an AstraDB test")
-        env = os.environ.get("ASTRA_DB_ENV", "prod").lower()
-        return AstraRef(
-            token=get_required_env("ASTRA_DB_TOKEN"),
-            api_endpoint=get_required_env("ASTRA_DB_ENDPOINT"),
-            collection=get_required_env("ASTRA_TABLE_NAME"),
-            id=get_required_env("ASTRA_DB_ID"),
-            env=env,
-        )
-
-    def ensure_implements_astradb(self):
-        if not self.is_astradb():
-            pytest.skip("Skipping test because Astra is not configured")
-
-    def ensure_implements_cassandra(self):
-        pass
-
-    def get_astra_client(self) -> LibAstraDB:
-        if not self.is_astradb():
-            raise ValueError("Not an AstraDB test")
-        astra_ref = self.get_astra_ref()
-        return LibAstraDB(
-            token=astra_ref.token,
-            api_endpoint=astra_ref.api_endpoint,
-        )
-
-    def get_cassandra_session(self) -> Session:
-        if not self.is_dse():
-            raise ValueError("Not running in dse mode")
-        return self.cassandra_session
-
-    def after_test(self):
-        self.test_table_name = None
-        if self.is_astradb():
-            astra_ref = self.get_astra_ref()
-            delete_astra_collection(astra_ref)
-            delete_all_astra_collections_with_client(
-                LibAstraDB(
-                    token=astra_ref.token,
-                    api_endpoint=astra_ref.api_endpoint,
-                )
-            )
-        pass
-
-    def before_test(self, implementation):
-        if self.is_astradb():
-            self.test_table_name = get_required_env("ASTRA_TABLE_NAME")
-            astra_ref = self.get_astra_ref()
-            astra_db_client = LibAstraDB(
-                token=astra_ref.token,
-                api_endpoint=astra_ref.api_endpoint,
-            )
-            delete_all_astra_collections_with_client(astra_db_client)
-
-            if implementation == "cassandra":
-                # to run cassandra implementation over astra
-                if astra_ref.env == "dev":
-                    bundle_url_template = "https://api.dev.cloud.datastax.com/v2/databases/{database_id}/secureBundleURL"
-                    cassio.init(
-                        token=astra_ref.token,
-                        database_id=astra_ref.id,
-                        bundle_url_template=bundle_url_template,
-                    )
-                else:
-                    cassio.init(token=astra_ref.token, database_id=astra_ref.id)
-        elif self.is_dse():
-            self.test_table_name = "table_" + str(random.randint(0, 1000000))
-            if self.cassandra_container is None:
-                self.cassandra_container = CassandraContainer()
-                self.cassandra_container.start()
-                logging.info("Cassandra container started")
-            else:
-                logging.info("Cassandra container already started")
-
-            self.cassandra_session = self.cassandra_container.create_session()
-            cassio.init(session=self.cassandra_session)
-
-    def get_table_name(self) -> str:
-        return self.test_table_name
-
-
-vector_database_handler = VectorDatabaseHandler()
-
-
-def get_vector_database_handler() -> VectorDatabaseHandler:
-    return vector_database_handler
-
-
-def delete_all_astra_collections_with_client(raw_client: LibAstraDB):
-    """
-    Deletes all collections.
-
-    Current AstraDB has a limit of 5 collections, meaning orphaned collections
-    will cause subsequent tests to fail if the limit is reached.
-    """
-    collections = raw_client.get_collections().get("status").get("collections")
-    logging.info(f"Existing collections: {collections}")
-    for collection_info in collections:
-        logging.info(f"Deleting collection: {collection_info}")
-        raw_client.delete_collection(collection_info)
-
-
-def delete_all_astra_collections(astra_ref: AstraRef):
-    """
-    Deletes all collections.
-
-    Current AstraDB has a limit of 5 collections, meaning orphaned collections
-    will cause subsequent tests to fail if the limit is reached.
-    """
-    raw_client = LibAstraDB(api_endpoint=astra_ref.api_endpoint, token=astra_ref.token)
-    delete_all_astra_collections_with_client(raw_client)
-
-
-def delete_astra_collection(astra_ref: AstraRef) -> None:
-    raw_client = LibAstraDB(api_endpoint=astra_ref.api_endpoint, token=astra_ref.token)
-    raw_client.delete_collection(astra_ref.collection)
-
-
-class CassandraContainer(DockerContainer):
-    def __init__(
-        self,
-        image: str = "docker.io/stargateio/dse-next:4.0.11-b259738f492f",
-        port: int = 9042,
-        keyspace: str = "default_keyspace",
-        **kwargs,
-    ) -> None:
-        super(CassandraContainer, self).__init__(image=image, **kwargs)
-        self.keyspace = keyspace
-        self.port = port
-
-        self.with_exposed_ports(self.port)
-
-    def _configure(self):
-        pass
-
-    def start(self):
-        start_res = super().start()
-        wait_for_logs(self, "Startup complete")
-        return start_res
-
-    def create_session(self) -> Session:
-        actual_port = self.get_exposed_port(self.port)
-        cluster = Cluster(
-            [("127.0.0.1", actual_port)],
-            auth_provider=PlainTextAuthProvider("cassandra", "cassandra"),
-        )
-        session = cluster.connect()
-        session.execute(f"DROP KEYSPACE IF EXISTS {self.keyspace}")
-        session.execute(
-            f"CREATE KEYSPACE IF NOT EXISTS {self.keyspace} WITH replication = {{'class': 'SimpleStrategy', 'replication_factor': '1'}}"
-        )
-        return session
+def get_vector_store_handler() -> VectorStoreHandler:
+    return vector_store_handler
 
 
 failed_report_lines = []
@@ -328,9 +150,6 @@ def _report_to_file(stats_str: str, filename: str, report_lines: list):
             f.write(stats_str + "\n")
         f.write("\n".join(report_lines))
 
-
-# astra
-os.environ["ASTRA_TABLE_NAME"] = f"documents_{random_string()}"
 
 # azure-open-ai
 os.environ["AZURE_OPEN_AI_CHAT_MODEL_DEPLOYMENT"] = "gpt-35-turbo"

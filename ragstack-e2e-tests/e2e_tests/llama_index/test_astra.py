@@ -6,6 +6,7 @@ from httpx import ConnectError, HTTPStatusError
 from e2e_tests.conftest import (
     get_required_env,
     get_vector_database_handler,
+    get_vector_store_handler,
 )
 from llama_index import (
     ServiceContext,
@@ -22,6 +23,8 @@ from llama_index.vector_stores import (
     MetadataFilters,
     ExactMatchFilter,
 )
+
+from e2e_tests.test_utils.vector_store_handler import VectorStoreImplementation
 
 
 def test_basic_vector_search(environment):
@@ -198,21 +201,10 @@ def test_vector_search_with_metadata(environment):
 
 
 def init_vector_db() -> AstraDBVectorStore:
-    handler = get_vector_database_handler()
-    handler.ensure_implements_astradb()
-    handler.before_test("astradb")
-    astra_ref = handler.get_astra_ref()
-    collection = astra_ref.collection
-    token = astra_ref.token
-    api_endpoint = astra_ref.api_endpoint
-    vector_db = AstraDBVectorStore(
-        token=token,
-        api_endpoint=api_endpoint,
-        collection_name=collection,
-        embedding_dimension=3,
-    )
-
-    return vector_db
+    handler = get_vector_store_handler()
+    return handler.before_test(
+        VectorStoreImplementation.ASTRADB
+    ).new_llamaindex_vector_store(embedding_dimension=3)
 
 
 class Environment:
@@ -244,7 +236,7 @@ def environment():
     yield Environment(
         vectorstore=vector_db_impl, llm=llm_impl, embedding=embeddings_impl
     )
-    get_vector_database_handler().after_test()
+    get_vector_store_handler().after_test(VectorStoreImplementation.ASTRADB)
 
 
 class MockEmbeddings(BaseEmbedding):
