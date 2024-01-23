@@ -12,16 +12,10 @@ from langchain.prompts import PromptTemplate
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.vectorstores import VectorStoreRetriever
 
+from e2e_tests.langchain.rag_application import BASIC_QA_PROMPT, SAMPLE_DATA
 
 import numpy as np
 from concurrent.futures import as_completed
-
-PROMPT = """
-Answer the question based only on the supplied context. If you don't know the answer, say you don't know the answer.
-Context: {context}
-Question: {question}
-Your answer:
-"""
 
 
 def _feedback_functions(chain: Runnable, llm: BaseLanguageModel) -> list[Feedback]:
@@ -46,14 +40,14 @@ def _feedback_functions(chain: Runnable, llm: BaseLanguageModel) -> list[Feedbac
 
 
 def _initialize_tru() -> Tru:
-    # We can use the default db url, then ensure it's reset before each run.
+    # We can use the default db url and reset before each run.
     tru = Tru()
     tru.reset_database()
     return tru
 
 
-def create_chain(retriever: VectorStoreRetriever, llm: BaseLanguageModel) -> Runnable:
-    prompt = PromptTemplate.from_template(PROMPT)
+def _create_chain(retriever: VectorStoreRetriever, llm: BaseLanguageModel) -> Runnable:
+    prompt = PromptTemplate.from_template(BASIC_QA_PROMPT)
     chain = (
         {"context": retriever, "question": RunnablePassthrough()}
         | prompt
@@ -64,17 +58,13 @@ def create_chain(retriever: VectorStoreRetriever, llm: BaseLanguageModel) -> Run
 
 
 def run_trulens_evaluation(vector_store: VectorStore, llm: BaseLanguageModel):
-    vector_store.add_texts(
-        [
-            "MyFakeProductForTesting is a versatile testing tool designed to streamline the testing process for software developers, quality assurance professionals, and product testers. It provides a comprehensive solution for testing various aspects of applications and systems, ensuring robust performance and functionality.",  # noqa: E501
-            "MyFakeProductForTesting comes equipped with an advanced dynamic test scenario generator. This feature allows users to create realistic test scenarios by simulating various user interactions, system inputs, and environmental conditions. The dynamic nature of the generator ensures that tests are not only diverse but also adaptive to changes in the application under test.",  # noqa: E501
-            "The product includes an intelligent bug detection and analysis module. It not only identifies bugs and issues but also provides in-depth analysis and insights into the root causes. The system utilizes machine learning algorithms to categorize and prioritize bugs, making it easier for developers and testers to address critical issues first.",  # noqa: E501
-            "MyFakeProductForTesting first release happened in June 2020.",
-        ]
-    )
+    """
+    Executes the TruLens evaluation process.
+    """
+    vector_store.add_texts(SAMPLE_DATA)
     _initialize_tru()
     retriever = vector_store.as_retriever()
-    chain = create_chain(retriever=retriever, llm=llm)
+    chain = _create_chain(retriever=retriever, llm=llm)
 
     feedback_functions = _feedback_functions(chain=chain, llm=llm)
     tru_recorder = TruChain(

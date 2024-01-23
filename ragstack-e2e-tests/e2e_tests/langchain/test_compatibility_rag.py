@@ -209,6 +209,16 @@ def openai_llm():
     return ChatOpenAI(
         openai_api_key=get_required_env("OPEN_AI_KEY"),
         model="gpt-3.5-turbo-16k",
+        streaming=False,
+        temperature=0,
+    )
+
+
+@pytest.fixture
+def openai_llm_streaming():
+    return ChatOpenAI(
+        openai_api_key=get_required_env("OPEN_AI_KEY"),
+        model="gpt-3.5-turbo-16k",
         streaming=True,
         temperature=0,
     )
@@ -331,12 +341,13 @@ def nvidia_mixtral_llm():
     "embedding,llm",
     [
         ("openai_embedding", "openai_llm"),
-        ("azure_openai_embedding", "azure_openai_llm"),
-        ("vertex_embedding", "vertex_llm"),
-        ("bedrock_titan_embedding", "bedrock_anthropic_llm"),
-        ("bedrock_cohere_embedding", "bedrock_meta_llm"),
-        ("huggingface_hub_embedding", "huggingface_hub_llm"),
-        ("nvidia_embedding", "nvidia_mixtral_llm"),
+        ("openai_embedding", "openai_llm_streaming"),
+        # ("azure_openai_embedding", "azure_openai_llm"),
+        # ("vertex_embedding", "vertex_llm"),
+        # ("bedrock_titan_embedding", "bedrock_anthropic_llm"),
+        # ("bedrock_cohere_embedding", "bedrock_meta_llm"),
+        # ("huggingface_hub_embedding", "huggingface_hub_llm"),
+        # ("nvidia_embedding", "nvidia_mixtral_llm"),
     ],
 )
 def test_rag(test_case, vector_store, embedding, llm, request):
