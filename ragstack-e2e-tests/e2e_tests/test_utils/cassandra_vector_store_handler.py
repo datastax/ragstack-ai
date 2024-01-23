@@ -100,7 +100,7 @@ class EnhancedAstraDBLlamaIndexVectorStore(
             [TextNode(text=document, metadata=metadata, id_=doc_id, embedding=vector)]
         )
 
-    def search(self, vector: List[float], limit: int) -> List[str]:
+    def search_documents(self, vector: List[float], limit: int) -> List[str]:
         return self.query(
             VectorStoreQuery(query_embedding=vector, similarity_top_k=limit)
         ).ids

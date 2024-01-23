@@ -134,7 +134,7 @@ class EnhancedAstraDBLlamaIndexVectorStore(
             }
         )
 
-    def search(self, vector: List[float], limit: int) -> List[str]:
+    def search_documents(self, vector: List[float], limit: int) -> List[str]:
         results = self.client.vector_find(
             vector,
             limit=limit,
