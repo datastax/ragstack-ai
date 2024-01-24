@@ -1,5 +1,7 @@
+import base64
 import logging
 import os
+import pathlib
 
 import pytest
 from langchain.embeddings import VertexAIEmbeddings, HuggingFaceInferenceAPIEmbeddings
@@ -284,7 +286,7 @@ def gemini_pro_vision_llm():
     "embedding,llm",
     [
         ("vertex_gemini_multimodal_embedding", "vertex_gemini_pro_vision_llm"),
-        # ("vertex_gemini_multimodal_embedding", "gemini_ pro_vision_llm"),
+        # ("vertex_gemini_multimodal_embedding", "gemini_pro_vision_llm"),
     ],
 )
 def test_multimodal(vector_store, embedding, llm, request):
@@ -326,18 +328,19 @@ def test_multimodal(vector_store, embedding, llm, request):
 
     query_image_path = get_local_resource_path("coffee_maker_part.png")
     img = Image.load_from_file(query_image_path)
+    b64 = base64.b64encode(pathlib.Path(query_image_path).read_bytes())
     embeddings = resolved_embedding.get_embeddings(
         image=img, contextual_text="Coffee Maker Part"
     )
 
     documents = enhanced_vector_store.search_documents(embeddings.image_embedding, 3)
     docs_str = ", ".join([f"'{p}'" for p in documents])
-    prompt = f"Tell me which one of these products it is part of. Only include product from the ones below: {docs_str}"
+    prompt = f"Tell me which one of these products it is part of. Only include product from the ones below: {docs_str}."
     logging.info(f"Prompt: {prompt}")
     response = llm_complete_fn(
         resolved_llm,
         prompt,
-        query_image_path,
+        "data:image/jpeg;base64," + b64.decode("utf-8"),
     )
     assert "Coffee Machine Ultra Cool" in response
 
