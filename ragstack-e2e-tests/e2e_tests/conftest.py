@@ -65,7 +65,7 @@ class DeleteCollectionHandler:
 DELETE_COLLECTION_HANDLER = DeleteCollectionHandler()
 
 
-def try_delete_with_backoff(collection, time=1, max_tries=5):
+def try_delete_with_backoff(collection, sleep=1, max_tries=5):
     try:
         DEFAULT_ASTRA_CLIENT.delete_collection(collection)
     except Exception as e:
@@ -74,9 +74,8 @@ def try_delete_with_backoff(collection, time=1, max_tries=5):
             raise e
 
         logging.warn(f"An exception occurred deleting collection {collection}: {e}")
-        time.sleep(time)
-        new_sleep = time * 2
-        try_delete_with_backoff(collection, new_sleep, max_tries)
+        time.sleep(sleep)
+        try_delete_with_backoff(collection, sleep * 2, max_tries)
 
 
 def get_required_env(name) -> str:
