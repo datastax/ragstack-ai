@@ -286,7 +286,7 @@ def gemini_pro_vision_llm():
     "embedding,llm",
     [
         ("vertex_gemini_multimodal_embedding", "vertex_gemini_pro_vision_llm"),
-        # ("vertex_gemini_multimodal_embedding", "gemini_pro_vision_llm"),
+        ("vertex_gemini_multimodal_embedding", "gemini_pro_vision_llm"),
     ],
 )
 def test_multimodal(vector_store, embedding, llm, request):

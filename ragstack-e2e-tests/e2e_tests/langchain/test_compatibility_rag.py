@@ -1,5 +1,7 @@
+import base64
 import logging
 import os
+import pathlib
 import time
 from typing import List
 
@@ -308,6 +310,7 @@ def test_multimodal(vector_store, embedding, llm, request):
         )
 
     query_image_path = get_local_resource_path("coffee_maker_part.png")
+    b64 = base64.b64encode(pathlib.Path(query_image_path).read_bytes())
     img = Image.load_from_file(query_image_path)
     embeddings = resolved_embedding.get_embeddings(
         image=img, contextual_text="Coffee Maker Part"
@@ -316,7 +319,7 @@ def test_multimodal(vector_store, embedding, llm, request):
     documents = enhanced_vector_store.search_documents(embeddings.image_embedding, 3)
     image_message = {
         "type": "image_url",
-        "image_url": {"url": query_image_path},
+        "image_url": {"url": "data:image/jpeg;base64," + b64.decode("utf-8"),},
     }
     text_message = {
         "type": "text",
