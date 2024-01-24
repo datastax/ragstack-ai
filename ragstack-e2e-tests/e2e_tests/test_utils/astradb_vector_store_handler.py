@@ -34,6 +34,7 @@ class AstraRef:
     id: str
     env: str
 
+
 class DeleteCollectionHandler:
     def __init__(self, delete_function: Callable, max_workers=5):
         self.delete_function = delete_function
@@ -46,7 +47,9 @@ class DeleteCollectionHandler:
         Blocks until all ongoing deletions are completed.
         """
         while self.semaphore._value != self.max_workers:
-            logging.info(f"{self.max_workers - self.semaphore._value} deletions still running, waiting to complete")
+            logging.info(
+                f"{self.max_workers - self.semaphore._value} deletions still running, waiting to complete"
+            )
             time.sleep(1)
         return
 
@@ -94,7 +97,9 @@ class AstraDBVectorStoreHandler(VectorStoreHandler):
         self.default_astra_client = AstraPyClient(
             api_endpoint=self.astra_ref.api_endpoint, token=self.astra_ref.token
         )
-        self.delete_collection_handler = DeleteCollectionHandler(self.try_delete_with_backoff)
+        self.delete_collection_handler = DeleteCollectionHandler(
+            self.try_delete_with_backoff
+        )
 
     def try_delete_with_backoff(self, collection: str, sleep=1, max_tries=5):
         try:
@@ -104,14 +109,18 @@ class AstraDBVectorStoreHandler(VectorStoreHandler):
             if max_tries < 0:
                 raise e
 
-            logging.warning(f"An exception occurred deleting collection {collection}: {e}")
+            logging.warning(
+                f"An exception occurred deleting collection {collection}: {e}"
+            )
             time.sleep(sleep)
             self.try_delete_with_backoff(collection, sleep * 2, max_tries)
 
     def ensure_astra_env_clean(self, blocking=False):
         logging.info("Ensuring astra env is clean")
         self.delete_collection_handler.run_delete(self.astra_ref.collection)
-        collections = self.default_astra_client.get_collections().get("status").get("collections")
+        collections = (
+            self.default_astra_client.get_collections().get("status").get("collections")
+        )
         logging.info(f"Existing collections: {collections}")
         for name in collections:
             if name == self.astra_ref.collection:
