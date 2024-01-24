@@ -52,6 +52,7 @@ class VectorStoreHandler:
     ) -> VectorStoreTestContext:
         if implementation not in self.supported_implementations:
             pytest.skip(f"Skipping test because {implementation} is not configured")
+        return VectorStoreTestContext()
 
     def after_test(self, implementation: VectorStoreImplementation):
         pass
