@@ -21,7 +21,7 @@ jobs:
 #            region: eu-west-1
 #            cloud: aws
 #            run_notebooks: true
-#            deploy_to_testspace: false
+#            testspace_space: ""
 
           - name: Astra DEV
             type: "astradb"
@@ -31,7 +31,7 @@ jobs:
             region: us-west-2
             cloud: aws
             run_notebooks: "false"
-            deploy_to_testspace: "false"
+            testspace_space: ""
 
           - name: DSE
             vector_db_mode: "dse"
@@ -41,7 +41,7 @@ jobs:
             region: ""
             cloud: ""
             run_notebooks: "false"
-            deploy_to_testspace: "true"
+            testspace_space: ""
     steps:
       - name: Check out the repo
         uses: actions/checkout@v3
@@ -125,11 +125,11 @@ jobs:
 
       - name: Testspace deploy report
         uses: ./.github/actions/deploy-testspace-report
-        if: always() && matrix.deploy_to_testspace == 'true' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+        if: always() && matrix.test_testspace != '' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
         with:
           token: ${{ secrets.TESTSPACE_TOKEN }}
           report-file: ragstack-e2e-tests/results.xml
-          space: ragstack-ai-latest-release
+          space: ${{ matrix.testspace_space }}
 
 #      - name: Upload report to Github Pages
 #        if: always()
