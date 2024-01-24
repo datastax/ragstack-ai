@@ -5,6 +5,8 @@ import time
 import uuid
 from dataclasses import dataclass
 from threading import Thread
+import concurrent
+import threading
 
 import pytest
 from astrapy.db import AstraDB as LibAstraDB
@@ -25,6 +27,56 @@ logging.basicConfig(
 
 # Uncomment to enable debug logging on Astra calls
 # logging.getLogger('astrapy.utils').setLevel(logging.DEBUG)
+
+
+class DeleteCollectionHandler:
+    def __init__(self, max_workers=5):
+        self.executor = concurrent.futures.ThreadPoolExecutor(max_workers=max_workers)
+        self.semaphore = threading.Semaphore(max_workers)
+
+    def run_delete(self, collection: str):
+        """
+        Runs a delete_collection in the background, blocking if max_workers are already running.
+        """
+        self.semaphore.acquire()  # Wait for a free thread
+        future = self.executor.submit(
+            self._run_and_release(collection),
+        )
+        return future
+
+    def _run_and_release(self, collection: str):
+        """
+        Internal wrapper to run the delete function and release the semaphore once done.
+        """
+        try:
+            logging.info(f"deleting collection {collection}")
+            try_delete_with_backoff(collection)
+            logging.info(f"deleted collection {collection}")
+        finally:
+            self.semaphore.release()
+
+    def shutdown(self, wait=True):
+        """
+        Shuts down the executor, waiting for tasks to complete if specified.
+        """
+        self.executor.shutdown(wait=wait)
+
+
+DELETE_COLLECTION_HANDLER = DeleteCollectionHandler()
+
+
+def try_delete_with_backoff(collection, time=1, max_tries=5):
+    try:
+        DEFAULT_ASTRA_CLIENT.delete_collection(collection)
+    except Exception as e:
+        max_tries -= 1
+        if max_tries < 0:
+            raise e
+
+        logging.warn(f"An exception occurred deleting collection {collection}: {e}")
+        time.sleep(time)
+        new_sleep = time * 2
+        try_delete_with_backoff(collection, new_sleep, max_tries)
 
 
 def get_required_env(name) -> str:
@@ -53,8 +105,8 @@ class AstraRef:
 def get_astra_ref() -> AstraRef:
     env = os.environ.get("ASTRA_DB_ENV", "prod").lower()
     return AstraRef(
-        token=get_required_env("ASTRA_DB_TOKEN"),
-        api_endpoint=get_required_env("ASTRA_DB_ENDPOINT"),
+        token=get_required_env("ASTRA_DB_APPLICATION_TOKEN"),
+        api_endpoint=get_required_env("ASTRA_DB_API_ENDPOINT"),
         collection=get_required_env("ASTRA_TABLE_NAME"),
         id=get_required_env("ASTRA_DB_ID"),
         env=env,
@@ -76,7 +128,7 @@ def ensure_astra_env_clean():
             f"Astra env not clean, currently there are {len(collections)} collections"
         )
         delete_all_astra_collections()
-        time.sleep(3)
+        time.sleep(5)
         ensure_astra_env_clean()
     else:
         logging.info("Astra environment is clean")
@@ -94,18 +146,19 @@ def delete_all_astra_collections():
     )
     logging.info(f"Existing collections: {collections}")
     for collection_name in collections:
-        delete_astra_collection(collection_name)
+        # delete_astra_collection(collection_name)
+        DELETE_COLLECTION_HANDLER.run_delete(collection_name)
 
 
-def _delete_astra_collection(collection: str) -> None:
-    logging.info(f"deleting collection {collection}")
-    DEFAULT_ASTRA_CLIENT.delete_collection(collection)
-    logging.info(f"deleted collection {collection}")
+# def _delete_astra_collection(collection: str) -> None:
+#     logging.info(f"deleting collection {collection}")
+#     DEFAULT_ASTRA_CLIENT.delete_collection(collection)
+#     logging.info(f"deleted collection {collection}")
 
 
-def delete_astra_collection(collection: str) -> None:
-    thread = Thread(target=_delete_astra_collection, args=(collection,))
-    thread.start()
+# def delete_astra_collection(collection: str) -> None:
+#     thread = Thread(target=_delete_astra_collection, args=(collection,))
+#     thread.start()
 
 
 failed_report_lines = []
