@@ -1,9 +1,6 @@
+import logging
 import os
-import random
-from abc import abstractmethod
-from typing import List
 
-import cassio
 import pytest
 from langchain.embeddings import VertexAIEmbeddings, HuggingFaceInferenceAPIEmbeddings
 from llama_index import (
@@ -27,138 +24,32 @@ from llama_index.llms import (
     Gemini,
 )
 from llama_index.multi_modal_llms import GeminiMultiModal
-from llama_index.schema import TextNode, ImageNode
-from llama_index.vector_stores import AstraDBVectorStore, CassandraVectorStore
+from llama_index.schema import ImageNode
 
 from e2e_tests.conftest import (
     set_current_test_info,
     get_required_env,
-    get_astra_ref,
-    delete_all_astra_collections,
-    delete_astra_collection,
-    AstraRef,
+    get_vector_store_handler,
 )
-from llama_index.vector_stores.types import VectorStore, VectorStoreQuery
-from sqlalchemy import Float
 from vertexai.vision_models import MultiModalEmbeddingModel, Image
 
-
-class VectorStoreWrapper:
-    @abstractmethod
-    def init(self, embedding_dimension: int) -> str:
-        pass
-
-    @abstractmethod
-    def as_vector_store(self) -> VectorStore:
-        pass
-
-    @abstractmethod
-    def put(
-        self, doc_id: str, document: str, metadata: dict, vector: List[Float]
-    ) -> None:
-        pass
-
-    @abstractmethod
-    def search(self, vector: List[float], limit: int) -> List[str]:
-        pass
-
-
-class CassandraVectorStoreWrapper(VectorStoreWrapper):
-    def __init__(self, astra_ref: AstraRef):
-        self.astra_ref = astra_ref
-        self.session_id = "test_session_id" + str(random.randint(0, 1000000))
-        self.vector_store = None
-
-    def init(self, embedding_dimension: int):
-        if self.astra_ref.env == "dev":
-            bundle_url_template = "https://api.dev.cloud.datastax.com/v2/databases/{database_id}/secureBundleURL"
-            cassio.init(
-                token=self.astra_ref.token,
-                database_id=self.astra_ref.id,
-                bundle_url_template=bundle_url_template,
-            )
-        else:
-            cassio.init(token=self.astra_ref.token, database_id=self.astra_ref.id)
-        self.vector_store = CassandraVectorStore(
-            embedding_dimension=embedding_dimension,
-            session=None,
-            keyspace="default_keyspace",
-            table=self.astra_ref.collection,
-        )
-
-    def as_vector_store(self) -> VectorStore:
-        return self.vector_store
-
-    def put(
-        self, doc_id: str, document: str, metadata: dict, vector: List[Float]
-    ) -> None:
-        self.vector_store.add(
-            [TextNode(text=document, metadata=metadata, id_=doc_id, embedding=vector)]
-        )
-
-    def search(self, vector: List[float], limit: int) -> List[str]:
-        return map(
-            lambda doc: doc,
-            self.vector_store.query(
-                VectorStoreQuery(query_embedding=vector, similarity_top_k=limit)
-            ).ids,
-        )
-
-
-class AstraDBVectorStoreWrapper(VectorStoreWrapper):
-    def __init__(self, astra_ref: AstraRef):
-        self.astra_ref = astra_ref
-        self.session_id = "test_session_id" + str(random.randint(0, 1000000))
-        self.vector_store = None
-
-    def init(self, embedding_dimension: int):
-        self.vector_store = AstraDBVectorStore(
-            collection_name=self.astra_ref.collection,
-            embedding_dimension=embedding_dimension,
-            token=self.astra_ref.token,
-            api_endpoint=self.astra_ref.api_endpoint,
-        )
-
-    def as_vector_store(self) -> VectorStore:
-        return self.vector_store
-
-    def put(
-        self, doc_id: str, document: str, metadata: dict, vector: List[Float]
-    ) -> None:
-        self.vector_store.client.insert_one(
-            {
-                "_id": doc_id,
-                "document": document,
-                "metadata": metadata or {},
-                "$vector": vector,
-            }
-        )
-
-    def search(self, vector: List[float], limit: int) -> List[str]:
-        return map(
-            lambda doc: doc["document"],
-            self.vector_store.client.vector_find(
-                vector,
-                limit=limit,
-            ),
-        )
+from e2e_tests.test_utils.vector_store_handler import VectorStoreImplementation
 
 
 @pytest.fixture
 def astra_db():
-    astra_ref = get_astra_ref()
-    delete_all_astra_collections(astra_ref)
-
-    yield AstraDBVectorStoreWrapper(astra_ref)
-    delete_astra_collection(astra_ref)
+    handler = get_vector_store_handler()
+    context = handler.before_test(VectorStoreImplementation.ASTRADB)
+    yield context
+    handler.after_test(VectorStoreImplementation.ASTRADB)
 
 
 @pytest.fixture
 def cassandra():
-    astra_ref = get_astra_ref()
-    delete_all_astra_collections(astra_ref)
-    yield CassandraVectorStoreWrapper(astra_ref)
-    delete_astra_collection(astra_ref)
+    handler = get_vector_store_handler()
+    context = handler.before_test(VectorStoreImplementation.CASSANDRA)
+    yield context
+    handler.after_test(VectorStoreImplementation.CASSANDRA)
 
 
 @pytest.fixture
@@ -290,14 +181,15 @@ def huggingface_hub_embedding():
 )
 def test_rag(vector_store, embedding, llm, request):
     embedding_name, embedding_dimensions, embedding = request.getfixturevalue(embedding)
-    vector_store_wrapper = request.getfixturevalue(vector_store)
+    vector_store_context = request.getfixturevalue(vector_store)
     llm_name, llm = request.getfixturevalue(llm)
     set_current_test_info(
         "llama_index::rag",
         f"{llm_name},{embedding_name},{vector_store}",
     )
-    vector_store_wrapper.init(embedding_dimensions)
-    vector_store = vector_store_wrapper.as_vector_store()
+    vector_store = vector_store_context.new_llamaindex_vector_store(
+        embedding_dimension=embedding_dimensions
+    )
     storage_context = StorageContext.from_defaults(vector_store=vector_store)
     service_context = ServiceContext.from_defaults(llm=llm, embed_model=embedding)
 
@@ -403,8 +295,10 @@ def test_multimodal(vector_store, embedding, llm, request):
 
     resolved_embedding, embedding_size = request.getfixturevalue(embedding)
 
-    vector_store_wrapper = request.getfixturevalue(vector_store)
-    vector_store_wrapper.init(embedding_dimension=embedding_size)
+    vector_store_context = request.getfixturevalue(vector_store)
+    enhanced_vector_store = vector_store_context.new_llamaindex_vector_store(
+        embedding_dimension=embedding_size
+    )
     resolved_llm, llm_complete_fn = request.getfixturevalue(llm)
 
     tree_image = get_local_resource_path("tree.jpeg")
@@ -426,7 +320,9 @@ def test_multimodal(vector_store, embedding, llm, request):
         )
         p["$vector"] = embeddings.image_embedding
 
-        vector_store_wrapper.put(p["name"], p["name"], {}, embeddings.image_embedding)
+        enhanced_vector_store.put_document(
+            p["name"], p["name"], {}, embeddings.image_embedding
+        )
 
     query_image_path = get_local_resource_path("coffee_maker_part.png")
     img = Image.load_from_file(query_image_path)
@@ -434,12 +330,11 @@ def test_multimodal(vector_store, embedding, llm, request):
         image=img, contextual_text="Coffee Maker Part"
     )
 
-    documents = vector_store_wrapper.search(embeddings.image_embedding, 3)
-    response = llm_complete_fn(
-        resolved_llm,
-        f"What is this image? Tell me which one of these products it is part of: {', '.join([p for p in documents])}",
-        query_image_path,
-    )
+    documents = enhanced_vector_store.search_documents(embeddings.image_embedding, 3)
+    docs_str = ", ".join([f"'{p}'" for p in documents])
+    prompt = f"Tell me which one of these products it is part of. Only include product from the ones below: {docs_str}."
+    logging.info(f"Prompt: {prompt}")
+    response = llm_complete_fn(resolved_llm, prompt, query_image_path)
     assert "Coffee Machine Ultra Cool" in response
 
 
