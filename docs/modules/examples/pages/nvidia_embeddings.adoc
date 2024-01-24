@@ -1,0 +1,258 @@
+= Nvidia Embeddings and Models
+
+image::https://colab.research.google.com/assets/colab-badge.svg[align="left",link="https://colab.research.google.com/github/datastax/ragstack-ai/blob/main/examples/notebooks/nvidia.ipynb"]
+
+This notebook demonstrates how to set up a simple RAG pipeline using
+https://catalog.ngc.nvidia.com[NVIDIA AI Foundation Models]. At the end
+of this notebook, you will have a functioning Question/Answer pipeline
+that can answer questions using your supplied documents, powered by
+Astra DB, LangChain, and NVIDIA.
+
+== Prerequisites
+
+You will need a vector-enabled Astra database and an NVIDIA NGC Account.
+
+* Create an
+https://docs.datastax.com/en/astra-serverless/docs/getting-started/create-db-choices.html[Astra
+vector database].
+* Within your database, create an
+https://docs.datastax.com/en/astra-serverless/docs/manage/org/manage-tokens.html[Astra
+DB Access Token] with Database Administrator permissions.
+* Get your Astra DB Endpoint:
+** `+https://<ASTRA_DB_ID>-<ASTRA_DB_REGION>.apps.astra.datastax.com+`
+* Create an https://catalog.ngc.nvidia.com/[NVIDIA NGC Account].
+** Once signed in, navigate to Catalog > AI Foundation Models > (Model).
+** In the model page, select the `+API+` tab, then `+Generate Key+`.
+* Install the following dependencies:
++
+[source,python]
+----
+pip install -qU ragstack-ai langchain-nvidia-ai-endpoints datasets
+----
++
+`+ragstack-ai+` includes all the packages you need to build a RAG
+pipeline.
++
+`+langchain-nvidia-ai-endpoints+` includes the NVIDIA models.
++
+`+datasets+` is used to import a sample dataset.
++
+See the https://docs.datastax.com/en/ragstack/docs/prerequisites.html[Prerequisites] page for more details.
+
+== Configure Astra DB and Nvidia NGC Credentials
+
+Export these values in the terminal where you're running this application. If you're using Google Colab, you'll be prompted for these values in the Colab environment.
+[source,bash]
+----
+export ASTRA_DB_APPLICATION_TOKEN=AstraCS: ...
+export ASTRA_DB_API_ENDPOINT=https://<ASTRA_DB_ID>-<ASTRA_DB_REGION>.apps.astra.datastax.com
+export NVIDIA_API_KEY=nvapi-...
+----
+
+== Create RAG Pipeline
+
+=== Embedding Model and Vector Store
+
+. Create an embedding model using the NVIDIA API key you generated in the prerequisites.
++
+[source,python]
+----
+from langchain_nvidia_ai_endpoints import NVIDIAEmbeddings
+
+embedding = NVIDIAEmbeddings(
+    nvidia_api_key=os.getenv("NVIDIA_API_KEY"),
+    model="nvolveqa_40k")
+----
++
+. Create a vector store using the embedding model and Astra DB credentials.
++
+[source,python]
+----
+import os
+from langchain.vectorstores.astradb import AstraDB
+
+vstore = AstraDB(
+    collection_name=collection,
+    embedding=embedding,
+    token=os.getenv("ASTRA_DB_APPLICATION_TOKEN"),
+    api_endpoint=os.getenv("ASTRA_DB_API_ENDPOINT"),
+)
+print("Astra vector store configured")
+----
++
+. Load a sample dataset and construct documents from the dataset.
++
+[source,python]
+----
+from datasets import load_dataset
+
+philo_dataset = load_dataset("datastax/philosopher-quotes")["train"]
+print("An example entry:")
+print(philo_dataset[16])
+----
++
+. Construct a set of `Documents` from your data. `Documents` can be used as inputs to your vector store.
++
+[source,python]
+----
+from langchain.schema import Document
+
+docs = []
+for entry in philo_dataset:
+    metadata = {"author": entry["author"]}
+    if entry["tags"]:
+        # Add metadata tags to the metadata dictionary
+        for tag in entry["tags"].split(";"):
+            metadata[tag] = "y"
+    # Create a LangChain document with the quote and metadata tags
+    doc = Document(page_content=entry["quote"], metadata=metadata)
+    docs.append(doc)
+----
++
+. Create embeddings by inserting your documents into the vector store.
+Print your collection to verify the documents are embedded.
++
+[source,python]
+----
+inserted_ids = vstore.add_documents(docs)
+print(f"\nInserted {len(inserted_ids)} documents.")
+print(vstore.astra_db.collection(collection).find())
+----
+
+=== QA Retrieval
+
+. Retrieve context from your vector database, and pass it to the NVIDIA
+model with a prompt.
++
+[source,python]
+----
+from langchain.prompts import ChatPromptTemplate
+from langchain.chat_models import ChatOpenAI
+from langchain.schema.output_parser import StrOutputParser
+from langchain.schema.runnable import RunnablePassthrough
+from langchain_nvidia_ai_endpoints import ChatNVIDIA
+
+retriever = vstore.as_retriever(search_kwargs={"k": 3})
+
+prompt_template = """
+Answer the question based only on the supplied context. If you don't know the answer, say you don't know the answer.
+Context: {context}
+Question: {question}
+Your answer:
+"""
+prompt = ChatPromptTemplate.from_template(prompt_template)
+model = ChatNVIDIA(model="mixtral_8x7b")
+
+chain = (
+    {"context": retriever, "question": RunnablePassthrough()}
+    | prompt
+    | model
+    | StrOutputParser()
+)
+
+result = chain.invoke("In the given context, what subject are philosophers most concerned with?")
+print(result)
+----
++
+. Optionally, modify the prompt invocation to ask your own question.
++
+[source,python]
+----
+# Add your questions here!
+result = chain.invoke("<your question>")
+----
++
+. Run the code you created previously.
+It should print the following output:
++
+[source,console]
+----
+Astra vector store configured
+An example entry:
+{'author': 'aristotle', 'quote': 'Love well, be loved and do something of value.', 'tags': 'love;ethics'}
+
+Inserted 450 documents.
+Based on the provided context, philosophers are most concerned with the subject of wonder. This is mentioned twice in documents attributed to Aristotle, stating 'Philosophy begins with wonder.' There is no information provided in the context that suggests philosophers are more concerned with any other subject.
+----
+
+You now have a functional RAG pipeline powered by NVIDIA! NVIDIA offers many different model types suited for different problems. Check out the https://catalog.ngc.nvidia.com[catalog] for more.
+
+== Cleanup
+
+Add the following code to the end of your script to delete the collection and all documents in the collection.
+[source,python]
+----
+vstore.delete_collection()
+----
+
+== Complete code
+
+.Python
+[%collapsible%open]
+====
+[source,python]
+----
+from datasets import load_dataset
+from langchain_nvidia_ai_endpoints import NVIDIAEmbeddings, ChatNVIDIA
+from langchain.vectorstores.astradb import AstraDB
+from langchain.schema import Document
+from langchain.prompts import ChatPromptTemplate
+from langchain.chat_models import ChatOpenAI
+from langchain.schema.output_parser import StrOutputParser
+from langchain.schema.runnable import RunnablePassthrough
+import os
+
+# Configuration for NVIDIA Embeddings
+nvidia_api_key = os.getenv("NVIDIA_API_KEY")
+embedding = NVIDIAEmbeddings(nvidia_api_key=nvidia_api_key, model="nvolveqa_40k")
+
+# AstraDB Vector Store setup
+collection_name = "test"
+astra_token = os.getenv("ASTRA_DB_APPLICATION_TOKEN")
+astra_api_endpoint = os.getenv("ASTRA_DB_API_ENDPOINT")
+vstore = AstraDB(collection_name=collection_name, embedding=embedding, 
+                 token=astra_token, api_endpoint=astra_api_endpoint)
+print("Astra vector store configured")
+
+# Load a sample dataset
+philo_dataset = load_dataset("datastax/philosopher-quotes")["train"]
+print("An example entry:")
+print(philo_dataset[16])
+
+# Construct documents from dataset
+docs = []
+for entry in philo_dataset:
+    metadata = {"author": entry["author"]}
+    if entry["tags"]:
+        for tag in entry["tags"].split(";"):
+            metadata[tag] = "y"
+    doc = Document(page_content=entry["quote"], metadata=metadata)
+    docs.append(doc)
+
+# Insert documents into vector store
+inserted_ids = vstore.add_documents(docs)
+print(f"\nInserted {len(inserted_ids)} documents.")
+
+# Setup LangChain Chat Prompt
+retriever = vstore.as_retriever(search_kwargs={"k": 3})
+prompt_template = """
+Answer the question based only on the supplied context. If you don't know the answer, say you don't know the answer.
+Context: {context}
+Question: {question}
+Your answer:
+"""
+prompt = ChatPromptTemplate.from_template(prompt_template)
+model = ChatNVIDIA(model="mixtral_8x7b", nvidia_api_key=nvidia_api_key)
+
+chain = (
+    {"context": retriever, "question": RunnablePassthrough()}
+    | prompt
+    | model
+    | StrOutputParser()
+)
+
+# Invoke the chain with a query and print result
+result = chain.invoke("In the given context, what subject are philosophers most concerned with?")
+print(result)
+----
+====

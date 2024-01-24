@@ -3,12 +3,6 @@ on:
   workflow_dispatch: {}
   schedule:
     - cron: '0 */2 * * *'
-#  pull_request:
-#    paths:
-#      - '.github/**'
-#      - 'ragstack-e2e-tests/**'
-#    branches:
-#      - main
 
 jobs:
   langchain-tests:
@@ -19,15 +13,34 @@ jobs:
       matrix:
         include:
 #          - name: Astra PROD
+#            vector_db_mode: "astradb"
+#            needs_astra_setup: true
 #            astra_token_secret: E2E_TESTS_ASTRA_PROD_DB_TOKEN
 #            env: PROD
 #            region: eu-west-1
 #            cloud: aws
+#            run_notebooks: true
+#            testspace_space: ""
+
           - name: Astra DEV
+            type: "astradb"
+            needs_astra_setup: "true"
             astra_token_secret: E2E_TESTS_ASTRA_DEV_DB_TOKEN
             env: DEV
-            region: us-central1
-            cloud: gcp
+            region: us-west-2
+            cloud: aws
+            run_notebooks: "false"
+            testspace_space: "langchain-master-branch"
+
+          - name: DSE
+            type: "local-cassandra"
+            needs_astra_setup: "false"
+            astra_token_secret: ""
+            env: ""
+            region: ""
+            cloud: ""
+            run_notebooks: "false"
+            testspace_space: "langchain-master-branch-DSE"
     steps:
       - name: Check out the repo
         uses: actions/checkout@v3
@@ -46,6 +59,7 @@ jobs:
       - name: Setup AstraDB
         uses: ./.github/actions/setup-astra-db
         id: astra-db
+        if: matrix.needs_astra_setup == 'true'
         with:
           astra-token: ${{ secrets[matrix.astra_token_secret] }}
           db-name: ${{ github.run_id }}
@@ -56,6 +70,7 @@ jobs:
       - name: Run E2E tests
         id: e2e-tests
         env:
+          VECTOR_DATABASE_TYPE: "${{ matrix.type }}"
           ASTRA_DB_TOKEN: "${{ secrets[matrix.astra_token_secret] }}"
           ASTRA_DB_ENDPOINT: "${{ steps.astra-db.outputs.db_endpoint }}"
           ASTRA_DB_ID: "${{ steps.astra-db.outputs.db_id }}"
@@ -105,11 +120,11 @@ jobs:
 
       - name: Testspace deploy report
         uses: ./.github/actions/deploy-testspace-report
-        if: always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+        if: always() && matrix.testspace_space != '' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
         with:
           token: ${{ secrets.TESTSPACE_TOKEN }}
           report-file: ragstack-e2e-tests/results.xml
-          space: langchain-master-branch
+          space: ${{ matrix.testspace_space }}
 
 #      - name: Upload report to Github Pages
 #        if: always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
@@ -122,7 +137,7 @@ jobs:
 
       - name: Cleanup AstraDB
         uses: ./.github/actions/cleanup-astra-db
-        if: always()
+        if: always() && matrix.needs_astra_setup == 'true'
         with:
           astra-token: ${{ secrets[matrix.astra_token_secret] }}
           db-name: ${{ github.run_id }}

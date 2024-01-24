@@ -1,10 +1,12 @@
 import logging
 from typing import List
 
-from astrapy.db import AstraDB as LibAstraDB
 import pytest
-from httpx import ConnectError, HTTPStatusError
-from e2e_tests.conftest import get_required_env, get_astra_ref
+from httpx import ConnectError
+from e2e_tests.conftest import (
+    get_required_env,
+    get_vector_store_handler,
+)
 from llama_index import (
     ServiceContext,
     StorageContext,
@@ -20,6 +22,8 @@ from llama_index.vector_stores import (
     MetadataFilters,
     ExactMatchFilter,
 )
+
+from e2e_tests.test_utils.vector_store_handler import VectorStoreImplementation
 
 
 def test_basic_vector_search(environment):
@@ -88,9 +92,9 @@ def test_ingest_errors(environment):
             )
 
 
-def test_wrong_connection_parameters():
+def test_wrong_connection_parameters(environment):
     # This is expected to be a valid endpoint, because we want to test an AUTHENTICATION error
-    astra_ref = get_astra_ref()
+    astra_ref = get_vector_store_handler().astra_ref
     api_endpoint = astra_ref.api_endpoint
 
     try:
@@ -115,9 +119,9 @@ def test_wrong_connection_parameters():
             embedding_dimension=1536,
         )
         pytest.fail("Should have thrown exception")
-    except HTTPStatusError as e:
+    except ValueError as e:
         print("Error:", e)
-        if "UNAUTHENTICATED" not in e.response.text:
+        if "UNAUTHENTICATED" not in e.args[0]:
             pytest.fail(
                 f"Should have thrown ValueError with UNAUTHENTICATED but it was {e}"
             )
@@ -196,29 +200,10 @@ def test_vector_search_with_metadata(environment):
 
 
 def init_vector_db() -> AstraDBVectorStore:
-    astra_ref = get_astra_ref()
-    collection = astra_ref.collection
-    token = astra_ref.token
-    api_endpoint = astra_ref.api_endpoint
-
-    raw_client = LibAstraDB(api_endpoint=api_endpoint, token=token)
-    collections = raw_client.get_collections().get("status").get("collections")
-    logging.info(f"Existing collections: {collections}")
-    for collection_info in collections:
-        try:
-            logging.info(f"Deleting collection: {collection_info}")
-            raw_client.delete_collection(collection_info)
-        except Exception as e:
-            logging.error(f"Error while deleting collection {collection_info}: {e}")
-
-    vector_db = AstraDBVectorStore(
-        token=token,
-        api_endpoint=api_endpoint,
-        collection_name=collection,
-        embedding_dimension=3,
-    )
-
-    return vector_db
+    handler = get_vector_store_handler()
+    return handler.before_test(
+        VectorStoreImplementation.ASTRADB
+    ).new_llamaindex_vector_store(embedding_dimension=3)
 
 
 class Environment:
@@ -250,13 +235,7 @@ def environment():
     yield Environment(
         vectorstore=vector_db_impl, llm=llm_impl, embedding=embeddings_impl
     )
-    close_vector_db(vector_db_impl)
-
-
-def close_vector_db(vector_store: AstraDBVectorStore):
-    vector_store._astra_db.delete_collection(
-        vector_store._astra_db_collection.collection_name
-    )
+    get_vector_store_handler().after_test(VectorStoreImplementation.ASTRADB)
 
 
 class MockEmbeddings(BaseEmbedding):
