@@ -1,3 +1,4 @@
+import logging
 import os
 
 import pytest
@@ -330,11 +331,10 @@ def test_multimodal(vector_store, embedding, llm, request):
     )
 
     documents = enhanced_vector_store.search_documents(embeddings.image_embedding, 3)
-    response = llm_complete_fn(
-        resolved_llm,
-        f"What is this image? Tell me which one of these products it is part of: {', '.join([p for p in documents])}",
-        query_image_path,
-    )
+    docs_str = ", ".join([f"'{p}'" for p in documents])
+    prompt = f"Tell me which one of these products it is part of. Only include product from the ones below: {docs_str}."
+    logging.info(f"Prompt: {prompt}")
+    response = llm_complete_fn(resolved_llm, prompt, query_image_path)
     assert "Coffee Machine Ultra Cool" in response
 
 

@@ -318,9 +318,13 @@ def test_multimodal(vector_store, embedding, llm, request):
         "type": "image_url",
         "image_url": {"url": query_image_path},
     }
+    docs_str = ", ".join([f"'{p}'" for p in documents])
+    prompt = f"Tell me which one of these products it is part of. Only include product from the ones below: {docs_str}."
+    logging.info(f"Prompt: {prompt}")
+
     text_message = {
         "type": "text",
-        "text": f"What is this image? Tell me which one of these products it is part of: {', '.join([p for p in documents])}",
+        "text": prompt,
     }
     message = HumanMessage(content=[text_message, image_message])
     response = resolved_llm([message])

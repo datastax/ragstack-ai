@@ -1,7 +1,10 @@
+import concurrent
 import logging
 import os
+import threading
+import time
 from dataclasses import dataclass
-from typing import List
+from typing import List, Callable
 
 import cassio
 from langchain_community.chat_message_histories import AstraDBChatMessageHistory
@@ -32,28 +35,50 @@ class AstraRef:
     env: str
 
 
-def delete_all_astra_collections(astra_ref: AstraRef):
-    """
-    Deletes all collections.
+class DeleteCollectionHandler:
+    def __init__(self, delete_function: Callable, max_workers=5):
+        self.delete_function = delete_function
+        self.executor = concurrent.futures.ThreadPoolExecutor(max_workers=max_workers)
+        self.max_workers = max_workers
+        self.semaphore = threading.Semaphore(max_workers)
 
-    Current AstraDB has a limit of 5 collections, meaning orphaned collections
-    will cause subsequent tests to fail if the limit is reached.
-    """
-    raw_client = AstraPyClient(
-        api_endpoint=astra_ref.api_endpoint, token=astra_ref.token
-    )
-    collections = raw_client.get_collections().get("status").get("collections")
-    logging.info(f"Existing collections: {collections}")
-    for collection_info in collections:
-        logging.info(f"Deleting collection: {collection_info}")
-        raw_client.delete_collection(collection_info)
+    def await_ongoing_deletions_completed(self):
+        """
+        Blocks until all ongoing deletions are completed.
+        """
+        while self.semaphore._value != self.max_workers:
+            logging.info(
+                f"{self.max_workers - self.semaphore._value} deletions still running, waiting to complete"
+            )
+            time.sleep(1)
+        return
 
+    def run_delete(self, collection: str):
+        """
+        Runs a delete_collection in the background, blocking if max_workers are already running.
+        """
+        self.semaphore.acquire()  # Wait for a free thread
+        future = self.executor.submit(
+            self._run_and_release(collection),
+        )
+        return future
 
-def delete_astra_collection(astra_ref: AstraRef) -> None:
-    raw_client = AstraPyClient(
-        api_endpoint=astra_ref.api_endpoint, token=astra_ref.token
-    )
-    raw_client.delete_collection(astra_ref.collection)
+    def _run_and_release(self, collection: str):
+        """
+        Internal wrapper to run the delete function and release the semaphore once done.
+        """
+        try:
+            logging.info(f"deleting collection {collection}")
+            self.delete_function(collection)
+            logging.info(f"deleted collection {collection}")
+        finally:
+            self.semaphore.release()
+
+    def shutdown(self, wait=True):
+        """
+        Shuts down the executor, waiting for tasks to complete if specified.
+        """
+        self.executor.shutdown(wait=wait)
 
 
 class AstraDBVectorStoreHandler(VectorStoreHandler):
@@ -65,17 +90,51 @@ class AstraDBVectorStoreHandler(VectorStoreHandler):
         self.astra_ref = AstraRef(
             token=get_required_env("ASTRA_DB_TOKEN"),
             api_endpoint=get_required_env("ASTRA_DB_ENDPOINT"),
-            collection="documents" + random_string(),
+            collection="documents_" + random_string(),
             id=get_required_env("ASTRA_DB_ID"),
             env=env,
         )
+        self.default_astra_client = AstraPyClient(
+            api_endpoint=self.astra_ref.api_endpoint, token=self.astra_ref.token
+        )
+        self.delete_collection_handler = DeleteCollectionHandler(
+            self.try_delete_with_backoff
+        )
+
+    def try_delete_with_backoff(self, collection: str, sleep=1, max_tries=5):
+        try:
+            self.default_astra_client.delete_collection(collection)
+        except Exception as e:
+            max_tries -= 1
+            if max_tries < 0:
+                raise e
+
+            logging.warning(
+                f"An exception occurred deleting collection {collection}: {e}"
+            )
+            time.sleep(sleep)
+            self.try_delete_with_backoff(collection, sleep * 2, max_tries)
+
+    def ensure_astra_env_clean(self, blocking=False):
+        logging.info("Ensuring astra env is clean")
+        self.delete_collection_handler.run_delete(self.astra_ref.collection)
+        collections = (
+            self.default_astra_client.get_collections().get("status").get("collections")
+        )
+        logging.info(f"Existing collections: {collections}")
+        for name in collections:
+            if name == self.astra_ref.collection:
+                continue
+            self.delete_collection_handler.run_delete(name)
+        if blocking:
+            self.delete_collection_handler.await_ongoing_deletions_completed()
 
     def before_test(
         self, implementation: VectorStoreImplementation
     ) -> VectorStoreTestContext:
         super().before_test(implementation)
-        delete_astra_collection(self.astra_ref)
-        delete_all_astra_collections(self.astra_ref)
+        self.ensure_astra_env_clean(blocking=True)
+        self.astra_ref.collection = "documents_" + random_string()
 
         if implementation == VectorStoreImplementation.CASSANDRA:
             # to run cassandra implementation over astra
@@ -91,8 +150,7 @@ class AstraDBVectorStoreHandler(VectorStoreHandler):
         return AstraDBVectorStoreTestContext(self)
 
     def after_test(self, implementation: VectorStoreImplementation):
-        delete_astra_collection(self.astra_ref)
-        delete_all_astra_collections(self.astra_ref)
+        self.ensure_astra_env_clean(blocking=False)
 
 
 class EnhancedCassandraLangChainVectorStore(EnhancedLangChainVectorStore, AstraDB):
