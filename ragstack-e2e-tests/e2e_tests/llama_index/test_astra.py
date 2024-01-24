@@ -2,7 +2,7 @@ import logging
 from typing import List
 
 import pytest
-from httpx import ConnectError, HTTPStatusError
+from httpx import ConnectError
 from e2e_tests.conftest import (
     get_required_env,
     get_vector_store_handler,
@@ -119,9 +119,9 @@ def test_wrong_connection_parameters(environment):
             embedding_dimension=1536,
         )
         pytest.fail("Should have thrown exception")
-    except HTTPStatusError as e:
+    except ValueError as e:
         print("Error:", e)
-        if "UNAUTHENTICATED" not in e.response.text:
+        if "UNAUTHENTICATED" not in e.args[0]:
             pytest.fail(
                 f"Should have thrown ValueError with UNAUTHENTICATED but it was {e}"
             )

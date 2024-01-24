@@ -1,7 +1,10 @@
 import logging
+import os
 from typing import List
 
 import cassio
+from cassandra.auth import PlainTextAuthProvider
+from cassandra.cluster import Cluster
 from cassio.table import MetadataVectorCassandraTable
 from langchain_community.chat_message_histories import (
     CassandraChatMessageHistory,
@@ -42,14 +45,30 @@ class CassandraVectorStoreHandler(VectorStoreHandler):
         super().before_test(implementation)
 
         self.test_table_name = "table_" + random_string()
-        if self.cassandra_container is None:
-            self.cassandra_container = CassandraContainer()
-            self.cassandra_container.start()
-            logging.info("Cassandra container started")
-        else:
-            logging.info("Cassandra container already started")
 
-        self.cassandra_session = self.cassandra_container.create_session()
+        start_container = os.environ.get("CASSANDRA_START_CONTAINER", "true")
+        if start_container == "true":
+            if self.cassandra_container is None:
+                self.cassandra_container = CassandraContainer()
+                self.cassandra_container.start()
+                logging.info("Cassandra container started")
+            else:
+                logging.info("Cassandra container already started")
+            cassandra_port = self.cassandra_container.get_mapped_port()
+        else:
+            logging.info("Connecting to local Cassandra instance")
+            cassandra_port = 9042
+
+        cluster = Cluster(
+            [("127.0.0.1", cassandra_port)],
+            auth_provider=PlainTextAuthProvider("cassandra", "cassandra"),
+        )
+        self.cassandra_session = cluster.connect()
+        keyspace = "default_keyspace"
+        self.cassandra_session.execute(f"DROP KEYSPACE IF EXISTS {keyspace}")
+        self.cassandra_session.execute(
+            f"CREATE KEYSPACE IF NOT EXISTS {keyspace} WITH replication = {{'class': 'SimpleStrategy', 'replication_factor': '1'}}"
+        )
         cassio.init(session=self.cassandra_session)
         return CassandraVectorStoreTestContext(self)
 
