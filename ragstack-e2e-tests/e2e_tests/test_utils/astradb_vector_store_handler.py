@@ -95,7 +95,7 @@ class AstraDBVectorStoreHandler(VectorStoreHandler):
         delete_all_astra_collections(self.astra_ref)
 
 
-class EnhancedAstraDBLangChainVectorStore(EnhancedLangChainVectorStore, AstraDB):
+class EnhancedCassandraLangChainVectorStore(EnhancedLangChainVectorStore, AstraDB):
     def put_document(
         self, doc_id: str, document: str, metadata: dict, vector: List[float]
     ) -> None:
@@ -119,7 +119,7 @@ class EnhancedAstraDBLangChainVectorStore(EnhancedLangChainVectorStore, AstraDB)
         return docs
 
 
-class EnhancedAstraDBLlamaIndexVectorStore(
+class EnhancedCassandraLlamaIndexVectorStore(
     EnhancedLlamaIndexVectorStore, AstraDBVectorStore
 ):
     def put_document(
@@ -152,7 +152,7 @@ class AstraDBVectorStoreTestContext(VectorStoreTestContext):
         self.test_id = "test_id" + random_string()
 
     def new_langchain_vector_store(self, **kwargs) -> LangChainVectorStore:
-        return EnhancedAstraDBLangChainVectorStore(
+        return EnhancedCassandraLangChainVectorStore(
             collection_name=self.handler.astra_ref.collection,
             token=self.handler.astra_ref.token,
             api_endpoint=self.handler.astra_ref.api_endpoint,
@@ -169,7 +169,7 @@ class AstraDBVectorStoreTestContext(VectorStoreTestContext):
         )
 
     def new_llamaindex_vector_store(self, **kwargs) -> LlamaIndexVectorStore:
-        return EnhancedAstraDBLlamaIndexVectorStore(
+        return EnhancedCassandraLlamaIndexVectorStore(
             token=self.handler.astra_ref.token,
             api_endpoint=self.handler.astra_ref.api_endpoint,
             collection_name=self.handler.astra_ref.collection + "_chat_memory",
