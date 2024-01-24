@@ -1,7 +1,5 @@
-import base64
 import logging
 import os
-import pathlib
 import time
 from typing import List
 
@@ -310,7 +308,6 @@ def test_multimodal(vector_store, embedding, llm, request):
         )
 
     query_image_path = get_local_resource_path("coffee_maker_part.png")
-    b64 = base64.b64encode(pathlib.Path(query_image_path).read_bytes())
     img = Image.load_from_file(query_image_path)
     embeddings = resolved_embedding.get_embeddings(
         image=img, contextual_text="Coffee Maker Part"
@@ -319,11 +316,15 @@ def test_multimodal(vector_store, embedding, llm, request):
     documents = enhanced_vector_store.search_documents(embeddings.image_embedding, 3)
     image_message = {
         "type": "image_url",
-        "image_url": {"url": "data:image/jpeg;base64," + b64.decode("utf-8"),},
+        "image_url": {"url": query_image_path},
     }
+    docs_str = ", ".join([f"'{p}'" for p in documents])
+    prompt = f"Tell me which one of these products it is part of. Only include product from the ones below: {docs_str}."
+    logging.info(f"Prompt: {prompt}")
+
     text_message = {
         "type": "text",
-        "text": f"What is this image? Tell me which one of these products it is part of: {', '.join([p for p in documents])}",
+        "text": prompt,
     }
     message = HumanMessage(content=[text_message, image_message])
     response = resolved_llm([message])
