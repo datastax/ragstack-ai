@@ -116,7 +116,7 @@ class AstraDBVectorStoreHandler(VectorStoreHandler):
         for name in collections:
             if name == self.astra_ref.collection:
                 continue
-            self.delete_collection_handler.run_delete(self.astra_ref.collection)
+            self.delete_collection_handler.run_delete(name)
         if blocking:
             self.delete_collection_handler.await_ongoing_deletions_completed()
 
