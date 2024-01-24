@@ -2,17 +2,18 @@ import logging
 import os
 import pathlib
 import time
-import uuid
-from dataclasses import dataclass
 
 import pytest
-from astrapy.db import AstraDB as LibAstraDB
+
+
+from e2e_tests.test_utils.astradb_vector_store_handler import AstraDBVectorStoreHandler
+from e2e_tests.test_utils.cassandra_vector_store_handler import (
+    CassandraVectorStoreHandler,
+)
+from e2e_tests.test_utils.vector_store_handler import VectorStoreHandler
+from e2e_tests.test_utils import get_required_env as root_get_required_env
 
 LOGGER = logging.getLogger(__name__)
-
-
-def random_string():
-    return str(uuid.uuid4()).split("-")[0]
 
 
 logging.basicConfig(
@@ -27,60 +28,21 @@ logging.basicConfig(
 
 
 def get_required_env(name) -> str:
-    if name not in os.environ:
-        LOGGER.warning(f"Missing required environment variable: {name}")
-        pytest.skip(f"Missing required environment variable: {name}")
-    return os.environ[name]
+    return root_get_required_env(name)
 
 
-@dataclass
-class AstraRef:
-    token: str
-    api_endpoint: str
-    collection: str
-    id: str
-    env: str
+vector_database_type = os.environ.get("VECTOR_DATABASE_TYPE", "astradb")
+if vector_database_type not in ["astradb", "local-cassandra"]:
+    raise ValueError(f"Invalid VECTOR_DATABASE_TYPE: {vector_database_type}")
+
+if vector_database_type == "astradb":
+    vector_store_handler = AstraDBVectorStoreHandler()
+else:
+    vector_store_handler = CassandraVectorStoreHandler()
 
 
-def get_astra_ref() -> AstraRef:
-    env = os.environ.get("ASTRA_DB_ENV", "prod").lower()
-    return AstraRef(
-        token=get_required_env("ASTRA_DB_TOKEN"),
-        api_endpoint=get_required_env("ASTRA_DB_ENDPOINT"),
-        collection=get_required_env("ASTRA_TABLE_NAME"),
-        id=get_required_env("ASTRA_DB_ID"),
-        env=env,
-    )
-
-
-def delete_all_astra_collections_with_client(raw_client: LibAstraDB):
-    """
-    Deletes all collections.
-
-    Current AstraDB has a limit of 5 collections, meaning orphaned collections
-    will cause subsequent tests to fail if the limit is reached.
-    """
-    collections = raw_client.get_collections().get("status").get("collections")
-    logging.info(f"Existing collections: {collections}")
-    for collection_info in collections:
-        logging.info(f"Deleting collection: {collection_info}")
-        raw_client.delete_collection(collection_info)
-
-
-def delete_all_astra_collections(astra_ref: AstraRef):
-    """
-    Deletes all collections.
-
-    Current AstraDB has a limit of 5 collections, meaning orphaned collections
-    will cause subsequent tests to fail if the limit is reached.
-    """
-    raw_client = LibAstraDB(api_endpoint=astra_ref.api_endpoint, token=astra_ref.token)
-    delete_all_astra_collections_with_client(raw_client)
-
-
-def delete_astra_collection(astra_ref: AstraRef) -> None:
-    raw_client = LibAstraDB(api_endpoint=astra_ref.api_endpoint, token=astra_ref.token)
-    raw_client.delete_collection(astra_ref.collection)
+def get_vector_store_handler() -> VectorStoreHandler:
+    return vector_store_handler
 
 
 failed_report_lines = []
@@ -188,9 +150,6 @@ def _report_to_file(stats_str: str, filename: str, report_lines: list):
             f.write(stats_str + "\n")
         f.write("\n".join(report_lines))
 
-
-# astra
-os.environ["ASTRA_TABLE_NAME"] = f"documents_{random_string()}"
 
 # azure-open-ai
 os.environ["AZURE_OPEN_AI_CHAT_MODEL_DEPLOYMENT"] = "gpt-35-turbo"

@@ -98,15 +98,34 @@ jobs:
       matrix:
         include:
 #          - name: Astra PROD
+#            vector_db_mode: "astradb"
+#            needs_astra_setup: true
 #            astra_token_secret: E2E_TESTS_ASTRA_PROD_DB_TOKEN
 #            env: PROD
 #            region: eu-west-1
 #            cloud: aws
+#            run_notebooks: true
+#            deploy_to_testspace: false
+
           - name: Astra DEV
+            type: "astradb"
+            needs_astra_setup: "true"
             astra_token_secret: E2E_TESTS_ASTRA_DEV_DB_TOKEN
             env: DEV
-            region: us-central1
-            cloud: gcp
+            region: us-west-2
+            cloud: aws
+            run_notebooks: "false"
+            testspace_space: "ragstack-ai-main-branch"
+
+          - name: DSE
+            type: "local-cassandra"
+            needs_astra_setup: "false"
+            astra_token_secret: ""
+            env: ""
+            region: ""
+            cloud: ""
+            run_notebooks: "false"
+            testspace_space: "ragstack-ai-main-branch-DSE"
 
     steps:
       - name: Check out the repo
@@ -125,6 +144,7 @@ jobs:
 
       - name: Setup AstraDB
         uses: ./.github/actions/setup-astra-db
+        if: matrix.needs_astra_setup == 'true'
         id: astra-db
         with:
           astra-token: ${{ secrets[matrix.astra_token_secret] }}
@@ -135,7 +155,7 @@ jobs:
 
       - name: Run notebook tests
         # we run notebook tests only on PROD env since we CassIO need different parameters for DEV, and we don't want to dirty the notebook
-        if: matrix.env == 'PROD' && (needs.preconditions.outputs.notebooks == 'true' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+        if: matrix.run_notebooks == 'true' && (needs.preconditions.outputs.notebooks == 'true' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
         env:
           ASTRA_DB_APPLICATION_TOKEN: "${{ secrets[matrix.astra_token_secret] }}"
           ASTRA_DB_API_ENDPOINT: "${{ steps.astra-db.outputs.db_endpoint }}"
@@ -151,6 +171,7 @@ jobs:
         id: e2e-tests
         if: needs.preconditions.outputs.e2e_tests == 'true' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
         env:
+          VECTOR_DATABASE_TYPE: "${{ matrix.type }}"
           ASTRA_DB_TOKEN: "${{ secrets[matrix.astra_token_secret] }}"
           ASTRA_DB_ENDPOINT: "${{ steps.astra-db.outputs.db_endpoint }}"
           ASTRA_DB_ID: "${{ steps.astra-db.outputs.db_id }}"
@@ -202,15 +223,15 @@ jobs:
 
       - name: Testspace deploy report
         uses: ./.github/actions/deploy-testspace-report
-        if: always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+        if: always() && matrix.testspace_space != '' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
         with:
           token: ${{ secrets.TESTSPACE_TOKEN }}
           report-file: ragstack-e2e-tests/results.xml
-          space: ragstack-ai-main-branch
+          space: ${{ matrix.testspace_space }}
 
       - name: Cleanup AstraDB
         uses: ./.github/actions/cleanup-astra-db
-        if: always()
+        if: always() && matrix.needs_astra_setup == 'true'
         continue-on-error: true
         with:
           astra-token: ${{ secrets[matrix.astra_token_secret] }}
