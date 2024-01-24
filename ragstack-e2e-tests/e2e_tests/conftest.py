@@ -32,7 +32,17 @@ logging.basicConfig(
 class DeleteCollectionHandler:
     def __init__(self, max_workers=5):
         self.executor = concurrent.futures.ThreadPoolExecutor(max_workers=max_workers)
+        self.max_workers = max_workers
         self.semaphore = threading.Semaphore(max_workers)
+
+    def await_ongoing_deletions_completed(self):
+        """
+        Blocks until all ongoing deletions are completed.
+        """
+        while self.semaphore._value != self.max_workers:
+            logging.info(f"{self.max_workers - self.semaphore._value} deletions still running, waiting to complete")
+            time.sleep(1)
+        return
 
     def run_delete(self, collection: str):
         """
@@ -73,7 +83,7 @@ def try_delete_with_backoff(collection, sleep=1, max_tries=5):
         if max_tries < 0:
             raise e
 
-        logging.warn(f"An exception occurred deleting collection {collection}: {e}")
+        logging.warning(f"An exception occurred deleting collection {collection}: {e}")
         time.sleep(sleep)
         try_delete_with_backoff(collection, sleep * 2, max_tries)
 
@@ -119,18 +129,9 @@ DEFAULT_ASTRA_CLIENT = LibAstraDB(
 
 
 def ensure_astra_env_clean():
-    collections = (
-        DEFAULT_ASTRA_CLIENT.get_collections().get("status").get("collections")
-    )
-    if len(collections) > 0:
-        logging.info(
-            f"Astra env not clean, currently there are {len(collections)} collections"
-        )
-        delete_all_astra_collections()
-        time.sleep(5)
-        ensure_astra_env_clean()
-    else:
-        logging.info("Astra environment is clean")
+    delete_all_astra_collections()
+    DELETE_COLLECTION_HANDLER.await_ongoing_deletions_completed()
+    logging.info("Astra environment is clean")
 
 
 def delete_all_astra_collections():
