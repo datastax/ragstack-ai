@@ -32,6 +32,7 @@ load_dotenv()
 
 temperature = 0
 
+
 class Framework(Enum):
     LANG_CHAIN = "langChain"
     LLAMA_INDEX = "llamaIndex"
@@ -106,8 +107,10 @@ def get_feedback_functions(pipeline, golden_set):
     return [f_answer_relevance, f_context_relevance, f_groundedness, f_answer_correctness]
 
 
-def get_recorder(framework: Framework, pipeline, app_id: str, golden_set: [], feedback_mode: str = "deferred"):
-    feedbacks = get_feedback_functions(pipeline, golden_set)
+
+
+def getRecorder(framework: Framework, pipeline, app_id: str, golden_set : [], feedback_mode : str = "deferred"):
+    feedbacks = getFeedbackFunctions(pipeline, golden_set)
     if framework == Framework.LANG_CHAIN:
         return TruChain(
             pipeline,
