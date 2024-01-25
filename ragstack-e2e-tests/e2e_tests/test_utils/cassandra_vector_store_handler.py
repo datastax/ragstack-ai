@@ -11,11 +11,9 @@ from langchain_community.chat_message_histories import (
 )
 from langchain_community.vectorstores.cassandra import Cassandra
 from langchain_core.chat_history import BaseChatMessageHistory
-from langchain_core.vectorstores import VectorStore as LangChainVectorStore
 from llama_index.schema import TextNode
 from llama_index.vector_stores import CassandraVectorStore
 from llama_index.vector_stores.types import (
-    VectorStore as LlamaIndexVectorStore,
     VectorStoreQuery,
 )
 
@@ -33,16 +31,14 @@ from e2e_tests.test_utils.vector_store_handler import (
 
 
 class CassandraVectorStoreHandler(VectorStoreHandler):
-    def __init__(self):
-        super().__init__([VectorStoreImplementation.CASSANDRA])
+    def __init__(self, implementation: VectorStoreImplementation) -> None:
+        super().__init__(implementation, [VectorStoreImplementation.CASSANDRA])
         self.cassandra_container = None
         self.cassandra_session = None
         self.test_table_name = None
 
-    def before_test(
-        self, implementation: VectorStoreImplementation
-    ) -> VectorStoreTestContext:
-        super().before_test(implementation)
+    def before_test(self) -> VectorStoreTestContext:
+        super().check_implementation()
 
         self.test_table_name = "table_" + random_string()
 
@@ -72,9 +68,6 @@ class CassandraVectorStoreHandler(VectorStoreHandler):
         cassio.init(session=self.cassandra_session)
         return CassandraVectorStoreTestContext(self)
 
-    def after_test(self, implementation: VectorStoreImplementation):
-        pass
-
 
 class EnhancedCassandraLangChainVectorStore(EnhancedLangChainVectorStore, Cassandra):
     def put_document(
@@ -96,7 +89,6 @@ class EnhancedCassandraLangChainVectorStore(EnhancedLangChainVectorStore, Cassan
             )
 
     def search_documents(self, vector: List[float], limit: int) -> List[str]:
-
         if isinstance(self.table, MetadataVectorCassandraTable):
             results = self.table.ann_search(vector=vector, n=limit)
             docs = []
@@ -111,7 +103,7 @@ class EnhancedCassandraLangChainVectorStore(EnhancedLangChainVectorStore, Cassan
             return docs
 
 
-class EnhancedAstraDBLlamaIndexVectorStore(
+class EnhancedCassandraLlamaIndexVectorStore(
     EnhancedLlamaIndexVectorStore, CassandraVectorStore
 ):
     def put_document(
@@ -133,7 +125,9 @@ class CassandraVectorStoreTestContext(VectorStoreTestContext):
         self.handler = handler
         self.test_id = "test_id" + random_string()
 
-    def new_langchain_vector_store(self, **kwargs) -> LangChainVectorStore:
+    def new_langchain_vector_store(
+        self, **kwargs
+    ) -> EnhancedCassandraLangChainVectorStore:
         return EnhancedCassandraLangChainVectorStore(
             session=self.handler.cassandra_session,
             keyspace="default_keyspace",
@@ -150,8 +144,10 @@ class CassandraVectorStoreTestContext(VectorStoreTestContext):
             **kwargs,
         )
 
-    def new_llamaindex_vector_store(self, **kwargs) -> LlamaIndexVectorStore:
-        return EnhancedAstraDBLlamaIndexVectorStore(
+    def new_llamaindex_vector_store(
+        self, **kwargs
+    ) -> EnhancedCassandraLlamaIndexVectorStore:
+        return EnhancedCassandraLlamaIndexVectorStore(
             session=self.handler.cassandra_session,
             keyspace="default_keyspace",
             table=self.handler.test_table_name,

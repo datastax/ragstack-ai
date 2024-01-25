@@ -10,9 +10,7 @@ import cassio
 from langchain_community.chat_message_histories import AstraDBChatMessageHistory
 from langchain_community.vectorstores.astradb import AstraDB
 from langchain_core.chat_history import BaseChatMessageHistory
-from langchain_core.vectorstores import VectorStore as LangChainVectorStore
 from llama_index.vector_stores import AstraDBVectorStore
-from llama_index.vector_stores.types import VectorStore as LlamaIndexVectorStore
 
 from e2e_tests.test_utils import get_required_env, random_string
 from e2e_tests.test_utils.vector_store_handler import (
@@ -81,10 +79,97 @@ class DeleteCollectionHandler:
         self.executor.shutdown(wait=wait)
 
 
+class EnhancedAstraDBLangChainVectorStore(EnhancedLangChainVectorStore, AstraDB):
+    def put_document(
+        self, doc_id: str, document: str, metadata: dict, vector: List[float]
+    ) -> None:
+        self.collection.insert_one(
+            {
+                "_id": doc_id,
+                "document": document,
+                "metadata": metadata or {},
+                "$vector": vector,
+            }
+        )
+
+    def search_documents(self, vector: List[float], limit: int) -> List[str]:
+        results = self.collection.vector_find(
+            vector,
+            limit=limit,
+        )
+        docs = []
+        for result in results:
+            docs.append(result["document"])
+        return docs
+
+
+class EnhancedAstraDBLlamaIndexVectorStore(
+    EnhancedLlamaIndexVectorStore, AstraDBVectorStore
+):
+    def put_document(
+        self, doc_id: str, document: str, metadata: dict, vector: List[float]
+    ) -> None:
+        self.client.insert_one(
+            {
+                "_id": doc_id,
+                "document": document,
+                "metadata": metadata or {},
+                "$vector": vector,
+            }
+        )
+
+    def search_documents(self, vector: List[float], limit: int) -> List[str]:
+        results = self.client.vector_find(
+            vector,
+            limit=limit,
+        )
+        docs = []
+        for result in results:
+            docs.append(result["document"])
+        return docs
+
+
+class AstraDBVectorStoreTestContext(VectorStoreTestContext):
+    def __init__(self, handler: "AstraDBVectorStoreHandler"):
+        super().__init__()
+        self.handler = handler
+        self.test_id = "test_id" + random_string()
+
+    def new_langchain_vector_store(
+        self, **kwargs
+    ) -> EnhancedAstraDBLangChainVectorStore:
+        return EnhancedAstraDBLangChainVectorStore(
+            collection_name=self.handler.astra_ref.collection,
+            token=self.handler.astra_ref.token,
+            api_endpoint=self.handler.astra_ref.api_endpoint,
+            **kwargs,
+        )
+
+    def new_langchain_chat_memory(self, **kwargs) -> BaseChatMessageHistory:
+        return AstraDBChatMessageHistory(
+            session_id=self.test_id,
+            token=self.handler.astra_ref.token,
+            api_endpoint=self.handler.astra_ref.api_endpoint,
+            collection_name=self.handler.astra_ref.collection + "_chat_memory",
+            **kwargs,
+        )
+
+    def new_llamaindex_vector_store(
+        self, **kwargs
+    ) -> EnhancedAstraDBLlamaIndexVectorStore:
+        return EnhancedAstraDBLlamaIndexVectorStore(
+            token=self.handler.astra_ref.token,
+            api_endpoint=self.handler.astra_ref.api_endpoint,
+            collection_name=self.handler.astra_ref.collection + "_chat_memory",
+            **kwargs,
+        )
+
+
 class AstraDBVectorStoreHandler(VectorStoreHandler):
-    def __init__(self):
+    def __init__(self, implementation: VectorStoreImplementation):
         super().__init__(
-            [VectorStoreImplementation.ASTRADB, VectorStoreImplementation.CASSANDRA]
+            implementation,
+            [VectorStoreImplementation.ASTRADB, VectorStoreImplementation.CASSANDRA],
         )
         env = os.environ.get("ASTRA_DB_ENV", "prod").lower()
         self.astra_ref = AstraRef(
@@ -129,14 +214,12 @@ class AstraDBVectorStoreHandler(VectorStoreHandler):
         if blocking:
             self.delete_collection_handler.await_ongoing_deletions_completed()
 
-    def before_test(
-        self, implementation: VectorStoreImplementation
-    ) -> VectorStoreTestContext:
-        super().before_test(implementation)
+    def before_test(self) -> AstraDBVectorStoreTestContext:
+        super().check_implementation()
         self.ensure_astra_env_clean(blocking=True)
         self.astra_ref.collection = "documents_" + random_string()
 
-        if implementation == VectorStoreImplementation.CASSANDRA:
+        if self.implementation == VectorStoreImplementation.CASSANDRA:
             # to run cassandra implementation over astra
             if self.astra_ref.env == "dev":
                 bundle_url_template = "https://api.dev.cloud.datastax.com/v2/databases/{database_id}/secureBundleURL"
@@ -149,87 +232,5 @@ class AstraDBVectorStoreHandler(VectorStoreHandler):
                 cassio.init(token=self.astra_ref.token, database_id=self.astra_ref.id)
         return AstraDBVectorStoreTestContext(self)
 
-    def after_test(self, implementation: VectorStoreImplementation):
+    def after_test(self):
         self.ensure_astra_env_clean(blocking=False)
-
-
-class EnhancedCassandraLangChainVectorStore(EnhancedLangChainVectorStore, AstraDB):
-    def put_document(
-        self, doc_id: str, document: str, metadata: dict, vector: List[float]
-    ) -> None:
-        self.collection.insert_one(
-            {
-                "_id": doc_id,
-                "document": document,
-                "metadata": metadata or {},
-                "$vector": vector,
-            }
-        )
-
-    def search_documents(self, vector: List[float], limit: int) -> List[str]:
-        results = self.collection.vector_find(
-            vector,
-            limit=limit,
-        )
-        docs = []
-        for result in results:
-            docs.append(result["document"])
-        return docs
-
-
-class EnhancedCassandraLlamaIndexVectorStore(
-    EnhancedLlamaIndexVectorStore, AstraDBVectorStore
-):
-    def put_document(
-        self, doc_id: str, document: str, metadata: dict, vector: List[float]
-    ) -> None:
-        self.client.insert_one(
-            {
-                "_id": doc_id,
-                "document": document,
-                "metadata": metadata or {},
-                "$vector": vector,
-            }
-        )
-
-    def search_documents(self, vector: List[float], limit: int) -> List[str]:
-        results = self.client.vector_find(
-            vector,
-            limit=limit,
-        )
-        docs = []
-        for result in results:
-            docs.append(result["document"])
-        return docs
-
-
-class AstraDBVectorStoreTestContext(VectorStoreTestContext):
-    def __init__(self, handler: AstraDBVectorStoreHandler):
-        super().__init__()
-        self.handler = handler
-        self.test_id = "test_id" + random_string()
-
-    def new_langchain_vector_store(self, **kwargs) -> LangChainVectorStore:
-        return EnhancedCassandraLangChainVectorStore(
-            collection_name=self.handler.astra_ref.collection,
-            token=self.handler.astra_ref.token,
-            api_endpoint=self.handler.astra_ref.api_endpoint,
-            **kwargs,
-        )
-
-    def new_langchain_chat_memory(self, **kwargs) -> BaseChatMessageHistory:
-        return AstraDBChatMessageHistory(
-            session_id=self.test_id,
-            token=self.handler.astra_ref.token,
-            api_endpoint=self.handler.astra_ref.api_endpoint,
-            collection_name=self.handler.astra_ref.collection + "_chat_memory",
-            **kwargs,
-        )
-
-    def new_llamaindex_vector_store(self, **kwargs) -> LlamaIndexVectorStore:
-        return EnhancedCassandraLlamaIndexVectorStore(
-            token=self.handler.astra_ref.token,
-            api_endpoint=self.handler.astra_ref.api_endpoint,
-            collection_name=self.handler.astra_ref.collection + "_chat_memory",
-            **kwargs,
-        )

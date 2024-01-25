@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod
 from enum import Enum
 from typing import List
 
@@ -13,47 +14,56 @@ class VectorStoreImplementation(Enum):
     CASSANDRA = "cassandra"
 
 
-class EnhancedLangChainVectorStore(LangChainVectorStore):
+class EnhancedVectorStore(ABC):
+    @abstractmethod
     def put_document(
         self, doc_id: str, document: str, metadata: dict, vector: List[float]
     ) -> None:
-        raise NotImplementedError()
+        """Put a document"""
 
+    @abstractmethod
     def search_documents(self, vector: List[float], limit: int) -> List[str]:
-        raise NotImplementedError()
+        """Search documents"""
 
 
-class EnhancedLlamaIndexVectorStore(LLamaIndexVectorStore):
-    def put_document(
-        self, doc_id: str, document: str, metadata: dict, vector: List[float]
-    ) -> None:
-        raise NotImplementedError()
-
-    def search(self, vector: List[float], limit: int) -> List[str]:
-        raise NotImplementedError()
+class EnhancedLangChainVectorStore(LangChainVectorStore, EnhancedVectorStore, ABC):
+    """Enhanced LangChain vector store"""
 
 
-class VectorStoreTestContext:
+class EnhancedLlamaIndexVectorStore(LLamaIndexVectorStore, EnhancedVectorStore, ABC):
+    """Enhanced Llama-Index vector store"""
+
+
+class VectorStoreTestContext(ABC):
+    @abstractmethod
     def new_langchain_vector_store(self, **kwargs) -> EnhancedLangChainVectorStore:
-        raise NotImplementedError()
+        """Create a new LangChain VectorStore"""
 
+    @abstractmethod
     def new_langchain_chat_memory(self, **kwargs) -> BaseChatMessageHistory:
-        raise NotImplementedError()
+        """Create a new LangChain Chat Memory"""
 
+    @abstractmethod
     def new_llamaindex_vector_store(self, **kwargs) -> EnhancedLlamaIndexVectorStore:
-        raise NotImplementedError()
+        """Create a new LLama-Index VectorStore"""
 
 
-class VectorStoreHandler:
-    def __init__(self, supported_implementations: List[VectorStoreImplementation]):
+class VectorStoreHandler(ABC):
+    def __init__(
+        self,
+        implementation: VectorStoreImplementation,
+        supported_implementations: List[VectorStoreImplementation],
+    ):
+        self.implementation = implementation
         self.supported_implementations = supported_implementations
 
-    def before_test(
-        self, implementation: VectorStoreImplementation
-    ) -> VectorStoreTestContext:
-        if implementation not in self.supported_implementations:
-            skip_test_due_to_implementation_not_supported(implementation)
-        return VectorStoreTestContext()
+    def check_implementation(self):
+        if self.implementation not in self.supported_implementations:
+            skip_test_due_to_implementation_not_supported(self.implementation.value)
 
-    def after_test(self, implementation: VectorStoreImplementation):
+    @abstractmethod
+    def before_test(self) -> VectorStoreTestContext:
+        pass
+
+    def after_test(self):
         pass

@@ -10,7 +10,10 @@ from e2e_tests.test_utils.astradb_vector_store_handler import AstraDBVectorStore
 from e2e_tests.test_utils.cassandra_vector_store_handler import (
     CassandraVectorStoreHandler,
 )
-from e2e_tests.test_utils.vector_store_handler import VectorStoreHandler
+from e2e_tests.test_utils.vector_store_handler import (
+    VectorStoreHandler,
+    VectorStoreImplementation,
+)
 from e2e_tests.test_utils import (
     get_required_env as root_get_required_env,
     is_skipped_due_to_implementation_not_supported,
@@ -52,14 +55,16 @@ vector_database_type = os.environ.get("VECTOR_DATABASE_TYPE", "astradb")
 if vector_database_type not in ["astradb", "local-cassandra"]:
     raise ValueError(f"Invalid VECTOR_DATABASE_TYPE: {vector_database_type}")
 
-if vector_database_type == "astradb":
-    vector_store_handler = AstraDBVectorStoreHandler()
-else:
-    vector_store_handler = CassandraVectorStoreHandler()
+is_astra = vector_database_type == "astradb"
 
 
-def get_vector_store_handler() -> VectorStoreHandler:
-    return vector_store_handler
+def get_vector_store_handler(
+    implementation: VectorStoreImplementation,
+) -> VectorStoreHandler:
+    if vector_database_type == "astradb":
+        return AstraDBVectorStoreHandler(implementation)
+    elif vector_database_type == "local-cassandra":
+        return CassandraVectorStoreHandler(implementation)
 
 
 failed_report_lines = []
