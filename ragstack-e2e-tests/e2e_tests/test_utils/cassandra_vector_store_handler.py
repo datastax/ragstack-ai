@@ -32,6 +32,7 @@ from e2e_tests.test_utils.vector_store_handler import (
 
 class CassandraVectorStoreHandler(VectorStoreHandler):
     cassandra_container = None
+
     def __init__(self, implementation: VectorStoreImplementation) -> None:
         super().__init__(implementation, [VectorStoreImplementation.CASSANDRA])
         self.cassandra_session = None
@@ -50,7 +51,9 @@ class CassandraVectorStoreHandler(VectorStoreHandler):
                 logging.info("Cassandra container started")
             else:
                 logging.info("Cassandra container already started")
-            cassandra_port = CassandraVectorStoreHandler.cassandra_container.get_mapped_port()
+            cassandra_port = (
+                CassandraVectorStoreHandler.cassandra_container.get_mapped_port()
+            )
         else:
             logging.info("Connecting to local Cassandra instance")
             cassandra_port = 9042
