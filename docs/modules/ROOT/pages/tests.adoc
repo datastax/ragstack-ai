@@ -4,13 +4,13 @@ The latest RAGStack test reports are available https://ragstack-ai.testspace.com
 
 RAGStack uses https://tox.wiki/en/4.11.4/[tox]{external-link-icon} to orchestrate testing the current version of RAGStack against a test matrix. Tox leverages https://python-poetry.org/[Poetry]{external-link-icon} for managing dependencies within the test environments.
 
-For the test source code, see https://github.com/datastax/ragstack-ai/tree/main/ragstack-e2e-tests[ragstack-e2e-tests]{external-link-icon}.
-
 == Why is this important?
 
 Generative AI moves very quickly. The RAGStack test suite is designed to ensure that the RAGStack components are working together as expected, no matter what new features are added or what new versions of the underlying components are released upstream.
 
 This thoroughly tested approach allows your enterprise to confidently deploy RAGStack in production without worrying about breaking changes.
+
+For the test source code, see https://github.com/datastax/ragstack-ai/tree/main/ragstack-e2e-tests[ragstack-e2e-tests]{external-link-icon}.
 
 == Testspace reports
 
@@ -23,21 +23,6 @@ Tests are run on every commit to the main branch and on every pull request.
 [cols="3*", options="header"]
 |===
 | Suite and Environment | Tested Components | Tests Run
-
-| RAGStack test suite - LlamaIndex dev - DSE
-| Tests LlamaIndex against DSE snapshot
-| e2e_tests.langchain.test_compatibility_rag
-e2e_tests.langchain.test_document_loaders
-e2e_tests.llama_index.test_compatibility_rag
-
-| RAGStack test suite - LLamaIndex dev - AstraDB
-| Tests LLamaIndex against AstraDB snapshot
-| e2e_tests.langchain.test_astra
-e2e_tests.langchain.test_compatibility_rag
-e2e_tests.langchain.test_document_loaders
-e2e_tests.langchain_llamaindex.test_astra
-e2e_tests.llama_index.test_astra
-e2e_tests.llama_index.test_compatibility_rag
 
 | RAGStack test suite - LangChain dev - DSE
 | Tests LangChain against DSE snapshot
@@ -62,6 +47,21 @@ e2e_tests.llama_index.test_compatibility_rag
 
 | RAGStack test suite - RAGStack dev - AstraDB
 | Tests RAGStack against AstraDB snapshot
+| e2e_tests.langchain.test_astra
+e2e_tests.langchain.test_compatibility_rag
+e2e_tests.langchain.test_document_loaders
+e2e_tests.langchain_llamaindex.test_astra
+e2e_tests.llama_index.test_astra
+e2e_tests.llama_index.test_compatibility_rag
+
+| RAGStack test suite - LlamaIndex dev - DSE
+| Tests LlamaIndex against DSE snapshot
+| e2e_tests.langchain.test_compatibility_rag
+e2e_tests.langchain.test_document_loaders
+e2e_tests.llama_index.test_compatibility_rag
+
+| RAGStack test suite - LLamaIndex dev - AstraDB
+| Tests LLamaIndex against AstraDB snapshot
 | e2e_tests.langchain.test_astra
 e2e_tests.langchain.test_compatibility_rag
 e2e_tests.langchain.test_document_loaders
@@ -138,7 +138,7 @@ e2e_tests.llama_index.test_compatibility_rag
 | Tests the AstraDBLoader, which loads documents from an AstraDB database. The test inserts sample documents into an AstraDB collection and then uses the loader to fetch and verify the documents. It checks the content (which is a payload derived from the database records), the uniqueness of document IDs, and the metadata.
 |===
 
-=== langchain_llamaindex.test_astra
+=== e2e_tests.langchain_llamaindex.test_astra
 [cols="1,3", options="header"]
 |===
 | Test | Description
@@ -166,15 +166,6 @@ e2e_tests.llama_index.test_compatibility_rag
 
 | `test_vector_search_with_metadata`
 | Assesses vector search functionality with metadata filters. It involves indexing documents with specific metadata and performing searches using these metadata as filters, aiming to verify accurate and consistent search results with the applied metadata filters.
-
-| `verify_document`
-| A utility function used within tests to check whether a retrieved document matches the expected content and metadata. Essential for validating the correctness of search and retrieval operations.
-
-| `environment fixture`
-| Sets up the test environment for the other tests, including initializing the vector store, configuring a language model (LLM), and setting up mock embeddings. Ensures a consistent and controlled environment for each test.
-
-| `MockEmbeddings`
-| A mock class simulating the behavior of an embedding generation system. Provides methods for generating embeddings for documents and queries, essential for testing the vector search functionality.
 |===
 
 === .e2e_tests.llama_index.test_compatibility_rag
@@ -207,6 +198,15 @@ e2e_tests.llama_index.test_compatibility_rag
 | Verifies the correct integration and functioning of different vector store implementations (AstraDB, Cassandra) with the language models and embeddings, ensuring seamless operation across various storage solutions.
 |===
 
+== Navigate Testspace dashboard
 
+Tests are presented in a hierarchical structure.
 
-
+To navigate from your Testspace Project down to an individual test case, select each item in the hierarchy to drill down to the next level.
+[source,plain]
+----
+* Project (contains spaces) Example: `ragstack-ai`
+** Space (contains test sequences) Example: `RAGStack test suite - LangChain dev - DSE`
+*** Test sequence (contains tests) Example: `e2e_tests.langchain.test_compatibility_rag`
+**** Test cases (passed, failed, skipped, etc.) Example: `Test rag: openai embedding | openai llm | cassandra | rag custom chain`
+----
