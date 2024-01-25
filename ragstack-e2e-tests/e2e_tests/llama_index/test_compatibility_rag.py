@@ -284,7 +284,7 @@ def gemini_pro_vision_llm():
     "embedding,llm",
     [
         # disable due to this bug: https://github.com/googleapis/python-aiplatform/issues/3227
-        #("vertex_gemini_multimodal_embedding", "vertex_gemini_pro_vision_llm"),
+        # ("vertex_gemini_multimodal_embedding", "vertex_gemini_pro_vision_llm"),
         ("vertex_gemini_multimodal_embedding", "gemini_pro_vision_llm"),
     ],
 )
