@@ -36,7 +36,7 @@ def test_csv_loader():
         assert doc1.metadata == {"row": 0, "source": temp_csv_file.name}
 
 
-def test_web_based_loader(t, c):
+def test_web_based_loader():
     set_current_test_info_document_loader("web")
     loader = WebBaseLoader(
         ["https://langstream.ai/changelog/", "https://langstream.ai/faq/"]
