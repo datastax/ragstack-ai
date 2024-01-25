@@ -1,19 +1,24 @@
 = What Tests Are Run?
 
-image:https://github.com/datastax/ragstack-ai/actions/workflows/ragstack-ai-latest.yml/badge.svg[Status,link=https://github.com/datastax/ragstack-ai/actions/workflows/ragstack-ai-latest.yml]
-
-Latest RAGStack test reports available https://ragstack-ai.testspace.com/projects/67980/spaces[here]{external-link-icon}.
+The latest RAGStack test reports are available https://ragstack-ai.testspace.com/projects/67980/spaces[here]{external-link-icon}.
 
 RAGStack uses https://tox.wiki/en/4.11.4/[tox]{external-link-icon} to orchestrate testing the current version of RAGStack against a test matrix. Tox leverages https://python-poetry.org/[Poetry]{external-link-icon} for managing dependencies within the test environments.
 
 For the test source code, see https://github.com/datastax/ragstack-ai/tree/main/ragstack-e2e-tests[ragstack-e2e-tests]{external-link-icon}.
 
+== Why is this important?
+
+Generative AI moves very quickly. The RAGStack test suite is designed to ensure that the RAGStack components are working together as expected, no matter what new features are added or what new versions of the underlying components are released upstream.
+
+This thoroughly tested approach allows your enterprise to confidently deploy RAGStack in production without worrying about breaking changes.
+
 == Testspace reports
 
 RAGStack tests are published to https://ragstack-ai.testspace.com/[Testspace]{external-link-icon}.
 
-Tests are run 
+Tests are run on every commit to the main branch and on every pull request.
 
+=== Test suites
 [%autowidth]
 [cols="3*", options="header"]
 |===
@@ -145,7 +150,6 @@ e2e_tests.llama_index.test_compatibility_rag
 | Purpose: This test ingests a document using LangChain and retrieves it using LlamaIndex, the opposite of the first test. Steps involve ingesting with LangChain's AstraDB, retrieving with LlamaIndex's VectorStoreIndex, and performing metadata filtering with LlamaIndex's filters.
 |===
 
-
 === .e2e_tests.llama_index.test_astra
 [cols="1,3", options="header"]
 |===
@@ -202,5 +206,7 @@ e2e_tests.llama_index.test_compatibility_rag
 | `Vector Store Integration`
 | Verifies the correct integration and functioning of different vector store implementations (AstraDB, Cassandra) with the language models and embeddings, ensuring seamless operation across various storage solutions.
 |===
+
+
 
 
