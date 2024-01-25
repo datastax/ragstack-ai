@@ -18,6 +18,20 @@ from e2e_tests.test_utils import (
 
 LOGGER = logging.getLogger(__name__)
 
+DIR_PATH = os.path.dirname(os.path.abspath(__file__))
+
+
+# Loading the .env file if it exists
+def _load_env() -> None:
+    dotenv_path = os.path.join(DIR_PATH, os.pardir, ".env")
+    if os.path.exists(dotenv_path):
+        from dotenv import load_dotenv
+
+        load_dotenv(dotenv_path)
+
+
+_load_env()
+
 
 logging.basicConfig(
     level=logging.INFO,
