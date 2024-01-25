@@ -2,7 +2,7 @@ name: RAGStack CI
 on:
   workflow_dispatch: {}
   schedule:
-    - cron: "0 0 * * *"
+    - cron: "0 */6 * * *"
   pull_request:
     paths-ignore:
       - ".github/workflows/langchain-master-daily.yml"
@@ -115,7 +115,7 @@ jobs:
             region: us-west-2
             cloud: aws
             run_notebooks: "false"
-            testspace_space: "ragstack-ai-main-branch"
+            testspace_space: "RAGStack suite - RAGStack dev - AstraDB"
 
           - name: DSE
             type: "local-cassandra"
@@ -125,7 +125,7 @@ jobs:
             region: ""
             cloud: ""
             run_notebooks: "false"
-            testspace_space: "ragstack-ai-main-branch-DSE"
+            testspace_space: "RAGStack suite - RAGStack dev - DSE"
 
     steps:
       - name: Check out the repo
@@ -223,7 +223,8 @@ jobs:
 
       - name: Testspace deploy report
         uses: ./.github/actions/deploy-testspace-report
-        if: always() && matrix.testspace_space != '' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+        #if: always() && matrix.testspace_space != '' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+        if: always() && matrix.testspace_space != ''
         with:
           token: ${{ secrets.TESTSPACE_TOKEN }}
           report-file: ragstack-e2e-tests/results.xml
