@@ -1,7 +1,6 @@
 from enum import Enum
 from typing import List
 
-import pytest
 from langchain_core.chat_history import BaseChatMessageHistory
 from langchain_core.vectorstores import VectorStore as LangChainVectorStore
 from llama_index.vector_stores.types import VectorStore as LLamaIndexVectorStore
