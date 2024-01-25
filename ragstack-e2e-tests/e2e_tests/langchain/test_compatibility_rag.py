@@ -35,6 +35,7 @@ from vertexai.vision_models import MultiModalEmbeddingModel, Image
 from e2e_tests.test_utils.tracing import record_langsmith_sharelink
 from e2e_tests.test_utils.vector_store_handler import VectorStoreImplementation
 
+
 @pytest.fixture
 def astra_db():
     handler = get_vector_store_handler(VectorStoreImplementation.ASTRADB)
