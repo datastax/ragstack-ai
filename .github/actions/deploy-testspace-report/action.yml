@@ -23,6 +23,7 @@ inputs:
 runs:
     using: 'composite'
     steps:
+
       - run: |
           base_url=https://testspace-client.s3.amazonaws.com
           version=""
@@ -52,6 +53,8 @@ runs:
           esac
           echo "$folder" >> $GITHUB_PATH
         shell: bash
+      - run: python ./scripts/postprocess-test-results.py "${{ inputs.report-file }}" postprocessed-results.xml
+        shell: bash
       - run: |
-          testspace "${{ inputs.report-file }}" "${{ inputs.token }}@${{ inputs.repository }}.testspace.com/${{ inputs.project }}/${{ inputs.space }}"
+          testspace postprocessed-results.xml "${{ inputs.token }}@${{ inputs.repository }}.testspace.com/${{ inputs.project }}/${{ inputs.space }}"
         shell: bash
