@@ -25,11 +25,18 @@ def main(input_file: str, output_file: str):
     # Find the element you want to modify and change its attribute or text
     for test_suites in root.iter("testsuites"):  # replace 'element_name' with the name of the element you want to find
         for test_suite in test_suites.iter("testsuite"):
+            to_remove = []
             test_suite.set("hostname", "RAGStack CI")
             for test_case in test_suite.iter("testcase"):
-                if test_case.find("skipped") is not None:
-                    test_suite.remove(test_case)
-                test_case.set("name", rewrite_name(test_case.get("name")))
+                print("processing test case: " + str(test_case.attrib))
+                if test_case.find("skipped") is not None or not test_case.get("name"):
+                    to_remove.append(test_case)
+                else:
+                    test_case.set("name", rewrite_name(test_case.get("name")))
+
+            for test_case in to_remove:
+                print("removing test case: " + str(test_case.attrib))
+                test_suite.remove(test_case)
 
     print(f"Writing modified file to {output_file}")
     tree.write(output_file)
