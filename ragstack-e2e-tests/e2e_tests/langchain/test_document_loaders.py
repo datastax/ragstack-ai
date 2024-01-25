@@ -1,15 +1,23 @@
 import io
+import json
 import os
 import tempfile
 import uuid
 from urllib.parse import urlparse
 
 import boto3
+import pytest
 from azure.storage.blob import ContainerClient
-from e2e_tests.conftest import set_current_test_info, get_required_env
+from e2e_tests.conftest import set_current_test_info, get_required_env, is_astra
 
 from langchain.document_loaders import CSVLoader, WebBaseLoader, S3DirectoryLoader
-from langchain_community.document_loaders import AzureBlobStorageContainerLoader
+from langchain_community.document_loaders import (
+    AzureBlobStorageContainerLoader,
+    AstraDBLoader,
+)
+
+from e2e_tests.test_utils.astradb_vector_store_handler import AstraDBVectorStoreHandler
+from e2e_tests.test_utils.vector_store_handler import VectorStoreImplementation
 
 
 def set_current_test_info_document_loader(doc_loader: str):
@@ -126,3 +134,48 @@ def test_azure_blob_doc_loader():
             blob_client.delete_blob()
     finally:
         container_client.delete_container()
+
+
+@pytest.mark.skipif(
+    not is_astra, reason="Skipping test because astradb is not supported"
+)
+def test_astradb_loader() -> None:
+    set_current_test_info_document_loader("astradb")
+
+    handler = AstraDBVectorStoreHandler(VectorStoreImplementation.ASTRADB)
+    handler.before_test()
+    astra_ref = handler.astra_ref
+
+    collection = handler.default_astra_client.create_collection(astra_ref.collection)
+
+    collection.insert_many([{"foo": "bar", "baz": "qux"}] * 20)
+    collection.insert_many(
+        [{"foo": "bar2", "baz": "qux"}] * 4 + [{"foo": "bar", "baz": "qux"}] * 4
+    )
+
+    loader = AstraDBLoader(
+        astra_ref.collection,
+        token=astra_ref.token,
+        api_endpoint=astra_ref.api_endpoint,
+        nb_prefetched=1,
+        projection={"foo": 1},
+        find_options={"limit": 22},
+        filter_criteria={"foo": "bar"},
+        extraction_function=lambda r: "Payload: " + json.dumps(r),
+    )
+    docs = loader.load()
+
+    assert len(docs) == 22
+    ids = set()
+    for doc in docs:
+        assert doc.page_content.startswith("Payload: ")
+        content = json.loads(doc.page_content[9:])
+        assert content["foo"] == "bar"
+        assert "baz" not in content
+        assert content["_id"] not in ids
+        ids.add(content["_id"])
+        assert doc.metadata == {
+            "namespace": "default_keyspace",
+            "api_endpoint": astra_ref.api_endpoint,
+            "collection": astra_ref.collection,
+        }
