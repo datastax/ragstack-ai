@@ -6,6 +6,8 @@ from langchain_core.chat_history import BaseChatMessageHistory
 from langchain_core.vectorstores import VectorStore as LangChainVectorStore
 from llama_index.vector_stores.types import VectorStore as LLamaIndexVectorStore
 
+from e2e_tests.test_utils import skip_test_due_to_implementation_not_supported
+
 
 class VectorStoreImplementation(Enum):
     ASTRADB = "astradb"
@@ -51,7 +53,7 @@ class VectorStoreHandler:
         self, implementation: VectorStoreImplementation
     ) -> VectorStoreTestContext:
         if implementation not in self.supported_implementations:
-            pytest.skip(f"Skipping test because {implementation} is not configured")
+            skip_test_due_to_implementation_not_supported(implementation)
         return VectorStoreTestContext()
 
     def after_test(self, implementation: VectorStoreImplementation):
