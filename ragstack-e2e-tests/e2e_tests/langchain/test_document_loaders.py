@@ -36,15 +36,6 @@ def test_csv_loader():
         assert doc1.metadata == {"row": 0, "source": temp_csv_file.name}
 
 
-import pytest
-@pytest.mark.parametrize(
-    "t",
-    ["a_xx", "b"],
-)
-@pytest.mark.parametrize(
-    "c",
-    ["xx", "xx_cc"],
-)
 def test_web_based_loader(t, c):
     set_current_test_info_document_loader("web")
     loader = WebBaseLoader(
