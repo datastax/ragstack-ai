@@ -345,7 +345,7 @@ def get_local_resource_path(filename: str):
     return os.path.join(e2e_tests_dir, "resources", filename)
 
 
-@pytest.mark.parametrize("chat", ["vertex_gemini_pro_llm"])  # , "gemini_pro_llm"],
+@pytest.mark.parametrize("chat", ["vertex_gemini_pro_llm", "gemini_pro_llm"])
 def test_chat(chat, request, record_property):
     set_current_test_info(
         "langchain::chat",
