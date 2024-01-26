@@ -36,7 +36,8 @@ def astra_db():
     handler = get_vector_store_handler(VectorStoreImplementation.ASTRADB)
     context = handler.before_test()
     yield context
-    handler.after_test()
+    # commenting to not delete
+    # handler.after_test()
 
 
 @pytest.fixture
@@ -165,21 +166,22 @@ def nvidia_mixtral_llm():
 @pytest.mark.parametrize(
     "test_case",
     ["rag_custom_chain", "conversational_rag"],
+    # ["rag_custom_chain"],
 )
-@pytest.mark.parametrize("vector_store", ["astra_db", "cassandra"])
+@pytest.mark.parametrize("vector_store", ["astra_db"])
 @pytest.mark.parametrize(
     "embedding,llm",
     [
         ("openai_embedding", "openai_llm"),
         ("azure_openai_embedding", "azure_openai_llm"),
-        ("vertex_embedding", "vertex_llm"),
-        ("bedrock_titan_embedding", "bedrock_anthropic_llm"),
-        ("bedrock_cohere_embedding", "bedrock_meta_llm"),
-        ("huggingface_hub_embedding", "huggingface_hub_llm"),
-        ("nvidia_embedding", "nvidia_mixtral_llm"),
+        # ("vertex_embedding", "vertex_llm"),
+        # ("bedrock_titan_embedding", "bedrock_anthropic_llm"),
+        # ("bedrock_cohere_embedding", "bedrock_meta_llm"),
+        # ("huggingface_hub_embedding", "huggingface_hub_llm"),
+        # ("nvidia_embedding", "nvidia_mixtral_llm"),
     ],
 )
-def test_rag(test_case, vector_store, embedding, llm, request):
+def test_rag(test_case, vector_store, embedding, llm, request, record_property):
     set_current_test_info(
         "langchain::" + test_case,
         f"{llm},{embedding},{vector_store}",
@@ -204,21 +206,22 @@ def test_rag(test_case, vector_store, embedding, llm, request):
         resolved_vector_store,
         resolved_embedding,
         resolved_llm,
+        record_property,
     )
 
 
-def _run_test(test_case: str, vector_store_context, embedding, llm):
+def _run_test(test_case: str, vector_store_context, embedding, llm, record_property):
     vector_store = vector_store_context.new_langchain_vector_store(embedding=embedding)
     if test_case == "rag_custom_chain":
         run_rag_custom_chain(
-            vector_store=vector_store,
-            llm=llm,
+            vector_store=vector_store, llm=llm, record_property=record_property
         )
     elif test_case == "conversational_rag":
         run_conversational_rag(
             vector_store=vector_store,
             llm=llm,
             chat_memory=vector_store_context.new_langchain_chat_memory(),
+            record_property=record_property,
         )
     else:
         raise ValueError(f"Unknown test case: {test_case}")

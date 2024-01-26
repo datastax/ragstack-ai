@@ -16,8 +16,11 @@ from langchain.schema.runnable import (
     RunnableLambda,
     RunnableMap,
 )
+from langchain.callbacks.tracers import LangChainTracer
 from langchain_core.chat_history import BaseChatMessageHistory
 from langchain_core.tracers import ConsoleCallbackHandler
+from langchain import callbacks
+from langsmith import Client
 from pydantic import BaseModel
 
 from langchain.prompts import PromptTemplate
@@ -67,6 +70,9 @@ Chat History:
 {chat_history}
 Follow Up Input: {question}
 Standalone Question:"""
+
+
+LANGSMITH_CLIENT = Client()
 
 
 class ChatRequest(BaseModel):
@@ -159,7 +165,9 @@ def create_chain(
     )
 
 
-def run_rag_custom_chain(vector_store: VectorStore, llm: BaseLanguageModel) -> None:
+def run_rag_custom_chain(
+    vector_store: VectorStore, llm: BaseLanguageModel, record_property
+) -> None:
     vector_store.add_texts(
         [
             "MyFakeProductForTesting is a versatile testing tool designed to streamline the testing process for software developers, quality assurance professionals, and product testers. It provides a comprehensive solution for testing various aspects of applications and systems, ensuring robust performance and functionality.",  # noqa: E501
@@ -173,12 +181,20 @@ def run_rag_custom_chain(vector_store: VectorStore, llm: BaseLanguageModel) -> N
         llm,
         retriever,
     )
-    response = answer_chain.invoke(
-        {
-            "question": "When was released MyFakeProductForTesting for the first time ?",
-            "chat_history": [],
-        }
-    )
+
+    with callbacks.collect_runs() as cb:
+        tracer = LangChainTracer(project_name="default")
+        response = answer_chain.invoke(
+            {
+                "question": "When was released MyFakeProductForTesting for the first time ?",
+                "chat_history": [],
+            },
+            config={"callbacks": [tracer]},
+        )
+
+        run_id = cb.traced_runs[0].id
+        record_langsmith_sharelink(LANGSMITH_CLIENT, run_id, record_property)
+
     logging.info("Got response: " + response)
     assert "2020" in response
 
@@ -187,6 +203,7 @@ def run_conversational_rag(
     vector_store: VectorStore,
     llm: BaseLanguageModel,
     chat_memory: BaseChatMessageHistory,
+    record_property,
 ) -> None:
     logging.info("Starting to add texts to vector store")
     start = time.perf_counter_ns()
@@ -213,10 +230,38 @@ def run_conversational_rag(
         memory=memory,
         callbacks=[ConsoleCallbackHandler()],
     )
-    result = conversation({"question": "what is MyFakeProductForTesting?"})
-    logging.info("First result: " + str(result))
 
-    result = conversation({"question": "and when was it released?"})
-    logging.info("Second result: " + str(result))
+    tracer = LangChainTracer(project_name="default")
+
+    with callbacks.collect_runs() as cb:
+        result = conversation.invoke(
+            {"question": "what is MyFakeProductForTesting?"},
+            config={"callbacks": [tracer]},
+        )
+        run_id = cb.traced_runs[0].id
+        record_langsmith_sharelink(LANGSMITH_CLIENT, run_id, record_property)
+        logging.info("First result: " + str(result))
+
+    with callbacks.collect_runs() as cb:
+        result = conversation.invoke(
+            {"question": "and when was it released?"},
+            config={"callbacks": [tracer]},
+        )
+        run_id = cb.traced_runs[0].id
+        record_langsmith_sharelink(LANGSMITH_CLIENT, run_id, record_property)
+        logging.info("Second result: " + str(result))
 
     assert "2020" in result["answer"]
+
+
+def record_langsmith_sharelink(client, run_id, record_property, tries=5):
+    try:
+        sharelink = client.share_run(run_id)
+        record_property("run_id", sharelink)
+        logging.info("recorded langsmith link: " + sharelink)
+    except Exception as e:
+        # runs take a second to show up in the api
+        if tries < 0:
+            raise e
+        time.sleep(3)
+        record_langsmith_sharelink(client, run_id, record_property, tries - 1)
