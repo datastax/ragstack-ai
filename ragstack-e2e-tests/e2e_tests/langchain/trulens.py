@@ -12,10 +12,15 @@ from langchain.prompts import PromptTemplate
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.vectorstores import VectorStoreRetriever
 
-from e2e_tests.langchain.rag_application import BASIC_QA_PROMPT, SAMPLE_DATA, format_docs
+from e2e_tests.langchain.rag_application import (
+    BASIC_QA_PROMPT,
+    SAMPLE_DATA,
+    format_docs,
+)
 
 import numpy as np
 from concurrent.futures import as_completed
+
 
 def _feedback_functions(chain: Runnable, llm: BaseLanguageModel) -> list[Feedback]:
     provider = Langchain(chain=llm)
@@ -43,6 +48,7 @@ def _initialize_tru() -> Tru:
     tru = Tru()
     tru.reset_database()
     return tru
+
 
 def _create_chain(retriever: VectorStoreRetriever, llm: BaseLanguageModel) -> Runnable:
     prompt = PromptTemplate.from_template(BASIC_QA_PROMPT)
