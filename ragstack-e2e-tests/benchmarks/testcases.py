@@ -1,3 +1,4 @@
+import os
 import sys
 
 from langchain.text_splitter import CharacterTextSplitter
@@ -98,13 +99,13 @@ def embeddings_batch100_chunk512(embeddings_fn):
 
 
 def openai_ada002(batch_size):
-    return OpenAIEmbeddings(chunk_size=batch_size)
+    return OpenAIEmbeddings(chunk_size=batch_size, api_key=os.environ.get("OPEN_AI_KEY"))
 
 
 def nvidia_nvolveqa40k(batch_size):
     # 50 is the max supported batch size
     return NVIDIAEmbeddings(
-        model="nvolveqa_40k", max_batch_size=min(batch_size, 50), model_type="query"
+        model="nvolveqa_40k", max_batch_size=max(50, batch_size), model_type="query"
     )
 
 
