@@ -36,7 +36,10 @@ jobs:
           cd ragstack-e2e-tests
           poetry install --no-root
           poetry run python benchmarks/runner.py -t all -i ${{ github.event.inputs.intensity }}
-          poetry run python benchmarks/visualize.py
+          
+          poetry run python benchmarks/visualize.py --format table > report.txt
+          poetry run python benchmarks/visualize.py --format plot_svg
+          cat benchmarks/reports/plot.svg
 
       - name: Dump logs
         if: always()
@@ -45,3 +48,23 @@ jobs:
           if [ -f "testcases.log" ]; then
             cat testcases.log
           fi
+
+      - name: Upload report
+        env:
+          OPEN_AI_KEY: "${{ secrets.E2E_TESTS_OPEN_AI_KEY }}"
+          NVIDIA_API_KEY: "${{ secrets.E2E_TESTS_NVIDIA_API_KEY }}"
+        run: |
+          cp report.txt /tmp/report.txt
+          cp benchmarks/reports/plot.svg /tmp/plot.svg
+          git reset --hard
+          git fetch origin gh-pages
+          git checkout gh-pages
+          git pull --rebase origin gh-pages
+          mkdir -p benchmarks/reports
+          # create a dir with today and now in format yyyy-mm-dd HH:mm:ss
+          dir=benchmarks/reports/$(date +"%Y-%m-%d %H:%M:%S")
+          mkdir -p $dir
+          cp /tmp/plot.svg $dir/plot.svg
+          cp /tmp/report.txt $dir/report.txt
+          git commit -am "Update benchmarks ${{ github.run_id }}"
+          git push origin gh-pages 

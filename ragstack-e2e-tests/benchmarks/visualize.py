@@ -30,7 +30,7 @@ def scan_result_directory(directory_path, filter_by):
     return sorted(values, key=lambda v: v["values"]["p99"])
 
 
-def render_plot(values):
+def render_plot(values, export_to: str, show: bool = False):
     plt.figure(figsize=(10, 8))
     cols = []
     rows = []
@@ -50,7 +50,10 @@ def render_plot(values):
     plt.legend(bbox_to_anchor=(0, -0.2), loc="upper left", ncol=1)
     plt.grid(True)
     plt.subplots_adjust(bottom=0.5)
-    plt.show()
+    plt.savefig(export_to)
+    if show:
+        plt.show()
+
 
 
 def render_table(values):
@@ -71,8 +74,8 @@ def render_table(values):
 
 def draw_report(directory_path: str, format: str, filter_by: str):
     values = scan_result_directory(directory_path, filter_by)
-    if format == "plot":
-        render_plot(values)
+    if format == "plot" or format == "plot_svg":
+        render_plot(values, export_to=os.path.join(directory_path, "plot.svg"), show=format == "plot")
     else:
         render_table(values)
 
@@ -90,7 +93,7 @@ if __name__ == "__main__":
         default=os.path.join(os.path.dirname(__file__), "reports"),
         help="Reports dir",
     )
-    parser.add_argument("--format", choices=["table", "plot"], default="table")
+    parser.add_argument("--format", choices=["table", "plot", "plot_svg"], default="table")
     parser.add_argument(
         "-f",
         "--filter",
