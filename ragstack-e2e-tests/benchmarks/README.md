@@ -12,7 +12,7 @@ export NVIDIA_API_KEY=<your key>
 
 Then you can run the benchmark with the following command:
 ```
-poetry run python benchmarks/runner.py -t * 
+poetry run python benchmarks/runner.py -t all
 ```
 
 After the run, all the reports are stored in the `reports` folder.
