@@ -141,7 +141,7 @@ def parse_report(input_file: str):
                 report_test_case = TestCase(
                     name=rewrite_name(test_case.get("name")),
                     passed=passed,
-                    time=test_case.get("time"),
+                    time=str(float(test_case.get("time")) * 1000),
                     failure_error_title=failure_error_title,
                     failure_error_message=failure_error_message,
                     links=links,
