@@ -53,8 +53,8 @@ runs:
           esac
           echo "$folder" >> $GITHUB_PATH
         shell: bash
-      - run: python ./scripts/postprocess-test-results.py "${{ inputs.report-file }}" postprocessed-results.xml
+      - run: python ./scripts/generate-testspace-report.py "${{ inputs.report-file }}" testspace-report.xml
         shell: bash
       - run: |
-          testspace postprocessed-results.xml "${{ inputs.token }}@${{ inputs.repository }}.testspace.com/${{ inputs.project }}/${{ inputs.space }}"
+          testspace testspace-report.xml "${{ inputs.token }}@${{ inputs.repository }}.testspace.com/${{ inputs.project }}/${{ inputs.space }}"
         shell: bash
