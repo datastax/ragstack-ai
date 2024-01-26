@@ -105,7 +105,7 @@ def openai_ada002(batch_size):
 def nvidia_nvolveqa40k(batch_size):
     # 50 is the max supported batch size
     return NVIDIAEmbeddings(
-        model="nvolveqa_40k", max_batch_size=batch_size, model_type="query"
+        model="nvolveqa_40k", max_batch_size=max(50, batch_size), model_type="query"
     )
 
 
