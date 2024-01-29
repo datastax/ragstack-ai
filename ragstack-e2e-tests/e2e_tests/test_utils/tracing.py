@@ -8,7 +8,7 @@ LANGSMITH_CLIENT = Client()
 
 
 def record_langsmith_sharelink(
-    run_id: str, record_property: Callable, tries: int = 5
+    run_id: str, record_property: Callable, tries: int = 10
 ) -> None:
     try:
         sharelink = LANGSMITH_CLIENT.share_run(run_id)
@@ -18,5 +18,5 @@ def record_langsmith_sharelink(
         # runs take a second to show up in the api
         if tries < 0:
             raise e
-        time.sleep(3)
+        time.sleep(5)
         record_langsmith_sharelink(run_id, record_property, tries - 1)
