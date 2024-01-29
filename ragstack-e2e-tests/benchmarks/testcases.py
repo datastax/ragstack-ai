@@ -3,7 +3,6 @@ import sys
 import logging
 
 
-
 from langchain.text_splitter import CharacterTextSplitter
 from langchain_community.embeddings import OpenAIEmbeddings
 from langchain_core.embeddings import Embeddings
@@ -102,7 +101,9 @@ def embeddings_batch100_chunk512(embeddings_fn):
 
 
 def openai_ada002(batch_size):
-    return OpenAIEmbeddings(chunk_size=batch_size, api_key=os.environ.get("OPEN_AI_KEY"))
+    return OpenAIEmbeddings(
+        chunk_size=batch_size, api_key=os.environ.get("OPEN_AI_KEY")
+    )
 
 
 def nvidia_nvolveqa40k(batch_size):

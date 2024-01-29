@@ -34,7 +34,7 @@ def get_values_for_testcase(test_case):
 
 
 def run_suite(
-        test_case: str, only_values_containing=[], loops=1, processes=1, report_dir="."
+    test_case: str, only_values_containing=[], loops=1, processes=1, report_dir="."
 ):
     all_values = get_values_for_testcase(test_case)
     if only_values_containing:
@@ -65,7 +65,7 @@ def run_suite(
             if os.path.exists(logs_file):
                 with open(logs_file, "r") as f:
                     print(f.read())
-            raise Exception(f"Error running suite")
+            raise Exception("Error running suite")
 
     if len(filenames) <= 1:
         print("Not enough files to compare")
