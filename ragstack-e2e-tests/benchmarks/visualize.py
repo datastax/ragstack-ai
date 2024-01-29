@@ -153,8 +153,7 @@ def draw_report(directory_path: str, format: str, filter_by: str):
             show=format == "plot",
         )
     elif format == "html":
-        render_html(values,
-                    export_to=os.path.join(directory_path, "report.html"))
+        render_html(values, export_to=os.path.join(directory_path, "report.html"))
     else:
         render_table(values)
 
