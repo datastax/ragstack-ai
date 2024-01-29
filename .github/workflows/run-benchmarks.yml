@@ -58,9 +58,12 @@ jobs:
 
           cp ragstack-e2e-tests/benchmarks/reports/report.html /tmp/report.html
           git reset --hard
+          git clean -df
+          git status
           git fetch origin gh-pages
           git checkout gh-pages
-          git pull --rebase origin gh-pages
+          git status
+          git reset --hard origin/gh-pages
           mkdir -p benchmarks/reports
           dir=benchmarks/reports/$(date +"%Y-%m-%d_%H-%M-%S")
           mkdir -p $dir
