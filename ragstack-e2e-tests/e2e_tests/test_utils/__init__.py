@@ -18,5 +18,13 @@ def get_required_env(name) -> str:
     return value
 
 
-def random_string():
+def random_string() -> str:
     return str(uuid.uuid4()).split("-")[0]
+
+
+def skip_test_due_to_implementation_not_supported(implementation: str) -> None:
+    pytest.skip(f"Skipping test because {implementation} is not supported")
+
+
+def is_skipped_due_to_implementation_not_supported(error: str) -> bool:
+    return "Skipping test because" in error and "is not supported" in error

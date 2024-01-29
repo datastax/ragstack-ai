@@ -11,11 +11,9 @@ from langchain_community.chat_message_histories import (
 )
 from langchain_community.vectorstores.cassandra import Cassandra
 from langchain_core.chat_history import BaseChatMessageHistory
-from langchain_core.vectorstores import VectorStore as LangChainVectorStore
 from llama_index.schema import TextNode
 from llama_index.vector_stores import CassandraVectorStore
 from llama_index.vector_stores.types import (
-    VectorStore as LlamaIndexVectorStore,
     VectorStoreQuery,
 )
 
@@ -33,28 +31,29 @@ from e2e_tests.test_utils.vector_store_handler import (
 
 
 class CassandraVectorStoreHandler(VectorStoreHandler):
-    def __init__(self):
-        super().__init__([VectorStoreImplementation.CASSANDRA])
-        self.cassandra_container = None
+    cassandra_container = None
+
+    def __init__(self, implementation: VectorStoreImplementation) -> None:
+        super().__init__(implementation, [VectorStoreImplementation.CASSANDRA])
         self.cassandra_session = None
         self.test_table_name = None
 
-    def before_test(
-        self, implementation: VectorStoreImplementation
-    ) -> VectorStoreTestContext:
-        super().before_test(implementation)
+    def before_test(self) -> VectorStoreTestContext:
+        super().check_implementation()
 
         self.test_table_name = "table_" + random_string()
 
         start_container = os.environ.get("CASSANDRA_START_CONTAINER", "true")
         if start_container == "true":
-            if self.cassandra_container is None:
-                self.cassandra_container = CassandraContainer()
-                self.cassandra_container.start()
+            if CassandraVectorStoreHandler.cassandra_container is None:
+                CassandraVectorStoreHandler.cassandra_container = CassandraContainer()
+                CassandraVectorStoreHandler.cassandra_container.start()
                 logging.info("Cassandra container started")
             else:
                 logging.info("Cassandra container already started")
-            cassandra_port = self.cassandra_container.get_mapped_port()
+            cassandra_port = (
+                CassandraVectorStoreHandler.cassandra_container.get_mapped_port()
+            )
         else:
             logging.info("Connecting to local Cassandra instance")
             cassandra_port = 9042
@@ -71,9 +70,6 @@ class CassandraVectorStoreHandler(VectorStoreHandler):
         )
         cassio.init(session=self.cassandra_session)
         return CassandraVectorStoreTestContext(self)
-
-    def after_test(self, implementation: VectorStoreImplementation):
-        pass
 
 
 class EnhancedCassandraLangChainVectorStore(EnhancedLangChainVectorStore, Cassandra):
@@ -96,20 +92,21 @@ class EnhancedCassandraLangChainVectorStore(EnhancedLangChainVectorStore, Cassan
             )
 
     def search_documents(self, vector: List[float], limit: int) -> List[str]:
-        results = self.table.search(embedding_vector=vector, top_k=limit)
         if isinstance(self.table, MetadataVectorCassandraTable):
+            results = self.table.ann_search(vector=vector, n=limit)
             docs = []
             for result in results:
                 docs.append(result["body_blob"])
             return docs
         else:
+            results = self.table.search(embedding_vector=vector, top_k=limit)
             docs = []
             for result in results:
                 docs.append(result["document"])
             return docs
 
 
-class EnhancedAstraDBLlamaIndexVectorStore(
+class EnhancedCassandraLlamaIndexVectorStore(
     EnhancedLlamaIndexVectorStore, CassandraVectorStore
 ):
     def put_document(
@@ -131,7 +128,9 @@ class CassandraVectorStoreTestContext(VectorStoreTestContext):
         self.handler = handler
         self.test_id = "test_id" + random_string()
 
-    def new_langchain_vector_store(self, **kwargs) -> LangChainVectorStore:
+    def new_langchain_vector_store(
+        self, **kwargs
+    ) -> EnhancedCassandraLangChainVectorStore:
         return EnhancedCassandraLangChainVectorStore(
             session=self.handler.cassandra_session,
             keyspace="default_keyspace",
@@ -148,8 +147,10 @@ class CassandraVectorStoreTestContext(VectorStoreTestContext):
             **kwargs,
         )
 
-    def new_llamaindex_vector_store(self, **kwargs) -> LlamaIndexVectorStore:
-        return EnhancedAstraDBLlamaIndexVectorStore(
+    def new_llamaindex_vector_store(
+        self, **kwargs
+    ) -> EnhancedCassandraLlamaIndexVectorStore:
+        return EnhancedCassandraLlamaIndexVectorStore(
             session=self.handler.cassandra_session,
             keyspace="default_keyspace",
             table=self.handler.test_table_name,

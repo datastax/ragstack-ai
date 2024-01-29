@@ -10,6 +10,7 @@ def test_import():
     import openai  # noqa
     import tiktoken  # noqa
 
+
 def test_meta():
     from importlib import metadata
     meta = metadata.metadata("ragstack-ai")

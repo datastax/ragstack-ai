@@ -48,6 +48,7 @@ def run_suite(
     report_dir = os.path.abspath(report_dir)
 
     filenames = []
+    logs_file = os.path.join(args.reports_dir, "benchmarks.log")
 
     for value in all_values:
         filename = f"{test_case}-{value}.json"
@@ -55,9 +56,16 @@ def run_suite(
         os.path.exists(abs_filename) and os.remove(abs_filename)
         filenames.append(abs_filename)
 
-        command = f"{sys.executable} -m pyperf command --copy-env -p {processes} -n 1 -l {loops} -t -o {abs_filename} --verbose -- {sys.executable} {bechmarks_dir}/testcases.py {test_case} {value}"
+        command = f"{sys.executable} -m pyperf command --copy-env -p {processes} -q -n 1 -l {loops} -t -o {abs_filename} -- {sys.executable} {bechmarks_dir}/testcases.py {logs_file} {test_case} {value}"
         print(f"Running suite: {test_case} with value: {value}")
-        subprocess.run(command.split(" "), text=True, check=True).check_returncode()
+        try:
+            subprocess.run(command.split(" "), text=True, check=True).check_returncode()
+        except Exception as e:
+            print(f"Error running suite: {e.args[0]}")
+            if os.path.exists(logs_file):
+                with open(logs_file, "r") as f:
+                    print(f.read())
+            raise Exception("Error running suite")
 
     if len(filenames) <= 1:
         print("Not enough files to compare")
@@ -119,6 +127,11 @@ if __name__ == "__main__":
         tests_to_run = TEST_CASES
     else:
         tests_to_run = filter(None, args.test_case.split(","))
+
+    logs_file = os.path.join(args.reports_dir, "benchmarks.log")
+    if os.path.exists(logs_file):
+        os.remove(logs_file)
+    print(f"Logs file: {logs_file}")
 
     for test_case in tests_to_run:
         run_suite(
