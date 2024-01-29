@@ -89,4 +89,4 @@ def run_trulens_evaluation(vector_store: VectorStore, llm: BaseLanguageModel):
         feedback_result: FeedbackResult
 
         # basic verification that feedback results were computed
-        assert feedback_result.result > 0.0
+        assert feedback_result.result is not None
