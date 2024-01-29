@@ -11,7 +11,7 @@ Text copyright (c) 2020 MariaDB Corporation Ab, All Rights Reserved. “Business
 | Change Date: | Two years from the date the Licensed Work is published |
 | Change License: | Apache 2.0 |
 ## Updated: 
-24/01/2023
+Jan. 29 2024
 
 ## Terms:
 
