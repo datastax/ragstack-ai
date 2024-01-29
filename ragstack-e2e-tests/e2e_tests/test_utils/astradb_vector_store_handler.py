@@ -201,23 +201,19 @@ class AstraDBVectorStoreHandler(VectorStoreHandler):
             self.try_delete_with_backoff(collection, sleep * 2, max_tries)
 
     def ensure_astra_env_clean(self, blocking=False):
-        logging.info("Ensuring astra env is clean")
-        self.delete_collection_handler.run_delete(self.astra_ref.collection)
         collections = (
             self.default_astra_client.get_collections().get("status").get("collections")
         )
-        logging.info(f"Existing collections: {collections}")
+        logging.info("Deleting all existing collections: {collections}")
         for name in collections:
-            if name == self.astra_ref.collection:
-                continue
             self.delete_collection_handler.run_delete(name)
+
         if blocking:
             self.delete_collection_handler.await_ongoing_deletions_completed()
 
     def before_test(self) -> AstraDBVectorStoreTestContext:
         super().check_implementation()
         self.ensure_astra_env_clean(blocking=True)
-        self.astra_ref.collection = "documents_" + random_string()
 
         if self.implementation == VectorStoreImplementation.CASSANDRA:
             # to run cassandra implementation over astra
@@ -233,4 +229,4 @@ class AstraDBVectorStoreHandler(VectorStoreHandler):
         return AstraDBVectorStoreTestContext(self)
 
     def after_test(self):
-        self.ensure_astra_env_clean(blocking=False)
+        self.delete_collection_handler.run_delete(self.astra_ref.collection)
