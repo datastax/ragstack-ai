@@ -56,7 +56,7 @@ jobs:
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
 
-          cp ragstack-e2e-tests/benchmarks/reports/report.html /tmp/report.html
+          mv ragstack-e2e-tests/benchmarks/reports /tmp/reports
           git reset --hard
           git clean -df
           git status
@@ -66,8 +66,7 @@ jobs:
           git reset --hard origin/gh-pages
           mkdir -p benchmarks/reports
           dir=benchmarks/reports/$(date +"%Y-%m-%d_%H-%M-%S")
-          mkdir -p $dir
-          cp /tmp/report.html $dir/report.html
+          mv /tmp/reports $dir
           git add -A benchmarks
           git commit -am "Update benchmarks ${{ github.run_id }} - $dir"
           git push origin gh-pages

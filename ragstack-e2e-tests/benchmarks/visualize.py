@@ -137,24 +137,70 @@ def render_html(values, export_to: str):
                   </div>
                 </div>
               </div>
-            <table class="table-fixed">
         """
 
     with open(export_to, "w") as f:
         f.write(html)
 
 
+def render_markdown(values, export_to: str, plot_src: str = "plot.png"):
+    title = "RAGStack - Benchmarks Report"
+    import datetime
+
+    title += " - " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    table_rows = []
+    for i, value in enumerate(values):
+        ps = []
+        for p in PERCENTILES:
+            k = f"p{p}"
+            ps.append(value["values"][k])
+        table_rows.append([value["name"]] + ps)
+
+    headers = ["Test Case"] + [f"p{p}" for p in PERCENTILES]
+
+    def draw_row(list):
+        return f"| {' | '.join(str(col) for col in list)} |"
+
+    table = draw_row(headers)
+    table += "\n|" + "|".join(["---" for _ in headers]) + "|"
+    for row in table_rows:
+        table += "\n" + draw_row(row)
+
+    plot = f"<img src='{plot_src}' />"
+
+    md = f"""# {title}
+
+{table}
+
+{plot}"""
+
+    with open(export_to, "w") as f:
+        f.write(md)
+
+
 def draw_report(directory_path: str, format: str, filter_by: str):
     values = scan_result_directory(directory_path, filter_by)
-    if format == "plot" or format == "plot_svg":
+    is_all = format == "all"
+    if is_all or format == "plot" or format == "plot_svg":
         render_plot(
             values,
             export_to=os.path.join(directory_path, "plot.svg"),
             show=format == "plot",
         )
-    elif format == "html":
+    if is_all or format == "html":
         render_html(values, export_to=os.path.join(directory_path, "report.html"))
-    else:
+    if is_all or format == "markdown":
+        render_plot(
+            values,
+            export_to=os.path.join(directory_path, "plot.svg"),
+            show=False,
+        )
+        render_markdown(
+            values,
+            export_to=os.path.join(directory_path, "report.md"),
+            plot_src="plot.svg",
+        )
+    if is_all or format == "table":
         render_table(values)
 
 
@@ -172,7 +218,9 @@ if __name__ == "__main__":
         help="Reports dir",
     )
     parser.add_argument(
-        "--format", choices=["table", "plot", "plot_svg", "html"], default="table"
+        "--format",
+        choices=["table", "plot", "plot_svg", "html", "markdown", "all"],
+        default="table",
     )
     parser.add_argument(
         "-f",
