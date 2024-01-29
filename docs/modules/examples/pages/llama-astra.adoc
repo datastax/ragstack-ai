@@ -147,6 +147,28 @@ for idx, node_with_score in enumerate(nodes_with_scores):
 number), while the other results are the least relevant (negative
 numbers).
 
+== Cleanup
+
+Be a good digital citizen and clean up after yourself.
+
+To *clear data* from your vector database but keep the collection, use the `vstore.clear()` method.
+
+To *delete the collection* from your vector database, use the `vstore.delete_collection()` method.
+Alternatively, you can use the Data API to delete the collection:
+[source,curl]
+----
+curl -v -s --location \
+--request POST https://${ASTRA_DB_ID}-${ASTRA_DB_REGION}.apps.astra.datastax.com/api/json/v1/default_keyspace \
+--header "X-Cassandra-Token: $ASTRA_DB_APPLICATION_TOKEN" \
+--header "Content-Type: application/json" \
+--header "Accept: application/json" \
+--data '{
+  "deleteCollection": {
+    "name": "test"
+  }
+}'
+----
+
 == Complete code
 
 .Python
@@ -217,7 +239,6 @@ for idx, node_with_score in enumerate(nodes_with_scores):
     print(f"    [{idx}] score = {node_with_score.score}")
     print(f"        id    = {node_with_score.node.node_id}")
     print(f"        text  = {node_with_score.node.text[:90]} ...")
-
-
 ----
 ====
+
