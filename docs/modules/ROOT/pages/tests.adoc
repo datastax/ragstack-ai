@@ -2,8 +2,6 @@
 
 The latest RAGStack test reports are available https://ragstack-ai.testspace.com/projects/67980/spaces[here]{external-link-icon}.
 
-RAGStack uses https://tox.wiki/en/4.11.4/[tox]{external-link-icon} to orchestrate testing the current version of RAGStack against a test matrix. Tox leverages https://python-poetry.org/[Poetry]{external-link-icon} for managing dependencies within the test environments.
-
 == Why is this important?
 
 Generative AI moves very quickly. The RAGStack test suite is designed to ensure that the RAGStack components are working together as expected, no matter what new features are added or what new versions of the underlying components are released upstream.
@@ -16,7 +14,7 @@ For the test source code, see https://github.com/datastax/ragstack-ai/tree/main/
 
 RAGStack tests are published to https://ragstack-ai.testspace.com/[Testspace]{external-link-icon}.
 
-Tests are run on every commit to the main branch and on every pull request.
+Tests are run multiple times daily against DSE (Cassandra) and AstraDB (Cassandra as a Service) vector databases.
 
 === Test suites
 [%autowidth]
@@ -72,14 +70,14 @@ e2e_tests.llama_index.test_compatibility_rag
 
 == What is being tested?
 
-=== e2e_tests.langchain.test_astra
+=== test_astra
 [%autowidth]
 [cols="1,3"]
 |===
 | Test | Description
 
 | `test_basic_vector_search`
-| Tests the basic vector search functionality. Adds a text to the vector store and asserts that a search for a related term ("RAGStack") returns at least one relevant document.
+| Tests the basic vector search functionality.
 
 | `test_ingest_errors`
 | Checks how the system handles errors during data ingestion. It tests two scenarios:
@@ -92,7 +90,7 @@ e2e_tests.llama_index.test_compatibility_rag
 * Using an incorrect authentication token.
 
 | `test_basic_metadata_filtering_no_vector`
-| Tests the functionality of filtering documents based on metadata, without considering their vector representations. It adds a document with specific metadata and then checks if the filtering works correctly.
+| Tests the functionality of filtering documents based on metadata, without considering their vector representations.
 
 | `test_vector_search_with_metadata`
 | Tests various aspects of vector search combined with metadata filtering. This includes:
@@ -102,40 +100,40 @@ e2e_tests.llama_index.test_compatibility_rag
 * Deleting documents and verifying that they no longer appear in search results.
 |===
 
-=== e2e_tests.langchain.test_compatibility_rag
+=== test_compatibility_rag
 [cols="1,3", options="header"]
 |===
 | Test | Description
 
 | `test_rag`
-| RAG Tests: This part tests Retrieval-Augmented Generation (RAG) capabilities. It uses the parametrize decorator to run the same test with different combinations of vector stores (like astra_db, cassandra), embeddings, and language models (LLMs). The _run_test function actually runs the test, which involves initializing the vector store, embedding, and LLM, and then running either run_rag_custom_chain or run_conversational_rag depending on the test case.
+| RAG Tests: This part tests Retrieval-Augmented Generation (RAG) capabilities.
 
 | `test_multimodal`
-| Multimodal RAG Tests: This tests the multimodal RAG capabilities (handling both text and images). It uses a fake embedding for simplicity and sets up a scenario with product images and names, testing if the system can correctly identify a product from an image and a short description.
+| Multimodal RAG Tests: This tests the multimodal RAG capabilities (handling both text and images).
 
 | `test_chat`
 | Chat Model Tests: These tests check the functionality of chat models. It sets up a chat prompt and expects the chat model to generate a relevant response.
 |===
 
-=== e2e_tests.langchain.test_document_loaders
+=== test_document_loaders
 [cols="1,3", options="header"]
 |===
 | Test | Description
 
 | `test_csv_loader`
-| Tests the CSVLoader, which loads documents from a CSV file. It creates a temporary CSV file with sample data, then asserts that the loader correctly reads and converts the rows into documents with the expected content and metadata.
+| Tests the CSVLoader, which loads documents from a CSV file.
 
 | `test_web_based_loader`
-| Tests the WebBaseLoader, which fetches documents from specified web URLs. It loads documents from two URLs and asserts that the content and metadata of the loaded documents match expected values, such as specific text in the content and metadata like source URL, title, description, and language.
+| Tests the WebBaseLoader, which fetches documents from specified web URLs.
 
 | `test_s3_loader`
-| Tests the S3DirectoryLoader, which loads documents from an AWS S3 bucket. The test creates a temporary S3 bucket, uploads a text file, and then uses the loader to fetch and verify the document's content and metadata.
+| Tests the S3DirectoryLoader, which loads documents from an AWS S3 bucket.
 
 | `test_azure_blob_doc_loader`
-| Tests the AzureBlobStorageContainerLoader, which loads documents from an Azure Blob Storage container. The test creates a temporary blob storage container, uploads a text file, and then uses the loader to fetch and verify the document's content and metadata.
+| Tests the AzureBlobStorageContainerLoader, which loads documents from an Azure Blob Storage container.
 
 | `test_astradb_loader`
-| Tests the AstraDBLoader, which loads documents from an AstraDB database. The test inserts sample documents into an AstraDB collection and then uses the loader to fetch and verify the documents. It checks the content (which is a payload derived from the database records), the uniqueness of document IDs, and the metadata.
+| Tests the AstraDBLoader, which loads documents from an AstraDB database.
 |===
 
 === e2e_tests.langchain_llamaindex.test_astra
@@ -144,58 +142,10 @@ e2e_tests.llama_index.test_compatibility_rag
 | Test | Description
 
 | `test_ingest_llama_retrieve_langchain`
-| Purpose: This test checks the integration where a document is ingested using LlamaIndex and then retrieved using LangChain. Steps include ingesting a document with LlamaIndex's VectorStoreIndex, retrieving using LangChain's mechanism, and performing metadata filtering for accurate document retrieval.
+| Purpose: This test checks the integration where a document is ingested using LlamaIndex and then retrieved using LangChain.
 
 | `test_ingest_langchain_retrieve_llama_index`
-| Purpose: This test ingests a document using LangChain and retrieves it using LlamaIndex, the opposite of the first test. Steps involve ingesting with LangChain's AstraDB, retrieving with LlamaIndex's VectorStoreIndex, and performing metadata filtering with LlamaIndex's filters.
-|===
-
-=== .e2e_tests.llama_index.test_astra
-[cols="1,3", options="header"]
-|===
-| Test | Description
-
-| `test_basic_vector_search`
-| Validates the core functionality of the vector search system. It includes adding a document to the vector store, and then using a search query to retrieve it, checking if the system can successfully index and retrieve the correct document based on the search query.
-
-| `test_ingest_errors`
-| Designed to evaluate the system's error handling during document ingestion. It tests two scenarios: ingesting a document with empty text which should fail with a ValueError, and ingesting an excessively long document, tested both with and without text splitting enabled, which should also fail with a ValueError.
-
-| `test_wrong_connection_parameters`
-| Checks the system's response to incorrect connection parameters for the vector store. It tests for a ConnectError with an invalid API endpoint and a ValueError with an "UNAUTHENTICATED" message when using an incorrect authentication token.
-
-| `test_vector_search_with_metadata`
-| Assesses vector search functionality with metadata filters. It involves indexing documents with specific metadata and performing searches using these metadata as filters, aiming to verify accurate and consistent search results with the applied metadata filters.
-|===
-
-=== .e2e_tests.llama_index.test_compatibility_rag
-[cols="1,3", options="header"]
-|===
-| Test | Description
-
-| `test_rag`
-| Tests the Retrieve and Generate (RAG) functionality, evaluating the system's ability to retrieve relevant information from a vector store and generate responses using a language model. This test involves embedding documents, querying the vector store, and generating responses based on retrieved data.
-
-| `test_multimodal`
-| Assesses the multi-modal capabilities of the system, combining text and image data. It tests the integration of multi-modal embeddings with vector stores and language models, ensuring the system can handle and generate responses for queries involving both text and images.
-
-| `test_chat`
-| Evaluates the chat interface functionality using various language models. This test checks if the chat system can correctly respond to prompts, ensuring the language models are properly integrated and functional within the chat interface.
-
-| `Vertex AI Embeddings and Models`
-| Focuses on testing the integration and functionality of Vertex AI models and embeddings within the system. Ensures compatibility and effective usage of Vertex AI components.
-
-| `OpenAI and Azure OpenAI Models and Embeddings`
-| Tests the functionality and integration of OpenAI and Azure OpenAI models and embeddings, confirming their effective operation within the system for generating responses and embeddings.
-
-| `Bedrock Models and Embeddings`
-| Checks the performance and integration of Bedrock models and embeddings, including various implementations such as anthropic and meta models.
-
-| `HuggingFace Models and Embeddings`
-| Evaluates the integration and effectiveness of HuggingFace models and embeddings in the system, ensuring they are correctly utilized for chat and embedding functionalities.
-
-| `Vector Store Integration`
-| Verifies the correct integration and functioning of different vector store implementations (AstraDB, Cassandra) with the language models and embeddings, ensuring seamless operation across various storage solutions.
+| Purpose: This test ingests a document using LangChain and retrieves it using LlamaIndex, the opposite of the first test.
 |===
 
 == Navigate Testspace dashboard
@@ -210,3 +160,21 @@ To navigate from your Testspace Project down to an individual test case, select 
 *** Test sequence (contains tests) Example: `e2e_tests.langchain.test_compatibility_rag`
 **** Test cases (passed, failed, skipped, etc.) Example: `Test rag: openai embedding | openai llm | cassandra | rag custom chain`
 ----
+
+=== Metrics
+
+Testspace provides a number of metrics to help you understand the health of your test suite.
+
+* https://help.testspace.com/dashboard/project-insights#results-strength[Results Strength]{external-link-icon} - measures the stability of results and infrastructure with the `Pass Rate` and `Health Rate` metrics.
+
+* https://help.testspace.com/dashboard/project-insights#test-effectiveness[Test Effectiveness]{external-link-icon} - measures if tests are effectively capturing side-effects with the `Effective Regression Rate` metric. Measures the percentage of results with unique regressions, including invalid results.
+
+* https://help.testspace.com/dashboard/project-insights#workflow-efficiency[Workflow Efficiency]{external-link-icon} - measures if failures are being resolved quickly and efficiently with the `Resolved Failures` and `Failure Resolution Time` metrics.
+
+For more, see the https://help.testspace.com/dashboard/space-metrics[Testspace docs]{external-link-icon}.
+
+=== Results
+
+The Results tab displays the results of the latest Test Sequence run.
+
+Filter tracked test failures by `New`, `Flaky`, `Consistent`, `Resolved`, and `Exempt`.
