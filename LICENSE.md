@@ -3,7 +3,7 @@
 Text copyright (c) 2020 MariaDB Corporation Ab, All Rights Reserved. “Business Source License” is a trademark of MariaDB Corporation Ab.
 
 ## Parameters:
-| Heading | Content |
+|  |  |
 | --- | --- |
 | Licensor: | DataStax, Inc. |
 | Licensed Work: | The Licensed Work is (c) 2023 DataStax, Inc. |
