@@ -2,7 +2,7 @@ from uuid import uuid4
 
 import langchain_core.documents
 import pytest
-from e2e_tests.conftest import get_required_env, get_vector_store_handler
+from e2e_tests.conftest import get_required_env, is_astra
 from langchain.chains import ConversationalRetrievalChain
 from langchain.chat_models import ChatOpenAI
 from langchain.embeddings import OpenAIEmbeddings
@@ -21,12 +21,16 @@ from llama_index.vector_stores import (
     ExactMatchFilter,
 )
 
+from e2e_tests.test_utils import skip_test_due_to_implementation_not_supported
+from e2e_tests.test_utils.astradb_vector_store_handler import (
+    AstraDBVectorStoreHandler,
+    AstraRef,
+)
 from e2e_tests.test_utils.vector_store_handler import VectorStoreImplementation
 
 
-def test_ingest_llama_retrieve_langchain(environment):
+def test_ingest_llama_retrieve_langchain(astra_ref: AstraRef):
     print("Running test_ingest_llama_retrieve_langchain")
-    astra_ref = environment.astra_ref
     token = astra_ref.token
     api_endpoint = astra_ref.api_endpoint
     openai_key = get_required_env("OPEN_AI_KEY")
@@ -122,9 +126,8 @@ def test_ingest_llama_retrieve_langchain(environment):
     print("response:", response)
 
 
-def test_ingest_langchain_retrieve_llama_index(environment):
+def test_ingest_langchain_retrieve_llama_index(astra_ref: AstraRef):
     print("Running test_ingest_langchain_retrieve_llama_index")
-    astra_ref = environment.astra_ref
     token = astra_ref.token
     api_endpoint = astra_ref.api_endpoint
     openai_key = get_required_env("OPEN_AI_KEY")
@@ -220,14 +223,11 @@ def test_ingest_langchain_retrieve_llama_index(environment):
     assert "framework" in response.response
 
 
-class Environment:
-    def __init__(self, astra_ref):
-        self.astra_ref = astra_ref
-
-
 @pytest.fixture
-def environment():
-    handler = get_vector_store_handler()
-    handler.before_test(VectorStoreImplementation.ASTRADB)
-    yield Environment(astra_ref=handler.astra_ref)
-    handler.after_test(VectorStoreImplementation.ASTRADB)
+def astra_ref() -> AstraRef:
+    if not is_astra:
+        skip_test_due_to_implementation_not_supported("astradb")
+    handler = AstraDBVectorStoreHandler(VectorStoreImplementation.ASTRADB)
+    handler.before_test()
+    yield handler.astra_ref
+    handler.after_test()

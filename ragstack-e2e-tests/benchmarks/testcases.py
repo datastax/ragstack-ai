@@ -1,4 +1,7 @@
+import os
 import sys
+import logging
+
 
 from langchain.text_splitter import CharacterTextSplitter
 from langchain_community.embeddings import OpenAIEmbeddings
@@ -98,24 +101,25 @@ def embeddings_batch100_chunk512(embeddings_fn):
 
 
 def openai_ada002(batch_size):
-    return OpenAIEmbeddings(chunk_size=batch_size)
+    return OpenAIEmbeddings(
+        chunk_size=batch_size, api_key=os.environ.get("OPEN_AI_KEY")
+    )
 
 
 def nvidia_nvolveqa40k(batch_size):
     # 50 is the max supported batch size
     return NVIDIAEmbeddings(
-        model="nvolveqa_40k", max_batch_size=min(batch_size, 50), model_type="query"
+        model="nvolveqa_40k", max_batch_size=min(50, batch_size), model_type="query"
     )
 
 
 if __name__ == "__main__":
-    import logging
-
-    logging.basicConfig(filename="testcases.log", encoding="utf-8", level=logging.INFO)
-    logging.info("Starting test case")
     try:
-        test_case = sys.argv[1]
-        embeddings = sys.argv[2]
+        logs_file = sys.argv[1]
+        logging.basicConfig(filename=logs_file, encoding="utf-8", level=logging.INFO)
+        logging.info("Starting test case")
+        test_case = sys.argv[2]
+        embeddings = sys.argv[3]
         eval(f"{test_case}({embeddings})")
     except Exception as e:
         logging.exception("Exception in test case")

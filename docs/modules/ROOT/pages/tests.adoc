@@ -1,11 +1,171 @@
 = What Tests Are Run?
 
-image:https://github.com/datastax/ragstack-ai/actions/workflows/ragstack-ai-latest.yml/badge.svg[Status,link=https://github.com/datastax/ragstack-ai/actions/workflows/ragstack-ai-latest.yml]
+The latest RAGStack test reports are available https://ragstack-ai.testspace.com/projects/67980/spaces[here]{external-link-icon}.
 
-Latest RAGStack test reports available https://ragstack-ai.testspace.com/projects/67980/spaces[here]{external-link-icon}.
+== Why is this important?
 
-RAGStack uses https://tox.wiki/en/4.11.4/[tox]{external-link-icon} to orchestrate testing the current version of RAGStack against a test matrix. Tox leverages https://python-poetry.org/[Poetry]{external-link-icon} for managing dependencies within the test environments.
+Generative AI moves very quickly. The RAGStack test suite is designed to ensure that the RAGStack components are working together as expected, no matter what new features are added or what new versions of the underlying components are released upstream.
+
+This thoroughly tested approach allows your enterprise to confidently deploy RAGStack in production without worrying about breaking changes.
 
 For the test source code, see https://github.com/datastax/ragstack-ai/tree/main/ragstack-e2e-tests[ragstack-e2e-tests]{external-link-icon}.
 
+== Testspace reports
 
+RAGStack tests are published to https://ragstack-ai.testspace.com/[Testspace]{external-link-icon}.
+
+Tests are run multiple times daily against DSE (Cassandra) and AstraDB (Cassandra as a Service) vector databases.
+
+=== Test suites
+[%autowidth]
+[cols="3*", options="header"]
+|===
+| Suite and Environment | Tested Components | Tests Run
+
+| RAGStack test suite - LangChain dev - DSE
+| Tests LangChain against DSE snapshot
+| e2e_tests.langchain.test_compatibility_rag
+e2e_tests.langchain.test_document_loaders
+e2e_tests.llama_index.test_compatibility_rag
+
+| RAGStack test suite - LangChain dev - AstraDB
+| Tests LangChain against AstraDB snapshot
+| e2e_tests.langchain.test_astra
+e2e_tests.langchain.test_compatibility_rag
+e2e_tests.langchain.test_document_loaders
+e2e_tests.langchain_llamaindex.test_astra
+e2e_tests.llama_index.test_astra
+e2e_tests.llama_index.test_compatibility_rag
+
+| RAGStack test suite - RAGStack dev - DSE
+| Tests RAGStack against DSE snapshot
+| e2e_tests.langchain.test_compatibility_rag
+e2e_tests.langchain.test_document_loaders
+e2e_tests.llama_index.test_compatibility_rag
+
+| RAGStack test suite - RAGStack dev - AstraDB
+| Tests RAGStack against AstraDB snapshot
+| e2e_tests.langchain.test_astra
+e2e_tests.langchain.test_compatibility_rag
+e2e_tests.langchain.test_document_loaders
+e2e_tests.langchain_llamaindex.test_astra
+e2e_tests.llama_index.test_astra
+e2e_tests.llama_index.test_compatibility_rag
+
+| RAGStack test suite - LlamaIndex dev - DSE
+| Tests LlamaIndex against DSE snapshot
+| e2e_tests.langchain.test_compatibility_rag
+e2e_tests.langchain.test_document_loaders
+e2e_tests.llama_index.test_compatibility_rag
+
+| RAGStack test suite - LLamaIndex dev - AstraDB
+| Tests LLamaIndex against AstraDB snapshot
+| e2e_tests.langchain.test_astra
+e2e_tests.langchain.test_compatibility_rag
+e2e_tests.langchain.test_document_loaders
+e2e_tests.langchain_llamaindex.test_astra
+e2e_tests.llama_index.test_astra
+e2e_tests.llama_index.test_compatibility_rag
+|===
+
+== What is being tested?
+
+=== test_astra
+[%autowidth]
+[cols="1,3"]
+|===
+| Test | Description
+
+| `test_basic_vector_search`
+| Tests the basic vector search functionality.
+
+| `test_ingest_errors`
+| Checks how the system handles errors during data ingestion. 
+
+| `test_wrong_connection_parameters`
+| Tests error handling when the vector store is initialized with incorrect connection parameters.
+
+| `test_basic_metadata_filtering_no_vector`
+| Tests the functionality of filtering documents based on metadata, without considering their vector representations.
+
+| `test_vector_search_with_metadata`
+| Tests various aspects of vector search combined with metadata filtering.
+|===
+
+=== test_compatibility_rag
+[cols="1,3", options="header"]
+|===
+| Test | Description
+
+| `test_rag`
+| RAG Tests: This part tests Retrieval-Augmented Generation (RAG) capabilities.
+
+| `test_multimodal`
+| Multimodal RAG Tests: This tests the multimodal RAG capabilities (handling both text and images).
+
+| `test_chat`
+| Chat Model Tests: These tests check the functionality of chat models. It sets up a chat prompt and expects the chat model to generate a relevant response.
+|===
+
+=== test_document_loaders
+[cols="1,3", options="header"]
+|===
+| Test | Description
+
+| `test_csv_loader`
+| Tests the CSVLoader, which loads documents from a CSV file.
+
+| `test_web_based_loader`
+| Tests the WebBaseLoader, which fetches documents from specified web URLs.
+
+| `test_s3_loader`
+| Tests the S3DirectoryLoader, which loads documents from an AWS S3 bucket.
+
+| `test_azure_blob_doc_loader`
+| Tests the AzureBlobStorageContainerLoader, which loads documents from an Azure Blob Storage container.
+
+| `test_astradb_loader`
+| Tests the AstraDBLoader, which loads documents from an AstraDB database.
+|===
+
+=== e2e_tests.langchain_llamaindex.test_astra
+[cols="1,3", options="header"]
+|===
+| Test | Description
+
+| `test_ingest_llama_retrieve_langchain`
+| This test checks the integration where a document is ingested using LlamaIndex and then retrieved using LangChain.
+
+| `test_ingest_langchain_retrieve_llama_index`
+| This test ingests a document using LangChain and retrieves it using LlamaIndex, the opposite of the first test.
+|===
+
+== Navigate Testspace dashboard
+
+Tests are presented in a hierarchical structure.
+
+To navigate from your Testspace Project down to an individual test case, select each item in the hierarchy to drill down to the next level.
+
+.Testspace hierarchy
+* Project (contains spaces) Example: `ragstack-ai`
+** Space (contains test sequences) Example: `RAGStack test suite - LangChain dev - DSE`
+*** Test sequence (contains tests) Example: `e2e_tests.langchain.test_compatibility_rag`
+**** Test cases (passed, failed, skipped, etc.) Example: `Test rag: openai embedding | openai llm | cassandra | rag custom chain`
+
+=== Metrics
+
+Testspace provides a number of metrics to help you understand the health of your test suite.
+
+* https://help.testspace.com/dashboard/project-insights#results-strength[Results Strength]{external-link-icon} - measures the stability of results and infrastructure with the `Pass Rate` and `Health Rate` metrics.
+
+* https://help.testspace.com/dashboard/project-insights#test-effectiveness[Test Effectiveness]{external-link-icon} - measures if tests are effectively capturing side-effects with the `Effective Regression Rate` metric. Measures the percentage of results with unique regressions, including invalid results.
+
+* https://help.testspace.com/dashboard/project-insights#workflow-efficiency[Workflow Efficiency]{external-link-icon} - measures if failures are being resolved quickly and efficiently with the `Resolved Failures` and `Failure Resolution Time` metrics.
+
+For more, see the https://help.testspace.com/dashboard/space-metrics[Testspace docs]{external-link-icon}.
+
+=== Results
+
+The Results tab displays the results of the latest Test Sequence run.
+
+Filter tracked test failures by `New`, `Flaky`, `Consistent`, `Resolved`, and `Exempt`.

@@ -33,23 +33,26 @@ from e2e_tests.conftest import (
 )
 from vertexai.vision_models import MultiModalEmbeddingModel, Image
 
-from e2e_tests.test_utils.vector_store_handler import VectorStoreImplementation
+from e2e_tests.test_utils.vector_store_handler import (
+    VectorStoreImplementation,
+    VectorStoreTestContext,
+)
 
 
 @pytest.fixture
 def astra_db():
-    handler = get_vector_store_handler()
-    context = handler.before_test(VectorStoreImplementation.ASTRADB)
+    handler = get_vector_store_handler(VectorStoreImplementation.ASTRADB)
+    context = handler.before_test()
     yield context
-    handler.after_test(VectorStoreImplementation.ASTRADB)
+    handler.after_test()
 
 
 @pytest.fixture
 def cassandra():
-    handler = get_vector_store_handler()
-    context = handler.before_test(VectorStoreImplementation.CASSANDRA)
+    handler = get_vector_store_handler(VectorStoreImplementation.CASSANDRA)
+    context = handler.before_test()
     yield context
-    handler.after_test(VectorStoreImplementation.CASSANDRA)
+    handler.after_test()
 
 
 @pytest.fixture
@@ -181,7 +184,7 @@ def huggingface_hub_embedding():
 )
 def test_rag(vector_store, embedding, llm, request):
     embedding_name, embedding_dimensions, embedding = request.getfixturevalue(embedding)
-    vector_store_context = request.getfixturevalue(vector_store)
+    vector_store_context: VectorStoreTestContext = request.getfixturevalue(vector_store)
     llm_name, llm = request.getfixturevalue(llm)
     set_current_test_info(
         "llama_index::rag",
@@ -195,16 +198,13 @@ def test_rag(vector_store, embedding, llm, request):
 
     documents = [
         Document(
-            text="MyFakeProductForTesting is a versatile testing tool designed to streamline the testing process for software developers, quality assurance professionals, and product testers. It provides a comprehensive solution for testing various aspects of applications and systems, ensuring robust performance and functionality."
-            # noqa: E501
+            text="MyFakeProductForTesting is a versatile testing tool designed to streamline the testing process for software developers, quality assurance professionals, and product testers. It provides a comprehensive solution for testing various aspects of applications and systems, ensuring robust performance and functionality."  # noqa: E501
         ),
         Document(
-            text="MyFakeProductForTesting comes equipped with an advanced dynamic test scenario generator. This feature allows users to create realistic test scenarios by simulating various user interactions, system inputs, and environmental conditions. The dynamic nature of the generator ensures that tests are not only diverse but also adaptive to changes in the application under test."
-            # noqa: E501
+            text="MyFakeProductForTesting comes equipped with an advanced dynamic test scenario generator. This feature allows users to create realistic test scenarios by simulating various user interactions, system inputs, and environmental conditions. The dynamic nature of the generator ensures that tests are not only diverse but also adaptive to changes in the application under test."  # noqa: E501
         ),
         Document(
-            text="The product includes an intelligent bug detection and analysis module. It not only identifies bugs and issues but also provides in-depth analysis and insights into the root causes. The system utilizes machine learning algorithms to categorize and prioritize bugs, making it easier for developers and testers to address critical issues first."
-            # noqa: E501
+            text="The product includes an intelligent bug detection and analysis module. It not only identifies bugs and issues but also provides in-depth analysis and insights into the root causes. The system utilizes machine learning algorithms to categorize and prioritize bugs, making it easier for developers and testers to address critical issues first."  # noqa: E501
         ),
         Document(text="MyFakeProductForTesting first release happened in June 2020."),
     ]
@@ -283,7 +283,8 @@ def gemini_pro_vision_llm():
 @pytest.mark.parametrize(
     "embedding,llm",
     [
-        ("vertex_gemini_multimodal_embedding", "vertex_gemini_pro_vision_llm"),
+        # disable due to this bug: https://github.com/googleapis/python-aiplatform/issues/3227
+        # ("vertex_gemini_multimodal_embedding", "vertex_gemini_pro_vision_llm"),
         ("vertex_gemini_multimodal_embedding", "gemini_pro_vision_llm"),
     ],
 )
