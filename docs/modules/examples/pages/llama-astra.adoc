@@ -1,4 +1,4 @@
-== RAG with LlamaIndex and AstraDB
+= RAG with LlamaIndex and AstraDB
 
 Build a RAG pipeline with RAGStack, AstraDB, and LlamaIndex.
 
@@ -6,28 +6,24 @@ Build a RAG pipeline with RAGStack, AstraDB, and LlamaIndex.
 
 You will need a vector-enabled Astra database.
 
-Create an
-https://docs.datastax.com/en/astra-serverless/docs/getting-started/create-db-choices.html[Astra
-vector database]. Within your database, create an
-https://docs.datastax.com/en/astra-serverless/docs/manage/org/manage-tokens.html[Astra
-DB Access Token] with Database Administrator permissions. Get your Astra
-DB Endpoint: https://-.apps.astra.datastax.com
-
-See the
-https://docs.datastax.com/en/ragstack/docs/prerequisites.html[Prerequisites]
-page for more details.
+* Create an https://docs.datastax.com/en/astra-serverless/docs/getting-started/create-db-choices.html[Astra
+vector database].
+* Within your database, create an https://docs.datastax.com/en/astra-serverless/docs/manage/org/manage-tokens.html[Astra
+DB Access Token] with Database Administrator permissions.
+* Get your Astra DB Endpoint:
+** `+https://<ASTRA_DB_ID>-<ASTRA_DB_REGION>.apps.astra.datastax.com+`
 
 Install the following dependencies:
 [source,python]
 ----
 pip install -qU ragstack-ai
 ----
+See the https://docs.datastax.com/en/ragstack/docs/prerequisites.html[Prerequisites] page for more details.
 
 == Database connection details
 
 Export these values in the terminal where you're running this application.
 If you're using Google Colab, you'll be prompted for these values in the Colab environment.
-+
 [source,bash]
 ----
 export ASTRA_DB_APPLICATION_TOKEN=AstraCS: ...
@@ -37,14 +33,13 @@ export OPENAI_API_KEY=sk-...
 
 == Create RAG pipeline
 
-. Load a sample dataset from Llama Hub to be loaded into your Astra vector store.
-. The dataset will be downloaded to `data/` directory.
+. Load a sample dataset from LlamaHub to be loaded into your Astra vector store.
+. The dataset will be downloaded to the `data/` directory.
 +
 [source,python]
 ----
+import os
 from llama_index.llama_dataset import download_llama_dataset
-
-mkdir -p 'data'
 
 dataset = download_llama_dataset(
   "PaulGrahamEssayDataset", "./data"
@@ -96,6 +91,7 @@ the author choose to work on AI?"
 +
 [source,python]
 ----
+# single query for most relevant result
 query_engine = index.as_query_engine()
 query_string_1 = "Why did the author choose to work on AI?"
 response = query_engine.query(query_string_1)
@@ -109,6 +105,7 @@ This will retrieve three nodes with their relevance scores.
 +
 [source,python]
 ----
+# similarity search with scores
 retriever = index.as_retriever(
     vector_store_query_mode="default",
     similarity_top_k=3,
@@ -126,37 +123,9 @@ for idx, node_with_score in enumerate(nodes_with_scores):
 +
 . Set the retriever to sort results by Maximal Marginal Relevance, or MMR,
 instead of the default similarity search.
-
-Send the prompt again. The top result is the most relevant (positive
-number), while the other results are the least relevant (negative
-numbers).
 +
 [source,python]
 ----
-
-# single query for most relevant result
-query_engine = index.as_query_engine()
-query_string_1 = "Why did the author choose to work on AI?"
-response = query_engine.query(query_string_1)
-
-print(query_string_1)
-print(response.response)
-
-# similarity search with scores
-retriever = index.as_retriever(
-    vector_store_query_mode="default",
-    similarity_top_k=3,
-)
-
-nodes_with_scores = retriever.retrieve(query_string_1)
-
-print(query_string_1)
-print(f"Found {len(nodes_with_scores)} nodes.")
-for idx, node_with_score in enumerate(nodes_with_scores):
-    print(f"    [{idx}] score = {node_with_score.score}")
-    print(f"        id    = {node_with_score.node.node_id}")
-    print(f"        text  = {node_with_score.node.text[:90]} ...")
-
 # MMR
 retriever = index.as_retriever(
     vector_store_query_mode="mmr",
@@ -173,13 +142,19 @@ for idx, node_with_score in enumerate(nodes_with_scores):
     print(f"        id    = {node_with_score.node.node_id}")
     print(f"        text  = {node_with_score.node.text[:90]} ...")
 ----
++
+. Send the prompt again. The top result is the most relevant (positive
+number), while the other results are the least relevant (negative
+numbers).
 
 == Complete code
 
 .Python
 [%collapsible%open]
+====
 [source,python]
 ----
+import os
 from llama_index.vector_stores import AstraDBVectorStore
 from llama_index import (
     VectorStoreIndex,
@@ -194,7 +169,7 @@ dataset = download_llama_dataset(
 )
 
 # Load the documents from the dataset into memory
-documents = SimpleDirectoryReader("./data").load_data()
+documents = SimpleDirectoryReader("./data/source_files").load_data()
 print(f"Total documents: {len(documents)}")
 print(f"First document, id: {documents[0].doc_id}")
 print(f"First document, hash: {documents[0].hash}")
@@ -242,4 +217,7 @@ for idx, node_with_score in enumerate(nodes_with_scores):
     print(f"    [{idx}] score = {node_with_score.score}")
     print(f"        id    = {node_with_score.node.node_id}")
     print(f"        text  = {node_with_score.node.text[:90]} ...")
+
+
 ----
+====
