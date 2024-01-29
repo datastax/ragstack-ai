@@ -1,0 +1,558 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>langchain_core.runnables.retry &mdash; 🦜🔗 LangChain 0.1.4</title>
+  
+  <link rel="canonical" href="https://api.python.langchain.com/en/latest/_modules/langchain_core/runnables/retry.html" />
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/vendor/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/autodoc_pydantic.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/sphinx-dropdown.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/panels-bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+<script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+<script src="../../../_static/jquery.js"></script> 
+</head>
+<body>
+
+
+<nav id="navbar" class="sk-docs-navbar navbar navbar-expand-md navbar-light bg-light py-0">
+  <div class="container-fluid sk-docs-container px-0">
+    <button
+      id="sk-navbar-toggler"
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="sk-navbar-collapse collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../langchain_api_reference.html">LangChain</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../core_api_reference.html">Core</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../community_api_reference.html">Community</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../experimental_api_reference.html">Experimental</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../../../openai_api_reference.html">openai</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../../../mistralai_api_reference.html">mistralai</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../../../robocorp_api_reference.html">robocorp</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../../../google_vertexai_api_reference.html">google-vertexai</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../../../nvidia_trt_api_reference.html">nvidia-trt</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../../../anthropic_api_reference.html">anthropic</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../../../together_api_reference.html">together</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../../../nvidia_ai_endpoints_api_reference.html">nvidia-ai-endpoints</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../../../exa_api_reference.html">exa</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../../../google_genai_api_reference.html">google-genai</a>
+        </li>
+        <li class="nav-item dropdown nav-more-item-dropdown">
+          <a class="sk-nav-link nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Partner libs</a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+              <a class="sk-nav-dropdown-item dropdown-item" href="../../../openai_api_reference.html">openai</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../../../mistralai_api_reference.html">mistralai</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../../../robocorp_api_reference.html">robocorp</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../../../google_vertexai_api_reference.html">google-vertexai</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../../../nvidia_trt_api_reference.html">nvidia-trt</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../../../anthropic_api_reference.html">anthropic</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../../../together_api_reference.html">together</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../../../nvidia_ai_endpoints_api_reference.html">nvidia-ai-endpoints</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../../../exa_api_reference.html">exa</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../../../google_genai_api_reference.html">google-genai</a>
+          </div>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" target="_blank" rel="noopener noreferrer" href="https://python.langchain.com/">Docs</a>
+        </li>
+      </ul>
+      <div id="searchbox" role="search">
+          <div class="searchformwrapper">
+          <form class="search" action="../../../search.html" method="get">
+            <input class="sk-search-text-input" type="text" name="q" aria-labelledby="searchlabel" />
+            <input class="sk-search-text-btn" type="submit" value="Go" />
+          </form>
+          </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="d-flex" id="sk-doc-wrapper">
+    <input type="checkbox" name="sk-toggle-checkbox" id="sk-toggle-checkbox">
+    <label id="sk-sidemenu-toggle" class="sk-btn-toggle-toc btn sk-btn-primary" for="sk-toggle-checkbox">Toggle Menu</label>
+    <div id="sk-sidebar-wrapper" class="border-right">
+      <div class="sk-sidebar-toc-wrapper">
+        <div class="btn-group w-100 mb-2" role="group" aria-label="rellinks">
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Prev</a><a href="../../index.html" role="button" class="btn sk-btn-rellink py-1" sk-rellink-tooltip="Module code">Up</a>
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Next</a>
+        </div>
+            <div class="sk-sidebar-toc">
+              
+            </div>
+      </div>
+    </div>
+    <div id="sk-page-content-wrapper">
+      <div class="sk-page-content container-fluid body px-md-3" role="main">
+        
+  <h1>Source code for langchain_core.runnables.retry</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">TYPE_CHECKING</span><span class="p">,</span>
+    <span class="n">Any</span><span class="p">,</span>
+    <span class="n">Dict</span><span class="p">,</span>
+    <span class="n">List</span><span class="p">,</span>
+    <span class="n">Optional</span><span class="p">,</span>
+    <span class="n">Tuple</span><span class="p">,</span>
+    <span class="n">Type</span><span class="p">,</span>
+    <span class="n">TypeVar</span><span class="p">,</span>
+    <span class="n">Union</span><span class="p">,</span>
+    <span class="n">cast</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">tenacity</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AsyncRetrying</span><span class="p">,</span>
+    <span class="n">RetryCallState</span><span class="p">,</span>
+    <span class="n">RetryError</span><span class="p">,</span>
+    <span class="n">Retrying</span><span class="p">,</span>
+    <span class="n">retry_if_exception_type</span><span class="p">,</span>
+    <span class="n">stop_after_attempt</span><span class="p">,</span>
+    <span class="n">wait_exponential_jitter</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">langchain_core.runnables.base</span> <span class="kn">import</span> <span class="n">Input</span><span class="p">,</span> <span class="n">Output</span><span class="p">,</span> <span class="n">RunnableBindingBase</span>
+<span class="kn">from</span> <span class="nn">langchain_core.runnables.config</span> <span class="kn">import</span> <span class="n">RunnableConfig</span><span class="p">,</span> <span class="n">patch_config</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">langchain_core.callbacks.manager</span> <span class="kn">import</span> <span class="p">(</span>
+        <span class="n">AsyncCallbackManagerForChainRun</span><span class="p">,</span>
+        <span class="n">CallbackManagerForChainRun</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">T</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;T&quot;</span><span class="p">,</span> <span class="n">CallbackManagerForChainRun</span><span class="p">,</span> <span class="n">AsyncCallbackManagerForChainRun</span><span class="p">)</span>
+<span class="n">U</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;U&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="RunnableRetry"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.retry.RunnableRetry.html#langchain_core.runnables.retry.RunnableRetry">[docs]</a><span class="k">class</span> <span class="nc">RunnableRetry</span><span class="p">(</span><span class="n">RunnableBindingBase</span><span class="p">[</span><span class="n">Input</span><span class="p">,</span> <span class="n">Output</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Retry a Runnable if it fails.</span>
+
+<span class="sd">    A RunnableRetry helps can be used to add retry logic to any object</span>
+<span class="sd">    that subclasses the base Runnable.</span>
+
+<span class="sd">    Such retries are especially useful for network calls that may fail</span>
+<span class="sd">    due to transient errors.</span>
+
+<span class="sd">    The RunnableRetry is implemented as a RunnableBinding. The easiest</span>
+<span class="sd">    way to use it is through the `.with_retry()` method on all Runnables.</span>
+
+<span class="sd">    Example:</span>
+
+<span class="sd">    Here&#39;s an example that uses a RunnableLambda to raise an exception</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            import time</span>
+
+<span class="sd">            def foo(input) -&gt; None:</span>
+<span class="sd">                &#39;&#39;&#39;Fake function that raises an exception.&#39;&#39;&#39;</span>
+<span class="sd">                raise ValueError(f&quot;Invoking foo failed. At time {time.time()}&quot;)</span>
+
+<span class="sd">            runnable = RunnableLambda(foo)</span>
+
+<span class="sd">            runnable_with_retries = runnable.with_retry(</span>
+<span class="sd">                retry_if_exception_type=(ValueError,), # Retry only on ValueError</span>
+<span class="sd">                wait_exponential_jitter=True, # Add jitter to the exponential backoff</span>
+<span class="sd">                stop_after_attempt=2, # Try twice</span>
+<span class="sd">            )</span>
+
+<span class="sd">            # The method invocation above is equivalent to the longer form below:</span>
+
+<span class="sd">            runnable_with_retries = RunnableRetry(</span>
+<span class="sd">                bound=runnable,</span>
+<span class="sd">                retry_exception_types=(ValueError,),</span>
+<span class="sd">                max_attempt_number=2,</span>
+<span class="sd">                wait_exponential_jitter=True</span>
+<span class="sd">            )</span>
+
+<span class="sd">    This logic can be used to retry any Runnable, including a chain of Runnables,</span>
+<span class="sd">    but in general it&#39;s best practice to keep the scope of the retry as small as</span>
+<span class="sd">    possible. For example, if you have a chain of Runnables, you should only retry</span>
+<span class="sd">    the Runnable that is likely to fail, not the entire chain.</span>
+
+<span class="sd">    Example:</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            from langchain_core.chat_models import ChatOpenAI</span>
+<span class="sd">            from langchain_core.prompts import PromptTemplate</span>
+
+<span class="sd">            template = PromptTemplate.from_template(&quot;tell me a joke about {topic}.&quot;)</span>
+<span class="sd">            model = ChatOpenAI(temperature=0.5)</span>
+
+<span class="sd">            # Good</span>
+<span class="sd">            chain = template | model.with_retry()</span>
+
+<span class="sd">            # Bad</span>
+<span class="sd">            chain = template | model</span>
+<span class="sd">            retryable_chain = chain.with_retry()</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">retry_exception_types</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Type</span><span class="p">[</span><span class="ne">BaseException</span><span class="p">],</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="ne">Exception</span><span class="p">,)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The exception types to retry on. By default all exceptions are retried.</span>
+<span class="sd">    </span>
+<span class="sd">    In general you should only retry on exceptions that are likely to be</span>
+<span class="sd">    transient, such as network errors.</span>
+<span class="sd">    </span>
+<span class="sd">    Good exceptions to retry are all server errors (5xx) and selected client</span>
+<span class="sd">    errors (4xx) such as 429 Too Many Requests.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">wait_exponential_jitter</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Whether to add jitter to the exponential backoff.&quot;&quot;&quot;</span>
+
+    <span class="n">max_attempt_number</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The maximum number of attempts to retry the runnable.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="RunnableRetry.get_lc_namespace"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.retry.RunnableRetry.html#langchain_core.runnables.retry.RunnableRetry.get_lc_namespace">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">get_lc_namespace</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the namespace of the langchain object.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span><span class="s2">&quot;langchain&quot;</span><span class="p">,</span> <span class="s2">&quot;schema&quot;</span><span class="p">,</span> <span class="s2">&quot;runnable&quot;</span><span class="p">]</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_kwargs_retrying</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+        <span class="n">kwargs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_attempt_number</span><span class="p">:</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;stop&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">stop_after_attempt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_attempt_number</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">wait_exponential_jitter</span><span class="p">:</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;wait&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">wait_exponential_jitter</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">retry_exception_types</span><span class="p">:</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;retry&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">retry_if_exception_type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">retry_exception_types</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">kwargs</span>
+
+    <span class="k">def</span> <span class="nf">_sync_retrying</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Retrying</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Retrying</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_kwargs_retrying</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_async_retrying</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncRetrying</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">AsyncRetrying</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_kwargs_retrying</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_patch_config</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">config</span><span class="p">:</span> <span class="n">RunnableConfig</span><span class="p">,</span>
+        <span class="n">run_manager</span><span class="p">:</span> <span class="s2">&quot;T&quot;</span><span class="p">,</span>
+        <span class="n">retry_state</span><span class="p">:</span> <span class="n">RetryCallState</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RunnableConfig</span><span class="p">:</span>
+        <span class="n">attempt</span> <span class="o">=</span> <span class="n">retry_state</span><span class="o">.</span><span class="n">attempt_number</span>
+        <span class="n">tag</span> <span class="o">=</span> <span class="s2">&quot;retry:attempt:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">attempt</span><span class="p">)</span> <span class="k">if</span> <span class="n">attempt</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">patch_config</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">callbacks</span><span class="o">=</span><span class="n">run_manager</span><span class="o">.</span><span class="n">get_child</span><span class="p">(</span><span class="n">tag</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">_patch_config_list</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">config</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">RunnableConfig</span><span class="p">],</span>
+        <span class="n">run_manager</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="s2">&quot;T&quot;</span><span class="p">],</span>
+        <span class="n">retry_state</span><span class="p">:</span> <span class="n">RetryCallState</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">RunnableConfig</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">[</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_patch_config</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">rm</span><span class="p">,</span> <span class="n">retry_state</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span><span class="p">,</span> <span class="n">rm</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">run_manager</span><span class="p">)</span>
+        <span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_invoke</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="nb">input</span><span class="p">:</span> <span class="n">Input</span><span class="p">,</span>
+        <span class="n">run_manager</span><span class="p">:</span> <span class="s2">&quot;CallbackManagerForChainRun&quot;</span><span class="p">,</span>
+        <span class="n">config</span><span class="p">:</span> <span class="n">RunnableConfig</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Output</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">attempt</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sync_retrying</span><span class="p">(</span><span class="n">reraise</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+            <span class="k">with</span> <span class="n">attempt</span><span class="p">:</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">invoke</span><span class="p">(</span>
+                    <span class="nb">input</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_patch_config</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">run_manager</span><span class="p">,</span> <span class="n">attempt</span><span class="o">.</span><span class="n">retry_state</span><span class="p">),</span>
+                    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="k">if</span> <span class="n">attempt</span><span class="o">.</span><span class="n">retry_state</span><span class="o">.</span><span class="n">outcome</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">attempt</span><span class="o">.</span><span class="n">retry_state</span><span class="o">.</span><span class="n">outcome</span><span class="o">.</span><span class="n">failed</span><span class="p">:</span>
+                <span class="n">attempt</span><span class="o">.</span><span class="n">retry_state</span><span class="o">.</span><span class="n">set_result</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span>
+
+<div class="viewcode-block" id="RunnableRetry.invoke"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.retry.RunnableRetry.html#langchain_core.runnables.retry.RunnableRetry.invoke">[docs]</a>    <span class="k">def</span> <span class="nf">invoke</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">:</span> <span class="n">Input</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">RunnableConfig</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Output</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_with_config</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_invoke</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_ainvoke</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="nb">input</span><span class="p">:</span> <span class="n">Input</span><span class="p">,</span>
+        <span class="n">run_manager</span><span class="p">:</span> <span class="s2">&quot;AsyncCallbackManagerForChainRun&quot;</span><span class="p">,</span>
+        <span class="n">config</span><span class="p">:</span> <span class="n">RunnableConfig</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Output</span><span class="p">:</span>
+        <span class="k">async</span> <span class="k">for</span> <span class="n">attempt</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_async_retrying</span><span class="p">(</span><span class="n">reraise</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+            <span class="k">with</span> <span class="n">attempt</span><span class="p">:</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">ainvoke</span><span class="p">(</span>
+                    <span class="nb">input</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_patch_config</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">run_manager</span><span class="p">,</span> <span class="n">attempt</span><span class="o">.</span><span class="n">retry_state</span><span class="p">),</span>
+                    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="k">if</span> <span class="n">attempt</span><span class="o">.</span><span class="n">retry_state</span><span class="o">.</span><span class="n">outcome</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">attempt</span><span class="o">.</span><span class="n">retry_state</span><span class="o">.</span><span class="n">outcome</span><span class="o">.</span><span class="n">failed</span><span class="p">:</span>
+                <span class="n">attempt</span><span class="o">.</span><span class="n">retry_state</span><span class="o">.</span><span class="n">set_result</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span>
+
+<div class="viewcode-block" id="RunnableRetry.ainvoke"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.retry.RunnableRetry.html#langchain_core.runnables.retry.RunnableRetry.ainvoke">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">ainvoke</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">:</span> <span class="n">Input</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">RunnableConfig</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Output</span><span class="p">:</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_acall_with_config</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ainvoke</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_batch</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">inputs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Input</span><span class="p">],</span>
+        <span class="n">run_manager</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="s2">&quot;CallbackManagerForChainRun&quot;</span><span class="p">],</span>
+        <span class="n">config</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">RunnableConfig</span><span class="p">],</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Output</span><span class="p">,</span> <span class="ne">Exception</span><span class="p">]]:</span>
+        <span class="n">results_map</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Output</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">def</span> <span class="nf">pending</span><span class="p">(</span><span class="n">iterable</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">U</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">U</span><span class="p">]:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">item</span> <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">item</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">iterable</span><span class="p">)</span> <span class="k">if</span> <span class="n">idx</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">results_map</span><span class="p">]</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">attempt</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sync_retrying</span><span class="p">():</span>
+                <span class="k">with</span> <span class="n">attempt</span><span class="p">:</span>
+                    <span class="c1"># Get the results of the inputs that have not succeeded yet.</span>
+                    <span class="n">result</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">batch</span><span class="p">(</span>
+                        <span class="n">pending</span><span class="p">(</span><span class="n">inputs</span><span class="p">),</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_patch_config_list</span><span class="p">(</span>
+                            <span class="n">pending</span><span class="p">(</span><span class="n">config</span><span class="p">),</span> <span class="n">pending</span><span class="p">(</span><span class="n">run_manager</span><span class="p">),</span> <span class="n">attempt</span><span class="o">.</span><span class="n">retry_state</span>
+                        <span class="p">),</span>
+                        <span class="n">return_exceptions</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+                    <span class="p">)</span>
+                    <span class="c1"># Register the results of the inputs that have succeeded.</span>
+                    <span class="n">first_exception</span> <span class="o">=</span> <span class="kc">None</span>
+                    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">r</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">result</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="ne">Exception</span><span class="p">):</span>
+                            <span class="k">if</span> <span class="ow">not</span> <span class="n">first_exception</span><span class="p">:</span>
+                                <span class="n">first_exception</span> <span class="o">=</span> <span class="n">r</span>
+                            <span class="k">continue</span>
+                        <span class="n">results_map</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">r</span>
+                    <span class="c1"># If any exception occurred, raise it, to retry the failed ones</span>
+                    <span class="k">if</span> <span class="n">first_exception</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="n">first_exception</span>
+                <span class="k">if</span> <span class="p">(</span>
+                    <span class="n">attempt</span><span class="o">.</span><span class="n">retry_state</span><span class="o">.</span><span class="n">outcome</span>
+                    <span class="ow">and</span> <span class="ow">not</span> <span class="n">attempt</span><span class="o">.</span><span class="n">retry_state</span><span class="o">.</span><span class="n">outcome</span><span class="o">.</span><span class="n">failed</span>
+                <span class="p">):</span>
+                    <span class="n">attempt</span><span class="o">.</span><span class="n">retry_state</span><span class="o">.</span><span class="n">set_result</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">RetryError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">result</span>
+            <span class="k">except</span> <span class="ne">UnboundLocalError</span><span class="p">:</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">List</span><span class="p">[</span><span class="n">Output</span><span class="p">],</span> <span class="p">[</span><span class="n">e</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">inputs</span><span class="p">))</span>
+
+        <span class="n">outputs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Output</span><span class="p">,</span> <span class="ne">Exception</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">inputs</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">results_map</span><span class="p">:</span>
+                <span class="n">outputs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">results_map</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">outputs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">outputs</span>
+
+<div class="viewcode-block" id="RunnableRetry.batch"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.retry.RunnableRetry.html#langchain_core.runnables.retry.RunnableRetry.batch">[docs]</a>    <span class="k">def</span> <span class="nf">batch</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">inputs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Input</span><span class="p">],</span>
+        <span class="n">config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">RunnableConfig</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">RunnableConfig</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">return_exceptions</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Output</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_batch_with_config</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_batch</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">return_exceptions</span><span class="o">=</span><span class="n">return_exceptions</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span></div>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_abatch</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">inputs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Input</span><span class="p">],</span>
+        <span class="n">run_manager</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="s2">&quot;AsyncCallbackManagerForChainRun&quot;</span><span class="p">],</span>
+        <span class="n">config</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">RunnableConfig</span><span class="p">],</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Output</span><span class="p">,</span> <span class="ne">Exception</span><span class="p">]]:</span>
+        <span class="n">results_map</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Output</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">def</span> <span class="nf">pending</span><span class="p">(</span><span class="n">iterable</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">U</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">U</span><span class="p">]:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">item</span> <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">item</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">iterable</span><span class="p">)</span> <span class="k">if</span> <span class="n">idx</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">results_map</span><span class="p">]</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">async</span> <span class="k">for</span> <span class="n">attempt</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_async_retrying</span><span class="p">():</span>
+                <span class="k">with</span> <span class="n">attempt</span><span class="p">:</span>
+                    <span class="c1"># Get the results of the inputs that have not succeeded yet.</span>
+                    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">abatch</span><span class="p">(</span>
+                        <span class="n">pending</span><span class="p">(</span><span class="n">inputs</span><span class="p">),</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_patch_config_list</span><span class="p">(</span>
+                            <span class="n">pending</span><span class="p">(</span><span class="n">config</span><span class="p">),</span> <span class="n">pending</span><span class="p">(</span><span class="n">run_manager</span><span class="p">),</span> <span class="n">attempt</span><span class="o">.</span><span class="n">retry_state</span>
+                        <span class="p">),</span>
+                        <span class="n">return_exceptions</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+                    <span class="p">)</span>
+                    <span class="c1"># Register the results of the inputs that have succeeded.</span>
+                    <span class="n">first_exception</span> <span class="o">=</span> <span class="kc">None</span>
+                    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">r</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">result</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="ne">Exception</span><span class="p">):</span>
+                            <span class="k">if</span> <span class="ow">not</span> <span class="n">first_exception</span><span class="p">:</span>
+                                <span class="n">first_exception</span> <span class="o">=</span> <span class="n">r</span>
+                            <span class="k">continue</span>
+                        <span class="n">results_map</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">r</span>
+                    <span class="c1"># If any exception occurred, raise it, to retry the failed ones</span>
+                    <span class="k">if</span> <span class="n">first_exception</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="n">first_exception</span>
+                <span class="k">if</span> <span class="p">(</span>
+                    <span class="n">attempt</span><span class="o">.</span><span class="n">retry_state</span><span class="o">.</span><span class="n">outcome</span>
+                    <span class="ow">and</span> <span class="ow">not</span> <span class="n">attempt</span><span class="o">.</span><span class="n">retry_state</span><span class="o">.</span><span class="n">outcome</span><span class="o">.</span><span class="n">failed</span>
+                <span class="p">):</span>
+                    <span class="n">attempt</span><span class="o">.</span><span class="n">retry_state</span><span class="o">.</span><span class="n">set_result</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">RetryError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">result</span>
+            <span class="k">except</span> <span class="ne">UnboundLocalError</span><span class="p">:</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">List</span><span class="p">[</span><span class="n">Output</span><span class="p">],</span> <span class="p">[</span><span class="n">e</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">inputs</span><span class="p">))</span>
+
+        <span class="n">outputs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Output</span><span class="p">,</span> <span class="ne">Exception</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">inputs</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">results_map</span><span class="p">:</span>
+                <span class="n">outputs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">results_map</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">outputs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">outputs</span>
+
+<div class="viewcode-block" id="RunnableRetry.abatch"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.retry.RunnableRetry.html#langchain_core.runnables.retry.RunnableRetry.abatch">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">abatch</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">inputs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Input</span><span class="p">],</span>
+        <span class="n">config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">RunnableConfig</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">RunnableConfig</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">return_exceptions</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Output</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_abatch_with_config</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_abatch</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">return_exceptions</span><span class="o">=</span><span class="n">return_exceptions</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span></div></div>
+
+    <span class="c1"># stream() and transform() are not retried because retrying a stream</span>
+    <span class="c1"># is not very intuitive.</span>
+</pre></div>
+
+      </div>
+    <div class="container">
+      <footer class="sk-content-footer">
+            &copy; 2023, LangChain, Inc..
+          Last updated on Jan 29, 2024.
+      </footer>
+    </div>
+  </div>
+</div>
+<script src="../../../_static/js/vendor/bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    /* Add a [>>>] button on the top-right corner of code samples to hide
+     * the >>> and ... prompts and the output and thus make the code
+     * copyable. */
+    var div = $('.highlight-python .highlight,' +
+                '.highlight-python3 .highlight,' +
+                '.highlight-pycon .highlight,' +
+		'.highlight-default .highlight')
+    var pre = div.find('pre');
+
+    // get the styles from the current theme
+    pre.parent().parent().css('position', 'relative');
+    var hide_text = 'Hide prompts and outputs';
+    var show_text = 'Show prompts and outputs';
+
+    // create and add the button to all the code blocks that contain >>>
+    div.each(function(index) {
+        var jthis = $(this);
+        if (jthis.find('.gp').length > 0) {
+            var button = $('<span class="copybutton">&gt;&gt;&gt;</span>');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+            jthis.prepend(button);
+        }
+        // tracebacks (.gt) contain bare text elements that need to be
+        // wrapped in a span to work with .nextUntil() (see later)
+        jthis.find('pre:has(.gt)').contents().filter(function() {
+            return ((this.nodeType == 3) && (this.data.trim().length > 0));
+        }).wrap('<span>');
+    });
+
+    // define the behavior of the button when it's clicked
+    $('.copybutton').click(function(e){
+        e.preventDefault();
+        var button = $(this);
+        if (button.data('hidden') === 'false') {
+            // hide the code output
+            button.parent().find('.go, .gp, .gt').hide();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'hidden');
+            button.css('text-decoration', 'line-through');
+            button.attr('title', show_text);
+            button.data('hidden', 'true');
+        } else {
+            // show the code output
+            button.parent().find('.go, .gp, .gt').show();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'visible');
+            button.css('text-decoration', 'none');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+        }
+    });
+
+	/*** Add permalink buttons next to glossary terms ***/
+	$('dl.glossary > dt[id]').append(function() {
+		return ('<a class="headerlink" href="#' +
+			    this.getAttribute('id') +
+			    '" title="Permalink to this term">¶</a>');
+	});
+});
+
+</script>
+    
+</body>
+</html>

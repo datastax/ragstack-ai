@@ -1,0 +1,373 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>langchain_community.cache.CassandraSemanticCache &mdash; 🦜🔗 LangChain 0.1.4</title>
+  
+  <link rel="canonical" href="https://api.python.langchain.com/en/latest/cache/langchain_community.cache.CassandraSemanticCache.html" />
+
+  
+
+  <link rel="stylesheet" href="../_static/css/vendor/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/autodoc_pydantic.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/sphinx-dropdown.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/panels-bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+<script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+<script src="../_static/jquery.js"></script> 
+</head>
+<body>
+
+
+<nav id="navbar" class="sk-docs-navbar navbar navbar-expand-md navbar-light bg-light py-0">
+  <div class="container-fluid sk-docs-container px-0">
+    <button
+      id="sk-navbar-toggler"
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="sk-navbar-collapse collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../langchain_api_reference.html">LangChain</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../core_api_reference.html">Core</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../community_api_reference.html">Community</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../experimental_api_reference.html">Experimental</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../openai_api_reference.html">openai</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../mistralai_api_reference.html">mistralai</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../robocorp_api_reference.html">robocorp</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../google_vertexai_api_reference.html">google-vertexai</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../nvidia_trt_api_reference.html">nvidia-trt</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../anthropic_api_reference.html">anthropic</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../together_api_reference.html">together</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../nvidia_ai_endpoints_api_reference.html">nvidia-ai-endpoints</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../exa_api_reference.html">exa</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../google_genai_api_reference.html">google-genai</a>
+        </li>
+        <li class="nav-item dropdown nav-more-item-dropdown">
+          <a class="sk-nav-link nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Partner libs</a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+              <a class="sk-nav-dropdown-item dropdown-item" href="../openai_api_reference.html">openai</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../mistralai_api_reference.html">mistralai</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../robocorp_api_reference.html">robocorp</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../google_vertexai_api_reference.html">google-vertexai</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../nvidia_trt_api_reference.html">nvidia-trt</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../anthropic_api_reference.html">anthropic</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../together_api_reference.html">together</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../nvidia_ai_endpoints_api_reference.html">nvidia-ai-endpoints</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../exa_api_reference.html">exa</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../google_genai_api_reference.html">google-genai</a>
+          </div>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" target="_blank" rel="noopener noreferrer" href="https://python.langchain.com/">Docs</a>
+        </li>
+      </ul>
+      <div id="searchbox" role="search">
+          <div class="searchformwrapper">
+          <form class="search" action="../search.html" method="get">
+            <input class="sk-search-text-input" type="text" name="q" aria-labelledby="searchlabel" />
+            <input class="sk-search-text-btn" type="submit" value="Go" />
+          </form>
+          </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="d-flex" id="sk-doc-wrapper">
+    <input type="checkbox" name="sk-toggle-checkbox" id="sk-toggle-checkbox">
+    <label id="sk-sidemenu-toggle" class="sk-btn-toggle-toc btn sk-btn-primary" for="sk-toggle-checkbox">Toggle Menu</label>
+    <div id="sk-sidebar-wrapper" class="border-right">
+      <div class="sk-sidebar-toc-wrapper">
+        <div class="btn-group w-100 mb-2" role="group" aria-label="rellinks">
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Prev</a>
+            <a href="#" role="button" class="btn sk-btn-rellink disabled py-1">Up</a>
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Next</a>
+        </div>
+            <div class="sk-sidebar-toc">
+              <ul>
+<li><a class="reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">langchain_community.cache</span></code>.CassandraSemanticCache</a><ul>
+<li><a class="reference internal" href="#langchain_community.cache.CassandraSemanticCache"><code class="docutils literal notranslate"><span class="pre">CassandraSemanticCache</span></code></a><ul>
+<li><a class="reference internal" href="#langchain_community.cache.CassandraSemanticCache.__init__"><code class="docutils literal notranslate"><span class="pre">CassandraSemanticCache.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.cache.CassandraSemanticCache.clear"><code class="docutils literal notranslate"><span class="pre">CassandraSemanticCache.clear()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.cache.CassandraSemanticCache.delete_by_document_id"><code class="docutils literal notranslate"><span class="pre">CassandraSemanticCache.delete_by_document_id()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.cache.CassandraSemanticCache.lookup"><code class="docutils literal notranslate"><span class="pre">CassandraSemanticCache.lookup()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.cache.CassandraSemanticCache.lookup_with_id"><code class="docutils literal notranslate"><span class="pre">CassandraSemanticCache.lookup_with_id()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.cache.CassandraSemanticCache.lookup_with_id_through_llm"><code class="docutils literal notranslate"><span class="pre">CassandraSemanticCache.lookup_with_id_through_llm()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.cache.CassandraSemanticCache.update"><code class="docutils literal notranslate"><span class="pre">CassandraSemanticCache.update()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            </div>
+      </div>
+    </div>
+    <div id="sk-page-content-wrapper">
+      <div class="sk-page-content container-fluid body px-md-3" role="main">
+        
+  <section id="langchain-community-cache-cassandrasemanticcache">
+<h1><a class="reference internal" href="../community_api_reference.html#module-langchain_community.cache" title="langchain_community.cache"><code class="xref py py-mod docutils literal notranslate"><span class="pre">langchain_community.cache</span></code></a>.CassandraSemanticCache<a class="headerlink" href="#langchain-community-cache-cassandrasemanticcache" title="Permalink to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="langchain_community.cache.CassandraSemanticCache">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">langchain_community.cache.</span></span><span class="sig-name descname"><span class="pre">CassandraSemanticCache</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">session</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">CassandraSession</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keyspace</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">embedding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../embeddings/langchain_core.embeddings.Embeddings.html#langchain_core.embeddings.Embeddings" title="langchain_core.embeddings.Embeddings"><span class="pre">Embeddings</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'langchain_llm_semantic_cache'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance_metric</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'dot'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">score_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.85</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ttl_seconds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_provisioning</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/langchain_community/cache.html#CassandraSemanticCache"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain_community.cache.CassandraSemanticCache" title="Permalink to this definition">¶</a></dt>
+<dd><p>Cache that uses Cassandra as a vector-store backend for semantic
+(i.e. similarity-based) lookup.</p>
+<p>It uses a single (vector) Cassandra table and stores, in principle,
+cached values from several LLMs, so the LLM’s llm_string is part
+of the rows’ primary keys.</p>
+<p>The similarity is based on one of several distance metrics (default: “dot”).
+If choosing another metric, the default threshold is to be re-tuned accordingly.</p>
+<p>Initialize the cache with all relevant parameters.
+:param session: an open Cassandra session
+:type session: cassandra.cluster.Session
+:param keyspace: the keyspace to use for storing the cache
+:type keyspace: str
+:param embedding: Embedding provider for semantic</p>
+<blockquote>
+<div><p>encoding and search.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>table_name</strong> (<em>str</em>) – name of the Cassandra (vector) table
+to use as cache</p></li>
+<li><p><strong>distance_metric</strong> (<em>str</em><em>, </em><em>'dot'</em>) – which measure to adopt for
+similarity searches</p></li>
+<li><p><strong>score_threshold</strong> (<em>optional float</em>) – numeric value to use as
+cutoff for the similarity searches</p></li>
+<li><p><strong>ttl_seconds</strong> (<em>optional int</em>) – time-to-live for cache entries
+(default: None, i.e. forever)</p></li>
+</ul>
+</dd>
+</dl>
+<p>The default score threshold is tuned to the default metric.
+Tune it carefully yourself if switching to another distance metric.</p>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#langchain_community.cache.CassandraSemanticCache.__init__" title="langchain_community.cache.CassandraSemanticCache.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(session, keyspace, embedding[, ...])</p></td>
+<td><p>Initialize the cache with all relevant parameters. :param session: an open Cassandra session :type session: cassandra.cluster.Session :param keyspace: the keyspace to use for storing the cache :type keyspace: str :param embedding: Embedding provider for semantic                   encoding and search. :type embedding: Embedding :param table_name: name of the Cassandra (vector) table                    to use as cache :type table_name: str :param distance_metric: which measure to adopt for                         similarity searches :type distance_metric: str, 'dot' :param score_threshold: numeric value to use as                         cutoff for the similarity searches :type score_threshold: optional float :param ttl_seconds: time-to-live for cache entries                     (default: None, i.e. forever) :type ttl_seconds: optional int.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#langchain_community.cache.CassandraSemanticCache.clear" title="langchain_community.cache.CassandraSemanticCache.clear"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clear</span></code></a>(**kwargs)</p></td>
+<td><p>Clear the <em>whole</em> semantic cache.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#langchain_community.cache.CassandraSemanticCache.delete_by_document_id" title="langchain_community.cache.CassandraSemanticCache.delete_by_document_id"><code class="xref py py-obj docutils literal notranslate"><span class="pre">delete_by_document_id</span></code></a>(document_id)</p></td>
+<td><p>Given this is a &quot;similarity search&quot; cache, an invalidation pattern that makes sense is first a lookup to get an ID, and then deleting with that ID.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#langchain_community.cache.CassandraSemanticCache.lookup" title="langchain_community.cache.CassandraSemanticCache.lookup"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lookup</span></code></a>(prompt, llm_string)</p></td>
+<td><p>Look up based on prompt and llm_string.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#langchain_community.cache.CassandraSemanticCache.lookup_with_id" title="langchain_community.cache.CassandraSemanticCache.lookup_with_id"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lookup_with_id</span></code></a>(prompt, llm_string)</p></td>
+<td><p>Look up based on prompt and llm_string.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#langchain_community.cache.CassandraSemanticCache.lookup_with_id_through_llm" title="langchain_community.cache.CassandraSemanticCache.lookup_with_id_through_llm"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lookup_with_id_through_llm</span></code></a>(prompt, llm[, stop])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#langchain_community.cache.CassandraSemanticCache.update" title="langchain_community.cache.CassandraSemanticCache.update"><code class="xref py py-obj docutils literal notranslate"><span class="pre">update</span></code></a>(prompt, llm_string, return_val)</p></td>
+<td><p>Update cache based on prompt and llm_string.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.cache.CassandraSemanticCache.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">session</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">CassandraSession</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keyspace</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">embedding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../embeddings/langchain_core.embeddings.Embeddings.html#langchain_core.embeddings.Embeddings" title="langchain_core.embeddings.Embeddings"><span class="pre">Embeddings</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'langchain_llm_semantic_cache'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance_metric</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'dot'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">score_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.85</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ttl_seconds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_provisioning</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/langchain_community/cache.html#CassandraSemanticCache.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain_community.cache.CassandraSemanticCache.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the cache with all relevant parameters.
+:param session: an open Cassandra session
+:type session: cassandra.cluster.Session
+:param keyspace: the keyspace to use for storing the cache
+:type keyspace: str
+:param embedding: Embedding provider for semantic</p>
+<blockquote>
+<div><p>encoding and search.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>table_name</strong> (<em>str</em>) – name of the Cassandra (vector) table
+to use as cache</p></li>
+<li><p><strong>distance_metric</strong> (<em>str</em><em>, </em><em>'dot'</em>) – which measure to adopt for
+similarity searches</p></li>
+<li><p><strong>score_threshold</strong> (<em>optional float</em>) – numeric value to use as
+cutoff for the similarity searches</p></li>
+<li><p><strong>ttl_seconds</strong> (<em>optional int</em>) – time-to-live for cache entries
+(default: None, i.e. forever)</p></li>
+</ul>
+</dd>
+</dl>
+<p>The default score threshold is tuned to the default metric.
+Tune it carefully yourself if switching to another distance metric.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.cache.CassandraSemanticCache.clear">
+<span class="sig-name descname"><span class="pre">clear</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/langchain_community/cache.html#CassandraSemanticCache.clear"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain_community.cache.CassandraSemanticCache.clear" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clear the <em>whole</em> semantic cache.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.cache.CassandraSemanticCache.delete_by_document_id">
+<span class="sig-name descname"><span class="pre">delete_by_document_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/langchain_community/cache.html#CassandraSemanticCache.delete_by_document_id"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain_community.cache.CassandraSemanticCache.delete_by_document_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given this is a “similarity search” cache, an invalidation pattern
+that makes sense is first a lookup to get an ID, and then deleting
+with that ID. This is for the second step.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.cache.CassandraSemanticCache.lookup">
+<span class="sig-name descname"><span class="pre">lookup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prompt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">llm_string</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../outputs/langchain_core.outputs.generation.Generation.html#langchain_core.outputs.generation.Generation" title="langchain_core.outputs.generation.Generation"><span class="pre">Generation</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/langchain_community/cache.html#CassandraSemanticCache.lookup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain_community.cache.CassandraSemanticCache.lookup" title="Permalink to this definition">¶</a></dt>
+<dd><p>Look up based on prompt and llm_string.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.cache.CassandraSemanticCache.lookup_with_id">
+<span class="sig-name descname"><span class="pre">lookup_with_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prompt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">llm_string</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../outputs/langchain_core.outputs.generation.Generation.html#langchain_core.outputs.generation.Generation" title="langchain_core.outputs.generation.Generation"><span class="pre">Generation</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/langchain_community/cache.html#CassandraSemanticCache.lookup_with_id"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain_community.cache.CassandraSemanticCache.lookup_with_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Look up based on prompt and llm_string.
+If there are hits, return (document_id, cached_entry)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.cache.CassandraSemanticCache.lookup_with_id_through_llm">
+<span class="sig-name descname"><span class="pre">lookup_with_id_through_llm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prompt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">llm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../language_models/langchain_core.language_models.llms.LLM.html#langchain_core.language_models.llms.LLM" title="langchain_core.language_models.llms.LLM"><span class="pre">LLM</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../outputs/langchain_core.outputs.generation.Generation.html#langchain_core.outputs.generation.Generation" title="langchain_core.outputs.generation.Generation"><span class="pre">Generation</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/langchain_community/cache.html#CassandraSemanticCache.lookup_with_id_through_llm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain_community.cache.CassandraSemanticCache.lookup_with_id_through_llm" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.cache.CassandraSemanticCache.update">
+<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prompt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">llm_string</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_val</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../outputs/langchain_core.outputs.generation.Generation.html#langchain_core.outputs.generation.Generation" title="langchain_core.outputs.generation.Generation"><span class="pre">Generation</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/langchain_community/cache.html#CassandraSemanticCache.update"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain_community.cache.CassandraSemanticCache.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update cache based on prompt and llm_string.</p>
+</dd></dl>
+
+</dd></dl>
+
+<ul class="simple">
+</ul>
+</section>
+
+
+      </div>
+    <div class="container">
+      <footer class="sk-content-footer">
+            &copy; 2023, LangChain, Inc..
+          Last updated on Jan 29, 2024.
+          <a href="../_sources/cache/langchain_community.cache.CassandraSemanticCache.rst.txt" rel="nofollow">Show this page source</a>
+      </footer>
+    </div>
+  </div>
+</div>
+<script src="../_static/js/vendor/bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    /* Add a [>>>] button on the top-right corner of code samples to hide
+     * the >>> and ... prompts and the output and thus make the code
+     * copyable. */
+    var div = $('.highlight-python .highlight,' +
+                '.highlight-python3 .highlight,' +
+                '.highlight-pycon .highlight,' +
+		'.highlight-default .highlight')
+    var pre = div.find('pre');
+
+    // get the styles from the current theme
+    pre.parent().parent().css('position', 'relative');
+    var hide_text = 'Hide prompts and outputs';
+    var show_text = 'Show prompts and outputs';
+
+    // create and add the button to all the code blocks that contain >>>
+    div.each(function(index) {
+        var jthis = $(this);
+        if (jthis.find('.gp').length > 0) {
+            var button = $('<span class="copybutton">&gt;&gt;&gt;</span>');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+            jthis.prepend(button);
+        }
+        // tracebacks (.gt) contain bare text elements that need to be
+        // wrapped in a span to work with .nextUntil() (see later)
+        jthis.find('pre:has(.gt)').contents().filter(function() {
+            return ((this.nodeType == 3) && (this.data.trim().length > 0));
+        }).wrap('<span>');
+    });
+
+    // define the behavior of the button when it's clicked
+    $('.copybutton').click(function(e){
+        e.preventDefault();
+        var button = $(this);
+        if (button.data('hidden') === 'false') {
+            // hide the code output
+            button.parent().find('.go, .gp, .gt').hide();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'hidden');
+            button.css('text-decoration', 'line-through');
+            button.attr('title', show_text);
+            button.data('hidden', 'true');
+        } else {
+            // show the code output
+            button.parent().find('.go, .gp, .gt').show();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'visible');
+            button.css('text-decoration', 'none');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+        }
+    });
+
+	/*** Add permalink buttons next to glossary terms ***/
+	$('dl.glossary > dt[id]').append(function() {
+		return ('<a class="headerlink" href="#' +
+			    this.getAttribute('id') +
+			    '" title="Permalink to this term">¶</a>');
+	});
+});
+
+</script>
+    
+</body>
+</html>

@@ -1,0 +1,997 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>langchain_community.llms.bedrock &mdash; 🦜🔗 LangChain 0.1.4</title>
+  
+  <link rel="canonical" href="https://api.python.langchain.com/en/latest/_modules/langchain_community/llms/bedrock.html" />
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/vendor/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/autodoc_pydantic.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/sphinx-dropdown.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/panels-bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+<script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+<script src="../../../_static/jquery.js"></script> 
+</head>
+<body>
+
+
+<nav id="navbar" class="sk-docs-navbar navbar navbar-expand-md navbar-light bg-light py-0">
+  <div class="container-fluid sk-docs-container px-0">
+    <button
+      id="sk-navbar-toggler"
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="sk-navbar-collapse collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../langchain_api_reference.html">LangChain</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../core_api_reference.html">Core</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../community_api_reference.html">Community</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../experimental_api_reference.html">Experimental</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../../../openai_api_reference.html">openai</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../../../mistralai_api_reference.html">mistralai</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../../../robocorp_api_reference.html">robocorp</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../../../google_vertexai_api_reference.html">google-vertexai</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../../../nvidia_trt_api_reference.html">nvidia-trt</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../../../anthropic_api_reference.html">anthropic</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../../../together_api_reference.html">together</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../../../nvidia_ai_endpoints_api_reference.html">nvidia-ai-endpoints</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../../../exa_api_reference.html">exa</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../../../google_genai_api_reference.html">google-genai</a>
+        </li>
+        <li class="nav-item dropdown nav-more-item-dropdown">
+          <a class="sk-nav-link nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Partner libs</a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+              <a class="sk-nav-dropdown-item dropdown-item" href="../../../openai_api_reference.html">openai</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../../../mistralai_api_reference.html">mistralai</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../../../robocorp_api_reference.html">robocorp</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../../../google_vertexai_api_reference.html">google-vertexai</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../../../nvidia_trt_api_reference.html">nvidia-trt</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../../../anthropic_api_reference.html">anthropic</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../../../together_api_reference.html">together</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../../../nvidia_ai_endpoints_api_reference.html">nvidia-ai-endpoints</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../../../exa_api_reference.html">exa</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../../../google_genai_api_reference.html">google-genai</a>
+          </div>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" target="_blank" rel="noopener noreferrer" href="https://python.langchain.com/">Docs</a>
+        </li>
+      </ul>
+      <div id="searchbox" role="search">
+          <div class="searchformwrapper">
+          <form class="search" action="../../../search.html" method="get">
+            <input class="sk-search-text-input" type="text" name="q" aria-labelledby="searchlabel" />
+            <input class="sk-search-text-btn" type="submit" value="Go" />
+          </form>
+          </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="d-flex" id="sk-doc-wrapper">
+    <input type="checkbox" name="sk-toggle-checkbox" id="sk-toggle-checkbox">
+    <label id="sk-sidemenu-toggle" class="sk-btn-toggle-toc btn sk-btn-primary" for="sk-toggle-checkbox">Toggle Menu</label>
+    <div id="sk-sidebar-wrapper" class="border-right">
+      <div class="sk-sidebar-toc-wrapper">
+        <div class="btn-group w-100 mb-2" role="group" aria-label="rellinks">
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Prev</a><a href="../../index.html" role="button" class="btn sk-btn-rellink py-1" sk-rellink-tooltip="Module code">Up</a>
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Next</a>
+        </div>
+            <div class="sk-sidebar-toc">
+              
+            </div>
+      </div>
+    </div>
+    <div id="sk-page-content-wrapper">
+      <div class="sk-page-content container-fluid body px-md-3" role="main">
+        
+  <h1>Source code for langchain_community.llms.bedrock</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span> <span class="nn">asyncio</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">TYPE_CHECKING</span><span class="p">,</span>
+    <span class="n">Any</span><span class="p">,</span>
+    <span class="n">AsyncGenerator</span><span class="p">,</span>
+    <span class="n">AsyncIterator</span><span class="p">,</span>
+    <span class="n">Dict</span><span class="p">,</span>
+    <span class="n">Iterator</span><span class="p">,</span>
+    <span class="n">List</span><span class="p">,</span>
+    <span class="n">Mapping</span><span class="p">,</span>
+    <span class="n">Optional</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">langchain_core.callbacks</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AsyncCallbackManagerForLLMRun</span><span class="p">,</span>
+    <span class="n">CallbackManagerForLLMRun</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">langchain_core.language_models.llms</span> <span class="kn">import</span> <span class="n">LLM</span>
+<span class="kn">from</span> <span class="nn">langchain_core.outputs</span> <span class="kn">import</span> <span class="n">GenerationChunk</span>
+<span class="kn">from</span> <span class="nn">langchain_core.pydantic_v1</span> <span class="kn">import</span> <span class="n">BaseModel</span><span class="p">,</span> <span class="n">Extra</span><span class="p">,</span> <span class="n">Field</span><span class="p">,</span> <span class="n">root_validator</span>
+<span class="kn">from</span> <span class="nn">langchain_core.utils</span> <span class="kn">import</span> <span class="n">get_from_dict_or_env</span>
+
+<span class="kn">from</span> <span class="nn">langchain_community.llms.utils</span> <span class="kn">import</span> <span class="n">enforce_stop_tokens</span>
+<span class="kn">from</span> <span class="nn">langchain_community.utilities.anthropic</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">get_num_tokens_anthropic</span><span class="p">,</span>
+    <span class="n">get_token_ids_anthropic</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">botocore.config</span> <span class="kn">import</span> <span class="n">Config</span>
+
+<span class="n">AMAZON_BEDROCK_TRACE_KEY</span> <span class="o">=</span> <span class="s2">&quot;amazon-bedrock-trace&quot;</span>
+<span class="n">GUARDRAILS_BODY_KEY</span> <span class="o">=</span> <span class="s2">&quot;amazon-bedrock-guardrailAssessment&quot;</span>
+<span class="n">HUMAN_PROMPT</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Human:&quot;</span>
+<span class="n">ASSISTANT_PROMPT</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Assistant:&quot;</span>
+<span class="n">ALTERNATION_ERROR</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="s2">&quot;Error: Prompt must alternate between &#39;</span><span class="se">\n\n</span><span class="s2">Human:&#39; and &#39;</span><span class="se">\n\n</span><span class="s2">Assistant:&#39;.&quot;</span>
+<span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_add_newlines_before_ha</span><span class="p">(</span><span class="n">input_text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="n">new_text</span> <span class="o">=</span> <span class="n">input_text</span>
+    <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;Human:&quot;</span><span class="p">,</span> <span class="s2">&quot;Assistant:&quot;</span><span class="p">]:</span>
+        <span class="n">new_text</span> <span class="o">=</span> <span class="n">new_text</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">word</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">word</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span>
+            <span class="n">new_text</span> <span class="o">=</span> <span class="n">new_text</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">word</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">word</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">new_text</span>
+
+
+<span class="k">def</span> <span class="nf">_human_assistant_format</span><span class="p">(</span><span class="n">input_text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">input_text</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s2">&quot;Human:&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="p">(</span>
+        <span class="n">input_text</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;Human:&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">input_text</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;Assistant:&quot;</span><span class="p">)</span>
+        <span class="ow">and</span> <span class="s2">&quot;Assistant:&quot;</span> <span class="ow">in</span> <span class="n">input_text</span>
+    <span class="p">):</span>
+        <span class="n">input_text</span> <span class="o">=</span> <span class="n">HUMAN_PROMPT</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">input_text</span>  <span class="c1"># SILENT CORRECTION</span>
+    <span class="k">if</span> <span class="n">input_text</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s2">&quot;Assistant:&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">input_text</span> <span class="o">=</span> <span class="n">input_text</span> <span class="o">+</span> <span class="n">ASSISTANT_PROMPT</span>  <span class="c1"># SILENT CORRECTION</span>
+    <span class="k">if</span> <span class="n">input_text</span><span class="p">[:</span> <span class="nb">len</span><span class="p">(</span><span class="s2">&quot;Human:&quot;</span><span class="p">)]</span> <span class="o">==</span> <span class="s2">&quot;Human:&quot;</span><span class="p">:</span>
+        <span class="n">input_text</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">input_text</span>
+    <span class="n">input_text</span> <span class="o">=</span> <span class="n">_add_newlines_before_ha</span><span class="p">(</span><span class="n">input_text</span><span class="p">)</span>
+    <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="c1"># track alternation</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">input_text</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="n">input_text</span><span class="p">[</span><span class="n">i</span> <span class="p">:</span> <span class="n">i</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">HUMAN_PROMPT</span><span class="p">)]</span> <span class="o">==</span> <span class="n">HUMAN_PROMPT</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">count</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">ALTERNATION_ERROR</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot; Received </span><span class="si">{</span><span class="n">input_text</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">input_text</span><span class="p">[</span><span class="n">i</span> <span class="p">:</span> <span class="n">i</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">ASSISTANT_PROMPT</span><span class="p">)]</span> <span class="o">==</span> <span class="n">ASSISTANT_PROMPT</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">count</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">ALTERNATION_ERROR</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot; Received </span><span class="si">{</span><span class="n">input_text</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">count</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>  <span class="c1"># Only saw Human, no Assistant</span>
+        <span class="n">input_text</span> <span class="o">=</span> <span class="n">input_text</span> <span class="o">+</span> <span class="n">ASSISTANT_PROMPT</span>  <span class="c1"># SILENT CORRECTION</span>
+
+    <span class="k">return</span> <span class="n">input_text</span>
+
+
+<div class="viewcode-block" id="LLMInputOutputAdapter"><a class="viewcode-back" href="../../../llms/langchain_community.llms.bedrock.LLMInputOutputAdapter.html#langchain_community.llms.bedrock.LLMInputOutputAdapter">[docs]</a><span class="k">class</span> <span class="nc">LLMInputOutputAdapter</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Adapter class to prepare the inputs from Langchain to a format</span>
+<span class="sd">    that LLM model expects.</span>
+
+<span class="sd">    It also provides helper function to extract</span>
+<span class="sd">    the generated text from the model response.&quot;&quot;&quot;</span>
+
+    <span class="n">provider_to_output_key_map</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;anthropic&quot;</span><span class="p">:</span> <span class="s2">&quot;completion&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;amazon&quot;</span><span class="p">:</span> <span class="s2">&quot;outputText&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;cohere&quot;</span><span class="p">:</span> <span class="s2">&quot;text&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;meta&quot;</span><span class="p">:</span> <span class="s2">&quot;generation&quot;</span><span class="p">,</span>
+    <span class="p">}</span>
+
+<div class="viewcode-block" id="LLMInputOutputAdapter.prepare_input"><a class="viewcode-back" href="../../../llms/langchain_community.llms.bedrock.LLMInputOutputAdapter.html#langchain_community.llms.bedrock.LLMInputOutputAdapter.prepare_input">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">prepare_input</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span> <span class="n">provider</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">model_kwargs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+        <span class="n">input_body</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="n">model_kwargs</span><span class="p">}</span>
+        <span class="k">if</span> <span class="n">provider</span> <span class="o">==</span> <span class="s2">&quot;anthropic&quot;</span><span class="p">:</span>
+            <span class="n">input_body</span><span class="p">[</span><span class="s2">&quot;prompt&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_human_assistant_format</span><span class="p">(</span><span class="n">prompt</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">provider</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;ai21&quot;</span><span class="p">,</span> <span class="s2">&quot;cohere&quot;</span><span class="p">,</span> <span class="s2">&quot;meta&quot;</span><span class="p">):</span>
+            <span class="n">input_body</span><span class="p">[</span><span class="s2">&quot;prompt&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">prompt</span>
+        <span class="k">elif</span> <span class="n">provider</span> <span class="o">==</span> <span class="s2">&quot;amazon&quot;</span><span class="p">:</span>
+            <span class="n">input_body</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+            <span class="n">input_body</span><span class="p">[</span><span class="s2">&quot;inputText&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">prompt</span>
+            <span class="n">input_body</span><span class="p">[</span><span class="s2">&quot;textGenerationConfig&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="n">model_kwargs</span><span class="p">}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">input_body</span><span class="p">[</span><span class="s2">&quot;inputText&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">prompt</span>
+
+        <span class="k">if</span> <span class="n">provider</span> <span class="o">==</span> <span class="s2">&quot;anthropic&quot;</span> <span class="ow">and</span> <span class="s2">&quot;max_tokens_to_sample&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">input_body</span><span class="p">:</span>
+            <span class="n">input_body</span><span class="p">[</span><span class="s2">&quot;max_tokens_to_sample&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">256</span>
+
+        <span class="k">return</span> <span class="n">input_body</span></div>
+
+<div class="viewcode-block" id="LLMInputOutputAdapter.prepare_output"><a class="viewcode-back" href="../../../llms/langchain_community.llms.bedrock.LLMInputOutputAdapter.html#langchain_community.llms.bedrock.LLMInputOutputAdapter.prepare_output">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">prepare_output</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">provider</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">response</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">provider</span> <span class="o">==</span> <span class="s2">&quot;anthropic&quot;</span><span class="p">:</span>
+            <span class="n">response_body</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;body&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">())</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="n">response_body</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;completion&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">response_body</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;body&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+
+            <span class="k">if</span> <span class="n">provider</span> <span class="o">==</span> <span class="s2">&quot;ai21&quot;</span><span class="p">:</span>
+                <span class="n">text</span> <span class="o">=</span> <span class="n">response_body</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;completions&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;data&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;text&quot;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">provider</span> <span class="o">==</span> <span class="s2">&quot;cohere&quot;</span><span class="p">:</span>
+                <span class="n">text</span> <span class="o">=</span> <span class="n">response_body</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;generations&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;text&quot;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">provider</span> <span class="o">==</span> <span class="s2">&quot;meta&quot;</span><span class="p">:</span>
+                <span class="n">text</span> <span class="o">=</span> <span class="n">response_body</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;generation&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">text</span> <span class="o">=</span> <span class="n">response_body</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;results&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;outputText&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="n">text</span><span class="p">,</span>
+            <span class="s2">&quot;body&quot;</span><span class="p">:</span> <span class="n">response_body</span><span class="p">,</span>
+        <span class="p">}</span></div>
+
+<div class="viewcode-block" id="LLMInputOutputAdapter.prepare_output_stream"><a class="viewcode-back" href="../../../llms/langchain_community.llms.bedrock.LLMInputOutputAdapter.html#langchain_community.llms.bedrock.LLMInputOutputAdapter.prepare_output_stream">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">prepare_output_stream</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span> <span class="n">provider</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">response</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">stop</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">GenerationChunk</span><span class="p">]:</span>
+        <span class="n">stream</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;body&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">stream</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="n">output_key</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">provider_to_output_key_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">provider</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">output_key</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Unknown streaming response output key for provider: </span><span class="si">{</span><span class="n">provider</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">stream</span><span class="p">:</span>
+            <span class="n">chunk</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;chunk&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">chunk</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+            <span class="n">chunk_obj</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">chunk</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;bytes&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">())</span>
+
+            <span class="k">if</span> <span class="n">provider</span> <span class="o">==</span> <span class="s2">&quot;cohere&quot;</span> <span class="ow">and</span> <span class="p">(</span>
+                <span class="n">chunk_obj</span><span class="p">[</span><span class="s2">&quot;is_finished&quot;</span><span class="p">]</span> <span class="ow">or</span> <span class="n">chunk_obj</span><span class="p">[</span><span class="n">output_key</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;&lt;EOS_TOKEN&gt;&quot;</span>
+            <span class="p">):</span>
+                <span class="k">return</span>
+                <span class="c1"># chunk obj format varies with provider</span>
+            <span class="k">yield</span> <span class="n">GenerationChunk</span><span class="p">(</span>
+                <span class="n">text</span><span class="o">=</span><span class="n">chunk_obj</span><span class="p">[</span><span class="n">output_key</span><span class="p">],</span>
+                <span class="n">generation_info</span><span class="o">=</span><span class="p">{</span>
+                    <span class="n">GUARDRAILS_BODY_KEY</span><span class="p">:</span> <span class="n">chunk_obj</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">GUARDRAILS_BODY_KEY</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">GUARDRAILS_BODY_KEY</span> <span class="ow">in</span> <span class="n">chunk_obj</span>
+                    <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="p">},</span>
+            <span class="p">)</span></div>
+
+<div class="viewcode-block" id="LLMInputOutputAdapter.aprepare_output_stream"><a class="viewcode-back" href="../../../llms/langchain_community.llms.bedrock.LLMInputOutputAdapter.html#langchain_community.llms.bedrock.LLMInputOutputAdapter.aprepare_output_stream">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">aprepare_output_stream</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span> <span class="n">provider</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">response</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">stop</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">GenerationChunk</span><span class="p">]:</span>
+        <span class="n">stream</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;body&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">stream</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="n">output_key</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">provider_to_output_key_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">provider</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">output_key</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Unknown streaming response output key for provider: </span><span class="si">{</span><span class="n">provider</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">stream</span><span class="p">:</span>
+            <span class="n">chunk</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;chunk&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">chunk</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+            <span class="n">chunk_obj</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">chunk</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;bytes&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">())</span>
+
+            <span class="k">if</span> <span class="n">provider</span> <span class="o">==</span> <span class="s2">&quot;cohere&quot;</span> <span class="ow">and</span> <span class="p">(</span>
+                <span class="n">chunk_obj</span><span class="p">[</span><span class="s2">&quot;is_finished&quot;</span><span class="p">]</span> <span class="ow">or</span> <span class="n">chunk_obj</span><span class="p">[</span><span class="n">output_key</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;&lt;EOS_TOKEN&gt;&quot;</span>
+            <span class="p">):</span>
+                <span class="k">return</span>
+
+            <span class="k">yield</span> <span class="n">GenerationChunk</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="n">chunk_obj</span><span class="p">[</span><span class="n">output_key</span><span class="p">])</span></div></div>
+
+
+<div class="viewcode-block" id="BedrockBase"><a class="viewcode-back" href="../../../llms/langchain_community.llms.bedrock.BedrockBase.html#langchain_community.llms.bedrock.BedrockBase">[docs]</a><span class="k">class</span> <span class="nc">BedrockBase</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">,</span> <span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for Bedrock models.&quot;&quot;&quot;</span>
+
+    <span class="n">client</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">exclude</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1">#: :meta private:</span>
+
+    <span class="n">region_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The aws region e.g., `us-west-2`. Fallsback to AWS_DEFAULT_REGION env variable</span>
+<span class="sd">    or region specified in ~/.aws/config in case it is not provided here.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">credentials_profile_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">exclude</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The name of the profile in the ~/.aws/credentials or ~/.aws/config files, which</span>
+<span class="sd">    has either access keys or role information specified.</span>
+<span class="sd">    If not specified, the default credential profile or, if on an EC2 instance,</span>
+<span class="sd">    credentials from IMDS will be used.</span>
+<span class="sd">    See: https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Config</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;An optional botocore.config.Config instance to pass to the client.&quot;&quot;&quot;</span>
+
+    <span class="n">model_id</span><span class="p">:</span> <span class="nb">str</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Id of the model to call, e.g., amazon.titan-text-express-v1, this is</span>
+<span class="sd">    equivalent to the modelId property in the list-foundation-models api&quot;&quot;&quot;</span>
+
+    <span class="n">model_kwargs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Keyword arguments to pass to the model.&quot;&quot;&quot;</span>
+
+    <span class="n">endpoint_url</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Needed if you don&#39;t want to default to us-east-1 endpoint&quot;&quot;&quot;</span>
+
+    <span class="n">streaming</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Whether to stream the results.&quot;&quot;&quot;</span>
+
+    <span class="n">provider_stop_sequence_key_name_map</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;anthropic&quot;</span><span class="p">:</span> <span class="s2">&quot;stop_sequences&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;amazon&quot;</span><span class="p">:</span> <span class="s2">&quot;stopSequences&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;ai21&quot;</span><span class="p">:</span> <span class="s2">&quot;stop_sequences&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;cohere&quot;</span><span class="p">:</span> <span class="s2">&quot;stop_sequences&quot;</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="n">guardrails</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="s2">&quot;trace&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">}</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    An optional dictionary to configure guardrails for Bedrock.</span>
+
+<span class="sd">    This field &#39;guardrails&#39; consists of two keys: &#39;id&#39; and &#39;version&#39;,</span>
+<span class="sd">    which should be strings, but are initialized to None. It&#39;s used to</span>
+<span class="sd">    determine if specific guardrails are enabled and properly set.</span>
+
+<span class="sd">    Type:</span>
+<span class="sd">        Optional[Mapping[str, str]]: A mapping with &#39;id&#39; and &#39;version&#39; keys.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">    llm = Bedrock(model_id=&quot;&lt;model_id&gt;&quot;, client=&lt;bedrock_client&gt;,</span>
+<span class="sd">                  model_kwargs={},</span>
+<span class="sd">                  guardrails={</span>
+<span class="sd">                        &quot;id&quot;: &quot;&lt;guardrail_id&gt;&quot;,</span>
+<span class="sd">                        &quot;version&quot;: &quot;&lt;guardrail_version&gt;&quot;})</span>
+
+<span class="sd">    To enable tracing for guardrails, set the &#39;trace&#39; key to True and pass a callback handler to the</span>
+<span class="sd">    &#39;run_manager&#39; parameter of the &#39;generate&#39;, &#39;_call&#39; methods.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">    llm = Bedrock(model_id=&quot;&lt;model_id&gt;&quot;, client=&lt;bedrock_client&gt;,</span>
+<span class="sd">                  model_kwargs={},</span>
+<span class="sd">                  guardrails={</span>
+<span class="sd">                        &quot;id&quot;: &quot;&lt;guardrail_id&gt;&quot;,</span>
+<span class="sd">                        &quot;version&quot;: &quot;&lt;guardrail_version&gt;&quot;,</span>
+<span class="sd">                        &quot;trace&quot;: True},</span>
+<span class="sd">                callbacks=[BedrockAsyncCallbackHandler()])</span>
+
+<span class="sd">    [https://python.langchain.com/docs/modules/callbacks/] for more information on callback handlers.</span>
+
+<span class="sd">    class BedrockAsyncCallbackHandler(AsyncCallbackHandler):</span>
+<span class="sd">        async def on_llm_error(</span>
+<span class="sd">            self,</span>
+<span class="sd">            error: BaseException,</span>
+<span class="sd">            **kwargs: Any,</span>
+<span class="sd">        ) -&gt; Any:</span>
+<span class="sd">            reason = kwargs.get(&quot;reason&quot;)</span>
+<span class="sd">            if reason == &quot;GUARDRAIL_INTERVENED&quot;:</span>
+<span class="sd">                ...Logic to handle guardrail intervention...</span>
+<span class="sd">    &quot;&quot;&quot;</span>  <span class="c1"># noqa: E501</span>
+
+    <span class="nd">@root_validator</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">validate_environment</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Validate that AWS credentials to and python package exists in environment.&quot;&quot;&quot;</span>
+
+        <span class="c1"># Skip creating new client if passed in constructor</span>
+        <span class="k">if</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;client&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">values</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">import</span> <span class="nn">boto3</span>
+
+            <span class="k">if</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;credentials_profile_name&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">session</span> <span class="o">=</span> <span class="n">boto3</span><span class="o">.</span><span class="n">Session</span><span class="p">(</span><span class="n">profile_name</span><span class="o">=</span><span class="n">values</span><span class="p">[</span><span class="s2">&quot;credentials_profile_name&quot;</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># use default credentials</span>
+                <span class="n">session</span> <span class="o">=</span> <span class="n">boto3</span><span class="o">.</span><span class="n">Session</span><span class="p">()</span>
+
+            <span class="n">values</span><span class="p">[</span><span class="s2">&quot;region_name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_from_dict_or_env</span><span class="p">(</span>
+                <span class="n">values</span><span class="p">,</span>
+                <span class="s2">&quot;region_name&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;AWS_DEFAULT_REGION&quot;</span><span class="p">,</span>
+                <span class="n">default</span><span class="o">=</span><span class="n">session</span><span class="o">.</span><span class="n">region_name</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="n">client_params</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">if</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;region_name&quot;</span><span class="p">]:</span>
+                <span class="n">client_params</span><span class="p">[</span><span class="s2">&quot;region_name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;region_name&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;endpoint_url&quot;</span><span class="p">]:</span>
+                <span class="n">client_params</span><span class="p">[</span><span class="s2">&quot;endpoint_url&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;endpoint_url&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;config&quot;</span><span class="p">]:</span>
+                <span class="n">client_params</span><span class="p">[</span><span class="s2">&quot;config&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;config&quot;</span><span class="p">]</span>
+
+            <span class="n">values</span><span class="p">[</span><span class="s2">&quot;client&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">client</span><span class="p">(</span><span class="s2">&quot;bedrock-runtime&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">client_params</span><span class="p">)</span>
+
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ModuleNotFoundError</span><span class="p">(</span>
+                <span class="s2">&quot;Could not import boto3 python package. &quot;</span>
+                <span class="s2">&quot;Please install it with `pip install boto3`.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Could not load credentials to authenticate with AWS client. &quot;</span>
+                <span class="s2">&quot;Please check that credentials in the specified &quot;</span>
+                <span class="s2">&quot;profile name are valid.&quot;</span>
+            <span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>
+
+        <span class="k">return</span> <span class="n">values</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_identifying_params</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the identifying parameters.&quot;&quot;&quot;</span>
+        <span class="n">_model_kwargs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_kwargs</span> <span class="ow">or</span> <span class="p">{}</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="o">**</span><span class="p">{</span><span class="s2">&quot;model_kwargs&quot;</span><span class="p">:</span> <span class="n">_model_kwargs</span><span class="p">},</span>
+        <span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">_get_provider</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_id</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_model_is_anthropic</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_provider</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;anthropic&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_guardrails_enabled</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Determines if guardrails are enabled and correctly configured.</span>
+<span class="sd">        Checks if &#39;guardrails&#39; is a dictionary with non-empty &#39;id&#39; and &#39;version&#39; keys.</span>
+<span class="sd">        Checks if &#39;guardrails.trace&#39; is true.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True if guardrails are correctly configured, False otherwise.</span>
+<span class="sd">        Raises:</span>
+<span class="sd">            TypeError: If &#39;guardrails&#39; lacks &#39;id&#39; or &#39;version&#39; keys.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span>
+                <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">guardrails</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span>
+                <span class="ow">and</span> <span class="nb">bool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">guardrails</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">])</span>
+                <span class="ow">and</span> <span class="nb">bool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">guardrails</span><span class="p">[</span><span class="s2">&quot;version&quot;</span><span class="p">])</span>
+            <span class="p">)</span>
+
+        <span class="k">except</span> <span class="ne">KeyError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="s2">&quot;Guardrails must be a dictionary with &#39;id&#39; and &#39;version&#39; keys.&quot;</span>
+            <span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>
+
+    <span class="k">def</span> <span class="nf">_get_guardrails_canonical</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The canonical way to pass in guardrails to the bedrock service</span>
+<span class="sd">        adheres to the following format:</span>
+
+<span class="sd">        &quot;amazon-bedrock-guardrailDetails&quot;: {</span>
+<span class="sd">            &quot;guardrailId&quot;: &quot;string&quot;,</span>
+<span class="sd">            &quot;guardrailVersion&quot;: &quot;string&quot;</span>
+<span class="sd">        }</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;amazon-bedrock-guardrailDetails&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;guardrailId&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">guardrails</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">),</span>
+                <span class="s2">&quot;guardrailVersion&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">guardrails</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;version&quot;</span><span class="p">),</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">_prepare_input_and_invoke</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">stop</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">run_manager</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">CallbackManagerForLLMRun</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">_model_kwargs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_kwargs</span> <span class="ow">or</span> <span class="p">{}</span>
+
+        <span class="n">provider</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_provider</span><span class="p">()</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="n">_model_kwargs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">}</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_guardrails_enabled</span><span class="p">:</span>
+            <span class="n">params</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_guardrails_canonical</span><span class="p">())</span>
+        <span class="n">input_body</span> <span class="o">=</span> <span class="n">LLMInputOutputAdapter</span><span class="o">.</span><span class="n">prepare_input</span><span class="p">(</span><span class="n">provider</span><span class="p">,</span> <span class="n">prompt</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+        <span class="n">body</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">input_body</span><span class="p">)</span>
+        <span class="n">accept</span> <span class="o">=</span> <span class="s2">&quot;application/json&quot;</span>
+        <span class="n">contentType</span> <span class="o">=</span> <span class="s2">&quot;application/json&quot;</span>
+
+        <span class="n">request_options</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;body&quot;</span><span class="p">:</span> <span class="n">body</span><span class="p">,</span>
+            <span class="s2">&quot;modelId&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_id</span><span class="p">,</span>
+            <span class="s2">&quot;accept&quot;</span><span class="p">:</span> <span class="n">accept</span><span class="p">,</span>
+            <span class="s2">&quot;contentType&quot;</span><span class="p">:</span> <span class="n">contentType</span><span class="p">,</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_guardrails_enabled</span><span class="p">:</span>
+            <span class="n">request_options</span><span class="p">[</span><span class="s2">&quot;guardrail&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;ENABLED&quot;</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">guardrails</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;trace&quot;</span><span class="p">):</span>
+                <span class="n">request_options</span><span class="p">[</span><span class="s2">&quot;trace&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;ENABLED&quot;</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">invoke_model</span><span class="p">(</span><span class="o">**</span><span class="n">request_options</span><span class="p">)</span>
+
+            <span class="n">text</span><span class="p">,</span> <span class="n">body</span> <span class="o">=</span> <span class="n">LLMInputOutputAdapter</span><span class="o">.</span><span class="n">prepare_output</span><span class="p">(</span>
+                <span class="n">provider</span><span class="p">,</span> <span class="n">response</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error raised by bedrock service: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">stop</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="n">enforce_stop_tokens</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">stop</span><span class="p">)</span>
+
+        <span class="c1"># Verify and raise a callback error if any intervention occurs or a signal is</span>
+        <span class="c1"># sent from a Bedrock service,</span>
+        <span class="c1"># such as when guardrails are triggered.</span>
+        <span class="n">services_trace</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_bedrock_services_signal</span><span class="p">(</span><span class="n">body</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">services_trace</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;signal&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">run_manager</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">run_manager</span><span class="o">.</span><span class="n">on_llm_error</span><span class="p">(</span>
+                <span class="ne">Exception</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Error raised by bedrock service: </span><span class="si">{</span><span class="n">services_trace</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;reason&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">),</span>
+                <span class="o">**</span><span class="n">services_trace</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">text</span>
+
+    <span class="k">def</span> <span class="nf">_get_bedrock_services_signal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">body</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This function checks the response body for an interrupt flag or message that indicates</span>
+<span class="sd">        whether any of the Bedrock services have intervened in the processing flow. It is</span>
+<span class="sd">        primarily used to identify modifications or interruptions imposed by these services</span>
+<span class="sd">        during the request-response cycle with a Large Language Model (LLM).</span>
+<span class="sd">        &quot;&quot;&quot;</span>  <span class="c1"># noqa: E501</span>
+
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_guardrails_enabled</span>
+            <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">guardrails</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;trace&quot;</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_guardrails_intervention</span><span class="p">(</span><span class="n">body</span><span class="p">)</span>
+        <span class="p">):</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s2">&quot;signal&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                <span class="s2">&quot;reason&quot;</span><span class="p">:</span> <span class="s2">&quot;GUARDRAIL_INTERVENED&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;trace&quot;</span><span class="p">:</span> <span class="n">body</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">AMAZON_BEDROCK_TRACE_KEY</span><span class="p">),</span>
+            <span class="p">}</span>
+
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;signal&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+            <span class="s2">&quot;reason&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="s2">&quot;trace&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">_is_guardrails_intervention</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">body</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">body</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">GUARDRAILS_BODY_KEY</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;GUARDRAIL_INTERVENED&quot;</span>
+
+    <span class="k">def</span> <span class="nf">_prepare_input_and_invoke_stream</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">stop</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">run_manager</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">CallbackManagerForLLMRun</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">GenerationChunk</span><span class="p">]:</span>
+        <span class="n">_model_kwargs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_kwargs</span> <span class="ow">or</span> <span class="p">{}</span>
+        <span class="n">provider</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_provider</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">stop</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">provider</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">provider_stop_sequence_key_name_map</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Stop sequence key name for </span><span class="si">{</span><span class="n">provider</span><span class="si">}</span><span class="s2"> is not supported.&quot;</span>
+                <span class="p">)</span>
+
+            <span class="c1"># stop sequence from _generate() overrides</span>
+            <span class="c1"># stop sequences in the class attribute</span>
+            <span class="n">_model_kwargs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">provider_stop_sequence_key_name_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">provider</span><span class="p">)]</span> <span class="o">=</span> <span class="n">stop</span>
+
+        <span class="k">if</span> <span class="n">provider</span> <span class="o">==</span> <span class="s2">&quot;cohere&quot;</span><span class="p">:</span>
+            <span class="n">_model_kwargs</span><span class="p">[</span><span class="s2">&quot;stream&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="n">_model_kwargs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">}</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_guardrails_enabled</span><span class="p">:</span>
+            <span class="n">params</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_guardrails_canonical</span><span class="p">())</span>
+
+        <span class="n">input_body</span> <span class="o">=</span> <span class="n">LLMInputOutputAdapter</span><span class="o">.</span><span class="n">prepare_input</span><span class="p">(</span><span class="n">provider</span><span class="p">,</span> <span class="n">prompt</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+        <span class="n">body</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">input_body</span><span class="p">)</span>
+
+        <span class="n">request_options</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;body&quot;</span><span class="p">:</span> <span class="n">body</span><span class="p">,</span>
+            <span class="s2">&quot;modelId&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_id</span><span class="p">,</span>
+            <span class="s2">&quot;accept&quot;</span><span class="p">:</span> <span class="s2">&quot;application/json&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;contentType&quot;</span><span class="p">:</span> <span class="s2">&quot;application/json&quot;</span><span class="p">,</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_guardrails_enabled</span><span class="p">:</span>
+            <span class="n">request_options</span><span class="p">[</span><span class="s2">&quot;guardrail&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;ENABLED&quot;</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">guardrails</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;trace&quot;</span><span class="p">):</span>
+                <span class="n">request_options</span><span class="p">[</span><span class="s2">&quot;trace&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;ENABLED&quot;</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">invoke_model_with_response_stream</span><span class="p">(</span><span class="o">**</span><span class="n">request_options</span><span class="p">)</span>
+
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error raised by bedrock service: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">LLMInputOutputAdapter</span><span class="o">.</span><span class="n">prepare_output_stream</span><span class="p">(</span>
+            <span class="n">provider</span><span class="p">,</span> <span class="n">response</span><span class="p">,</span> <span class="n">stop</span>
+        <span class="p">):</span>
+            <span class="k">yield</span> <span class="n">chunk</span>
+            <span class="c1"># verify and raise callback error if any middleware intervened</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_get_bedrock_services_signal</span><span class="p">(</span><span class="n">chunk</span><span class="o">.</span><span class="n">generation_info</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">run_manager</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">run_manager</span><span class="o">.</span><span class="n">on_llm_new_token</span><span class="p">(</span><span class="n">chunk</span><span class="o">.</span><span class="n">text</span><span class="p">,</span> <span class="n">chunk</span><span class="o">=</span><span class="n">chunk</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_aprepare_input_and_invoke_stream</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">stop</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">run_manager</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AsyncCallbackManagerForLLMRun</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">GenerationChunk</span><span class="p">]:</span>
+        <span class="n">_model_kwargs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_kwargs</span> <span class="ow">or</span> <span class="p">{}</span>
+        <span class="n">provider</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_provider</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">stop</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">provider</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">provider_stop_sequence_key_name_map</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Stop sequence key name for </span><span class="si">{</span><span class="n">provider</span><span class="si">}</span><span class="s2"> is not supported.&quot;</span>
+                <span class="p">)</span>
+            <span class="n">_model_kwargs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">provider_stop_sequence_key_name_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">provider</span><span class="p">)]</span> <span class="o">=</span> <span class="n">stop</span>
+
+        <span class="k">if</span> <span class="n">provider</span> <span class="o">==</span> <span class="s2">&quot;cohere&quot;</span><span class="p">:</span>
+            <span class="n">_model_kwargs</span><span class="p">[</span><span class="s2">&quot;stream&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="n">_model_kwargs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">}</span>
+        <span class="n">input_body</span> <span class="o">=</span> <span class="n">LLMInputOutputAdapter</span><span class="o">.</span><span class="n">prepare_input</span><span class="p">(</span><span class="n">provider</span><span class="p">,</span> <span class="n">prompt</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+        <span class="n">body</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">input_body</span><span class="p">)</span>
+
+        <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">get_running_loop</span><span class="p">()</span><span class="o">.</span><span class="n">run_in_executor</span><span class="p">(</span>
+            <span class="kc">None</span><span class="p">,</span>
+            <span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">invoke_model_with_response_stream</span><span class="p">(</span>
+                <span class="n">body</span><span class="o">=</span><span class="n">body</span><span class="p">,</span>
+                <span class="n">modelId</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model_id</span><span class="p">,</span>
+                <span class="n">accept</span><span class="o">=</span><span class="s2">&quot;application/json&quot;</span><span class="p">,</span>
+                <span class="n">contentType</span><span class="o">=</span><span class="s2">&quot;application/json&quot;</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">)</span>
+
+        <span class="k">async</span> <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">LLMInputOutputAdapter</span><span class="o">.</span><span class="n">aprepare_output_stream</span><span class="p">(</span>
+            <span class="n">provider</span><span class="p">,</span> <span class="n">response</span><span class="p">,</span> <span class="n">stop</span>
+        <span class="p">):</span>
+            <span class="k">yield</span> <span class="n">chunk</span>
+            <span class="k">if</span> <span class="n">run_manager</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">iscoroutinefunction</span><span class="p">(</span>
+                <span class="n">run_manager</span><span class="o">.</span><span class="n">on_llm_new_token</span>
+            <span class="p">):</span>
+                <span class="k">await</span> <span class="n">run_manager</span><span class="o">.</span><span class="n">on_llm_new_token</span><span class="p">(</span><span class="n">chunk</span><span class="o">.</span><span class="n">text</span><span class="p">,</span> <span class="n">chunk</span><span class="o">=</span><span class="n">chunk</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">run_manager</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">run_manager</span><span class="o">.</span><span class="n">on_llm_new_token</span><span class="p">(</span><span class="n">chunk</span><span class="o">.</span><span class="n">text</span><span class="p">,</span> <span class="n">chunk</span><span class="o">=</span><span class="n">chunk</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Bedrock"><a class="viewcode-back" href="../../../llms/langchain_community.llms.bedrock.Bedrock.html#langchain_community.llms.bedrock.Bedrock">[docs]</a><span class="k">class</span> <span class="nc">Bedrock</span><span class="p">(</span><span class="n">LLM</span><span class="p">,</span> <span class="n">BedrockBase</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Bedrock models.</span>
+
+<span class="sd">    To authenticate, the AWS client uses the following methods to</span>
+<span class="sd">    automatically load credentials:</span>
+<span class="sd">    https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html</span>
+
+<span class="sd">    If a specific credential profile should be used, you must pass</span>
+<span class="sd">    the name of the profile from the ~/.aws/credentials file that is to be used.</span>
+
+<span class="sd">    Make sure the credentials / roles used have the required policies to</span>
+<span class="sd">    access the Bedrock service.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Example:</span>
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            from bedrock_langchain.bedrock_llm import BedrockLLM</span>
+
+<span class="sd">            llm = BedrockLLM(</span>
+<span class="sd">                credentials_profile_name=&quot;default&quot;,</span>
+<span class="sd">                model_id=&quot;amazon.titan-text-express-v1&quot;,</span>
+<span class="sd">                streaming=True</span>
+<span class="sd">            )</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_llm_type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return type of llm.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s2">&quot;amazon_bedrock&quot;</span>
+
+<div class="viewcode-block" id="Bedrock.is_lc_serializable"><a class="viewcode-back" href="../../../llms/langchain_community.llms.bedrock.Bedrock.html#langchain_community.llms.bedrock.Bedrock.is_lc_serializable">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">is_lc_serializable</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return whether this model can be serialized by Langchain.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="Bedrock.get_lc_namespace"><a class="viewcode-back" href="../../../llms/langchain_community.llms.bedrock.Bedrock.html#langchain_community.llms.bedrock.Bedrock.get_lc_namespace">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">get_lc_namespace</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the namespace of the langchain object.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span><span class="s2">&quot;langchain&quot;</span><span class="p">,</span> <span class="s2">&quot;llms&quot;</span><span class="p">,</span> <span class="s2">&quot;bedrock&quot;</span><span class="p">]</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">lc_attributes</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+        <span class="n">attributes</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">region_name</span><span class="p">:</span>
+            <span class="n">attributes</span><span class="p">[</span><span class="s2">&quot;region_name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">region_name</span>
+
+        <span class="k">return</span> <span class="n">attributes</span>
+
+    <span class="k">class</span> <span class="nc">Config</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Configuration for this pydantic object.&quot;&quot;&quot;</span>
+
+        <span class="n">extra</span> <span class="o">=</span> <span class="n">Extra</span><span class="o">.</span><span class="n">forbid</span>
+
+    <span class="k">def</span> <span class="nf">_stream</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">stop</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">run_manager</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">CallbackManagerForLLMRun</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">GenerationChunk</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Call out to Bedrock service with streaming.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            prompt (str): The prompt to pass into the model</span>
+<span class="sd">            stop (Optional[List[str]], optional): Stop sequences. These will</span>
+<span class="sd">                override any stop sequences in the `model_kwargs` attribute.</span>
+<span class="sd">                Defaults to None.</span>
+<span class="sd">            run_manager (Optional[CallbackManagerForLLMRun], optional): Callback</span>
+<span class="sd">                run managers used to process the output. Defaults to None.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Iterator[GenerationChunk]: Generator that yields the streamed responses.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            Iterator[GenerationChunk]: Responses from the model.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prepare_input_and_invoke_stream</span><span class="p">(</span>
+            <span class="n">prompt</span><span class="o">=</span><span class="n">prompt</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="n">stop</span><span class="p">,</span> <span class="n">run_manager</span><span class="o">=</span><span class="n">run_manager</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_call</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">stop</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">run_manager</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">CallbackManagerForLLMRun</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Call out to Bedrock service model.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            prompt: The prompt to pass into the model.</span>
+<span class="sd">            stop: Optional list of stop words to use when generating.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The string generated by the model.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            .. code-block:: python</span>
+
+<span class="sd">                response = llm(&quot;Tell me a joke.&quot;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">streaming</span><span class="p">:</span>
+            <span class="n">completion</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+            <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stream</span><span class="p">(</span>
+                <span class="n">prompt</span><span class="o">=</span><span class="n">prompt</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="n">stop</span><span class="p">,</span> <span class="n">run_manager</span><span class="o">=</span><span class="n">run_manager</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+            <span class="p">):</span>
+                <span class="n">completion</span> <span class="o">+=</span> <span class="n">chunk</span><span class="o">.</span><span class="n">text</span>
+            <span class="k">return</span> <span class="n">completion</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prepare_input_and_invoke</span><span class="p">(</span>
+            <span class="n">prompt</span><span class="o">=</span><span class="n">prompt</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="n">stop</span><span class="p">,</span> <span class="n">run_manager</span><span class="o">=</span><span class="n">run_manager</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_astream</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">stop</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">run_manager</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AsyncCallbackManagerForLLMRun</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="n">GenerationChunk</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Call out to Bedrock service with streaming.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            prompt (str): The prompt to pass into the model</span>
+<span class="sd">            stop (Optional[List[str]], optional): Stop sequences. These will</span>
+<span class="sd">                override any stop sequences in the `model_kwargs` attribute.</span>
+<span class="sd">                Defaults to None.</span>
+<span class="sd">            run_manager (Optional[CallbackManagerForLLMRun], optional): Callback</span>
+<span class="sd">                run managers used to process the output. Defaults to None.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            AsyncGenerator[GenerationChunk, None]: Generator that asynchronously yields</span>
+<span class="sd">            the streamed responses.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">async</span> <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_aprepare_input_and_invoke_stream</span><span class="p">(</span>
+            <span class="n">prompt</span><span class="o">=</span><span class="n">prompt</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="n">stop</span><span class="p">,</span> <span class="n">run_manager</span><span class="o">=</span><span class="n">run_manager</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">):</span>
+            <span class="k">yield</span> <span class="n">chunk</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_acall</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">stop</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">run_manager</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AsyncCallbackManagerForLLMRun</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Call out to Bedrock service model.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            prompt: The prompt to pass into the model.</span>
+<span class="sd">            stop: Optional list of stop words to use when generating.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The string generated by the model.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            .. code-block:: python</span>
+
+<span class="sd">                response = await llm._acall(&quot;Tell me a joke.&quot;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">streaming</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Streaming must be set to True for async operations. &quot;</span><span class="p">)</span>
+
+        <span class="n">chunks</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">chunk</span><span class="o">.</span><span class="n">text</span>
+            <span class="k">async</span> <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_astream</span><span class="p">(</span>
+                <span class="n">prompt</span><span class="o">=</span><span class="n">prompt</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="n">stop</span><span class="p">,</span> <span class="n">run_manager</span><span class="o">=</span><span class="n">run_manager</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+            <span class="p">)</span>
+        <span class="p">]</span>
+        <span class="k">return</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">chunks</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Bedrock.get_num_tokens"><a class="viewcode-back" href="../../../llms/langchain_community.llms.bedrock.Bedrock.html#langchain_community.llms.bedrock.Bedrock.get_num_tokens">[docs]</a>    <span class="k">def</span> <span class="nf">get_num_tokens</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model_is_anthropic</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">get_num_tokens_anthropic</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_num_tokens</span><span class="p">(</span><span class="n">text</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Bedrock.get_token_ids"><a class="viewcode-back" href="../../../llms/langchain_community.llms.bedrock.Bedrock.html#langchain_community.llms.bedrock.Bedrock.get_token_ids">[docs]</a>    <span class="k">def</span> <span class="nf">get_token_ids</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model_is_anthropic</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">get_token_ids_anthropic</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_token_ids</span><span class="p">(</span><span class="n">text</span><span class="p">)</span></div></div>
+</pre></div>
+
+      </div>
+    <div class="container">
+      <footer class="sk-content-footer">
+            &copy; 2023, LangChain, Inc..
+          Last updated on Jan 29, 2024.
+      </footer>
+    </div>
+  </div>
+</div>
+<script src="../../../_static/js/vendor/bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    /* Add a [>>>] button on the top-right corner of code samples to hide
+     * the >>> and ... prompts and the output and thus make the code
+     * copyable. */
+    var div = $('.highlight-python .highlight,' +
+                '.highlight-python3 .highlight,' +
+                '.highlight-pycon .highlight,' +
+		'.highlight-default .highlight')
+    var pre = div.find('pre');
+
+    // get the styles from the current theme
+    pre.parent().parent().css('position', 'relative');
+    var hide_text = 'Hide prompts and outputs';
+    var show_text = 'Show prompts and outputs';
+
+    // create and add the button to all the code blocks that contain >>>
+    div.each(function(index) {
+        var jthis = $(this);
+        if (jthis.find('.gp').length > 0) {
+            var button = $('<span class="copybutton">&gt;&gt;&gt;</span>');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+            jthis.prepend(button);
+        }
+        // tracebacks (.gt) contain bare text elements that need to be
+        // wrapped in a span to work with .nextUntil() (see later)
+        jthis.find('pre:has(.gt)').contents().filter(function() {
+            return ((this.nodeType == 3) && (this.data.trim().length > 0));
+        }).wrap('<span>');
+    });
+
+    // define the behavior of the button when it's clicked
+    $('.copybutton').click(function(e){
+        e.preventDefault();
+        var button = $(this);
+        if (button.data('hidden') === 'false') {
+            // hide the code output
+            button.parent().find('.go, .gp, .gt').hide();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'hidden');
+            button.css('text-decoration', 'line-through');
+            button.attr('title', show_text);
+            button.data('hidden', 'true');
+        } else {
+            // show the code output
+            button.parent().find('.go, .gp, .gt').show();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'visible');
+            button.css('text-decoration', 'none');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+        }
+    });
+
+	/*** Add permalink buttons next to glossary terms ***/
+	$('dl.glossary > dt[id]').append(function() {
+		return ('<a class="headerlink" href="#' +
+			    this.getAttribute('id') +
+			    '" title="Permalink to this term">¶</a>');
+	});
+});
+
+</script>
+    
+</body>
+</html>

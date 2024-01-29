@@ -1,0 +1,987 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>langchain_community.vectorstores.chroma.Chroma &mdash; 🦜🔗 LangChain 0.1.4</title>
+  
+  <link rel="canonical" href="https://api.python.langchain.com/en/latest/vectorstores/langchain_community.vectorstores.chroma.Chroma.html" />
+
+  
+
+  <link rel="stylesheet" href="../_static/css/vendor/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/autodoc_pydantic.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/sphinx-dropdown.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/panels-bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+<script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+<script src="../_static/jquery.js"></script> 
+</head>
+<body>
+
+
+<nav id="navbar" class="sk-docs-navbar navbar navbar-expand-md navbar-light bg-light py-0">
+  <div class="container-fluid sk-docs-container px-0">
+    <button
+      id="sk-navbar-toggler"
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="sk-navbar-collapse collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../langchain_api_reference.html">LangChain</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../core_api_reference.html">Core</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../community_api_reference.html">Community</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../experimental_api_reference.html">Experimental</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../openai_api_reference.html">openai</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../mistralai_api_reference.html">mistralai</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../robocorp_api_reference.html">robocorp</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../google_vertexai_api_reference.html">google-vertexai</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../nvidia_trt_api_reference.html">nvidia-trt</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../anthropic_api_reference.html">anthropic</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../together_api_reference.html">together</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../nvidia_ai_endpoints_api_reference.html">nvidia-ai-endpoints</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../exa_api_reference.html">exa</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../google_genai_api_reference.html">google-genai</a>
+        </li>
+        <li class="nav-item dropdown nav-more-item-dropdown">
+          <a class="sk-nav-link nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Partner libs</a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+              <a class="sk-nav-dropdown-item dropdown-item" href="../openai_api_reference.html">openai</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../mistralai_api_reference.html">mistralai</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../robocorp_api_reference.html">robocorp</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../google_vertexai_api_reference.html">google-vertexai</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../nvidia_trt_api_reference.html">nvidia-trt</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../anthropic_api_reference.html">anthropic</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../together_api_reference.html">together</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../nvidia_ai_endpoints_api_reference.html">nvidia-ai-endpoints</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../exa_api_reference.html">exa</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../google_genai_api_reference.html">google-genai</a>
+          </div>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" target="_blank" rel="noopener noreferrer" href="https://python.langchain.com/">Docs</a>
+        </li>
+      </ul>
+      <div id="searchbox" role="search">
+          <div class="searchformwrapper">
+          <form class="search" action="../search.html" method="get">
+            <input class="sk-search-text-input" type="text" name="q" aria-labelledby="searchlabel" />
+            <input class="sk-search-text-btn" type="submit" value="Go" />
+          </form>
+          </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="d-flex" id="sk-doc-wrapper">
+    <input type="checkbox" name="sk-toggle-checkbox" id="sk-toggle-checkbox">
+    <label id="sk-sidemenu-toggle" class="sk-btn-toggle-toc btn sk-btn-primary" for="sk-toggle-checkbox">Toggle Menu</label>
+    <div id="sk-sidebar-wrapper" class="border-right">
+      <div class="sk-sidebar-toc-wrapper">
+        <div class="btn-group w-100 mb-2" role="group" aria-label="rellinks">
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Prev</a>
+            <a href="#" role="button" class="btn sk-btn-rellink disabled py-1">Up</a>
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Next</a>
+        </div>
+            <div class="sk-sidebar-toc">
+              <ul>
+<li><a class="reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">langchain_community.vectorstores.chroma</span></code>.Chroma</a><ul>
+<li><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma"><code class="docutils literal notranslate"><span class="pre">Chroma</span></code></a><ul>
+<li><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.__init__"><code class="docutils literal notranslate"><span class="pre">Chroma.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.aadd_documents"><code class="docutils literal notranslate"><span class="pre">Chroma.aadd_documents()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.aadd_texts"><code class="docutils literal notranslate"><span class="pre">Chroma.aadd_texts()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.add_documents"><code class="docutils literal notranslate"><span class="pre">Chroma.add_documents()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.add_images"><code class="docutils literal notranslate"><span class="pre">Chroma.add_images()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.add_texts"><code class="docutils literal notranslate"><span class="pre">Chroma.add_texts()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.adelete"><code class="docutils literal notranslate"><span class="pre">Chroma.adelete()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.afrom_documents"><code class="docutils literal notranslate"><span class="pre">Chroma.afrom_documents()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.afrom_texts"><code class="docutils literal notranslate"><span class="pre">Chroma.afrom_texts()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.amax_marginal_relevance_search"><code class="docutils literal notranslate"><span class="pre">Chroma.amax_marginal_relevance_search()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.amax_marginal_relevance_search_by_vector"><code class="docutils literal notranslate"><span class="pre">Chroma.amax_marginal_relevance_search_by_vector()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.as_retriever"><code class="docutils literal notranslate"><span class="pre">Chroma.as_retriever()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.asearch"><code class="docutils literal notranslate"><span class="pre">Chroma.asearch()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.asimilarity_search"><code class="docutils literal notranslate"><span class="pre">Chroma.asimilarity_search()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.asimilarity_search_by_vector"><code class="docutils literal notranslate"><span class="pre">Chroma.asimilarity_search_by_vector()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.asimilarity_search_with_relevance_scores"><code class="docutils literal notranslate"><span class="pre">Chroma.asimilarity_search_with_relevance_scores()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.asimilarity_search_with_score"><code class="docutils literal notranslate"><span class="pre">Chroma.asimilarity_search_with_score()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.delete"><code class="docutils literal notranslate"><span class="pre">Chroma.delete()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.delete_collection"><code class="docutils literal notranslate"><span class="pre">Chroma.delete_collection()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.encode_image"><code class="docutils literal notranslate"><span class="pre">Chroma.encode_image()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.from_documents"><code class="docutils literal notranslate"><span class="pre">Chroma.from_documents()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.from_texts"><code class="docutils literal notranslate"><span class="pre">Chroma.from_texts()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.get"><code class="docutils literal notranslate"><span class="pre">Chroma.get()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.max_marginal_relevance_search"><code class="docutils literal notranslate"><span class="pre">Chroma.max_marginal_relevance_search()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.max_marginal_relevance_search_by_vector"><code class="docutils literal notranslate"><span class="pre">Chroma.max_marginal_relevance_search_by_vector()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.persist"><code class="docutils literal notranslate"><span class="pre">Chroma.persist()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.search"><code class="docutils literal notranslate"><span class="pre">Chroma.search()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.similarity_search"><code class="docutils literal notranslate"><span class="pre">Chroma.similarity_search()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.similarity_search_by_vector"><code class="docutils literal notranslate"><span class="pre">Chroma.similarity_search_by_vector()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.similarity_search_by_vector_with_relevance_scores"><code class="docutils literal notranslate"><span class="pre">Chroma.similarity_search_by_vector_with_relevance_scores()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.similarity_search_with_relevance_scores"><code class="docutils literal notranslate"><span class="pre">Chroma.similarity_search_with_relevance_scores()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.similarity_search_with_score"><code class="docutils literal notranslate"><span class="pre">Chroma.similarity_search_with_score()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.update_document"><code class="docutils literal notranslate"><span class="pre">Chroma.update_document()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.update_documents"><code class="docutils literal notranslate"><span class="pre">Chroma.update_documents()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            </div>
+      </div>
+    </div>
+    <div id="sk-page-content-wrapper">
+      <div class="sk-page-content container-fluid body px-md-3" role="main">
+        
+  <section id="langchain-community-vectorstores-chroma-chroma">
+<h1><code class="xref py py-mod docutils literal notranslate"><span class="pre">langchain_community.vectorstores.chroma</span></code>.Chroma<a class="headerlink" href="#langchain-community-vectorstores-chroma-chroma" title="Permalink to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.chroma.Chroma">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">langchain_community.vectorstores.chroma.</span></span><span class="sig-name descname"><span class="pre">Chroma</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">collection_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'langchain'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">embedding_function</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../embeddings/langchain_core.embeddings.Embeddings.html#langchain_core.embeddings.Embeddings" title="langchain_core.embeddings.Embeddings"><span class="pre">Embeddings</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">persist_directory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">client_settings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">chromadb.config.Settings</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">collection_metadata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">client</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">chromadb.Client</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">relevance_score_fn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/langchain_community/vectorstores/chroma.html#Chroma"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain_community.vectorstores.chroma.Chroma" title="Permalink to this definition">¶</a></dt>
+<dd><p><cite>ChromaDB</cite> vector store.</p>
+<p>To use, you should have the <code class="docutils literal notranslate"><span class="pre">chromadb</span></code> python package installed.</p>
+<p class="rubric">Example</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">langchain_community.vectorstores</span> <span class="kn">import</span> <span class="n">Chroma</span>
+<span class="kn">from</span> <span class="nn">langchain_community.embeddings.openai</span> <span class="kn">import</span> <span class="n">OpenAIEmbeddings</span>
+
+<span class="n">embeddings</span> <span class="o">=</span> <span class="n">OpenAIEmbeddings</span><span class="p">()</span>
+<span class="n">vectorstore</span> <span class="o">=</span> <span class="n">Chroma</span><span class="p">(</span><span class="s2">&quot;langchain_store&quot;</span><span class="p">,</span> <span class="n">embeddings</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Initialize with a Chroma client.</p>
+<p class="rubric">Attributes</p>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">embeddings</span></code></p></td>
+<td><p>Access the query embedding object if available.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.__init__" title="langchain_community.vectorstores.chroma.Chroma.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>([collection_name, ...])</p></td>
+<td><p>Initialize with a Chroma client.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.aadd_documents" title="langchain_community.vectorstores.chroma.Chroma.aadd_documents"><code class="xref py py-obj docutils literal notranslate"><span class="pre">aadd_documents</span></code></a>(documents, **kwargs)</p></td>
+<td><p>Run more documents through the embeddings and add to the vectorstore.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.aadd_texts" title="langchain_community.vectorstores.chroma.Chroma.aadd_texts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">aadd_texts</span></code></a>(texts[, metadatas])</p></td>
+<td><p>Run more texts through the embeddings and add to the vectorstore.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.add_documents" title="langchain_community.vectorstores.chroma.Chroma.add_documents"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_documents</span></code></a>(documents, **kwargs)</p></td>
+<td><p>Run more documents through the embeddings and add to the vectorstore.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.add_images" title="langchain_community.vectorstores.chroma.Chroma.add_images"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_images</span></code></a>(uris[, metadatas, ids])</p></td>
+<td><p>Run more images through the embeddings and add to the vectorstore.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.add_texts" title="langchain_community.vectorstores.chroma.Chroma.add_texts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_texts</span></code></a>(texts[, metadatas, ids])</p></td>
+<td><p>Run more texts through the embeddings and add to the vectorstore.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.adelete" title="langchain_community.vectorstores.chroma.Chroma.adelete"><code class="xref py py-obj docutils literal notranslate"><span class="pre">adelete</span></code></a>([ids])</p></td>
+<td><p>Delete by vector ID or other criteria.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.afrom_documents" title="langchain_community.vectorstores.chroma.Chroma.afrom_documents"><code class="xref py py-obj docutils literal notranslate"><span class="pre">afrom_documents</span></code></a>(documents, embedding, **kwargs)</p></td>
+<td><p>Return VectorStore initialized from documents and embeddings.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.afrom_texts" title="langchain_community.vectorstores.chroma.Chroma.afrom_texts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">afrom_texts</span></code></a>(texts, embedding[, metadatas])</p></td>
+<td><p>Return VectorStore initialized from texts and embeddings.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.amax_marginal_relevance_search" title="langchain_community.vectorstores.chroma.Chroma.amax_marginal_relevance_search"><code class="xref py py-obj docutils literal notranslate"><span class="pre">amax_marginal_relevance_search</span></code></a>(query[, k, ...])</p></td>
+<td><p>Return docs selected using the maximal marginal relevance.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.amax_marginal_relevance_search_by_vector" title="langchain_community.vectorstores.chroma.Chroma.amax_marginal_relevance_search_by_vector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">amax_marginal_relevance_search_by_vector</span></code></a>(...)</p></td>
+<td><p>Return docs selected using the maximal marginal relevance.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.as_retriever" title="langchain_community.vectorstores.chroma.Chroma.as_retriever"><code class="xref py py-obj docutils literal notranslate"><span class="pre">as_retriever</span></code></a>(**kwargs)</p></td>
+<td><p>Return VectorStoreRetriever initialized from this VectorStore.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.asearch" title="langchain_community.vectorstores.chroma.Chroma.asearch"><code class="xref py py-obj docutils literal notranslate"><span class="pre">asearch</span></code></a>(query, search_type, **kwargs)</p></td>
+<td><p>Return docs most similar to query using specified search type.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.asimilarity_search" title="langchain_community.vectorstores.chroma.Chroma.asimilarity_search"><code class="xref py py-obj docutils literal notranslate"><span class="pre">asimilarity_search</span></code></a>(query[, k])</p></td>
+<td><p>Return docs most similar to query.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.asimilarity_search_by_vector" title="langchain_community.vectorstores.chroma.Chroma.asimilarity_search_by_vector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">asimilarity_search_by_vector</span></code></a>(embedding[, k])</p></td>
+<td><p>Return docs most similar to embedding vector.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.asimilarity_search_with_relevance_scores" title="langchain_community.vectorstores.chroma.Chroma.asimilarity_search_with_relevance_scores"><code class="xref py py-obj docutils literal notranslate"><span class="pre">asimilarity_search_with_relevance_scores</span></code></a>(query)</p></td>
+<td><p>Return docs and relevance scores in the range [0, 1], asynchronously.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.asimilarity_search_with_score" title="langchain_community.vectorstores.chroma.Chroma.asimilarity_search_with_score"><code class="xref py py-obj docutils literal notranslate"><span class="pre">asimilarity_search_with_score</span></code></a>(*args, **kwargs)</p></td>
+<td><p>Run similarity search with distance asynchronously.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.delete" title="langchain_community.vectorstores.chroma.Chroma.delete"><code class="xref py py-obj docutils literal notranslate"><span class="pre">delete</span></code></a>([ids])</p></td>
+<td><p>Delete by vector IDs.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.delete_collection" title="langchain_community.vectorstores.chroma.Chroma.delete_collection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">delete_collection</span></code></a>()</p></td>
+<td><p>Delete the collection.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.encode_image" title="langchain_community.vectorstores.chroma.Chroma.encode_image"><code class="xref py py-obj docutils literal notranslate"><span class="pre">encode_image</span></code></a>(uri)</p></td>
+<td><p>Get base64 string from image URI.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.from_documents" title="langchain_community.vectorstores.chroma.Chroma.from_documents"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_documents</span></code></a>(documents[, embedding, ids, ...])</p></td>
+<td><p>Create a Chroma vectorstore from a list of documents.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.from_texts" title="langchain_community.vectorstores.chroma.Chroma.from_texts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_texts</span></code></a>(texts[, embedding, metadatas, ...])</p></td>
+<td><p>Create a Chroma vectorstore from a raw documents.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.get" title="langchain_community.vectorstores.chroma.Chroma.get"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get</span></code></a>([ids, where, limit, offset, ...])</p></td>
+<td><p>Gets the collection.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.max_marginal_relevance_search" title="langchain_community.vectorstores.chroma.Chroma.max_marginal_relevance_search"><code class="xref py py-obj docutils literal notranslate"><span class="pre">max_marginal_relevance_search</span></code></a>(query[, k, ...])</p></td>
+<td><p>Return docs selected using the maximal marginal relevance.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.max_marginal_relevance_search_by_vector" title="langchain_community.vectorstores.chroma.Chroma.max_marginal_relevance_search_by_vector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">max_marginal_relevance_search_by_vector</span></code></a>(...)</p></td>
+<td><p>Return docs selected using the maximal marginal relevance.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.persist" title="langchain_community.vectorstores.chroma.Chroma.persist"><code class="xref py py-obj docutils literal notranslate"><span class="pre">persist</span></code></a>()</p></td>
+<td><p>Persist the collection.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.search" title="langchain_community.vectorstores.chroma.Chroma.search"><code class="xref py py-obj docutils literal notranslate"><span class="pre">search</span></code></a>(query, search_type, **kwargs)</p></td>
+<td><p>Return docs most similar to query using specified search type.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.similarity_search" title="langchain_community.vectorstores.chroma.Chroma.similarity_search"><code class="xref py py-obj docutils literal notranslate"><span class="pre">similarity_search</span></code></a>(query[, k, filter])</p></td>
+<td><p>Run similarity search with Chroma.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.similarity_search_by_vector" title="langchain_community.vectorstores.chroma.Chroma.similarity_search_by_vector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">similarity_search_by_vector</span></code></a>(embedding[, k, ...])</p></td>
+<td><p>Return docs most similar to embedding vector.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.similarity_search_by_vector_with_relevance_scores" title="langchain_community.vectorstores.chroma.Chroma.similarity_search_by_vector_with_relevance_scores"><code class="xref py py-obj docutils literal notranslate"><span class="pre">similarity_search_by_vector_with_relevance_scores</span></code></a>(...)</p></td>
+<td><p>Return docs most similar to embedding vector and similarity score.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.similarity_search_with_relevance_scores" title="langchain_community.vectorstores.chroma.Chroma.similarity_search_with_relevance_scores"><code class="xref py py-obj docutils literal notranslate"><span class="pre">similarity_search_with_relevance_scores</span></code></a>(query)</p></td>
+<td><p>Return docs and relevance scores in the range [0, 1].</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.similarity_search_with_score" title="langchain_community.vectorstores.chroma.Chroma.similarity_search_with_score"><code class="xref py py-obj docutils literal notranslate"><span class="pre">similarity_search_with_score</span></code></a>(query[, k, ...])</p></td>
+<td><p>Run similarity search with Chroma with distance.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.update_document" title="langchain_community.vectorstores.chroma.Chroma.update_document"><code class="xref py py-obj docutils literal notranslate"><span class="pre">update_document</span></code></a>(document_id, document)</p></td>
+<td><p>Update a document in the collection.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma.update_documents" title="langchain_community.vectorstores.chroma.Chroma.update_documents"><code class="xref py py-obj docutils literal notranslate"><span class="pre">update_documents</span></code></a>(ids, documents)</p></td>
+<td><p>Update a document in the collection.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.chroma.Chroma.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">collection_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'langchain'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">embedding_function</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../embeddings/langchain_core.embeddings.Embeddings.html#langchain_core.embeddings.Embeddings" title="langchain_core.embeddings.Embeddings"><span class="pre">Embeddings</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">persist_directory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">client_settings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">chromadb.config.Settings</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">collection_metadata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">client</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">chromadb.Client</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">relevance_score_fn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/langchain_community/vectorstores/chroma.html#Chroma.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain_community.vectorstores.chroma.Chroma.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize with a Chroma client.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.chroma.Chroma.aadd_documents">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">aadd_documents</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">documents</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../documents/langchain_core.documents.base.Document.html#langchain_core.documents.base.Document" title="langchain_core.documents.base.Document"><span class="pre">Document</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#langchain_community.vectorstores.chroma.Chroma.aadd_documents" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run more documents through the embeddings and add to the vectorstore.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>(</strong><strong>List</strong><strong>[</strong><strong>Document</strong><strong>]</strong> (<em>documents</em>) – Documents to add to the vectorstore.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>List of IDs of the added texts.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>List[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.chroma.Chroma.aadd_texts">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">aadd_texts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">texts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadatas</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#langchain_community.vectorstores.chroma.Chroma.aadd_texts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run more texts through the embeddings and add to the vectorstore.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.chroma.Chroma.add_documents">
+<span class="sig-name descname"><span class="pre">add_documents</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">documents</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../documents/langchain_core.documents.base.Document.html#langchain_core.documents.base.Document" title="langchain_core.documents.base.Document"><span class="pre">Document</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#langchain_community.vectorstores.chroma.Chroma.add_documents" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run more documents through the embeddings and add to the vectorstore.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>(</strong><strong>List</strong><strong>[</strong><strong>Document</strong><strong>]</strong> (<em>documents</em>) – Documents to add to the vectorstore.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>List of IDs of the added texts.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>List[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.chroma.Chroma.add_images">
+<span class="sig-name descname"><span class="pre">add_images</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uris</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadatas</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/langchain_community/vectorstores/chroma.html#Chroma.add_images"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain_community.vectorstores.chroma.Chroma.add_images" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run more images through the embeddings and add to the vectorstore.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>List</strong><strong>[</strong><strong>str</strong><strong>]</strong> (<em>uris</em>) – File path to the image.</p></li>
+<li><p><strong>metadatas</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><em>dict</em><em>]</em><em>]</em><em>, </em><em>optional</em>) – Optional list of metadatas.</p></li>
+<li><p><strong>ids</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><em>str</em><em>]</em><em>]</em><em>, </em><em>optional</em>) – Optional list of IDs.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>List of IDs of the added images.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>List[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.chroma.Chroma.add_texts">
+<span class="sig-name descname"><span class="pre">add_texts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">texts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadatas</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/langchain_community/vectorstores/chroma.html#Chroma.add_texts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain_community.vectorstores.chroma.Chroma.add_texts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run more texts through the embeddings and add to the vectorstore.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>texts</strong> (<em>Iterable</em><em>[</em><em>str</em><em>]</em>) – Texts to add to the vectorstore.</p></li>
+<li><p><strong>metadatas</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><em>dict</em><em>]</em><em>]</em><em>, </em><em>optional</em>) – Optional list of metadatas.</p></li>
+<li><p><strong>ids</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><em>str</em><em>]</em><em>]</em><em>, </em><em>optional</em>) – Optional list of IDs.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>List of IDs of the added texts.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>List[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.chroma.Chroma.adelete">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">adelete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#langchain_community.vectorstores.chroma.Chroma.adelete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete by vector ID or other criteria.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ids</strong> – List of ids to delete.</p></li>
+<li><p><strong>**kwargs</strong> – Other keyword arguments that subclasses might use.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>True if deletion is successful,
+False otherwise, None if not implemented.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Optional[bool]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.chroma.Chroma.afrom_documents">
+<em class="property"><span class="pre">async</span><span class="w"> </span><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">afrom_documents</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">documents</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../documents/langchain_core.documents.base.Document.html#langchain_core.documents.base.Document" title="langchain_core.documents.base.Document"><span class="pre">Document</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">embedding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../embeddings/langchain_core.embeddings.Embeddings.html#langchain_core.embeddings.Embeddings" title="langchain_core.embeddings.Embeddings"><span class="pre">Embeddings</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">VST</span></span></span><a class="headerlink" href="#langchain_community.vectorstores.chroma.Chroma.afrom_documents" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return VectorStore initialized from documents and embeddings.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.chroma.Chroma.afrom_texts">
+<em class="property"><span class="pre">async</span><span class="w"> </span><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">afrom_texts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">texts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">embedding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../embeddings/langchain_core.embeddings.Embeddings.html#langchain_core.embeddings.Embeddings" title="langchain_core.embeddings.Embeddings"><span class="pre">Embeddings</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadatas</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">VST</span></span></span><a class="headerlink" href="#langchain_community.vectorstores.chroma.Chroma.afrom_texts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return VectorStore initialized from texts and embeddings.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.chroma.Chroma.amax_marginal_relevance_search">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">amax_marginal_relevance_search</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fetch_k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lambda_mult</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../documents/langchain_core.documents.base.Document.html#langchain_core.documents.base.Document" title="langchain_core.documents.base.Document"><span class="pre">Document</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#langchain_community.vectorstores.chroma.Chroma.amax_marginal_relevance_search" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return docs selected using the maximal marginal relevance.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.chroma.Chroma.amax_marginal_relevance_search_by_vector">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">amax_marginal_relevance_search_by_vector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">embedding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fetch_k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lambda_mult</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../documents/langchain_core.documents.base.Document.html#langchain_core.documents.base.Document" title="langchain_core.documents.base.Document"><span class="pre">Document</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#langchain_community.vectorstores.chroma.Chroma.amax_marginal_relevance_search_by_vector" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return docs selected using the maximal marginal relevance.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.chroma.Chroma.as_retriever">
+<span class="sig-name descname"><span class="pre">as_retriever</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="langchain_core.vectorstores.VectorStoreRetriever.html#langchain_core.vectorstores.VectorStoreRetriever" title="langchain_core.vectorstores.VectorStoreRetriever"><span class="pre">VectorStoreRetriever</span></a></span></span><a class="headerlink" href="#langchain_community.vectorstores.chroma.Chroma.as_retriever" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return VectorStoreRetriever initialized from this VectorStore.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>search_type</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – Defines the type of search that
+the Retriever should perform.
+Can be “similarity” (default), “mmr”, or
+“similarity_score_threshold”.</p></li>
+<li><p><strong>search_kwargs</strong> (<em>Optional</em><em>[</em><em>Dict</em><em>]</em>) – <p>Keyword arguments to pass to the
+search function. Can include things like:</p>
+<blockquote>
+<div><p>k: Amount of documents to return (Default: 4)
+score_threshold: Minimum relevance threshold</p>
+<blockquote>
+<div><p>for similarity_score_threshold</p>
+</div></blockquote>
+<p>fetch_k: Amount of documents to pass to MMR algorithm (Default: 20)
+lambda_mult: Diversity of results returned by MMR;</p>
+<blockquote>
+<div><p>1 for minimum diversity and 0 for maximum. (Default: 0.5)</p>
+</div></blockquote>
+<p>filter: Filter by document metadata</p>
+</div></blockquote>
+</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Retriever class for VectorStore.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="langchain_core.vectorstores.VectorStoreRetriever.html#langchain_core.vectorstores.VectorStoreRetriever" title="langchain_core.vectorstores.VectorStoreRetriever">VectorStoreRetriever</a></p>
+</dd>
+</dl>
+<p>Examples:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Retrieve more documents with higher diversity</span>
+<span class="c1"># Useful if your dataset has many similar documents</span>
+<span class="n">docsearch</span><span class="o">.</span><span class="n">as_retriever</span><span class="p">(</span>
+    <span class="n">search_type</span><span class="o">=</span><span class="s2">&quot;mmr&quot;</span><span class="p">,</span>
+    <span class="n">search_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;k&#39;</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span> <span class="s1">&#39;lambda_mult&#39;</span><span class="p">:</span> <span class="mf">0.25</span><span class="p">}</span>
+<span class="p">)</span>
+
+<span class="c1"># Fetch more documents for the MMR algorithm to consider</span>
+<span class="c1"># But only return the top 5</span>
+<span class="n">docsearch</span><span class="o">.</span><span class="n">as_retriever</span><span class="p">(</span>
+    <span class="n">search_type</span><span class="o">=</span><span class="s2">&quot;mmr&quot;</span><span class="p">,</span>
+    <span class="n">search_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;k&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s1">&#39;fetch_k&#39;</span><span class="p">:</span> <span class="mi">50</span><span class="p">}</span>
+<span class="p">)</span>
+
+<span class="c1"># Only retrieve documents that have a relevance score</span>
+<span class="c1"># Above a certain threshold</span>
+<span class="n">docsearch</span><span class="o">.</span><span class="n">as_retriever</span><span class="p">(</span>
+    <span class="n">search_type</span><span class="o">=</span><span class="s2">&quot;similarity_score_threshold&quot;</span><span class="p">,</span>
+    <span class="n">search_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;score_threshold&#39;</span><span class="p">:</span> <span class="mf">0.8</span><span class="p">}</span>
+<span class="p">)</span>
+
+<span class="c1"># Only get the single most similar document from the dataset</span>
+<span class="n">docsearch</span><span class="o">.</span><span class="n">as_retriever</span><span class="p">(</span><span class="n">search_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;k&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span>
+
+<span class="c1"># Use a filter to only retrieve documents from a specific paper</span>
+<span class="n">docsearch</span><span class="o">.</span><span class="n">as_retriever</span><span class="p">(</span>
+    <span class="n">search_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;filter&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;paper_title&#39;</span><span class="p">:</span><span class="s1">&#39;GPT-4 Technical Report&#39;</span><span class="p">}}</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.chroma.Chroma.asearch">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">asearch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">search_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../documents/langchain_core.documents.base.Document.html#langchain_core.documents.base.Document" title="langchain_core.documents.base.Document"><span class="pre">Document</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#langchain_community.vectorstores.chroma.Chroma.asearch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return docs most similar to query using specified search type.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.chroma.Chroma.asimilarity_search">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">asimilarity_search</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../documents/langchain_core.documents.base.Document.html#langchain_core.documents.base.Document" title="langchain_core.documents.base.Document"><span class="pre">Document</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#langchain_community.vectorstores.chroma.Chroma.asimilarity_search" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return docs most similar to query.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.chroma.Chroma.asimilarity_search_by_vector">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">asimilarity_search_by_vector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">embedding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../documents/langchain_core.documents.base.Document.html#langchain_core.documents.base.Document" title="langchain_core.documents.base.Document"><span class="pre">Document</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#langchain_community.vectorstores.chroma.Chroma.asimilarity_search_by_vector" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return docs most similar to embedding vector.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.chroma.Chroma.asimilarity_search_with_relevance_scores">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">asimilarity_search_with_relevance_scores</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../documents/langchain_core.documents.base.Document.html#langchain_core.documents.base.Document" title="langchain_core.documents.base.Document"><span class="pre">Document</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#langchain_community.vectorstores.chroma.Chroma.asimilarity_search_with_relevance_scores" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return docs and relevance scores in the range [0, 1], asynchronously.</p>
+<p>0 is dissimilar, 1 is most similar.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>query</strong> – input text</p></li>
+<li><p><strong>k</strong> – Number of Documents to return. Defaults to 4.</p></li>
+<li><p><strong>**kwargs</strong> – <p>kwargs to be passed to similarity search. Should include:
+score_threshold: Optional, a floating point value between 0 to 1 to</p>
+<blockquote>
+<div><p>filter the resulting set of retrieved docs</p>
+</div></blockquote>
+</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>List of Tuples of (doc, similarity_score)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.chroma.Chroma.asimilarity_search_with_score">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">asimilarity_search_with_score</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../documents/langchain_core.documents.base.Document.html#langchain_core.documents.base.Document" title="langchain_core.documents.base.Document"><span class="pre">Document</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#langchain_community.vectorstores.chroma.Chroma.asimilarity_search_with_score" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run similarity search with distance asynchronously.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.chroma.Chroma.delete">
+<span class="sig-name descname"><span class="pre">delete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/langchain_community/vectorstores/chroma.html#Chroma.delete"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain_community.vectorstores.chroma.Chroma.delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete by vector IDs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>ids</strong> – List of ids to delete.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.chroma.Chroma.delete_collection">
+<span class="sig-name descname"><span class="pre">delete_collection</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/langchain_community/vectorstores/chroma.html#Chroma.delete_collection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain_community.vectorstores.chroma.Chroma.delete_collection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete the collection.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.chroma.Chroma.encode_image">
+<span class="sig-name descname"><span class="pre">encode_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uri</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../_modules/langchain_community/vectorstores/chroma.html#Chroma.encode_image"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain_community.vectorstores.chroma.Chroma.encode_image" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get base64 string from image URI.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.chroma.Chroma.from_documents">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_documents</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">documents</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../documents/langchain_core.documents.base.Document.html#langchain_core.documents.base.Document" title="langchain_core.documents.base.Document"><span class="pre">Document</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">embedding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../embeddings/langchain_core.embeddings.Embeddings.html#langchain_core.embeddings.Embeddings" title="langchain_core.embeddings.Embeddings"><span class="pre">Embeddings</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">collection_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'langchain'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">persist_directory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">client_settings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">chromadb.config.Settings</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">client</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">chromadb.Client</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">collection_metadata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma" title="langchain_community.vectorstores.chroma.Chroma"><span class="pre">Chroma</span></a></span></span><a class="reference internal" href="../_modules/langchain_community/vectorstores/chroma.html#Chroma.from_documents"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain_community.vectorstores.chroma.Chroma.from_documents" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a Chroma vectorstore from a list of documents.</p>
+<p>If a persist_directory is specified, the collection will be persisted there.
+Otherwise, the data will be ephemeral in-memory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>collection_name</strong> (<em>str</em>) – Name of the collection to create.</p></li>
+<li><p><strong>persist_directory</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – Directory to persist the collection.</p></li>
+<li><p><strong>ids</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><em>str</em><em>]</em><em>]</em>) – List of document IDs. Defaults to None.</p></li>
+<li><p><strong>documents</strong> (<em>List</em><em>[</em><a class="reference internal" href="../documents/langchain_core.documents.base.Document.html#langchain_core.documents.base.Document" title="langchain_core.documents.base.Document"><em>Document</em></a><em>]</em>) – List of documents to add to the vectorstore.</p></li>
+<li><p><strong>embedding</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="../embeddings/langchain_core.embeddings.Embeddings.html#langchain_core.embeddings.Embeddings" title="langchain_core.embeddings.Embeddings"><em>Embeddings</em></a><em>]</em>) – Embedding function. Defaults to None.</p></li>
+<li><p><strong>client_settings</strong> (<em>Optional</em><em>[</em><em>chromadb.config.Settings</em><em>]</em>) – Chroma client settings</p></li>
+<li><p><strong>collection_metadata</strong> (<em>Optional</em><em>[</em><em>Dict</em><em>]</em>) – Collection configurations.
+Defaults to None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Chroma vectorstore.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma" title="langchain_community.vectorstores.chroma.Chroma">Chroma</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.chroma.Chroma.from_texts">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_texts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">texts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">embedding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../embeddings/langchain_core.embeddings.Embeddings.html#langchain_core.embeddings.Embeddings" title="langchain_core.embeddings.Embeddings"><span class="pre">Embeddings</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadatas</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">collection_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'langchain'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">persist_directory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">client_settings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">chromadb.config.Settings</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">client</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">chromadb.Client</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">collection_metadata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma" title="langchain_community.vectorstores.chroma.Chroma"><span class="pre">Chroma</span></a></span></span><a class="reference internal" href="../_modules/langchain_community/vectorstores/chroma.html#Chroma.from_texts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain_community.vectorstores.chroma.Chroma.from_texts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a Chroma vectorstore from a raw documents.</p>
+<p>If a persist_directory is specified, the collection will be persisted there.
+Otherwise, the data will be ephemeral in-memory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>texts</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – List of texts to add to the collection.</p></li>
+<li><p><strong>collection_name</strong> (<em>str</em>) – Name of the collection to create.</p></li>
+<li><p><strong>persist_directory</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – Directory to persist the collection.</p></li>
+<li><p><strong>embedding</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="../embeddings/langchain_core.embeddings.Embeddings.html#langchain_core.embeddings.Embeddings" title="langchain_core.embeddings.Embeddings"><em>Embeddings</em></a><em>]</em>) – Embedding function. Defaults to None.</p></li>
+<li><p><strong>metadatas</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><em>dict</em><em>]</em><em>]</em>) – List of metadatas. Defaults to None.</p></li>
+<li><p><strong>ids</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><em>str</em><em>]</em><em>]</em>) – List of document IDs. Defaults to None.</p></li>
+<li><p><strong>client_settings</strong> (<em>Optional</em><em>[</em><em>chromadb.config.Settings</em><em>]</em>) – Chroma client settings</p></li>
+<li><p><strong>collection_metadata</strong> (<em>Optional</em><em>[</em><em>Dict</em><em>]</em>) – Collection configurations.
+Defaults to None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Chroma vectorstore.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#langchain_community.vectorstores.chroma.Chroma" title="langchain_community.vectorstores.chroma.Chroma">Chroma</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.chroma.Chroma.get">
+<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">OneOrMany</span><span class="p"><span class="pre">[</span></span><span class="pre">ID</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">where</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Where</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">where_document</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">WhereDocument</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/langchain_community/vectorstores/chroma.html#Chroma.get"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain_community.vectorstores.chroma.Chroma.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the collection.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ids</strong> – The ids of the embeddings to get. Optional.</p></li>
+<li><p><strong>where</strong> – A Where type dict used to filter results by.
+E.g. <cite>{“color” : “red”, “price”: 4.20}</cite>. Optional.</p></li>
+<li><p><strong>limit</strong> – The number of documents to return. Optional.</p></li>
+<li><p><strong>offset</strong> – The offset to start returning results from.
+Useful for paging results with limit. Optional.</p></li>
+<li><p><strong>where_document</strong> – A WhereDocument type dict used to filter by the documents.
+E.g. <cite>{$contains: “hello”}</cite>. Optional.</p></li>
+<li><p><strong>include</strong> – A list of what to include in the results.
+Can contain <cite>“embeddings”</cite>, <cite>“metadatas”</cite>, <cite>“documents”</cite>.
+Ids are always included.
+Defaults to <cite>[“metadatas”, “documents”]</cite>. Optional.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.chroma.Chroma.max_marginal_relevance_search">
+<span class="sig-name descname"><span class="pre">max_marginal_relevance_search</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fetch_k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lambda_mult</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">where_document</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../documents/langchain_core.documents.base.Document.html#langchain_core.documents.base.Document" title="langchain_core.documents.base.Document"><span class="pre">Document</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/langchain_community/vectorstores/chroma.html#Chroma.max_marginal_relevance_search"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain_community.vectorstores.chroma.Chroma.max_marginal_relevance_search" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return docs selected using the maximal marginal relevance.
+Maximal marginal relevance optimizes for similarity to query AND diversity
+among selected documents.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>query</strong> – Text to look up documents similar to.</p></li>
+<li><p><strong>k</strong> – Number of Documents to return. Defaults to 4.</p></li>
+<li><p><strong>fetch_k</strong> – Number of Documents to fetch to pass to MMR algorithm.</p></li>
+<li><p><strong>lambda_mult</strong> – Number between 0 and 1 that determines the degree
+of diversity among the results with 0 corresponding
+to maximum diversity and 1 to minimum diversity.
+Defaults to 0.5.</p></li>
+<li><p><strong>filter</strong> (<em>Optional</em><em>[</em><em>Dict</em><em>[</em><em>str</em><em>, </em><em>str</em><em>]</em><em>]</em>) – Filter by metadata. Defaults to None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>List of Documents selected by maximal marginal relevance.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.chroma.Chroma.max_marginal_relevance_search_by_vector">
+<span class="sig-name descname"><span class="pre">max_marginal_relevance_search_by_vector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">embedding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fetch_k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lambda_mult</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">where_document</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../documents/langchain_core.documents.base.Document.html#langchain_core.documents.base.Document" title="langchain_core.documents.base.Document"><span class="pre">Document</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/langchain_community/vectorstores/chroma.html#Chroma.max_marginal_relevance_search_by_vector"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain_community.vectorstores.chroma.Chroma.max_marginal_relevance_search_by_vector" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return docs selected using the maximal marginal relevance.
+Maximal marginal relevance optimizes for similarity to query AND diversity
+among selected documents.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>embedding</strong> – Embedding to look up documents similar to.</p></li>
+<li><p><strong>k</strong> – Number of Documents to return. Defaults to 4.</p></li>
+<li><p><strong>fetch_k</strong> – Number of Documents to fetch to pass to MMR algorithm.</p></li>
+<li><p><strong>lambda_mult</strong> – Number between 0 and 1 that determines the degree
+of diversity among the results with 0 corresponding
+to maximum diversity and 1 to minimum diversity.
+Defaults to 0.5.</p></li>
+<li><p><strong>filter</strong> (<em>Optional</em><em>[</em><em>Dict</em><em>[</em><em>str</em><em>, </em><em>str</em><em>]</em><em>]</em>) – Filter by metadata. Defaults to None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>List of Documents selected by maximal marginal relevance.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.chroma.Chroma.persist">
+<span class="sig-name descname"><span class="pre">persist</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/langchain_community/vectorstores/chroma.html#Chroma.persist"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain_community.vectorstores.chroma.Chroma.persist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Persist the collection.</p>
+<p>This can be used to explicitly persist the data to disk.
+It will also be called automatically when the object is destroyed.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.chroma.Chroma.search">
+<span class="sig-name descname"><span class="pre">search</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">search_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../documents/langchain_core.documents.base.Document.html#langchain_core.documents.base.Document" title="langchain_core.documents.base.Document"><span class="pre">Document</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#langchain_community.vectorstores.chroma.Chroma.search" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return docs most similar to query using specified search type.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.chroma.Chroma.similarity_search">
+<span class="sig-name descname"><span class="pre">similarity_search</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../documents/langchain_core.documents.base.Document.html#langchain_core.documents.base.Document" title="langchain_core.documents.base.Document"><span class="pre">Document</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/langchain_community/vectorstores/chroma.html#Chroma.similarity_search"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain_community.vectorstores.chroma.Chroma.similarity_search" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run similarity search with Chroma.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>query</strong> (<em>str</em>) – Query text to search for.</p></li>
+<li><p><strong>k</strong> (<em>int</em>) – Number of results to return. Defaults to 4.</p></li>
+<li><p><strong>filter</strong> (<em>Optional</em><em>[</em><em>Dict</em><em>[</em><em>str</em><em>, </em><em>str</em><em>]</em><em>]</em>) – Filter by metadata. Defaults to None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>List of documents most similar to the query text.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>List[<a class="reference internal" href="../documents/langchain_core.documents.base.Document.html#langchain_core.documents.base.Document" title="langchain_core.documents.base.Document">Document</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.chroma.Chroma.similarity_search_by_vector">
+<span class="sig-name descname"><span class="pre">similarity_search_by_vector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">embedding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">where_document</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../documents/langchain_core.documents.base.Document.html#langchain_core.documents.base.Document" title="langchain_core.documents.base.Document"><span class="pre">Document</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/langchain_community/vectorstores/chroma.html#Chroma.similarity_search_by_vector"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain_community.vectorstores.chroma.Chroma.similarity_search_by_vector" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return docs most similar to embedding vector.
+:param embedding: Embedding to look up documents similar to.
+:type embedding: List[float]
+:param k: Number of Documents to return. Defaults to 4.
+:type k: int
+:param filter: Filter by metadata. Defaults to None.
+:type filter: Optional[Dict[str, str]]</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>List of Documents most similar to the query vector.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.chroma.Chroma.similarity_search_by_vector_with_relevance_scores">
+<span class="sig-name descname"><span class="pre">similarity_search_by_vector_with_relevance_scores</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">embedding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">where_document</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../documents/langchain_core.documents.base.Document.html#langchain_core.documents.base.Document" title="langchain_core.documents.base.Document"><span class="pre">Document</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/langchain_community/vectorstores/chroma.html#Chroma.similarity_search_by_vector_with_relevance_scores"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain_community.vectorstores.chroma.Chroma.similarity_search_by_vector_with_relevance_scores" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return docs most similar to embedding vector and similarity score.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>embedding</strong> (<em>List</em><em>[</em><em>float</em><em>]</em>) – Embedding to look up documents similar to.</p></li>
+<li><p><strong>k</strong> (<em>int</em>) – Number of Documents to return. Defaults to 4.</p></li>
+<li><p><strong>filter</strong> (<em>Optional</em><em>[</em><em>Dict</em><em>[</em><em>str</em><em>, </em><em>str</em><em>]</em><em>]</em>) – Filter by metadata. Defaults to None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>List of documents most similar to
+the query text and cosine distance in float for each.
+Lower score represents more similarity.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>List[Tuple[<a class="reference internal" href="../documents/langchain_core.documents.base.Document.html#langchain_core.documents.base.Document" title="langchain_core.documents.base.Document">Document</a>, float]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.chroma.Chroma.similarity_search_with_relevance_scores">
+<span class="sig-name descname"><span class="pre">similarity_search_with_relevance_scores</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../documents/langchain_core.documents.base.Document.html#langchain_core.documents.base.Document" title="langchain_core.documents.base.Document"><span class="pre">Document</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#langchain_community.vectorstores.chroma.Chroma.similarity_search_with_relevance_scores" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return docs and relevance scores in the range [0, 1].</p>
+<p>0 is dissimilar, 1 is most similar.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>query</strong> – input text</p></li>
+<li><p><strong>k</strong> – Number of Documents to return. Defaults to 4.</p></li>
+<li><p><strong>**kwargs</strong> – <p>kwargs to be passed to similarity search. Should include:
+score_threshold: Optional, a floating point value between 0 to 1 to</p>
+<blockquote>
+<div><p>filter the resulting set of retrieved docs</p>
+</div></blockquote>
+</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>List of Tuples of (doc, similarity_score)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.chroma.Chroma.similarity_search_with_score">
+<span class="sig-name descname"><span class="pre">similarity_search_with_score</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">where_document</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../documents/langchain_core.documents.base.Document.html#langchain_core.documents.base.Document" title="langchain_core.documents.base.Document"><span class="pre">Document</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/langchain_community/vectorstores/chroma.html#Chroma.similarity_search_with_score"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain_community.vectorstores.chroma.Chroma.similarity_search_with_score" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run similarity search with Chroma with distance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>query</strong> (<em>str</em>) – Query text to search for.</p></li>
+<li><p><strong>k</strong> (<em>int</em>) – Number of results to return. Defaults to 4.</p></li>
+<li><p><strong>filter</strong> (<em>Optional</em><em>[</em><em>Dict</em><em>[</em><em>str</em><em>, </em><em>str</em><em>]</em><em>]</em>) – Filter by metadata. Defaults to None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>List of documents most similar to
+the query text and cosine distance in float for each.
+Lower score represents more similarity.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>List[Tuple[<a class="reference internal" href="../documents/langchain_core.documents.base.Document.html#langchain_core.documents.base.Document" title="langchain_core.documents.base.Document">Document</a>, float]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.chroma.Chroma.update_document">
+<span class="sig-name descname"><span class="pre">update_document</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">document</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../documents/langchain_core.documents.base.Document.html#langchain_core.documents.base.Document" title="langchain_core.documents.base.Document"><span class="pre">Document</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/langchain_community/vectorstores/chroma.html#Chroma.update_document"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain_community.vectorstores.chroma.Chroma.update_document" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update a document in the collection.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>document_id</strong> (<em>str</em>) – ID of the document to update.</p></li>
+<li><p><strong>document</strong> (<a class="reference internal" href="../documents/langchain_core.documents.base.Document.html#langchain_core.documents.base.Document" title="langchain_core.documents.base.Document"><em>Document</em></a>) – Document to update.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.chroma.Chroma.update_documents">
+<span class="sig-name descname"><span class="pre">update_documents</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">documents</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../documents/langchain_core.documents.base.Document.html#langchain_core.documents.base.Document" title="langchain_core.documents.base.Document"><span class="pre">Document</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/langchain_community/vectorstores/chroma.html#Chroma.update_documents"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain_community.vectorstores.chroma.Chroma.update_documents" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update a document in the collection.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ids</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – List of ids of the document to update.</p></li>
+<li><p><strong>documents</strong> (<em>List</em><em>[</em><a class="reference internal" href="../documents/langchain_core.documents.base.Document.html#langchain_core.documents.base.Document" title="langchain_core.documents.base.Document"><em>Document</em></a><em>]</em>) – List of documents to update.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<h1>Examples using Chroma<a class="headerlink" href="#langchain-community-vectorstores-chroma-chroma" title="Permalink to this heading">¶</a></h1>
+<ul class="simple">
+<li><p><a class="reference external" href="https://python.langchain.com/docs/integrations/retrievers/re_phrase">RePhraseQueryRetriever</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/integrations/retrievers/merger_retriever">LOTR (Merger Retriever)</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/integrations/llms/ollama">Ollama</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/integrations/callbacks/confident">Confident</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/modules/data_connection/retrievers/self_query/chroma_self_query">Chroma</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/integrations/toolkits/vectorstore">Vectorstore</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/integrations/vectorstores/starrocks">StarRocks</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/integrations/document_loaders/psychic">Psychic</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/integrations/document_loaders/docugami">Docugami</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/use_cases/chatbots">Set env var OPENAI_API_KEY or load from a .env file:</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/use_cases/code_understanding">Set env var OPENAI_API_KEY or load from a .env file</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/use_cases/question_answering/question_answering">Question Answering</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/use_cases/question_answering/how_to/document-context-aware-QA">Perform context-aware text splitting</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/use_cases/question_answering/how_to/local_retrieval_qa">Use local LLMs</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/use_cases/question_answering/how_to/vector_db_text_generation">Retrieve from vector stores directly</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/use_cases/question_answering/how_to/hyde">Improve document indexing with HyDE</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/use_cases/question_answering/integrations/openai_functions_retrieval_qa">Structure answers with OpenAI functions</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/use_cases/more/agents/agents/sales_agent_with_context">SalesGPT - Your Context-Aware AI Sales Assistant With Knowledge Base</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/modules/data_connection/retrievers/multi_vector">MultiVector Retriever</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/modules/data_connection/retrievers/MultiQueryRetriever">MultiQueryRetriever</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/modules/data_connection/retrievers/parent_document_retriever">Parent Document Retriever</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/modules/data_connection/retrievers/web_research">WebResearchRetriever</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/modules/data_connection/document_transformers/post_retrieval/long_context_reorder">Lost in the middle: The problem with long contexts</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/modules/memory/adding_memory_chain_multiple_inputs">Memory in the Multi-Input Chain</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/modules/agents/how_to/agent_vectorstore">Combine agents and vector stores</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/modules/model_io/prompts/prompt_templates/few_shot_examples_chat">Few-shot examples for chat models</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/modules/chains/foundational/router">Router</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/modules/chains/how_to/from_hub">Loading from LangChainHub</a></p></li>
+</ul>
+</section>
+
+
+      </div>
+    <div class="container">
+      <footer class="sk-content-footer">
+            &copy; 2023, LangChain, Inc..
+          Last updated on Jan 29, 2024.
+          <a href="../_sources/vectorstores/langchain_community.vectorstores.chroma.Chroma.rst.txt" rel="nofollow">Show this page source</a>
+      </footer>
+    </div>
+  </div>
+</div>
+<script src="../_static/js/vendor/bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    /* Add a [>>>] button on the top-right corner of code samples to hide
+     * the >>> and ... prompts and the output and thus make the code
+     * copyable. */
+    var div = $('.highlight-python .highlight,' +
+                '.highlight-python3 .highlight,' +
+                '.highlight-pycon .highlight,' +
+		'.highlight-default .highlight')
+    var pre = div.find('pre');
+
+    // get the styles from the current theme
+    pre.parent().parent().css('position', 'relative');
+    var hide_text = 'Hide prompts and outputs';
+    var show_text = 'Show prompts and outputs';
+
+    // create and add the button to all the code blocks that contain >>>
+    div.each(function(index) {
+        var jthis = $(this);
+        if (jthis.find('.gp').length > 0) {
+            var button = $('<span class="copybutton">&gt;&gt;&gt;</span>');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+            jthis.prepend(button);
+        }
+        // tracebacks (.gt) contain bare text elements that need to be
+        // wrapped in a span to work with .nextUntil() (see later)
+        jthis.find('pre:has(.gt)').contents().filter(function() {
+            return ((this.nodeType == 3) && (this.data.trim().length > 0));
+        }).wrap('<span>');
+    });
+
+    // define the behavior of the button when it's clicked
+    $('.copybutton').click(function(e){
+        e.preventDefault();
+        var button = $(this);
+        if (button.data('hidden') === 'false') {
+            // hide the code output
+            button.parent().find('.go, .gp, .gt').hide();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'hidden');
+            button.css('text-decoration', 'line-through');
+            button.attr('title', show_text);
+            button.data('hidden', 'true');
+        } else {
+            // show the code output
+            button.parent().find('.go, .gp, .gt').show();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'visible');
+            button.css('text-decoration', 'none');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+        }
+    });
+
+	/*** Add permalink buttons next to glossary terms ***/
+	$('dl.glossary > dt[id]').append(function() {
+		return ('<a class="headerlink" href="#' +
+			    this.getAttribute('id') +
+			    '" title="Permalink to this term">¶</a>');
+	});
+});
+
+</script>
+    
+</body>
+</html>

@@ -1,0 +1,453 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>langchain_community.embeddings.elasticsearch.ElasticsearchEmbeddings &mdash; 🦜🔗 LangChain 0.1.4</title>
+  
+  <link rel="canonical" href="https://api.python.langchain.com/en/latest/embeddings/langchain_community.embeddings.elasticsearch.ElasticsearchEmbeddings.html" />
+
+  
+
+  <link rel="stylesheet" href="../_static/css/vendor/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/autodoc_pydantic.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/sphinx-dropdown.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/panels-bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+<script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+<script src="../_static/jquery.js"></script> 
+</head>
+<body>
+
+
+<nav id="navbar" class="sk-docs-navbar navbar navbar-expand-md navbar-light bg-light py-0">
+  <div class="container-fluid sk-docs-container px-0">
+    <button
+      id="sk-navbar-toggler"
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="sk-navbar-collapse collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../langchain_api_reference.html">LangChain</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../core_api_reference.html">Core</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../community_api_reference.html">Community</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../experimental_api_reference.html">Experimental</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../openai_api_reference.html">openai</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../mistralai_api_reference.html">mistralai</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../robocorp_api_reference.html">robocorp</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../google_vertexai_api_reference.html">google-vertexai</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../nvidia_trt_api_reference.html">nvidia-trt</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../anthropic_api_reference.html">anthropic</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../together_api_reference.html">together</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../nvidia_ai_endpoints_api_reference.html">nvidia-ai-endpoints</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../exa_api_reference.html">exa</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../google_genai_api_reference.html">google-genai</a>
+        </li>
+        <li class="nav-item dropdown nav-more-item-dropdown">
+          <a class="sk-nav-link nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Partner libs</a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+              <a class="sk-nav-dropdown-item dropdown-item" href="../openai_api_reference.html">openai</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../mistralai_api_reference.html">mistralai</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../robocorp_api_reference.html">robocorp</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../google_vertexai_api_reference.html">google-vertexai</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../nvidia_trt_api_reference.html">nvidia-trt</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../anthropic_api_reference.html">anthropic</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../together_api_reference.html">together</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../nvidia_ai_endpoints_api_reference.html">nvidia-ai-endpoints</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../exa_api_reference.html">exa</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../google_genai_api_reference.html">google-genai</a>
+          </div>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" target="_blank" rel="noopener noreferrer" href="https://python.langchain.com/">Docs</a>
+        </li>
+      </ul>
+      <div id="searchbox" role="search">
+          <div class="searchformwrapper">
+          <form class="search" action="../search.html" method="get">
+            <input class="sk-search-text-input" type="text" name="q" aria-labelledby="searchlabel" />
+            <input class="sk-search-text-btn" type="submit" value="Go" />
+          </form>
+          </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="d-flex" id="sk-doc-wrapper">
+    <input type="checkbox" name="sk-toggle-checkbox" id="sk-toggle-checkbox">
+    <label id="sk-sidemenu-toggle" class="sk-btn-toggle-toc btn sk-btn-primary" for="sk-toggle-checkbox">Toggle Menu</label>
+    <div id="sk-sidebar-wrapper" class="border-right">
+      <div class="sk-sidebar-toc-wrapper">
+        <div class="btn-group w-100 mb-2" role="group" aria-label="rellinks">
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Prev</a>
+            <a href="#" role="button" class="btn sk-btn-rellink disabled py-1">Up</a>
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Next</a>
+        </div>
+            <div class="sk-sidebar-toc">
+              <ul>
+<li><a class="reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">langchain_community.embeddings.elasticsearch</span></code>.ElasticsearchEmbeddings</a><ul>
+<li><a class="reference internal" href="#langchain_community.embeddings.elasticsearch.ElasticsearchEmbeddings"><code class="docutils literal notranslate"><span class="pre">ElasticsearchEmbeddings</span></code></a><ul>
+<li><a class="reference internal" href="#langchain_community.embeddings.elasticsearch.ElasticsearchEmbeddings.__init__"><code class="docutils literal notranslate"><span class="pre">ElasticsearchEmbeddings.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.embeddings.elasticsearch.ElasticsearchEmbeddings.aembed_documents"><code class="docutils literal notranslate"><span class="pre">ElasticsearchEmbeddings.aembed_documents()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.embeddings.elasticsearch.ElasticsearchEmbeddings.aembed_query"><code class="docutils literal notranslate"><span class="pre">ElasticsearchEmbeddings.aembed_query()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.embeddings.elasticsearch.ElasticsearchEmbeddings.embed_documents"><code class="docutils literal notranslate"><span class="pre">ElasticsearchEmbeddings.embed_documents()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.embeddings.elasticsearch.ElasticsearchEmbeddings.embed_query"><code class="docutils literal notranslate"><span class="pre">ElasticsearchEmbeddings.embed_query()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.embeddings.elasticsearch.ElasticsearchEmbeddings.from_credentials"><code class="docutils literal notranslate"><span class="pre">ElasticsearchEmbeddings.from_credentials()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.embeddings.elasticsearch.ElasticsearchEmbeddings.from_es_connection"><code class="docutils literal notranslate"><span class="pre">ElasticsearchEmbeddings.from_es_connection()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            </div>
+      </div>
+    </div>
+    <div id="sk-page-content-wrapper">
+      <div class="sk-page-content container-fluid body px-md-3" role="main">
+        
+  <section id="langchain-community-embeddings-elasticsearch-elasticsearchembeddings">
+<h1><code class="xref py py-mod docutils literal notranslate"><span class="pre">langchain_community.embeddings.elasticsearch</span></code>.ElasticsearchEmbeddings<a class="headerlink" href="#langchain-community-embeddings-elasticsearch-elasticsearchembeddings" title="Permalink to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="langchain_community.embeddings.elasticsearch.ElasticsearchEmbeddings">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">langchain_community.embeddings.elasticsearch.</span></span><span class="sig-name descname"><span class="pre">ElasticsearchEmbeddings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">client</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">MlClient</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_field</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'text_field'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/langchain_community/embeddings/elasticsearch.html#ElasticsearchEmbeddings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain_community.embeddings.elasticsearch.ElasticsearchEmbeddings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Elasticsearch embedding models.</p>
+<p>This class provides an interface to generate embeddings using a model deployed
+in an Elasticsearch cluster. It requires an Elasticsearch connection object
+and the model_id of the model deployed in the cluster.</p>
+<p>In Elasticsearch you need to have an embedding model loaded and deployed.
+- <a class="reference external" href="https://www.elastic.co/guide/en/elasticsearch/reference/current/infer-trained-model.html">https://www.elastic.co/guide/en/elasticsearch/reference/current/infer-trained-model.html</a>
+- <a class="reference external" href="https://www.elastic.co/guide/en/machine-learning/current/ml-nlp-deploy-models.html">https://www.elastic.co/guide/en/machine-learning/current/ml-nlp-deploy-models.html</a></p>
+<p>Initialize the ElasticsearchEmbeddings instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>client</strong> (<em>MlClient</em>) – An Elasticsearch ML client object.</p></li>
+<li><p><strong>model_id</strong> (<em>str</em>) – The model_id of the model deployed in the Elasticsearch
+cluster.</p></li>
+<li><p><strong>input_field</strong> (<em>str</em>) – The name of the key for the input text field in the
+document. Defaults to ‘text_field’.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#langchain_community.embeddings.elasticsearch.ElasticsearchEmbeddings.__init__" title="langchain_community.embeddings.elasticsearch.ElasticsearchEmbeddings.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(client, model_id, *[, input_field])</p></td>
+<td><p>Initialize the ElasticsearchEmbeddings instance.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#langchain_community.embeddings.elasticsearch.ElasticsearchEmbeddings.aembed_documents" title="langchain_community.embeddings.elasticsearch.ElasticsearchEmbeddings.aembed_documents"><code class="xref py py-obj docutils literal notranslate"><span class="pre">aembed_documents</span></code></a>(texts)</p></td>
+<td><p>Asynchronous Embed search docs.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#langchain_community.embeddings.elasticsearch.ElasticsearchEmbeddings.aembed_query" title="langchain_community.embeddings.elasticsearch.ElasticsearchEmbeddings.aembed_query"><code class="xref py py-obj docutils literal notranslate"><span class="pre">aembed_query</span></code></a>(text)</p></td>
+<td><p>Asynchronous Embed query text.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#langchain_community.embeddings.elasticsearch.ElasticsearchEmbeddings.embed_documents" title="langchain_community.embeddings.elasticsearch.ElasticsearchEmbeddings.embed_documents"><code class="xref py py-obj docutils literal notranslate"><span class="pre">embed_documents</span></code></a>(texts)</p></td>
+<td><p>Generate embeddings for a list of documents.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#langchain_community.embeddings.elasticsearch.ElasticsearchEmbeddings.embed_query" title="langchain_community.embeddings.elasticsearch.ElasticsearchEmbeddings.embed_query"><code class="xref py py-obj docutils literal notranslate"><span class="pre">embed_query</span></code></a>(text)</p></td>
+<td><p>Generate an embedding for a single query text.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#langchain_community.embeddings.elasticsearch.ElasticsearchEmbeddings.from_credentials" title="langchain_community.embeddings.elasticsearch.ElasticsearchEmbeddings.from_credentials"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_credentials</span></code></a>(model_id, *[, es_cloud_id, ...])</p></td>
+<td><p>Instantiate embeddings from Elasticsearch credentials.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#langchain_community.embeddings.elasticsearch.ElasticsearchEmbeddings.from_es_connection" title="langchain_community.embeddings.elasticsearch.ElasticsearchEmbeddings.from_es_connection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_es_connection</span></code></a>(model_id, es_connection)</p></td>
+<td><p>Instantiate embeddings from an existing Elasticsearch connection.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.embeddings.elasticsearch.ElasticsearchEmbeddings.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">client</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">MlClient</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_field</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'text_field'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/langchain_community/embeddings/elasticsearch.html#ElasticsearchEmbeddings.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain_community.embeddings.elasticsearch.ElasticsearchEmbeddings.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the ElasticsearchEmbeddings instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>client</strong> (<em>MlClient</em>) – An Elasticsearch ML client object.</p></li>
+<li><p><strong>model_id</strong> (<em>str</em>) – The model_id of the model deployed in the Elasticsearch
+cluster.</p></li>
+<li><p><strong>input_field</strong> (<em>str</em>) – The name of the key for the input text field in the
+document. Defaults to ‘text_field’.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.embeddings.elasticsearch.ElasticsearchEmbeddings.aembed_documents">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">aembed_documents</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">texts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#langchain_community.embeddings.elasticsearch.ElasticsearchEmbeddings.aembed_documents" title="Permalink to this definition">¶</a></dt>
+<dd><p>Asynchronous Embed search docs.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.embeddings.elasticsearch.ElasticsearchEmbeddings.aembed_query">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">aembed_query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#langchain_community.embeddings.elasticsearch.ElasticsearchEmbeddings.aembed_query" title="Permalink to this definition">¶</a></dt>
+<dd><p>Asynchronous Embed query text.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.embeddings.elasticsearch.ElasticsearchEmbeddings.embed_documents">
+<span class="sig-name descname"><span class="pre">embed_documents</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">texts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/langchain_community/embeddings/elasticsearch.html#ElasticsearchEmbeddings.embed_documents"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain_community.embeddings.elasticsearch.ElasticsearchEmbeddings.embed_documents" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate embeddings for a list of documents.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>texts</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – A list of document text strings to generate embeddings
+for.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A list of embeddings, one for each document in the input</dt><dd><p>list.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>List[List[float]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.embeddings.elasticsearch.ElasticsearchEmbeddings.embed_query">
+<span class="sig-name descname"><span class="pre">embed_query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/langchain_community/embeddings/elasticsearch.html#ElasticsearchEmbeddings.embed_query"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain_community.embeddings.elasticsearch.ElasticsearchEmbeddings.embed_query" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate an embedding for a single query text.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>text</strong> (<em>str</em>) – The query text to generate an embedding for.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The embedding for the input query text.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>List[float]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.embeddings.elasticsearch.ElasticsearchEmbeddings.from_credentials">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_credentials</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">es_cloud_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">es_user</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">es_password</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_field</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'text_field'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#langchain_community.embeddings.elasticsearch.ElasticsearchEmbeddings" title="langchain_community.embeddings.elasticsearch.ElasticsearchEmbeddings"><span class="pre">ElasticsearchEmbeddings</span></a></span></span><a class="reference internal" href="../_modules/langchain_community/embeddings/elasticsearch.html#ElasticsearchEmbeddings.from_credentials"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain_community.embeddings.elasticsearch.ElasticsearchEmbeddings.from_credentials" title="Permalink to this definition">¶</a></dt>
+<dd><p>Instantiate embeddings from Elasticsearch credentials.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_id</strong> (<em>str</em>) – The model_id of the model deployed in the Elasticsearch
+cluster.</p></li>
+<li><p><strong>input_field</strong> (<em>str</em>) – The name of the key for the input text field in the
+document. Defaults to ‘text_field’.</p></li>
+<li><p><strong>es_cloud_id</strong> – (str, optional): The Elasticsearch cloud ID to connect to.</p></li>
+<li><p><strong>es_user</strong> – (str, optional): Elasticsearch username.</p></li>
+<li><p><strong>es_password</strong> – (str, optional): Elasticsearch password.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">langchain_community.embeddings</span> <span class="kn">import</span> <span class="n">ElasticsearchEmbeddings</span>
+
+<span class="c1"># Define the model ID and input field name (if different from default)</span>
+<span class="n">model_id</span> <span class="o">=</span> <span class="s2">&quot;your_model_id&quot;</span>
+<span class="c1"># Optional, only if different from &#39;text_field&#39;</span>
+<span class="n">input_field</span> <span class="o">=</span> <span class="s2">&quot;your_input_field&quot;</span>
+
+<span class="c1"># Credentials can be passed in two ways. Either set the env vars</span>
+<span class="c1"># ES_CLOUD_ID, ES_USER, ES_PASSWORD and they will be automatically</span>
+<span class="c1"># pulled in, or pass them in directly as kwargs.</span>
+<span class="n">embeddings</span> <span class="o">=</span> <span class="n">ElasticsearchEmbeddings</span><span class="o">.</span><span class="n">from_credentials</span><span class="p">(</span>
+    <span class="n">model_id</span><span class="p">,</span>
+    <span class="n">input_field</span><span class="o">=</span><span class="n">input_field</span><span class="p">,</span>
+    <span class="c1"># es_cloud_id=&quot;foo&quot;,</span>
+    <span class="c1"># es_user=&quot;bar&quot;,</span>
+    <span class="c1"># es_password=&quot;baz&quot;,</span>
+<span class="p">)</span>
+
+<span class="n">documents</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;This is an example document.&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Another example document to generate embeddings for.&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+<span class="n">embeddings_generator</span><span class="o">.</span><span class="n">embed_documents</span><span class="p">(</span><span class="n">documents</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.embeddings.elasticsearch.ElasticsearchEmbeddings.from_es_connection">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_es_connection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">es_connection</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Elasticsearch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_field</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'text_field'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#langchain_community.embeddings.elasticsearch.ElasticsearchEmbeddings" title="langchain_community.embeddings.elasticsearch.ElasticsearchEmbeddings"><span class="pre">ElasticsearchEmbeddings</span></a></span></span><a class="reference internal" href="../_modules/langchain_community/embeddings/elasticsearch.html#ElasticsearchEmbeddings.from_es_connection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain_community.embeddings.elasticsearch.ElasticsearchEmbeddings.from_es_connection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Instantiate embeddings from an existing Elasticsearch connection.</p>
+<p>This method provides a way to create an instance of the ElasticsearchEmbeddings
+class using an existing Elasticsearch connection. The connection object is used
+to create an MlClient, which is then used to initialize the
+ElasticsearchEmbeddings instance.</p>
+<p>Args:
+model_id (str): The model_id of the model deployed in the Elasticsearch cluster.
+es_connection (elasticsearch.Elasticsearch): An existing Elasticsearch
+connection object. input_field (str, optional): The name of the key for the
+input text field in the document. Defaults to ‘text_field’.</p>
+<p>Returns:
+ElasticsearchEmbeddings: An instance of the ElasticsearchEmbeddings class.</p>
+<p class="rubric">Example</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">elasticsearch</span> <span class="kn">import</span> <span class="n">Elasticsearch</span>
+
+<span class="kn">from</span> <span class="nn">langchain_community.embeddings</span> <span class="kn">import</span> <span class="n">ElasticsearchEmbeddings</span>
+
+<span class="c1"># Define the model ID and input field name (if different from default)</span>
+<span class="n">model_id</span> <span class="o">=</span> <span class="s2">&quot;your_model_id&quot;</span>
+<span class="c1"># Optional, only if different from &#39;text_field&#39;</span>
+<span class="n">input_field</span> <span class="o">=</span> <span class="s2">&quot;your_input_field&quot;</span>
+
+<span class="c1"># Create Elasticsearch connection</span>
+<span class="n">es_connection</span> <span class="o">=</span> <span class="n">Elasticsearch</span><span class="p">(</span>
+    <span class="n">hosts</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;localhost:9200&quot;</span><span class="p">],</span> <span class="n">http_auth</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;password&quot;</span><span class="p">)</span>
+<span class="p">)</span>
+
+<span class="c1"># Instantiate ElasticsearchEmbeddings using the existing connection</span>
+<span class="n">embeddings</span> <span class="o">=</span> <span class="n">ElasticsearchEmbeddings</span><span class="o">.</span><span class="n">from_es_connection</span><span class="p">(</span>
+    <span class="n">model_id</span><span class="p">,</span>
+    <span class="n">es_connection</span><span class="p">,</span>
+    <span class="n">input_field</span><span class="o">=</span><span class="n">input_field</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">documents</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;This is an example document.&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Another example document to generate embeddings for.&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+<span class="n">embeddings_generator</span><span class="o">.</span><span class="n">embed_documents</span><span class="p">(</span><span class="n">documents</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<h1>Examples using ElasticsearchEmbeddings<a class="headerlink" href="#langchain-community-embeddings-elasticsearch-elasticsearchembeddings" title="Permalink to this heading">¶</a></h1>
+<ul class="simple">
+<li><p><a class="reference external" href="https://python.langchain.com/docs/integrations/text_embedding/elasticsearch">Elasticsearch</a></p></li>
+</ul>
+</section>
+
+
+      </div>
+    <div class="container">
+      <footer class="sk-content-footer">
+            &copy; 2023, LangChain, Inc..
+          Last updated on Jan 29, 2024.
+          <a href="../_sources/embeddings/langchain_community.embeddings.elasticsearch.ElasticsearchEmbeddings.rst.txt" rel="nofollow">Show this page source</a>
+      </footer>
+    </div>
+  </div>
+</div>
+<script src="../_static/js/vendor/bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    /* Add a [>>>] button on the top-right corner of code samples to hide
+     * the >>> and ... prompts and the output and thus make the code
+     * copyable. */
+    var div = $('.highlight-python .highlight,' +
+                '.highlight-python3 .highlight,' +
+                '.highlight-pycon .highlight,' +
+		'.highlight-default .highlight')
+    var pre = div.find('pre');
+
+    // get the styles from the current theme
+    pre.parent().parent().css('position', 'relative');
+    var hide_text = 'Hide prompts and outputs';
+    var show_text = 'Show prompts and outputs';
+
+    // create and add the button to all the code blocks that contain >>>
+    div.each(function(index) {
+        var jthis = $(this);
+        if (jthis.find('.gp').length > 0) {
+            var button = $('<span class="copybutton">&gt;&gt;&gt;</span>');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+            jthis.prepend(button);
+        }
+        // tracebacks (.gt) contain bare text elements that need to be
+        // wrapped in a span to work with .nextUntil() (see later)
+        jthis.find('pre:has(.gt)').contents().filter(function() {
+            return ((this.nodeType == 3) && (this.data.trim().length > 0));
+        }).wrap('<span>');
+    });
+
+    // define the behavior of the button when it's clicked
+    $('.copybutton').click(function(e){
+        e.preventDefault();
+        var button = $(this);
+        if (button.data('hidden') === 'false') {
+            // hide the code output
+            button.parent().find('.go, .gp, .gt').hide();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'hidden');
+            button.css('text-decoration', 'line-through');
+            button.attr('title', show_text);
+            button.data('hidden', 'true');
+        } else {
+            // show the code output
+            button.parent().find('.go, .gp, .gt').show();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'visible');
+            button.css('text-decoration', 'none');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+        }
+    });
+
+	/*** Add permalink buttons next to glossary terms ***/
+	$('dl.glossary > dt[id]').append(function() {
+		return ('<a class="headerlink" href="#' +
+			    this.getAttribute('id') +
+			    '" title="Permalink to this term">¶</a>');
+	});
+});
+
+</script>
+    
+</body>
+</html>

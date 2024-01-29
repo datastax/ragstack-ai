@@ -1,0 +1,1262 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>langchain_community.vectorstores.redis.base.Redis &mdash; 🦜🔗 LangChain 0.1.4</title>
+  
+  <link rel="canonical" href="https://api.python.langchain.com/en/latest/vectorstores/langchain_community.vectorstores.redis.base.Redis.html" />
+
+  
+
+  <link rel="stylesheet" href="../_static/css/vendor/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/autodoc_pydantic.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/sphinx-dropdown.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/panels-bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+<script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+<script src="../_static/jquery.js"></script> 
+</head>
+<body>
+
+
+<nav id="navbar" class="sk-docs-navbar navbar navbar-expand-md navbar-light bg-light py-0">
+  <div class="container-fluid sk-docs-container px-0">
+    <button
+      id="sk-navbar-toggler"
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="sk-navbar-collapse collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../langchain_api_reference.html">LangChain</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../core_api_reference.html">Core</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../community_api_reference.html">Community</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../experimental_api_reference.html">Experimental</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../openai_api_reference.html">openai</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../mistralai_api_reference.html">mistralai</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../robocorp_api_reference.html">robocorp</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../google_vertexai_api_reference.html">google-vertexai</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../nvidia_trt_api_reference.html">nvidia-trt</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../anthropic_api_reference.html">anthropic</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../together_api_reference.html">together</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../nvidia_ai_endpoints_api_reference.html">nvidia-ai-endpoints</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../exa_api_reference.html">exa</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../google_genai_api_reference.html">google-genai</a>
+        </li>
+        <li class="nav-item dropdown nav-more-item-dropdown">
+          <a class="sk-nav-link nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Partner libs</a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+              <a class="sk-nav-dropdown-item dropdown-item" href="../openai_api_reference.html">openai</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../mistralai_api_reference.html">mistralai</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../robocorp_api_reference.html">robocorp</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../google_vertexai_api_reference.html">google-vertexai</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../nvidia_trt_api_reference.html">nvidia-trt</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../anthropic_api_reference.html">anthropic</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../together_api_reference.html">together</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../nvidia_ai_endpoints_api_reference.html">nvidia-ai-endpoints</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../exa_api_reference.html">exa</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../google_genai_api_reference.html">google-genai</a>
+          </div>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" target="_blank" rel="noopener noreferrer" href="https://python.langchain.com/">Docs</a>
+        </li>
+      </ul>
+      <div id="searchbox" role="search">
+          <div class="searchformwrapper">
+          <form class="search" action="../search.html" method="get">
+            <input class="sk-search-text-input" type="text" name="q" aria-labelledby="searchlabel" />
+            <input class="sk-search-text-btn" type="submit" value="Go" />
+          </form>
+          </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="d-flex" id="sk-doc-wrapper">
+    <input type="checkbox" name="sk-toggle-checkbox" id="sk-toggle-checkbox">
+    <label id="sk-sidemenu-toggle" class="sk-btn-toggle-toc btn sk-btn-primary" for="sk-toggle-checkbox">Toggle Menu</label>
+    <div id="sk-sidebar-wrapper" class="border-right">
+      <div class="sk-sidebar-toc-wrapper">
+        <div class="btn-group w-100 mb-2" role="group" aria-label="rellinks">
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Prev</a>
+            <a href="#" role="button" class="btn sk-btn-rellink disabled py-1">Up</a>
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Next</a>
+        </div>
+            <div class="sk-sidebar-toc">
+              <ul>
+<li><a class="reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">langchain_community.vectorstores.redis.base</span></code>.Redis</a><ul>
+<li><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis"><code class="docutils literal notranslate"><span class="pre">Redis</span></code></a><ul>
+<li><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis.__init__"><code class="docutils literal notranslate"><span class="pre">Redis.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis.aadd_documents"><code class="docutils literal notranslate"><span class="pre">Redis.aadd_documents()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis.aadd_texts"><code class="docutils literal notranslate"><span class="pre">Redis.aadd_texts()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis.add_documents"><code class="docutils literal notranslate"><span class="pre">Redis.add_documents()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis.add_texts"><code class="docutils literal notranslate"><span class="pre">Redis.add_texts()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis.adelete"><code class="docutils literal notranslate"><span class="pre">Redis.adelete()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis.afrom_documents"><code class="docutils literal notranslate"><span class="pre">Redis.afrom_documents()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis.afrom_texts"><code class="docutils literal notranslate"><span class="pre">Redis.afrom_texts()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis.amax_marginal_relevance_search"><code class="docutils literal notranslate"><span class="pre">Redis.amax_marginal_relevance_search()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis.amax_marginal_relevance_search_by_vector"><code class="docutils literal notranslate"><span class="pre">Redis.amax_marginal_relevance_search_by_vector()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis.as_retriever"><code class="docutils literal notranslate"><span class="pre">Redis.as_retriever()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis.asearch"><code class="docutils literal notranslate"><span class="pre">Redis.asearch()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis.asimilarity_search"><code class="docutils literal notranslate"><span class="pre">Redis.asimilarity_search()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis.asimilarity_search_by_vector"><code class="docutils literal notranslate"><span class="pre">Redis.asimilarity_search_by_vector()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis.asimilarity_search_with_relevance_scores"><code class="docutils literal notranslate"><span class="pre">Redis.asimilarity_search_with_relevance_scores()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis.asimilarity_search_with_score"><code class="docutils literal notranslate"><span class="pre">Redis.asimilarity_search_with_score()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis.delete"><code class="docutils literal notranslate"><span class="pre">Redis.delete()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis.drop_index"><code class="docutils literal notranslate"><span class="pre">Redis.drop_index()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis.from_documents"><code class="docutils literal notranslate"><span class="pre">Redis.from_documents()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis.from_existing_index"><code class="docutils literal notranslate"><span class="pre">Redis.from_existing_index()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis.from_texts"><code class="docutils literal notranslate"><span class="pre">Redis.from_texts()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis.from_texts_return_keys"><code class="docutils literal notranslate"><span class="pre">Redis.from_texts_return_keys()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis.max_marginal_relevance_search"><code class="docutils literal notranslate"><span class="pre">Redis.max_marginal_relevance_search()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis.max_marginal_relevance_search_by_vector"><code class="docutils literal notranslate"><span class="pre">Redis.max_marginal_relevance_search_by_vector()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis.search"><code class="docutils literal notranslate"><span class="pre">Redis.search()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis.similarity_search"><code class="docutils literal notranslate"><span class="pre">Redis.similarity_search()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis.similarity_search_by_vector"><code class="docutils literal notranslate"><span class="pre">Redis.similarity_search_by_vector()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis.similarity_search_limit_score"><code class="docutils literal notranslate"><span class="pre">Redis.similarity_search_limit_score()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis.similarity_search_with_relevance_scores"><code class="docutils literal notranslate"><span class="pre">Redis.similarity_search_with_relevance_scores()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis.similarity_search_with_score"><code class="docutils literal notranslate"><span class="pre">Redis.similarity_search_with_score()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis.write_schema"><code class="docutils literal notranslate"><span class="pre">Redis.write_schema()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            </div>
+      </div>
+    </div>
+    <div id="sk-page-content-wrapper">
+      <div class="sk-page-content container-fluid body px-md-3" role="main">
+        
+  <section id="langchain-community-vectorstores-redis-base-redis">
+<h1><code class="xref py py-mod docutils literal notranslate"><span class="pre">langchain_community.vectorstores.redis.base</span></code>.Redis<a class="headerlink" href="#langchain-community-vectorstores-redis-base-redis" title="Permalink to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.redis.base.Redis">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">langchain_community.vectorstores.redis.base.</span></span><span class="sig-name descname"><span class="pre">Redis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">redis_url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">embedding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../embeddings/langchain_core.embeddings.Embeddings.html#langchain_core.embeddings.Embeddings" title="langchain_core.embeddings.Embeddings"><span class="pre">Embeddings</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">index_schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">PathLike</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vector_schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">relevance_score_fn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key_prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/langchain_community/vectorstores/redis/base.html#Redis"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain_community.vectorstores.redis.base.Redis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Redis vector database.</p>
+<p>To use, you should have the <code class="docutils literal notranslate"><span class="pre">redis</span></code> python package installed
+and have a running Redis Enterprise or Redis-Stack server</p>
+<p>For production use cases, it is recommended to use Redis Enterprise
+as the scaling, performance, stability and availability is much
+better than Redis-Stack.</p>
+<p>For testing and prototyping, however, this is not required.
+Redis-Stack is available as a docker container the full vector
+search API available.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># to run redis stack in docker locally</span>
+docker<span class="w"> </span>run<span class="w"> </span>-d<span class="w"> </span>-p<span class="w"> </span><span class="m">6379</span>:6379<span class="w"> </span>-p<span class="w"> </span><span class="m">8001</span>:8001<span class="w"> </span>redis/redis-stack:latest
+</pre></div>
+</div>
+<p>Once running, you can connect to the redis server with the following url schemas:
+- redis://&lt;host&gt;:&lt;port&gt; # simple connection
+- redis://&lt;username&gt;:&lt;password&gt;&#64;&lt;host&gt;:&lt;port&gt; # connection with authentication
+- rediss://&lt;host&gt;:&lt;port&gt; # connection with SSL
+- rediss://&lt;username&gt;:&lt;password&gt;&#64;&lt;host&gt;:&lt;port&gt; # connection with SSL and auth</p>
+<p>Examples:</p>
+<p>The following examples show various ways to use the Redis VectorStore with
+LangChain.</p>
+<p>For all the following examples assume we have the following imports:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">langchain_community.vectorstores</span> <span class="kn">import</span> <span class="n">Redis</span>
+<span class="kn">from</span> <span class="nn">langchain_community.embeddings</span> <span class="kn">import</span> <span class="n">OpenAIEmbeddings</span>
+</pre></div>
+</div>
+<dl>
+<dt>Initialize, create index, and load Documents</dt><dd><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">langchain_community.vectorstores</span> <span class="kn">import</span> <span class="n">Redis</span>
+<span class="kn">from</span> <span class="nn">langchain_community.embeddings</span> <span class="kn">import</span> <span class="n">OpenAIEmbeddings</span>
+
+<span class="n">rds</span> <span class="o">=</span> <span class="n">Redis</span><span class="o">.</span><span class="n">from_documents</span><span class="p">(</span>
+    <span class="n">documents</span><span class="p">,</span> <span class="c1"># a list of Document objects from loaders or created</span>
+    <span class="n">embeddings</span><span class="p">,</span> <span class="c1"># an Embeddings object</span>
+    <span class="n">redis_url</span><span class="o">=</span><span class="s2">&quot;redis://localhost:6379&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</dd>
+<dt>Initialize, create index, and load Documents with metadata</dt><dd><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">rds</span> <span class="o">=</span> <span class="n">Redis</span><span class="o">.</span><span class="n">from_texts</span><span class="p">(</span>
+    <span class="n">texts</span><span class="p">,</span> <span class="c1"># a list of strings</span>
+    <span class="n">metadata</span><span class="p">,</span> <span class="c1"># a list of metadata dicts</span>
+    <span class="n">embeddings</span><span class="p">,</span> <span class="c1"># an Embeddings object</span>
+    <span class="n">redis_url</span><span class="o">=</span><span class="s2">&quot;redis://localhost:6379&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+<p>Initialize, create index, and load Documents with metadata and return keys</p>
+<blockquote>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">rds</span><span class="p">,</span> <span class="n">keys</span> <span class="o">=</span> <span class="n">Redis</span><span class="o">.</span><span class="n">from_texts_return_keys</span><span class="p">(</span>
+    <span class="n">texts</span><span class="p">,</span> <span class="c1"># a list of strings</span>
+    <span class="n">metadata</span><span class="p">,</span> <span class="c1"># a list of metadata dicts</span>
+    <span class="n">embeddings</span><span class="p">,</span> <span class="c1"># an Embeddings object</span>
+    <span class="n">redis_url</span><span class="o">=</span><span class="s2">&quot;redis://localhost:6379&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p>For use cases where the index needs to stay alive, you can initialize
+with an index name such that it’s easier to reference later</p>
+<blockquote>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">rds</span> <span class="o">=</span> <span class="n">Redis</span><span class="o">.</span><span class="n">from_texts</span><span class="p">(</span>
+    <span class="n">texts</span><span class="p">,</span> <span class="c1"># a list of strings</span>
+    <span class="n">metadata</span><span class="p">,</span> <span class="c1"># a list of metadata dicts</span>
+    <span class="n">embeddings</span><span class="p">,</span> <span class="c1"># an Embeddings object</span>
+    <span class="n">index_name</span><span class="o">=</span><span class="s2">&quot;my-index&quot;</span><span class="p">,</span>
+    <span class="n">redis_url</span><span class="o">=</span><span class="s2">&quot;redis://localhost:6379&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p>Initialize and connect to an existing index (from above)</p>
+<blockquote>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># must pass in schema and key_prefix from another index</span>
+<span class="n">existing_rds</span> <span class="o">=</span> <span class="n">Redis</span><span class="o">.</span><span class="n">from_existing_index</span><span class="p">(</span>
+    <span class="n">embeddings</span><span class="p">,</span> <span class="c1"># an Embeddings object</span>
+    <span class="n">index_name</span><span class="o">=</span><span class="s2">&quot;my-index&quot;</span><span class="p">,</span>
+    <span class="n">schema</span><span class="o">=</span><span class="n">rds</span><span class="o">.</span><span class="n">schema</span><span class="p">,</span> <span class="c1"># schema dumped from another index</span>
+    <span class="n">key_prefix</span><span class="o">=</span><span class="n">rds</span><span class="o">.</span><span class="n">key_prefix</span><span class="p">,</span> <span class="c1"># key prefix from another index</span>
+    <span class="n">redis_url</span><span class="o">=</span><span class="s2">&quot;redis://localhost:6379&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p>Advanced examples:</p>
+<p>Custom vector schema can be supplied to change the way that
+Redis creates the underlying vector schema. This is useful
+for production use cases where you want to optimize the
+vector schema for your use case. ex. using HNSW instead of
+FLAT (knn) which is the default</p>
+<blockquote>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">vector_schema</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;algorithm&quot;</span><span class="p">:</span> <span class="s2">&quot;HNSW&quot;</span>
+<span class="p">}</span>
+
+<span class="n">rds</span> <span class="o">=</span> <span class="n">Redis</span><span class="o">.</span><span class="n">from_texts</span><span class="p">(</span>
+    <span class="n">texts</span><span class="p">,</span> <span class="c1"># a list of strings</span>
+    <span class="n">metadata</span><span class="p">,</span> <span class="c1"># a list of metadata dicts</span>
+    <span class="n">embeddings</span><span class="p">,</span> <span class="c1"># an Embeddings object</span>
+    <span class="n">vector_schema</span><span class="o">=</span><span class="n">vector_schema</span><span class="p">,</span>
+    <span class="n">redis_url</span><span class="o">=</span><span class="s2">&quot;redis://localhost:6379&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p>Custom index schema can be supplied to change the way that the
+metadata is indexed. This is useful for you would like to use the
+hybrid querying (filtering) capability of Redis.</p>
+<p>By default, this implementation will automatically generate the index
+schema according to the following rules:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>All strings are indexed as text fields</p></li>
+<li><p>All numbers are indexed as numeric fields</p></li>
+<li><dl class="simple">
+<dt>All lists of strings are indexed as tag fields (joined by</dt><dd><p>langchain_community.vectorstores.redis.constants.REDIS_TAG_SEPARATOR)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>All None values are not indexed but still stored in Redis these are</dt><dd><p>not retrievable through the interface here, but the raw Redis client
+can be used to retrieve them.</p>
+</dd>
+</dl>
+</li>
+<li><p>All other types are not indexed</p></li>
+</ul>
+</div></blockquote>
+<p>To override these rules, you can pass in a custom index schema like the following</p>
+<blockquote>
+<div><div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">tag</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">credit_score</span>
+<span class="nt">text</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">job</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p>Typically, the <code class="docutils literal notranslate"><span class="pre">credit_score</span></code> field would be a text field since it’s a string,
+however, we can override this behavior by specifying the field type as shown with
+the yaml config (can also be a dictionary) above and the code below.</p>
+<blockquote>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">rds</span> <span class="o">=</span> <span class="n">Redis</span><span class="o">.</span><span class="n">from_texts</span><span class="p">(</span>
+    <span class="n">texts</span><span class="p">,</span> <span class="c1"># a list of strings</span>
+    <span class="n">metadata</span><span class="p">,</span> <span class="c1"># a list of metadata dicts</span>
+    <span class="n">embeddings</span><span class="p">,</span> <span class="c1"># an Embeddings object</span>
+    <span class="n">index_schema</span><span class="o">=</span><span class="s2">&quot;path/to/index_schema.yaml&quot;</span><span class="p">,</span> <span class="c1"># can also be a dictionary</span>
+    <span class="n">redis_url</span><span class="o">=</span><span class="s2">&quot;redis://localhost:6379&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p>When connecting to an existing index where a custom schema has been applied, it’s
+important to pass in the same schema to the <code class="docutils literal notranslate"><span class="pre">from_existing_index</span></code> method.
+Otherwise, the schema for newly added samples will be incorrect and metadata
+will not be returned.</p>
+<p>Initialize Redis vector store with necessary components.</p>
+<p class="rubric">Attributes</p>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">DEFAULT_VECTOR_SCHEMA</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">embeddings</span></code></p></td>
+<td><p>Access the query embedding object if available.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">schema</span></code></p></td>
+<td><p>Return the schema of the index.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis.__init__" title="langchain_community.vectorstores.redis.base.Redis.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(redis_url, index_name, embedding[, ...])</p></td>
+<td><p>Initialize Redis vector store with necessary components.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis.aadd_documents" title="langchain_community.vectorstores.redis.base.Redis.aadd_documents"><code class="xref py py-obj docutils literal notranslate"><span class="pre">aadd_documents</span></code></a>(documents, **kwargs)</p></td>
+<td><p>Run more documents through the embeddings and add to the vectorstore.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis.aadd_texts" title="langchain_community.vectorstores.redis.base.Redis.aadd_texts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">aadd_texts</span></code></a>(texts[, metadatas])</p></td>
+<td><p>Run more texts through the embeddings and add to the vectorstore.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis.add_documents" title="langchain_community.vectorstores.redis.base.Redis.add_documents"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_documents</span></code></a>(documents, **kwargs)</p></td>
+<td><p>Run more documents through the embeddings and add to the vectorstore.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis.add_texts" title="langchain_community.vectorstores.redis.base.Redis.add_texts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_texts</span></code></a>(texts[, metadatas, embeddings, ...])</p></td>
+<td><p>Add more texts to the vectorstore.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis.adelete" title="langchain_community.vectorstores.redis.base.Redis.adelete"><code class="xref py py-obj docutils literal notranslate"><span class="pre">adelete</span></code></a>([ids])</p></td>
+<td><p>Delete by vector ID or other criteria.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis.afrom_documents" title="langchain_community.vectorstores.redis.base.Redis.afrom_documents"><code class="xref py py-obj docutils literal notranslate"><span class="pre">afrom_documents</span></code></a>(documents, embedding, **kwargs)</p></td>
+<td><p>Return VectorStore initialized from documents and embeddings.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis.afrom_texts" title="langchain_community.vectorstores.redis.base.Redis.afrom_texts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">afrom_texts</span></code></a>(texts, embedding[, metadatas])</p></td>
+<td><p>Return VectorStore initialized from texts and embeddings.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis.amax_marginal_relevance_search" title="langchain_community.vectorstores.redis.base.Redis.amax_marginal_relevance_search"><code class="xref py py-obj docutils literal notranslate"><span class="pre">amax_marginal_relevance_search</span></code></a>(query[, k, ...])</p></td>
+<td><p>Return docs selected using the maximal marginal relevance.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis.amax_marginal_relevance_search_by_vector" title="langchain_community.vectorstores.redis.base.Redis.amax_marginal_relevance_search_by_vector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">amax_marginal_relevance_search_by_vector</span></code></a>(...)</p></td>
+<td><p>Return docs selected using the maximal marginal relevance.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis.as_retriever" title="langchain_community.vectorstores.redis.base.Redis.as_retriever"><code class="xref py py-obj docutils literal notranslate"><span class="pre">as_retriever</span></code></a>(**kwargs)</p></td>
+<td><p>Return VectorStoreRetriever initialized from this VectorStore.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis.asearch" title="langchain_community.vectorstores.redis.base.Redis.asearch"><code class="xref py py-obj docutils literal notranslate"><span class="pre">asearch</span></code></a>(query, search_type, **kwargs)</p></td>
+<td><p>Return docs most similar to query using specified search type.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis.asimilarity_search" title="langchain_community.vectorstores.redis.base.Redis.asimilarity_search"><code class="xref py py-obj docutils literal notranslate"><span class="pre">asimilarity_search</span></code></a>(query[, k])</p></td>
+<td><p>Return docs most similar to query.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis.asimilarity_search_by_vector" title="langchain_community.vectorstores.redis.base.Redis.asimilarity_search_by_vector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">asimilarity_search_by_vector</span></code></a>(embedding[, k])</p></td>
+<td><p>Return docs most similar to embedding vector.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis.asimilarity_search_with_relevance_scores" title="langchain_community.vectorstores.redis.base.Redis.asimilarity_search_with_relevance_scores"><code class="xref py py-obj docutils literal notranslate"><span class="pre">asimilarity_search_with_relevance_scores</span></code></a>(query)</p></td>
+<td><p>Return docs and relevance scores in the range [0, 1], asynchronously.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis.asimilarity_search_with_score" title="langchain_community.vectorstores.redis.base.Redis.asimilarity_search_with_score"><code class="xref py py-obj docutils literal notranslate"><span class="pre">asimilarity_search_with_score</span></code></a>(*args, **kwargs)</p></td>
+<td><p>Run similarity search with distance asynchronously.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis.delete" title="langchain_community.vectorstores.redis.base.Redis.delete"><code class="xref py py-obj docutils literal notranslate"><span class="pre">delete</span></code></a>([ids])</p></td>
+<td><p>Delete a Redis entry.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis.drop_index" title="langchain_community.vectorstores.redis.base.Redis.drop_index"><code class="xref py py-obj docutils literal notranslate"><span class="pre">drop_index</span></code></a>(index_name, delete_documents, ...)</p></td>
+<td><p>Drop a Redis search index.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis.from_documents" title="langchain_community.vectorstores.redis.base.Redis.from_documents"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_documents</span></code></a>(documents, embedding, **kwargs)</p></td>
+<td><p>Return VectorStore initialized from documents and embeddings.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis.from_existing_index" title="langchain_community.vectorstores.redis.base.Redis.from_existing_index"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_existing_index</span></code></a>(embedding, index_name, ...)</p></td>
+<td><p>Connect to an existing Redis index.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis.from_texts" title="langchain_community.vectorstores.redis.base.Redis.from_texts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_texts</span></code></a>(texts, embedding[, metadatas, ...])</p></td>
+<td><p>Create a Redis vectorstore from a list of texts.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis.from_texts_return_keys" title="langchain_community.vectorstores.redis.base.Redis.from_texts_return_keys"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_texts_return_keys</span></code></a>(texts, embedding[, ...])</p></td>
+<td><p>Create a Redis vectorstore from raw documents.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis.max_marginal_relevance_search" title="langchain_community.vectorstores.redis.base.Redis.max_marginal_relevance_search"><code class="xref py py-obj docutils literal notranslate"><span class="pre">max_marginal_relevance_search</span></code></a>(query[, k, ...])</p></td>
+<td><p>Return docs selected using the maximal marginal relevance.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis.max_marginal_relevance_search_by_vector" title="langchain_community.vectorstores.redis.base.Redis.max_marginal_relevance_search_by_vector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">max_marginal_relevance_search_by_vector</span></code></a>(...)</p></td>
+<td><p>Return docs selected using the maximal marginal relevance.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis.search" title="langchain_community.vectorstores.redis.base.Redis.search"><code class="xref py py-obj docutils literal notranslate"><span class="pre">search</span></code></a>(query, search_type, **kwargs)</p></td>
+<td><p>Return docs most similar to query using specified search type.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis.similarity_search" title="langchain_community.vectorstores.redis.base.Redis.similarity_search"><code class="xref py py-obj docutils literal notranslate"><span class="pre">similarity_search</span></code></a>(query[, k, filter, ...])</p></td>
+<td><p>Run similarity search</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis.similarity_search_by_vector" title="langchain_community.vectorstores.redis.base.Redis.similarity_search_by_vector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">similarity_search_by_vector</span></code></a>(embedding[, k, ...])</p></td>
+<td><p>Run similarity search between a query vector and the indexed vectors.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis.similarity_search_limit_score" title="langchain_community.vectorstores.redis.base.Redis.similarity_search_limit_score"><code class="xref py py-obj docutils literal notranslate"><span class="pre">similarity_search_limit_score</span></code></a>(query[, k, ...])</p></td>
+<td><p>[<em>Deprecated</em>]  Returns the most similar indexed documents to the query text within the score_threshold range.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis.similarity_search_with_relevance_scores" title="langchain_community.vectorstores.redis.base.Redis.similarity_search_with_relevance_scores"><code class="xref py py-obj docutils literal notranslate"><span class="pre">similarity_search_with_relevance_scores</span></code></a>(query)</p></td>
+<td><p>Return docs and relevance scores in the range [0, 1].</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis.similarity_search_with_score" title="langchain_community.vectorstores.redis.base.Redis.similarity_search_with_score"><code class="xref py py-obj docutils literal notranslate"><span class="pre">similarity_search_with_score</span></code></a>(query[, k, ...])</p></td>
+<td><p>Run similarity search with <strong>vector distance</strong>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis.write_schema" title="langchain_community.vectorstores.redis.base.Redis.write_schema"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_schema</span></code></a>(path)</p></td>
+<td><p>Write the schema to a yaml file.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.redis.base.Redis.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">redis_url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">embedding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../embeddings/langchain_core.embeddings.Embeddings.html#langchain_core.embeddings.Embeddings" title="langchain_core.embeddings.Embeddings"><span class="pre">Embeddings</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">index_schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">PathLike</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vector_schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">relevance_score_fn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key_prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/langchain_community/vectorstores/redis/base.html#Redis.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain_community.vectorstores.redis.base.Redis.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize Redis vector store with necessary components.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.redis.base.Redis.aadd_documents">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">aadd_documents</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">documents</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../documents/langchain_core.documents.base.Document.html#langchain_core.documents.base.Document" title="langchain_core.documents.base.Document"><span class="pre">Document</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#langchain_community.vectorstores.redis.base.Redis.aadd_documents" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run more documents through the embeddings and add to the vectorstore.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>(</strong><strong>List</strong><strong>[</strong><strong>Document</strong><strong>]</strong> (<em>documents</em>) – Documents to add to the vectorstore.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>List of IDs of the added texts.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>List[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.redis.base.Redis.aadd_texts">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">aadd_texts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">texts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadatas</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#langchain_community.vectorstores.redis.base.Redis.aadd_texts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run more texts through the embeddings and add to the vectorstore.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.redis.base.Redis.add_documents">
+<span class="sig-name descname"><span class="pre">add_documents</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">documents</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../documents/langchain_core.documents.base.Document.html#langchain_core.documents.base.Document" title="langchain_core.documents.base.Document"><span class="pre">Document</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#langchain_community.vectorstores.redis.base.Redis.add_documents" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run more documents through the embeddings and add to the vectorstore.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>(</strong><strong>List</strong><strong>[</strong><strong>Document</strong><strong>]</strong> (<em>documents</em>) – Documents to add to the vectorstore.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>List of IDs of the added texts.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>List[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.redis.base.Redis.add_texts">
+<span class="sig-name descname"><span class="pre">add_texts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">texts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadatas</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">embeddings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clean_metadata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/langchain_community/vectorstores/redis/base.html#Redis.add_texts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain_community.vectorstores.redis.base.Redis.add_texts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add more texts to the vectorstore.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>texts</strong> (<em>Iterable</em><em>[</em><em>str</em><em>]</em>) – Iterable of strings/text to add to the vectorstore.</p></li>
+<li><p><strong>metadatas</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><em>dict</em><em>]</em><em>]</em><em>, </em><em>optional</em>) – Optional list of metadatas.
+Defaults to None.</p></li>
+<li><p><strong>embeddings</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><em>List</em><em>[</em><em>float</em><em>]</em><em>]</em><em>]</em><em>, </em><em>optional</em>) – Optional pre-generated
+embeddings. Defaults to None.</p></li>
+<li><p><strong>keys</strong> (<em>List</em><em>[</em><em>str</em><em>]</em><em>) or </em><em>ids</em><em> (</em><em>List</em><em>[</em><em>str</em><em>]</em>) – Identifiers of entries.
+Defaults to None.</p></li>
+<li><p><strong>batch_size</strong> (<em>int</em><em>, </em><em>optional</em>) – Batch size to use for writes. Defaults to 1000.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>List of ids added to the vectorstore</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>List[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.redis.base.Redis.adelete">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">adelete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#langchain_community.vectorstores.redis.base.Redis.adelete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete by vector ID or other criteria.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ids</strong> – List of ids to delete.</p></li>
+<li><p><strong>**kwargs</strong> – Other keyword arguments that subclasses might use.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>True if deletion is successful,
+False otherwise, None if not implemented.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Optional[bool]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.redis.base.Redis.afrom_documents">
+<em class="property"><span class="pre">async</span><span class="w"> </span><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">afrom_documents</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">documents</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../documents/langchain_core.documents.base.Document.html#langchain_core.documents.base.Document" title="langchain_core.documents.base.Document"><span class="pre">Document</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">embedding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../embeddings/langchain_core.embeddings.Embeddings.html#langchain_core.embeddings.Embeddings" title="langchain_core.embeddings.Embeddings"><span class="pre">Embeddings</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">VST</span></span></span><a class="headerlink" href="#langchain_community.vectorstores.redis.base.Redis.afrom_documents" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return VectorStore initialized from documents and embeddings.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.redis.base.Redis.afrom_texts">
+<em class="property"><span class="pre">async</span><span class="w"> </span><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">afrom_texts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">texts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">embedding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../embeddings/langchain_core.embeddings.Embeddings.html#langchain_core.embeddings.Embeddings" title="langchain_core.embeddings.Embeddings"><span class="pre">Embeddings</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadatas</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">VST</span></span></span><a class="headerlink" href="#langchain_community.vectorstores.redis.base.Redis.afrom_texts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return VectorStore initialized from texts and embeddings.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.redis.base.Redis.amax_marginal_relevance_search">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">amax_marginal_relevance_search</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fetch_k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lambda_mult</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../documents/langchain_core.documents.base.Document.html#langchain_core.documents.base.Document" title="langchain_core.documents.base.Document"><span class="pre">Document</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#langchain_community.vectorstores.redis.base.Redis.amax_marginal_relevance_search" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return docs selected using the maximal marginal relevance.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.redis.base.Redis.amax_marginal_relevance_search_by_vector">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">amax_marginal_relevance_search_by_vector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">embedding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fetch_k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lambda_mult</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../documents/langchain_core.documents.base.Document.html#langchain_core.documents.base.Document" title="langchain_core.documents.base.Document"><span class="pre">Document</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#langchain_community.vectorstores.redis.base.Redis.amax_marginal_relevance_search_by_vector" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return docs selected using the maximal marginal relevance.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.redis.base.Redis.as_retriever">
+<span class="sig-name descname"><span class="pre">as_retriever</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="langchain_community.vectorstores.redis.base.RedisVectorStoreRetriever.html#langchain_community.vectorstores.redis.base.RedisVectorStoreRetriever" title="langchain_community.vectorstores.redis.base.RedisVectorStoreRetriever"><span class="pre">RedisVectorStoreRetriever</span></a></span></span><a class="reference internal" href="../_modules/langchain_community/vectorstores/redis/base.html#Redis.as_retriever"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain_community.vectorstores.redis.base.Redis.as_retriever" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return VectorStoreRetriever initialized from this VectorStore.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>search_type</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – Defines the type of search that
+the Retriever should perform.
+Can be “similarity” (default), “mmr”, or
+“similarity_score_threshold”.</p></li>
+<li><p><strong>search_kwargs</strong> (<em>Optional</em><em>[</em><em>Dict</em><em>]</em>) – <p>Keyword arguments to pass to the
+search function. Can include things like:</p>
+<blockquote>
+<div><p>k: Amount of documents to return (Default: 4)
+score_threshold: Minimum relevance threshold</p>
+<blockquote>
+<div><p>for similarity_score_threshold</p>
+</div></blockquote>
+<p>fetch_k: Amount of documents to pass to MMR algorithm (Default: 20)
+lambda_mult: Diversity of results returned by MMR;</p>
+<blockquote>
+<div><p>1 for minimum diversity and 0 for maximum. (Default: 0.5)</p>
+</div></blockquote>
+<p>filter: Filter by document metadata</p>
+</div></blockquote>
+</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Retriever class for VectorStore.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="langchain_core.vectorstores.VectorStoreRetriever.html#langchain_core.vectorstores.VectorStoreRetriever" title="langchain_core.vectorstores.VectorStoreRetriever">VectorStoreRetriever</a></p>
+</dd>
+</dl>
+<p>Examples:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Retrieve more documents with higher diversity</span>
+<span class="c1"># Useful if your dataset has many similar documents</span>
+<span class="n">docsearch</span><span class="o">.</span><span class="n">as_retriever</span><span class="p">(</span>
+    <span class="n">search_type</span><span class="o">=</span><span class="s2">&quot;mmr&quot;</span><span class="p">,</span>
+    <span class="n">search_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;k&#39;</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span> <span class="s1">&#39;lambda_mult&#39;</span><span class="p">:</span> <span class="mf">0.25</span><span class="p">}</span>
+<span class="p">)</span>
+
+<span class="c1"># Fetch more documents for the MMR algorithm to consider</span>
+<span class="c1"># But only return the top 5</span>
+<span class="n">docsearch</span><span class="o">.</span><span class="n">as_retriever</span><span class="p">(</span>
+    <span class="n">search_type</span><span class="o">=</span><span class="s2">&quot;mmr&quot;</span><span class="p">,</span>
+    <span class="n">search_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;k&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s1">&#39;fetch_k&#39;</span><span class="p">:</span> <span class="mi">50</span><span class="p">}</span>
+<span class="p">)</span>
+
+<span class="c1"># Only retrieve documents that have a relevance score</span>
+<span class="c1"># Above a certain threshold</span>
+<span class="n">docsearch</span><span class="o">.</span><span class="n">as_retriever</span><span class="p">(</span>
+    <span class="n">search_type</span><span class="o">=</span><span class="s2">&quot;similarity_score_threshold&quot;</span><span class="p">,</span>
+    <span class="n">search_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;score_threshold&#39;</span><span class="p">:</span> <span class="mf">0.8</span><span class="p">}</span>
+<span class="p">)</span>
+
+<span class="c1"># Only get the single most similar document from the dataset</span>
+<span class="n">docsearch</span><span class="o">.</span><span class="n">as_retriever</span><span class="p">(</span><span class="n">search_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;k&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span>
+
+<span class="c1"># Use a filter to only retrieve documents from a specific paper</span>
+<span class="n">docsearch</span><span class="o">.</span><span class="n">as_retriever</span><span class="p">(</span>
+    <span class="n">search_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;filter&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;paper_title&#39;</span><span class="p">:</span><span class="s1">&#39;GPT-4 Technical Report&#39;</span><span class="p">}}</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.redis.base.Redis.asearch">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">asearch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">search_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../documents/langchain_core.documents.base.Document.html#langchain_core.documents.base.Document" title="langchain_core.documents.base.Document"><span class="pre">Document</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#langchain_community.vectorstores.redis.base.Redis.asearch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return docs most similar to query using specified search type.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.redis.base.Redis.asimilarity_search">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">asimilarity_search</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../documents/langchain_core.documents.base.Document.html#langchain_core.documents.base.Document" title="langchain_core.documents.base.Document"><span class="pre">Document</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#langchain_community.vectorstores.redis.base.Redis.asimilarity_search" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return docs most similar to query.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.redis.base.Redis.asimilarity_search_by_vector">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">asimilarity_search_by_vector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">embedding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../documents/langchain_core.documents.base.Document.html#langchain_core.documents.base.Document" title="langchain_core.documents.base.Document"><span class="pre">Document</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#langchain_community.vectorstores.redis.base.Redis.asimilarity_search_by_vector" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return docs most similar to embedding vector.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.redis.base.Redis.asimilarity_search_with_relevance_scores">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">asimilarity_search_with_relevance_scores</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../documents/langchain_core.documents.base.Document.html#langchain_core.documents.base.Document" title="langchain_core.documents.base.Document"><span class="pre">Document</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#langchain_community.vectorstores.redis.base.Redis.asimilarity_search_with_relevance_scores" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return docs and relevance scores in the range [0, 1], asynchronously.</p>
+<p>0 is dissimilar, 1 is most similar.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>query</strong> – input text</p></li>
+<li><p><strong>k</strong> – Number of Documents to return. Defaults to 4.</p></li>
+<li><p><strong>**kwargs</strong> – <p>kwargs to be passed to similarity search. Should include:
+score_threshold: Optional, a floating point value between 0 to 1 to</p>
+<blockquote>
+<div><p>filter the resulting set of retrieved docs</p>
+</div></blockquote>
+</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>List of Tuples of (doc, similarity_score)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.redis.base.Redis.asimilarity_search_with_score">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">asimilarity_search_with_score</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../documents/langchain_core.documents.base.Document.html#langchain_core.documents.base.Document" title="langchain_core.documents.base.Document"><span class="pre">Document</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#langchain_community.vectorstores.redis.base.Redis.asimilarity_search_with_score" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run similarity search with distance asynchronously.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.redis.base.Redis.delete">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">delete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../_modules/langchain_community/vectorstores/redis/base.html#Redis.delete"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain_community.vectorstores.redis.base.Redis.delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete a Redis entry.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ids</strong> – List of ids (keys in redis) to delete.</p></li>
+<li><p><strong>redis_url</strong> – Redis connection url. This should be passed in the kwargs
+or set as an environment variable: REDIS_URL.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Whether or not the deletions were successful.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If the redis python package is not installed.</p></li>
+<li><p><strong>ValueError</strong> – If the ids (keys in redis) are not provided</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.redis.base.Redis.drop_index">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">drop_index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delete_documents</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../_modules/langchain_community/vectorstores/redis/base.html#Redis.drop_index"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain_community.vectorstores.redis.base.Redis.drop_index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Drop a Redis search index.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>index_name</strong> (<em>str</em>) – Name of the index to drop.</p></li>
+<li><p><strong>delete_documents</strong> (<em>bool</em>) – Whether to drop the associated documents.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Whether or not the drop was successful.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.redis.base.Redis.from_documents">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_documents</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">documents</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../documents/langchain_core.documents.base.Document.html#langchain_core.documents.base.Document" title="langchain_core.documents.base.Document"><span class="pre">Document</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">embedding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../embeddings/langchain_core.embeddings.Embeddings.html#langchain_core.embeddings.Embeddings" title="langchain_core.embeddings.Embeddings"><span class="pre">Embeddings</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">VST</span></span></span><a class="headerlink" href="#langchain_community.vectorstores.redis.base.Redis.from_documents" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return VectorStore initialized from documents and embeddings.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.redis.base.Redis.from_existing_index">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_existing_index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">embedding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../embeddings/langchain_core.embeddings.Embeddings.html#langchain_core.embeddings.Embeddings" title="langchain_core.embeddings.Embeddings"><span class="pre">Embeddings</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">index_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">PathLike</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key_prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis" title="langchain_community.vectorstores.redis.base.Redis"><span class="pre">Redis</span></a></span></span><a class="reference internal" href="../_modules/langchain_community/vectorstores/redis/base.html#Redis.from_existing_index"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain_community.vectorstores.redis.base.Redis.from_existing_index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Connect to an existing Redis index.</p>
+<p class="rubric">Example</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">langchain_community.vectorstores</span> <span class="kn">import</span> <span class="n">Redis</span>
+<span class="kn">from</span> <span class="nn">langchain_community.embeddings</span> <span class="kn">import</span> <span class="n">OpenAIEmbeddings</span>
+
+<span class="n">embeddings</span> <span class="o">=</span> <span class="n">OpenAIEmbeddings</span><span class="p">()</span>
+
+<span class="c1"># must pass in schema and key_prefix from another index</span>
+<span class="n">existing_rds</span> <span class="o">=</span> <span class="n">Redis</span><span class="o">.</span><span class="n">from_existing_index</span><span class="p">(</span>
+    <span class="n">embeddings</span><span class="p">,</span>
+    <span class="n">index_name</span><span class="o">=</span><span class="s2">&quot;my-index&quot;</span><span class="p">,</span>
+    <span class="n">schema</span><span class="o">=</span><span class="n">rds</span><span class="o">.</span><span class="n">schema</span><span class="p">,</span> <span class="c1"># schema dumped from another index</span>
+    <span class="n">key_prefix</span><span class="o">=</span><span class="n">rds</span><span class="o">.</span><span class="n">key_prefix</span><span class="p">,</span> <span class="c1"># key prefix from another index</span>
+    <span class="n">redis_url</span><span class="o">=</span><span class="s2">&quot;redis://username:password@localhost:6379&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>embedding</strong> (<a class="reference internal" href="../embeddings/langchain_core.embeddings.Embeddings.html#langchain_core.embeddings.Embeddings" title="langchain_core.embeddings.Embeddings"><em>Embeddings</em></a>) – Embedding model class (i.e. OpenAIEmbeddings)
+for embedding queries.</p></li>
+<li><p><strong>index_name</strong> (<em>str</em>) – Name of the index to connect to.</p></li>
+<li><p><strong>schema</strong> (<em>Union</em><em>[</em><em>Dict</em><em>[</em><em>str</em><em>, </em><em>str</em><em>]</em><em>, </em><em>str</em><em>, </em><em>os.PathLike</em><em>]</em>) – Schema of the index
+and the vector schema. Can be a dict, or path to yaml file.</p></li>
+<li><p><strong>key_prefix</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – Prefix to use for all keys in Redis associated
+with this index.</p></li>
+<li><p><strong>**kwargs</strong> (<em>Any</em>) – Additional keyword arguments to pass to the Redis client.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Redis VectorStore instance.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis" title="langchain_community.vectorstores.redis.base.Redis">Redis</a></p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If the index does not exist.</p></li>
+<li><p><strong>ImportError</strong> – If the redis python package is not installed.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.redis.base.Redis.from_texts">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_texts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">texts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">embedding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../embeddings/langchain_core.embeddings.Embeddings.html#langchain_core.embeddings.Embeddings" title="langchain_core.embeddings.Embeddings"><span class="pre">Embeddings</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadatas</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index_schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">PathLike</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vector_schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis" title="langchain_community.vectorstores.redis.base.Redis"><span class="pre">Redis</span></a></span></span><a class="reference internal" href="../_modules/langchain_community/vectorstores/redis/base.html#Redis.from_texts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain_community.vectorstores.redis.base.Redis.from_texts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a Redis vectorstore from a list of texts.</p>
+<dl class="simple">
+<dt>This is a user-friendly interface that:</dt><dd><ol class="arabic simple">
+<li><p>Embeds documents.</p></li>
+<li><p>Creates a new Redis index if it doesn’t already exist</p></li>
+<li><p>Adds the documents to the newly created Redis index.</p></li>
+</ol>
+</dd>
+</dl>
+<p>This method will generate schema based on the metadata passed in
+if the <cite>index_schema</cite> is not defined. If the <cite>index_schema</cite> is defined,
+it will compare against the generated schema and warn if there are
+differences. If you are purposefully defining the schema for the
+metadata, then you can ignore that warning.</p>
+<p>To examine the schema options, initialize an instance of this class
+and print out the schema using the <cite>Redis.schema`</cite> property. This
+will include the content and content_vector classes which are
+always present in the langchain schema.</p>
+<p class="rubric">Example</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">langchain_community.vectorstores</span> <span class="kn">import</span> <span class="n">Redis</span>
+<span class="kn">from</span> <span class="nn">langchain_community.embeddings</span> <span class="kn">import</span> <span class="n">OpenAIEmbeddings</span>
+<span class="n">embeddings</span> <span class="o">=</span> <span class="n">OpenAIEmbeddings</span><span class="p">()</span>
+<span class="n">redisearch</span> <span class="o">=</span> <span class="n">RediSearch</span><span class="o">.</span><span class="n">from_texts</span><span class="p">(</span>
+    <span class="n">texts</span><span class="p">,</span>
+    <span class="n">embeddings</span><span class="p">,</span>
+    <span class="n">redis_url</span><span class="o">=</span><span class="s2">&quot;redis://username:password@localhost:6379&quot;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>texts</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – List of texts to add to the vectorstore.</p></li>
+<li><p><strong>embedding</strong> (<a class="reference internal" href="../embeddings/langchain_core.embeddings.Embeddings.html#langchain_core.embeddings.Embeddings" title="langchain_core.embeddings.Embeddings"><em>Embeddings</em></a>) – Embedding model class (i.e. OpenAIEmbeddings)
+for embedding queries.</p></li>
+<li><p><strong>metadatas</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><em>dict</em><em>]</em><em>]</em><em>, </em><em>optional</em>) – Optional list of metadata dicts
+to add to the vectorstore. Defaults to None.</p></li>
+<li><p><strong>index_name</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em><em>, </em><em>optional</em>) – Optional name of the index to create
+or add to. Defaults to None.</p></li>
+<li><p><strong>index_schema</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><em>Dict</em><em>[</em><em>str</em><em>, </em><em>str</em><em>]</em><em>, </em><em>str</em><em>, </em><em>os.PathLike</em><em>]</em><em>]</em><em>, </em><em>optional</em>) – Optional fields to index within the metadata. Overrides generated
+schema. Defaults to None.</p></li>
+<li><p><strong>vector_schema</strong> (<em>Optional</em><em>[</em><em>Dict</em><em>[</em><em>str</em><em>, </em><em>Union</em><em>[</em><em>str</em><em>, </em><em>int</em><em>]</em><em>]</em><em>]</em><em>, </em><em>optional</em>) – Optional
+vector schema to use. Defaults to None.</p></li>
+<li><p><strong>**kwargs</strong> (<em>Any</em>) – Additional keyword arguments to pass to the Redis client.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Redis VectorStore instance.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis" title="langchain_community.vectorstores.redis.base.Redis">Redis</a></p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If the number of metadatas does not match the number of texts.</p></li>
+<li><p><strong>ImportError</strong> – If the redis python package is not installed.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.redis.base.Redis.from_texts_return_keys">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_texts_return_keys</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">texts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">embedding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../embeddings/langchain_core.embeddings.Embeddings.html#langchain_core.embeddings.Embeddings" title="langchain_core.embeddings.Embeddings"><span class="pre">Embeddings</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadatas</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index_schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">PathLike</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vector_schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis" title="langchain_community.vectorstores.redis.base.Redis"><span class="pre">Redis</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/langchain_community/vectorstores/redis/base.html#Redis.from_texts_return_keys"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain_community.vectorstores.redis.base.Redis.from_texts_return_keys" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a Redis vectorstore from raw documents.</p>
+<dl class="simple">
+<dt>This is a user-friendly interface that:</dt><dd><ol class="arabic simple">
+<li><p>Embeds documents.</p></li>
+<li><p>Creates a new Redis index if it doesn’t already exist</p></li>
+<li><p>Adds the documents to the newly created Redis index.</p></li>
+<li><p>Returns the keys of the newly created documents once stored.</p></li>
+</ol>
+</dd>
+</dl>
+<p>This method will generate schema based on the metadata passed in
+if the <cite>index_schema</cite> is not defined. If the <cite>index_schema</cite> is defined,
+it will compare against the generated schema and warn if there are
+differences. If you are purposefully defining the schema for the
+metadata, then you can ignore that warning.</p>
+<p>To examine the schema options, initialize an instance of this class
+and print out the schema using the <cite>Redis.schema`</cite> property. This
+will include the content and content_vector classes which are
+always present in the langchain schema.</p>
+<p class="rubric">Example</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">langchain_community.vectorstores</span> <span class="kn">import</span> <span class="n">Redis</span>
+<span class="kn">from</span> <span class="nn">langchain_community.embeddings</span> <span class="kn">import</span> <span class="n">OpenAIEmbeddings</span>
+<span class="n">embeddings</span> <span class="o">=</span> <span class="n">OpenAIEmbeddings</span><span class="p">()</span>
+<span class="n">redis</span><span class="p">,</span> <span class="n">keys</span> <span class="o">=</span> <span class="n">Redis</span><span class="o">.</span><span class="n">from_texts_return_keys</span><span class="p">(</span>
+    <span class="n">texts</span><span class="p">,</span>
+    <span class="n">embeddings</span><span class="p">,</span>
+    <span class="n">redis_url</span><span class="o">=</span><span class="s2">&quot;redis://localhost:6379&quot;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>texts</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – List of texts to add to the vectorstore.</p></li>
+<li><p><strong>embedding</strong> (<a class="reference internal" href="../embeddings/langchain_core.embeddings.Embeddings.html#langchain_core.embeddings.Embeddings" title="langchain_core.embeddings.Embeddings"><em>Embeddings</em></a>) – Embeddings to use for the vectorstore.</p></li>
+<li><p><strong>metadatas</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><em>dict</em><em>]</em><em>]</em><em>, </em><em>optional</em>) – Optional list of metadata
+dicts to add to the vectorstore. Defaults to None.</p></li>
+<li><p><strong>index_name</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em><em>, </em><em>optional</em>) – Optional name of the index to
+create or add to. Defaults to None.</p></li>
+<li><p><strong>index_schema</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><em>Dict</em><em>[</em><em>str</em><em>, </em><em>str</em><em>]</em><em>, </em><em>str</em><em>, </em><em>os.PathLike</em><em>]</em><em>]</em><em>, </em><em>optional</em>) – Optional fields to index within the metadata. Overrides generated
+schema. Defaults to None.</p></li>
+<li><p><strong>vector_schema</strong> (<em>Optional</em><em>[</em><em>Dict</em><em>[</em><em>str</em><em>, </em><em>Union</em><em>[</em><em>str</em><em>, </em><em>int</em><em>]</em><em>]</em><em>]</em><em>, </em><em>optional</em>) – Optional
+vector schema to use. Defaults to None.</p></li>
+<li><p><strong>**kwargs</strong> (<em>Any</em>) – Additional keyword arguments to pass to the Redis client.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>Tuple of the Redis instance and the keys of</dt><dd><p>the newly created documents.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Tuple[<a class="reference internal" href="#langchain_community.vectorstores.redis.base.Redis" title="langchain_community.vectorstores.redis.base.Redis">Redis</a>, List[str]]</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If the number of metadatas does not match the number of texts.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.redis.base.Redis.max_marginal_relevance_search">
+<span class="sig-name descname"><span class="pre">max_marginal_relevance_search</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fetch_k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lambda_mult</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="langchain_community.vectorstores.redis.filters.RedisFilterExpression.html#langchain_community.vectorstores.redis.filters.RedisFilterExpression" title="langchain_community.vectorstores.redis.filters.RedisFilterExpression"><span class="pre">RedisFilterExpression</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_metadata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../documents/langchain_core.documents.base.Document.html#langchain_core.documents.base.Document" title="langchain_core.documents.base.Document"><span class="pre">Document</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/langchain_community/vectorstores/redis/base.html#Redis.max_marginal_relevance_search"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain_community.vectorstores.redis.base.Redis.max_marginal_relevance_search" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return docs selected using the maximal marginal relevance.</p>
+<dl class="simple">
+<dt>Maximal marginal relevance optimizes for similarity to query AND diversity</dt><dd><p>among selected documents.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>query</strong> (<em>str</em>) – Text to look up documents similar to.</p></li>
+<li><p><strong>k</strong> (<em>int</em>) – Number of Documents to return. Defaults to 4.</p></li>
+<li><p><strong>fetch_k</strong> (<em>int</em>) – Number of Documents to fetch to pass to MMR algorithm.</p></li>
+<li><p><strong>lambda_mult</strong> (<em>float</em>) – Number between 0 and 1 that determines the degree
+of diversity among the results with 0 corresponding
+to maximum diversity and 1 to minimum diversity.
+Defaults to 0.5.</p></li>
+<li><p><strong>filter</strong> (<a class="reference internal" href="langchain_community.vectorstores.redis.filters.RedisFilterExpression.html#langchain_community.vectorstores.redis.filters.RedisFilterExpression" title="langchain_community.vectorstores.redis.filters.RedisFilterExpression"><em>RedisFilterExpression</em></a><em>, </em><em>optional</em>) – Optional metadata filter.
+Defaults to None.</p></li>
+<li><p><strong>return_metadata</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to return metadata.
+Defaults to True.</p></li>
+<li><p><strong>distance_threshold</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em><em>, </em><em>optional</em>) – Maximum vector distance
+between selected documents and the query vector. Defaults to None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A list of Documents selected by maximal marginal relevance.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>List[<a class="reference internal" href="../documents/langchain_core.documents.base.Document.html#langchain_core.documents.base.Document" title="langchain_core.documents.base.Document">Document</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.redis.base.Redis.max_marginal_relevance_search_by_vector">
+<span class="sig-name descname"><span class="pre">max_marginal_relevance_search_by_vector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">embedding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fetch_k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lambda_mult</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../documents/langchain_core.documents.base.Document.html#langchain_core.documents.base.Document" title="langchain_core.documents.base.Document"><span class="pre">Document</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#langchain_community.vectorstores.redis.base.Redis.max_marginal_relevance_search_by_vector" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return docs selected using the maximal marginal relevance.</p>
+<p>Maximal marginal relevance optimizes for similarity to query AND diversity
+among selected documents.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>embedding</strong> – Embedding to look up documents similar to.</p></li>
+<li><p><strong>k</strong> – Number of Documents to return. Defaults to 4.</p></li>
+<li><p><strong>fetch_k</strong> – Number of Documents to fetch to pass to MMR algorithm.</p></li>
+<li><p><strong>lambda_mult</strong> – Number between 0 and 1 that determines the degree
+of diversity among the results with 0 corresponding
+to maximum diversity and 1 to minimum diversity.
+Defaults to 0.5.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>List of Documents selected by maximal marginal relevance.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.redis.base.Redis.search">
+<span class="sig-name descname"><span class="pre">search</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">search_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../documents/langchain_core.documents.base.Document.html#langchain_core.documents.base.Document" title="langchain_core.documents.base.Document"><span class="pre">Document</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#langchain_community.vectorstores.redis.base.Redis.search" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return docs most similar to query using specified search type.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.redis.base.Redis.similarity_search">
+<span class="sig-name descname"><span class="pre">similarity_search</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="langchain_community.vectorstores.redis.filters.RedisFilterExpression.html#langchain_community.vectorstores.redis.filters.RedisFilterExpression" title="langchain_community.vectorstores.redis.filters.RedisFilterExpression"><span class="pre">RedisFilterExpression</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_metadata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../documents/langchain_core.documents.base.Document.html#langchain_core.documents.base.Document" title="langchain_core.documents.base.Document"><span class="pre">Document</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/langchain_community/vectorstores/redis/base.html#Redis.similarity_search"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain_community.vectorstores.redis.base.Redis.similarity_search" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run similarity search</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>query</strong> (<em>str</em>) – The query text for which to find similar documents.</p></li>
+<li><p><strong>k</strong> (<em>int</em>) – The number of documents to return. Default is 4.</p></li>
+<li><p><strong>filter</strong> (<a class="reference internal" href="langchain_community.vectorstores.redis.filters.RedisFilterExpression.html#langchain_community.vectorstores.redis.filters.RedisFilterExpression" title="langchain_community.vectorstores.redis.filters.RedisFilterExpression"><em>RedisFilterExpression</em></a><em>, </em><em>optional</em>) – Optional metadata filter.
+Defaults to None.</p></li>
+<li><p><strong>return_metadata</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to return metadata.
+Defaults to True.</p></li>
+<li><p><strong>distance_threshold</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em><em>, </em><em>optional</em>) – Maximum vector distance
+between selected documents and the query vector. Defaults to None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A list of documents that are most similar to the query</dt><dd><p>text.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>List[<a class="reference internal" href="../documents/langchain_core.documents.base.Document.html#langchain_core.documents.base.Document" title="langchain_core.documents.base.Document">Document</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.redis.base.Redis.similarity_search_by_vector">
+<span class="sig-name descname"><span class="pre">similarity_search_by_vector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">embedding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="langchain_community.vectorstores.redis.filters.RedisFilterExpression.html#langchain_community.vectorstores.redis.filters.RedisFilterExpression" title="langchain_community.vectorstores.redis.filters.RedisFilterExpression"><span class="pre">RedisFilterExpression</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_metadata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../documents/langchain_core.documents.base.Document.html#langchain_core.documents.base.Document" title="langchain_core.documents.base.Document"><span class="pre">Document</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/langchain_community/vectorstores/redis/base.html#Redis.similarity_search_by_vector"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain_community.vectorstores.redis.base.Redis.similarity_search_by_vector" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run similarity search between a query vector and the indexed vectors.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>embedding</strong> (<em>List</em><em>[</em><em>float</em><em>]</em>) – The query vector for which to find similar
+documents.</p></li>
+<li><p><strong>k</strong> (<em>int</em>) – The number of documents to return. Default is 4.</p></li>
+<li><p><strong>filter</strong> (<a class="reference internal" href="langchain_community.vectorstores.redis.filters.RedisFilterExpression.html#langchain_community.vectorstores.redis.filters.RedisFilterExpression" title="langchain_community.vectorstores.redis.filters.RedisFilterExpression"><em>RedisFilterExpression</em></a><em>, </em><em>optional</em>) – Optional metadata filter.
+Defaults to None.</p></li>
+<li><p><strong>return_metadata</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to return metadata.
+Defaults to True.</p></li>
+<li><p><strong>distance_threshold</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em><em>, </em><em>optional</em>) – Maximum vector distance
+between selected documents and the query vector. Defaults to None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A list of documents that are most similar to the query</dt><dd><p>text.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>List[<a class="reference internal" href="../documents/langchain_core.documents.base.Document.html#langchain_core.documents.base.Document" title="langchain_core.documents.base.Document">Document</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.redis.base.Redis.similarity_search_limit_score">
+<span class="sig-name descname"><span class="pre">similarity_search_limit_score</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">score_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.2</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../documents/langchain_core.documents.base.Document.html#langchain_core.documents.base.Document" title="langchain_core.documents.base.Document"><span class="pre">Document</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/langchain_community/vectorstores/redis/base.html#Redis.similarity_search_limit_score"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain_community.vectorstores.redis.base.Redis.similarity_search_limit_score" title="Permalink to this definition">¶</a></dt>
+<dd><p>[<em>Deprecated</em>]  Returns the most similar indexed documents to the query text within the
+score_threshold range.</p>
+<p>Deprecated: Use similarity_search with distance_threshold instead.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>query</strong> (<em>str</em>) – The query text for which to find similar documents.</p></li>
+<li><p><strong>k</strong> (<em>int</em>) – The number of documents to return. Default is 4.</p></li>
+<li><p><strong>score_threshold</strong> (<em>float</em>) – The minimum matching <em>distance</em> required
+for a document to be considered a match. Defaults to 0.2.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A list of documents that are most similar to the query text</dt><dd><p>including the match score for each document.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>List[<a class="reference internal" href="../documents/langchain_core.documents.base.Document.html#langchain_core.documents.base.Document" title="langchain_core.documents.base.Document">Document</a>]</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If there are no documents that satisfy the score_threshold value,
+an empty list is returned.[<em>Deprecated</em>] Returns the most similar indexed documents to the query text within the</p>
+</div>
+<p>score_threshold range.</p>
+<p>Deprecated: Use similarity_search with distance_threshold instead.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>query</strong> (<em>str</em>) – The query text for which to find similar documents.</p></li>
+<li><p><strong>k</strong> (<em>int</em>) – The number of documents to return. Default is 4.</p></li>
+<li><p><strong>score_threshold</strong> (<em>float</em>) – The minimum matching <em>distance</em> required
+for a document to be considered a match. Defaults to 0.2.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A list of documents that are most similar to the query text</dt><dd><p>including the match score for each document.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>List[<a class="reference internal" href="../documents/langchain_core.documents.base.Document.html#langchain_core.documents.base.Document" title="langchain_core.documents.base.Document">Document</a>]</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If there are no documents that satisfy the score_threshold value,
+an empty list is returned.</p>
+</div>
+<p class="rubric">Notes</p>
+<div class="deprecated">
+<p><span class="versionmodified deprecated">Deprecated since version 0.0.272: </span>Use similarity_search(distance_threshold=0.1) instead.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.redis.base.Redis.similarity_search_with_relevance_scores">
+<span class="sig-name descname"><span class="pre">similarity_search_with_relevance_scores</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../documents/langchain_core.documents.base.Document.html#langchain_core.documents.base.Document" title="langchain_core.documents.base.Document"><span class="pre">Document</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#langchain_community.vectorstores.redis.base.Redis.similarity_search_with_relevance_scores" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return docs and relevance scores in the range [0, 1].</p>
+<p>0 is dissimilar, 1 is most similar.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>query</strong> – input text</p></li>
+<li><p><strong>k</strong> – Number of Documents to return. Defaults to 4.</p></li>
+<li><p><strong>**kwargs</strong> – <p>kwargs to be passed to similarity search. Should include:
+score_threshold: Optional, a floating point value between 0 to 1 to</p>
+<blockquote>
+<div><p>filter the resulting set of retrieved docs</p>
+</div></blockquote>
+</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>List of Tuples of (doc, similarity_score)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.redis.base.Redis.similarity_search_with_score">
+<span class="sig-name descname"><span class="pre">similarity_search_with_score</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="langchain_community.vectorstores.redis.filters.RedisFilterExpression.html#langchain_community.vectorstores.redis.filters.RedisFilterExpression" title="langchain_community.vectorstores.redis.filters.RedisFilterExpression"><span class="pre">RedisFilterExpression</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_metadata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../documents/langchain_core.documents.base.Document.html#langchain_core.documents.base.Document" title="langchain_core.documents.base.Document"><span class="pre">Document</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/langchain_community/vectorstores/redis/base.html#Redis.similarity_search_with_score"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain_community.vectorstores.redis.base.Redis.similarity_search_with_score" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run similarity search with <strong>vector distance</strong>.</p>
+<p>The “scores” returned from this function are the raw vector
+distances from the query vector. For similarity scores, use
+<code class="docutils literal notranslate"><span class="pre">similarity_search_with_relevance_scores</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>query</strong> (<em>str</em>) – The query text for which to find similar documents.</p></li>
+<li><p><strong>k</strong> (<em>int</em>) – The number of documents to return. Default is 4.</p></li>
+<li><p><strong>filter</strong> (<a class="reference internal" href="langchain_community.vectorstores.redis.filters.RedisFilterExpression.html#langchain_community.vectorstores.redis.filters.RedisFilterExpression" title="langchain_community.vectorstores.redis.filters.RedisFilterExpression"><em>RedisFilterExpression</em></a><em>, </em><em>optional</em>) – Optional metadata filter.
+Defaults to None.</p></li>
+<li><p><strong>return_metadata</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to return metadata.
+Defaults to True.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A list of documents that are</dt><dd><p>most similar to the query with the distance for each document.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>List[Tuple[<a class="reference internal" href="../documents/langchain_core.documents.base.Document.html#langchain_core.documents.base.Document" title="langchain_core.documents.base.Document">Document</a>, float]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.vectorstores.redis.base.Redis.write_schema">
+<span class="sig-name descname"><span class="pre">write_schema</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">PathLike</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/langchain_community/vectorstores/redis/base.html#Redis.write_schema"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain_community.vectorstores.redis.base.Redis.write_schema" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write the schema to a yaml file.</p>
+</dd></dl>
+
+</dd></dl>
+
+<h1>Examples using Redis<a class="headerlink" href="#langchain-community-vectorstores-redis-base-redis" title="Permalink to this heading">¶</a></h1>
+<ul class="simple">
+<li><p><a class="reference external" href="https://python.langchain.com/docs/modules/data_connection/retrievers/self_query/redis_self_query">Redis</a></p></li>
+</ul>
+</section>
+
+
+      </div>
+    <div class="container">
+      <footer class="sk-content-footer">
+            &copy; 2023, LangChain, Inc..
+          Last updated on Jan 29, 2024.
+          <a href="../_sources/vectorstores/langchain_community.vectorstores.redis.base.Redis.rst.txt" rel="nofollow">Show this page source</a>
+      </footer>
+    </div>
+  </div>
+</div>
+<script src="../_static/js/vendor/bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    /* Add a [>>>] button on the top-right corner of code samples to hide
+     * the >>> and ... prompts and the output and thus make the code
+     * copyable. */
+    var div = $('.highlight-python .highlight,' +
+                '.highlight-python3 .highlight,' +
+                '.highlight-pycon .highlight,' +
+		'.highlight-default .highlight')
+    var pre = div.find('pre');
+
+    // get the styles from the current theme
+    pre.parent().parent().css('position', 'relative');
+    var hide_text = 'Hide prompts and outputs';
+    var show_text = 'Show prompts and outputs';
+
+    // create and add the button to all the code blocks that contain >>>
+    div.each(function(index) {
+        var jthis = $(this);
+        if (jthis.find('.gp').length > 0) {
+            var button = $('<span class="copybutton">&gt;&gt;&gt;</span>');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+            jthis.prepend(button);
+        }
+        // tracebacks (.gt) contain bare text elements that need to be
+        // wrapped in a span to work with .nextUntil() (see later)
+        jthis.find('pre:has(.gt)').contents().filter(function() {
+            return ((this.nodeType == 3) && (this.data.trim().length > 0));
+        }).wrap('<span>');
+    });
+
+    // define the behavior of the button when it's clicked
+    $('.copybutton').click(function(e){
+        e.preventDefault();
+        var button = $(this);
+        if (button.data('hidden') === 'false') {
+            // hide the code output
+            button.parent().find('.go, .gp, .gt').hide();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'hidden');
+            button.css('text-decoration', 'line-through');
+            button.attr('title', show_text);
+            button.data('hidden', 'true');
+        } else {
+            // show the code output
+            button.parent().find('.go, .gp, .gt').show();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'visible');
+            button.css('text-decoration', 'none');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+        }
+    });
+
+	/*** Add permalink buttons next to glossary terms ***/
+	$('dl.glossary > dt[id]').append(function() {
+		return ('<a class="headerlink" href="#' +
+			    this.getAttribute('id') +
+			    '" title="Permalink to this term">¶</a>');
+	});
+});
+
+</script>
+    
+</body>
+</html>
