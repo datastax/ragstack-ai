@@ -8,15 +8,15 @@ LANGSMITH_CLIENT = Client()
 
 
 def record_langsmith_sharelink(
-    run_id: str, record_property: Callable, tries: int = 5
+    run_id: str, record_property: Callable, tries: int = 6
 ) -> None:
     try:
         sharelink = LANGSMITH_CLIENT.share_run(run_id)
         record_property("langsmith_url", sharelink)
         logging.info(f"recorded langsmith link: {sharelink}")
     except Exception as e:
-        # runs take a second to show up in the api
+        # runs may take a while to be discoverable
         if tries < 0:
             raise e
-        time.sleep(3)
+        time.sleep(5)
         record_langsmith_sharelink(run_id, record_property, tries - 1)
