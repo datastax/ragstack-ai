@@ -1,8 +1,26 @@
 # Benchmarks
 
-This framework is used to run benchmarks on different providers, models and datasets. 
+This framework is used to run benchmarks on different providers, models and datasets.
+Benchmarks results are available in the [Github Pages branch](https://github.com/datastax/ragstack-ai/blob/gh-pages/reports/benchmarks/).
 
-## Running benchmarks
+## Understand the benchmarks
+
+Testcases available are: 
+- Embeddings latency
+
+### Embeddings latency
+This benchmarks measure how much time it takes to embed 100 documents. The variables are:
+* Embeddings provider/model
+* Batch size - how many inputs to send in the same request
+* Size of each document - split is performed using LangChain's TextSplitter
+
+For example, `embeddings_batch100_chunk512-openai_ada002` can be decomposed in:
+* `embeddings`: the main test case.
+* `batch_100`: batch size.
+* `chunks_512`: the size of each document (512).
+* `openai_ada002`: provider and model (OpenAI's ada-embeddings-002).
+
+## Run the benchmarks
 To run the benchmark, you need to add the secrets to the environment variables.
 ```
 export OPENAI_API_KEY=<your key>
