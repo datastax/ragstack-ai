@@ -37,7 +37,7 @@ jobs:
           poetry install --no-root
           poetry run python benchmarks/runner.py -t all -i ${{ github.event.inputs.intensity }}
           
-          poetry run python benchmarks/visualize.py --format html
+          poetry run python benchmarks/visualize.py --format all
           cat benchmarks/reports/report.html
 
       - name: Dump logs
@@ -65,8 +65,8 @@ jobs:
           git status
           git reset --hard origin/gh-pages
           mkdir -p benchmarks/reports
-          dir=benchmarks/reports/$(date +"%Y-%m-%d_%H-%M-%S")
+          dir=reports/benchmarks/$(date +"%Y-%m-%d_%H-%M-%S")
           mv /tmp/reports $dir
-          git add -A benchmarks
+          git add -A benchmarks/reports
           git commit -am "Update benchmarks ${{ github.run_id }} - $dir"
           git push origin gh-pages

@@ -188,7 +188,7 @@ def draw_report(directory_path: str, format: str, filter_by: str):
             show=format == "plot",
         )
     if is_all or format == "html":
-        render_html(values, export_to=os.path.join(directory_path, "report.html"))
+        render_html(values, export_to=os.path.join(directory_path, "index.html"))
     if is_all or format == "markdown":
         render_plot(
             values,
@@ -197,7 +197,7 @@ def draw_report(directory_path: str, format: str, filter_by: str):
         )
         render_markdown(
             values,
-            export_to=os.path.join(directory_path, "report.md"),
+            export_to=os.path.join(directory_path, "README.md"),
             plot_src="plot.svg",
         )
     if is_all or format == "table":
