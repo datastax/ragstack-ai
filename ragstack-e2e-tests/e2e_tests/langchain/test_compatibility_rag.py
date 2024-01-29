@@ -4,6 +4,8 @@ import time
 from typing import List
 
 import pytest
+from langchain import callbacks
+
 from e2e_tests.conftest import (
     set_current_test_info,
     get_required_env,
@@ -28,6 +30,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_google_genai import ChatGoogleGenerativeAI
 from vertexai.vision_models import MultiModalEmbeddingModel, Image
 
+from e2e_tests.test_utils.tracing import record_langsmith_sharelink
 from e2e_tests.test_utils.vector_store_handler import VectorStoreImplementation
 
 
@@ -179,7 +182,7 @@ def nvidia_mixtral_llm():
         ("nvidia_embedding", "nvidia_mixtral_llm"),
     ],
 )
-def test_rag(test_case, vector_store, embedding, llm, request):
+def test_rag(test_case, vector_store, embedding, llm, request, record_property):
     set_current_test_info(
         "langchain::" + test_case,
         f"{llm},{embedding},{vector_store}",
@@ -204,21 +207,22 @@ def test_rag(test_case, vector_store, embedding, llm, request):
         resolved_vector_store,
         resolved_embedding,
         resolved_llm,
+        record_property,
     )
 
 
-def _run_test(test_case: str, vector_store_context, embedding, llm):
+def _run_test(test_case: str, vector_store_context, embedding, llm, record_property):
     vector_store = vector_store_context.new_langchain_vector_store(embedding=embedding)
     if test_case == "rag_custom_chain":
         run_rag_custom_chain(
-            vector_store=vector_store,
-            llm=llm,
+            vector_store=vector_store, llm=llm, record_property=record_property
         )
     elif test_case == "conversational_rag":
         run_conversational_rag(
             vector_store=vector_store,
             llm=llm,
             chat_memory=vector_store_context.new_langchain_chat_memory(),
+            record_property=record_property,
         )
     else:
         raise ValueError(f"Unknown test case: {test_case}")
@@ -265,7 +269,7 @@ def gemini_pro_llm():
         ("vertex_gemini_multimodal_embedding", "gemini_pro_vision_llm"),
     ],
 )
-def test_multimodal(vector_store, embedding, llm, request):
+def test_multimodal(vector_store, embedding, llm, request, record_property):
     set_current_test_info(
         "langchain::multimodal_rag",
         f"{llm},{embedding},{vector_store}",
@@ -328,8 +332,11 @@ def test_multimodal(vector_store, embedding, llm, request):
         "text": prompt,
     }
     message = HumanMessage(content=[text_message, image_message])
-    response = resolved_llm([message])
-    assert "Coffee Machine Ultra Cool" in response.content
+    with callbacks.collect_runs() as cb:
+        response = resolved_llm([message])
+        run_id = cb.traced_runs[0].id
+        record_langsmith_sharelink(run_id, record_property)
+        assert "Coffee Machine Ultra Cool" in response.content
 
 
 def get_local_resource_path(filename: str):
@@ -338,11 +345,8 @@ def get_local_resource_path(filename: str):
     return os.path.join(e2e_tests_dir, "resources", filename)
 
 
-@pytest.mark.parametrize(
-    "chat",
-    ["vertex_gemini_pro_llm", "gemini_pro_llm"],
-)
-def test_chat(chat, request):
+@pytest.mark.parametrize("chat", ["vertex_gemini_pro_llm", "gemini_pro_llm"])
+def test_chat(chat, request, record_property):
     set_current_test_info(
         "langchain::chat",
         chat,
@@ -352,5 +356,8 @@ def test_chat(chat, request):
         [("human", "Hello! Where Archimede was born?")]
     )
     chain = prompt | chat_model
-    response = chain.invoke({})
-    assert "Syracuse" in response.content
+    with callbacks.collect_runs() as cb:
+        response = chain.invoke({})
+        run_id = cb.traced_runs[0].id
+        record_langsmith_sharelink(run_id, record_property)
+        assert "Syracuse" in response.content
