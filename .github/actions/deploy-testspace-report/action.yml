@@ -55,6 +55,8 @@ runs:
         shell: bash
       - run: python ./scripts/generate-testspace-report.py "${{ inputs.report-file }}" testspace-report.xml
         shell: bash
+        env:
+          TESTSPACE_REPORT_GITHUB_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
       - run: |
           echo "Original report was:"
           cat "${{ inputs.report-file }}"
