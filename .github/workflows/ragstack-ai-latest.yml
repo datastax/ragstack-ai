@@ -1,9 +1,14 @@
-name: RAGStack latest daily
+name: RAGStack latest released version
 on:
   workflow_dispatch: {}
-# Commenting out because it's broken as of ragstack-ai 0.5.0 because of the upgrade of astrapy in the tests not being compatible with the actual code
-#  schedule:
-#    - cron: '0 4,16 * * *'
+  schedule:
+    - cron: '0 3,15 * * *'
+  pull_request:
+    paths:
+      - '.github/**'
+      - 'ragstack-e2e-tests/**'
+    branches:
+      - main
 
 jobs:
   ragstack-latest:
@@ -13,17 +18,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-#          - name: Astra PROD
-#            vector_db_mode: "astradb"
-#            needs_astra_setup: true
-#            astra_token_secret: E2E_TESTS_ASTRA_PROD_DB_TOKEN
-#            env: PROD
-#            region: eu-west-1
-#            cloud: aws
-#            run_notebooks: true
-#            testspace_space: ""
-
           - name: Astra DEV
+            skip: "${{ github.event_name == 'pull_request' }}"
             type: "astradb"
             needs_astra_setup: "true"
             astra_token_secret: E2E_TESTS_ASTRA_DEV_DB_TOKEN
@@ -31,28 +27,32 @@ jobs:
             region: us-west-2
             cloud: aws
             run_notebooks: "false"
-            testspace_space: ""
+            testspace_space: "RAGStack test suite - RAGStack latest - AstraDB"
 
           - name: DSE
-            vector_db_mode: "dse"
+            skip: "false"
+            type: "local-cassandra"
             needs_astra_setup: "false"
             astra_token_secret: ""
             env: ""
             region: ""
             cloud: ""
             run_notebooks: "false"
-            testspace_space: ""
+            testspace_space: "RAGStack test suite - RAGStack latest - DSE"
     steps:
       - name: Check out the repo
+        if: matrix.skip == 'false'
         uses: actions/checkout@v3
 
       - name: 'Setup: Python 3.11'
         uses: actions/setup-python@v4
+        if: matrix.skip == 'false'
         with:
           python-version: '3.11'
           cache: 'pip'
 
       - name: Install dependencies
+        if: matrix.skip == 'false'
         run: |
           python -m pip install --upgrade pip
           python -m pip install tox
@@ -60,7 +60,7 @@ jobs:
       - name: Setup AstraDB
         uses: ./.github/actions/setup-astra-db
         id: astra-db
-        if: matrix.needs_astra_setup == 'true'
+        if: matrix.needs_astra_setup == 'true' && matrix.skip == 'false'
         with:
           astra-token: ${{ secrets[matrix.astra_token_secret] }}
           db-name: ${{ github.run_id }}
@@ -70,6 +70,7 @@ jobs:
 
       - name: Run E2E tests
         id: e2e-tests
+        if: matrix.skip == 'false'
         env:
           VECTOR_DATABASE_TYPE: "${{ matrix.type }}"
           ASTRA_DB_TOKEN: "${{ secrets[matrix.astra_token_secret] }}"
@@ -93,11 +94,11 @@ jobs:
           tox -c ragstack-e2e-tests -e ragstack-ai-latest
 
       - name: Dump report on Github Summary
-        if: always()
+        if: always() && matrix.skip == 'false'
         uses: ./.github/actions/add-report-to-github-summary
 
       - name: Compute version
-        if: always()
+        if: always() && matrix.skip == 'false'
         id: ragstack-ai-version
         run: |
           set +x
@@ -105,44 +106,27 @@ jobs:
           cat /tmp/ragstack-ai-version
           echo "ragstack-ai-version=$(cat /tmp/ragstack-ai-version)" >> $GITHUB_OUTPUT
 
-      - name: Prepare report for Slack
-        if: always()
-        uses: ./.github/actions/generate-slack-report
+      - name: Slack deploy report
+        if: always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && matrix.skip == 'false'
+        uses: ./.github/actions/deploy-slack-report
         with:
           from-report-file: "ragstack-e2e-tests/failed-tests-report.txt"
-          output-file: slack-report.json
           type: "Tests using latest RAGStack released version (${{ steps.ragstack-ai-version.outputs.ragstack-ai-version }}) - (${{ matrix.name }})"
           outcome: ${{ steps.e2e-tests.outcome }}
           commit-url: "https://pypi.org/project/ragstack-ai/${{ steps.ragstack-ai-version.outputs.ragstack-ai-version }}/"
-
-      - name: Dump report on Slack
-        if: always()
-        uses: slackapi/slack-github-action@v1.24.0
-        with:
-          payload-file-path: "./slack-report.json"
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
 
       - name: Testspace deploy report
         uses: ./.github/actions/deploy-testspace-report
-        if: always() && matrix.test_testspace != '' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+        if: always() && matrix.test_testspace != '' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && matrix.skip == 'false'
         with:
           token: ${{ secrets.TESTSPACE_TOKEN }}
           report-file: ragstack-e2e-tests/results.xml
           space: ${{ matrix.testspace_space }}
 
-#      - name: Upload report to Github Pages
-#        if: always()
-#        uses: ./.github/actions/deploy-tests-report
-#        with:
-#          target: "reports/tests/ragstack-ai/latest-release.html"
-#          reference: "${{ steps.ragstack-ai-version.outputs.ragstack-ai-version }}"
-#          reference-link: "https://pypi.org/project/ragstack-ai/${{ steps.ragstack-ai-version.outputs.ragstack-ai-version }}/"
-#          input: "ragstack-e2e-tests/all-tests-report.txt"
-
       - name: Cleanup AstraDB
         uses: ./.github/actions/cleanup-astra-db
-        if: always() && matrix.needs_astra_setup == 'true'
+        if: always() && matrix.needs_astra_setup == 'true' && matrix.skip == 'false'
         with:
           astra-token: ${{ secrets[matrix.astra_token_secret] }}
           db-name: ${{ github.run_id }}
