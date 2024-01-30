@@ -56,5 +56,14 @@ runs:
       - run: python ./scripts/generate-testspace-report.py "${{ inputs.report-file }}" testspace-report.xml
         shell: bash
       - run: |
-          testspace testspace-report.xml "${{ inputs.token }}@${{ inputs.repository }}.testspace.com/${{ inputs.project }}/${{ inputs.space }}"
+          echo "Original report was:"
+          cat "${{ inputs.report-file }}"
+          file=testspace-report.xml
+          if [ -f "$file" ]; then
+            echo "Uploading $file to testspace"
+            cat $file
+            testspace testspace-report.xml "${{ inputs.token }}@${{ inputs.repository }}.testspace.com/${{ inputs.project }}/${{ inputs.space }}"
+          else
+            echo "Skipping testspace upload as $file does not exist"
+          fi
         shell: bash
