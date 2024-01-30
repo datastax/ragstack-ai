@@ -215,9 +215,7 @@ jobs:
 
       - name: Testspace deploy report
         uses: ./.github/actions/deploy-testspace-report
-        #if: always() && matrix.testspace_space != '' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
-        # TO REVERT !
-        if: always() && matrix.testspace_space != ''
+        if: always() && matrix.testspace_space != '' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
         with:
           token: ${{ secrets.TESTSPACE_TOKEN }}
           report-file: ragstack-e2e-tests/results.xml
