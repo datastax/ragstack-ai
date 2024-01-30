@@ -208,7 +208,7 @@ class AstraDBVectorStoreHandler(VectorStoreHandler):
         if self.collection_name:
             self.__class__.delete_collection_handler.run_delete(self.collection_name)
         collections = (
-            self.default_astra_client.get_collections().get("status").get("collections")
+            self.__class__.default_astra_client.get_collections().get("status").get("collections")
         )
         logging.info(f"Existing collections: {collections}")
         for name in collections:
