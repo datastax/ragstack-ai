@@ -20,6 +20,11 @@ from e2e_tests.test_utils.vector_store_handler import (
     EnhancedLangChainVectorStore,
     EnhancedLlamaIndexVectorStore,
 )
+from e2e_tests.test_utils.cassandra_vector_store_handler import (
+    EnhancedCassandraLlamaIndexVectorStore,
+    EnhancedCassandraLangChainVectorStore,
+    CassandraChatMessageHistory,
+)
 
 from astrapy.db import AstraDB as AstraPyClient
 
@@ -135,34 +140,66 @@ class AstraDBVectorStoreTestContext(VectorStoreTestContext):
         self.handler = handler
         self.test_id = "test_id" + random_string()
 
-    def new_langchain_vector_store(
-        self, **kwargs
-    ) -> EnhancedAstraDBLangChainVectorStore:
-        return EnhancedAstraDBLangChainVectorStore(
-            collection_name=self.handler.collection_name,
-            token=self.handler.token,
-            api_endpoint=self.handler.api_endpoint,
-            **kwargs,
+    def new_langchain_vector_store(self, **kwargs) -> EnhancedLangChainVectorStore:
+        logging.info(
+            f"Creating langchain vector store, implementation {self.handler.implementation}, collection {self.handler.collection_name}"
         )
+
+        if self.handler.implementation == VectorStoreImplementation.CASSANDRA:
+            vector_store = EnhancedCassandraLangChainVectorStore(
+                session=None,
+                keyspace="default_keyspace",
+                table_name=self.handler.collection_name,
+                **kwargs,
+            )
+        else:
+            vector_store = EnhancedAstraDBLangChainVectorStore(
+                collection_name=self.handler.collection_name,
+                token=self.handler.token,
+                api_endpoint=self.handler.api_endpoint,
+                **kwargs,
+            )
+        logging.info("Created vector store")
+        return vector_store
 
     def new_langchain_chat_memory(self, **kwargs) -> BaseChatMessageHistory:
-        return AstraDBChatMessageHistory(
-            session_id=self.test_id,
-            token=self.handler.token,
-            api_endpoint=self.handler.api_endpoint,
-            collection_name=self.handler.collection_name + "_chat_memory",
-            **kwargs,
-        )
+        if self.handler.implementation == VectorStoreImplementation.CASSANDRA:
+            return CassandraChatMessageHistory(
+                session_id=self.test_id,
+                session=None,
+                keyspace="default_keyspace",
+                table_name=self.handler.collection_name + "_chat_memory",
+                **kwargs,
+            )
+        else:
+            return AstraDBChatMessageHistory(
+                session_id=self.test_id,
+                token=self.handler.token,
+                api_endpoint=self.handler.api_endpoint,
+                collection_name=self.handler.collection_name + "_chat_memory",
+                **kwargs,
+            )
 
-    def new_llamaindex_vector_store(
-        self, **kwargs
-    ) -> EnhancedAstraDBLlamaIndexVectorStore:
-        return EnhancedAstraDBLlamaIndexVectorStore(
-            token=self.handler.token,
-            api_endpoint=self.handler.api_endpoint,
-            collection_name=self.handler.collection_name + "_chat_memory",
-            **kwargs,
+    def new_llamaindex_vector_store(self, **kwargs) -> EnhancedLlamaIndexVectorStore:
+        logging.info(
+            f"Creating llama index vector store, implementation {self.handler.implementation}, collection {self.handler.collection_name}"
         )
+        if self.handler.implementation == VectorStoreImplementation.CASSANDRA:
+            vector_store = EnhancedCassandraLlamaIndexVectorStore(
+                session=None,
+                keyspace="default_keyspace",
+                table=self.handler.collection_name,
+                **kwargs,
+            )
+        else:
+            vector_store = EnhancedAstraDBLlamaIndexVectorStore(
+                token=self.handler.token,
+                api_endpoint=self.handler.api_endpoint,
+                collection_name=self.handler.collection_name,
+                **kwargs,
+            )
+        logging.info("Created vector store")
+        return vector_store
 
 
 def try_delete_with_backoff(collection: str, sleep=1, max_tries=5):
