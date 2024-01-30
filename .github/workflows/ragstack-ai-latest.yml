@@ -26,7 +26,6 @@ jobs:
             env: DEV
             region: us-west-2
             cloud: aws
-            run_notebooks: "false"
             testspace_space: "RAGStack test suite - RAGStack latest - AstraDB"
 
           - name: DSE
@@ -37,7 +36,6 @@ jobs:
             env: ""
             region: ""
             cloud: ""
-            run_notebooks: "false"
             testspace_space: "RAGStack test suite - RAGStack latest - DSE"
     steps:
       - name: Check out the repo
@@ -118,7 +116,7 @@ jobs:
 
       - name: Testspace deploy report
         uses: ./.github/actions/deploy-testspace-report
-        if: always() && matrix.test_testspace != '' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && matrix.skip == 'false'
+        if: always() && matrix.testspace_space != '' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && matrix.skip == 'false'
         with:
           token: ${{ secrets.TESTSPACE_TOKEN }}
           report-file: ragstack-e2e-tests/results.xml
