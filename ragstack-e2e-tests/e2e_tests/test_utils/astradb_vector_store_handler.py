@@ -196,11 +196,11 @@ class AstraDBVectorStoreHandler(VectorStoreHandler):
     @property
     def astra_ref(self) -> AstraRef:
         return AstraRef(
-            token=self.token,
-            api_endpoint=self.api_endpoint,
+            token=self.__class__.token,
+            api_endpoint=self.__class__.api_endpoint,
             collection=self.collection_name,
-            id=self.database_id,
-            env=self.env,
+            id=self.__class__.database_id,
+            env=self.__class__.env,
         )
 
     def ensure_astra_env_clean(self, blocking=False):
@@ -228,16 +228,18 @@ class AstraDBVectorStoreHandler(VectorStoreHandler):
         logging.info("Start using collection: " + self.collection_name)
 
         if self.implementation == VectorStoreImplementation.CASSANDRA:
+            print("useing" + str(self.astra_ref))
             # to run cassandra implementation over astra
-            if self.env == "dev":
+            if self.astra_ref.env == "dev":
                 bundle_url_template = "https://api.dev.cloud.datastax.com/v2/databases/{database_id}/secureBundleURL"
+
                 cassio.init(
-                    token=self.token,
-                    database_id=self.database_id,
+                    token=self.astra_ref.token,
+                    database_id=self.astra_ref.id,
                     bundle_url_template=bundle_url_template,
                 )
             else:
-                cassio.init(token=self.token, database_id=self.database_id)
+                cassio.init(token=self.astra_ref.token, database_id=self.astra_ref.id)
         return AstraDBVectorStoreTestContext(self)
 
     def after_test(self):

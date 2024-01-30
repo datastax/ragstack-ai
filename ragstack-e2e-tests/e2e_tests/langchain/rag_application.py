@@ -195,7 +195,7 @@ def run_rag_custom_chain(
             }
         )
 
-        run_id = cb.traced_runs[0].database_id
+        run_id = cb.traced_runs[0].id
         record_langsmith_sharelink(run_id, record_property)
 
     logging.info("Got response: " + response)
@@ -229,13 +229,13 @@ def run_conversational_rag(
 
     with callbacks.collect_runs() as cb:
         result = conversation.invoke({"question": "what is MyFakeProductForTesting?"})
-        run_id = cb.traced_runs[0].database_id
+        run_id = cb.traced_runs[0].id
         record_langsmith_sharelink(run_id, record_property)
         logging.info("First result: " + str(result))
 
     with callbacks.collect_runs() as cb:
         result = conversation.invoke({"question": "and when was it released?"})
-        run_id = cb.traced_runs[0].database_id
+        run_id = cb.traced_runs[0].id
         record_langsmith_sharelink(run_id, record_property)
         logging.info("Second result: " + str(result))
 
