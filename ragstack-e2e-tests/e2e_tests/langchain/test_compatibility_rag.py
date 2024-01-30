@@ -1,6 +1,5 @@
 import logging
 import os
-import time
 from typing import List
 
 import pytest
@@ -200,21 +199,9 @@ def test_rag(test_case, vector_store, embedding, llm, request, record_property):
         "langchain::" + test_case,
         f"{llm},{embedding},{vector_store}",
     )
-    start = time.perf_counter_ns()
     resolved_vector_store = request.getfixturevalue(vector_store)
-    logging.info(
-        "Vector store initialized in %s seconds", (time.perf_counter_ns() - start) / 1e9
-    )
-    start = time.perf_counter_ns()
     resolved_embedding = request.getfixturevalue(embedding)
-    logging.info(
-        "Embedding initialized in %s seconds", (time.perf_counter_ns() - start) / 1e9
-    )
-    start = time.perf_counter_ns()
     resolved_llm = request.getfixturevalue(llm)
-    logging.info(
-        "LLM initialized in %s seconds", (time.perf_counter_ns() - start) / 1e9
-    )
     _run_test(
         test_case,
         resolved_vector_store,
