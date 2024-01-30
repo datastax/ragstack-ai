@@ -102,6 +102,7 @@ jobs:
 
       - name: Slack deploy report
         if: always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && matrix.skip == 'false'
+        uses: ./.github/actions/deploy-slack-report
         with:
           from-report-file: "ragstack-e2e-tests/failed-tests-report.txt"
           type: "Tests using LangChain main branch (${{ matrix.name }})"
