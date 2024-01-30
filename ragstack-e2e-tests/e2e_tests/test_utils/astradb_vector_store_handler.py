@@ -219,7 +219,7 @@ class AstraDBVectorStoreHandler(VectorStoreHandler):
             self.__class__.delete_collection_handler.await_ongoing_deletions_completed()
             logging.info("Astra env cleanup completed")
         else:
-            logging.info("Astra env cleanup started in background, proceeeding")
+            logging.info("Astra env cleanup started in background, proceeding")
 
     def before_test(self) -> AstraDBVectorStoreTestContext:
         super().check_implementation()
@@ -228,7 +228,6 @@ class AstraDBVectorStoreHandler(VectorStoreHandler):
         logging.info("Start using collection: " + self.collection_name)
 
         if self.implementation == VectorStoreImplementation.CASSANDRA:
-            print("useing" + str(self.astra_ref))
             # to run cassandra implementation over astra
             if self.astra_ref.env == "dev":
                 bundle_url_template = "https://api.dev.cloud.datastax.com/v2/databases/{database_id}/secureBundleURL"
