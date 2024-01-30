@@ -19,7 +19,7 @@ jobs:
       matrix:
         include:
           - name: Astra DEV
-            skip: "${{ github.event_name == 'pull_request' }}"
+            skip: "${{ ''github.event_name == 'pull_request''' }}"
             type: "astradb"
             needs_astra_setup: "true"
             astra_token_secret: E2E_TESTS_ASTRA_DEV_DB_TOKEN
@@ -41,7 +41,7 @@ jobs:
       - run: |
           echo "value -> ${{ github.event_name }} -> ${{ matrix.skip }}"
       - name: Check out the repo
-        if: matrix.skip == false
+        if: matrix.skip == 'false'
         uses: actions/checkout@v3
 
       - name: 'Setup: Python 3.11'
