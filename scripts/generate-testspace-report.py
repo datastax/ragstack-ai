@@ -117,9 +117,6 @@ def generate_link_annotation(link):
     link_el = ET.Element("annotation")
     link_el.set("name", link.name)
     link_el.set("level", "info")
-    # link to file is not always clickable in Testspace
-    # so we add the link in the description to at least provide the URL
-    link_el.set("description", link.url)
     link_el.set("file", link.url)
     link_el.set("link_file", "true")
     return link_el
