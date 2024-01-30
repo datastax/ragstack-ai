@@ -1,13 +1,9 @@
-name: 'Generate Slack report'
-description: 'Generate a report for Slack'
+name: 'Deploy Slack report'
+description: 'Deploy a report to Slack'
 inputs:
   from-report-file:
     required: true
     description: 'File to read the report from'
-  output-file:
-    required: true
-    description: 'File to write the report to'
-    default: 'slack-report.json'
   type:
     required: true
     description: 'Type of the report'
@@ -17,6 +13,9 @@ inputs:
   commit-url:
     required: true
     description: 'Github commit url'
+  slack-webhook-url:
+    required: true
+    description: 'Slack webhook url'
 runs:
   using: "composite"
   steps:
@@ -42,6 +41,11 @@ runs:
         --arg commit "${{ inputs.commit-url }}" \
         --arg url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
         --arg type "${{ inputs.type }}" \
-        -n '{"content": $content, "summary": $summary, "commit": $commit, "url": $url, "type": $type}'  > ${{ inputs.output-file }}
-      echo "Slack report generated to ${{ inputs.output-file }}"
-      cat ${{ inputs.output-file }}
+        -n '{"content": $content, "summary": $summary, "commit": $commit, "url": $url, "type": $type}'  > slack-report.json
+      echo "Slack report generated to slack-report.json"
+      cat slack-report.json
+  - uses: slackapi/slack-github-action@v1.24.0
+    with:
+      payload-file-path: "./slack-report.json"
+    env:
+      SLACK_WEBHOOK_URL: ${{ inputs.slack-webhook-url }}
