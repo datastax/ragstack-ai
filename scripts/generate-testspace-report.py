@@ -101,15 +101,25 @@ def generate_new_report(test_suites):
 
                 test_case_el.append(failure_el)
             for link in test_case.links:
-                link_el = ET.Element("annotation")
-                link_el.set("name", link.name)
-                link_el.set("level", "info")
-                link_el.set("file", link.url)
-                link_el.set("link_file", "true")
+                link_el = generate_link_annotation(link)
                 test_case_el.append(link_el)
             test_suite_el.append(test_case_el)
         reporter.append(test_suite_el)
+    github_url = os.environ.get("TESTSPACE_REPORT_GITHUB_URL")
+    if github_url:
+        link = Link(name="See logs on Github Actions", url=github_url)
+        link_el = generate_link_annotation(link)
+        reporter.append(link_el)
     return reporter
+
+
+def generate_link_annotation(link):
+    link_el = ET.Element("annotation")
+    link_el.set("name", link.name)
+    link_el.set("level", "info")
+    link_el.set("file", link.url)
+    link_el.set("link_file", "true")
+    return link_el
 
 
 def parse_report(input_file: str):
