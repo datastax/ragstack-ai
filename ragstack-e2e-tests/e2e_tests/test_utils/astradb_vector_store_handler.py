@@ -179,18 +179,33 @@ def try_delete_with_backoff(collection: str, sleep=1, max_tries=5):
 
 
 class AstraDBVectorStoreHandler(VectorStoreHandler):
-    token = get_required_env("ASTRA_DB_TOKEN")
-    api_endpoint = get_required_env("ASTRA_DB_ENDPOINT")
-    env = os.environ.get("ASTRA_DB_ENV", "prod").lower()
-    database_id = get_required_env("ASTRA_DB_ID")
-    default_astra_client = AstraPyClient(api_endpoint=api_endpoint, token=token)
-    delete_collection_handler = DeleteCollectionHandler(try_delete_with_backoff)
+    token = ""
+    api_endpoint = ""
+    env = ""
+    database_id = ""
+    default_astra_client = None
+    delete_collection_handler = None
+
+    @classmethod
+    def initialize(cls):
+        if not cls.token:
+            cls.token = get_required_env("ASTRA_DB_TOKEN")
+            cls.api_endpoint = get_required_env("ASTRA_DB_ENDPOINT")
+            cls.env = os.environ.get("ASTRA_DB_ENV", "prod").lower()
+            cls.database_id = get_required_env("ASTRA_DB_ID")
+            cls.default_astra_client = AstraPyClient(
+                api_endpoint=cls.api_endpoint, token=cls.token
+            )
+            cls.delete_collection_handler = DeleteCollectionHandler(
+                try_delete_with_backoff
+            )
 
     def __init__(self, implementation: VectorStoreImplementation):
         super().__init__(
             implementation,
             [VectorStoreImplementation.ASTRADB, VectorStoreImplementation.CASSANDRA],
         )
+        self.__class__.initialize()
         self.collection_name = None
 
     @property
@@ -208,7 +223,9 @@ class AstraDBVectorStoreHandler(VectorStoreHandler):
         if self.collection_name:
             self.__class__.delete_collection_handler.run_delete(self.collection_name)
         collections = (
-            self.__class__.default_astra_client.get_collections().get("status").get("collections")
+            self.__class__.default_astra_client.get_collections()
+            .get("status")
+            .get("collections")
         )
         logging.info(f"Existing collections: {collections}")
         for name in collections:
