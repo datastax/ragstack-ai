@@ -67,10 +67,13 @@ xml.etree.ElementTree._escape_cdata = unsafe_escape_data
 
 def main(input_file: str, output_file: str):
     test_suites = parse_report(input_file)
-    reporter = generate_new_report(test_suites)
-    print(f"Writing modified file to {output_file}")
-    root = ET.ElementTree(reporter)
-    root.write(output_file, encoding="utf-8")
+    if len(test_suites) == 0:
+        print("No test suites found in input file, exiting")
+    else:
+        reporter = generate_new_report(test_suites)
+        print(f"Writing report file to {output_file}")
+        root = ET.ElementTree(reporter)
+        root.write(output_file, encoding="utf-8")
 
 
 def generate_new_report(test_suites):
@@ -118,7 +121,8 @@ def parse_report(input_file: str):
             test_suite.set("hostname", "RAGStack CI")
             for test_case in test_suite.iter("testcase"):
                 print("processing test case: " + str(test_case.attrib))
-                if test_case.find("skipped") is not None or not test_case.get("name"):
+                classname = test_case.get("classname")
+                if test_case.find("skipped") is not None or not test_case.get("name") or not classname:
                     continue
 
                 failure = test_case.find("failure")
@@ -146,7 +150,6 @@ def parse_report(input_file: str):
                     failure_error_message=failure_error_message,
                     links=links,
                 )
-                classname = test_case.get("classname")
                 if classname not in report_test_suites:
                     report_test_suites[classname] = TestSuite(
                         name=classname, test_cases=[]
