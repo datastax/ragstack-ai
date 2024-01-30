@@ -14,7 +14,7 @@ jobs:
   langchain-tests:
     name: "Tests using LangChain main branch (${{ matrix.name }})"
     runs-on: ubuntu-latest
-    if: ${{ matrix.disabled == 'true' }}
+    if: ${{ matrix.disabled == 'false' }}
     strategy:
       fail-fast: false
       matrix:
@@ -100,7 +100,6 @@ jobs:
         run: echo "commit-ref=$(grep resolved_reference ragstack-e2e-tests/poetry.lock | awk -F'"' '{print $2}' | head -1)" >> $GITHUB_OUTPUT
 
       - name: Slack deploy report
-        if: always()
         if: always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
         with:
           from-report-file: "ragstack-e2e-tests/failed-tests-report.txt"
