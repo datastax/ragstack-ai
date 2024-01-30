@@ -1,6 +1,5 @@
 import logging
 import os
-import time
 from typing import List
 
 import pytest
@@ -200,21 +199,9 @@ def test_rag(test_case, vector_store, embedding, llm, request, record_property):
         "langchain::" + test_case,
         f"{llm},{embedding},{vector_store}",
     )
-    start = time.perf_counter_ns()
     resolved_vector_store = request.getfixturevalue(vector_store)
-    logging.info(
-        "Vector store initialized in %s seconds", (time.perf_counter_ns() - start) / 1e9
-    )
-    start = time.perf_counter_ns()
     resolved_embedding = request.getfixturevalue(embedding)
-    logging.info(
-        "Embedding initialized in %s seconds", (time.perf_counter_ns() - start) / 1e9
-    )
-    start = time.perf_counter_ns()
     resolved_llm = request.getfixturevalue(llm)
-    logging.info(
-        "LLM initialized in %s seconds", (time.perf_counter_ns() - start) / 1e9
-    )
     _run_test(
         test_case,
         resolved_vector_store,
@@ -349,7 +336,7 @@ def test_multimodal(vector_store, embedding, llm, request, record_property):
     message = HumanMessage(content=[text_message, image_message])
     with callbacks.collect_runs() as cb:
         response = resolved_llm([message])
-        run_id = cb.traced_runs[0].id
+        run_id = cb.traced_runs[0].database_id
         record_langsmith_sharelink(run_id, record_property)
         assert "Coffee Machine Ultra Cool" in response.content
 
@@ -373,6 +360,6 @@ def test_chat(chat, request, record_property):
     chain = prompt | chat_model
     with callbacks.collect_runs() as cb:
         response = chain.invoke({})
-        run_id = cb.traced_runs[0].id
+        run_id = cb.traced_runs[0].database_id
         record_langsmith_sharelink(run_id, record_property)
         assert "Syracuse" in response.content
