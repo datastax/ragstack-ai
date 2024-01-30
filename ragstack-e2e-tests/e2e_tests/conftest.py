@@ -130,6 +130,18 @@ def pytest_runtest_makereport(item, call):
             if rep.outcome != "passed":
                 # also keep skipped tests in the report
                 failed_report_lines.append(report_line)
+                if call.excinfo:
+                    try:
+                        logging.warn("Full stacktrace:")
+                        import traceback
+
+                        traceback.print_exception(
+                            call.excinfo._excinfo[0],
+                            call.excinfo._excinfo[1],
+                            call.excinfo._excinfo[2],
+                        )
+                    except Exception as e:
+                        logging.warn(f"Failed to print stacktrace: {e}")
             all_report_lines.append(report_line)
             if is_langchain:
                 langchain_report_lines.append(report_line)
