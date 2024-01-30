@@ -21,7 +21,7 @@ jobs:
           - name: Astra DEV
             skip: "${{ github.event_name == 'pull_request' }}"
             type: "astradb"
-            needs_astra_setup: "true"
+            needs_astra_setup: true
             astra_token_secret: E2E_TESTS_ASTRA_DEV_DB_TOKEN
             env: DEV
             region: us-west-2
@@ -29,9 +29,9 @@ jobs:
             testspace_space: "RAGStack test suite - LLamaIndex dev - AstraDB"
 
           - name: DSE
-            skip: "false"
+            skip: false
             type: "local-cassandra"
-            needs_astra_setup: "false"
+            needs_astra_setup: false
             astra_token_secret: ""
             env: ""
             region: ""
@@ -39,18 +39,18 @@ jobs:
             testspace_space: "RAGStack test suite - LLamaIndex dev - DSE"
     steps:
       - name: Check out the repo
-        if: matrix.skip == 'false'
+        if: ${{ !matrix.skip }}
         uses: actions/checkout@v3
 
       - name: 'Setup: Python 3.11'
-        if: matrix.skip == 'false'
+        if: ${{ !matrix.skip }}
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
           cache: 'pip'
 
       - name: Install dependencies
-        if: matrix.skip == 'false'
+        if: ${{ !matrix.skip }}
         run: |
           python -m pip install --upgrade pip
           python -m pip install tox
@@ -58,7 +58,7 @@ jobs:
       - name: Setup AstraDB
         uses: ./.github/actions/setup-astra-db
         id: astra-db
-        if: matrix.needs_astra_setup == 'true' && matrix.skip == 'false'
+        if: ${{ matrix.needs_astra_setup && !matrix.skip }}
         with:
           astra-token: ${{ secrets[matrix.astra_token_secret] }}
           db-name: ${{ github.run_id }}-${{ github.run_attempt }}
@@ -68,7 +68,7 @@ jobs:
 
       - name: Run E2E tests
         id: e2e-tests
-        if: matrix.skip == 'false'
+        if: ${{ !matrix.skip }}
         env:
           VECTOR_DATABASE_TYPE: "${{ matrix.type }}"
           ASTRA_DB_TOKEN: "${{ secrets[matrix.astra_token_secret] }}"
@@ -92,16 +92,16 @@ jobs:
           tox -c ragstack-e2e-tests -e llamaindex
 
       - name: Dump report on Github Summary
-        if: always() && matrix.skip == 'false'
+        if: ${{ always() && !matrix.skip }}
         uses: ./.github/actions/add-report-to-github-summary
 
       - name: Compute commit URL
-        if: always() && matrix.skip == 'false'
+        if: ${{ always() && !matrix.skip }}
         id: commit-ref
         run: echo "commit-ref=$(grep resolved_reference ragstack-e2e-tests/poetry.lock | awk -F'"' '{print $2}' | head -1)" >> $GITHUB_OUTPUT
 
       - name: Slack deploy report
-        if: always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && matrix.skip == 'false'
+        if: ${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && !matrix.skip }}
         uses: ./.github/actions/deploy-slack-report
         with:
           from-report-file: "ragstack-e2e-tests/failed-tests-report.txt"
@@ -112,7 +112,7 @@ jobs:
 
       - name: Testspace deploy report
         uses: ./.github/actions/deploy-testspace-report
-        if: always() && matrix.testspace_space != '' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && matrix.skip == 'false'
+        if: ${{ always() && matrix.testspace_space != '' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && !matrix.skip }}
         with:
           token: ${{ secrets.TESTSPACE_TOKEN }}
           report-file: ragstack-e2e-tests/results.xml
@@ -120,7 +120,7 @@ jobs:
 
       - name: Cleanup AstraDB
         uses: ./.github/actions/cleanup-astra-db
-        if: always() && matrix.needs_astra_setup == 'true' && matrix.skip == 'false'
+        if: ${{ always() && matrix.needs_astra_setup && !matrix.skip }}
         with:
           astra-token: ${{ secrets[matrix.astra_token_secret] }}
           db-name: ${{ github.run_id }}-${{ github.run_attempt }}
