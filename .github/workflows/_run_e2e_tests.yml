@@ -94,7 +94,7 @@ jobs:
         if: ${{ always() && inputs.run-tests }}
         env:
           VECTOR_DATABASE_TYPE: "${{ inputs.vector-database-type }}"
-          ASTRA_DB_TOKEN: "${{ secrets.astra }}"
+          ASTRA_DB_TOKEN: "${{ secrets[inputs.astradb-token-secret-name] }}"
           ASTRA_DB_ENDPOINT: "${{ steps.astra-db.outputs.db_endpoint }}"
           ASTRA_DB_ID: "${{ steps.astra-db.outputs.db_id }}"
           ASTRA_DB_ENV: "${{ inputs.astradb-env }}"
