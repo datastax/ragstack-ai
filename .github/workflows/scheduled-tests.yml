@@ -13,13 +13,18 @@ on:
     branches:
       - main
 
-env:
-  ASTRADB_DEV_REGION: "us-west-2"
-  ASTRADB_DEV_CLOUD: "aws"
-
 jobs:
+  compute-vars:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo ""
+    outputs:
+      astradb-dev-region: "us-west-2"
+      astradb-dev-cloud: "aws"
+
   langchain-dse-tests:
     name: "Tests using LangChain main branch (DSE)"
+    needs: ["compute-vars"]
     uses: ./.github/workflows/_run_e2e_tests.yml
     secrets: inherit
     with:
@@ -33,6 +38,7 @@ jobs:
 
   langchain-astradev-tests:
     name: "Tests using LangChain main branch (AstraDB DEV)"
+    needs: ["compute-vars"]
     if: ${{ contains(github.event.schedule, '0 */2 * * *') || github.event_name == 'workflow_dispatch' }}
     uses: ./.github/workflows/_run_e2e_tests.yml
     secrets: inherit
@@ -41,8 +47,8 @@ jobs:
       astradb: true
       astradb-token-secret-name: "E2E_TESTS_ASTRA_DEV_DB_TOKEN"
       astradb-env: "DEV"
-      astradb-region: "${{ env.ASTRADB_DEV_REGION }}"
-      astradb-cloud: "${{ env.ASTRADB_DEV_CLOUD }}"
+      astradb-region: "${{ needs.compute-vars.outputs.astradb-dev-region }}"
+      astradb-cloud: "${{ needs.compute-vars.outputs.astradb-dev-cloud }}"
       vector-database-type: "astradb"
       deploy-to-slack: true
       slack-title: "Tests using LangChain main branch (AstraDB DEV)"
@@ -51,6 +57,7 @@ jobs:
 
   llamaindex-dse-tests:
     name: "Tests using LlamaIndex main branch (AstraDB DEV)"
+    needs: ["compute-vars"]
     uses: ./.github/workflows/_run_e2e_tests.yml
     secrets: inherit
     with:
@@ -64,6 +71,7 @@ jobs:
 
   llamaindex-astradev-tests:
     name: "Tests using LlamaIndex main branch (AstraDB DEV)"
+    needs: ["compute-vars"]
     if: ${{ contains(github.event.schedule, '0 */2 * * *') || github.event_name == 'workflow_dispatch' }}
     uses: ./.github/workflows/_run_e2e_tests.yml
     secrets: inherit
@@ -72,8 +80,8 @@ jobs:
       astradb: true
       astradb-token-secret-name: "E2E_TESTS_ASTRA_DEV_DB_TOKEN"
       astradb-env: "DEV"
-      astradb-region: "${{ env.ASTRADB_DEV_REGION }}"
-      astradb-cloud: "${{ env.ASTRADB_DEV_CLOUD }}"
+      astradb-region: "${{ needs.compute-vars.outputs.astradb-dev-region }}"
+      astradb-cloud: "${{ needs.compute-vars.outputs.astradb-dev-cloud }}"
       vector-database-type: "astradb"
       deploy-to-slack: true
       slack-title: "Tests using LlamaIndex main branch (AstraDB DEV)"
@@ -82,6 +90,7 @@ jobs:
 
   ragstack-latest-release-dse-tests:
     name: "Tests using latest release of RAGStack (DSE)"
+    needs: ["compute-vars"]
     uses: ./.github/workflows/_run_e2e_tests.yml
     secrets: inherit
     with:
@@ -95,6 +104,7 @@ jobs:
 
   ragstack-latest-release-astradev-tests:
     name: "Tests using latest release of RAGStack (AstraDB DEV)"
+    needs: ["compute-vars"]
     if: ${{ contains(github.event.schedule, '0 */2 * * *') || github.event_name == 'workflow_dispatch' }}
     uses: ./.github/workflows/_run_e2e_tests.yml
     secrets: inherit
@@ -103,8 +113,8 @@ jobs:
       astradb: true
       astradb-token-secret-name: "E2E_TESTS_ASTRA_DEV_DB_TOKEN"
       astradb-env: "DEV"
-      astradb-region: "${{ env.ASTRADB_DEV_REGION }}"
-      astradb-cloud: "${{ env.ASTRADB_DEV_CLOUD }}"
+      astradb-region: "${{ needs.compute-vars.outputs.astradb-dev-region }}"
+      astradb-cloud: "${{ needs.compute-vars.outputs.astradb-dev-cloud }}"
       vector-database-type: "astradb"
       deploy-to-slack: true
       slack-title: "Tests using RAGStack latest release (AstraDB DEV)"
