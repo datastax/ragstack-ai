@@ -64,13 +64,17 @@ jobs:
       - name: "Setup: Python 3.11"
         uses: ./.github/actions/setup-python
 
+      - name: Compute db name
+        id: db-name
+        run: echo "db-name=${{ github.run_id}}-$(echo $(for((i=1;i<=8;i++)); do printf '%s' "${RANDOM:0:1}"; done) | tr '[0-9]' '[a-z]')" >> $GITHUB_OUTPUT
+
       - name: Setup AstraDB
         uses: ./.github/actions/setup-astra-db
         id: astra-db
         if: ${{ inputs.astradb }}
         with:
           astra-token: ${{ secrets[inputs.astradb-token-secret-name] }}
-          db-name: ${{ github.run_id }}-${{ github.run_attempt }}-${{ github.job_id }}
+          db-name: ${{ steps.db-name.outputs.db-name }}
           env: ${{ inputs.astradb-env }}
           region: ${{ inputs.astradb-region }}
           cloud: ${{ inputs.asstradb-cloud }}
@@ -175,5 +179,5 @@ jobs:
         if: ${{ always() && inputs.astradb }}
         with:
           astra-token: ${{ secrets[inputs.astradb-token-secret-name] }}
-          db-name: ${{ github.run_id }}-${{ github.run_attempt }}-${{ github.job_id }}
+          db-name: ${{ steps.db-name.outputs.db-name }}
           env: ${{ inputs.astradb-env }}
