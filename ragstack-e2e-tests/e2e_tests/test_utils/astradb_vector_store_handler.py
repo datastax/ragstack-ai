@@ -210,7 +210,9 @@ class AstraDBVectorStoreTestContext(VectorStoreTestContext):
 
 def try_delete_with_backoff(collection: str, sleep=1, max_tries=5):
     try:
-        response = AstraDBVectorStoreHandler.default_astra_client.delete_collection(collection)
+        response = AstraDBVectorStoreHandler.default_astra_client.delete_collection(
+            collection
+        )
         logging.info(f"delete collection {collection} response: {str(response)}")
     except Exception as e:
         max_tries -= 1
@@ -263,7 +265,9 @@ class AstraDBVectorStoreHandler(VectorStoreHandler):
         )
 
     def ensure_astra_env_clean(self, blocking=False):
-        logging.info(f"Ensuring astra env is clean (current deletions in progress: {self.__class__.delete_collection_handler.get_current_deletions()})")
+        logging.info(
+            f"Ensuring astra env is clean (current deletions in progress: {self.__class__.delete_collection_handler.get_current_deletions()})"
+        )
         collections = (
             self.__class__.default_astra_client.get_collections()
             .get("status")
@@ -271,8 +275,12 @@ class AstraDBVectorStoreHandler(VectorStoreHandler):
         )
         logging.info(f"Existing collections: {collections}")
         if self.collection_name:
-            logging.info(f"Deleting collection configured in the vector store: {self.collection_name}")
-            self.__class__.delete_collection_handler.run_delete(self.collection_name).result()
+            logging.info(
+                f"Deleting collection configured in the vector store: {self.collection_name}"
+            )
+            self.__class__.delete_collection_handler.run_delete(
+                self.collection_name
+            ).result()
 
         for name in collections:
             self.__class__.delete_collection_handler.run_delete(name)
@@ -280,7 +288,9 @@ class AstraDBVectorStoreHandler(VectorStoreHandler):
             self.__class__.delete_collection_handler.await_ongoing_deletions_completed()
             logging.info("Astra env cleanup completed")
         else:
-            logging.info(f"Astra env cleanup started in background, proceeding (current deletions in progress: {self.__class__.delete_collection_handler.get_current_deletions()})")
+            logging.info(
+                f"Astra env cleanup started in background, proceeding (current deletions in progress: {self.__class__.delete_collection_handler.get_current_deletions()})"
+            )
 
     def before_test(self) -> AstraDBVectorStoreTestContext:
         super().check_implementation()

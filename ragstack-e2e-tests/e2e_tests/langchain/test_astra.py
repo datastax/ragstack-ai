@@ -1,4 +1,5 @@
 import json
+import logging
 from typing import List
 
 from astrapy.api import APIRequestError
@@ -393,26 +394,19 @@ def test_vector_search_with_metadata(vectorstore: VectorStore):
     assert len(documents) == 0
 
 
-
-#@pytest.mark.skip
+@pytest.mark.skip
 def test_stress_astra():
-    handler = get_vector_store_handler(VectorStoreImplementation.ASTRADB)
-    embedding_size = 10
-    class FakeEmbeddings(Embeddings):
-        def embed_documents(self, texts: List[str]) -> List[List[float]]:
-            return [[0.1] * embedding_size] * len(texts)
-
-        def embed_query(self, text: str) -> List[float]:
-            return [0.1] * embedding_size
+    handler = AstraDBVectorStoreHandler(VectorStoreImplementation.ASTRADB)
     while True:
         context = handler.before_test()
         logging.info("mocking test")
-        vstore = context.new_langchain_vector_store(embedding=FakeEmbeddings())
+        vstore = context.new_langchain_vector_store(embedding=MockEmbeddings())
         vstore.add_texts(["hello world, im a document"])
         result = vstore.search("hello", search_type="similarity")
         print(str(result))
         logging.info("test finished")
         handler.after_test()
+
 
 class MockEmbeddings(Embeddings):
     def __init__(self):
