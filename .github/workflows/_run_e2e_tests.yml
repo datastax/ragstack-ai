@@ -2,6 +2,10 @@ name: Run E2E tests
 on:
   workflow_call:
     inputs:
+      title:
+        description: 'Title'
+        required: true
+        type: string
       suite-name:
         type: string
       run-tests:
@@ -38,10 +42,6 @@ on:
         description: 'Whether to deploy to Slack or not'
         default: true
         type: boolean
-      slack-title:
-        description: 'Slack report title'
-        required: false
-        type: string
       deploy-to-testspace:
         description: 'Whether to deploy to TestSpace or not'
         default: false
@@ -55,6 +55,7 @@ on:
 
 jobs:
   tests:
+    name: "${{ inputs.title }}"
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
@@ -156,7 +157,7 @@ jobs:
         uses: ./.github/actions/deploy-slack-report
         with:
           from-report-file: "ragstack-e2e-tests/failed-tests-report.txt"
-          type: "${{ inputs.slack-title }}"
+          type: "${{ inputs.title }}"
           outcome: ${{ steps.e2e-tests.outcome }}
           commit-url: "${{ steps.info.outputs.commit-url }}"
           slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
