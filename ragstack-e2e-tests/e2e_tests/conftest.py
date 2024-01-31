@@ -121,9 +121,9 @@ def pytest_runtest_makereport(item, call):
             test_outcome = f"(? {rep.outcome}))"
         result = " " + str(call.excinfo) if call.excinfo else ""
         report_line = f"{info} -> {test_outcome}{result} ({total_time} s)"
-        skip_report_line = (
-            rep.outcome == "skipped"
-            and (is_skipped_due_to_implementation_not_supported(result) or "unconditional skip" in result)
+        skip_report_line = rep.outcome == "skipped" and (
+            is_skipped_due_to_implementation_not_supported(result)
+            or "unconditional skip" in result
         )
         if not skip_report_line:
             logging.info("Test report line: " + report_line)
