@@ -23,7 +23,7 @@ jobs:
       astradb-dev-cloud: "aws"
 
   langchain-dse-tests:
-    name: "Tests using LangChain main branch (DSE)"
+    name: "LangChain dev / DSE"
     needs: ["compute-vars"]
     uses: ./.github/workflows/_run_e2e_tests.yml
     secrets: inherit
@@ -32,12 +32,12 @@ jobs:
       astradb: false
       vector-database-type: "local-cassandra"
       deploy-to-slack: true
-      slack-title: "Tests using LangChain main branch (DSE)"
+      slack-title: "LangChain dev / DSE"
       deploy-to-testspace: true
       testspace-space: "RAGStack test suite - LangChain dev - DSE"
 
   langchain-astradev-tests:
-    name: "Tests using LangChain main branch (AstraDB DEV)"
+    name: "LangChain dev / AstraDB dev"
     needs: ["compute-vars"]
     if: ${{ contains(github.event.schedule, '0 */2 * * *') || github.event_name == 'workflow_dispatch' }}
     uses: ./.github/workflows/_run_e2e_tests.yml
@@ -51,12 +51,12 @@ jobs:
       astradb-cloud: "${{ needs.compute-vars.outputs.astradb-dev-cloud }}"
       vector-database-type: "astradb"
       deploy-to-slack: true
-      slack-title: "Tests using LangChain main branch (AstraDB DEV)"
+      slack-title: "LangChain dev / AstraDB dev"
       deploy-to-testspace: true
       testspace-space: "RAGStack test suite - LangChain dev - AstraDB"
 
   llamaindex-dse-tests:
-    name: "Tests using LlamaIndex main branch (AstraDB DEV)"
+    name: "LLamaIndex dev / DSE"
     needs: ["compute-vars"]
     uses: ./.github/workflows/_run_e2e_tests.yml
     secrets: inherit
@@ -65,12 +65,12 @@ jobs:
       astradb: false
       vector-database-type: "local-cassandra"
       deploy-to-slack: true
-      slack-title: "Tests using LLamaIndex main branch (DSE)"
+      slack-title: "LLamaIndex dev / DSE"
       deploy-to-testspace: true
       testspace-space: "RAGStack test suite - LLamaIndex dev - DSE"
 
   llamaindex-astradev-tests:
-    name: "Tests using LlamaIndex main branch (AstraDB DEV)"
+    name: "LLamaIndex dev / AstraDB dev"
     needs: ["compute-vars"]
     if: ${{ contains(github.event.schedule, '0 */2 * * *') || github.event_name == 'workflow_dispatch' }}
     uses: ./.github/workflows/_run_e2e_tests.yml
@@ -84,12 +84,12 @@ jobs:
       astradb-cloud: "${{ needs.compute-vars.outputs.astradb-dev-cloud }}"
       vector-database-type: "astradb"
       deploy-to-slack: true
-      slack-title: "Tests using LlamaIndex main branch (AstraDB DEV)"
+      slack-title: "LLamaIndex dev / AstraDB dev"
       deploy-to-testspace: true
       testspace-space: "RAGStack test suite - LLamaIndex dev - AstraDB"
 
   ragstack-latest-release-dse-tests:
-    name: "Tests using latest release of RAGStack (DSE)"
+    name: "RAGStack latest / DSE"
     needs: ["compute-vars"]
     uses: ./.github/workflows/_run_e2e_tests.yml
     secrets: inherit
@@ -98,12 +98,12 @@ jobs:
       astradb: false
       vector-database-type: "local-cassandra"
       deploy-to-slack: true
-      slack-title: "Tests using RAGStack latest release (DSE)"
+      slack-title: "RAGStack latest / DSE"
       deploy-to-testspace: true
       testspace-space: "RAGStack test suite - RAGStack latest - DSE"
 
   ragstack-latest-release-astradev-tests:
-    name: "Tests using latest release of RAGStack (AstraDB DEV)"
+    name: "RAGStack latest / AstraDB dev"
     needs: ["compute-vars"]
     if: ${{ contains(github.event.schedule, '0 */2 * * *') || github.event_name == 'workflow_dispatch' }}
     uses: ./.github/workflows/_run_e2e_tests.yml
@@ -117,6 +117,6 @@ jobs:
       astradb-cloud: "${{ needs.compute-vars.outputs.astradb-dev-cloud }}"
       vector-database-type: "astradb"
       deploy-to-slack: true
-      slack-title: "Tests using RAGStack latest release (AstraDB DEV)"
+      slack-title: "RAGStack latest / AstraDB dev"
       deploy-to-testspace: true
       testspace-space: "RAGStack test suite - RAGStack latest - AstraDB"
