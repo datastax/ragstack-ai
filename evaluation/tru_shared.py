@@ -11,12 +11,11 @@ from trulens_eval.app import App
 from trulens_eval.feedback.provider import AzureOpenAI
 from trulens_eval.feedback import Groundedness, GroundTruthAgreement
 
-from llama_index.embeddings import AzureOpenAIEmbedding
+from llama_index.embeddings import AzureOpenAIEmbedding as LlamaAzureOpenAIEmbedding
 from llama_index.llms import AzureOpenAI as LlamaAzureChatOpenAI
 from llama_index.vector_stores import AstraDBVectorStore
 
-from langchain_community.chat_models import AzureChatOpenAI
-from langchain_community.embeddings import AzureOpenAIEmbeddings
+from langchain_openai import AzureOpenAIEmbeddings, AzureChatOpenAI
 from langchain.vectorstores.astradb import AstraDB
 
 # this code assumes the following env vars exist in a .env file:
@@ -31,7 +30,6 @@ from langchain.vectorstores.astradb import AstraDB
 load_dotenv()
 
 temperature = 0
-
 
 class Framework(Enum):
     LANG_CHAIN = "langChain"
@@ -107,10 +105,8 @@ def get_feedback_functions(pipeline, golden_set):
     return [f_answer_relevance, f_context_relevance, f_groundedness, f_answer_correctness]
 
 
-
-
-def getRecorder(framework: Framework, pipeline, app_id: str, golden_set : [], feedback_mode : str = "deferred"):
-    feedbacks = getFeedbackFunctions(pipeline, golden_set)
+def get_recorder(framework: Framework, pipeline, app_id: str, golden_set : [], feedback_mode : str = "deferred"):
+    feedbacks = get_feedback_functions(pipeline, golden_set)
     if framework == Framework.LANG_CHAIN:
         return TruChain(
             pipeline,
@@ -202,7 +198,8 @@ def execute_query(framework: Framework, pipeline, query):
 
 
 # runs the pipeline across all queries in all known datasets
-def execute_experiment(framework: Framework, pipeline, experiment_name: str):
+# unless allowed_datasets is passed... then limit to only the listed datasets
+def execute_experiment(framework: Framework, pipeline, experiment_name: str, allowed_datasets: [] = None):
     tru = init_tru()
 
     # use a short uuid to ensure that multiple experiments with the same name don't collide in the DB
@@ -210,6 +207,9 @@ def execute_experiment(framework: Framework, pipeline, experiment_name: str):
     datasets, golden_set = get_test_data()
 
     for dataset_name in datasets:
+        if allowed_datasets is not None and dataset_name not in allowed_datasets:
+            continue
+
         app_id = f"{experiment_name}#{shortUuid}#{dataset_name}"
         tru_recorder = get_recorder(framework, pipeline, app_id, golden_set)
         for query in datasets[dataset_name]:

@@ -3,8 +3,7 @@
 collection_name = "open_ai_256"
 
 from langchain.chains import RetrievalQA
-from langchain.chat_models import AzureChatOpenAI
-from langchain.embeddings import AzureOpenAIEmbeddings
+from langchain_openai import AzureOpenAIEmbeddings, AzureChatOpenAI
 from langchain.prompts import ChatPromptTemplate
 from langchain.smith import RunEvalConfig, run_on_dataset
 

@@ -1,6 +1,6 @@
 from langchain.document_loaders import BSHTMLLoader, DirectoryLoader, TextLoader, PDFMinerLoader, UnstructuredMarkdownLoader
 from langchain.vectorstores.astradb import AstraDB
-from langchain.embeddings import AzureOpenAIEmbeddings
+from langchain_openai import AzureOpenAIEmbeddings
 from langchain.text_splitter import TokenTextSplitter
 
 from dotenv import load_dotenv
