@@ -4,7 +4,12 @@ on:
     inputs:
       suite-name:
         type: string
-        #options: ['llamaindex', 'langchain', 'ragstack-latest-release']
+      run-tests:
+        type: boolean
+        default: true
+      run-notebooks:
+        type: boolean
+        default: false
       astradb:
         description: 'Whether to use AstraDB or not'
         required: true
@@ -69,8 +74,23 @@ jobs:
           region: ${{ inputs.astradb-region }}
           cloud: ${{ inputs.asstradb-cloud }}
 
+      - name: Run notebook tests
+        # we run notebook tests only on PROD env since we CassIO need different parameters for DEV, and we don't want to dirty the notebook
+        if: ${{ inputs.run-notebooks }}
+        env:
+          ASTRA_DB_APPLICATION_TOKEN: "${{ secrets[inputs.astradb-token-secret-name] }}"
+          ASTRA_DB_API_ENDPOINT: "${{ steps.astra-db.outputs.db_endpoint }}"
+          ASTRA_DB_ID: "${{ steps.astra-db.outputs.db_id }}"
+          OPENAI_API_KEY: "${{ secrets.E2E_TESTS_OPEN_AI_KEY }}"
+          LANGCHAIN_API_KEY: "${{ secrets.E2E_TESTS_LANGCHAIN_API_KEY }}"
+          GCLOUD_ACCOUNT_KEY_JSON: "${{ secrets.E2E_TESTS_GCLOUD_ACCOUNT_KEY_JSON }}"
+        run: |
+          source scripts/ci-common-env.sh
+          tox -e notebooks
+
       - name: Run E2E tests
         id: e2e-tests
+        if: ${{ always() && inputs.run-tests }}
         env:
           VECTOR_DATABASE_TYPE: "${{ inputs.vector-database-type }}"
           ASTRA_DB_TOKEN: "${{ secrets.astra }}"
@@ -91,7 +111,9 @@ jobs:
           LANGCHAIN_API_KEY: "${{ secrets.E2E_TESTS_LANGCHAIN_API_KEY }}"
         run: |
           source scripts/ci-common-env.sh
-          if [ "${{ inputs.suite-name == 'langchain' }}" == "true" ]; then
+          if [ "${{ inputs.suite-name == 'ragstack' }}" == "true" ]; then
+            tox -c ragstack-e2e-tests
+          elif [ "${{ inputs.suite-name == 'langchain' }}" == "true" ]; then
             tox -c ragstack-e2e-tests -e langchain
           elif [ "${{ inputs.suite-name == 'llamaindex' }}" == "true" ]; then
             tox -c ragstack-e2e-tests -e llamaindex
@@ -110,10 +132,18 @@ jobs:
         if: ${{ always() }}
         id: info
         run: |
-          if [ "${{ inputs.suite-name == 'langchain' }}" == "true" ]; then
-            echo "commit-url=https://github.com/langchain-ai/langchain/commits/${{ steps.commit-ref.outputs.commit-ref }}" >> $GITHUB_OUTPUT
+          if [ "${{ inputs.suite-name == 'ragstack' }}" == "true" ]; then
+            commit_ref=$(git rev-parse --short HEAD)
+            echo "commit-url=https://github.com/datastax/ragstack-ai/commits/${commit_ref}" >> $GITHUB_OUTPUT
+          
+          elif [ "${{ inputs.suite-name == 'langchain' }}" == "true" ]; then
+            commit_ref=$(grep resolved_reference ragstack-e2e-tests/poetry.lock | awk -F'"' '{print $2}' | head -1)
+            echo "commit-url=https://github.com/langchain-ai/langchain/commits/${commit_ref}" >> $GITHUB_OUTPUT
+
           elif [ "${{ inputs.suite-name == 'llamaindex' }}" == "true" ]; then
-            echo "commit-url=https://github.com/run-llama/llama_index/commits/${{ steps.commit-ref.outputs.commit-ref }}" >> $GITHUB_OUTPUT
+            commit_ref=$(grep resolved_reference ragstack-e2e-tests/poetry.lock | awk -F'"' '{print $2}' | head -1)
+            echo "commit-url=https://github.com/run-llama/llama_index/commits/${commit_ref}" >> $GITHUB_OUTPUT
+
           elif [ "${{ inputs.suite-name == 'ragstack-latest-release' }}" == "true" ]; then
             (tox run -c ragstack-e2e-tests -e get-latest-ragstack-ai-version -q) | tail -3 | head -n 1 > /tmp/ragstack-ai-version
             cat /tmp/ragstack-ai-version
