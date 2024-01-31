@@ -37,6 +37,7 @@ jobs:
   ragstack-dev-dse-tests:
     name: "RAGStack dev / DSE"
     needs: [ "preconditions" ]
+    if: ${{ needs.preconditions.outputs.is-scheduled == 'true' || needs.preconditions.outputs.e2e_tests == 'true' }}
     uses: ./.github/workflows/_run_e2e_tests.yml
     secrets: inherit
     with:
@@ -51,6 +52,7 @@ jobs:
   ragstack-dev-astradev-tests:
     name: "RAGStack dev / AstraDB dev"
     needs: [ "preconditions" ]
+    if: ${{ needs.preconditions.outputs.is-scheduled == 'true' || needs.preconditions.outputs.e2e_tests == 'true' }}
     uses: ./.github/workflows/_run_e2e_tests.yml
     secrets: inherit
     with:
@@ -69,6 +71,7 @@ jobs:
   langchain-dse-tests:
     name: "LangChain dev / DSE"
     needs: ["preconditions"]
+    if: ${{ needs.preconditions.outputs.is-scheduled == 'true' || needs.preconditions.outputs.e2e_tests == 'true' }}
     uses: ./.github/workflows/_run_e2e_tests.yml
     secrets: inherit
     with:
@@ -83,7 +86,7 @@ jobs:
   langchain-astradev-tests:
     name: "LangChain dev / AstraDB dev"
     needs: ["preconditions"]
-    if: ${{ contains(github.event.schedule, '0 */2 * * *') || github.event_name == 'workflow_dispatch' }}
+    if: ${{ needs.preconditions.outputs.is-scheduled == 'true' }}
     uses: ./.github/workflows/_run_e2e_tests.yml
     secrets: inherit
     with:
@@ -102,6 +105,7 @@ jobs:
   llamaindex-dse-tests:
     name: "LLamaIndex dev / DSE"
     needs: ["preconditions"]
+    if: ${{ needs.preconditions.outputs.is-scheduled == 'true' || needs.preconditions.outputs.e2e_tests == 'true' }}
     uses: ./.github/workflows/_run_e2e_tests.yml
     secrets: inherit
     with:
@@ -116,7 +120,7 @@ jobs:
   llamaindex-astradev-tests:
     name: "LLamaIndex dev / AstraDB dev"
     needs: ["preconditions"]
-    if: ${{ contains(github.event.schedule, '0 */2 * * *') || github.event_name == 'workflow_dispatch' }}
+    if: ${{ needs.preconditions.outputs.is-scheduled == 'true' }}
     uses: ./.github/workflows/_run_e2e_tests.yml
     secrets: inherit
     with:
@@ -135,6 +139,7 @@ jobs:
   ragstack-latest-release-dse-tests:
     name: "RAGStack latest / DSE"
     needs: ["preconditions"]
+    if: ${{ needs.preconditions.outputs.is-scheduled == 'true' || needs.preconditions.outputs.e2e_tests == 'true' }}
     uses: ./.github/workflows/_run_e2e_tests.yml
     secrets: inherit
     with:
@@ -149,7 +154,7 @@ jobs:
   ragstack-latest-release-astradev-tests:
     name: "RAGStack latest / AstraDB dev"
     needs: ["preconditions"]
-    if: ${{ contains(github.event.schedule, '0 */2 * * *') || github.event_name == 'workflow_dispatch' }}
+    if: ${{ needs.preconditions.outputs.is-scheduled == 'true' }}
     uses: ./.github/workflows/_run_e2e_tests.yml
     secrets: inherit
     with:
