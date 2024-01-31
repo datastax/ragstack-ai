@@ -14,15 +14,16 @@ inputs:
         required: true
         description: "Report to upload"
     repository:
-        default: "nicoloboschi"
+        default: "ragstack-ai"
         description: "Testspace repository"
     project:
-        default: "ragstack-ai-stand"
+        default: "RAGStack"
         description: "Testspace project"
 
 runs:
     using: 'composite'
     steps:
+
       - run: |
           base_url=https://testspace-client.s3.amazonaws.com
           version=""
@@ -52,6 +53,19 @@ runs:
           esac
           echo "$folder" >> $GITHUB_PATH
         shell: bash
+      - run: python ./scripts/generate-testspace-report.py "${{ inputs.report-file }}" testspace-report.xml
+        shell: bash
+        env:
+          TESTSPACE_REPORT_GITHUB_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
       - run: |
-          testspace "${{ inputs.report-file }}" "${{ inputs.token }}@${{ inputs.repository }}.testspace.com/${{ inputs.project }}/${{ inputs.space }}"
+          echo "Original report was:"
+          cat "${{ inputs.report-file }}"
+          file=testspace-report.xml
+          if [ -f "$file" ]; then
+            echo "Uploading $file to testspace"
+            cat $file
+            testspace testspace-report.xml "${{ inputs.token }}@${{ inputs.repository }}.testspace.com/${{ inputs.project }}/${{ inputs.space }}"
+          else
+            echo "Skipping testspace upload as $file does not exist"
+          fi
         shell: bash

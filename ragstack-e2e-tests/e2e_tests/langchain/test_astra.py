@@ -3,31 +3,32 @@ import logging
 from typing import List
 
 from astrapy.api import APIRequestError
-from astrapy.db import AstraDB as LibAstraDB
 import pytest
-from httpx import ConnectError, HTTPStatusError
+from httpx import ConnectError
 
 from langchain.schema.embeddings import Embeddings
 from langchain.vectorstores import AstraDB
-from langchain.chat_models import ChatOpenAI
-from langchain.schema.language_model import BaseLanguageModel
-from e2e_tests.conftest import get_required_env, get_astra_ref
+from e2e_tests.conftest import (
+    is_astra,
+)
 from langchain_core.documents import Document
 from langchain_core.runnables import RunnableConfig
 from langchain_core.vectorstores import VectorStore
 
+from e2e_tests.test_utils import skip_test_due_to_implementation_not_supported
+from e2e_tests.test_utils.astradb_vector_store_handler import AstraDBVectorStoreHandler
+from e2e_tests.test_utils.vector_store_handler import VectorStoreImplementation
 
-def test_basic_vector_search(environment):
+
+def test_basic_vector_search(vectorstore: AstraDB):
     print("Running test_basic_vector_search")
-    vectorstore = environment.vectorstore
     vectorstore.add_texts(["RAGStack is a framework to run LangChain in production"])
     retriever = vectorstore.as_retriever()
     assert len(retriever.get_relevant_documents("RAGStack")) > 0
 
 
-def test_ingest_errors(environment):
+def test_ingest_errors(vectorstore: AstraDB):
     print("Running test_ingestion")
-    vectorstore = environment.vectorstore
 
     empty_text = ""
 
@@ -58,15 +59,14 @@ def test_ingest_errors(environment):
             )
 
 
-def test_wrong_connection_parameters():
+def test_wrong_connection_parameters(vectorstore: AstraDB):
     # This is expected to be a valid endpoint, because we want to test an AUTHENTICATION error
-    astra_ref = get_astra_ref()
-    api_endpoint = astra_ref.api_endpoint
+    api_endpoint = vectorstore.api_endpoint
 
     try:
         AstraDB(
             collection_name="something",
-            embedding=init_embeddings(),
+            embedding=MockEmbeddings(),
             token="xxxxx",
             # we assume that post 1234 is not open locally
             api_endpoint="https://locahost:1234",
@@ -80,23 +80,22 @@ def test_wrong_connection_parameters():
         print("api_endpoint:", api_endpoint)
         AstraDB(
             collection_name="something",
-            embedding=init_embeddings(),
+            embedding=MockEmbeddings(),
             token="this-is-a-wrong-token",
             api_endpoint=api_endpoint,
         )
         pytest.fail("Should have thrown exception")
-    except HTTPStatusError as e:
+    except ValueError as e:
         print("Error:", e)
-        if "UNAUTHENTICATED" not in e.response.text:
+        if "UNAUTHENTICATED" not in e.args[0]:
             pytest.fail(
                 f"Should have thrown ValueError with UNAUTHENTICATED but it was {e}"
             )
 
 
-def test_basic_metadata_filtering_no_vector(environment):
+def test_basic_metadata_filtering_no_vector(vectorstore: AstraDB):
     print("Running test_basic_metadata_filtering_no_vector")
 
-    vectorstore = environment.vectorstore
     collection = vectorstore.collection
 
     vectorstore.add_texts(
@@ -198,10 +197,8 @@ def verify_document(document, expected_content, expected_metadata):
         assert document.get("metadata") == expected_metadata
 
 
-def test_vector_search_with_metadata(environment):
+def test_vector_search_with_metadata(vectorstore: VectorStore):
     print("Running test_vector_search_with_metadata")
-
-    vectorstore: VectorStore = environment.vectorstore
 
     document_ids = vectorstore.add_texts(
         texts=[
@@ -397,6 +394,20 @@ def test_vector_search_with_metadata(environment):
     assert len(documents) == 0
 
 
+@pytest.mark.skip
+def test_stress_astra():
+    handler = AstraDBVectorStoreHandler(VectorStoreImplementation.ASTRADB)
+    while True:
+        context = handler.before_test()
+        logging.info("mocking test")
+        vstore = context.new_langchain_vector_store(embedding=MockEmbeddings())
+        vstore.add_texts(["hello world, im a document"])
+        result = vstore.search("hello", search_type="similarity")
+        print(str(result))
+        logging.info("test finished")
+        handler.after_test()
+
+
 class MockEmbeddings(Embeddings):
     def __init__(self):
         self.embedded_documents = None
@@ -415,61 +426,12 @@ class MockEmbeddings(Embeddings):
         return self.mock_embedding(text)
 
 
-def init_vector_db(embedding: Embeddings) -> VectorStore:
-    astra_ref = get_astra_ref()
-    collection = astra_ref.collection
-    token = astra_ref.token
-    api_endpoint = astra_ref.api_endpoint
-
-    raw_client = LibAstraDB(api_endpoint=api_endpoint, token=token)
-    collections = raw_client.get_collections().get("status").get("collections")
-    logging.info(f"Existing collections: {collections}")
-    for collection_info in collections:
-        logging.info(f"Deleting collection: {collection_info}")
-        raw_client.delete_collection(collection_info)
-
-    vector_db = AstraDB(
-        collection_name=collection,
-        embedding=embedding,
-        token=token,
-        api_endpoint=api_endpoint,
-    )
-    return vector_db
-
-
-class Environment:
-    def __init__(
-        self, vectorstore: VectorStore, llm: BaseLanguageModel, embedding: Embeddings
-    ):
-        self.vectorstore = vectorstore
-        self.llm = llm
-        self.embedding = embedding
-
-
 @pytest.fixture
-def environment():
-    embeddings_impl = init_embeddings()
-    vector_db_impl = init_vector_db(embeddings_impl)
-    llm_impl = init_llm()
-    yield Environment(
-        vectorstore=vector_db_impl, llm=llm_impl, embedding=embeddings_impl
-    )
-    close_vector_db(vector_db_impl)
-
-
-def close_vector_db(vector_store: VectorStore):
-    vector_store.astra_db.delete_collection(vector_store.collection_name)
-
-
-def init_embeddings() -> Embeddings:
-    return MockEmbeddings()
-
-
-def init_llm() -> BaseLanguageModel:
-    key = get_required_env("OPEN_AI_KEY")
-    return ChatOpenAI(
-        openai_api_key=key,
-        model="gpt-3.5-turbo-16k",
-        streaming=True,
-        temperature=0,
-    )
+def vectorstore() -> AstraDB:
+    if not is_astra:
+        skip_test_due_to_implementation_not_supported("astradb")
+    handler = AstraDBVectorStoreHandler(VectorStoreImplementation.ASTRADB)
+    context = handler.before_test()
+    vector_db = context.new_langchain_vector_store(embedding=MockEmbeddings())
+    yield vector_db
+    handler.after_test()

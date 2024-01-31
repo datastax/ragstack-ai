@@ -2,17 +2,38 @@ import logging
 import os
 import pathlib
 import time
-import uuid
-from dataclasses import dataclass
 
 import pytest
-from astrapy.db import AstraDB as LibAstraDB
+
+
+from e2e_tests.test_utils.astradb_vector_store_handler import AstraDBVectorStoreHandler
+from e2e_tests.test_utils.cassandra_vector_store_handler import (
+    CassandraVectorStoreHandler,
+)
+from e2e_tests.test_utils.vector_store_handler import (
+    VectorStoreHandler,
+    VectorStoreImplementation,
+)
+from e2e_tests.test_utils import (
+    get_required_env as root_get_required_env,
+    is_skipped_due_to_implementation_not_supported,
+)
 
 LOGGER = logging.getLogger(__name__)
 
+DIR_PATH = os.path.dirname(os.path.abspath(__file__))
 
-def random_string():
-    return str(uuid.uuid4()).split("-")[0]
+
+# Loading the .env file if it exists
+def _load_env() -> None:
+    dotenv_path = os.path.join(DIR_PATH, os.pardir, ".env")
+    if os.path.exists(dotenv_path):
+        from dotenv import load_dotenv
+
+        load_dotenv(dotenv_path)
+
+
+_load_env()
 
 
 logging.basicConfig(
@@ -22,65 +43,28 @@ logging.basicConfig(
 )
 
 
-# Uncomment to enable debug logging on Astra calls
-# logging.getLogger('astrapy.utils').setLevel(logging.DEBUG)
+# Comment/uncomment to enable debug logging on Astra calls
+logging.getLogger("astrapy.utils").setLevel(logging.INFO)
 
 
 def get_required_env(name) -> str:
-    if name not in os.environ:
-        LOGGER.warning(f"Missing required environment variable: {name}")
-        pytest.skip(f"Missing required environment variable: {name}")
-    return os.environ[name]
+    return root_get_required_env(name)
 
 
-@dataclass
-class AstraRef:
-    token: str
-    api_endpoint: str
-    collection: str
-    id: str
-    env: str
+vector_database_type = os.environ.get("VECTOR_DATABASE_TYPE", "astradb")
+if vector_database_type not in ["astradb", "local-cassandra"]:
+    raise ValueError(f"Invalid VECTOR_DATABASE_TYPE: {vector_database_type}")
+
+is_astra = vector_database_type == "astradb"
 
 
-def get_astra_ref() -> AstraRef:
-    env = os.environ.get("ASTRA_DB_ENV", "prod").lower()
-    return AstraRef(
-        token=get_required_env("ASTRA_DB_TOKEN"),
-        api_endpoint=get_required_env("ASTRA_DB_ENDPOINT"),
-        collection=get_required_env("ASTRA_TABLE_NAME"),
-        id=get_required_env("ASTRA_DB_ID"),
-        env=env,
-    )
-
-
-def delete_all_astra_collections_with_client(raw_client: LibAstraDB):
-    """
-    Deletes all collections.
-
-    Current AstraDB has a limit of 5 collections, meaning orphaned collections
-    will cause subsequent tests to fail if the limit is reached.
-    """
-    collections = raw_client.get_collections().get("status").get("collections")
-    logging.info(f"Existing collections: {collections}")
-    for collection_info in collections:
-        logging.info(f"Deleting collection: {collection_info}")
-        raw_client.delete_collection(collection_info)
-
-
-def delete_all_astra_collections(astra_ref: AstraRef):
-    """
-    Deletes all collections.
-
-    Current AstraDB has a limit of 5 collections, meaning orphaned collections
-    will cause subsequent tests to fail if the limit is reached.
-    """
-    raw_client = LibAstraDB(api_endpoint=astra_ref.api_endpoint, token=astra_ref.token)
-    delete_all_astra_collections_with_client(raw_client)
-
-
-def delete_astra_collection(astra_ref: AstraRef) -> None:
-    raw_client = LibAstraDB(api_endpoint=astra_ref.api_endpoint, token=astra_ref.token)
-    raw_client.delete_collection(astra_ref.collection)
+def get_vector_store_handler(
+    implementation: VectorStoreImplementation,
+) -> VectorStoreHandler:
+    if vector_database_type == "astradb":
+        return AstraDBVectorStoreHandler(implementation)
+    elif vector_database_type == "local-cassandra":
+        return CassandraVectorStoreHandler(implementation)
 
 
 failed_report_lines = []
@@ -137,15 +121,34 @@ def pytest_runtest_makereport(item, call):
             test_outcome = f"(? {rep.outcome}))"
         result = " " + str(call.excinfo) if call.excinfo else ""
         report_line = f"{info} -> {test_outcome}{result} ({total_time} s)"
-        logging.info("Test report line: " + report_line)
-        if rep.outcome != "passed":
-            # also keep skipped tests in the report
-            failed_report_lines.append(report_line)
-        all_report_lines.append(report_line)
-        if is_langchain:
-            langchain_report_lines.append(report_line)
-        elif is_llamaindex:
-            llamaindex_report_lines.append(report_line)
+        skip_report_line = (
+            rep.outcome == "skipped"
+            and (is_skipped_due_to_implementation_not_supported(result) or "unconditional skip" in result)
+        )
+        if not skip_report_line:
+            logging.info("Test report line: " + report_line)
+            if rep.outcome != "passed":
+                # also keep skipped tests in the report
+                failed_report_lines.append(report_line)
+                if call.excinfo:
+                    try:
+                        logging.warn("Full stacktrace:")
+                        import traceback
+
+                        traceback.print_exception(
+                            call.excinfo._excinfo[0],
+                            call.excinfo._excinfo[1],
+                            call.excinfo._excinfo[2],
+                        )
+                    except Exception as e:
+                        logging.warn(f"Failed to print stacktrace: {e}")
+            all_report_lines.append(report_line)
+            if is_langchain:
+                langchain_report_lines.append(report_line)
+            elif is_llamaindex:
+                llamaindex_report_lines.append(report_line)
+        else:
+            logging.info("Skipping test report line: " + result)
         os.environ["RAGSTACK_E2E_TESTS_TEST_INFO"] = ""
 
     if rep.when == "call":
@@ -188,9 +191,6 @@ def _report_to_file(stats_str: str, filename: str, report_lines: list):
             f.write(stats_str + "\n")
         f.write("\n".join(report_lines))
 
-
-# astra
-os.environ["ASTRA_TABLE_NAME"] = f"documents_{random_string()}"
 
 # azure-open-ai
 os.environ["AZURE_OPEN_AI_CHAT_MODEL_DEPLOYMENT"] = "gpt-35-turbo"

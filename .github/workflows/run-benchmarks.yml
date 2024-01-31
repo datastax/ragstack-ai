@@ -1,0 +1,60 @@
+name: Run benchmarks
+
+on:
+  workflow_dispatch:
+    inputs:
+      intensity:
+        description: 'Intensity of the tests (1-5)'
+        default: "2"
+
+jobs:
+  run-benchmarks:
+    name: Run benchmarks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: "Setup: Python 3.11"
+        uses: ./.github/actions/setup-python
+
+      - name: Run
+        env:
+          OPEN_AI_KEY: "${{ secrets.E2E_TESTS_OPEN_AI_KEY }}"
+          NVIDIA_API_KEY: "${{ secrets.E2E_TESTS_NVIDIA_API_KEY }}"
+        run: |
+          cd ragstack-e2e-tests
+          poetry install --no-root
+          poetry run python benchmarks/runner.py -t all -i ${{ github.event.inputs.intensity }}
+          
+          poetry run python benchmarks/visualize.py --format all
+
+      - name: Dump logs
+        if: always()
+        continue-on-error: true
+        run: |
+          log_file=ragstack-e2e-tests/benchmarks/reports/benchmarks.log
+          if [ -f "$log_file" ]; then
+            cat $log_file
+          fi
+
+      - name: Upload report
+        run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+
+          mv ragstack-e2e-tests/benchmarks/reports /tmp/reports
+          git reset --hard
+          git clean -df
+          git status
+          git fetch origin gh-pages
+          git checkout gh-pages
+          git status
+          git reset --hard origin/gh-pages
+          mkdir -p reports/benchmarks
+          dir=reports/benchmarks/$(date +"%Y-%m-%d_%H-%M-%S")
+          mv /tmp/reports $dir
+          git add -A reports/benchmarks
+          git commit -am "Update benchmarks ${{ github.run_id }} - $dir"
+          git push origin gh-pages

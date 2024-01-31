@@ -1,0 +1,246 @@
+= RAG with LlamaIndex and AstraDB
+
+image::https://colab.research.google.com/assets/colab-badge.svg[align="left",link="https://colab.research.google.com/github/datastax/ragstack-ai/blob/main/examples/notebooks/llama-astra.ipynb"]
+
+Build a RAG pipeline with RAGStack, AstraDB, and LlamaIndex.
+
+== Prerequisites
+
+You will need a vector-enabled Astra database.
+
+* Create an https://docs.datastax.com/en/astra-serverless/docs/getting-started/create-db-choices.html[Astra
+vector database].
+* Within your database, create an https://docs.datastax.com/en/astra-serverless/docs/manage/org/manage-tokens.html[Astra
+DB Access Token] with Database Administrator permissions.
+* Get your Astra DB Endpoint:
+** `+https://<ASTRA_DB_ID>-<ASTRA_DB_REGION>.apps.astra.datastax.com+`
+
+Install the following dependencies:
+[source,python]
+----
+pip install -qU ragstack-ai
+----
+See the https://docs.datastax.com/en/ragstack/docs/prerequisites.html[Prerequisites] page for more details.
+
+== Database connection details
+
+Export these values in the terminal where you're running this application.
+If you're using Google Colab, you'll be prompted for these values in the Colab environment.
+[source,bash]
+----
+export ASTRA_DB_APPLICATION_TOKEN=AstraCS: ...
+export ASTRA_DB_API_ENDPOINT=https://<ASTRA_DB_ID>-<ASTRA_DB_REGION>.apps.astra.datastax.com
+export OPENAI_API_KEY=sk-...
+----
+
+== Create RAG pipeline
+
+. Load a sample dataset from LlamaHub to be loaded into your Astra vector store.
+. The dataset will be downloaded to the `data/` directory.
++
+[source,python]
+----
+import os
+from llama_index.llama_dataset import download_llama_dataset
+
+dataset = download_llama_dataset(
+  "PaulGrahamEssayDataset", "./data"
+)
+----
++
+. Create the vector store, populate the vector store with the dataset, and create the index.
++
+[source,python]
+----
+from llama_index.vector_stores import AstraDBVectorStore
+from llama_index import (
+    VectorStoreIndex,
+    SimpleDirectoryReader,
+    StorageContext,
+)
+
+# Load the documents from the dataset into memory
+documents = SimpleDirectoryReader("./data/source_files").load_data()
+print(f"Total documents: {len(documents)}")
+print(f"First document, id: {documents[0].doc_id}")
+print(f"First document, hash: {documents[0].hash}")
+print(
+    "First document, text"
+    f" ({len(documents[0].text)} characters):\n"
+    f"{'=' * 20}\n"
+    f"{documents[0].text[:360]} ..."
+)
+
+# Create a vector store instance
+astra_db_store = AstraDBVectorStore(
+    token=os.getenv("ASTRA_DB_APPLICATION_TOKEN"),
+    api_endpoint=os.getenv("ASTRA_DB_API_ENDPOINT"),
+    collection_name="test",
+    embedding_dimension=1536,
+)
+
+# Create a default storage context for the vector store
+storage_context = StorageContext.from_defaults(vector_store=astra_db_store)
+
+# Create a vector index from your documents
+index = VectorStoreIndex.from_documents(
+    documents, storage_context=storage_context
+)
+----
++
+. Query the vector store index for the most relevant answer to your prompt, "Why did
+the author choose to work on AI?"
++
+[source,python]
+----
+# single query for most relevant result
+query_engine = index.as_query_engine()
+query_string_1 = "Why did the author choose to work on AI?"
+response = query_engine.query(query_string_1)
+
+print(query_string_1)
+print(response.response)
+----
++
+. Retrieve results from your vector store index based on your prompt.
+This will retrieve three nodes with their relevance scores.
++
+[source,python]
+----
+# similarity search with scores
+retriever = index.as_retriever(
+    vector_store_query_mode="default",
+    similarity_top_k=3,
+)
+
+nodes_with_scores = retriever.retrieve(query_string_1)
+
+print(query_string_1)
+print(f"Found {len(nodes_with_scores)} nodes.")
+for idx, node_with_score in enumerate(nodes_with_scores):
+    print(f"    [{idx}] score = {node_with_score.score}")
+    print(f"        id    = {node_with_score.node.node_id}")
+    print(f"        text  = {node_with_score.node.text[:90]} ...")
+----
++
+. Set the retriever to sort results by Maximal Marginal Relevance, or MMR,
+instead of the default similarity search.
++
+[source,python]
+----
+# MMR
+retriever = index.as_retriever(
+    vector_store_query_mode="mmr",
+    similarity_top_k=3,
+    vector_store_kwargs={"mmr_prefetch_factor": 4},
+)
+
+nodes_with_scores = retriever.retrieve(query_string_1)
+
+print(query_string_1)
+print(f"Found {len(nodes_with_scores)} nodes.")
+for idx, node_with_score in enumerate(nodes_with_scores):
+    print(f"    [{idx}] score = {node_with_score.score}")
+    print(f"        id    = {node_with_score.node.node_id}")
+    print(f"        text  = {node_with_score.node.text[:90]} ...")
+----
++
+. Send the prompt again. The top result is the most relevant (positive
+number), while the other results are the least relevant (negative
+numbers).
+
+== Cleanup
+
+Be a good digital citizen and clean up after yourself.
+
+To *clear data* from your vector database but keep the collection, use the `vstore.clear()` method.
+
+To *delete the collection* from your vector database, use the `vstore.delete_collection()` method.
+Alternatively, you can use the Data API to delete the collection:
+[source,curl]
+----
+curl -v -s --location \
+--request POST https://${ASTRA_DB_ID}-${ASTRA_DB_REGION}.apps.astra.datastax.com/api/json/v1/default_keyspace \
+--header "X-Cassandra-Token: $ASTRA_DB_APPLICATION_TOKEN" \
+--header "Content-Type: application/json" \
+--header "Accept: application/json" \
+--data '{
+  "deleteCollection": {
+    "name": "test"
+  }
+}'
+----
+
+== Complete code
+
+.Python
+[%collapsible%open]
+====
+[source,python]
+----
+import os
+from llama_index.vector_stores import AstraDBVectorStore
+from llama_index import (
+    VectorStoreIndex,
+    SimpleDirectoryReader,
+    StorageContext,
+)
+
+from llama_index.llama_dataset import download_llama_dataset
+
+dataset = download_llama_dataset(
+  "PaulGrahamEssayDataset", "./data"
+)
+
+# Load the documents from the dataset into memory
+documents = SimpleDirectoryReader("./data/source_files").load_data()
+print(f"Total documents: {len(documents)}")
+print(f"First document, id: {documents[0].doc_id}")
+print(f"First document, hash: {documents[0].hash}")
+print(
+    "First document, text"
+    f" ({len(documents[0].text)} characters):\n"
+    f"{'=' * 20}\n"
+    f"{documents[0].text[:360]} ..."
+)
+
+# Create a vector store instance
+astra_db_store = AstraDBVectorStore(
+    token=os.getenv("ASTRA_DB_APPLICATION_TOKEN"),
+    api_endpoint=os.getenv("ASTRA_DB_API_ENDPOINT"),
+    collection_name="test",
+    embedding_dimension=1536,
+)
+
+# Create a default storage context for the vector store
+storage_context = StorageContext.from_defaults(vector_store=astra_db_store)
+
+# Create a vector index from your documents
+index = VectorStoreIndex.from_documents(
+    documents, storage_context=storage_context
+)
+
+query_engine = index.as_query_engine()
+query_string_1 = "Why did the author choose to work on AI?"
+response = query_engine.query(query_string_1)
+
+print(query_string_1)
+print(response.response)
+
+retriever = index.as_retriever(
+    vector_store_query_mode="mmr",
+    similarity_top_k=3,
+    vector_store_kwargs={"mmr_prefetch_factor": 4},
+)
+
+nodes_with_scores = retriever.retrieve(query_string_1)
+
+print(query_string_1)
+print(f"Found {len(nodes_with_scores)} nodes.")
+for idx, node_with_score in enumerate(nodes_with_scores):
+    print(f"    [{idx}] score = {node_with_score.score}")
+    print(f"        id    = {node_with_score.node.node_id}")
+    print(f"        text  = {node_with_score.node.text[:90]} ...")
+----
+====
+

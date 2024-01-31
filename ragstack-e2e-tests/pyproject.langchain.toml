@@ -6,27 +6,34 @@ license = ""
 authors = ["DataStax"]
 
 [tool.poetry.dependencies]
-python = ">=3.9,<3.12"
+python = ">=3.9,<3.12,!=3.9.7"
 
 [tool.poetry.group.test.dependencies]
 pytest = "*"
 black = "*"
 ruff = "*"
 google-cloud-aiplatform = "^1.36.4"
-langchain-google-genai = "^0.0.4"
-langchain-nvidia-ai-endpoints = "^0.0.1"
 boto3 = "^1.29.6"
 huggingface-hub = "^0.19.4"
 azure-storage-blob = "^12.19.0"
 pillow = "^10.2.0"
+testcontainers = "^3.7.1"
+python-dotenv = "^1.0.1"
+trulens-eval = "^0.21.0"
 
 # From LangChain optional deps, needed by WebBaseLoader
 beautifulsoup4 = "^4"
 
-langchain = { git = "https://github.com/langchain-ai/langchain.git", branch = "master", subdirectory = "libs/langchain", extras = ["openai"] }
+langchain = { git = "https://github.com/langchain-ai/langchain.git", branch = "master", subdirectory = "libs/langchain", extras = [
+    "openai",
+] }
 langchain_core = { git = "https://github.com/langchain-ai/langchain.git", branch = "master", subdirectory = "libs/core" }
 langchain_community = { git = "https://github.com/langchain-ai/langchain.git", branch = "master", subdirectory = "libs/community" }
-llama-index = { version = "0.9.29", extras = ["langchain"] }
+langchain-openai = { git = "https://github.com/langchain-ai/langchain.git", branch = "master", subdirectory = "libs/partners/openai" }
+langchain-google-genai = { git = "https://github.com/langchain-ai/langchain.git", branch = "master", subdirectory = "libs/partners/google-genai" }
+langchain-google-vertexai = { git = "https://github.com/langchain-ai/langchain.git", branch = "master", subdirectory = "libs/partners/google-vertexai" }
+langchain-nvidia-ai-endpoints = { git = "https://github.com/langchain-ai/langchain.git", branch = "master", subdirectory = "libs/partners/nvidia-ai-endpoints" }
+llama-index = { version = "0.9.34", extras = ["langchain"] }
 astrapy = "~0.7.0"
 # we need this specific feature from cassio: https://github.com/CassioML/cassio/pull/128
 cassio = "~0.1.4"
