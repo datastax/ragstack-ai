@@ -1,0 +1,118 @@
+name: Scheduled tests (LangChain dev, LLamaIndex dev, RAGStack latest release)
+on:
+  workflow_dispatch: {}
+  schedule:
+    # astra dev and dse - every 2 hours
+    - cron: '0 */2 * * *'
+  pull_request:
+    paths-ignore:
+      - "scripts/**"
+      - "docs/**"
+      - "README.adoc"
+      - "PACKAGE_README.md"
+    branches:
+      - main
+
+env:
+  ASTRADB_DEV_REGION: "us-west-2"
+  ASTRADB_DEV_CLOUD: "aws"
+
+jobs:
+  langchain-dse-tests:
+    name: "Tests using LangChain main branch (DSE)"
+    runs-on: ubuntu-latest
+    uses: ./.github/workflows/_run_e2e_tests.yml
+    secrets: inherit
+    with:
+      suite-name: "langchain"
+      astradb: false
+      vector-database-type: "local-cassandra"
+      deploy-to-slack: true
+      slack-title: "Tests using LangChain main branch (DSE)"
+      deploy-to-testspace: true
+      testspace-space: "RAGStack test suite - LangChain dev - DSE"
+
+  langchain-astradev-tests:
+    name: "Tests using LangChain main branch (AstraDB DEV)"
+    if: ${{ contains(github.event.schedule, '0 */2 * * *') || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    uses: ./.github/workflows/_run_e2e_tests.yml
+    secrets: inherit
+    with:
+      suite-name: "langchain"
+      astradb: true
+      astradb-token-secret-name: "E2E_TESTS_ASTRA_DEV_DB_TOKEN"
+      astradb-env: "DEV"
+      astradb-region: "${{ env.ASTRADB_DEV_REGION }}"
+      astradb-cloud: "${{ env.ASTRADB_DEV_CLOUD }}"
+      vector-database-type: "astradb"
+      deploy-to-slack: true
+      slack-title: "Tests using LangChain main branch (AstraDB DEV)"
+      deploy-to-testspace: true
+      testspace-space: "RAGStack test suite - LangChain dev - AstraDB"
+
+  llamaindex-dse-tests:
+    name: "Tests using LlamaIndex main branch (AstraDB DEV)"
+    runs-on: ubuntu-latest
+    uses: ./.github/workflows/_run_e2e_tests.yml
+    secrets: inherit
+    with:
+      suite-name: "llamaindex"
+      astradb: false
+      vector-database-type: "local-cassandra"
+      deploy-to-slack: true
+      slack-title: "Tests using LLamaIndex main branch (DSE)"
+      deploy-to-testspace: true
+      testspace-space: "RAGStack test suite - LLamaIndex dev - DSE"
+
+  llamaindex-astradev-tests:
+    name: "Tests using LlamaIndex main branch (AstraDB DEV)"
+    if: ${{ contains(github.event.schedule, '0 */2 * * *') || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    uses: ./.github/workflows/_run_e2e_tests.yml
+    secrets: inherit
+    with:
+      suite-name: "llamaindex"
+      astradb: true
+      astradb-token-secret-name: "E2E_TESTS_ASTRA_DEV_DB_TOKEN"
+      astradb-env: "DEV"
+      astradb-region: "${{ env.ASTRADB_DEV_REGION }}"
+      astradb-cloud: "${{ env.ASTRADB_DEV_CLOUD }}"
+      vector-database-type: "astradb"
+      deploy-to-slack: true
+      slack-title: "Tests using LlamaIndex main branch (AstraDB DEV)"
+      deploy-to-testspace: true
+      testspace-space: "RAGStack test suite - LLamaIndex dev - AstraDB"
+
+  ragstack-latest-release-dse-tests:
+    name: "Tests using latest release of RAGStack (DSE)"
+    runs-on: ubuntu-latest
+    uses: ./.github/workflows/_run_e2e_tests.yml
+    secrets: inherit
+    with:
+      suite-name: "ragstack-latest-release"
+      astradb: false
+      vector-database-type: "local-cassandra"
+      deploy-to-slack: true
+      slack-title: "Tests using RAGStack latest release (DSE)"
+      deploy-to-testspace: true
+      testspace-space: "RAGStack test suite - RAGStack latest - DSE"
+
+  ragstack-latest-release-astradev-tests:
+    name: "Tests using latest release of RAGStack (AstraDB DEV)"
+    if: ${{ contains(github.event.schedule, '0 */2 * * *') || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    uses: ./.github/workflows/_run_e2e_tests.yml
+    secrets: inherit
+    with:
+      suite-name: "ragstack-latest-release"
+      astradb: true
+      astradb-token-secret-name: "E2E_TESTS_ASTRA_DEV_DB_TOKEN"
+      astradb-env: "DEV"
+      astradb-region: "${{ env.ASTRADB_DEV_REGION }}"
+      astradb-cloud: "${{ env.ASTRADB_DEV_CLOUD }}"
+      vector-database-type: "astradb"
+      deploy-to-slack: true
+      slack-title: "Tests using RAGStack latest release (AstraDB DEV)"
+      deploy-to-testspace: true
+      testspace-space: "RAGStack test suite - RAGStack latest - AstraDB"

@@ -1,0 +1,136 @@
+name: Run E2E tests
+on:
+  workflow_call:
+    inputs:
+      suite-name:
+        choices: ['llamaindex', 'langchain', 'ragstack-latest-release']
+      astradb:
+        description: 'Whether to use AstraDB or not'
+        required: true
+        default: false
+        type: boolean
+      astradb-token-secret-name:
+        description: 'AstraDB token'
+        required: false
+      astradb-env:
+        description: 'AstraDB env'
+        required: false
+      astradb-region:
+        description: 'AstraDB region'
+        required: false
+      astradb-cloud:
+        description: 'AstraDB cloud'
+        required: false
+      vector-database-type:
+        description: 'Vector database type'
+        required: true
+      deploy-to-slack:
+        description: 'Whether to deploy to Slack or not'
+        default: true
+      slack-title:
+        description: 'Slack report title'
+        required: false
+      deploy-to-testspace:
+        description: 'Whether to deploy to TestSpace or not'
+        default: false
+      testspace-space:
+        description: 'TestSpace space to deploy to'
+        required: false
+
+
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: "Setup: Python 3.11"
+        uses: ./.github/actions/setup-python
+
+      - name: Setup AstraDB
+        uses: ./.github/actions/setup-astra-db
+        id: astra-db
+        if: ${{ inputs.astradb }}
+        with:
+          astra-token: ${{ secrets[inputs.astradb-token-secret-name] }}
+          db-name: ${{ github.run_id }}-${{ github.run_attempt }}
+          env: ${{ inputs.astradb-env }}
+          region: ${{ inputs.astradb-region }}
+          cloud: ${{ inputs.asstradb-cloud }}
+
+      - name: Run E2E tests
+        id: e2e-tests
+        env:
+          VECTOR_DATABASE_TYPE: "${{ inputs.vector-database-type }}"
+          ASTRA_DB_TOKEN: "${{ secrets.astra }}"
+          ASTRA_DB_ENDPOINT: "${{ steps.astra-db.outputs.db_endpoint }}"
+          ASTRA_DB_ID: "${{ steps.astra-db.outputs.db_id }}"
+          ASTRA_DB_ENV: "${{ inputs.astradb-env }}"
+          OPEN_AI_KEY: "${{ secrets.E2E_TESTS_OPEN_AI_KEY }}"
+          AZURE_OPEN_AI_KEY: "${{ secrets.E2E_TESTS_AZURE_OPEN_AI_KEY }}"
+          AZURE_OPEN_AI_ENDPOINT: "${{ secrets.E2E_TESTS_AZURE_OPEN_AI_ENDPOINT }}"
+          AZURE_BLOB_STORAGE_CONNECTION_STRING: "${{ secrets.E2E_TESTS_AZURE_BLOB_STORAGE_CONNECTION_STRING }}"
+          GCLOUD_ACCOUNT_KEY_JSON: "${{ secrets.E2E_TESTS_GCLOUD_ACCOUNT_KEY_JSON }}"
+          GOOGLE_API_KEY: "${{ secrets.E2E_TESTS_GOOGLE_API_KEY }}"
+          AWS_ACCESS_KEY_ID: "${{ secrets.E2E_TESTS_AWS_ACCESS_KEY_ID }}"
+          AWS_SECRET_ACCESS_KEY: "${{ secrets.E2E_TESTS_AWS_SECRET_ACCESS_KEY }}"
+          BEDROCK_AWS_REGION: "${{ secrets.E2E_TESTS_BEDROCK_AWS_REGION }}"
+          HUGGINGFACE_HUB_KEY: "${{ secrets.E2E_TESTS_HUGGINGFACE_HUB_KEY }}"
+          NVIDIA_API_KEY: "${{ secrets.E2E_TESTS_NVIDIA_API_KEY }}"
+          LANGCHAIN_API_KEY: "${{ secrets.E2E_TESTS_LANGCHAIN_API_KEY }}"
+        run: |
+          source scripts/ci-common-env.sh
+          if [ "${{ inputs.suite-name == 'langchain' }}" == "true" ]; then
+            tox -c ragstack-e2e-tests -e langchain
+          elif [ "${{ inputs.suite-name == 'llamaindex' }}" == "true" ]; then
+            tox -c ragstack-e2e-tests -e llamaindex
+          elif [ "${{ inputs.suite-name == 'ragstack-ai-latest' }}" == "true" ]; then
+            tox -c ragstack-e2e-tests -e ragstack-ai-latest
+          fi
+
+      - name: Dump report on Github Summary
+        if: ${{ always() }}
+        uses: ./.github/actions/add-report-to-github-summary
+
+      - name: Compute info
+        if: ${{ always() }}
+        id: info
+        run: |
+          if [ "${{ inputs.suite-name == 'langchain' }}" == "true" ]; then
+            echo "commit-url=https://github.com/langchain-ai/langchain/commits/${{ steps.commit-ref.outputs.commit-ref }}" >> $GITHUB_OUTPUT
+          elif [ "${{ inputs.suite-name == 'llamaindex' }}" == "true" ]; then
+            echo "commit-url=https://github.com/run-llama/llama_index/commits/${{ steps.commit-ref.outputs.commit-ref }}" >> $GITHUB_OUTPUT
+          elif [ "${{ inputs.suite-name == 'ragstack-ai-latest' }}" == "true" ]; then
+            (tox run -c ragstack-e2e-tests -e get-latest-ragstack-ai-version -q) | tail -3 | head -n 1 > /tmp/ragstack-ai-version
+            cat /tmp/ragstack-ai-version
+            ragstack_version=$(cat /tmp/ragstack-ai-version)
+            echo "commit-url=https://pypi.org/project/ragstack-ai/${ragstack_version}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Slack deploy report
+        if: ${{ always() }}
+        uses: ./.github/actions/deploy-slack-report
+        with:
+          from-report-file: "ragstack-e2e-tests/failed-tests-report.txt"
+          type: "${{ inputs.slack-title }}"
+          outcome: ${{ steps.e2e-tests.outcome }}
+          commit-url: "${{ steps.info.outputs.commit-url }}"
+          slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Testspace deploy report
+        uses: ./.github/actions/deploy-testspace-report
+        if: ${{ always() && inputs.deploy-to-testspace }}
+        with:
+          token: ${{ secrets.TESTSPACE_TOKEN }}
+          report-file: ragstack-e2e-tests/results.xml
+          space: ${{ inputs.testspace-space }}
+
+      - name: Cleanup AstraDB
+        uses: ./.github/actions/cleanup-astra-db
+        if: ${{ always() && inputs.astradb }}
+        with:
+          astra-token: ${{ secrets[inputs.astradb-token-secret-name] }}
+          db-name: ${{ github.run_id }}-${{ github.run_attempt }}
+          env: ${{ inputs.astradb-env }}
