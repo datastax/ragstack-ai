@@ -12,15 +12,13 @@ jobs:
     name: Update API reference
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Set up python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-      - name: Install Poetry
-        uses: snok/install-poetry@v1
+      - name: "Setup: Python 3.11"
+        if: ${{ !matrix.skip }}
+        uses: ./.github/actions/setup-python
+
       - name: Update API reference
         uses: ./.github/actions/deploy-api-reference
         with:

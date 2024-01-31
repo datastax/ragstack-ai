@@ -28,7 +28,7 @@ jobs:
       notebooks: ${{ steps.filter.outputs.notebooks }}
       e2e_tests: ${{ steps.filter.outputs.e2e_tests }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v2
         id: filter
         with:
@@ -39,7 +39,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Build docker image
         uses: ./.github/actions/build-deploy-docker-image
         with:
@@ -71,18 +71,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: "Setup: Python 3.11"
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.11"
-          cache: "pip"
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install tox
+        uses: ./.github/actions/setup-python
 
       - name: Run ragstack-ai unit tests
         run: |
@@ -129,18 +121,10 @@ jobs:
 
     steps:
       - name: Check out the repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: "Setup: Python 3.11"
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.11"
-          cache: "pip"
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install tox
+        uses: ./.github/actions/setup-python
 
       - name: Setup AstraDB
         uses: ./.github/actions/setup-astra-db
@@ -208,7 +192,7 @@ jobs:
         uses: ./.github/actions/deploy-slack-report
         with:
           from-report-file: ragstack-e2e-tests/failed-tests-report.txt
-          type: "RAGStack Tests"
+          type: "RAGStack dev Tests"
           outcome: ${{ steps.e2e-tests.outcome }}
           commit-url: "https://github.com/datastax/ragstack-ai/commits/${{ steps.commit-ref.outputs.commit-ref }}"
           slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}

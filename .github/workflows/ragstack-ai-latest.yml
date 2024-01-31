@@ -40,20 +40,11 @@ jobs:
     steps:
       - name: Check out the repo
         if: ${{ !matrix.skip }}
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: 'Setup: Python 3.11'
-        uses: actions/setup-python@v4
+      - name: "Setup: Python 3.11"
         if: ${{ !matrix.skip }}
-        with:
-          python-version: '3.11'
-          cache: 'pip'
-
-      - name: Install dependencies
-        if: ${{ !matrix.skip }}
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install tox
+        uses: ./.github/actions/setup-python
 
       - name: Setup AstraDB
         uses: ./.github/actions/setup-astra-db
