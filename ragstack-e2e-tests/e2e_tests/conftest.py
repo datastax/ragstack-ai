@@ -43,8 +43,8 @@ logging.basicConfig(
 )
 
 
-# Uncomment to enable debug logging on Astra calls
-# logging.getLogger('astrapy.utils').setLevel(logging.DEBUG)
+# Comment/uncomment to enable debug logging on Astra calls
+logging.getLogger("astrapy.utils").setLevel(logging.INFO)
 
 
 def get_required_env(name) -> str:
