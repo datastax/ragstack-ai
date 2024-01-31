@@ -30,6 +30,10 @@ runs:
         ls -la .
         touch $from_file 
       fi
+      if [ "${{ inputs.outcome }}" == "cancelled" ]; then
+        echo "Report cancelled"
+        exit 0
+      fi
       if [ "${{ inputs.outcome }}" != "success" ]; then
         summary="FAILED ❌"
       else
