@@ -20,8 +20,10 @@ runs:
   using: "composite"
   steps:
   - shell: bash
+    id: prepare
     run: |
       from_file=${{ inputs.from-report-file }}
+      
       if [ -f "$from_file" ]; then
         echo "Report found"
       else
@@ -30,6 +32,12 @@ runs:
         ls -la .
         touch $from_file 
       fi
+      if [ "${{ inputs.outcome }}" == "cancelled" ]; then
+        echo "Report cancelled"
+        echo "send-report=false" >> $GITHUB_OUTPUT
+        exit 0
+      fi
+      echo "send-report=true" >> $GITHUB_OUTPUT
       if [ "${{ inputs.outcome }}" != "success" ]; then
         summary="FAILED ❌"
       else
@@ -45,6 +53,7 @@ runs:
       echo "Slack report generated to slack-report.json"
       cat slack-report.json
   - uses: slackapi/slack-github-action@v1.25.0
+    if: ${{ steps.prepare.outputs.send-report == 'true' }}
     with:
       payload-file-path: "./slack-report.json"
     env:

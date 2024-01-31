@@ -1,0 +1,66 @@
+name: CI - Unit tests
+on:
+  pull_request:
+    paths-ignore:
+      - "scripts/**"
+      - "docs/**"
+      - "README.adoc"
+      - "PACKAGE_README.md"
+    branches:
+      - main
+
+concurrency:
+  group: ragstack-unit-tests-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-docker:
+    name: Build Docker image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+      - name: Build docker image
+        uses: ./.github/actions/build-deploy-docker-image
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          # we don't really care about the version here, we just want to make sure the image builds
+          ragstack-version: "0.*"
+          docker-tag: latest-dev
+          push: "false"
+      - name: Scan docker image
+        uses: ./.github/actions/scan-docker-image
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          docker-tag: "latest"
+          snyk-token: ${{ secrets.SNYK_TOKEN }}
+
+      - name: Docker examples - basic
+        run: |
+          docker --version
+          cd docker/examples/basic
+          sudo docker build -t ragstack-basic .
+      - name: Docker examples - multistage
+        run: |
+          docker --version
+          cd docker/examples/multistage
+          sudo docker build -t ragstack-multistage .
+      - name: Docker examples - local llm
+        run: |
+          docker --version
+          cd docker/examples/local-llm
+          sudo docker build -t local-llm .
+
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: "Setup: Python 3.11"
+        uses: ./.github/actions/setup-python
+
+      - name: Run ragstack-ai unit tests
+        run: |
+          tox
