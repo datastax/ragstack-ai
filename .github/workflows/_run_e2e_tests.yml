@@ -3,12 +3,11 @@ on:
   workflow_call:
     inputs:
       suite-name:
-        type: choice
-        options: ['llamaindex', 'langchain', 'ragstack-latest-release']
+        type: string
+        #options: ['llamaindex', 'langchain', 'ragstack-latest-release']
       astradb:
         description: 'Whether to use AstraDB or not'
         required: true
-        default: false
         type: boolean
       astradb-token-secret-name:
         description: 'AstraDB token'
@@ -28,12 +27,14 @@ on:
       deploy-to-slack:
         description: 'Whether to deploy to Slack or not'
         default: true
+        type: boolean
       slack-title:
         description: 'Slack report title'
         required: false
       deploy-to-testspace:
         description: 'Whether to deploy to TestSpace or not'
         default: false
+        type: boolean
       testspace-space:
         description: 'TestSpace space to deploy to'
         required: false
