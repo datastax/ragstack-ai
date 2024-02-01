@@ -24,9 +24,9 @@ def rewrite_name(name):
 @dataclass
 class Link:
     name: str
-    description: str = ""
+    description: str
     url: str
-    level: str = "info"
+    level: str
 
 @dataclass
 class Failure:
@@ -119,7 +119,7 @@ def generate_new_report(test_suites):
         reporter.append(test_suite_el)
     github_url = os.environ.get("TESTSPACE_REPORT_GITHUB_URL")
     if github_url:
-        link = Link(name="See logs on Github Actions", url=github_url)
+        link = Link(name="See logs on Github Actions", url=github_url, description="", level="info")
         link_el = generate_link_annotation(link)
         reporter.append(link_el)
     return reporter
@@ -199,7 +199,7 @@ def parse_test_report(input_file: str):
                 if properties:
                     for prop in properties.iter("property"):
                         if prop.get("name") == "langsmith_url":
-                            links.append(Link(name="LangSmith trace", url=prop.get("value")))
+                            links.append(Link(name="LangSmith trace", url=prop.get("value"), level="info", description=""))
 
                 report_test_case = TestCase(
                     name=rewrite_name(test_case.get("name")),
