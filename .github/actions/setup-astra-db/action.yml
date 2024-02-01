@@ -45,7 +45,7 @@ runs:
         --cloud "${{ inputs.cloud }}" \
         --timeout 600
       
-      text=$(/home/runner/.astra/cli/astra db describe "${{ inputs.db-name }}" --token "${{ inputs.astra-token }}" --env "${{ inputs.env }}" -o json)
+      describe_out=$(/home/runner/.astra/cli/astra db describe "${{ inputs.db-name }}" --token "${{ inputs.astra-token }}" --env "${{ inputs.env }}" -o json)
       database_id=$(echo "$describe_out" | jq -r '.data.id')
       echo "Found database id: $database_id"
       domain="astra"
