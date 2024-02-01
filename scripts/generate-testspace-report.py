@@ -47,6 +47,7 @@ class TestCase:
 class TestSuite:
     name: str
     test_cases: List[TestCase]
+    links: List[Link]
 
 
 def unsafe_escape_data(text):
@@ -92,6 +93,9 @@ def generate_new_report(test_suites):
     for test_suite in test_suites.values():
         test_suite_el = ET.Element("test_suite")
         test_suite_el.set("name", test_suite.name)
+        for link in test_suite.links:
+            link_el = generate_link_annotation(link)
+            test_suite_el.append(link_el)
         for test_case in test_suite.test_cases:
             print(test_case)
             test_case_el = ET.Element("test_case")
@@ -175,7 +179,7 @@ def parse_snyk_report(input_file: str):
     for v in vulnerabilities.values():
         links.append(Link(name=v[0], description=v[1], url=v[2], level="error"))
     test_case = TestCase(name=TEST_CASE_NAME, passed=False, time="0.0", links=links, failures=[])
-    return {SUITE_NAME: TestSuite(name=SUITE_NAME, test_cases=[test_case])}
+    return {SUITE_NAME: TestSuite(name=SUITE_NAME, test_cases=[test_case], links=links)}
 def parse_test_report(input_file: str):
     tree = ET.parse(input_file)
     root = tree.getroot()
