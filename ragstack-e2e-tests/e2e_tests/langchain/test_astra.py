@@ -86,7 +86,7 @@ def test_wrong_connection_parameters(vectorstore: AstraDB):
         pytest.fail("Should have thrown exception")
     except HTTPStatusError as e:
         print("Error:", e)
-        if "UNAUTHENTICATED" not in str(e):
+        if "401 Unauthorized" not in str(e):
             pytest.fail(
                 f"Should have thrown HTTPStatusError with UNAUTHENTICATED but it was {e}"
             )
