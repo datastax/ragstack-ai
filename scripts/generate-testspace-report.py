@@ -24,9 +24,9 @@ def rewrite_name(name):
 @dataclass
 class Link:
     name: str
-    description: str
+    description: str = ""
     url: str
-    level: str
+    level: str = "info"
 
 @dataclass
 class Failure:
