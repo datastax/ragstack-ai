@@ -1,5 +1,6 @@
 import os.path
 import sys
+import json
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from typing import List
@@ -23,7 +24,14 @@ def rewrite_name(name):
 @dataclass
 class Link:
     name: str
+    description: str
     url: str
+    level: str
+
+@dataclass
+class Failure:
+    title: str
+    description: str
 
 
 @dataclass
@@ -31,9 +39,8 @@ class TestCase:
     name: str
     passed: bool
     time: str
-    failure_error_title: str
-    failure_error_message: str
     links: List[Link]
+    failures: List[Failure]
 
 
 @dataclass
@@ -65,15 +72,19 @@ import xml
 xml.etree.ElementTree._escape_cdata = unsafe_escape_data
 
 
-def main(input_file: str, output_file: str):
-    test_suites = parse_report(input_file)
-    if len(test_suites) == 0:
-        print("No test suites found in input file, exiting")
+def main(type: str, input_file: str, output_file: str):
+    if type == "tests":
+        test_suites = parse_test_report(input_file)
+        if len(test_suites) == 0:
+            print("No test suites found in input file, exiting")
+            return
     else:
-        reporter = generate_new_report(test_suites)
-        print(f"Writing report file to {output_file}")
-        root = ET.ElementTree(reporter)
-        root.write(output_file, encoding="utf-8")
+        test_suites = parse_snyk_report(input_file)
+
+    reporter = generate_new_report(test_suites)
+    print(f"Writing report file to {output_file}")
+    root = ET.ElementTree(reporter)
+    root.write(output_file, encoding="utf-8")
 
 
 def generate_new_report(test_suites):
@@ -91,15 +102,16 @@ def generate_new_report(test_suites):
                 failure_el = ET.Element("annotation")
                 failure_el.set("name", "Failure")
                 failure_el.set("level", "error")
-                title = ET.SubElement(failure_el, "comment")
-                title.set("label", "Error")
-                title.text = cdata(test_case.failure_error_title)
-                if test_case.failure_error_message:
-                    stack = ET.SubElement(failure_el, "comment")
-                    stack.set("label", "Stacktrace")
-                    stack.text = cdata(test_case.failure_error_message)
+                for failure in test_case.failures:
+                    title = ET.SubElement(failure_el, "comment")
+                    title.set("label", "Error")
+                    title.text = cdata(failure.title)
+                    if failure.description:
+                        stack = ET.SubElement(failure_el, "comment")
+                        stack.set("label", "Stacktrace")
+                        stack.text = cdata(failure.description)
 
-                test_case_el.append(failure_el)
+                    test_case_el.append(failure_el)
             for link in test_case.links:
                 link_el = generate_link_annotation(link)
                 test_case_el.append(link_el)
@@ -116,13 +128,55 @@ def generate_new_report(test_suites):
 def generate_link_annotation(link):
     link_el = ET.Element("annotation")
     link_el.set("name", link.name)
-    link_el.set("level", "info")
-    link_el.set("file", link.url)
-    link_el.set("link_file", "true")
+    if link.description:
+        link_el.set("description", link.description)
+    link_el.set("level", link.level or "info")
+    if link.url:
+        link_el.set("file", link.url)
+        link_el.set("link_file", "true")
     return link_el
 
 
-def parse_report(input_file: str):
+def parse_snyk_report(input_file: str):
+    vulnerabilities = {}
+    with open(input_file, "r") as file:
+        data = json.load(file)
+        for vulnerability in data.get("vulnerabilities", []):
+            title = vulnerability.get("title", "?")
+            cvssScore = vulnerability.get("cvssScore", "")
+            severity = vulnerability.get("severity", "")
+            from_packages = " -> ".join(vulnerability.get("from", []))
+            package_name = vulnerability.get("packageName", "?")
+            version = vulnerability.get("version", "?")
+            id = vulnerability.get("id", "?")
+            identifiers = vulnerability.get("identifiers", [])
+
+
+            if "GHSA" in identifiers:
+                link = f"https://github.com/advisories/{identifiers['GHSA'][0]}"
+            elif "CVE" in identifiers:
+                link = f"https://cve.mitre.org/cgi-bin/cvename.cgi?name={identifiers['CVE'][0]}"
+            else:
+                link = ""
+
+            ann_title = f"{title}@{version}"
+            cvss_str = f" [CVSS: {cvssScore}]" if cvssScore else ""
+            ann_description = f"{title} [{id}] [{severity.capitalize()} severity] {cvss_str} from {from_packages}"
+            if id not in vulnerabilities:
+                vulnerabilities[id] = [ann_title, ann_description, link]
+
+
+    SUITE_NAME = "Security scans"
+    TEST_CASE_NAME = "Scan python dependencies"
+    if len(vulnerabilities) == 0:
+        test_case = TestCase(name=TEST_CASE_NAME, passed=True, time="0.0", failures=[], links=[])
+
+    links = []
+    for v in vulnerabilities.values():
+        links.append(Link(name=v[0], description=v[1], url=v[2], level="error"))
+    test_case = TestCase(name=TEST_CASE_NAME, passed=False, time="0.0", links=links, failures=[])
+    return {SUITE_NAME: TestSuite(name=SUITE_NAME, test_cases=[test_case])}
+def parse_test_report(input_file: str):
     tree = ET.parse(input_file)
     root = tree.getroot()
     report_test_suites = {}
@@ -136,14 +190,9 @@ def parse_report(input_file: str):
                     continue
 
                 failure = test_case.find("failure")
+                failures = []
                 if failure is not None:
-                    passed = False
-                    failure_error_title = failure.get("message")
-                    failure_error_message = failure.text
-                else:
-                    passed = True
-                    failure_error_title = ""
-                    failure_error_message = ""
+                    failures.append(Failure(title=failure.get("message"), description=failure.text))
 
                 properties = test_case.find("properties")
                 links = []
@@ -154,10 +203,9 @@ def parse_report(input_file: str):
 
                 report_test_case = TestCase(
                     name=rewrite_name(test_case.get("name")),
-                    passed=passed,
+                    passed=len(failures) == 0,
                     time=str(float(test_case.get("time")) * 1000),
-                    failure_error_title=failure_error_title,
-                    failure_error_message=failure_error_message,
+                    failures=failures,
                     links=links,
                 )
                 if classname not in report_test_suites:
@@ -169,8 +217,8 @@ def parse_report(input_file: str):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 3:
-        print("Usage: generate-testspace-report.py {junit-report-file.xml} {output-file.xml}")
+    if len(sys.argv) < 4:
+        print("Usage: generate-testspace-report.py [tests|snyk] {junit-file.xml|snyk.json} {output-file.xml}")
         sys.exit(1)
 
-    main(sys.argv[1], sys.argv[2])
+    main(sys.argv[1], sys.argv[2], sys.argv[3])

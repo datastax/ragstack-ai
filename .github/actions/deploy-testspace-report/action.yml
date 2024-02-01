@@ -4,6 +4,8 @@ branding:
   color: green
   icon: terminal
 inputs:
+    report-type:
+      required: true
     token:
         required: true
         description: "Testspace token"
@@ -55,7 +57,7 @@ runs:
         shell: bash
       - run: |
           if [ -f "${{ inputs.report-file }}" ]; then
-            python ./scripts/generate-testspace-report.py "${{ inputs.report-file }}" testspace-report.xml
+            python ./scripts/generate-testspace-report.py ${{ inputs.report-type }} "${{ inputs.report-file }}" testspace-report.xml
           else
             echo "Skipping testspace report generation as ${{ inputs.report-file }} does not exist"
           fi
