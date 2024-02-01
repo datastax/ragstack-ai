@@ -36,10 +36,17 @@ runs:
     run: |
       set -x
       (curl -Ls "https://dtsx.io/get-astra-cli" | bash) || true 
-      /home/runner/.astra/cli/astra db create -v "${{ inputs.db-name }}" --env "${{ inputs.env }}" -k default_keyspace --token "${{ inputs.astra-token }}" --vector --region "${{ inputs.region }}" --cloud "${{ inputs.cloud }}"
+      /home/runner/.astra/cli/astra db create -v "${{ inputs.db-name }}" \
+        --env "${{ inputs.env }}" \
+        -k default_keyspace \
+        --token "${{ inputs.astra-token }}" \
+        --vector \
+        --region "${{ inputs.region }}" \
+        --cloud "${{ inputs.cloud }}" \
+        --timeout 600
       
-      text=$(/home/runner/.astra/cli/astra db describe "${{ inputs.db-name }}" --token "${{ inputs.astra-token }}" --env "${{ inputs.env }}" )
-      database_id=$(echo "$text" | grep 'id' | awk -F '|' '{print $3}' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+      text=$(/home/runner/.astra/cli/astra db describe "${{ inputs.db-name }}" --token "${{ inputs.astra-token }}" --env "${{ inputs.env }}" -o json)
+      database_id=$(echo "$describe_out" | jq -r '.data.id')
       echo "Found database id: $database_id"
       domain="astra"
       if [ "${{ inputs.env }}" == "DEV" ]; then
