@@ -28,13 +28,10 @@ runs:
         echo "Report found"
       else
         echo "Report NOT found"
+        echo "send-report=false" >> $GITHUB_OUTPUT
         pwd
         ls -la .
-        touch $from_file 
-      fi
-      if [ "${{ inputs.outcome }}" == "cancelled" ]; then
-        echo "Report cancelled"
-        echo "send-report=false" >> $GITHUB_OUTPUT
+        touch $from_file
         exit 0
       fi
       echo "send-report=true" >> $GITHUB_OUTPUT
