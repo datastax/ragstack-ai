@@ -1,0 +1,133 @@
+= Build a Hotel Search Application with RAGStack and AstraDB
+
+image::https://gitpod.io/button/open-in-gitpod.svg[align="left",link="https://gitpod.io/#https://github.com/hemidactylus/langchain-astrapy-hotels-app"]
+
+This page demonstrates using RAGStack and an Astra vector database to build a Hotels Search application.
+
+The application uses an Astra vector database to store hotel data, and RAGStack to search for hotels and generate summaries.
+
+== Prerequisites
+
+. Clone the Git repository and change to that directory.
++
+[source,bash]
+----
+git clone https://github.com/hemidactylus/langchain-astrapy-hotels-app.git
+cd langchain-astrapy-hotels-app
+----
++
+. You will need a vector-enabled Astra database.
++
+.. Create an https://docs.datastax.com/en/astra-serverless/docs/getting-started/create-db-choices.html[Astra
+vector database].
++
+.. Within your database, create an https://docs.datastax.com/en/astra-serverless/docs/manage/org/manage-tokens.html[Astra
+DB Access Token] with Database Administrator permissions.
++
+.. Copy your Astra DB Endpoint from the Astra database.
++
+. Set the following environment variables in a `.env` file in `langchain-astrapy-hotels-app`:
++
+[source,text]
+----
+OPENAI_API_KEY=sk-...
+ASTRA_DB_API_ENDPOINT=https://<ASTRA_DB_ID>-<ASTRA_DB_REGION>.apps.astra.datastax.com
+ASTRA_DB_APPLICATION_TOKEN=AstraCS:...
+----
++
+. Install the following dependencies:
++
+[source,python]
+----
+pip install ragstack-ai fastapi python-dotenv uvicorn
+----
+
+The installed dependencies differ from the `requirements.txt` file in the repo because RAGStack includes many of them already.
+
+See the https://docs.datastax.com/en/ragstack/docs/prerequisites.html[Prerequisites] page for more details on finding these values.
+
+== Load the data
+
+. From the root folder, run four Python scripts to populate your database with data collections.
++
+[tabs]
+======
+Python::
++
+[source,bash]
+----
+python -m setup.2-populate-review-vector-collection
+python -m setup.3-populate-hotels-and-cities-collections
+python -m setup.4-create-users-collection
+python -m setup.5-populate-reviews-collection
+----
+
+Result::
++
+[source,console]
+----
+[2-populate-review-vector-collection.py] Finished. 10000 rows written.
+[3-populate-hotels-and-cities-collections.py] Inserted 1433 hotels
+[3-populate-hotels-and-cities-collections.py] Inserted 842 cities
+[5-populate-reviews-collection.py] Inserted 10000 reviews
+----
+======
++
+. Each script populates a different collection in your Astra database, including a collection of precalculated embeddings for vector search.
+
+The application will use these collections to deliver valuable, personalized results to users.
+
+== Run the application
+
+Now that your vector database is populated, run the application frontend to see the results.
+
+. Open a new terminal and start the API server.
++
+[source, bash]
+----
+uvicorn api:app --reload
+----
++
+. Open a new terminal and change directory to the `client` folder.
+Install the node dependencies and start the application.
++
+[source, bash]
+----
+npm install
+npm start
+----
++
+. Open http://localhost:3000 to view the application in your browser.
+Click "Login" in the upper right corner, enter any values for the username and password, and click Login.
++
+. Enter `US` for the country and a US city for the location, and click Search.
++
+. The application lists hotels, including an OpenAI-generated summary of reviews from the reviews collection.
++
+. Selecting "Details" will show more information about the hotel, including a summary based on your Preferences, stored in the users collection.
+
+image::hotels-app.png[Hotels,200,100,align="center"]
+
+[NOTE]
+====
+If your results summaries aren't displaying and you're getting openai errors from pydantic, run `pip install pydantic~=1.10.10` to downgrade pydantic.
+====
+
+== Cleanup
+
+. Use `ctrl+c` to stop the API server and the application.
+. Use the Data API command below or see https://docs.datastax.com/en/astra/astra-db-vector/api-reference/data-api-commands.html#delete-a-collection[delete a collection^] to delete the created collections and make room in your Astra database.
++
+[source,curl]
+----
+curl -v -s --location \
+--request POST "https://ASTRA_DB_ID-ASTRA_DB_REGION.apps.astra.datastax.com/api/json/v1/default_keyspace" \
+--header "X-Cassandra-Token: AstraCS:..." \
+--header "Content-Type: application/json" \
+--header "Accept: application/json" \
+--data '{
+  "deleteCollection": {
+    "name": "hotels"
+  }
+}'
+----
