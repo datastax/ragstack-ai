@@ -6,8 +6,10 @@ from langchain.schema import StrOutputParser
 import glob
 import os
 
-os.environ["ASTRA_DB_ENDPOINT"] = os.environ.get(
-    "ASTRA_DB_ENDPOINT_PDF_SPLITS_2")
+# os.environ["ASTRA_DB_ENDPOINT"] = os.environ.get("ASTRA_DB_ENDPOINT_PDF_SPLITS")
+# os.environ["ASTRA_DB_TOKEN"] = os.environ.get("ASTRA_DB_TOKEN_PDF_SPLITS")
+
+os.environ["ASTRA_DB_ENDPOINT"] = os.environ.get("ASTRA_DB_ENDPOINT_PDF_SPLITS_2")
 os.environ["ASTRA_DB_TOKEN"] = os.environ.get("ASTRA_DB_TOKEN_PDF_SPLITS_2")
 
 framework = tru_shared.Framework.LANG_CHAIN
@@ -21,9 +23,13 @@ for file_path in glob.glob('data/*/source_files/*.pdf'):
     if dataset not in pdf_datasets:
         pdf_datasets.append(dataset)
 
+# collection_names = [
+#     "PyPDFium2Loader", "PyMuPDFLoader", "PyPDFLoader",
+#     "PDFMinerLoader_by_page", "PDFMinerLoader_by_pdf",
+# ]
+
 collection_names = [
-    "PyPDFium2Loader", "PyMuPDFLoader", "PyPDFLoader", "PDFMinerLoader_by_page",
-    "PDFMinerLoader_by_pdf", "LayoutPDFReader_base", "LayoutPDFReader_new",
+    "LayoutPDFReader_base", "LayoutPDFReader_new",
     "UnstructuredFileLoader_single", "UnstructuredFileLoader_elements"
 ]
 

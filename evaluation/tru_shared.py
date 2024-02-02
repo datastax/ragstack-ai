@@ -66,7 +66,7 @@ def init_tru():
 
 def get_feedback_functions(pipeline, golden_set):
     # Initialize provider class
-    azureOpenAI = AzureOpenAI(deployment_name="gpt-35-turbo")
+    azureOpenAI = AzureOpenAI(deployment_name="gpt-35-turbo-16k")
 
     context = App.select_context(pipeline)
 
