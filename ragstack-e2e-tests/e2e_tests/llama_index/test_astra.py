@@ -149,8 +149,6 @@ def test_wrong_connection_parameters(environment: Environment):
             )
 
 
-
-
 def verify_document(document, expected_content, expected_metadata):
     if isinstance(document, NodeWithScore):
         document = document.node
