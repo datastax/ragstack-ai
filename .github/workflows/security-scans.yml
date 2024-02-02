@@ -15,7 +15,7 @@ on:
 
 jobs:
   snyk-ragstack-dev:
-    name: Run Snyk scan
+    name: Security Scan / RAGStack dev
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
@@ -33,6 +33,7 @@ jobs:
       - name: Move snyk vulnerabilities file
         if: ${{ always() }}
         run: |
+          python -m pip install poetry>=1.7.1
           mkdir -p snyk_reports
           mv snyk-vuln.json snyk_reports/snyk-vuln.json
 
@@ -70,7 +71,7 @@ jobs:
 
 
   snyk-ragstack-latest-release:
-    name: Run Snyk scan for latest release
+    name: Security Scan / RAGStack latest
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
