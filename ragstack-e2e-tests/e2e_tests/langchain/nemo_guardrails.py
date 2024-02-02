@@ -19,6 +19,15 @@ from nemoguardrails.integrations.langchain.runnable_rails import RunnableRails
 from nemoguardrails.actions.actions import ActionResult
 
 
+import logging
+
+logging.basicConfig(
+    level=logging.DEBUG, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
+
+#   Your task if to check if the user message below complies with the following policies.
+
+
 def _config(engine, model) -> str:
     return f"""
     models:
