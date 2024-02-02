@@ -1,0 +1,216 @@
+= VectorStore QA with MMR
+
+image::https://colab.research.google.com/assets/colab-badge.svg[align="left",link="http://colab.research.google.com/github/CassioML/cassio-website/blob/main/docs/frameworks/langchain/.colab/colab_qa-maximal-marginal-relevance.ipynb"]
+
+This page demonstrates using RAGStack and an Astra vector database to perform vector search with the *Maximal Marginal Relevance (MMR)* algorithm.
+
+Instead of selecting the top _k_ stored documents most relevant to the provided query, MMR first identifies a larger pool of relevant results, and then retrieves top _k_ from this pool. MMR algorithms return results with more diverse information.
+
+== Prerequisites
+
+. You will need a vector-enabled Astra database.
++
+.. Create an https://docs.datastax.com/en/astra-serverless/docs/getting-started/create-db-choices.html[Astra
+vector database].
++
+.. Within your database, create an https://docs.datastax.com/en/astra-serverless/docs/manage/org/manage-tokens.html[Astra
+DB Access Token] with Database Administrator permissions.
++
+.. Copy your Astra DB Endpoint from the Astra database.
++
+. Set the following environment variables in a `.env` file in the root of your project:
++
+[source,text]
+----
+ASTRA_DB_ID=aad075g237-8ab4-4d81-aa7d-7f58dbed3ead
+ASTRA_DB_APPLICATION_TOKEN=AstraCS:...
+OPENAI_API_KEY=sk-...
+ASTRA_DB_KEYSPACE=default_keyspace #optional
+----
++
+[NOTE]
+====
+The `ASTRA_DB_ID` can be found in the Astra DB endpoint. If your Astra DB endpoint is `https://aad075g237-8ab4-4d81-aa7d-7f58dbed3ead-us-east-2.apps.astra.datastax.com`, then your `ASTRA_DB_ID` is `aad075g237-8ab4-4d81-aa7d-7f58dbed3ead`.
+====
++
+. Install the following dependencies:
++
+[source,python]
+----
+pip install -qU ragstack-ai python-dotenv
+----
++
+See the https://docs.datastax.com/en/ragstack/docs/prerequisites.html[Prerequisites] page for more details.
+
+== Embedding model and vector store
+
+. Import dependencies and load environment variables.
++
+[source,python]
+----
+import os
+import cassio
+from dotenv import load_dotenv
+from langchain.chains.qa_with_sources.retrieval import RetrievalQAWithSourcesChain
+from langchain_openai import OpenAI, OpenAIEmbeddings
+from langchain.indexes.vectorstore import VectorStoreIndexWrapper
+from langchain_community.vectorstores import Cassandra
+
+load_dotenv()
+----
++
+. Initialize the OpenAI model and embeddings.
++
+[source,python]
+----
+llm = OpenAI(temperature=0)
+myEmbedding = OpenAIEmbeddings()
+----
++
+. Initialize the vector store.
++
+[source,python]
+----
+cassio.init(
+        database_id=os.environ["ASTRA_DB_ID"],
+        token=os.environ["ASTRA_DB_APPLICATION_TOKEN"],
+        keyspace=os.environ.get("ASTRA_DB_KEYSPACE"),  # this is optional
+    )
+
+myCassandraVStore = Cassandra(
+    embedding=myEmbedding,
+    session=None,
+    keyspace=None,
+    table_name='vs_test2',
+)
+index = VectorStoreIndexWrapper(vectorstore=myCassandraVStore)
+----
+
+== Populate the vector store
+
+. Create a list of sentences, with their sources stored as metadata.
+Note that the last sentence's content is considerably different from the others.
++
+[source,python]
+----
+# declare data
+
+BASE_SENTENCE_0 =     ('The frogs and the toads were meeting in the night '
+                       'for a party under the moon.')
+
+BASE_SENTENCE_1 =     ('There was a party under the moon, that all toads, '
+                       'with the frogs, decided to throw that night.')
+
+BASE_SENTENCE_2 =     ('And the frogs and the toads said: "Let us have a party '
+                       'tonight, as the moon is shining".')
+
+BASE_SENTENCE_3 =     ('I remember that night... toads, along with frogs, '
+                       'were all busy planning a moonlit celebration.')
+
+DIFFERENT_SENTENCE =  ('For the party, frogs and toads set a rule: '
+                       'everyone was to wear a purple hat.')
+
+# insert into index
+texts = [
+    BASE_SENTENCE_0,
+    BASE_SENTENCE_1,
+    BASE_SENTENCE_2,
+    BASE_SENTENCE_3,
+    DIFFERENT_SENTENCE,
+]
+metadatas = [
+    {'source': 'Barney\'s story at the pub'},
+    {'source': 'Barney\'s story at the pub'},
+    {'source': 'Barney\'s story at the pub'},
+    {'source': 'Barney\'s story at the pub'},
+    {'source': 'The chronicles at the village library'},
+]
+----
++
+. Load the sentences into the vector store and print their IDs.
++
+[source,python]
+----
+ids = myCassandraVStore.add_texts(
+    texts,
+    metadatas=metadatas,
+    )
+print('\n'.join(ids))
+----
+
+== Create and compare retrievers
+
+Create one retriever with similarity search, and another retriever with MMR search.
+
+Both will return the top 2 results with the source metadata included.
+Ask them a question, and see how the MMR response differs from the similarity response.
+
+. Set the question.
++
+[source,python]
+----
+QUESTION = 'Tell me about the party that night.'
+----
++
+. Create a retriever with similarity search.
++
+[source,python]
+----
+retrieverSim = myCassandraVStore.as_retriever(
+    search_type='similarity',
+    search_kwargs={
+        'k': 2,
+    },
+)
+
+chainSimSrc = RetrievalQAWithSourcesChain.from_chain_type(
+    llm,
+    retriever=retrieverSim,
+)
+
+responseSimSrc = chainSimSrc.invoke({chainSimSrc.question_key: QUESTION})
+print('Similarity-based chain:')
+print(f'  ANSWER : {responseSimSrc["answer"].strip()}')
+print(f'  SOURCES: {responseSimSrc["sources"].strip()}')
+----
++
+. Create a retriever with MMR search.
++
+[source,python]
+----
+retrieverMMR = myCassandraVStore.as_retriever(
+    search_type='mmr',
+    search_kwargs={
+        'k': 2,
+    },
+)
+
+chainMMRSrc = RetrievalQAWithSourcesChain.from_chain_type(
+    llm,
+    retriever=retrieverMMR,
+)
+
+responseMMRSrc = chainMMRSrc.invoke({chainMMRSrc.question_key: QUESTION})
+print('MMR-based chain:')
+print(f'  ANSWER : {responseMMRSrc["answer"].strip()}')
+print(f'  SOURCES: {responseMMRSrc["sources"].strip()}')
+----
++
+. Run the code and observe the differences in the responses.
++
+Similarity search returns only the most similar sentence.
+MMR returns the `DIFFERENT_SENTENCE`, which was considerably different from the others.
++
+[source,bash]
+----
+Similarity-based chain:
+  ANSWER : The party was thrown by all the toads and frogs under the moon that night.
+  SOURCES: Barney's story at the pub
+MMR-based chain:
+  ANSWER : The party that night was thrown by the frogs and toads, and the rule was for everyone to wear a purple hat.
+  SOURCES: Barney's story at the pub, The chronicles at the village library
+----
+
+== Complete code example
+
+include::examples:partial$mmr-example.adoc[]
