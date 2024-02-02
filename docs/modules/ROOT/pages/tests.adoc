@@ -66,6 +66,11 @@ e2e_tests.langchain.test_document_loaders
 e2e_tests.langchain_llamaindex.test_astra
 e2e_tests.llama_index.test_astra
 e2e_tests.llama_index.test_compatibility_rag
+
+| RAGStack security scans
+| Tests for vulnerabilties with Snyk
+| security-scans
+
 |===
 
 == What is being tested?
@@ -80,7 +85,7 @@ e2e_tests.llama_index.test_compatibility_rag
 | Tests the basic vector search functionality.
 
 | `test_ingest_errors`
-| Checks how the system handles errors during data ingestion. 
+| Checks how the system handles errors during data ingestion.
 
 | `test_wrong_connection_parameters`
 | Tests error handling when the vector store is initialized with incorrect connection parameters.
@@ -140,6 +145,16 @@ e2e_tests.llama_index.test_compatibility_rag
 | This test ingests a document using LangChain and retrieves it using LlamaIndex, the opposite of the first test.
 |===
 
+=== security-scans
+[cols="1,3", options="header"]
+|===
+| Test | Description
+
+| `scan python dependencies`
+| This test scans Python dependencies for vulnerabilities using Snyk
+
+|===
+
 == Navigate Testspace dashboard
 
 Tests are presented in a hierarchical structure.
@@ -151,6 +166,18 @@ To navigate from your Testspace Project down to an individual test case, select 
 ** Space (contains test sequences) Example: `RAGStack test suite - LangChain dev - DSE`
 *** Test sequence (contains tests) Example: `e2e_tests.langchain.test_compatibility_rag`
 **** Test cases (passed, failed, skipped, etc.) Example: `Test rag: openai embedding | openai llm | cassandra | rag custom chain`
+
+=== LangSmith trace
+
+Within individual test cases, https://smith.langchain.com/[LangSmith]{external-link-icon} traces are also available to view.
+
+A LangSmith trace displays the test's entire LLM chain, including the input prompt, the generated response, token spend, and the metadata associated with the response.
+
+For example, you can see that a test fails because the LLM lacks the context to answer the prompt `and when was it released?` because it doesn't understand what `it` is. Providing the LLM more context would likely solve this problem.
+[source,console]
+----
+query: ' I do not have enough context to rephrase the follow up question "and when was it released?" into a standalone question. Without knowing what "it" refers to in the original conversation, I cannot create a coherent standalone question. Please provide more context about what "MyFakeProductForTesting" refers to so I can understand what the follow up question is asking about.'
+----
 
 === Metrics
 
