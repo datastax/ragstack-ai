@@ -2,7 +2,8 @@ import logging
 from typing import List
 
 import pytest
-from httpx import ConnectError
+from httpx import ConnectError, HTTPStatusError
+
 from e2e_tests.conftest import (
     get_required_env,
     is_astra,
@@ -116,9 +117,6 @@ def test_ingest_errors(environment: Environment):
 
 
 def test_wrong_connection_parameters(environment: Environment):
-    # This is expected to be a valid endpoint, because we want to test an AUTHENTICATION error
-    api_endpoint = environment.vectorstore._astra_db.base_url
-
     try:
         AstraDBVectorStore(
             token="xxxxx",
@@ -132,6 +130,8 @@ def test_wrong_connection_parameters(environment: Environment):
         print("Error:", e)
         pass
 
+    # This is expected to be a valid endpoint, because we want to test an AUTHENTICATION error
+    api_endpoint = environment.vectorstore._astra_db.base_url
     try:
         print("api_endpoint:", api_endpoint)
         AstraDBVectorStore(
@@ -141,12 +141,14 @@ def test_wrong_connection_parameters(environment: Environment):
             embedding_dimension=1536,
         )
         pytest.fail("Should have thrown exception")
-    except ValueError as e:
+    except HTTPStatusError as e:
         print("Error:", e)
-        if "UNAUTHENTICATED" not in e.args[0]:
+        if "401 Unauthorized" not in str(e):
             pytest.fail(
-                f"Should have thrown ValueError with UNAUTHENTICATED but it was {e}"
+                f"Should have thrown HTTPStatusError with UNAUTHENTICATED but it was {e}"
             )
+
+
 
 
 def verify_document(document, expected_content, expected_metadata):
