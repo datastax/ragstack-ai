@@ -1,4 +1,4 @@
-name: RAGStack Security Scan
+name: CI - Security scans
 
 on:
   workflow_dispatch: {}
@@ -6,7 +6,7 @@ on:
     - cron: '0 0 * * *'
   pull_request:
     paths:
-      - '.github/workflows/security-scans.yml'
+      - '.github/workflows/ci-security-scans.yml'
       - 'scripts/**'
       - 'pyproject.toml'
       - 'poetry.lock'
@@ -67,7 +67,7 @@ jobs:
 
       - name: Testspace deploy report
         uses: ./.github/actions/deploy-testspace-report
-        if: ${{ always() }}
+        if: ${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
         with:
           report-type: snyk
           token: ${{ secrets.TESTSPACE_TOKEN }}
@@ -121,7 +121,7 @@ jobs:
 
       - name: Testspace deploy report
         uses: ./.github/actions/deploy-testspace-report
-        if: ${{ always() }}
+        if: ${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
         with:
           report-type: snyk
           token: ${{ secrets.TESTSPACE_TOKEN }}
