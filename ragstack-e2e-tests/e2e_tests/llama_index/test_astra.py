@@ -145,7 +145,7 @@ def test_wrong_connection_parameters(environment: Environment):
         print("Error:", e)
         if "401 Unauthorized" not in str(e):
             pytest.fail(
-                f"Should have thrown HTTPStatusError with UNAUTHENTICATED but it was {e}"
+                f"Should have thrown HTTPStatusError with '401 Unauthorized' but it was {e}"
             )
 
 
