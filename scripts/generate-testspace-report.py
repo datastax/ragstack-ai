@@ -157,6 +157,7 @@ def parse_snyk_report(input_file: str):
     all_links = []
 
     for snykfile in files:
+        snykfile = os.path.join(input_file, snykfile)
         print("Reading file: " + snykfile)
 
         with open(snykfile, "r") as file:
