@@ -14,18 +14,42 @@ on:
       - main
 
 jobs:
-  snyk:
+  snyk-ragstack-dev:
     name: Run Snyk scan
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
         uses: actions/checkout@v4
 
-      - name: Run Snyk to check for vulnerabilities
+      - name: Run Snyk scan
         id: snyk
         uses: ./.github/actions/snyk-python-3.11
         with:
           token: ${{ secrets.SNYK_TOKEN }}
+
+      - name: Move snyk vulnerabilities file
+        run: |
+          mkdir -p snyk_reports
+          mv snyk-vuln.json snyk_reports/snyk-vuln.json
+
+      - name: Prepare dev docker image
+        run: | 
+          poetry build
+          docker build -t datastax/ragstack-ai:latest-dev -f docker/Dockerfile.dev dist
+
+      - name: Run Snyk to check Docker image for vulnerabilities
+        uses: snyk/actions/docker@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          image: datastax/ragstack-ai:latest-dev
+          args: --severity-threshold=high json-file-output=snyk.json
+          json: true
+
+      - name: Move snyk docker file
+        run: |
+          mkdir -p snyk_reports
+          mv snyk.json snyk_reports/snyk-docker.json
 
       - name: "Setup: Python 3.11"
         if: always()
@@ -37,6 +61,56 @@ jobs:
         with:
           report-type: snyk
           token: ${{ secrets.TESTSPACE_TOKEN }}
-          report-file: snyk-vuln.json
-          space: "RAGStack security scans"
+          report-file: snyk_reports
+          space: "RAGStack security scans - RAGStack dev"
 
+
+  snyk-ragstack-latest-release:
+    name: Run Snyk scan for latest release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Prepare requirements
+        run: |
+          echo "ragstack-ai" > snyk_requirements.txt
+
+      - name: Run Snyk scan
+        id: snyk
+        uses: ./.github/actions/snyk-python-3.11
+        with:
+          token: ${{ secrets.SNYK_TOKEN }}
+          args: --file=snyk_requirements.txt
+
+      - name: Move snyk vulnerabilities file
+        run: |
+          mkdir -p snyk_reports
+          mv snyk-vuln.json snyk_reports/snyk-vuln.json
+
+      - name: Run Snyk to check Docker image for vulnerabilities
+        uses: snyk/actions/docker@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          image: ghcr.io/datastax/ragstack-ai:latest
+          args: --severity-threshold=high json-file-output=snyk.json
+          json: true
+
+      - name: Move snyk docker file
+        run: |
+          mkdir -p snyk_reports
+          mv snyk.json snyk_reports/snyk-docker.json
+
+      - name: "Setup: Python 3.11"
+        if: always()
+        uses: ./.github/actions/setup-python
+
+      - name: Testspace deploy report
+        uses: ./.github/actions/deploy-testspace-report
+        if: ${{ always() }}
+        with:
+          report-type: snyk
+          token: ${{ secrets.TESTSPACE_TOKEN }}
+          report-file: snyk_reports
+          space: "RAGStack security scans - RAGStack latest"

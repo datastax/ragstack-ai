@@ -28,6 +28,7 @@ class Link:
     url: str
     level: str
 
+
 @dataclass
 class Failure:
     title: str
@@ -141,45 +142,73 @@ def generate_link_annotation(link):
     return link_el
 
 
+SNYK_REPORT_SUITE_NAME = "Security scans"
 def parse_snyk_report(input_file: str):
+    test_cases = []
     vulnerabilities = {}
-    with open(input_file, "r") as file:
-        data = json.load(file)
-        for vulnerability in data.get("vulnerabilities", []):
-            title = vulnerability.get("title", "?")
-            cvssScore = vulnerability.get("cvssScore", "")
-            severity = vulnerability.get("severity", "")
-            from_packages = " -> ".join(vulnerability.get("from", []))
-            package_name = vulnerability.get("packageName", "?")
-            version = vulnerability.get("version", "?")
-            id = vulnerability.get("id", "?")
-            identifiers = vulnerability.get("identifiers", [])
+    files = []
 
+    if os.path.isdir(input_file):
+        for f in os.listdir(input_file):
+            if f.endswith(".json"):
+                files.append(f)
+    else:
+        files.append(input_file)
+    all_links = []
 
-            if "GHSA" in identifiers:
-                link = f"https://github.com/advisories/{identifiers['GHSA'][0]}"
-            elif "CVE" in identifiers:
-                link = f"https://cve.mitre.org/cgi-bin/cvename.cgi?name={identifiers['CVE'][0]}"
+    for snykfile in files:
+        print("Reading file: " + snykfile)
+
+        with open(snykfile, "r") as file:
+            data = json.load(file)
+            for vulnerability in data.get("vulnerabilities", []):
+                title = vulnerability.get("title", "?")
+                cvssScore = vulnerability.get("cvssScore", "")
+                severity = vulnerability.get("severity", "")
+                from_packages = " -> ".join(vulnerability.get("from", []))
+                package_name = vulnerability.get("packageName", "?")
+                version = vulnerability.get("version", "?")
+                id = vulnerability.get("id", "?")
+                identifiers = vulnerability.get("identifiers", [])
+
+                if "GHSA" in identifiers:
+                    link = f"https://github.com/advisories/{identifiers['GHSA'][0]}"
+                elif "CVE" in identifiers:
+                    link = f"https://cve.mitre.org/cgi-bin/cvename.cgi?name={identifiers['CVE'][0]}"
+                else:
+                    link = ""
+
+                ann_title = f"{title}@{version}"
+                cvss_str = f" [CVSS: {cvssScore}]" if cvssScore else ""
+                ann_description = f"{title} [{id}] [{severity.capitalize()} severity] {cvss_str} from {from_packages}"
+                if id not in vulnerabilities:
+                    vulnerabilities[id] = [ann_title, ann_description, link]
+
+            project = data.get("projectName", "")
+            local_links = []
+            if project == "ragstack-ai":
+                test_case_name = "Python dependencies"
+            elif "docker-image" in project:
+                test_case_name = "Docker image"
+                docker_image_digest = os.environ.get("TESTSPACE_REPORT_DOCKER_IMAGE_DIGEST", "")
+                if docker_image_digest:
+                    link = Link(name="Docker image", description=docker_image_digest, url="", level="info")
+                    local_links.append(link)
+                    all_links.append(link)
             else:
-                link = ""
+                raise Exception(f"Unknown snyk 'projectName': {project}")
 
-            ann_title = f"{title}@{version}"
-            cvss_str = f" [CVSS: {cvssScore}]" if cvssScore else ""
-            ann_description = f"{title} [{id}] [{severity.capitalize()} severity] {cvss_str} from {from_packages}"
-            if id not in vulnerabilities:
-                vulnerabilities[id] = [ann_title, ann_description, link]
+            passed = len(vulnerabilities) == 0
+            for v in vulnerabilities.values():
+                link = Link(name=v[0], description=v[1], url=v[2], level="error")
+                all_links.append(link)
+                local_links.append(link)
+            test_case = TestCase(name=test_case_name, passed=passed, time="0.0", failures=[], links=local_links)
+            test_cases.append(test_case)
+
+    return {SNYK_REPORT_SUITE_NAME: TestSuite(name=SNYK_REPORT_SUITE_NAME, test_cases=test_cases, links=all_links)}
 
 
-    SUITE_NAME = "Security scans"
-    TEST_CASE_NAME = "Scan python dependencies"
-    if len(vulnerabilities) == 0:
-        test_case = TestCase(name=TEST_CASE_NAME, passed=True, time="0.0", failures=[], links=[])
-
-    links = []
-    for v in vulnerabilities.values():
-        links.append(Link(name=v[0], description=v[1], url=v[2], level="error"))
-    test_case = TestCase(name=TEST_CASE_NAME, passed=False, time="0.0", links=links, failures=[])
-    return {SUITE_NAME: TestSuite(name=SUITE_NAME, test_cases=[test_case], links=links)}
 def parse_test_report(input_file: str):
     tree = ET.parse(input_file)
     root = tree.getroot()
@@ -203,7 +232,8 @@ def parse_test_report(input_file: str):
                 if properties:
                     for prop in properties.iter("property"):
                         if prop.get("name") == "langsmith_url":
-                            links.append(Link(name="LangSmith trace", url=prop.get("value"), level="info", description=""))
+                            links.append(
+                                Link(name="LangSmith trace", url=prop.get("value"), level="info", description=""))
 
                 report_test_case = TestCase(
                     name=rewrite_name(test_case.get("name")),
