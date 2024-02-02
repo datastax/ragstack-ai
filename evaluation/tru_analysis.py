@@ -14,6 +14,7 @@ def _gen_visibility_by_metric(test_count: int, metric_count: int, metric_index: 
 def box_plot_by_metric(parquet_file_name):
     df = pd.read_parquet(parquet_file_name)
     tests = df["test"].unique().tolist()
+    datasets = df["dataset"].unique().tolist()
     metrics = ["groundedness", "context_relevance",
                "answer_correctness", "answer_relevance", "latency"]
 
@@ -47,8 +48,10 @@ def box_plot_by_metric(parquet_file_name):
             test_index += 1
         metric_index += 1
 
+    height = (len(datasets) * len(tests) * 20) + 150
+
     fig.update_traces(orientation="h", boxmean=True, jitter=1, )
-    fig.update_layout(boxmode="group", height=1000, width=900)
+    fig.update_layout(boxmode="group", height=height, width=900)
     fig.update_layout(legend=dict(
         orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1))
     fig.update_layout(yaxis_title="dataset", xaxis_title="score")
@@ -122,8 +125,10 @@ def box_plot_by_dataset(parquet_file_name):
             test_index += 1
         dataset_index += 1
 
+    height = (len(metrics) * len(tests) * 20) + 150
+
     fig.update_traces(orientation="h", boxmean=True, jitter=1, )
-    fig.update_layout(boxmode="group", height=900, width=900)
+    fig.update_layout(boxmode="group", height=height, width=900)
     fig.update_layout(legend=dict(
         orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1))
     fig.update_layout(yaxis_title="metric", xaxis_title="score")
