@@ -167,7 +167,6 @@ def parse_snyk_report(input_file: str):
                 cvssScore = vulnerability.get("cvssScore", "")
                 severity = vulnerability.get("severity", "")
                 from_packages = " -> ".join(vulnerability.get("from", []))
-                package_name = vulnerability.get("packageName", "?")
                 version = vulnerability.get("version", "?")
                 id = vulnerability.get("id", "?")
                 identifiers = vulnerability.get("identifiers", [])
@@ -187,9 +186,7 @@ def parse_snyk_report(input_file: str):
 
             project = data.get("projectName", "")
             local_links = []
-            if project == "ragstack-ai":
-                test_case_name = "Python dependencies"
-            elif "docker-image" in project:
+            if "docker-image" in project:
                 test_case_name = "Docker image"
                 docker_image_digest = os.environ.get("TESTSPACE_REPORT_DOCKER_IMAGE_DIGEST", "")
                 if docker_image_digest:
@@ -197,7 +194,7 @@ def parse_snyk_report(input_file: str):
                     local_links.append(link)
                     all_links.append(link)
             else:
-                raise Exception(f"Unknown snyk 'projectName': {project}")
+                test_case_name = "Python dependencies"
 
             passed = len(vulnerabilities) == 0
             for v in vulnerabilities.values():
