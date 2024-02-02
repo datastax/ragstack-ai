@@ -7,6 +7,9 @@ inputs:
   token:
     required: true
     description: 'Snyk token'
+  args:
+    required: false
+    description: 'Additional arguments to pass to Snyk'
 runs:
   using: "docker"
   image: "docker://snyk/snyk:python-3.11"
@@ -21,3 +24,4 @@ runs:
   - --severity-threshold=high
   - --json-file-output=snyk-vuln.json
   - --print-deps
+  - ${{ inputs.args || '' }}
