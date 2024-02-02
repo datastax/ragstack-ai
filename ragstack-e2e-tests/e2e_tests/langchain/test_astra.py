@@ -4,7 +4,7 @@ from typing import List
 
 from astrapy.api import APIRequestError
 import pytest
-from httpx import ConnectError
+from httpx import ConnectError, HTTPStatusError
 
 from langchain.schema.embeddings import Embeddings
 from langchain.vectorstores import AstraDB
@@ -60,9 +60,6 @@ def test_ingest_errors(vectorstore: AstraDB):
 
 
 def test_wrong_connection_parameters(vectorstore: AstraDB):
-    # This is expected to be a valid endpoint, because we want to test an AUTHENTICATION error
-    api_endpoint = vectorstore.api_endpoint
-
     try:
         AstraDB(
             collection_name="something",
@@ -76,6 +73,8 @@ def test_wrong_connection_parameters(vectorstore: AstraDB):
         print("Error:", e)
         pass
 
+    # This is expected to be a valid endpoint, because we want to test an AUTHENTICATION error
+    api_endpoint = vectorstore.api_endpoint
     try:
         print("api_endpoint:", api_endpoint)
         AstraDB(
@@ -85,19 +84,16 @@ def test_wrong_connection_parameters(vectorstore: AstraDB):
             api_endpoint=api_endpoint,
         )
         pytest.fail("Should have thrown exception")
-    except ValueError as e:
+    except HTTPStatusError as e:
         print("Error:", e)
-        if "UNAUTHENTICATED" not in e.args[0]:
+        if "401 Unauthorized" not in str(e):
             pytest.fail(
-                f"Should have thrown ValueError with UNAUTHENTICATED but it was {e}"
+                f"Should have thrown HTTPStatusError with UNAUTHENTICATED but it was {e}"
             )
 
 
 def test_basic_metadata_filtering_no_vector(vectorstore: AstraDB):
-    print("Running test_basic_metadata_filtering_no_vector")
-
     collection = vectorstore.collection
-
     vectorstore.add_texts(
         texts=["RAGStack is a framework to run LangChain in production"],
         metadatas=[
