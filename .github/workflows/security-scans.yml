@@ -21,26 +21,30 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v4
 
+      - name: "Setup: Python 3.11"
+        uses: ./.github/actions/setup-python
+
       - name: Run Snyk scan
         id: snyk
-        continue-on-error: true
         uses: ./.github/actions/snyk-python-3.11
         with:
           token: ${{ secrets.SNYK_TOKEN }}
 
       - name: Move snyk vulnerabilities file
+        if: ${{ always() }}
         run: |
           mkdir -p snyk_reports
           mv snyk-vuln.json snyk_reports/snyk-vuln.json
 
       - name: Prepare dev docker image
+        if: ${{ always() }}
         run: | 
           poetry build
           docker build -t datastax/ragstack-ai:latest-dev -f docker/Dockerfile.dev dist
 
       - name: Run Snyk to check Docker image for vulnerabilities
         uses: snyk/actions/docker@master
-        continue-on-error: true
+        if: ${{ always() }}
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
@@ -49,13 +53,11 @@ jobs:
           json: true
 
       - name: Move snyk docker file
+        if: ${{ always() }}
         run: |
           mkdir -p snyk_reports
           mv snyk.json snyk_reports/snyk-docker.json
-
-      - name: "Setup: Python 3.11"
-        if: always()
-        uses: ./.github/actions/setup-python
+      
 
       - name: Testspace deploy report
         uses: ./.github/actions/deploy-testspace-report
@@ -80,20 +82,20 @@ jobs:
 
       - name: Run Snyk scan
         id: snyk
-        continue-on-error: true
         uses: ./.github/actions/snyk-python-3.11
         with:
           token: ${{ secrets.SNYK_TOKEN }}
           args: --file=snyk_requirements.txt
 
       - name: Move snyk vulnerabilities file
+        if: ${{ always() }}
         run: |
           mkdir -p snyk_reports
           mv snyk-vuln.json snyk_reports/snyk-vuln.json
 
       - name: Run Snyk to check Docker image for vulnerabilities
         uses: snyk/actions/docker@master
-        continue-on-error: true
+        if: ${{ always() }}
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
@@ -102,12 +104,13 @@ jobs:
           json: true
 
       - name: Move snyk docker file
+        if: ${{ always() }}
         run: |
           mkdir -p snyk_reports
           mv snyk.json snyk_reports/snyk-docker.json
 
       - name: "Setup: Python 3.11"
-        if: always()
+        if: ${{ always() }}
         uses: ./.github/actions/setup-python
 
       - name: Testspace deploy report
