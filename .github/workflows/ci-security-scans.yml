@@ -1,0 +1,129 @@
+name: CI - Security scans
+
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: '0 0 * * *'
+  pull_request:
+    paths:
+      - '.github/workflows/ci-security-scans.yml'
+      - 'scripts/**'
+      - 'pyproject.toml'
+      - 'poetry.lock'
+    branches:
+      - main
+
+concurrency:
+  group: ragstack-security-scans-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+
+jobs:
+  snyk-ragstack-dev:
+    name: Security Scan / RAGStack dev
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: "Setup: Python 3.11"
+        uses: ./.github/actions/setup-python
+
+      - name: Run Snyk scan
+        id: snyk
+        uses: ./.github/actions/snyk-python-3.11
+        with:
+          token: ${{ secrets.SNYK_TOKEN }}
+
+      - name: Move snyk vulnerabilities file
+        if: ${{ always() }}
+        run: |
+          python -m pip install poetry>=1.7.1
+          mkdir -p snyk_reports
+          mv snyk-vuln.json snyk_reports/snyk-vuln.json
+
+      - name: Prepare dev docker image
+        if: ${{ always() }}
+        run: | 
+          poetry build
+          docker build -t datastax/ragstack-ai:latest-dev -f docker/Dockerfile.dev dist
+
+      - name: Run Snyk to check Docker image for vulnerabilities
+        uses: snyk/actions/docker@master
+        if: ${{ always() }}
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          image: datastax/ragstack-ai:latest-dev
+          args: --json-file-output=snyk.json --severity-threshold=high
+          json: true
+
+      - name: Move snyk docker file
+        if: ${{ always() }}
+        run: |
+          mkdir -p snyk_reports
+          mv snyk.json snyk_reports/snyk-docker.json
+      
+
+      - name: Testspace deploy report
+        uses: ./.github/actions/deploy-testspace-report
+        if: ${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
+        with:
+          report-type: snyk
+          token: ${{ secrets.TESTSPACE_TOKEN }}
+          report-file: snyk_reports
+          space: "RAGStack security scans - RAGStack dev"
+
+
+  snyk-ragstack-latest-release:
+    name: Security Scan / RAGStack latest
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Prepare requirements
+        run: |
+          echo "ragstack-ai" > requirements.txt
+
+      - name: Run Snyk scan
+        id: snyk
+        uses: ./.github/actions/snyk-python-3.11
+        with:
+          token: ${{ secrets.SNYK_TOKEN }}
+          args: --file=requirements.txt
+
+      - name: Move snyk vulnerabilities file
+        if: ${{ always() }}
+        run: |
+          mkdir -p snyk_reports
+          mv snyk-vuln.json snyk_reports/snyk-vuln.json
+
+      - name: Run Snyk to check Docker image for vulnerabilities
+        uses: snyk/actions/docker@master
+        if: ${{ always() }}
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          image: ghcr.io/datastax/ragstack-ai:latest
+          args: --severity-threshold=high --json-file-output=snyk.json
+          json: true
+
+      - name: Move snyk docker file
+        if: ${{ always() }}
+        run: |
+          mkdir -p snyk_reports
+          mv snyk.json snyk_reports/snyk-docker.json
+
+      - name: "Setup: Python 3.11"
+        if: ${{ always() }}
+        uses: ./.github/actions/setup-python
+
+      - name: Testspace deploy report
+        uses: ./.github/actions/deploy-testspace-report
+        if: ${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
+        with:
+          report-type: snyk
+          token: ${{ secrets.TESTSPACE_TOKEN }}
+          report-file: snyk_reports
+          space: "RAGStack security scans - RAGStack latest"
