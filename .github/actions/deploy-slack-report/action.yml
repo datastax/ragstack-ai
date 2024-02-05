@@ -1,57 +1,59 @@
-name: 'Deploy Slack report'
-description: 'Deploy a report to Slack'
+name: "Deploy Slack report"
+description: "Deploy a report to Slack"
+
 inputs:
   from-report-file:
     required: true
-    description: 'File to read the report from'
+    description: "File to read the report from"
   type:
     required: true
-    description: 'Type of the report'
+    description: "Type of the report"
   outcome:
     required: true
-    description: 'Outcome of the test run'
+    description: "Outcome of the test run"
   commit-url:
     required: true
-    description: 'Github commit url'
+    description: "Github commit url"
   slack-webhook-url:
     required: true
-    description: 'Slack webhook url'
+    description: "Slack webhook url"
+
 runs:
   using: "composite"
   steps:
-  - shell: bash
-    id: prepare
-    run: |
-      from_file=${{ inputs.from-report-file }}
-      
-      if [ -f "$from_file" ]; then
-        echo "Report found"
-      else
-        echo "Report NOT found"
-        echo "send-report=false" >> $GITHUB_OUTPUT
-        pwd
-        ls -la .
-        touch $from_file
-        exit 0
-      fi
-      echo "send-report=true" >> $GITHUB_OUTPUT
-      if [ "${{ inputs.outcome }}" != "success" ]; then
-        summary="FAILED ❌"
-      else
-        summary="PASSED ✅"
-      fi
-      jq \
-        --arg content "$(cat $from_file)" \
-        --arg summary "$summary" \
-        --arg commit "${{ inputs.commit-url }}" \
-        --arg url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
-        --arg type "${{ inputs.type }}" \
-        -n '{"content": $content, "summary": $summary, "commit": $commit, "url": $url, "type": $type}'  > slack-report.json
-      echo "Slack report generated to slack-report.json"
-      cat slack-report.json
-  - uses: slackapi/slack-github-action@v1.25.0
-    if: ${{ steps.prepare.outputs.send-report == 'true' }}
-    with:
-      payload-file-path: "./slack-report.json"
-    env:
-      SLACK_WEBHOOK_URL: ${{ inputs.slack-webhook-url }}
+    - shell: bash
+      id: prepare
+      run: |
+        from_file=${{ inputs.from-report-file }}
+
+        if [ -f "$from_file" ]; then
+          echo "Report found"
+        else
+          echo "Report NOT found"
+          echo "send-report=false" >> $GITHUB_OUTPUT
+          pwd
+          ls -la .
+          touch $from_file
+          exit 0
+        fi
+        echo "send-report=true" >> $GITHUB_OUTPUT
+        if [ "${{ inputs.outcome }}" != "success" ]; then
+          summary="FAILED ❌"
+        else
+          summary="PASSED ✅"
+        fi
+        jq \
+          --arg content "$(cat $from_file)" \
+          --arg summary "$summary" \
+          --arg commit "${{ inputs.commit-url }}" \
+          --arg url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+          --arg type "${{ inputs.type }}" \
+          -n '{"content": $content, "summary": $summary, "commit": $commit, "url": $url, "type": $type}'  > slack-report.json
+        echo "Slack report generated to slack-report.json"
+        cat slack-report.json
+    - uses: slackapi/slack-github-action@v1.25.0
+      if: ${{ steps.prepare.outputs.send-report == 'true' }}
+      with:
+        payload-file-path: "./slack-report.json"
+      env:
+        SLACK_WEBHOOK_URL: ${{ inputs.slack-webhook-url }}

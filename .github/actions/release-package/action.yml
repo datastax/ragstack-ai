@@ -1,19 +1,21 @@
-name: 'Release package'
-description: 'Build and release a package on PyPI'
+name: "Release package"
+description: "Build and release a package on PyPI"
+
 inputs:
   package-directory:
     required: true
-    description: 'Package directory'
+    description: "Package directory"
   pypi-token:
     required: true
-    description: 'PyPI token'
+    description: "PyPI token"
   pypi-test-token:
     required: true
-    description: 'PyPI token'
+    description: "PyPI token"
   pypi-use-test-release:
     required: false
     default: "false"
-    description: 'Whether to release to TestPyPI or PyPI'
+    description: "Whether to release to TestPyPI or PyPI"
+
 runs:
   using: "composite"
   steps:
@@ -28,13 +30,13 @@ runs:
       id: pypi-url
       shell: bash
       run: |
-          if [ "${{ inputs.pypi-use-test-release }}" == "true" ]; then
-            echo "pypi-url=https://test.pypi.org/legacy/" >> $GITHUB_OUTPUT
-            echo "password=${{ inputs.pypi-test-token }}" >> $GITHUB_OUTPUT
-          else
-            echo "pypi-url=https://pypi.org/legacy/" >> $GITHUB_OUTPUT
-            echo "password=${{ inputs.pypi-token }}" >> $GITHUB_OUTPUT
-          fi
+        if [ "${{ inputs.pypi-use-test-release }}" == "true" ]; then
+          echo "pypi-url=https://test.pypi.org/legacy/" >> $GITHUB_OUTPUT
+          echo "password=${{ inputs.pypi-test-token }}" >> $GITHUB_OUTPUT
+        else
+          echo "pypi-url=https://pypi.org/legacy/" >> $GITHUB_OUTPUT
+          echo "password=${{ inputs.pypi-token }}" >> $GITHUB_OUTPUT
+        fi
 
     - name: Publish package to TestPyPI
       uses: pypa/gh-action-pypi-publish@release/v1

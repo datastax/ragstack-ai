@@ -4,19 +4,19 @@ description: Setup a new database in Astra DB
 inputs:
   astra-token:
     required: true
-    description: 'Astra DB application token'
+    description: "Astra DB application token"
   db-name:
     required: true
-    description: 'Astra DB database name'
+    description: "Astra DB database name"
   env:
     required: true
-    description: 'Astra DB env'
+    description: "Astra DB env"
   region:
     required: true
-    description: 'Astra DB region'
+    description: "Astra DB region"
   cloud:
     required: true
-    description: 'Astra DB cloud'
+    description: "Astra DB cloud"
 
 outputs:
   db_endpoint:
@@ -25,34 +25,35 @@ outputs:
   db_id:
     description: "Database ID"
     value: ${{ steps.db-setup.outputs.db_id }}
+
 runs:
   using: "composite"
   steps:
-  - name: Create a new database
-    shell: bash
-    id: db-setup
-    env:
-      TERM: linux
-    run: |
-      set -x
-      (curl -Ls "https://dtsx.io/get-astra-cli" | bash) || true 
-      /home/runner/.astra/cli/astra db create -v "${{ inputs.db-name }}" \
-        --env "${{ inputs.env }}" \
-        -k default_keyspace \
-        --token "${{ inputs.astra-token }}" \
-        --vector \
-        --region "${{ inputs.region }}" \
-        --cloud "${{ inputs.cloud }}" \
-        --timeout 600
-      
-      describe_out=$(/home/runner/.astra/cli/astra db describe "${{ inputs.db-name }}" --token "${{ inputs.astra-token }}" --env "${{ inputs.env }}" -o json)
-      database_id=$(echo "$describe_out" | jq -r '.data.id')
-      echo "Found database id: $database_id"
-      domain="astra"
-      if [ "${{ inputs.env }}" == "DEV" ]; then
-        domain="astra-dev"
-      fi
-      db_endpoint="https://${database_id}-${{ inputs.region }}.apps.${domain}.datastax.com"
-      echo "Database endpoint: $db_endpoint"
-      echo "db_endpoint=$db_endpoint" >> $GITHUB_OUTPUT
-      echo "db_id=$database_id" >> $GITHUB_OUTPUT
+    - name: Create a new database
+      shell: bash
+      id: db-setup
+      env:
+        TERM: linux
+      run: |
+        set -x
+        (curl -Ls "https://dtsx.io/get-astra-cli" | bash) || true 
+        /home/runner/.astra/cli/astra db create -v "${{ inputs.db-name }}" \
+          --env "${{ inputs.env }}" \
+          -k default_keyspace \
+          --token "${{ inputs.astra-token }}" \
+          --vector \
+          --region "${{ inputs.region }}" \
+          --cloud "${{ inputs.cloud }}" \
+          --timeout 600
+
+        describe_out=$(/home/runner/.astra/cli/astra db describe "${{ inputs.db-name }}" --token "${{ inputs.astra-token }}" --env "${{ inputs.env }}" -o json)
+        database_id=$(echo "$describe_out" | jq -r '.data.id')
+        echo "Found database id: $database_id"
+        domain="astra"
+        if [ "${{ inputs.env }}" == "DEV" ]; then
+          domain="astra-dev"
+        fi
+        db_endpoint="https://${database_id}-${{ inputs.region }}.apps.${domain}.datastax.com"
+        echo "Database endpoint: $db_endpoint"
+        echo "db_endpoint=$db_endpoint" >> $GITHUB_OUTPUT
+        echo "db_id=$database_id" >> $GITHUB_OUTPUT
