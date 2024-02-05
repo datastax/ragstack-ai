@@ -3,7 +3,7 @@ on:
   workflow_dispatch: {}
   schedule:
     # astra dev and dse - every 2 hours
-    - cron: '0 */2 * * *'
+    - cron: "0 */2 * * *"
   pull_request:
     paths-ignore:
       - "scripts/**"
@@ -43,11 +43,7 @@ jobs:
 
   ragstack-dev-dse-tests:
     name: "RAGStack dev / DSE"
-<<<<<<< HEAD
-    needs: [ "preconditions" ]
-=======
     needs: ["preconditions", "lint"]
->>>>>>> 458d22a1 (add lint)
     if: ${{ needs.preconditions.outputs.is-scheduled == 'true' || needs.preconditions.outputs.e2e_tests == 'true' }}
     uses: ./.github/workflows/_run_e2e_tests.yml
     secrets: inherit
@@ -62,11 +58,7 @@ jobs:
 
   ragstack-dev-astradev-tests:
     name: "RAGStack dev / AstraDB dev"
-<<<<<<< HEAD
-    needs: [ "preconditions" ]
-=======
     needs: ["preconditions", "lint"]
->>>>>>> 458d22a1 (add lint)
     if: ${{ needs.preconditions.outputs.is-scheduled == 'true' || needs.preconditions.outputs.e2e_tests == 'true' }}
     uses: ./.github/workflows/_run_e2e_tests.yml
     secrets: inherit
@@ -81,30 +73,7 @@ jobs:
       vector-database-type: "astradb"
       deploy-to-slack: ${{ needs.preconditions.outputs.is-scheduled == 'true' }}
       deploy-to-testspace: ${{ needs.preconditions.outputs.is-scheduled == 'true' }}
-<<<<<<< HEAD
       testspace-space: "RAGStack test suite - RAGStack dev - AstraDB"
-=======
-      testspace-space: "RAGStack test suite - RAGStack dev - AstraDB Dev"
-
-  ragstack-dev-astraprod-tests:
-    name: "RAGStack dev / AstraDB prod"
-    needs: ["preconditions", "lint"]
-    if: ${{ needs.preconditions.outputs.is-scheduled == 'true' || needs.preconditions.outputs.e2e_tests == 'true' }}
-    uses: ./.github/workflows/_run_e2e_tests.yml
-    secrets: inherit
-    with:
-      title: "RAGStack dev / AstraDB prod"
-      suite-name: "ragstack"
-      astradb: true
-      astradb-token-secret-name: "E2E_TESTS_ASTRA_PROD_DB_TOKEN"
-      astradb-env: "PROD"
-      astradb-region: "${{ needs.preconditions.outputs.astradb-prod-region }}"
-      astradb-cloud: "${{ needs.preconditions.outputs.astradb-prod-cloud }}"
-      vector-database-type: "astradb"
-      deploy-to-slack: ${{ needs.preconditions.outputs.is-scheduled == 'true' }}
-      deploy-to-testspace: ${{ needs.preconditions.outputs.is-scheduled == 'true' }}
-      testspace-space: "RAGStack test suite - RAGStack dev - AstraDB Prod"
->>>>>>> 458d22a1 (add lint)
 
   langchain-dse-tests:
     name: "LangChain dev / DSE"
