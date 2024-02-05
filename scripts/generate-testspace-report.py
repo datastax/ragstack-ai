@@ -242,7 +242,7 @@ def parse_test_report(input_file: str):
                 )
                 if classname not in report_test_suites:
                     report_test_suites[classname] = TestSuite(
-                        name=classname, test_cases=[]
+                        name=classname, test_cases=[], links=[]
                     )
                 report_test_suites[classname].test_cases.append(report_test_case)
     return report_test_suites
