@@ -1,4 +1,5 @@
 from uuid import uuid4
+from typing import Generator
 
 import langchain_core.documents
 import pytest
@@ -8,6 +9,7 @@ from langchain.chat_models import ChatOpenAI
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.vectorstores.astradb import AstraDB
 from llama_index import (
+    Response,
     Document,
     OpenAIEmbedding,
     ServiceContext,
@@ -40,8 +42,8 @@ def test_ingest_llama_retrieve_langchain(astra_ref: AstraRef):
     document_id = str(uuid4())
     document = Document(
         text="RAGStack is a framework to run LangChain and LlamaIndex in production",
-        id=document_id,
-        metadata={"source": "llama-index-ingest"},
+        doc_id=document_id,
+        extra_info={"source": "llama-index-ingest"},
     )
     documents = [document]
 
@@ -74,12 +76,12 @@ def test_ingest_llama_retrieve_langchain(astra_ref: AstraRef):
     # Basic RAG with LlamaIndex
     query_engine = index.as_query_engine()
     response = query_engine.query("What is RAGStack ?")
-    print("response:", response)
+    assert isinstance(response, Response), "Response is not of type Response"
 
-    assert "framework" in response.response
+    print("response:", response)
+    assert response.response is not None and "framework" in response.response
 
     # Use LangChain now
-
     langchain_embeddings = OpenAIEmbeddings(openai_api_key=openai_key)
 
     vector_db = AstraDB(
@@ -90,19 +92,22 @@ def test_ingest_llama_retrieve_langchain(astra_ref: AstraRef):
     )
 
     # Verify that the document is in the vector store
-
-    retriever = vector_db.as_retriever()
-    documents_from_langchain = retriever.invoke("What is RAGStack ?")
+    vstore_retriever = vector_db.as_retriever()
+    documents_from_langchain: list[langchain_core.documents.Document] = (
+        vstore_retriever.invoke("What is RAGStack ?")
+    )
     assert len(documents_from_langchain) > 0
     for doc in documents_from_langchain:
         print("doc:", doc)
         assert "framework" in doc.page_content
 
     # Verify compatibility of metadata filtering
-    retriever = vector_db.as_retriever(
+    vstore_retriever = vector_db.as_retriever(
         search_kwargs={"filter": {"source": "llama-index-ingest"}}
     )
-    documents_from_langchain = retriever.invoke("What is RAGStack ?")
+    documents_from_langchain: list[langchain_core.documents.Document] = (
+        vstore_retriever.invoke("What is RAGStack ?")
+    )
     assert len(documents_from_langchain) > 0
     for doc in documents_from_langchain:
         print("doc:", doc)
@@ -115,12 +120,11 @@ def test_ingest_llama_retrieve_langchain(astra_ref: AstraRef):
     assert len(documents_from_langchain) == 0
 
     # Basic RAG with LangChain
-
     llm = ChatOpenAI(
         model_name=llm_model, temperature=0, openai_api_key=openai_key, streaming=False
     )
     chain = ConversationalRetrievalChain.from_llm(
-        llm=llm, retriever=retriever, verbose=False
+        llm=llm, retriever=vstore_retriever, verbose=False
     )
     response = chain.invoke({"question": "What is RAGStack ?", "chat_history": []})
     print("response:", response)
@@ -218,13 +222,14 @@ def test_ingest_langchain_retrieve_llama_index(astra_ref: AstraRef):
     # Basic RAG with LlamaIndex
     query_engine = index.as_query_engine()
     response = query_engine.query("What is RAGStack ?")
-    print("response:", response)
+    assert isinstance(response, Response), "Response is not of type Response"
 
-    assert "framework" in response.response
+    print("response:", response)
+    assert response.response is not None and "framework" in response.response
 
 
 @pytest.fixture
-def astra_ref() -> AstraRef:
+def astra_ref() -> Generator[AstraRef, None, None]:
     if not is_astra:
         skip_test_due_to_implementation_not_supported("astradb")
     handler = AstraDBVectorStoreHandler(VectorStoreImplementation.ASTRADB)

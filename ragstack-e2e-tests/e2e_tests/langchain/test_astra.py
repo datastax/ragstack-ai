@@ -309,7 +309,9 @@ def test_vector_search_with_metadata(vectorstore: VectorStore):
 
     # test for max_marginal_relevance_search_by_vector
 
-    embeddings: Embeddings = vectorstore.embeddings
+    embeddings = vectorstore.embeddings
+    assert embeddings is not None
+
     vector = embeddings.embed_query("RAGStack")
 
     documents = vectorstore.max_marginal_relevance_search_by_vector(

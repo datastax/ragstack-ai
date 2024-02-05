@@ -146,6 +146,7 @@ def test_astradb_loader() -> None:
     handler.before_test()
     astra_ref = handler.astra_ref
 
+    assert handler.default_astra_client is not None
     collection = handler.default_astra_client.create_collection(astra_ref.collection)
 
     collection.insert_many([{"foo": "bar", "baz": "qux"}] * 20)

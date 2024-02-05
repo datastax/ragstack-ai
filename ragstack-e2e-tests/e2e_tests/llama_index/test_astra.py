@@ -23,6 +23,7 @@ from llama_index.vector_stores import (
     MetadataFilters,
     ExactMatchFilter,
 )
+from llama_index.vector_stores.types import VectorStore
 
 from e2e_tests.test_utils import skip_test_due_to_implementation_not_supported
 from e2e_tests.test_utils.astradb_vector_store_handler import AstraDBVectorStoreHandler
@@ -31,9 +32,12 @@ from e2e_tests.test_utils.vector_store_handler import VectorStoreImplementation
 
 class Environment:
     def __init__(
-        self, vectorstore: AstraDBVectorStore, llm: LLM, embedding: BaseEmbedding
+        self,
+        vectorstore: AstraDBVectorStore,
+        llm: LLM,
+        embedding: BaseEmbedding,
     ):
-        self.vectorstore = vectorstore
+        self.vectorstore: AstraDBVectorStore = vectorstore
         self.llm = llm
         self.embedding = embedding
         self.service_context = ServiceContext.from_defaults(
@@ -228,6 +232,8 @@ def environment() -> Generator[Environment, None, None]:
     embeddings = MockEmbeddings()
     handler = AstraDBVectorStoreHandler(VectorStoreImplementation.ASTRADB)
     vector_db = handler.before_test().new_llamaindex_vector_store(embedding_dimension=3)
+    assert isinstance(vector_db, AstraDBVectorStore)
+
     llm = OpenAI(
         api_key=get_required_env("OPEN_AI_KEY"),
         model="gpt-3.5-turbo-16k",

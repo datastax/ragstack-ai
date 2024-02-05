@@ -52,7 +52,7 @@ def _initialize_tru() -> Tru:
 
 def _create_chain(retriever: VectorStoreRetriever, llm: BaseLanguageModel) -> Runnable:
     prompt = PromptTemplate.from_template(BASIC_QA_PROMPT)
-    chain = (
+    chain: Runnable = (
         {"context": retriever | format_docs, "question": RunnablePassthrough()}
         | prompt
         | llm

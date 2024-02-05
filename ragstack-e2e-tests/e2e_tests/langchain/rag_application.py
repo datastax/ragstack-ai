@@ -7,7 +7,7 @@ from langchain.schema.vectorstore import VectorStore
 from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain.schema import Document
 from langchain.schema.language_model import BaseLanguageModel
-from langchain.schema.messages import AIMessage, HumanMessage
+from langchain.schema.messages import AIMessage, HumanMessage, BaseMessage
 from langchain.schema.output_parser import StrOutputParser
 from langchain.schema.retriever import BaseRetriever
 from langchain.schema.runnable import (
@@ -128,7 +128,7 @@ def format_docs(docs: Sequence[Document]) -> str:
 
 def serialize_history(request: ChatRequest):
     chat_history = request.chat_history or []
-    converted_chat_history = []
+    converted_chat_history: list[BaseMessage] = []
     for message in chat_history:
         if message.get("human") is not None:
             converted_chat_history.append(HumanMessage(content=message["human"]))
@@ -145,8 +145,8 @@ def create_chain(
         llm,
         retriever,
     ).with_config(run_name="FindDocs")
-    _context = RunnableMap(
-        {
+    _context: Runnable = RunnableMap(
+        {  # type: ignore
             "context": retriever_chain | format_docs,
             "question": itemgetter("question"),
             "chat_history": itemgetter("chat_history"),

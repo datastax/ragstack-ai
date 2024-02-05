@@ -184,7 +184,7 @@ def huggingface_hub_embedding():
 )
 def test_rag(vector_store, embedding, llm, request):
     embedding_name, embedding_dimensions, embedding = request.getfixturevalue(embedding)
-    vector_store_context: VectorStoreTestContext = request.getfixturevalue(vector_store)
+    vector_store_context = request.getfixturevalue(vector_store)
     llm_name, llm = request.getfixturevalue(llm)
     set_current_test_info(
         "llama_index::rag",

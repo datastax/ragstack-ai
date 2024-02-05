@@ -163,6 +163,7 @@ class AstraDBVectorStoreTestContext(VectorStoreTestContext):
         logging.info(
             f"Creating langchain vector store, implementation {self.handler.implementation}, collection {self.handler.collection_name}"
         )
+        vector_store: EnhancedLangChainVectorStore
 
         if self.handler.implementation == VectorStoreImplementation.CASSANDRA:
             vector_store = EnhancedCassandraLangChainVectorStore(
@@ -203,6 +204,8 @@ class AstraDBVectorStoreTestContext(VectorStoreTestContext):
         logging.info(
             f"Creating llama index vector store, implementation {self.handler.implementation}, collection {self.handler.collection_name}"
         )
+        vector_store: EnhancedLlamaIndexVectorStore
+
         if self.handler.implementation == VectorStoreImplementation.CASSANDRA:
             vector_store = EnhancedCassandraLlamaIndexVectorStore(
                 session=None,

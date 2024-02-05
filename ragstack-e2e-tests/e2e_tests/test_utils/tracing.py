@@ -1,5 +1,6 @@
 import logging
 import time
+from uuid import UUID
 from typing import Callable
 
 from langsmith import Client
@@ -8,7 +9,7 @@ LANGSMITH_CLIENT = Client()
 
 
 def record_langsmith_sharelink(
-    run_id: str, record_property: Callable, tries: int = 6
+    run_id: UUID, record_property: Callable, tries: int = 6
 ) -> None:
     try:
         sharelink = LANGSMITH_CLIENT.share_run(run_id)
