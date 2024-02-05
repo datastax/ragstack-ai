@@ -1,10 +1,10 @@
 import logging
 import os
-from typing import List
+from typing import List, Optional
 
 import cassio
 from cassandra.auth import PlainTextAuthProvider
-from cassandra.cluster import Cluster
+from cassandra.cluster import Cluster, Session
 from cassio.table import MetadataVectorCassandraTable
 from langchain_community.chat_message_histories import (
     CassandraChatMessageHistory,
@@ -35,8 +35,8 @@ class CassandraVectorStoreHandler(VectorStoreHandler):
 
     def __init__(self, implementation: VectorStoreImplementation) -> None:
         super().__init__(implementation, [VectorStoreImplementation.CASSANDRA])
-        self.cassandra_session = None
-        self.test_table_name = None
+        self.cassandra_session: Optional[Session] = None
+        self.test_table_name = ""
 
     def before_test(self) -> VectorStoreTestContext:
         super().check_implementation()
@@ -113,10 +113,10 @@ class EnhancedCassandraLlamaIndexVectorStore(
         self, doc_id: str, document: str, metadata: dict, vector: List[float]
     ) -> None:
         self.add(
-            [TextNode(text=document, metadata=metadata, id_=doc_id, embedding=vector)]
+            [TextNode(text=document, extra_info=metadata, id_=doc_id, embedding=vector)]
         )
 
-    def search_documents(self, vector: List[float], limit: int) -> List[str]:
+    def search_documents(self, vector: List[float], limit: int) -> List[str] | None:
         return self.query(
             VectorStoreQuery(query_embedding=vector, similarity_top_k=limit)
         ).ids

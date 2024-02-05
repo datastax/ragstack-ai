@@ -127,7 +127,7 @@ def format_docs(docs: Sequence[Document]) -> str:
 
 
 def serialize_history(request: ChatRequest):
-    chat_history = request["chat_history"] or []
+    chat_history = request.chat_history or []
     converted_chat_history = []
     for message in chat_history:
         if message.get("human") is not None:

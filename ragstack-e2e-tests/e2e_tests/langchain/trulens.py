@@ -86,7 +86,5 @@ def run_trulens_evaluation(vector_store: VectorStore, llm: BaseLanguageModel):
     for feedback_future in as_completed(tru_record.feedback_results):
         _, feedback_result = feedback_future.result()
 
-        feedback_result: FeedbackResult
-
         # basic verification that feedback results were computed
         assert feedback_result.result is not None

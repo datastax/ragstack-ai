@@ -1,5 +1,5 @@
 import logging
-from typing import List
+from typing import List, Generator
 
 import pytest
 from httpx import ConnectError, HTTPStatusError
@@ -167,7 +167,7 @@ def test_vector_search_with_metadata(environment: Environment):
     documents = [
         Document(
             text="RAGStack is a framework to run LangChain in production",
-            metadata={
+            extra_info={
                 "id": "http://mywebsite/intro",
                 "source": "website",
                 "context": "homepage",
@@ -175,7 +175,7 @@ def test_vector_search_with_metadata(environment: Environment):
         ),
         Document(
             text="RAGStack is developed by DataStax",
-            metadata={
+            extra_info={
                 "id": "http://mywebsite/about",
                 "source": "website",
                 "context": "other",
@@ -200,17 +200,17 @@ def test_vector_search_with_metadata(environment: Environment):
         filters=[ExactMatchFilter(key="context", value="homepage")]
     )
 
-    documents = index.as_retriever(filters=filters).retrieve("What is RAGStack ?")
+    retrieved_nodes = index.as_retriever(filters=filters).retrieve("What is RAGStack ?")
 
-    assert len(documents) == 1
+    assert len(retrieved_nodes) == 1
     verify_document(
-        documents[0],
+        retrieved_nodes[0],
         "RAGStack is a framework to run LangChain in production",
         {"id": "http://mywebsite/intro", "source": "website", "context": "homepage"},
     )
 
-    documents = index.as_retriever().retrieve("RAGStack")
-    assert len(documents) == 2
+    retrieved_nodes = index.as_retriever().retrieve("RAGStack")
+    assert len(retrieved_nodes) == 2
 
     # delete all the documents
     for doc_id in document_ids:
@@ -222,7 +222,7 @@ def test_vector_search_with_metadata(environment: Environment):
 
 
 @pytest.fixture
-def environment() -> Environment:
+def environment() -> Generator[Environment, None, None]:
     if not is_astra:
         skip_test_due_to_implementation_not_supported("astradb")
     embeddings = MockEmbeddings()

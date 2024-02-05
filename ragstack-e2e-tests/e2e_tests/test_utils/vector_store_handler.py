@@ -22,7 +22,7 @@ class EnhancedVectorStore(ABC):
         """Put a document"""
 
     @abstractmethod
-    def search_documents(self, vector: List[float], limit: int) -> List[str]:
+    def search_documents(self, vector: List[float], limit: int) -> List[str] | None:
         """Search documents"""
 
 

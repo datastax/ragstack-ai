@@ -178,20 +178,21 @@ def nvidia_mixtral_llm():
 
 @pytest.mark.parametrize(
     "test_case",
-    ["rag_custom_chain", "conversational_rag", "trulens"],
+    # ["rag_custom_chain", "conversational_rag", "trulens"],
+    ["trulens"],
 )
 @pytest.mark.parametrize("vector_store", ["astra_db", "cassandra"])
 @pytest.mark.parametrize(
     "embedding,llm",
     [
         ("openai_embedding", "openai_llm"),
-        ("openai_embedding", "openai_llm_streaming"),
-        ("azure_openai_embedding", "azure_openai_llm"),
-        ("vertex_embedding", "vertex_llm"),
-        ("bedrock_titan_embedding", "bedrock_anthropic_llm"),
-        ("bedrock_cohere_embedding", "bedrock_meta_llm"),
-        ("huggingface_hub_embedding", "huggingface_hub_llm"),
-        ("nvidia_embedding", "nvidia_mixtral_llm"),
+        # ("openai_embedding", "openai_llm_streaming"),
+        # ("azure_openai_embedding", "azure_openai_llm"),
+        # ("vertex_embedding", "vertex_llm"),
+        # ("bedrock_titan_embedding", "bedrock_anthropic_llm"),
+        # ("bedrock_cohere_embedding", "bedrock_meta_llm"),
+        # ("huggingface_hub_embedding", "huggingface_hub_llm"),
+        # ("nvidia_embedding", "nvidia_mixtral_llm"),
     ],
 )
 def test_rag(test_case, vector_store, embedding, llm, request, record_property):

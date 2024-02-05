@@ -4,7 +4,7 @@ import os
 import threading
 import time
 from dataclasses import dataclass
-from typing import List, Callable
+from typing import List, Callable, Optional
 
 import cassio
 from langchain_community.chat_message_histories import AstraDBChatMessageHistory
@@ -114,7 +114,9 @@ class EnhancedAstraDBLangChainVectorStore(EnhancedLangChainVectorStore, AstraDB)
         return docs
 
 
-def metaclass_resolver(*classes):
+# Required as part of this change in LlamaIndex:
+# https://github.com/run-llama/llama_index/commit/16d3b0b7921219ccc36bcce199ce2f36845d7ff7
+def metaclass_resolver(*classes):  # type: ignore
     metaclass = tuple(set(type(cls) for cls in classes))
     metaclass = (
         metaclass[0]
@@ -125,7 +127,7 @@ def metaclass_resolver(*classes):
 
 
 class EnhancedAstraDBLlamaIndexVectorStore(
-    metaclass_resolver(EnhancedLlamaIndexVectorStore, AstraDBVectorStore)
+    metaclass_resolver(EnhancedLlamaIndexVectorStore, AstraDBVectorStore)  # type: ignore
 ):
 
     def put_document(
@@ -220,10 +222,13 @@ class AstraDBVectorStoreTestContext(VectorStoreTestContext):
 
 
 def try_delete_with_backoff(collection: str, sleep=1, max_tries=5):
+    assert (
+        AstraDBVectorStoreHandler.default_astra_client is not None
+    ), "default_astra_client not initialized"
+    client = AstraDBVectorStoreHandler.default_astra_client
+
     try:
-        response = AstraDBVectorStoreHandler.default_astra_client.delete_collection(
-            collection
-        )
+        response = client.delete_collection(collection)
         logging.info(f"delete collection {collection} response: {str(response)}")
     except Exception as e:
         max_tries -= 1
@@ -240,8 +245,8 @@ class AstraDBVectorStoreHandler(VectorStoreHandler):
     api_endpoint = ""
     env = ""
     database_id = ""
-    default_astra_client = None
-    delete_collection_handler = None
+    default_astra_client: Optional[AstraPyClient] = None
+    delete_collection_handler: Optional[DeleteCollectionHandler] = None
 
     @classmethod
     def initialize(cls):
@@ -263,7 +268,7 @@ class AstraDBVectorStoreHandler(VectorStoreHandler):
             [VectorStoreImplementation.ASTRADB, VectorStoreImplementation.CASSANDRA],
         )
         self.__class__.initialize()
-        self.collection_name = None
+        self.collection_name = ""
 
     @property
     def astra_ref(self) -> AstraRef:
