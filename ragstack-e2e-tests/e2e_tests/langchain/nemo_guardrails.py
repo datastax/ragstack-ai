@@ -19,15 +19,6 @@ from nemoguardrails.integrations.langchain.runnable_rails import RunnableRails
 from nemoguardrails.actions.actions import ActionResult
 
 
-import logging
-
-logging.basicConfig(
-    level=logging.DEBUG, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
-
-#   Your task if to check if the user message below complies with the following policies.
-
-
 def _config(engine, model) -> str:
     return f"""
     models:
@@ -132,7 +123,3 @@ def run_nemo_guardrails(vector_store: VectorStore, config: dict[str, str]) -> No
         yaml_content=model_config, colang_content=_colang()
     )
     _try_runnable_rails(config=rails_config, retriever=retriever)
-
-
-if __name__ == "__main__":
-    run_nemo_guardrails()
