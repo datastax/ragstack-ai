@@ -170,7 +170,7 @@ def huggingface_hub_embedding():
     )
 
 
-@pytest.mark.parametrize("vector_store", [ "astra_db"])
+@pytest.mark.parametrize("vector_store", ["cassandra", "astra_db"])
 @pytest.mark.parametrize(
     "embedding,llm",
     [
@@ -179,7 +179,7 @@ def huggingface_hub_embedding():
         ("vertex_embedding", "vertex_llm"),
         ("bedrock_titan_embedding", "bedrock_anthropic_llm"),
         ("bedrock_cohere_embedding", "bedrock_meta_llm"),
-        #("huggingface_hub_embedding", "huggingface_hub_llm"),
+        ("huggingface_hub_embedding", "huggingface_hub_llm"),
     ],
 )
 def test_rag(vector_store, embedding, llm, request):
