@@ -64,7 +64,9 @@ jobs:
 
       - name: Compute db name
         id: db-name
-        run: echo "db-name=${{ github.run_id}}-$(echo $(for((i=1;i<=8;i++)); do printf '%s' "${RANDOM:0:1}"; done) | tr '[0-9]' '[a-z]')" >> $GITHUB_OUTPUT
+        run: |
+          echo "db-name=${{ github.run_id}}-$(echo $(for((i=1;i<=8;i++))
+          do printf '%s' "${RANDOM:0:1}"; done) | tr '[0-9]' '[a-z]')" >> $GITHUB_OUTPUT
 
       - name: Setup AstraDB
         uses: ./.github/actions/setup-astra-db
