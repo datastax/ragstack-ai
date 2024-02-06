@@ -1,0 +1,17 @@
+name: Lint
+description: runs linters
+
+runs:
+  using: composite
+  steps:
+    - name: "Setup Python and Tox"
+      uses: ./.github/actions/setup-python
+    - name: "Install yamllint"
+      shell: bash
+      run: |
+        python -m pip install --upgrade yamllint
+    - name: Lint
+      shell: bash
+      run: |
+        tox -c ragstack-e2e-tests -e lint
+        tox -e lint-yaml
