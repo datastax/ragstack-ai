@@ -1,84 +1,84 @@
-name: 'Testspace deploy'
-description: 'Setup Testspace client to publish CI results from workflow to Dashboard; report flaky tests, metrics, graphs, and analytics'
+name: "Testspace deploy"
+description: "Setup Testspace client to publish CI results from workflow to Dashboard; report flaky tests, metrics, graphs, and analytics"
 branding:
   color: green
   icon: terminal
 inputs:
-    report-type:
-      required: true
-    token:
-        required: true
-        description: "Testspace token"
-    space:
-        required: true
-        description: "Testspace project's space"
-    report-file:
-        required: true
-        description: "Report to upload"
-    repository:
-        default: "ragstack-ai"
-        description: "Testspace repository"
-    project:
-        default: "RAGStack"
-        description: "Testspace project"
+  report-type:
+    required: true
+    description: "Report type"
+  token:
+    required: true
+    description: "Testspace token"
+  space:
+    required: true
+    description: "Testspace project's space"
+  report-file:
+    required: true
+    description: "Report to upload"
+  repository:
+    default: "ragstack-ai"
+    description: "Testspace repository"
+  project:
+    default: "RAGStack"
+    description: "Testspace project"
 
 runs:
-    using: 'composite'
-    steps:
-
-      - run: |
-          base_url=https://testspace-client.s3.amazonaws.com
-          version=""
-          case `uname -s` in
-            Linux)
-              folder=$HOME/bin
-              mkdir -p $folder
-              arch=`uname -m`
-              if [ "$arch" != "x86_64" ]; then version="-${arch}${version}"; fi
-              curl -fsSL ${base_url}/testspace-linux${version}.tgz | tar -zxvf- -C $RUNNER_TEMP
-              cp -f -p -u $RUNNER_TEMP/testspace $folder
-              ;;
-            Darwin)
-              folder=$HOME/bin
-              mkdir -p $folder
-              curl -fsSL ${base_url}/testspace-darwin${version}.tgz | tar -zxvf- -C $RUNNER_TEMP
-              rsync -t -u $RUNNER_TEMP/testspace $folder
-              ;;
-            *) # Windows
-              folder=$LOCALAPPDATA\Programs\testspace
-              mkdir -p "$folder"
-              curl -OsSL ${base_url}/testspace-windows${version}.zip
-              unzip -q -o testspace-windows${version}.zip -d $RUNNER_TEMP
-              rm testspace-windows${version}.zip
-              cp -f -p -u $RUNNER_TEMP/testspace.exe "$folder"
-              ;;
-          esac
-          echo "$folder" >> $GITHUB_PATH
-        shell: bash
-      - run: |
-          if [ -e "${{ inputs.report-file }}" ]; then
-            python ./scripts/generate-testspace-report.py ${{ inputs.report-type }} "${{ inputs.report-file }}" testspace-report.xml
-          else
-            echo "Skipping testspace report generation as ${{ inputs.report-file }} does not exist"
-          fi
-        shell: bash
-        env:
-          TESTSPACE_REPORT_GITHUB_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-      - run: |
-          if [ -f "${{ inputs.report-file }}" ]; then
-            echo "Original report was:"
-            cat "${{ inputs.report-file }}"
-          elif [ -d "${{ inputs.report-file }}" ]; then
-            echo "Original report was a directory"
-          else
-            echo "Skipping testspace report generation as ${{ inputs.report-file }} does not exist"
-          fi
-          file=testspace-report.xml
-          if [ -f "$file" ]; then
-            echo "Uploading $file to testspace"
-            cat $file
-            testspace testspace-report.xml "${{ inputs.token }}@${{ inputs.repository }}.testspace.com/${{ inputs.project }}/${{ inputs.space }}"
-          else
-            echo "Skipping testspace upload as $file does not exist"
-          fi
-        shell: bash
+  using: "composite"
+  steps:
+    - run: |
+        base_url=https://testspace-client.s3.amazonaws.com
+        version=""
+        case `uname -s` in
+          Linux)
+            folder=$HOME/bin
+            mkdir -p $folder
+            arch=`uname -m`
+            if [ "$arch" != "x86_64" ]; then version="-${arch}${version}"; fi
+            curl -fsSL ${base_url}/testspace-linux${version}.tgz | tar -zxvf- -C $RUNNER_TEMP
+            cp -f -p -u $RUNNER_TEMP/testspace $folder
+            ;;
+          Darwin)
+            folder=$HOME/bin
+            mkdir -p $folder
+            curl -fsSL ${base_url}/testspace-darwin${version}.tgz | tar -zxvf- -C $RUNNER_TEMP
+            rsync -t -u $RUNNER_TEMP/testspace $folder
+            ;;
+          *) # Windows
+            folder=$LOCALAPPDATA\Programs\testspace
+            mkdir -p "$folder"
+            curl -OsSL ${base_url}/testspace-windows${version}.zip
+            unzip -q -o testspace-windows${version}.zip -d $RUNNER_TEMP
+            rm testspace-windows${version}.zip
+            cp -f -p -u $RUNNER_TEMP/testspace.exe "$folder"
+            ;;
+        esac
+        echo "$folder" >> $GITHUB_PATH
+      shell: bash
+    - run: |
+        if [ -e "${{ inputs.report-file }}" ]; then
+          python ./scripts/generate-testspace-report.py ${{ inputs.report-type }} "${{ inputs.report-file }}" testspace-report.xml
+        else
+          echo "Skipping testspace report generation as ${{ inputs.report-file }} does not exist"
+        fi
+      shell: bash
+      env:
+        TESTSPACE_REPORT_GITHUB_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+    - run: |
+        if [ -f "${{ inputs.report-file }}" ]; then
+          echo "Original report was:"
+          cat "${{ inputs.report-file }}"
+        elif [ -d "${{ inputs.report-file }}" ]; then
+          echo "Original report was a directory"
+        else
+          echo "Skipping testspace report generation as ${{ inputs.report-file }} does not exist"
+        fi
+        file=testspace-report.xml
+        if [ -f "$file" ]; then
+          echo "Uploading $file to testspace"
+          cat $file
+          testspace testspace-report.xml "${{ inputs.token }}@${{ inputs.repository }}.testspace.com/${{ inputs.project }}/${{ inputs.space }}"
+        else
+          echo "Skipping testspace upload as $file does not exist"
+        fi
+      shell: bash

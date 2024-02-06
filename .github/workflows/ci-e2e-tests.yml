@@ -3,7 +3,7 @@ on:
   workflow_dispatch: {}
   schedule:
     # astra dev and dse - every 2 hours
-    - cron: '0 */2 * * *'
+    - cron: "0 */2 * * *"
   pull_request:
     paths-ignore:
       - "scripts/**"
@@ -36,7 +36,7 @@ jobs:
 
   ragstack-dev-dse-tests:
     name: "RAGStack dev / DSE"
-    needs: [ "preconditions" ]
+    needs: ["preconditions"]
     if: ${{ needs.preconditions.outputs.is-scheduled == 'true' || needs.preconditions.outputs.e2e_tests == 'true' }}
     uses: ./.github/workflows/_run_e2e_tests.yml
     secrets: inherit
@@ -51,7 +51,7 @@ jobs:
 
   ragstack-dev-astradev-tests:
     name: "RAGStack dev / AstraDB dev"
-    needs: [ "preconditions" ]
+    needs: ["preconditions"]
     if: ${{ needs.preconditions.outputs.is-scheduled == 'true' || needs.preconditions.outputs.e2e_tests == 'true' }}
     uses: ./.github/workflows/_run_e2e_tests.yml
     secrets: inherit

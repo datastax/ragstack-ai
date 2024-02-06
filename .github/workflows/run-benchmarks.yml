@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       intensity:
-        description: 'Intensity of the tests (1-5)'
+        description: "Intensity of the tests (1-5)"
         default: "2"
 
 jobs:
@@ -27,7 +27,6 @@ jobs:
           cd ragstack-e2e-tests
           poetry install --no-root
           poetry run python benchmarks/runner.py -t all -i ${{ github.event.inputs.intensity }}
-          
           poetry run python benchmarks/visualize.py --format all
 
       - name: Dump logs

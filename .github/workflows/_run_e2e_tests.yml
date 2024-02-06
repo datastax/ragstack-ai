@@ -3,7 +3,7 @@ on:
   workflow_call:
     inputs:
       title:
-        description: 'Title'
+        description: "Title"
         required: true
         type: string
       suite-name:
@@ -15,43 +15,41 @@ on:
         type: boolean
         default: false
       astradb:
-        description: 'Whether to use AstraDB or not'
+        description: "Whether to use AstraDB or not"
         required: true
         type: boolean
       astradb-token-secret-name:
-        description: 'AstraDB token'
+        description: "AstraDB token"
         required: false
         type: string
       astradb-env:
-        description: 'AstraDB env'
+        description: "AstraDB env"
         type: string
         required: false
       astradb-region:
-        description: 'AstraDB region'
+        description: "AstraDB region"
         required: false
         type: string
       astradb-cloud:
-        description: 'AstraDB cloud'
+        description: "AstraDB cloud"
         required: false
         type: string
       vector-database-type:
-        description: 'Vector database type'
+        description: "Vector database type"
         required: true
         type: string
       deploy-to-slack:
-        description: 'Whether to deploy to Slack or not'
+        description: "Whether to deploy to Slack or not"
         default: true
         type: boolean
       deploy-to-testspace:
-        description: 'Whether to deploy to TestSpace or not'
+        description: "Whether to deploy to TestSpace or not"
         default: false
         type: boolean
       testspace-space:
-        description: 'TestSpace space to deploy to'
+        description: "TestSpace space to deploy to"
         required: false
         type: string
-
-
 
 jobs:
   tests:
@@ -140,7 +138,7 @@ jobs:
           if [ "${{ inputs.suite-name == 'ragstack' }}" == "true" ]; then
             commit_ref=$(git rev-parse --short HEAD)
             echo "commit-url=https://github.com/datastax/ragstack-ai/commits/${commit_ref}" >> $GITHUB_OUTPUT
-          
+
           elif [ "${{ inputs.suite-name == 'langchain' }}" == "true" ]; then
             commit_ref=$(grep resolved_reference ragstack-e2e-tests/poetry.lock | awk -F'"' '{print $2}' | head -1)
             echo "commit-url=https://github.com/langchain-ai/langchain/commits/${commit_ref}" >> $GITHUB_OUTPUT
