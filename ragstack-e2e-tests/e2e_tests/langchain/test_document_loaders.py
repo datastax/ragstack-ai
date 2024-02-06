@@ -142,8 +142,8 @@ def test_azure_blob_doc_loader():
 def test_astradb_loader() -> None:
     set_current_test_info_document_loader("astradb")
 
-    handler = AstraDBVectorStoreHandler(VectorStoreImplementation.ASTRADB)
-    handler.before_test()
+    handler = AstraDBVectorStoreHandler()
+    handler.before_test(VectorStoreImplementation.ASTRADB)
     astra_ref = handler.astra_ref
 
     collection = handler.default_astra_client.create_collection(astra_ref.collection)

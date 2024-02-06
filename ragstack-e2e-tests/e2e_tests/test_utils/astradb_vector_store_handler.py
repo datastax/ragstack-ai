@@ -25,6 +25,7 @@ from e2e_tests.test_utils.cassandra_vector_store_handler import (
     EnhancedCassandraLangChainVectorStore,
     CassandraChatMessageHistory,
 )
+from e2e_tests.test_utils.singleton import Singleton
 
 from astrapy.db import AstraDB as AstraPyClient
 
@@ -169,13 +170,18 @@ class AstraDBVectorStoreTestContext(VectorStoreTestContext):
                 table_name=self.handler.collection_name,
                 **kwargs,
             )
-        else:
+        elif self.handler.implementation == VectorStoreImplementation.ASTRADB:
             vector_store = EnhancedAstraDBLangChainVectorStore(
                 collection_name=self.handler.collection_name,
                 token=self.handler.token,
                 api_endpoint=self.handler.api_endpoint,
                 **kwargs,
             )
+        else:
+            raise ValueError(
+                "Invalid vstore implementation: {self.handler.implementation}"
+            )
+
         logging.info("Created vector store")
         return vector_store
 
@@ -219,92 +225,81 @@ class AstraDBVectorStoreTestContext(VectorStoreTestContext):
         return vector_store
 
 
-def try_delete_with_backoff(collection: str, sleep=1, max_tries=5):
-    try:
-        response = AstraDBVectorStoreHandler.default_astra_client.delete_collection(
-            collection
-        )
-        logging.info(f"delete collection {collection} response: {str(response)}")
-    except Exception as e:
-        max_tries -= 1
-        if max_tries < 0:
-            raise e
-
-        logging.warning(f"An exception occurred deleting collection {collection}: {e}")
-        time.sleep(sleep)
-        try_delete_with_backoff(collection, sleep * 2, max_tries)
-
-
-class AstraDBVectorStoreHandler(VectorStoreHandler):
-    token = ""
-    api_endpoint = ""
-    env = ""
-    database_id = ""
-    default_astra_client = None
-    delete_collection_handler = None
-
-    @classmethod
-    def initialize(cls):
-        if not cls.token:
-            cls.token = get_required_env("ASTRA_DB_TOKEN")
-            cls.api_endpoint = get_required_env("ASTRA_DB_ENDPOINT")
-            cls.env = os.environ.get("ASTRA_DB_ENV", "prod").lower()
-            cls.database_id = get_required_env("ASTRA_DB_ID")
-            cls.default_astra_client = AstraPyClient(
-                api_endpoint=cls.api_endpoint, token=cls.token
-            )
-            cls.delete_collection_handler = DeleteCollectionHandler(
-                try_delete_with_backoff
-            )
-
-    def __init__(self, implementation: VectorStoreImplementation):
+class AstraDBVectorStoreHandler(VectorStoreHandler, metaclass=Singleton):
+    def __init__(self):
         super().__init__(
-            implementation,
             [VectorStoreImplementation.ASTRADB, VectorStoreImplementation.CASSANDRA],
         )
-        self.__class__.initialize()
-        self.collection_name = None
+        token = get_required_env("ASTRA_DB_TOKEN")
+        api_endpoint = get_required_env("ASTRA_DB_ENDPOINT")
+
+        self.collection_name = ""  # initialized per test
+        self.token = token
+        self.api_endpoint = api_endpoint
+        self.env = os.environ.get("ASTRA_DB_ENV", "prod").lower()
+        self.database_id = get_required_env("ASTRA_DB_ID")
+        self.default_astra_client = AstraPyClient(
+            api_endpoint=api_endpoint, token=token
+        )
+        self.delete_collection_handler = DeleteCollectionHandler(
+            self.try_delete_with_backoff
+        )
 
     @property
     def astra_ref(self) -> AstraRef:
         return AstraRef(
-            token=self.__class__.token,
-            api_endpoint=self.__class__.api_endpoint,
+            token=self.token,
+            api_endpoint=self.api_endpoint,
             collection=self.collection_name,
-            id=self.__class__.database_id,
-            env=self.__class__.env,
+            id=self.database_id,
+            env=self.env,
         )
 
     def ensure_astra_env_clean(self, blocking=False):
         logging.info(
-            f"Ensuring astra env is clean (current deletions in progress: {self.__class__.delete_collection_handler.get_current_deletions()})"
+            f"Ensuring astra env is clean (current deletions in progress: {self.delete_collection_handler.get_current_deletions()})"
         )
         collections = (
-            self.__class__.default_astra_client.get_collections()
-            .get("status")
-            .get("collections")
+            self.default_astra_client.get_collections().get("status").get("collections")
         )
         logging.info(f"Existing collections: {collections}")
         if self.collection_name:
             logging.info(
                 f"Deleting collection configured in the vector store: {self.collection_name}"
             )
-            self.__class__.delete_collection_handler.run_delete(
-                self.collection_name
-            ).result()
+            self.delete_collection_handler.run_delete(self.collection_name).result()
 
         for name in collections:
-            self.__class__.delete_collection_handler.run_delete(name)
+            self.delete_collection_handler.run_delete(name)
         if blocking:
-            self.__class__.delete_collection_handler.await_ongoing_deletions_completed()
+            self.delete_collection_handler.await_ongoing_deletions_completed()
             logging.info("Astra env cleanup completed")
         else:
             logging.info(
-                f"Astra env cleanup started in background, proceeding (current deletions in progress: {self.__class__.delete_collection_handler.get_current_deletions()})"
+                f"Astra env cleanup started in background, proceeding (current deletions in progress: {self.delete_collection_handler.get_current_deletions()})"
             )
 
-    def before_test(self) -> AstraDBVectorStoreTestContext:
+    def try_delete_with_backoff(self, collection: str, sleep=1, max_tries=5):
+        try:
+            response = self.default_astra_client.delete_collection(collection)
+            logging.info(f"delete collection {collection} response: {str(response)}")
+        except Exception as e:
+            max_tries -= 1
+            if max_tries < 0:
+                raise e
+
+            logging.warning(
+                f"An exception occurred deleting collection {collection}: {e}"
+            )
+            time.sleep(sleep)
+            self.try_delete_with_backoff(collection, sleep * 2, max_tries)
+
+    def before_test(
+        self, implementation: VectorStoreImplementation
+    ) -> AstraDBVectorStoreTestContext:
+        self.implementation = implementation
         super().check_implementation()
+
         self.ensure_astra_env_clean(blocking=True)
         self.collection_name = "documents_" + random_string()
         logging.info("Start using collection: " + self.collection_name)

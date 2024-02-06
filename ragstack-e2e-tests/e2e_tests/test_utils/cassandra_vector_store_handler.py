@@ -33,12 +33,15 @@ from e2e_tests.test_utils.vector_store_handler import (
 class CassandraVectorStoreHandler(VectorStoreHandler):
     cassandra_container = None
 
-    def __init__(self, implementation: VectorStoreImplementation) -> None:
-        super().__init__(implementation, [VectorStoreImplementation.CASSANDRA])
+    def __init__(self) -> None:
+        super().__init__([VectorStoreImplementation.CASSANDRA])
         self.cassandra_session = None
         self.test_table_name = None
 
-    def before_test(self) -> VectorStoreTestContext:
+    def before_test(
+        self, implementation: VectorStoreImplementation
+    ) -> VectorStoreTestContext:
+        self.implementation = implementation
         super().check_implementation()
 
         self.test_table_name = "table_" + random_string()

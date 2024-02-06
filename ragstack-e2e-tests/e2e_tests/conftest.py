@@ -12,7 +12,6 @@ from e2e_tests.test_utils.cassandra_vector_store_handler import (
 )
 from e2e_tests.test_utils.vector_store_handler import (
     VectorStoreHandler,
-    VectorStoreImplementation,
 )
 from e2e_tests.test_utils import (
     get_required_env as root_get_required_env,
@@ -58,13 +57,11 @@ if vector_database_type not in ["astradb", "local-cassandra"]:
 is_astra = vector_database_type == "astradb"
 
 
-def get_vector_store_handler(
-    implementation: VectorStoreImplementation,
-) -> VectorStoreHandler:
+def get_vector_store_handler() -> VectorStoreHandler:
     if vector_database_type == "astradb":
-        return AstraDBVectorStoreHandler(implementation)
+        return AstraDBVectorStoreHandler()
     elif vector_database_type == "local-cassandra":
-        return CassandraVectorStoreHandler(implementation)
+        return CassandraVectorStoreHandler()
 
 
 failed_report_lines = []

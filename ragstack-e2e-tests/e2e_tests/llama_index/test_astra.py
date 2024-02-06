@@ -226,8 +226,10 @@ def environment() -> Environment:
     if not is_astra:
         skip_test_due_to_implementation_not_supported("astradb")
     embeddings = MockEmbeddings()
-    handler = AstraDBVectorStoreHandler(VectorStoreImplementation.ASTRADB)
-    vector_db = handler.before_test().new_llamaindex_vector_store(embedding_dimension=3)
+    handler = AstraDBVectorStoreHandler()
+    vector_db = handler.before_test(
+        VectorStoreImplementation.ASTRADB
+    ).new_llamaindex_vector_store(embedding_dimension=3)
     llm = OpenAI(
         api_key=get_required_env("OPEN_AI_KEY"),
         model="gpt-3.5-turbo-16k",

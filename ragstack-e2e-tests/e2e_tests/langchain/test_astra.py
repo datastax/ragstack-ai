@@ -392,9 +392,9 @@ def test_vector_search_with_metadata(vectorstore: VectorStore):
 
 @pytest.mark.skip
 def test_stress_astra():
-    handler = AstraDBVectorStoreHandler(VectorStoreImplementation.ASTRADB)
+    handler = AstraDBVectorStoreHandler()
     while True:
-        context = handler.before_test()
+        context = handler.before_test(VectorStoreImplementation.ASTRADB)
         logging.info("mocking test")
         vstore = context.new_langchain_vector_store(embedding=MockEmbeddings())
         vstore.add_texts(["hello world, im a document"])
@@ -426,8 +426,8 @@ class MockEmbeddings(Embeddings):
 def vectorstore() -> AstraDB:
     if not is_astra:
         skip_test_due_to_implementation_not_supported("astradb")
-    handler = AstraDBVectorStoreHandler(VectorStoreImplementation.ASTRADB)
-    context = handler.before_test()
+    handler = AstraDBVectorStoreHandler()
+    context = handler.before_test(VectorStoreImplementation.ASTRADB)
     vector_db = context.new_langchain_vector_store(embedding=MockEmbeddings())
     yield vector_db
     handler.after_test()

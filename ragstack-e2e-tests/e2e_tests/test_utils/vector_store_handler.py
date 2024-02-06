@@ -12,6 +12,7 @@ from e2e_tests.test_utils import skip_test_due_to_implementation_not_supported
 class VectorStoreImplementation(Enum):
     ASTRADB = "astradb"
     CASSANDRA = "cassandra"
+    UNINITIALIZED = ""
 
 
 class EnhancedVectorStore(ABC):
@@ -51,18 +52,22 @@ class VectorStoreTestContext(ABC):
 class VectorStoreHandler(ABC):
     def __init__(
         self,
-        implementation: VectorStoreImplementation,
         supported_implementations: List[VectorStoreImplementation],
     ):
-        self.implementation = implementation
+        self.implementation = VectorStoreImplementation.UNINITIALIZED
         self.supported_implementations = supported_implementations
 
     def check_implementation(self):
+        if self.implementation == VectorStoreImplementation.UNINITIALIZED:
+            raise ValueError("Implementation not initialized")
+
         if self.implementation not in self.supported_implementations:
             skip_test_due_to_implementation_not_supported(self.implementation.value)
 
     @abstractmethod
-    def before_test(self) -> VectorStoreTestContext:
+    def before_test(
+        self, implementation: VectorStoreImplementation
+    ) -> VectorStoreTestContext:
         pass
 
     def after_test(self):

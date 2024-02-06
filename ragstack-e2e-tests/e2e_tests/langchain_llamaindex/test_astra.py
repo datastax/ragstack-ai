@@ -227,7 +227,7 @@ def test_ingest_langchain_retrieve_llama_index(astra_ref: AstraRef):
 def astra_ref() -> AstraRef:
     if not is_astra:
         skip_test_due_to_implementation_not_supported("astradb")
-    handler = AstraDBVectorStoreHandler(VectorStoreImplementation.ASTRADB)
-    handler.before_test()
+    handler = AstraDBVectorStoreHandler()
+    handler.before_test(VectorStoreImplementation.ASTRADB)
     yield handler.astra_ref
     handler.after_test()
