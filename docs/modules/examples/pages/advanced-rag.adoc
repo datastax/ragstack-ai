@@ -45,7 +45,7 @@ from langchain_community.vectorstores import AstraDB
 . The two advanced RAG techniques require different dependencies.
 Their imports are shown in their respective sections.
 
-== Helper functions
+== Create helper functions
 
 Create some helper methods for printing docs and results:
 [source,python]
@@ -134,7 +134,7 @@ def do_retrieval(chain):
             print(f'\nTotal Tokens: {cb.total_tokens}\n')
 ----
 
-== Document embedding and loading
+== Load and embed documents
 
 For the purpose of this example, you will use a method that is compatible with the advanced ParentDocumentRAG technique.
 If you aren't going to use this technique, you can review the xref:ROOT:quickstart.adoc[] example for a simpler document insertion method.
@@ -184,7 +184,7 @@ parent_retriever = ParentDocumentRetriever(
 parent_retriever.add_documents(docs)
 ----
 
-== Base Retriever
+== Create a base retriever
 
 . As a control, first make a standard RAG pipeline.
 +
@@ -332,7 +332,7 @@ gait of my friend was unsteady, and the bells upon his cap jingled
 ----
 ======
 
-== MultiQueryRAG
+== Create a MultiQueryRetriever RAG chain
 
 Next, try the advanced MultiQueryRAG technique.
 
@@ -503,7 +503,7 @@ gait of my friend was unsteady, and the bells upon his cap jingled
 There are 5 documents of size 128 tokens.
 The model might benefit from the extra context provided when answering the question.
 
-== ParentDocumentRAG
+== Create a ParentDocumentRetriever RAG chain
 
 The second advanced technique uses the `ParentDocumentRetriever` defined above.
 Remember that this will perform a post-processing step between retrieval and inference to replace the child documents with their parent documents. After this is done, any duplicate documents are removed.
@@ -703,7 +703,7 @@ fellows that lay upon the mould.  "Drink," I said, presenting him the
 There are 3 documents that are 512 tokens in size.
 The additional context helps the LLM generate a good answer for the question.
 
-== Combined Techniques
+== Combine both RAG techniques
 
 Finally, you can combine both the MultiQuery and ParentDocument techniques, as shown below.
 [tabs]
