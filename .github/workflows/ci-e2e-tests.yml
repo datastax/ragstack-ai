@@ -3,7 +3,7 @@ on:
   workflow_dispatch: {}
   schedule:
     # astra dev and dse - every 2 hours
-    - cron: '0 */2 * * *'
+    - cron: "0 */2 * * *"
   pull_request:
     paths-ignore:
       - "scripts/**"
@@ -18,6 +18,15 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+      - name: Run lint
+        uses: ./.github/actions/lint
+
   preconditions:
     name: Preconditions
     runs-on: ubuntu-latest
@@ -36,7 +45,7 @@ jobs:
 
   ragstack-dev-dse-tests:
     name: "RAGStack dev / DSE"
-    needs: [ "preconditions" ]
+    needs: ["preconditions", "lint"]
     if: ${{ needs.preconditions.outputs.is-scheduled == 'true' || needs.preconditions.outputs.e2e_tests == 'true' }}
     uses: ./.github/workflows/_run_e2e_tests.yml
     secrets: inherit
@@ -51,7 +60,7 @@ jobs:
 
   ragstack-dev-astradev-tests:
     name: "RAGStack dev / AstraDB dev"
-    needs: [ "preconditions" ]
+    needs: ["preconditions", "lint"]
     if: ${{ needs.preconditions.outputs.is-scheduled == 'true' || needs.preconditions.outputs.e2e_tests == 'true' }}
     uses: ./.github/workflows/_run_e2e_tests.yml
     secrets: inherit
@@ -70,7 +79,7 @@ jobs:
 
   langchain-dse-tests:
     name: "LangChain dev / DSE"
-    needs: ["preconditions"]
+    needs: ["preconditions", "lint"]
     if: ${{ needs.preconditions.outputs.is-scheduled == 'true' || needs.preconditions.outputs.e2e_tests == 'true' }}
     uses: ./.github/workflows/_run_e2e_tests.yml
     secrets: inherit
@@ -85,7 +94,7 @@ jobs:
 
   langchain-astradev-tests:
     name: "LangChain dev / AstraDB dev"
-    needs: ["preconditions"]
+    needs: ["preconditions", "lint"]
     if: ${{ needs.preconditions.outputs.is-scheduled == 'true' }}
     uses: ./.github/workflows/_run_e2e_tests.yml
     secrets: inherit
@@ -104,7 +113,7 @@ jobs:
 
   llamaindex-dse-tests:
     name: "LLamaIndex dev / DSE"
-    needs: ["preconditions"]
+    needs: ["preconditions", "lint"]
     if: ${{ needs.preconditions.outputs.is-scheduled == 'true' || needs.preconditions.outputs.e2e_tests == 'true' }}
     uses: ./.github/workflows/_run_e2e_tests.yml
     secrets: inherit
@@ -119,7 +128,7 @@ jobs:
 
   llamaindex-astradev-tests:
     name: "LLamaIndex dev / AstraDB dev"
-    needs: ["preconditions"]
+    needs: ["preconditions", "lint"]
     if: ${{ needs.preconditions.outputs.is-scheduled == 'true' }}
     uses: ./.github/workflows/_run_e2e_tests.yml
     secrets: inherit
@@ -138,7 +147,7 @@ jobs:
 
   ragstack-latest-release-dse-tests:
     name: "RAGStack latest / DSE"
-    needs: ["preconditions"]
+    needs: ["preconditions", "lint"]
     if: ${{ needs.preconditions.outputs.is-scheduled == 'true' || needs.preconditions.outputs.e2e_tests == 'true' }}
     uses: ./.github/workflows/_run_e2e_tests.yml
     secrets: inherit
@@ -153,7 +162,7 @@ jobs:
 
   ragstack-latest-release-astradev-tests:
     name: "RAGStack latest / AstraDB dev"
-    needs: ["preconditions"]
+    needs: ["preconditions", "lint"]
     if: ${{ needs.preconditions.outputs.is-scheduled == 'true' }}
     uses: ./.github/workflows/_run_e2e_tests.yml
     secrets: inherit

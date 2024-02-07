@@ -3,20 +3,19 @@ name: CI - Security scans
 on:
   workflow_dispatch: {}
   schedule:
-    - cron: '0 0 * * *'
+    - cron: "0 0 * * *"
   pull_request:
     paths:
-      - '.github/workflows/ci-security-scans.yml'
-      - 'scripts/**'
-      - 'pyproject.toml'
-      - 'poetry.lock'
+      - ".github/workflows/ci-security-scans.yml"
+      - "scripts/**"
+      - "pyproject.toml"
+      - "poetry.lock"
     branches:
       - main
 
 concurrency:
   group: ragstack-security-scans-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
-
 
 jobs:
   snyk-ragstack-dev:
@@ -44,7 +43,7 @@ jobs:
 
       - name: Prepare dev docker image
         if: ${{ always() }}
-        run: | 
+        run: |
           poetry build
           docker build -t datastax/ragstack-ai:latest-dev -f docker/Dockerfile.dev dist
 
@@ -63,7 +62,6 @@ jobs:
         run: |
           mkdir -p snyk_reports
           mv snyk.json snyk_reports/snyk-docker.json
-      
 
       - name: Testspace deploy report
         uses: ./.github/actions/deploy-testspace-report
@@ -73,7 +71,6 @@ jobs:
           token: ${{ secrets.TESTSPACE_TOKEN }}
           report-file: snyk_reports
           space: "RAGStack security scans - RAGStack dev"
-
 
   snyk-ragstack-latest-release:
     name: Security Scan / RAGStack latest
