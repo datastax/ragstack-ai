@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import argparse
 import base64
 import json
@@ -53,7 +55,7 @@ def render_plot_obj(values):
         rows.append(value["name"])
     plt.title("All")
     plt.xlabel("Percentile")
-    plt.ylabel("Milliseconds")
+    plt.ylabel("Seconds")
     plt.legend(bbox_to_anchor=(0, -0.2), loc="upper left", ncol=1)
     plt.grid(True)
     plt.subplots_adjust(bottom=0.5)

@@ -2,42 +2,54 @@ import argparse
 import os
 import subprocess
 import sys
+from datasets import load_dataset
+
+INPUT_PATH = "data/imdb_train.csv"
 
 TEST_CASES = [
     # "embeddings_batch1_chunk256", too slow
-    # "embeddings_batch1_chunk512", too slow
-    "embeddings_batch10_chunk256",
-    "embeddings_batch10_chunk512",
-    "embeddings_batch50_chunk256",
-    "embeddings_batch50_chunk512",
-    "embeddings_batch100_chunk256",
-    "embeddings_batch100_chunk512",
+    "embeddings_batch1_chunk512",
+    # "embeddings_batch10_chunk256",
+    # "embeddings_batch10_chunk512",
+    # "embeddings_batch50_chunk256",
+    # "embeddings_batch50_chunk512",
+    # "embeddings_batch100_chunk256",
+    # "embeddings_batch100_chunk512",
 ]
 
-INTENSITIES = {
-    "1": {"processes": 1, "loops": 1},
-    "2": {"processes": 2, "loops": 2},
-    "3": {"processes": 3, "loops": 3},
-    "4": {"processes": 4, "loops": 4},
-    "5": {"processes": 10, "loops": 5},
-}
 
-PROCESSES = 1
-LOOPS_PER_PROCESS = 1
+# Custom type function to convert input string to a list of integers
+def int_list(value):
+    try:
+        return [int(item) for item in value.strip("[]").split(",")]
+    except ValueError:
+        raise argparse.ArgumentTypeError(
+            f"Value {value} is not a valid list of integers"
+        )
 
 
 def get_values_for_testcase(test_case):
     if test_case.startswith("embeddings"):
-        return ["openai_ada002", "nvidia_nvolveqa40k"]
+        return ["nemo_microservice"]
+        # return ["openai_ada002", "nvidia_nvolveqa40k"]
+        # return ["openai_ada002", "nemo_microservice"]
+        # return ["nvidia_nvolveqa40k", "nemo_microservice"]
     else:
         raise ValueError(f"Unknown testcase: {test_case}")
 
 
 def run_suite(
-    test_case: str, only_values_containing=[], loops=1, processes=1, report_dir="."
+    test_case: str,
+    loops=1,
+    report_dir=".",
+    only_values_containing=None,
+    threads_per_benchmark=None,
 ):
+    if threads_per_benchmark is None:
+        threads_per_benchmark: list[int] = [1]
+
     all_values = get_values_for_testcase(test_case)
-    if only_values_containing:
+    if only_values_containing is not None:
         for value in all_values:
             for filter_by in only_values_containing:
                 if filter_by not in value:
@@ -51,30 +63,33 @@ def run_suite(
     logs_file = os.path.join(args.reports_dir, "benchmarks.log")
 
     for value in all_values:
-        filename = f"{test_case}-{value}.json"
-        abs_filename = os.path.join(report_dir, filename)
-        os.path.exists(abs_filename) and os.remove(abs_filename)
-        filenames.append(abs_filename)
+        for threads in threads_per_benchmark:
+            filename = f"{test_case}-{value}-{threads}.json"
+            abs_filename = os.path.join(report_dir, filename)
+            os.path.exists(abs_filename) and os.remove(abs_filename)
+            filenames.append(abs_filename)
 
-        command = f"{sys.executable} -m pyperf command --copy-env -p {processes} -q -n 1 -l {loops} -t -o {abs_filename} -- {sys.executable} {bechmarks_dir}/testcases.py {logs_file} {test_case} {value}"
-        print(f"Running suite: {test_case} with value: {value}")
-        try:
-            subprocess.run(command.split(" "), text=True, check=True).check_returncode()
-        except Exception as e:
-            print(f"Error running suite: {e.args[0]}")
-            if os.path.exists(logs_file):
-                with open(logs_file, "r") as f:
-                    print(f.read())
-            raise Exception("Error running suite")
+            command = f"{sys.executable} -m pyperf command --copy-env -n 1 -l {loops} -t -o {abs_filename} -- {sys.executable} {bechmarks_dir}/testcases.py {logs_file} {test_case} {value} {threads}"
+            print(
+                f"Running suite: {test_case} with value: {value} and threads: {threads}"
+            )
+            try:
+                subprocess.run(command.split(" "), text=True, check=True)
+            except Exception as e:
+                print(f"Error running suite: {e.args[0]}")
+                if os.path.exists(logs_file):
+                    with open(logs_file, "r") as f:
+                        print(f.read())
+                raise Exception("Error running suite")
 
     if len(filenames) <= 1:
         print("Not enough files to compare")
     else:
-        print("Showing comparison:")
         filenames_str = " ".join(filenames)
+        print("Showing comparison between files: {filenames_str}")
 
         comparison_command = (
-            f"{sys.executable} -m pyperf compare_to {filenames_str} --table -v -G"
+            f"{sys.executable} -m pyperf compare_to --table -v {filenames_str}"
         )
         subprocess.run(comparison_command.split(" "), text=True, check=True)
     print("Done")
@@ -112,12 +127,21 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "-i",
-        "--intensity",
-        choices=["1", "2", "3", "4", "5"],
-        default="2",
-        help="Intensity of the test (1-5). The higher the number, the more iterations will be run and the more the tests will cost and take time.",
+        "-l",
+        "--loops",
+        type=int,
+        default=1,
+        help="Number of loops to run each benchmark. Results will be statistically computed over each loop.",
     )
+
+    parser.add_argument(
+        "-n",
+        "--num_threads",
+        type=int_list,
+        default=[1],
+        help="Number of threads (concurrent requests) per benchmark",
+    )
+
     args = parser.parse_args()
     if not os.path.exists(args.reports_dir):
         os.makedirs(args.reports_dir)
@@ -133,11 +157,16 @@ if __name__ == "__main__":
         os.remove(logs_file)
     print(f"Logs file: {logs_file}")
 
+    # Download the dataset to use
+    if not os.path.exists(INPUT_PATH):
+        dataset = load_dataset("imdb", split="train")
+        dataset.to_csv(INPUT_PATH, index=False)
+
     for test_case in tests_to_run:
         run_suite(
             test_case=test_case,
-            only_values_containing=args.values.split(","),
             report_dir=args.reports_dir,
-            loops=INTENSITIES[args.intensity]["loops"],
-            processes=INTENSITIES[args.intensity]["processes"],
+            loops=args.loops,
+            only_values_containing=args.values.split(","),
+            threads_per_benchmark=args.num_threads,
         )
