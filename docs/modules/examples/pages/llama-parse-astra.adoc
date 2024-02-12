@@ -103,6 +103,7 @@ astra_db_store = AstraDBVectorStore(
 ----
 node_parser = SimpleNodeParser()
 nodes = node_parser.get_nodes_from_documents(documents)
+print(nodes[0].get_content())
 
 storage_context = StorageContext.from_defaults(vector_store=astra_db_store)
 service_context = ServiceContext.from_defaults(
@@ -194,9 +195,10 @@ astra_db_store = AstraDBVectorStore(
     embedding_dimension=1536
 )
 
-# Parse nodes from documents
+# Parse nodes from documents and output a snippet for verification
 node_parser = SimpleNodeParser()
 nodes = node_parser.get_nodes_from_documents(documents)
+print(nodes[0].get_content())
 
 # Setup storage and service contexts
 storage_context = StorageContext.from_defaults(vector_store=astra_db_store)
