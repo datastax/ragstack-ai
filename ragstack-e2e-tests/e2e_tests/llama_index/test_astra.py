@@ -12,7 +12,7 @@ from llama_index.vector_stores import (
     ExactMatchFilter,
 )
 
-from e2e_tests.llama_index.environment import Environment
+from e2e_tests.llama_index import Environment
 
 
 def test_basic_vector_search(environment: Environment):
