@@ -5,41 +5,60 @@ try:
 except ImportError:
     pytest.skip("llama_parse is not supported, skipping tests", allow_module_level=True)
 
-from llama_index import VectorStoreIndex
+from llama_index import (
+    VectorStoreIndex,
+    StorageContext,
+    ServiceContext,
+)
 
-from e2e_tests.llama_index.conftest import Environment
+from e2e_tests.llama_index.conftest import (
+    openai_llm,
+    openai_embedding,
+)
+from e2e_tests.conftest import set_current_test_info
 from e2e_tests.test_utils import get_local_resource_path
+from e2e_tests.test_utils.vector_store_handler import (
+    VectorStoreTestContext,
+)
 
 
-def test_llamaparse_as_text_with_vector_search(environment: Environment):
-    print("test_llamaparse_with_vector_search")
+@pytest.fixture
+def llama_parse_text():
+    return "text", LlamaParse(result_type="text")
+
+
+@pytest.fixture
+def llama_parse_markdown():
+    return "markdown", LlamaParse(result_type="markdown")
+
+
+@pytest.mark.parametrize("vector_store", ["cassandra", "astra_db"])
+@pytest.mark.parametrize(
+    "llama_parse_instance",
+    ["llama_parse_text", "llama_parse_markdown"],
+)
+def test_llama_parse(vector_store, llama_parse_instance, request):
+    vector_store_context: VectorStoreTestContext = request.getfixturevalue(vector_store)
+    lp_type, lp = request.getfixturevalue(llama_parse_instance)
+    _, llm = openai_llm()
+    _, embedding_dimensions, embedding = openai_embedding()
+
+    set_current_test_info(
+        "llama_index::llama_parse",
+        f"{lp_type},{vector_store}",
+    )
+    vector_store = vector_store_context.new_llamaindex_vector_store(
+        embedding_dimension=embedding_dimensions
+    )
+    storage_context = StorageContext.from_defaults(vector_store=vector_store)
+    service_context = ServiceContext.from_defaults(llm=llm, embed_model=embedding)
 
     file_path = get_local_resource_path("tree.pdf")
-    documents = LlamaParse(result_type="test").load_data(file_path)
+    documents = lp.load_data(file_path)
 
     index = VectorStoreIndex.from_documents(
-        documents,
-        storage_context=environment.storage_context,
-        service_context=environment.service_context,
+        documents, storage_context=storage_context, service_context=service_context
     )
 
-    # Verify that the document is in the vector store
-    retriever = index.as_retriever()
-    assert len(retriever.retrieve("What was Eldenroot?")) > 0
-
-
-def test_llamaparse_as_markdown_with_vector_search(environment: Environment):
-    print("test_llamaparse_with_vector_search")
-
-    file_path = get_local_resource_path("tree.pdf")
-    documents = LlamaParse(result_type="markdown").load_data(file_path)
-
-    index = VectorStoreIndex.from_documents(
-        documents,
-        storage_context=environment.storage_context,
-        service_context=environment.service_context,
-    )
-
-    # Verify that the document is in the vector store
     retriever = index.as_retriever()
     assert len(retriever.retrieve("What was Eldenroot?")) > 0

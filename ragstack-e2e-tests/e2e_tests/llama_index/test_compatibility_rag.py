@@ -9,12 +9,10 @@ from llama_index import (
     Document,
 )
 from llama_index.embeddings import (
-    OpenAIEmbedding,
     AzureOpenAIEmbedding,
     BedrockEmbedding,
 )
 from llama_index.llms import (
-    OpenAI,
     AzureOpenAI,
     Vertex,
     Bedrock,
@@ -28,41 +26,13 @@ from llama_index.schema import ImageNode
 from e2e_tests.conftest import (
     set_current_test_info,
     get_required_env,
-    get_vector_store_handler,
 )
 from vertexai.vision_models import MultiModalEmbeddingModel, Image
 
 from e2e_tests.test_utils import get_local_resource_path
 from e2e_tests.test_utils.vector_store_handler import (
-    VectorStoreImplementation,
     VectorStoreTestContext,
 )
-
-
-@pytest.fixture
-def astra_db():
-    handler = get_vector_store_handler(VectorStoreImplementation.ASTRADB)
-    context = handler.before_test()
-    yield context
-    handler.after_test()
-
-
-@pytest.fixture
-def cassandra():
-    handler = get_vector_store_handler(VectorStoreImplementation.CASSANDRA)
-    context = handler.before_test()
-    yield context
-    handler.after_test()
-
-
-@pytest.fixture
-def openai_llm():
-    return "openai", OpenAI(api_key=get_required_env("OPEN_AI_KEY"))
-
-
-@pytest.fixture
-def openai_embedding():
-    return "openai", 1536, OpenAIEmbedding(api_key=get_required_env("OPEN_AI_KEY"))
 
 
 @pytest.fixture
