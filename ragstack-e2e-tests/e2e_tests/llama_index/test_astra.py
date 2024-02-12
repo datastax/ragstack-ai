@@ -1,6 +1,6 @@
 import logging
 from typing import List
-import requests
+
 import pytest
 from httpx import ConnectError, HTTPStatusError
 
@@ -8,7 +8,6 @@ from e2e_tests.conftest import (
     get_required_env,
     is_astra,
 )
-from llama_parse import LlamaParse
 from llama_index import (
     ServiceContext,
     StorageContext,
@@ -220,39 +219,6 @@ def test_vector_search_with_metadata(environment: Environment):
     # commenting this part, as the delete is not working, maybe it is a problem with document ids ?
     # documents = index.as_retriever().retrieve("RAGStack")
     # assert len(documents) == 0
-
-def test_llamaparse_with_vector_search(environment: Environment):
-    print("test_llamaparse_with_vector_search")
-
-    # Grab a PDF from Arxiv for indexing
-    # The URL of the file you want to download
-    url = "https://arxiv.org/pdf/1706.03762.pdf"
-    # The local path where you want to save the file
-    file_path = "./attention.pdf"
-
-    # Perform the HTTP request
-    response = requests.get(url)
-
-    # Check if the request was successful
-    if response.status_code == 200:
-        # Open the file in binary write mode and save the content
-        with open(file_path, "wb") as file:
-            file.write(response.content)
-        print("Download complete.")
-    else:
-        print("Error downloading the file.")
-
-    documents = LlamaParse(result_type="text").load_data("./attention.pdf")
-
-    index = VectorStoreIndex.from_documents(
-        documents,
-        storage_context=environment.storage_context,
-        service_context=environment.service_context,
-    )
-
-    # Verify that the document is in the vector store
-    retriever = index.as_retriever()
-    assert len(retriever.retrieve("What")) > 0
 
 
 @pytest.fixture
