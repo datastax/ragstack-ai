@@ -1,7 +1,7 @@
 from llama_parse import LlamaParse
 from llama_index import VectorStoreIndex
 
-from e2e_tests.llama_index.test_astra import Environment
+from e2e_tests.llama_index.test_astra import Environment, environment
 from e2e_tests.llama_index.test_compatibility_rag import get_local_resource_path
 
 
