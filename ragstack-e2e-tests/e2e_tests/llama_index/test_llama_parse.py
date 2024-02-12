@@ -11,11 +11,13 @@ from llama_index import (
     ServiceContext,
 )
 
-from e2e_tests.llama_index.conftest import (
-    openai_llm,
-    openai_embedding,
+from llama_index.embeddings import OpenAIEmbedding
+from llama_index.llms import OpenAI
+
+from e2e_tests.conftest import (
+    set_current_test_info,
+    get_required_env,
 )
-from e2e_tests.conftest import set_current_test_info
 from e2e_tests.test_utils import get_local_resource_path
 from e2e_tests.test_utils.vector_store_handler import (
     VectorStoreTestContext,
@@ -40,15 +42,15 @@ def llama_parse_markdown():
 def test_llama_parse(vector_store, llama_parse_instance, request):
     vector_store_context: VectorStoreTestContext = request.getfixturevalue(vector_store)
     lp_type, lp = request.getfixturevalue(llama_parse_instance)
-    _, llm = openai_llm()
-    _, embedding_dimensions, embedding = openai_embedding()
+    llm = OpenAI(api_key=get_required_env("OPEN_AI_KEY"))
+    embedding = OpenAIEmbedding(api_key=get_required_env("OPEN_AI_KEY"))
 
     set_current_test_info(
         "llama_index::llama_parse",
         f"{lp_type},{vector_store}",
     )
     vector_store = vector_store_context.new_llamaindex_vector_store(
-        embedding_dimension=embedding_dimensions
+        embedding_dimension=1536
     )
     storage_context = StorageContext.from_defaults(vector_store=vector_store)
     service_context = ServiceContext.from_defaults(llm=llm, embed_model=embedding)
