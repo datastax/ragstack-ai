@@ -18,6 +18,12 @@ def get_required_env(name) -> str:
     return value
 
 
+def get_local_resource_path(filename: str):
+    dirname = os.path.dirname(__file__)
+    e2e_tests_dir = os.path.dirname(dirname)
+    return os.path.join(e2e_tests_dir, "resources", filename)
+
+
 def random_string() -> str:
     return str(uuid.uuid4()).split("-")[0]
 

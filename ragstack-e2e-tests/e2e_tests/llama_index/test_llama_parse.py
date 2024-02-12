@@ -1,8 +1,8 @@
 from llama_parse import LlamaParse
 from llama_index import VectorStoreIndex
 
-from e2e_tests.llama_index.test_astra import Environment, environment
-from e2e_tests.llama_index.test_compatibility_rag import get_local_resource_path
+from e2e_tests.llama_index.environment import Environment
+from e2e_tests.test_utils import get_local_resource_path
 
 
 def test_llamaparse_as_text_with_vector_search(environment: Environment):

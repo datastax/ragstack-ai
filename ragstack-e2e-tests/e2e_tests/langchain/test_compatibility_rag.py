@@ -15,6 +15,7 @@ from e2e_tests.langchain.rag_application import (
     run_conversational_rag,
 )
 from e2e_tests.langchain.trulens import run_trulens_evaluation
+from e2e_tests.test_utils import get_local_resource_path
 
 from langchain.chat_models import ChatOpenAI, AzureChatOpenAI, ChatVertexAI, BedrockChat
 from langchain.embeddings import (
@@ -79,7 +80,8 @@ def openai_embedding():
 @pytest.fixture
 def azure_openai_llm():
     return AzureChatOpenAI(
-        azure_deployment=get_required_env("AZURE_OPEN_AI_CHAT_MODEL_DEPLOYMENT"),
+        azure_deployment=get_required_env(
+            "AZURE_OPEN_AI_CHAT_MODEL_DEPLOYMENT"),
         openai_api_base=get_required_env("AZURE_OPEN_AI_ENDPOINT"),
         openai_api_key=get_required_env("AZURE_OPEN_AI_KEY"),
         openai_api_type="azure",
@@ -89,7 +91,8 @@ def azure_openai_llm():
 
 @pytest.fixture
 def azure_openai_embedding():
-    model_and_deployment = get_required_env("AZURE_OPEN_AI_EMBEDDINGS_MODEL_DEPLOYMENT")
+    model_and_deployment = get_required_env(
+        "AZURE_OPEN_AI_EMBEDDINGS_MODEL_DEPLOYMENT")
     return AzureOpenAIEmbeddings(
         model=model_and_deployment,
         deployment=model_and_deployment,
@@ -212,7 +215,8 @@ def test_rag(test_case, vector_store, embedding, llm, request, record_property):
 
 
 def _run_test(test_case: str, vector_store_context, embedding, llm, record_property):
-    vector_store = vector_store_context.new_langchain_vector_store(embedding=embedding)
+    vector_store = vector_store_context.new_langchain_vector_store(
+        embedding=embedding)
     if test_case == "rag_custom_chain":
         run_rag_custom_chain(
             vector_store=vector_store, llm=llm, record_property=record_property
@@ -320,7 +324,8 @@ def test_multimodal(vector_store, embedding, llm, request, record_property):
         image=img, contextual_text="Coffee Maker Part"
     )
 
-    documents = enhanced_vector_store.search_documents(embeddings.image_embedding, 3)
+    documents = enhanced_vector_store.search_documents(
+        embeddings.image_embedding, 3)
     image_message = {
         "type": "image_url",
         "image_url": {"url": query_image_path},
@@ -339,12 +344,6 @@ def test_multimodal(vector_store, embedding, llm, request, record_property):
         run_id = cb.traced_runs[0].id
         record_langsmith_sharelink(run_id, record_property)
         assert "Coffee Machine Ultra Cool" in response.content
-
-
-def get_local_resource_path(filename: str):
-    dirname = os.path.dirname(__file__)
-    e2e_tests_dir = os.path.dirname(dirname)
-    return os.path.join(e2e_tests_dir, "resources", filename)
 
 
 @pytest.mark.parametrize("chat", ["vertex_gemini_pro_llm", "gemini_pro_llm"])
