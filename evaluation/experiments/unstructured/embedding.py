@@ -2,7 +2,7 @@
 import tru_shared
 
 from langchain_community.document_loaders import UnstructuredAPIFileLoader
-from langchain.text_splitter import TokenTextSplitter, SentenceTransformersTokenTextSplitter
+from langchain.text_splitter import TokenTextSplitter
 
 import os
 import glob
@@ -12,8 +12,8 @@ os.environ["ASTRA_DB_TOKEN"] = os.environ.get("ASTRA_DB_TOKEN_CHUNK_OVERLAP")
 
 framework = tru_shared.Framework.LANG_CHAIN
 
-text_token_splitter = TokenTextSplitter(chunk_size=512, chunk_overlap=192)
-sentence_token_splitter = SentenceTransformersTokenTextSplitter(chunk_overlap=192, tokens_per_chunk=384)
+splitter_0 = TokenTextSplitter(chunk_size=512, chunk_overlap=0)
+splitter_192 = TokenTextSplitter(chunk_size=512, chunk_overlap=192)
 
 api_url = "http://localhost:8000/general/v0/general"
 
@@ -49,7 +49,7 @@ def import_docs(collection_name, mode, splitter):
 
         vector_store.add_documents(splitter.split_documents(loader.load()))
 
-import_docs("unstructured_single_text", "single", text_token_splitter)
-import_docs("unstructured_elements_text", "elements", text_token_splitter)
-import_docs("unstructured_single_sentence", "single", sentence_token_splitter)
-import_docs("unstructured_elements_sentence", "elements", sentence_token_splitter)
+import_docs("unstructured_single_0", "single", splitter_0)
+import_docs("unstructured_elements_0", "elements", splitter_0)
+import_docs("unstructured_single_192", "single", splitter_192)
+import_docs("unstructured_elements_192", "elements", splitter_192)

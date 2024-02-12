@@ -21,10 +21,10 @@ Your answer:
 """
 prompt = ChatPromptTemplate.from_template(prompt_template)
 
-collection_name = "unstructured_single_text"
-# collection_name = "unstructured_elements_text"
-# collection_name = "unstructured_single_sentence"
-# collection_name = "unstructured_elements_sentence"
+collection_name = "unstructured_single_0"
+# collection_name = "unstructured_elements_0"
+# collection_name = "unstructured_single_192"
+# collection_name = "unstructured_elements_192"
 
 vector_store = tru_shared.get_astra_vector_store(framework, collection_name)
 pipeline = (

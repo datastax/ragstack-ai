@@ -25,7 +25,7 @@ for dataset in datasets:
         for test in tests:
             existing_size = len(df[(df["dataset"] == dataset) & (df["test"] == test) & (df["test_uuid"] == test_uuid)])
             expected_size = dataset_sizes[dataset]
-            if existing_size > 0 and existing_size != expected_size:
+            if existing_size > 0 and existing_size < (expected_size * 0.99):
                 print(f"Dropping {existing_size} rows for {test}#{test_uuid}#{dataset} expected {expected_size}")
                 df = df[~((df["dataset"] == dataset) & (df["test"] == test) & (df["test_uuid"] == test_uuid))]
 
