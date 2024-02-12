@@ -1,4 +1,10 @@
-from llama_parse import LlamaParse
+import pytest
+
+try:
+    from llama_parse import LlamaParse
+except ImportError:
+    pytest.skip("llama_parse is not supported, skipping tests", allow_module_level=True)
+
 from llama_index import VectorStoreIndex
 
 from e2e_tests.llama_index.conftest import Environment
