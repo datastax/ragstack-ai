@@ -10,12 +10,7 @@ import cassio
 from langchain_community.chat_message_histories import AstraDBChatMessageHistory
 from langchain_community.vectorstores.astradb import AstraDB
 from langchain_core.chat_history import BaseChatMessageHistory
-
-try:
-    from llama_index.vector_stores import AstraDBVectorStore
-except ImportError:
-    # change made with llama_index 0.10.0
-    from llama_index.vector_stores.astra import AstraDBVectorStore
+from llama_index.vector_stores import AstraDBVectorStore
 
 from e2e_tests.test_utils import get_required_env, random_string
 from e2e_tests.test_utils.vector_store_handler import (
