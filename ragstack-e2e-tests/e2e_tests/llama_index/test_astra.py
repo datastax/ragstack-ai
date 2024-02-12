@@ -14,6 +14,7 @@ from llama_index.vector_stores import (
 
 from e2e_tests.llama_index.environment import Environment
 
+
 def test_basic_vector_search(environment: Environment):
     print("Running test_basic_vector_search")
     documents = [

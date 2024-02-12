@@ -1,5 +1,4 @@
 import logging
-import os
 
 import pytest
 from langchain.embeddings import VertexAIEmbeddings, HuggingFaceInferenceAPIEmbeddings
@@ -69,8 +68,7 @@ def openai_embedding():
 @pytest.fixture
 def azure_openai_llm():
     return "azure-openai", AzureOpenAI(
-        azure_deployment=get_required_env(
-            "AZURE_OPEN_AI_CHAT_MODEL_DEPLOYMENT"),
+        azure_deployment=get_required_env("AZURE_OPEN_AI_CHAT_MODEL_DEPLOYMENT"),
         azure_endpoint=get_required_env("AZURE_OPEN_AI_ENDPOINT"),
         api_key=get_required_env("AZURE_OPEN_AI_KEY"),
         api_version="2023-07-01-preview",
@@ -79,8 +77,7 @@ def azure_openai_llm():
 
 @pytest.fixture
 def azure_openai_embedding():
-    model_and_deployment = get_required_env(
-        "AZURE_OPEN_AI_EMBEDDINGS_MODEL_DEPLOYMENT")
+    model_and_deployment = get_required_env("AZURE_OPEN_AI_EMBEDDINGS_MODEL_DEPLOYMENT")
     return (
         "azure-openai",
         1536,
@@ -186,10 +183,8 @@ def huggingface_hub_embedding():
     ],
 )
 def test_rag(vector_store, embedding, llm, request):
-    embedding_name, embedding_dimensions, embedding = request.getfixturevalue(
-        embedding)
-    vector_store_context: VectorStoreTestContext = request.getfixturevalue(
-        vector_store)
+    embedding_name, embedding_dimensions, embedding = request.getfixturevalue(embedding)
+    vector_store_context: VectorStoreTestContext = request.getfixturevalue(vector_store)
     llm_name, llm = request.getfixturevalue(llm)
     set_current_test_info(
         "llama_index::rag",
@@ -199,8 +194,7 @@ def test_rag(vector_store, embedding, llm, request):
         embedding_dimension=embedding_dimensions
     )
     storage_context = StorageContext.from_defaults(vector_store=vector_store)
-    service_context = ServiceContext.from_defaults(
-        llm=llm, embed_model=embedding)
+    service_context = ServiceContext.from_defaults(llm=llm, embed_model=embedding)
 
     documents = [
         Document(
@@ -337,8 +331,7 @@ def test_multimodal(vector_store, embedding, llm, request):
         image=img, contextual_text="Coffee Maker Part"
     )
 
-    documents = enhanced_vector_store.search_documents(
-        embeddings.image_embedding, 3)
+    documents = enhanced_vector_store.search_documents(embeddings.image_embedding, 3)
     docs_str = ", ".join([f"'{p}'" for p in documents])
     prompt = f"Tell me which one of these products it is part of. Only include product from the ones below: {docs_str}."
     logging.info(f"Prompt: {prompt}")

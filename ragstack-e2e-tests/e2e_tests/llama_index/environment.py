@@ -41,6 +41,7 @@ class Environment:
         )
         self.storage_context = StorageContext.from_defaults(vector_store=vectorstore)
 
+
 @pytest.fixture
 def environment() -> Environment:
     if not is_astra:

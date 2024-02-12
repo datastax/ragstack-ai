@@ -1,5 +1,4 @@
 import logging
-import os
 from typing import List
 
 import pytest
@@ -80,8 +79,7 @@ def openai_embedding():
 @pytest.fixture
 def azure_openai_llm():
     return AzureChatOpenAI(
-        azure_deployment=get_required_env(
-            "AZURE_OPEN_AI_CHAT_MODEL_DEPLOYMENT"),
+        azure_deployment=get_required_env("AZURE_OPEN_AI_CHAT_MODEL_DEPLOYMENT"),
         openai_api_base=get_required_env("AZURE_OPEN_AI_ENDPOINT"),
         openai_api_key=get_required_env("AZURE_OPEN_AI_KEY"),
         openai_api_type="azure",
@@ -91,8 +89,7 @@ def azure_openai_llm():
 
 @pytest.fixture
 def azure_openai_embedding():
-    model_and_deployment = get_required_env(
-        "AZURE_OPEN_AI_EMBEDDINGS_MODEL_DEPLOYMENT")
+    model_and_deployment = get_required_env("AZURE_OPEN_AI_EMBEDDINGS_MODEL_DEPLOYMENT")
     return AzureOpenAIEmbeddings(
         model=model_and_deployment,
         deployment=model_and_deployment,
@@ -215,8 +212,7 @@ def test_rag(test_case, vector_store, embedding, llm, request, record_property):
 
 
 def _run_test(test_case: str, vector_store_context, embedding, llm, record_property):
-    vector_store = vector_store_context.new_langchain_vector_store(
-        embedding=embedding)
+    vector_store = vector_store_context.new_langchain_vector_store(embedding=embedding)
     if test_case == "rag_custom_chain":
         run_rag_custom_chain(
             vector_store=vector_store, llm=llm, record_property=record_property
@@ -324,8 +320,7 @@ def test_multimodal(vector_store, embedding, llm, request, record_property):
         image=img, contextual_text="Coffee Maker Part"
     )
 
-    documents = enhanced_vector_store.search_documents(
-        embeddings.image_embedding, 3)
+    documents = enhanced_vector_store.search_documents(embeddings.image_embedding, 3)
     image_message = {
         "type": "image_url",
         "image_url": {"url": query_image_path},
