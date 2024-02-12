@@ -35,6 +35,8 @@ OPENAI_API_KEY=sk-...
 
 If you're using Google Colab, you'll be prompted for these values in the Colab environment.
 
+See the https://docs.datastax.com/en/ragstack/docs/prerequisites.html[Prerequisites] page for more details.
+
 == Create RAG pipeline
 
 . Import dependencies and load environment variables.
@@ -58,7 +60,7 @@ token = os.getenv("ASTRA_DB_APPLICATION_TOKEN")
 openai_api_key = os.getenv("OPENAI_API_KEY")
 ----
 +
-. Download a PDF for indexing.
+. Download a PDF about attention mechanisms in transformer model architectures.
 +
 [source,python]
 ----
@@ -72,9 +74,14 @@ if response.status_code == 200:
     print("Download complete.")
 else:
     print("Error downloading the file.")
-
+----
++
+. Load the downloaded PDF with LlamaParse as a text Document for indexing.
+LlamaParse also supports Markdown-type Documents with `(result_type=markdown)`.
++
+[source,python]
+----
 documents = LlamaParse(result_type="text").load_data(file_path)
-
 print(documents[0].get_content()[10000:11000])
 ----
 +
@@ -90,7 +97,7 @@ astra_db_store = AstraDBVectorStore(
 )
 ----
 +
-. Parse documents into nodes and set up storage and service contexts to use AstraDB.
+. Parse Documents into nodes and set up storage and service contexts to use AstraDB and OpenAI.
 +
 [source,python]
 ----
@@ -105,7 +112,7 @@ service_context = ServiceContext.from_defaults(
 )
 ----
 +
-. Create a vector store index and query engine using AstraDB for storage.
+. Create a vector store index and query engine from your nodes and contexts.
 +
 [source,python]
 ----
@@ -115,7 +122,7 @@ query_engine = index.as_query_engine(similarity_top_k=15, service_context=servic
 
 == Execute a query
 
-. Query the Astra vector store for an example with expected context.
+. Query the Astra vector store for an example with expected context - this query should return a relevant response.
 +
 [source,python]
 ----
@@ -126,6 +133,7 @@ print(response_1)
 ----
 +
 . Query the Astra vector store for an example with expected lack of context.
+This query should return `The context does not provide information about the color of the sky` because your document does not contain information about the color of the sky.
 +
 [source,python]
 ----
@@ -142,8 +150,6 @@ print(response_1)
 ====
 [source,python]
 ----
-# pip install ragstack-ai python-dotenv llama-parse requests nest_asyncio
-
 import os
 import requests
 from dotenv import load_dotenv
