@@ -159,8 +159,8 @@ def huggingface_hub_embedding():
         ("openai_embedding", "openai_llm"),
         ("azure_openai_embedding", "azure_openai_llm"),
         ("vertex_embedding", "vertex_llm"),
-        # ("bedrock_titan_embedding", "bedrock_anthropic_llm"),
-        # ("bedrock_cohere_embedding", "bedrock_meta_llm"),
+        ("bedrock_titan_embedding", "bedrock_anthropic_llm"),
+        ("bedrock_cohere_embedding", "bedrock_meta_llm"),
         ("huggingface_hub_embedding", "huggingface_hub_llm"),
     ],
 )
