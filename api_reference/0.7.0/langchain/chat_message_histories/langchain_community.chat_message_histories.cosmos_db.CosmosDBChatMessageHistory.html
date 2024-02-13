@@ -1,0 +1,386 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>langchain_community.chat_message_histories.cosmos_db.CosmosDBChatMessageHistory &mdash; 🦜🔗 LangChain 0.1.4</title>
+  
+  <link rel="canonical" href="https://api.python.langchain.com/en/latest/chat_message_histories/langchain_community.chat_message_histories.cosmos_db.CosmosDBChatMessageHistory.html" />
+
+  
+
+  <link rel="stylesheet" href="../_static/css/vendor/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/autodoc_pydantic.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/sphinx-dropdown.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/panels-bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+<script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+<script src="../_static/jquery.js"></script> 
+</head>
+<body>
+
+
+<nav id="navbar" class="sk-docs-navbar navbar navbar-expand-md navbar-light bg-light py-0">
+  <div class="container-fluid sk-docs-container px-0">
+    <button
+      id="sk-navbar-toggler"
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="sk-navbar-collapse collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../langchain_api_reference.html">LangChain</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../core_api_reference.html">Core</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../community_api_reference.html">Community</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../experimental_api_reference.html">Experimental</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../robocorp_api_reference.html">robocorp</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../openai_api_reference.html">openai</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../together_api_reference.html">together</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../google_genai_api_reference.html">google-genai</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../nvidia_ai_endpoints_api_reference.html">nvidia-ai-endpoints</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../google_vertexai_api_reference.html">google-vertexai</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../anthropic_api_reference.html">anthropic</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../exa_api_reference.html">exa</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../mistralai_api_reference.html">mistralai</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../nvidia_trt_api_reference.html">nvidia-trt</a>
+        </li>
+        <li class="nav-item dropdown nav-more-item-dropdown">
+          <a class="sk-nav-link nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Partner libs</a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+              <a class="sk-nav-dropdown-item dropdown-item" href="../robocorp_api_reference.html">robocorp</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../openai_api_reference.html">openai</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../together_api_reference.html">together</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../google_genai_api_reference.html">google-genai</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../nvidia_ai_endpoints_api_reference.html">nvidia-ai-endpoints</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../google_vertexai_api_reference.html">google-vertexai</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../anthropic_api_reference.html">anthropic</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../exa_api_reference.html">exa</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../mistralai_api_reference.html">mistralai</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../nvidia_trt_api_reference.html">nvidia-trt</a>
+          </div>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" target="_blank" rel="noopener noreferrer" href="https://python.langchain.com/">Docs</a>
+        </li>
+      </ul>
+      <div id="searchbox" role="search">
+          <div class="searchformwrapper">
+          <form class="search" action="../search.html" method="get">
+            <input class="sk-search-text-input" type="text" name="q" aria-labelledby="searchlabel" />
+            <input class="sk-search-text-btn" type="submit" value="Go" />
+          </form>
+          </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="d-flex" id="sk-doc-wrapper">
+    <input type="checkbox" name="sk-toggle-checkbox" id="sk-toggle-checkbox">
+    <label id="sk-sidemenu-toggle" class="sk-btn-toggle-toc btn sk-btn-primary" for="sk-toggle-checkbox">Toggle Menu</label>
+    <div id="sk-sidebar-wrapper" class="border-right">
+      <div class="sk-sidebar-toc-wrapper">
+        <div class="btn-group w-100 mb-2" role="group" aria-label="rellinks">
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Prev</a>
+            <a href="#" role="button" class="btn sk-btn-rellink disabled py-1">Up</a>
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Next</a>
+        </div>
+            <div class="sk-sidebar-toc">
+              <ul>
+<li><a class="reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">langchain_community.chat_message_histories.cosmos_db</span></code>.CosmosDBChatMessageHistory</a><ul>
+<li><a class="reference internal" href="#langchain_community.chat_message_histories.cosmos_db.CosmosDBChatMessageHistory"><code class="docutils literal notranslate"><span class="pre">CosmosDBChatMessageHistory</span></code></a><ul>
+<li><a class="reference internal" href="#langchain_community.chat_message_histories.cosmos_db.CosmosDBChatMessageHistory.__init__"><code class="docutils literal notranslate"><span class="pre">CosmosDBChatMessageHistory.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.chat_message_histories.cosmos_db.CosmosDBChatMessageHistory.add_ai_message"><code class="docutils literal notranslate"><span class="pre">CosmosDBChatMessageHistory.add_ai_message()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.chat_message_histories.cosmos_db.CosmosDBChatMessageHistory.add_message"><code class="docutils literal notranslate"><span class="pre">CosmosDBChatMessageHistory.add_message()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.chat_message_histories.cosmos_db.CosmosDBChatMessageHistory.add_user_message"><code class="docutils literal notranslate"><span class="pre">CosmosDBChatMessageHistory.add_user_message()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.chat_message_histories.cosmos_db.CosmosDBChatMessageHistory.clear"><code class="docutils literal notranslate"><span class="pre">CosmosDBChatMessageHistory.clear()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.chat_message_histories.cosmos_db.CosmosDBChatMessageHistory.load_messages"><code class="docutils literal notranslate"><span class="pre">CosmosDBChatMessageHistory.load_messages()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.chat_message_histories.cosmos_db.CosmosDBChatMessageHistory.prepare_cosmos"><code class="docutils literal notranslate"><span class="pre">CosmosDBChatMessageHistory.prepare_cosmos()</span></code></a></li>
+<li><a class="reference internal" href="#langchain_community.chat_message_histories.cosmos_db.CosmosDBChatMessageHistory.upsert_messages"><code class="docutils literal notranslate"><span class="pre">CosmosDBChatMessageHistory.upsert_messages()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            </div>
+      </div>
+    </div>
+    <div id="sk-page-content-wrapper">
+      <div class="sk-page-content container-fluid body px-md-3" role="main">
+        
+  <section id="langchain-community-chat-message-histories-cosmos-db-cosmosdbchatmessagehistory">
+<h1><code class="xref py py-mod docutils literal notranslate"><span class="pre">langchain_community.chat_message_histories.cosmos_db</span></code>.CosmosDBChatMessageHistory<a class="headerlink" href="#langchain-community-chat-message-histories-cosmos-db-cosmosdbchatmessagehistory" title="Permalink to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="langchain_community.chat_message_histories.cosmos_db.CosmosDBChatMessageHistory">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">langchain_community.chat_message_histories.cosmos_db.</span></span><span class="sig-name descname"><span class="pre">CosmosDBChatMessageHistory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cosmos_endpoint</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cosmos_database</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cosmos_container</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">session_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">credential</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">connection_string</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ttl</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cosmos_client_kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/langchain_community/chat_message_histories/cosmos_db.html#CosmosDBChatMessageHistory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain_community.chat_message_histories.cosmos_db.CosmosDBChatMessageHistory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Chat message history backed by Azure CosmosDB.</p>
+<p>Initializes a new instance of the CosmosDBChatMessageHistory class.</p>
+<p>Make sure to call prepare_cosmos or use the context manager to make
+sure your database is ready.</p>
+<p>Either a credential or a connection string must be provided.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cosmos_endpoint</strong> – The connection endpoint for the Azure Cosmos DB account.</p></li>
+<li><p><strong>cosmos_database</strong> – The name of the database to use.</p></li>
+<li><p><strong>cosmos_container</strong> – The name of the container to use.</p></li>
+<li><p><strong>session_id</strong> – The session ID to use, can be overwritten while loading.</p></li>
+<li><p><strong>user_id</strong> – The user ID to use, can be overwritten while loading.</p></li>
+<li><p><strong>credential</strong> – The credential to use to authenticate to Azure Cosmos DB.</p></li>
+<li><p><strong>connection_string</strong> – The connection string to use to authenticate.</p></li>
+<li><p><strong>ttl</strong> – The time to live (in seconds) to use for documents in the container.</p></li>
+<li><p><strong>cosmos_client_kwargs</strong> – Additional kwargs to pass to the CosmosClient.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Attributes</p>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">messages</span></code></p></td>
+<td><p>A list of Messages stored in-memory.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#langchain_community.chat_message_histories.cosmos_db.CosmosDBChatMessageHistory.__init__" title="langchain_community.chat_message_histories.cosmos_db.CosmosDBChatMessageHistory.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(cosmos_endpoint, cosmos_database, ...)</p></td>
+<td><p>Initializes a new instance of the CosmosDBChatMessageHistory class.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#langchain_community.chat_message_histories.cosmos_db.CosmosDBChatMessageHistory.add_ai_message" title="langchain_community.chat_message_histories.cosmos_db.CosmosDBChatMessageHistory.add_ai_message"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_ai_message</span></code></a>(message)</p></td>
+<td><p>Convenience method for adding an AI message string to the store.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#langchain_community.chat_message_histories.cosmos_db.CosmosDBChatMessageHistory.add_message" title="langchain_community.chat_message_histories.cosmos_db.CosmosDBChatMessageHistory.add_message"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_message</span></code></a>(message)</p></td>
+<td><p>Add a self-created message to the store</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#langchain_community.chat_message_histories.cosmos_db.CosmosDBChatMessageHistory.add_user_message" title="langchain_community.chat_message_histories.cosmos_db.CosmosDBChatMessageHistory.add_user_message"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_user_message</span></code></a>(message)</p></td>
+<td><p>Convenience method for adding a human message string to the store.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#langchain_community.chat_message_histories.cosmos_db.CosmosDBChatMessageHistory.clear" title="langchain_community.chat_message_histories.cosmos_db.CosmosDBChatMessageHistory.clear"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clear</span></code></a>()</p></td>
+<td><p>Clear session memory from this memory and cosmos.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#langchain_community.chat_message_histories.cosmos_db.CosmosDBChatMessageHistory.load_messages" title="langchain_community.chat_message_histories.cosmos_db.CosmosDBChatMessageHistory.load_messages"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_messages</span></code></a>()</p></td>
+<td><p>Retrieve the messages from Cosmos</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#langchain_community.chat_message_histories.cosmos_db.CosmosDBChatMessageHistory.prepare_cosmos" title="langchain_community.chat_message_histories.cosmos_db.CosmosDBChatMessageHistory.prepare_cosmos"><code class="xref py py-obj docutils literal notranslate"><span class="pre">prepare_cosmos</span></code></a>()</p></td>
+<td><p>Prepare the CosmosDB client.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#langchain_community.chat_message_histories.cosmos_db.CosmosDBChatMessageHistory.upsert_messages" title="langchain_community.chat_message_histories.cosmos_db.CosmosDBChatMessageHistory.upsert_messages"><code class="xref py py-obj docutils literal notranslate"><span class="pre">upsert_messages</span></code></a>()</p></td>
+<td><p>Update the cosmosdb item.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.chat_message_histories.cosmos_db.CosmosDBChatMessageHistory.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cosmos_endpoint</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cosmos_database</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cosmos_container</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">session_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">credential</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">connection_string</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ttl</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cosmos_client_kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/langchain_community/chat_message_histories/cosmos_db.html#CosmosDBChatMessageHistory.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain_community.chat_message_histories.cosmos_db.CosmosDBChatMessageHistory.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initializes a new instance of the CosmosDBChatMessageHistory class.</p>
+<p>Make sure to call prepare_cosmos or use the context manager to make
+sure your database is ready.</p>
+<p>Either a credential or a connection string must be provided.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cosmos_endpoint</strong> – The connection endpoint for the Azure Cosmos DB account.</p></li>
+<li><p><strong>cosmos_database</strong> – The name of the database to use.</p></li>
+<li><p><strong>cosmos_container</strong> – The name of the container to use.</p></li>
+<li><p><strong>session_id</strong> – The session ID to use, can be overwritten while loading.</p></li>
+<li><p><strong>user_id</strong> – The user ID to use, can be overwritten while loading.</p></li>
+<li><p><strong>credential</strong> – The credential to use to authenticate to Azure Cosmos DB.</p></li>
+<li><p><strong>connection_string</strong> – The connection string to use to authenticate.</p></li>
+<li><p><strong>ttl</strong> – The time to live (in seconds) to use for documents in the container.</p></li>
+<li><p><strong>cosmos_client_kwargs</strong> – Additional kwargs to pass to the CosmosClient.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.chat_message_histories.cosmos_db.CosmosDBChatMessageHistory.add_ai_message">
+<span class="sig-name descname"><span class="pre">add_ai_message</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../messages/langchain_core.messages.ai.AIMessage.html#langchain_core.messages.ai.AIMessage" title="langchain_core.messages.ai.AIMessage"><span class="pre">AIMessage</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#langchain_community.chat_message_histories.cosmos_db.CosmosDBChatMessageHistory.add_ai_message" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convenience method for adding an AI message string to the store.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>message</strong> – The AI message to add.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.chat_message_histories.cosmos_db.CosmosDBChatMessageHistory.add_message">
+<span class="sig-name descname"><span class="pre">add_message</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../messages/langchain_core.messages.base.BaseMessage.html#langchain_core.messages.base.BaseMessage" title="langchain_core.messages.base.BaseMessage"><span class="pre">BaseMessage</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/langchain_community/chat_message_histories/cosmos_db.html#CosmosDBChatMessageHistory.add_message"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain_community.chat_message_histories.cosmos_db.CosmosDBChatMessageHistory.add_message" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a self-created message to the store</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.chat_message_histories.cosmos_db.CosmosDBChatMessageHistory.add_user_message">
+<span class="sig-name descname"><span class="pre">add_user_message</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../messages/langchain_core.messages.human.HumanMessage.html#langchain_core.messages.human.HumanMessage" title="langchain_core.messages.human.HumanMessage"><span class="pre">HumanMessage</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#langchain_community.chat_message_histories.cosmos_db.CosmosDBChatMessageHistory.add_user_message" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convenience method for adding a human message string to the store.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>message</strong> – The human message to add</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.chat_message_histories.cosmos_db.CosmosDBChatMessageHistory.clear">
+<span class="sig-name descname"><span class="pre">clear</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/langchain_community/chat_message_histories/cosmos_db.html#CosmosDBChatMessageHistory.clear"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain_community.chat_message_histories.cosmos_db.CosmosDBChatMessageHistory.clear" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clear session memory from this memory and cosmos.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.chat_message_histories.cosmos_db.CosmosDBChatMessageHistory.load_messages">
+<span class="sig-name descname"><span class="pre">load_messages</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/langchain_community/chat_message_histories/cosmos_db.html#CosmosDBChatMessageHistory.load_messages"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain_community.chat_message_histories.cosmos_db.CosmosDBChatMessageHistory.load_messages" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve the messages from Cosmos</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.chat_message_histories.cosmos_db.CosmosDBChatMessageHistory.prepare_cosmos">
+<span class="sig-name descname"><span class="pre">prepare_cosmos</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/langchain_community/chat_message_histories/cosmos_db.html#CosmosDBChatMessageHistory.prepare_cosmos"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain_community.chat_message_histories.cosmos_db.CosmosDBChatMessageHistory.prepare_cosmos" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prepare the CosmosDB client.</p>
+<p>Use this function or the context manager to make sure your database is ready.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain_community.chat_message_histories.cosmos_db.CosmosDBChatMessageHistory.upsert_messages">
+<span class="sig-name descname"><span class="pre">upsert_messages</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/langchain_community/chat_message_histories/cosmos_db.html#CosmosDBChatMessageHistory.upsert_messages"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain_community.chat_message_histories.cosmos_db.CosmosDBChatMessageHistory.upsert_messages" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the cosmosdb item.</p>
+</dd></dl>
+
+</dd></dl>
+
+<ul class="simple">
+</ul>
+</section>
+
+
+      </div>
+    <div class="container">
+      <footer class="sk-content-footer">
+            &copy; 2023, LangChain, Inc..
+          Last updated on Feb 13, 2024.
+          <a href="../_sources/chat_message_histories/langchain_community.chat_message_histories.cosmos_db.CosmosDBChatMessageHistory.rst.txt" rel="nofollow">Show this page source</a>
+      </footer>
+    </div>
+  </div>
+</div>
+<script src="../_static/js/vendor/bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    /* Add a [>>>] button on the top-right corner of code samples to hide
+     * the >>> and ... prompts and the output and thus make the code
+     * copyable. */
+    var div = $('.highlight-python .highlight,' +
+                '.highlight-python3 .highlight,' +
+                '.highlight-pycon .highlight,' +
+		'.highlight-default .highlight')
+    var pre = div.find('pre');
+
+    // get the styles from the current theme
+    pre.parent().parent().css('position', 'relative');
+    var hide_text = 'Hide prompts and outputs';
+    var show_text = 'Show prompts and outputs';
+
+    // create and add the button to all the code blocks that contain >>>
+    div.each(function(index) {
+        var jthis = $(this);
+        if (jthis.find('.gp').length > 0) {
+            var button = $('<span class="copybutton">&gt;&gt;&gt;</span>');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+            jthis.prepend(button);
+        }
+        // tracebacks (.gt) contain bare text elements that need to be
+        // wrapped in a span to work with .nextUntil() (see later)
+        jthis.find('pre:has(.gt)').contents().filter(function() {
+            return ((this.nodeType == 3) && (this.data.trim().length > 0));
+        }).wrap('<span>');
+    });
+
+    // define the behavior of the button when it's clicked
+    $('.copybutton').click(function(e){
+        e.preventDefault();
+        var button = $(this);
+        if (button.data('hidden') === 'false') {
+            // hide the code output
+            button.parent().find('.go, .gp, .gt').hide();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'hidden');
+            button.css('text-decoration', 'line-through');
+            button.attr('title', show_text);
+            button.data('hidden', 'true');
+        } else {
+            // show the code output
+            button.parent().find('.go, .gp, .gt').show();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'visible');
+            button.css('text-decoration', 'none');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+        }
+    });
+
+	/*** Add permalink buttons next to glossary terms ***/
+	$('dl.glossary > dt[id]').append(function() {
+		return ('<a class="headerlink" href="#' +
+			    this.getAttribute('id') +
+			    '" title="Permalink to this term">¶</a>');
+	});
+});
+
+</script>
+    
+</body>
+</html>

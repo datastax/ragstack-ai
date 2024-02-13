@@ -1,0 +1,408 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>langchain.text_splitter.CharacterTextSplitter &mdash; 🦜🔗 LangChain 0.1.4</title>
+  
+  <link rel="canonical" href="https://api.python.langchain.com/en/latest/text_splitter/langchain.text_splitter.CharacterTextSplitter.html" />
+
+  
+
+  <link rel="stylesheet" href="../_static/css/vendor/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/autodoc_pydantic.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/sphinx-dropdown.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/panels-bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+<script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+<script src="../_static/jquery.js"></script> 
+</head>
+<body>
+
+
+<nav id="navbar" class="sk-docs-navbar navbar navbar-expand-md navbar-light bg-light py-0">
+  <div class="container-fluid sk-docs-container px-0">
+    <button
+      id="sk-navbar-toggler"
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="sk-navbar-collapse collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../langchain_api_reference.html">LangChain</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../core_api_reference.html">Core</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../community_api_reference.html">Community</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../experimental_api_reference.html">Experimental</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../robocorp_api_reference.html">robocorp</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../openai_api_reference.html">openai</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../together_api_reference.html">together</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../google_genai_api_reference.html">google-genai</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../nvidia_ai_endpoints_api_reference.html">nvidia-ai-endpoints</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../google_vertexai_api_reference.html">google-vertexai</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../anthropic_api_reference.html">anthropic</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../exa_api_reference.html">exa</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../mistralai_api_reference.html">mistralai</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../nvidia_trt_api_reference.html">nvidia-trt</a>
+        </li>
+        <li class="nav-item dropdown nav-more-item-dropdown">
+          <a class="sk-nav-link nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Partner libs</a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+              <a class="sk-nav-dropdown-item dropdown-item" href="../robocorp_api_reference.html">robocorp</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../openai_api_reference.html">openai</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../together_api_reference.html">together</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../google_genai_api_reference.html">google-genai</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../nvidia_ai_endpoints_api_reference.html">nvidia-ai-endpoints</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../google_vertexai_api_reference.html">google-vertexai</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../anthropic_api_reference.html">anthropic</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../exa_api_reference.html">exa</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../mistralai_api_reference.html">mistralai</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../nvidia_trt_api_reference.html">nvidia-trt</a>
+          </div>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" target="_blank" rel="noopener noreferrer" href="https://python.langchain.com/">Docs</a>
+        </li>
+      </ul>
+      <div id="searchbox" role="search">
+          <div class="searchformwrapper">
+          <form class="search" action="../search.html" method="get">
+            <input class="sk-search-text-input" type="text" name="q" aria-labelledby="searchlabel" />
+            <input class="sk-search-text-btn" type="submit" value="Go" />
+          </form>
+          </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="d-flex" id="sk-doc-wrapper">
+    <input type="checkbox" name="sk-toggle-checkbox" id="sk-toggle-checkbox">
+    <label id="sk-sidemenu-toggle" class="sk-btn-toggle-toc btn sk-btn-primary" for="sk-toggle-checkbox">Toggle Menu</label>
+    <div id="sk-sidebar-wrapper" class="border-right">
+      <div class="sk-sidebar-toc-wrapper">
+        <div class="btn-group w-100 mb-2" role="group" aria-label="rellinks">
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Prev</a>
+            <a href="#" role="button" class="btn sk-btn-rellink disabled py-1">Up</a>
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Next</a>
+        </div>
+            <div class="sk-sidebar-toc">
+              <ul>
+<li><a class="reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">langchain.text_splitter</span></code>.CharacterTextSplitter</a><ul>
+<li><a class="reference internal" href="#langchain.text_splitter.CharacterTextSplitter"><code class="docutils literal notranslate"><span class="pre">CharacterTextSplitter</span></code></a><ul>
+<li><a class="reference internal" href="#langchain.text_splitter.CharacterTextSplitter.__init__"><code class="docutils literal notranslate"><span class="pre">CharacterTextSplitter.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.text_splitter.CharacterTextSplitter.atransform_documents"><code class="docutils literal notranslate"><span class="pre">CharacterTextSplitter.atransform_documents()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.text_splitter.CharacterTextSplitter.create_documents"><code class="docutils literal notranslate"><span class="pre">CharacterTextSplitter.create_documents()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.text_splitter.CharacterTextSplitter.from_huggingface_tokenizer"><code class="docutils literal notranslate"><span class="pre">CharacterTextSplitter.from_huggingface_tokenizer()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.text_splitter.CharacterTextSplitter.from_tiktoken_encoder"><code class="docutils literal notranslate"><span class="pre">CharacterTextSplitter.from_tiktoken_encoder()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.text_splitter.CharacterTextSplitter.split_documents"><code class="docutils literal notranslate"><span class="pre">CharacterTextSplitter.split_documents()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.text_splitter.CharacterTextSplitter.split_text"><code class="docutils literal notranslate"><span class="pre">CharacterTextSplitter.split_text()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.text_splitter.CharacterTextSplitter.transform_documents"><code class="docutils literal notranslate"><span class="pre">CharacterTextSplitter.transform_documents()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            </div>
+      </div>
+    </div>
+    <div id="sk-page-content-wrapper">
+      <div class="sk-page-content container-fluid body px-md-3" role="main">
+        
+  <section id="langchain-text-splitter-charactertextsplitter">
+<h1><a class="reference internal" href="../langchain_api_reference.html#module-langchain.text_splitter" title="langchain.text_splitter"><code class="xref py py-mod docutils literal notranslate"><span class="pre">langchain.text_splitter</span></code></a>.CharacterTextSplitter<a class="headerlink" href="#langchain-text-splitter-charactertextsplitter" title="Permalink to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="langchain.text_splitter.CharacterTextSplitter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">langchain.text_splitter.</span></span><span class="sig-name descname"><span class="pre">CharacterTextSplitter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">separator</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'\n\n'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_separator_regex</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/langchain/text_splitter.html#CharacterTextSplitter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain.text_splitter.CharacterTextSplitter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Splitting text that looks at characters.</p>
+<p>Create a new TextSplitter.</p>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#langchain.text_splitter.CharacterTextSplitter.__init__" title="langchain.text_splitter.CharacterTextSplitter.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>([separator, is_separator_regex])</p></td>
+<td><p>Create a new TextSplitter.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#langchain.text_splitter.CharacterTextSplitter.atransform_documents" title="langchain.text_splitter.CharacterTextSplitter.atransform_documents"><code class="xref py py-obj docutils literal notranslate"><span class="pre">atransform_documents</span></code></a>(documents, **kwargs)</p></td>
+<td><p>Asynchronously transform a list of documents.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#langchain.text_splitter.CharacterTextSplitter.create_documents" title="langchain.text_splitter.CharacterTextSplitter.create_documents"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_documents</span></code></a>(texts[, metadatas])</p></td>
+<td><p>Create documents from a list of texts.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#langchain.text_splitter.CharacterTextSplitter.from_huggingface_tokenizer" title="langchain.text_splitter.CharacterTextSplitter.from_huggingface_tokenizer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_huggingface_tokenizer</span></code></a>(tokenizer, **kwargs)</p></td>
+<td><p>Text splitter that uses HuggingFace tokenizer to count length.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#langchain.text_splitter.CharacterTextSplitter.from_tiktoken_encoder" title="langchain.text_splitter.CharacterTextSplitter.from_tiktoken_encoder"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_tiktoken_encoder</span></code></a>([encoding_name, ...])</p></td>
+<td><p>Text splitter that uses tiktoken encoder to count length.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#langchain.text_splitter.CharacterTextSplitter.split_documents" title="langchain.text_splitter.CharacterTextSplitter.split_documents"><code class="xref py py-obj docutils literal notranslate"><span class="pre">split_documents</span></code></a>(documents)</p></td>
+<td><p>Split documents.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#langchain.text_splitter.CharacterTextSplitter.split_text" title="langchain.text_splitter.CharacterTextSplitter.split_text"><code class="xref py py-obj docutils literal notranslate"><span class="pre">split_text</span></code></a>(text)</p></td>
+<td><p>Split incoming text and return chunks.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#langchain.text_splitter.CharacterTextSplitter.transform_documents" title="langchain.text_splitter.CharacterTextSplitter.transform_documents"><code class="xref py py-obj docutils literal notranslate"><span class="pre">transform_documents</span></code></a>(documents, **kwargs)</p></td>
+<td><p>Transform sequence of documents by splitting them.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.text_splitter.CharacterTextSplitter.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">separator</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'\n\n'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_separator_regex</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/langchain/text_splitter.html#CharacterTextSplitter.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain.text_splitter.CharacterTextSplitter.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new TextSplitter.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.text_splitter.CharacterTextSplitter.atransform_documents">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">atransform_documents</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">documents</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../documents/langchain_core.documents.base.Document.html#langchain_core.documents.base.Document" title="langchain_core.documents.base.Document"><span class="pre">Document</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../documents/langchain_core.documents.base.Document.html#langchain_core.documents.base.Document" title="langchain_core.documents.base.Document"><span class="pre">Document</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#langchain.text_splitter.CharacterTextSplitter.atransform_documents" title="Permalink to this definition">¶</a></dt>
+<dd><p>Asynchronously transform a list of documents.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>documents</strong> – A sequence of Documents to be transformed.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A list of transformed Documents.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.text_splitter.CharacterTextSplitter.create_documents">
+<span class="sig-name descname"><span class="pre">create_documents</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">texts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadatas</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../documents/langchain_core.documents.base.Document.html#langchain_core.documents.base.Document" title="langchain_core.documents.base.Document"><span class="pre">Document</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#langchain.text_splitter.CharacterTextSplitter.create_documents" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create documents from a list of texts.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.text_splitter.CharacterTextSplitter.from_huggingface_tokenizer">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_huggingface_tokenizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tokenizer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="langchain.text_splitter.TextSplitter.html#langchain.text_splitter.TextSplitter" title="langchain.text_splitter.TextSplitter"><span class="pre">TextSplitter</span></a></span></span><a class="headerlink" href="#langchain.text_splitter.CharacterTextSplitter.from_huggingface_tokenizer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Text splitter that uses HuggingFace tokenizer to count length.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.text_splitter.CharacterTextSplitter.from_tiktoken_encoder">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_tiktoken_encoder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">encoding_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'gpt2'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allowed_special</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'all'</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">AbstractSet</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">disallowed_special</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'all'</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Collection</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">TS</span></span></span><a class="headerlink" href="#langchain.text_splitter.CharacterTextSplitter.from_tiktoken_encoder" title="Permalink to this definition">¶</a></dt>
+<dd><p>Text splitter that uses tiktoken encoder to count length.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.text_splitter.CharacterTextSplitter.split_documents">
+<span class="sig-name descname"><span class="pre">split_documents</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">documents</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../documents/langchain_core.documents.base.Document.html#langchain_core.documents.base.Document" title="langchain_core.documents.base.Document"><span class="pre">Document</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../documents/langchain_core.documents.base.Document.html#langchain_core.documents.base.Document" title="langchain_core.documents.base.Document"><span class="pre">Document</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#langchain.text_splitter.CharacterTextSplitter.split_documents" title="Permalink to this definition">¶</a></dt>
+<dd><p>Split documents.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.text_splitter.CharacterTextSplitter.split_text">
+<span class="sig-name descname"><span class="pre">split_text</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/langchain/text_splitter.html#CharacterTextSplitter.split_text"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain.text_splitter.CharacterTextSplitter.split_text" title="Permalink to this definition">¶</a></dt>
+<dd><p>Split incoming text and return chunks.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.text_splitter.CharacterTextSplitter.transform_documents">
+<span class="sig-name descname"><span class="pre">transform_documents</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">documents</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../documents/langchain_core.documents.base.Document.html#langchain_core.documents.base.Document" title="langchain_core.documents.base.Document"><span class="pre">Document</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../documents/langchain_core.documents.base.Document.html#langchain_core.documents.base.Document" title="langchain_core.documents.base.Document"><span class="pre">Document</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#langchain.text_splitter.CharacterTextSplitter.transform_documents" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transform sequence of documents by splitting them.</p>
+</dd></dl>
+
+</dd></dl>
+
+<h1>Examples using CharacterTextSplitter<a class="headerlink" href="#langchain-text-splitter-charactertextsplitter" title="Permalink to this heading">¶</a></h1>
+<ul class="simple">
+<li><p><a class="reference external" href="https://python.langchain.com/docs/integrations/callbacks/confident">Confident</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/integrations/providers/huggingface">Hugging Face</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/integrations/providers/openai">OpenAI</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/integrations/vectorstores/elasticsearch">Elasticsearch</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/integrations/providers/vectara/vectara_text_generation">Vectara Text Generation</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/integrations/toolkits/document_comparison_toolkit">Document Comparison</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/integrations/toolkits/vectorstore">Vectorstore</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/integrations/vectorstores/lancedb">LanceDB</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/integrations/vectorstores/sqlitevss">sqlite-vss</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/integrations/vectorstores/weaviate">Weaviate</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/integrations/vectorstores/dashvector">DashVector</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/integrations/vectorstores/scann">ScaNN</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/integrations/vectorstores/xata">Xata</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/modules/data_connection/retrievers/self_query/vectara_self_query">Vectara</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/integrations/vectorstores/pgvector">PGVector</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/integrations/vectorstores/rockset">Rockset</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/integrations/vectorstores/dingo">DingoDB</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/integrations/vectorstores/zilliz">Zilliz</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/integrations/vectorstores/singlestoredb">SingleStoreDB</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/integrations/vectorstores/annoy">Annoy</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/integrations/vectorstores/typesense">Typesense</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/integrations/vectorstores/activeloop_deeplake">Activeloop Deep Lake</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/integrations/vectorstores/neo4jvector">Neo4j Vector Index</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/integrations/vectorstores/tair">Tair</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/integrations/vectorstores/chroma">Chroma</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/integrations/vectorstores/alibabacloud_opensearch">Alibaba Cloud OpenSearch</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/integrations/vectorstores/baiducloud_vector_search">Baidu Cloud VectorSearch</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/integrations/vectorstores/starrocks">StarRocks</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/integrations/vectorstores/sklearn">scikit-learn</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/integrations/vectorstores/tencentvectordb">Tencent Cloud VectorDB</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/integrations/vectorstores/docarray_hnsw">DocArray HnswSearch</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/integrations/vectorstores/myscale">MyScale</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/integrations/vectorstores/clickhouse">ClickHouse</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/integrations/vectorstores/qdrant">Qdrant</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/integrations/vectorstores/tigris">Tigris</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/integrations/vectorstores/awadb">AwaDB</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/integrations/vectorstores/supabase">Supabase (Postgres)</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/integrations/vectorstores/opensearch">OpenSearch</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/integrations/vectorstores/pinecone">Pinecone</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/integrations/vectorstores/bageldb">BagelDB</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/integrations/vectorstores/azuresearch">Azure Cognitive Search</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/integrations/vectorstores/cassandra">Cassandra</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/integrations/vectorstores/usearch">USearch</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/integrations/vectorstores/milvus">Milvus</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/integrations/vectorstores/marqo">Marqo</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/integrations/vectorstores/docarray_in_memory">DocArray InMemorySearch</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/integrations/vectorstores/pgembedding">Postgres Embedding</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/integrations/vectorstores/faiss">Faiss</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/integrations/vectorstores/epsilla">Epsilla</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/integrations/vectorstores/analyticdb">AnalyticDB</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/integrations/vectorstores/hologres">Hologres</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/integrations/vectorstores/mongodb_atlas">MongoDB Atlas</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/integrations/vectorstores/meilisearch">Meilisearch</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/integrations/document_loaders/figma">Figma</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/integrations/document_loaders/psychic">Psychic</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/integrations/llms/manifest">Manifest</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/integrations/llms/llm_caching">LLM Caching integrations</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/use_cases/summarization">Set env var OPENAI_API_KEY or load from a .env file</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/use_cases/question_answering/how_to/conversational_retrieval_agents">Conversational Retrieval Agent</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/use_cases/question_answering/how_to/vector_db_text_generation">Retrieve from vector stores directly</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/use_cases/question_answering/how_to/hyde">Improve document indexing with HyDE</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/use_cases/question_answering/how_to/code/twitter-the-algorithm-analysis-deeplake">Analysis of Twitter the-algorithm source code with LangChain, GPT4 and Activeloop’s Deep Lake</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/use_cases/question_answering/how_to/code/code-analysis-deeplake">Use LangChain, GPT and Activeloop’s Deep Lake to work with code base</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/use_cases/question_answering/integrations/openai_functions_retrieval_qa">Structure answers with OpenAI functions</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/use_cases/question_answering/integrations/semantic-search-over-chat">QA using Activeloop’s DeepLake</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/use_cases/more/agents/agents/sales_agent_with_context">SalesGPT - Your Context-Aware AI Sales Assistant With Knowledge Base</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/modules/data_connection/indexing">Indexing</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/modules/data_connection/text_embedding/caching_embeddings">Caching</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/modules/data_connection/document_transformers/text_splitters/split_by_token">Split by tokens </a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/modules/memory/adding_memory_chain_multiple_inputs">Memory in the Multi-Input Chain</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/modules/agents/how_to/agent_vectorstore">Combine agents and vector stores</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/modules/chains/how_to/from_hub">Loading from LangChainHub</a></p></li>
+</ul>
+</section>
+
+
+      </div>
+    <div class="container">
+      <footer class="sk-content-footer">
+            &copy; 2023, LangChain, Inc..
+          Last updated on Feb 13, 2024.
+          <a href="../_sources/text_splitter/langchain.text_splitter.CharacterTextSplitter.rst.txt" rel="nofollow">Show this page source</a>
+      </footer>
+    </div>
+  </div>
+</div>
+<script src="../_static/js/vendor/bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    /* Add a [>>>] button on the top-right corner of code samples to hide
+     * the >>> and ... prompts and the output and thus make the code
+     * copyable. */
+    var div = $('.highlight-python .highlight,' +
+                '.highlight-python3 .highlight,' +
+                '.highlight-pycon .highlight,' +
+		'.highlight-default .highlight')
+    var pre = div.find('pre');
+
+    // get the styles from the current theme
+    pre.parent().parent().css('position', 'relative');
+    var hide_text = 'Hide prompts and outputs';
+    var show_text = 'Show prompts and outputs';
+
+    // create and add the button to all the code blocks that contain >>>
+    div.each(function(index) {
+        var jthis = $(this);
+        if (jthis.find('.gp').length > 0) {
+            var button = $('<span class="copybutton">&gt;&gt;&gt;</span>');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+            jthis.prepend(button);
+        }
+        // tracebacks (.gt) contain bare text elements that need to be
+        // wrapped in a span to work with .nextUntil() (see later)
+        jthis.find('pre:has(.gt)').contents().filter(function() {
+            return ((this.nodeType == 3) && (this.data.trim().length > 0));
+        }).wrap('<span>');
+    });
+
+    // define the behavior of the button when it's clicked
+    $('.copybutton').click(function(e){
+        e.preventDefault();
+        var button = $(this);
+        if (button.data('hidden') === 'false') {
+            // hide the code output
+            button.parent().find('.go, .gp, .gt').hide();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'hidden');
+            button.css('text-decoration', 'line-through');
+            button.attr('title', show_text);
+            button.data('hidden', 'true');
+        } else {
+            // show the code output
+            button.parent().find('.go, .gp, .gt').show();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'visible');
+            button.css('text-decoration', 'none');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+        }
+    });
+
+	/*** Add permalink buttons next to glossary terms ***/
+	$('dl.glossary > dt[id]').append(function() {
+		return ('<a class="headerlink" href="#' +
+			    this.getAttribute('id') +
+			    '" title="Permalink to this term">¶</a>');
+	});
+});
+
+</script>
+    
+</body>
+</html>
