@@ -92,7 +92,7 @@ def bedrock_anthropic_llm():
         model="anthropic.claude-v2",
         aws_access_key_id=get_required_env("AWS_ACCESS_KEY_ID"),
         aws_secret_access_key=get_required_env("AWS_SECRET_ACCESS_KEY"),
-        aws_region_name=get_required_env("BEDROCK_AWS_REGION"),
+        region_name=get_required_env("BEDROCK_AWS_REGION"),
     )
 
 
@@ -120,12 +120,13 @@ def bedrock_titan_embedding():
 
 @pytest.fixture
 def bedrock_cohere_embedding():
+    import boto3
     return (
         "bedrock-cohere",
         1024,
-        BedrockEmbedding.from_credentials(
-            model_name="cohere.embed-english-v3",
-            aws_region=get_required_env("BEDROCK_AWS_REGION"),
+        BedrockEmbedding(
+            client=boto3.Session(region_name=get_required_env("BEDROCK_AWS_REGION")).client("bedrock-runtime"),
+            model="cohere.embed-english-v3",
         ),
     )
 
