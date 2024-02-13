@@ -102,7 +102,7 @@ def bedrock_meta_llm():
         model="meta.llama2-13b-chat-v1",
         aws_access_key_id=get_required_env("AWS_ACCESS_KEY_ID"),
         aws_secret_access_key=get_required_env("AWS_SECRET_ACCESS_KEY"),
-        aws_region_name=get_required_env("BEDROCK_AWS_REGION"),
+        region_name=get_required_env("BEDROCK_AWS_REGION"),
     )
 
 

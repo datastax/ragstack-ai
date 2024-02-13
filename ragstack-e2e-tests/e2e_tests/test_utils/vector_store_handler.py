@@ -4,7 +4,6 @@ from typing import List
 
 from langchain_core.chat_history import BaseChatMessageHistory
 from langchain_core.vectorstores import VectorStore as LangChainVectorStore
-from llama_index.vector_stores.types import VectorStore as LLamaIndexVectorStore
 
 from e2e_tests.test_utils import skip_test_due_to_implementation_not_supported
 
