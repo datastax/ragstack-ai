@@ -1,35 +1,34 @@
 = Migrate to RAGStack
 
-Migrating an existing LangChain application to RAGStack is easy - just change your `requirements.txt` or `pyproject.toml` file to use `ragstack-ai`.
+Migrating existing LangChain or LlamaIndex applications to RAGStack is easy - just change your `requirements.txt` or `pyproject.toml` file to use `ragstack-ai`.
 
-RAGStack contains the below packages as of version 0.3.1. When RAGStack is installed, these packages are replaced with the stable, tested `ragstack-ai` versions listed below. For the latest list, see xref:ROOT:changelog.adoc[].
+RAGStack contains the below packages as of version `0.6.0`. When RAGStack is installed, these packages are replaced with the stable, tested `ragstack-ai` versions listed here. For the latest list, see xref:ROOT:changelog.adoc[].
 [%autowidth]
 [cols="2*",options="header"]
 |===
 | Library | Version
 
 | astrapy
-| >=0.6.2,<0.7.0
+| >=0.7.0,<0.8.0
 
 | cassio
 | >=0.1.3,<0.2.0
 
 | langchain
-| ==0.0.349
+| https://datastax.github.io/ragstack-ai/api_reference/0.6.0/langchain[==0.1.4]{external-link-icon}
 
 | llama-index
-| ==0.9.14
+| ==0.9.34
 
 | unstructured
 | >=0.10,<0.11
-
 |===
 
-== Example migration
+== Example LangChain migration
 
 Here is a simple LangChain application that loads a dataset from HuggingFace and embeds the document objects in AstraDB.
 
-.migration.py
+.langchain-migration.py
 [%collapsible%open]
 ====
 [source,python]
@@ -211,7 +210,200 @@ yarl                1.9.4
 +
 [source,python]
 ----
-python3 migration.py
+python3 langchain-migration.py
 ----
 
+...and you should see the same output as before, with no changes to your code required!
+
+== Example LlamaIndex migration
+
+Here is an application that uses LlamaIndex to index a set of documents.
+
+.llama-migration.py
+[%collapsible%open]
+====
+[source,python]
+----
+import os
+from llama_index.llama_dataset import download_llama_dataset
+from llama_index.vector_stores import AstraDBVectorStore
+from llama_index import VectorStoreIndex, SimpleDirectoryReader, StorageContext
+
+# Download and load dataset
+dataset = download_llama_dataset("PaulGrahamEssayDataset", "./data")
+documents = SimpleDirectoryReader("./data/source_files").load_data()
+
+# Display basic information about the documents
+print(f"Total documents: {len(documents)}")
+first_doc = documents[0]
+print(f"First document, id: {first_doc.doc_id}")
+print(f"First document, hash: {first_doc.hash}")
+print(f"First document, text ({len(first_doc.text)} characters):\n{'=' * 20}\n{first_doc.text[:360]} ...")
+
+# Setup AstraDB Vector Store
+astra_db_store = AstraDBVectorStore(
+    token=os.getenv("ASTRA_DB_APPLICATION_TOKEN"),
+    api_endpoint=os.getenv("ASTRA_DB_API_ENDPOINT"),
+    collection_name="test",
+    embedding_dimension=1536
+)
+
+# Create Storage Context and Index
+storage_context = StorageContext.from_defaults(vector_store=astra_db_store)
+index = VectorStoreIndex.from_documents(documents, storage_context=storage_context)
+
+# Query the index
+def execute_query(query_string, mode="default", top_k=3, mmr_prefetch_factor=None):
+    retriever = index.as_retriever(
+        vector_store_query_mode=mode,
+        similarity_top_k=top_k,
+        vector_store_kwargs={"mmr_prefetch_factor": mmr_prefetch_factor} if mmr_prefetch_factor else {}
+    )
+
+    nodes_with_scores = retriever.retrieve(query_string)
+
+    print(query_string)
+    print(f"Found {len(nodes_with_scores)} nodes.")
+    for idx, node_with_score in enumerate(nodes_with_scores):
+        print(f"    [{idx}] score = {node_with_score.score}")
+        print(f"        id    = {node_with_score.node.node_id}")
+        print(f"        text  = {node_with_score.node.text[:90]} ...")
+
+# Execute queries
+query_string_1 = "Why did the author choose to work on AI?"
+execute_query(query_string_1)
+execute_query(query_string_1, mode="mmr", mmr_prefetch_factor=4)
+----
+====
+
+. This application requires installation of the following packages:
++
+[source,python]
+----
+pip install llama-index
+----
++
+. Your application is tested and working at `llama-index` version `0.9.29`. But then, LlamaIndex version `0.10.1` changes the module to split every integration into its own PyPi package. Oh no, your application no longer works!
+. You decide to use RAGStack's pinned, tested version of LlamaIndex (currently `0.9.34`) instead of the latest version of LlamaIndex(`0.10.1`), to avoid this sudden change happening again in the future.
+. Install the `ragstack-ai` package with the `--upgrade-strategy="only-if-needed"` option.
+This ensures pip will not upgrade any packages that are already installed, unless required by the `ragstack-ai` package.
++
+[source,python]
+----
+pip install ragstack-ai --upgrade-strategy="only-if-needed"
+----
++
+[NOTE]
+====
+If you're having trouble with your migration, try uninstalling your current LlamaIndex packages and reinstalling the `ragstack-ai` package.
+[source,python]
+----
+pip uninstall llama-index-agent-openai llama-index-core llama-index-embeddings-openai llama-index-legacy llama-index-llms-openai llama-index-multi-modal-llms-openai llama-index-question-gen-openai llama-index-readers-file llama-index-program-openai
+Successfully uninstalled llama-index-0.9.29
+pip install ragstack-ai --upgrade-strategy="only-if-needed"
+----
+====
++
+. Once the `ragstack-ai` package is installed, run `pip list` to see your current list of packages.
+Notice that the installed version of llama-index is `0.9.34`.
++
+.Pip list
+[%collapsible%open]
+====
+[source,console]
+----
+Package             Version
+------------------- ------------
+aiohttp             3.9.1
+aiosignal           1.3.1
+annotated-types     0.6.0
+anyio               4.2.0
+astrapy             0.7.4
+attrs               23.2.0
+backoff             2.2.1
+beautifulsoup4      4.12.3
+cassandra-driver    3.29.0
+cassio              0.1.4
+certifi             2023.11.17
+chardet             5.2.0
+charset-normalizer  3.3.2
+click               8.1.7
+dataclasses-json    0.6.3
+Deprecated          1.2.14
+deprecation         2.1.0
+distro              1.9.0
+emoji               2.10.0
+filetype            1.2.0
+frozenlist          1.4.1
+fsspec              2023.12.2
+geomet              0.2.1.post1
+greenlet            3.0.3
+h11                 0.14.0
+h2                  4.1.0
+hpack               4.0.0
+httpcore            1.0.2
+httpx               0.25.2
+hyperframe          6.0.1
+idna                3.6
+joblib              1.3.2
+jsonpatch           1.33
+jsonpointer         2.4
+langchain           0.1.4
+langchain-community 0.0.16
+langchain-core      0.1.16
+langchain-openai    0.0.3
+langdetect          1.0.9
+langsmith           0.0.83
+llama-index         0.9.34
+lxml                5.1.0
+marshmallow         3.20.2
+multidict           6.0.4
+mypy-extensions     1.0.0
+nest-asyncio        1.6.0
+networkx            3.2.1
+nltk                3.8.1
+numpy               1.26.3
+openai              1.9.0
+packaging           23.2
+pandas              2.2.0
+pip                 23.3.1
+pydantic            2.5.3
+pydantic_core       2.14.6
+python-dateutil     2.8.2
+python-dotenv       1.0.1
+python-iso639       2024.1.2
+python-magic        0.4.27
+pytz                2023.3.post1
+PyYAML              6.0.1
+ragstack-ai         0.6.0
+rapidfuzz           3.6.1
+regex               2023.12.25
+requests            2.31.0
+setuptools          68.2.2
+six                 1.16.0
+sniffio             1.3.0
+soupsieve           2.5
+SQLAlchemy          2.0.25
+tabulate            0.9.0
+tenacity            8.2.3
+tiktoken            0.5.2
+toml                0.10.2
+tqdm                4.66.1
+typing_extensions   4.9.0
+typing-inspect      0.9.0
+tzdata              2023.4
+unstructured        0.10.30
+urllib3             2.1.0
+wrapt               1.16.0
+yarl                1.9.4
+----
+====
++
+. Run your application...
++
+[source,python]
+----
+python3 llama-migration.py
+----
++
 ...and you should see the same output as before, with no changes to your code required!
