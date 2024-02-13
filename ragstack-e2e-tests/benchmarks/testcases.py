@@ -24,6 +24,13 @@ HOSTNAME = "0.0.0.0"
 SERVICE_PORT = 8080
 MODEL_ID = "NV-Embed-QA"
 
+# The number of chars to read of the input file. A smaller value here will
+# result in faster benchmarks, but may affect accuracy if not enough chunks
+# are created.
+#
+# The default file downloaded is 33MB.
+CHARS_TO_READ = 5000000
+
 thread_local = threading.local()
 
 
@@ -88,7 +95,7 @@ def _split(chunk_size: int) -> list[str]:
     start_split = time.time()
 
     with open(INPUT_PATH, "r") as file:
-        input_data = file.read()
+        input_data = file.read(BYTES_TO_READ)
 
     # TODO: NeMo token limit is 512, though using anything above a chunk_size of 300 will result in
     # sporadic token length errors.

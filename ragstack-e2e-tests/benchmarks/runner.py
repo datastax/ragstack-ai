@@ -41,6 +41,7 @@ def get_values_for_testcase(test_case):
 def run_suite(
     test_case: str,
     loops=1,
+    processes=1,
     report_dir=".",
     only_values_containing=None,
     threads_per_benchmark=None,
@@ -69,7 +70,7 @@ def run_suite(
             os.path.exists(abs_filename) and os.remove(abs_filename)
             filenames.append(abs_filename)
 
-            command = f"{sys.executable} -m pyperf command --copy-env -n 1 -l {loops} -t -o {abs_filename} -- {sys.executable} {benchmarks_dir}/testcases.py {logs_file} {test_case} {value} {threads}"
+            command = f"{sys.executable} -m pyperf command --copy-env -p {processes} -n 1 -l {loops} -t -o {abs_filename} -- {sys.executable} {benchmarks_dir}/testcases.py {logs_file} {test_case} {value} {threads}"
             print(
                 f"Running suite: {test_case} with value: {value} and threads: {threads}"
             )
@@ -127,6 +128,14 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
+        "-p",
+        "--processes",
+        type=int,
+        default=1,
+        help="The number of independent processes to run each benchmark. These run sequentially by default, and thus do not affect CPU/GPU access. Running multiple processes ensures sources of randomness (hash collisions, ASLR) do not affect results.",
+    )
+
+    parser.add_argument(
         "-l",
         "--loops",
         type=int,
@@ -173,6 +182,7 @@ if __name__ == "__main__":
             test_case=test_case,
             report_dir=args.reports_dir,
             loops=args.loops,
+            processes=args.processes,
             only_values_containing=args.values.split(","),
             threads_per_benchmark=args.num_threads,
         )
