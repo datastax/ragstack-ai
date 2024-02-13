@@ -36,7 +36,6 @@ on:
         type: string
       vector-database-type:
         description: "Vector database type"
-        required: true
         type: string
       deploy-to-slack:
         description: "Whether to deploy to Slack or not"
@@ -80,7 +79,6 @@ jobs:
           cloud: ${{ inputs.astradb-cloud }}
 
       - name: Run notebook tests
-        # we run notebook tests only on PROD env since we CassIO need different parameters for DEV, and we don't want to dirty the notebook
         if: ${{ inputs.run-notebooks }}
         env:
           ASTRA_DB_APPLICATION_TOKEN: "${{ secrets[inputs.astradb-token-secret-name] }}"
