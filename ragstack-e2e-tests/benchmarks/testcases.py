@@ -16,7 +16,7 @@ from langchain_community.embeddings import OpenAIEmbeddings
 from langchain_core.embeddings import Embeddings
 from langchain_nvidia_ai_endpoints import NVIDIAEmbeddings
 
-from benchmarks.runner import INPUT_PATH
+from runner import INPUT_PATH
 
 # Define NeMo microservice API request headers
 HEADERS = {"accept": "application/json", "Content-Type": "application/json"}
@@ -86,15 +86,13 @@ def _embed(embeddings: Embeddings, docs: list[str], threads: int):
 
 def _split(chunk_size: int) -> list[str]:
     start_split = time.time()
-    READ_SIZE = 34603000
-    logging.info(f"Ingesting file of bytes: {READ_SIZE}")
 
     with open(INPUT_PATH, "r") as file:
-        input_data = file.read(READ_SIZE)
+        input_data = file.read()
 
     # TODO: NeMo token limit is 512, though using anything above a chunk_size of 300 will result in
     # sporadic token length errors.
-    text_splitter = TokenTextSplitter(chunk_size=max(chunk_size, 300), chunk_overlap=0)
+    text_splitter = TokenTextSplitter(chunk_size=min(chunk_size, 300), chunk_overlap=0)
     split_texts = text_splitter.split_text(input_data)
     docs = []
     for split in split_texts:

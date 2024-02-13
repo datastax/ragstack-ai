@@ -7,7 +7,7 @@ from datasets import load_dataset
 INPUT_PATH = "data/imdb_train.csv"
 
 TEST_CASES = [
-    # "embeddings_batch1_chunk256", too slow
+    # "embeddings_batch1_chunk256",
     "embeddings_batch1_chunk512",
     # "embeddings_batch10_chunk256",
     # "embeddings_batch10_chunk512",
@@ -56,7 +56,7 @@ def run_suite(
                     all_values.remove(value)
                     break
 
-    bechmarks_dir = os.path.dirname(os.path.abspath(__file__))
+    benchmarks_dir = os.path.dirname(os.path.abspath(__file__))
     report_dir = os.path.abspath(report_dir)
 
     filenames = []
@@ -69,7 +69,7 @@ def run_suite(
             os.path.exists(abs_filename) and os.remove(abs_filename)
             filenames.append(abs_filename)
 
-            command = f"{sys.executable} -m pyperf command --copy-env -n 1 -l {loops} -t -o {abs_filename} -- {sys.executable} {bechmarks_dir}/testcases.py {logs_file} {test_case} {value} {threads}"
+            command = f"{sys.executable} -m pyperf command --copy-env -n 1 -l {loops} -t -o {abs_filename} -- {sys.executable} {benchmarks_dir}/testcases.py {logs_file} {test_case} {value} {threads}"
             print(
                 f"Running suite: {test_case} with value: {value} and threads: {threads}"
             )
@@ -159,8 +159,14 @@ if __name__ == "__main__":
 
     # Download the dataset to use
     if not os.path.exists(INPUT_PATH):
+        directory = os.path.dirname(INPUT_PATH)
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+
         dataset = load_dataset("imdb", split="train")
         dataset.to_csv(INPUT_PATH, index=False)
+
+    print("Using dataset: ", INPUT_PATH)
 
     for test_case in tests_to_run:
         run_suite(
