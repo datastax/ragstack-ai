@@ -177,6 +177,8 @@ def _local_nemo_embedding(batch_size, docs, threads):
     logging.info(
         f"Processing batches of size: {batch_size}, for total num_batches: {num_batches}"
     )
+    # Construct the URL
+    url = f"http://{HOSTNAME}:{SERVICE_PORT}/v1/embeddings"
 
     def _process_batch(batch):
         session = get_session()
@@ -289,9 +291,6 @@ if __name__ == "__main__":
             gpu_logs_file,
         ]
         nvidia_smi_process = subprocess.Popen(" ".join(nvidia_smi_cmd), shell=True)
-
-        # Construct the URL
-        url = f"http://{HOSTNAME}:{SERVICE_PORT}/v1/embeddings"
 
         if embeddings == "nemo_microservice":
             logging.info(
