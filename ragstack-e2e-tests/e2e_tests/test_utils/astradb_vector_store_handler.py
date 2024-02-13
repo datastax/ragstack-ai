@@ -125,7 +125,7 @@ def metaclass_resolver(*classes):
 
 
 class EnhancedAstraDBLlamaIndexVectorStore(
-    metaclass_resolver(EnhancedLlamaIndexVectorStore, AstraDBVectorStore)
+    metaclass_resolver(AstraDBVectorStore, EnhancedLlamaIndexVectorStore)
 ):
 
     def put_document(
