@@ -4,7 +4,6 @@ from typing import List
 
 from langchain_core.chat_history import BaseChatMessageHistory
 from langchain_core.vectorstores import VectorStore as LangChainVectorStore
-from llama_index.vector_stores.types import VectorStore as LLamaIndexVectorStore
 
 from e2e_tests.test_utils import skip_test_due_to_implementation_not_supported
 
@@ -30,7 +29,8 @@ class EnhancedLangChainVectorStore(LangChainVectorStore, EnhancedVectorStore, AB
     """Enhanced LangChain vector store"""
 
 
-class EnhancedLlamaIndexVectorStore(LLamaIndexVectorStore, EnhancedVectorStore, ABC):
+# we can't use the VectorStore type here from llama_index.vector_stores.types because AstraDBVectorStore is based on BasePydanticVectorStore
+class EnhancedLlamaIndexVectorStore(EnhancedVectorStore, ABC):
     """Enhanced Llama-Index vector store"""
 
 

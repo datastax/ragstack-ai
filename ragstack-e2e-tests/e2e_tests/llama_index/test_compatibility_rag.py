@@ -1,5 +1,4 @@
 import logging
-import os
 
 import pytest
 from langchain.embeddings import VertexAIEmbeddings, HuggingFaceInferenceAPIEmbeddings
@@ -29,30 +28,13 @@ from llama_index.schema import ImageNode
 from e2e_tests.conftest import (
     set_current_test_info,
     get_required_env,
-    get_vector_store_handler,
 )
 from vertexai.vision_models import MultiModalEmbeddingModel, Image
 
+from e2e_tests.test_utils import get_local_resource_path
 from e2e_tests.test_utils.vector_store_handler import (
-    VectorStoreImplementation,
     VectorStoreTestContext,
 )
-
-
-@pytest.fixture
-def astra_db():
-    handler = get_vector_store_handler(VectorStoreImplementation.ASTRADB)
-    context = handler.before_test()
-    yield context
-    handler.after_test()
-
-
-@pytest.fixture
-def cassandra():
-    handler = get_vector_store_handler(VectorStoreImplementation.CASSANDRA)
-    context = handler.before_test()
-    yield context
-    handler.after_test()
 
 
 @pytest.fixture
@@ -110,7 +92,7 @@ def bedrock_anthropic_llm():
         model="anthropic.claude-v2",
         aws_access_key_id=get_required_env("AWS_ACCESS_KEY_ID"),
         aws_secret_access_key=get_required_env("AWS_SECRET_ACCESS_KEY"),
-        aws_region_name=get_required_env("BEDROCK_AWS_REGION"),
+        region_name=get_required_env("BEDROCK_AWS_REGION"),
     )
 
 
@@ -120,7 +102,7 @@ def bedrock_meta_llm():
         model="meta.llama2-13b-chat-v1",
         aws_access_key_id=get_required_env("AWS_ACCESS_KEY_ID"),
         aws_secret_access_key=get_required_env("AWS_SECRET_ACCESS_KEY"),
-        aws_region_name=get_required_env("BEDROCK_AWS_REGION"),
+        region_name=get_required_env("BEDROCK_AWS_REGION"),
     )
 
 
@@ -138,12 +120,16 @@ def bedrock_titan_embedding():
 
 @pytest.fixture
 def bedrock_cohere_embedding():
+    import boto3
+
     return (
         "bedrock-cohere",
         1024,
-        BedrockEmbedding.from_credentials(
-            model_name="cohere.embed-english-v3",
-            aws_region=get_required_env("BEDROCK_AWS_REGION"),
+        BedrockEmbedding(
+            client=boto3.Session(
+                region_name=get_required_env("BEDROCK_AWS_REGION")
+            ).client("bedrock-runtime"),
+            model="cohere.embed-english-v3",
         ),
     )
 
@@ -337,12 +323,6 @@ def test_multimodal(vector_store, embedding, llm, request):
     logging.info(f"Prompt: {prompt}")
     response = llm_complete_fn(resolved_llm, prompt, query_image_path)
     assert "Coffee Machine Ultra Cool" in response
-
-
-def get_local_resource_path(filename: str):
-    dirname = os.path.dirname(__file__)
-    e2e_tests_dir = os.path.dirname(dirname)
-    return os.path.join(e2e_tests_dir, "resources", filename)
 
 
 @pytest.mark.parametrize(

@@ -1,5 +1,4 @@
 import logging
-import os
 from typing import List
 
 import pytest
@@ -15,6 +14,7 @@ from e2e_tests.langchain.rag_application import (
     run_conversational_rag,
 )
 from e2e_tests.langchain.trulens import run_trulens_evaluation
+from e2e_tests.test_utils import get_local_resource_path
 
 from langchain.chat_models import ChatOpenAI, AzureChatOpenAI, ChatVertexAI, BedrockChat
 from langchain.embeddings import (
@@ -339,12 +339,6 @@ def test_multimodal(vector_store, embedding, llm, request, record_property):
         run_id = cb.traced_runs[0].id
         record_langsmith_sharelink(run_id, record_property)
         assert "Coffee Machine Ultra Cool" in response.content
-
-
-def get_local_resource_path(filename: str):
-    dirname = os.path.dirname(__file__)
-    e2e_tests_dir = os.path.dirname(dirname)
-    return os.path.join(e2e_tests_dir, "resources", filename)
 
 
 @pytest.mark.parametrize("chat", ["vertex_gemini_pro_llm", "gemini_pro_llm"])
