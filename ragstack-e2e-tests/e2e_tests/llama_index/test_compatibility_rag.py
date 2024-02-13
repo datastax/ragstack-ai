@@ -121,11 +121,14 @@ def bedrock_titan_embedding():
 @pytest.fixture
 def bedrock_cohere_embedding():
     import boto3
+
     return (
         "bedrock-cohere",
         1024,
         BedrockEmbedding(
-            client=boto3.Session(region_name=get_required_env("BEDROCK_AWS_REGION")).client("bedrock-runtime"),
+            client=boto3.Session(
+                region_name=get_required_env("BEDROCK_AWS_REGION")
+            ).client("bedrock-runtime"),
             model="cohere.embed-english-v3",
         ),
     )
