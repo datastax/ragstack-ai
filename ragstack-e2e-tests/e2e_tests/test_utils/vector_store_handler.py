@@ -30,7 +30,8 @@ class EnhancedLangChainVectorStore(LangChainVectorStore, EnhancedVectorStore, AB
     """Enhanced LangChain vector store"""
 
 
-class EnhancedLlamaIndexVectorStore(LLamaIndexVectorStore, EnhancedVectorStore, ABC):
+# we can't use the VectorStore type here from llama_index.vector_stores.types because AstraDBVectorStore is based on BasePydanticVectorStore
+class EnhancedLlamaIndexVectorStore(EnhancedVectorStore, ABC):
     """Enhanced Llama-Index vector store"""
 
 
