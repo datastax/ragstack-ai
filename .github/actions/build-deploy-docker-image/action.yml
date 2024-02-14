@@ -13,6 +13,10 @@ inputs:
   push:
     default: "false"
     description: "Whether to push the image or not"
+outputs:
+  test-docker-image:
+    description: "Test Docker image"
+    value: ${{ steps.test-docker-image.outputs.test-docker-image }}
 runs:
   using: "composite"
   steps:
@@ -37,14 +41,16 @@ runs:
         platforms: linux/amd64
         build-args: |
           RAGSTACK_AI_VERSION=${{ inputs.ragstack-version }}
-        tags: ghcr.io/datastax/ragstack-ai:test
+        tags: datastax/ragstack-ai:test
         push: false
 
     - name: Test docker image
+      id: test-docker-image
       shell: bash
       run: |
         set -e
-        docker run --rm ghcr.io/datastax/ragstack-ai:test python -c "import langchain"
+        echo "test-docker-image=datastax/ragstack-ai:test" >> $GITHUB_OUTPUT
+        docker run --rm datastax/ragstack-ai:test python -c "import langchain"
 
     - name: Build Docker image and deploy
       uses: docker/build-push-action@v5
