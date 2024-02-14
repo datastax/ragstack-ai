@@ -8,6 +8,7 @@ import psutil
 import concurrent
 import threading
 import subprocess
+import asyncio
 
 from requests.adapters import HTTPAdapter
 
@@ -62,11 +63,11 @@ def log_cpu_usage(stop_event, interval, filename):
             f.flush()
 
 
-def _embed(embeddings: Embeddings, docs: list[str], threads: int):
-    def process_chunk(chunk):
+async def _aembed(embeddings: Embeddings, docs: list[str], threads: int):
+    async def process_chunk(chunk):
         try:
             logging.debug(f"Embedding {len(chunk)} documents")
-            embeddings.embed_documents(chunk)
+            await embeddings.aembed_documents(chunk)
         except Exception as e:
             logging.error(f"Failed to embed chunk: {e}")
 
@@ -79,13 +80,8 @@ def _embed(embeddings: Embeddings, docs: list[str], threads: int):
     inference_start = time.time()
     logging.info(f"Inference Start: {inference_start}")
 
-    with concurrent.futures.ThreadPoolExecutor(max_workers=threads) as executor:
-        futures = [executor.submit(process_chunk, chunk) for chunk in chunks]
-        for future in concurrent.futures.as_completed(futures):
-            try:
-                future.result()
-            except Exception as e:
-                logging.error(f"Exception occurred in thread: {e}")
+    # Use asyncio.gather to run the process_chunk tasks concurrently
+    await asyncio.gather(*(process_chunk(chunk) for chunk in chunks))
 
     inference_end = time.time()
     logging.info(f"Inference End: {inference_end}")
@@ -118,7 +114,7 @@ def _split(chunk_size: int) -> list[str]:
 def embeddings_batch1_chunk256(embeddings_fn, threads):
     docs = _split(256)
     if embeddings_fn is not None:
-        _embed(embeddings_fn(1, threads), docs, threads)
+        _aembed(embeddings_fn(1, threads), docs, threads)
     else:
         _local_nemo_embedding(1, docs, threads)
 
@@ -126,7 +122,7 @@ def embeddings_batch1_chunk256(embeddings_fn, threads):
 def embeddings_batch1_chunk512(embeddings_fn, threads):
     docs = _split(512)
     if embeddings_fn is not None:
-        _embed(embeddings_fn(1, threads), docs, threads)
+        _aembed(embeddings_fn(1, threads), docs, threads)
     else:
         _local_nemo_embedding(1, docs, threads)
 
@@ -134,7 +130,7 @@ def embeddings_batch1_chunk512(embeddings_fn, threads):
 def embeddings_batch10_chunk256(embeddings_fn, threads):
     docs = _split(256)
     if embeddings_fn is not None:
-        _embed(embeddings_fn(10, threads), docs, threads)
+        _aembed(embeddings_fn(10, threads), docs, threads)
     else:
         _local_nemo_embedding(10, docs, threads)
 
@@ -142,7 +138,7 @@ def embeddings_batch10_chunk256(embeddings_fn, threads):
 def embeddings_batch10_chunk512(embeddings_fn, threads):
     docs = _split(512)
     if embeddings_fn is not None:
-        _embed(embeddings_fn(10, threads), docs, threads)
+        _aembed(embeddings_fn(10, threads), docs, threads)
     else:
         _local_nemo_embedding(10, docs, threads)
 
@@ -150,7 +146,7 @@ def embeddings_batch10_chunk512(embeddings_fn, threads):
 def embeddings_batch50_chunk256(embeddings_fn, threads):
     docs = _split(256)
     if embeddings_fn is not None:
-        _embed(embeddings_fn(50, threads), docs, threads)
+        _aembed(embeddings_fn(50, threads), docs, threads)
     else:
         _local_nemo_embedding(50, docs, threads)
 
@@ -158,7 +154,7 @@ def embeddings_batch50_chunk256(embeddings_fn, threads):
 def embeddings_batch50_chunk512(embeddings_fn, threads):
     docs = _split(512)
     if embeddings_fn is not None:
-        _embed(embeddings_fn(50, threads), docs, threads)
+        _aembed(embeddings_fn(50, threads), docs, threads)
     else:
         _local_nemo_embedding(50, docs, threads)
 
@@ -166,7 +162,7 @@ def embeddings_batch50_chunk512(embeddings_fn, threads):
 def embeddings_batch100_chunk256(embeddings_fn, threads):
     docs = _split(256)
     if embeddings_fn is not None:
-        _embed(embeddings_fn(100, threads), docs, threads)
+        _aembed(embeddings_fn(100, threads), docs, threads)
     else:
         _local_nemo_embedding(100, docs, threads)
 
@@ -174,7 +170,7 @@ def embeddings_batch100_chunk256(embeddings_fn, threads):
 def embeddings_batch100_chunk512(embeddings_fn, threads):
     docs = _split(512)
     if embeddings_fn is not None:
-        _embed(embeddings_fn(100, threads), docs, threads)
+        _aembed(embeddings_fn(100, threads), docs, threads)
     else:
         _local_nemo_embedding(100, docs, threads)
 
