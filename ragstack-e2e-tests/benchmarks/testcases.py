@@ -72,6 +72,7 @@ def log_cpu_usage(stop_event, interval, filename):
 def _split(chunk_size: int) -> list[str]:
     start_split = time.time()
 
+    logging.info(f"Reading {CHARS_TO_READ} characters from {INPUT_PATH}")
     with open(INPUT_PATH, "r") as file:
         input_data = file.read(CHARS_TO_READ)
 
@@ -159,11 +160,12 @@ def _local_nemo_embedding(batch_size, chunks, threads):
     logging.info(f"Inference End: {inference_end}")
 
 
-def openai_text_embedding_3_small(batch_size):
+def openai_ada002(batch_size):
+    model = "text-embedding-ada-002"
     # test network latency first -- can subtract this from each call manually for now.
     total_latency = 0
     bad_embeds = OpenAIEmbeddings(
-        model="text-embedding-3-small", chunk_size=batch_size, api_key="bad_creds"
+        model=model, chunk_size=batch_size, api_key="bad_creds"
     )
     logging.info("Calling openai with bad credentials")
     for _ in range(10):
