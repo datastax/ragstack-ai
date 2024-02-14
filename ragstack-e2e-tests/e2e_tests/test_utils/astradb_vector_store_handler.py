@@ -34,7 +34,7 @@ class AstraRef:
     token: str = field(repr=False)
     api_endpoint: str = field(repr=False)
     collection: str
-    id: str
+    id: str = field(repr=False)
     env: str
 
 
