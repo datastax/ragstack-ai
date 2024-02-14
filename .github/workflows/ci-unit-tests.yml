@@ -20,23 +20,33 @@ jobs:
     steps:
       - name: Check out the repo
         uses: actions/checkout@v4
-      - name: Build docker image
+      - name: Build docker image (Dockerfile)
+        id: build-docker-image
         uses: ./.github/actions/build-deploy-docker-image
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           # we don't really care about the version here, we just want to make sure the image builds
           ragstack-version: "0.*"
-          docker-tag: latest-dev
+          docker-tag: latest
           push: "false"
+
+      - name: Scan docker image
+        uses: snyk/actions/docker@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          image: ${{ steps.build-docker-image.outputs.test-docker-image }}
+          args: --severity-threshold=high
+
       - name: "Setup: Python 3.11"
         uses: ./.github/actions/setup-python
 
-      - name: Build dev docker image
+      - name: Build dev docker image (Dockerfile.dev)
         run: |
           poetry build
           docker build -t datastax/ragstack-ai:latest-dev -f docker/Dockerfile.dev dist
 
-      - name: Run Snyk to check Docker image for vulnerabilities
+      - name: Scan dev docker image
         uses: snyk/actions/docker@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
