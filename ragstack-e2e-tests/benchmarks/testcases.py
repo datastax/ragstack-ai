@@ -88,6 +88,8 @@ def _split(chunk_size: int) -> list[str]:
 
 
 async def _aembed(embeddings: Embeddings, docs: list[str], threads: int):
+    logging.info("TODO DELETE ME -------- aembed")
+
     async def process_chunk(chunk):
         try:
             logging.info(f"Embedding {len(chunk)} documents")
@@ -105,7 +107,6 @@ async def _aembed(embeddings: Embeddings, docs: list[str], threads: int):
     inference_start = time.time()
     logging.info(f"Inference Start: {inference_start}")
 
-    # Use asyncio.gather to run the process_chunk tasks concurrently
     await asyncio.gather(*(process_chunk(chunk) for chunk in chunks))
 
     inference_end = time.time()
@@ -199,7 +200,7 @@ def _eval_embeddings(batch_size, chunk_size, threads):
 
 async def _aeval_embeddings(embedding_model, chunk_size, threads):
     docs = _split(chunk_size)
-    _aembed(embedding_model, docs, threads)
+    await _aembed(embedding_model, docs, threads)
 
 
 if __name__ == "__main__":

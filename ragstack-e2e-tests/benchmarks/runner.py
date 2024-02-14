@@ -217,7 +217,6 @@ if __name__ == "__main__":
     print("Using dataset: ", INPUT_PATH)
 
     for test_case in tests_to_run:
-        print(test_case)
         run_suite(
             test_case=test_case,
             report_dir=args.reports_dir,
