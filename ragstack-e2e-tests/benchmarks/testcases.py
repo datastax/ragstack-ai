@@ -87,38 +87,29 @@ def _split(chunk_size: int) -> list[str]:
     return docs
 
 
-async def _aembed(embeddings: Embeddings, docs: list[str], threads: int):
-    logging.info("TODO DELETE ME -------- aembed")
-
-    async def process_chunk(chunk):
+async def _aembed(embeddings: Embeddings, chunks: list[str], threads: int):
+    async def process_batch(batch):
         try:
-            logging.info(f"Embedding {len(chunk)} documents")
-            res = await embeddings.aembed_documents(chunk)
-            logging.info(res)
+            await embeddings.aembed_documents(batch)
         except Exception as e:
             logging.error(f"Failed to embed chunk: {e}")
 
-    # Determine the size of each chunk based on the desired number of threads
-    chunk_size = len(docs) // threads + (1 if len(docs) % threads else 0)
-
-    # Create chunks of documents to be processed
-    chunks = [docs[i : i + chunk_size] for i in range(0, len(docs), chunk_size)]
+    batch_size = len(chunks) // threads + (1 if len(chunks) % threads else 0)
+    batches = [chunks[i : i + batch_size] for i in range(0, len(chunks), batch_size)]
+    logging.info(
+        f"Splitting chunks into batches of size {batch_size} for {threads} threads"
+    )
 
     inference_start = time.time()
     logging.info(f"Inference Start: {inference_start}")
 
-    await asyncio.gather(*(process_chunk(chunk) for chunk in chunks))
+    await asyncio.gather(*(process_batch(batch) for batch in batches))
 
     inference_end = time.time()
     logging.info(f"Inference End: {inference_end}")
 
 
 def _local_nemo_embedding(batch_size, chunks, threads):
-    num_batches = len(chunks) // batch_size + (1 if len(chunks) % batch_size else 0)
-    logging.info(
-        f"Processing batches of size: {batch_size}, for total num_batches: {num_batches}"
-    )
-    # Construct the URL
     url = f"http://{HOSTNAME}:{SERVICE_PORT}/v1/embeddings"
 
     def _process_batch(batch):
@@ -136,6 +127,11 @@ def _local_nemo_embedding(batch_size, chunks, threads):
                 f"Request failed with status code {response.status_code}: {response.text}"
             )
         return response
+
+    num_batches = len(chunks) // batch_size + (1 if len(chunks) % batch_size else 0)
+    logging.info(
+        f"Processing batches of size: {batch_size}, for total num_batches: {num_batches}"
+    )
 
     inference_start = time.time()
     logging.info(f"Inference Start: {inference_start}")
