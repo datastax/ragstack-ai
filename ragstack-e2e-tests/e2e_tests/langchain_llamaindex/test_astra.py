@@ -37,6 +37,16 @@ def test_ingest_llama_retrieve_langchain(astra_ref: AstraRef):
     collection = astra_ref.collection
     llm_model = "gpt-3.5-turbo"
 
+    langchain_embeddings = OpenAIEmbeddings(openai_api_key=openai_key)
+
+    langchain_vector_db = AstraDB(
+        collection_name=collection,
+        embedding=langchain_embeddings,
+        token=token,
+        api_endpoint=api_endpoint,
+    )
+    langchain_vector_db.delete_collection()
+
     document_id = str(uuid4())
     document = Document(
         text="RAGStack is a framework to run LangChain and LlamaIndex in production",
@@ -79,19 +89,9 @@ def test_ingest_llama_retrieve_langchain(astra_ref: AstraRef):
     assert "framework" in response.response
 
     # Use LangChain now
-
-    langchain_embeddings = OpenAIEmbeddings(openai_api_key=openai_key)
-
-    vector_db = AstraDB(
-        collection_name=collection,
-        embedding=langchain_embeddings,
-        token=token,
-        api_endpoint=api_endpoint,
-    )
-
     # Verify that the document is in the vector store
 
-    retriever = vector_db.as_retriever()
+    retriever = langchain_vector_db.as_retriever()
     documents_from_langchain = retriever.invoke("What is RAGStack ?")
     assert len(documents_from_langchain) > 0
     for doc in documents_from_langchain:
@@ -99,7 +99,7 @@ def test_ingest_llama_retrieve_langchain(astra_ref: AstraRef):
         assert "framework" in doc.page_content
 
     # Verify compatibility of metadata filtering
-    retriever = vector_db.as_retriever(
+    retriever = langchain_vector_db.as_retriever(
         search_kwargs={"filter": {"source": "llama-index-ingest"}}
     )
     documents_from_langchain = retriever.invoke("What is RAGStack ?")
@@ -108,7 +108,7 @@ def test_ingest_llama_retrieve_langchain(astra_ref: AstraRef):
         print("doc:", doc)
         assert "framework" in doc.page_content
 
-    retriever_no_docs = vector_db.as_retriever(
+    retriever_no_docs = langchain_vector_db.as_retriever(
         search_kwargs={"filter": {"source": "don't-find-anything-please"}}
     )
     documents_from_langchain = retriever_no_docs.invoke("What is RAGStack ?")
