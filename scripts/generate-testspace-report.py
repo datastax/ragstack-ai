@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from typing import List
 
 
-def rewrite_name(name):
+def rewrite_test_case_name(name):
     params = ""
     if "[" in name:
         after_split = name.split("[")
@@ -19,6 +19,9 @@ def rewrite_name(name):
     name = name.replace("_", " ").capitalize()
 
     return f"{name}{params}"
+
+def beatify_xml_name(name):
+    return name.replace("_", " ").capitalize()
 
 
 @dataclass
@@ -223,21 +226,33 @@ def parse_test_report(input_file: str):
                 failure = test_case.find("failure")
                 failures = []
                 if failure is not None:
-                    #err_desc = failure.text
-                    # while it could be informative, it's better to not risk to expose sensitive data
-                    err_desc = ""
-                    failures.append(Failure(title=failure.get("message"), description=err_desc))
+                    failures.append(Failure(title=failure.get("message"), description=failure.text))
 
                 properties = test_case.find("properties")
                 links = []
                 if properties:
+                    prop_map = {}
                     for prop in properties.iter("property"):
-                        if prop.get("name") == "langsmith_url":
+                        prop_map[prop.get("name")] = prop.get("value")
+
+                    for prop in properties.iter("property"):
+                        name = prop.get("name")
+                        if name == "langsmith_url":
                             links.append(
                                 Link(name="LangSmith trace", url=prop.get("value"), level="info", description=""))
+                        elif name.startswith("langsmith_feedback_"):
+                            if not name.endswith("url"):
+                                url_name = name + "_url"
+                                url_value = ""
+                                if url_name in prop_map:
+                                    url_value = prop_map[url_name]
+                                fname = beatify_xml_name(name.replace("langsmith_feedback_", ""))
+                                desc = f"{fname}: {prop.get('value')}"
+                                links.append(
+                                    Link(name="LangSmith feedback", url=url_value, level="info", description=desc))
 
                 report_test_case = TestCase(
-                    name=rewrite_name(test_case.get("name")),
+                    name=rewrite_test_case_name(test_case.get("name")),
                     passed=len(failures) == 0,
                     time=str(float(test_case.get("time")) * 1000),
                     failures=failures,
