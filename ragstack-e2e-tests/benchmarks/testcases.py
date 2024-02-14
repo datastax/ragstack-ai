@@ -95,7 +95,7 @@ def _split(chunk_size: int) -> list[str]:
     start_split = time.time()
 
     with open(INPUT_PATH, "r") as file:
-        input_data = file.read(BYTES_TO_READ)
+        input_data = file.read(CHARS_TO_READ)
 
     # TODO: NeMo token limit is 512, though using anything above a chunk_size of 300 will result in
     # sporadic token length errors.
