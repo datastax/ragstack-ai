@@ -11,6 +11,7 @@ from langchain_community.chat_message_histories import (
 )
 from langchain_community.vectorstores.cassandra import Cassandra
 from langchain_core.chat_history import BaseChatMessageHistory
+
 try:
     # llamaindex 0.9.x
     from llama_index.schema import TextNode
@@ -25,7 +26,6 @@ except ImportError:
     from llama_index.core.vector_stores.types import (
         VectorStoreQuery,
     )
-
 
 
 from e2e_tests.test_utils import (

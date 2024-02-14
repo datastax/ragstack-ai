@@ -2,14 +2,10 @@ import logging
 
 import pytest
 from langchain.embeddings import VertexAIEmbeddings, HuggingFaceInferenceAPIEmbeddings
+
 try:
     # llamaindex 0.9.x
-    from llama_index import (
-        ServiceContext,
-        StorageContext,
-        VectorStoreIndex,
-        Document
-    )
+    from llama_index import ServiceContext, StorageContext, VectorStoreIndex, Document
     from llama_index.embeddings import (
         OpenAIEmbedding,
         AzureOpenAIEmbedding,

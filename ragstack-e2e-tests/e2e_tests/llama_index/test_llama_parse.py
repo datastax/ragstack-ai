@@ -8,23 +8,14 @@ except ImportError:
 
 try:
     # llamaindex 0.9.x
-    from llama_index import (
-        ServiceContext,
-        StorageContext,
-        VectorStoreIndex
-    )
+    from llama_index import ServiceContext, StorageContext, VectorStoreIndex
     from llama_index.embeddings import OpenAIEmbedding
     from llama_index.llms import OpenAI
 except ImportError:
     # llamaindex 0.10.x
-    from llama_index.core import (
-        ServiceContext,
-        StorageContext,
-        VectorStoreIndex
-    )
+    from llama_index.core import ServiceContext, StorageContext, VectorStoreIndex
     from llama_index.llms.openai import OpenAI
     from llama_index.embeddings.openai import OpenAIEmbedding
-
 
 
 from e2e_tests.conftest import (
