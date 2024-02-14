@@ -14,41 +14,41 @@ class TestCase(Enum):
         "batch_size": 1,
         "chunk_size": 512,
     }
-    EMBEDDINGS_BATCH1_CHUNK256 = {
-        "name": "embeddings_batch1_chunk256",
-        "batch_size": 1,
-        "chunk_size": 256,
-    }
-    EMBEDDINGS_BATCH10_CHUNK512 = {
-        "name": "embeddings_batch10_chunk512",
-        "batch_size": 10,
-        "chunk_size": 512,
-    }
-    EMBEDDINGS_BATCH10_CHUNK256 = {
-        "name": "embeddings_batch10_chunk256",
-        "batch_size": 10,
-        "chunk_size": 256,
-    }
-    EMBEDDINGS_BATCH50_CHUNK512 = {
-        "name": "embeddings_batch50_chunk512",
-        "batch_size": 50,
-        "chunk_size": 512,
-    }
-    EMBEDDINGS_BATCH50_CHUNK256 = {
-        "name": "embeddings_batch50_chunk256",
-        "batch_size": 50,
-        "chunk_size": 256,
-    }
-    EMBEDDINGS_BATCH100_CHUNK512 = {
-        "name": "embeddings_batch100_chunk512",
-        "batch_size": 100,
-        "chunk_size": 512,
-    }
-    EMBEDDINGS_BATCH100_CHUNK256 = {
-        "name": "embeddings_batch100_chunk256",
-        "batch_size": 100,
-        "chunk_size": 256,
-    }
+    # EMBEDDINGS_BATCH1_CHUNK256 = {
+    #     "name": "embeddings_batch1_chunk256",
+    #     "batch_size": 1,
+    #     "chunk_size": 256,
+    # }
+    # EMBEDDINGS_BATCH10_CHUNK512 = {
+    #     "name": "embeddings_batch10_chunk512",
+    #     "batch_size": 10,
+    #     "chunk_size": 512,
+    # }
+    # EMBEDDINGS_BATCH10_CHUNK256 = {
+    #     "name": "embeddings_batch10_chunk256",
+    #     "batch_size": 10,
+    #     "chunk_size": 256,
+    # }
+    # EMBEDDINGS_BATCH50_CHUNK512 = {
+    #     "name": "embeddings_batch50_chunk512",
+    #     "batch_size": 50,
+    #     "chunk_size": 512,
+    # }
+    # EMBEDDINGS_BATCH50_CHUNK256 = {
+    #     "name": "embeddings_batch50_chunk256",
+    #     "batch_size": 50,
+    #     "chunk_size": 256,
+    # }
+    # EMBEDDINGS_BATCH100_CHUNK512 = {
+    #     "name": "embeddings_batch100_chunk512",
+    #     "batch_size": 100,
+    #     "chunk_size": 512,
+    # }
+    # EMBEDDINGS_BATCH100_CHUNK256 = {
+    #     "name": "embeddings_batch100_chunk256",
+    #     "batch_size": 100,
+    #     "chunk_size": 256,
+    # }
 
 
 # Custom type function to convert input string to a list of integers
