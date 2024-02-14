@@ -249,13 +249,13 @@ if __name__ == "__main__":
                 f"Running test case: {test_name}/{embedding}/threads:{threads}"
             )
             embedding_model = None
-            _eval_embeddings()
+            _eval_embeddings(batch_size, chunk_size, int(threads))
         else:
             logging.info(
                 f"Running test case: {test_name}/{embedding}/threads:{threads}"
             )
             embedding_model = eval(f"{embedding}({batch_size})")
-            asyncio.run(_aeval_embeddings(embedding_model, chunk_size, threads))
+            asyncio.run(_aeval_embeddings(embedding_model, chunk_size, int(threads)))
 
         logging.info("Test case completed successfully")
 
