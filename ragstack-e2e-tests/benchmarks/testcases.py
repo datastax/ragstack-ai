@@ -66,7 +66,7 @@ def log_cpu_usage(stop_event, interval, filename):
 async def _aembed(embeddings: Embeddings, docs: list[str], threads: int):
     async def process_chunk(chunk):
         try:
-            logging.debug(f"Embedding {len(chunk)} documents")
+            logging.info(f"Embedding {len(chunk)} documents")
             res = await embeddings.aembed_documents(chunk)
             logging.info(res)
         except Exception as e:
@@ -121,6 +121,7 @@ def embeddings_batch1_chunk256(embeddings_fn, threads):
 
 
 def embeddings_batch1_chunk512(embeddings_fn, threads):
+    logging.info("Test - here")
     docs = _split(512)
     if embeddings_fn is not None:
         _aembed(embeddings_fn(1, threads), docs, threads)
@@ -220,12 +221,12 @@ def _local_nemo_embedding(batch_size, docs, threads):
     logging.info(f"Inference End: {inference_end}")
 
 
-def openai_ada002(batch_size, threads):
+def openai_ada002(batch_size):
     # test network latency first -- can subtract this from each call manually for now.
     total_latency = 0
     bad_embeds = OpenAIEmbeddings(chunk_size=batch_size, api_key="bad_creds")
+    logging.info("Calling openai with bad credentials")
     for _ in range(10):
-        logging.info("Calling openai with bad credentials")
         start_time = time.time()
         try:
             bad_embeds.embed_documents(["expect unauthorized error"])
@@ -247,7 +248,7 @@ def openai_ada002(batch_size, threads):
     )
 
 
-def nvidia_nvolveqa40k(batch_size, threads):
+def nvidia_nvolveqa40k(batch_size):
     # 50 is the max supported batch size
     return NVIDIAEmbeddings(
         model="nvolveqa_40k",
@@ -301,10 +302,11 @@ if __name__ == "__main__":
                 f"Running test case: {test_case}/{embeddings}/threads:{threads}"
             )
             embeddings = None
-            eval(f"{test_case}({embeddings}, {threads})")
         else:
-            logging.info(f"Running test case: {test_case}/{embeddings}")
-            eval(f"{test_case}({embeddings}, {threads})")
+            logging.info(
+                f"Running test case: {test_case}/{embeddings}/threads:{threads}"
+            )
+            eval(f"{test_case}({embeddings})")
 
         # Terminate GPU monitor
         nvidia_smi_process.terminate()
