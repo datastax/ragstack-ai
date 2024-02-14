@@ -18,15 +18,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  lint:
-    name: Lint
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out the repo
-        uses: actions/checkout@v4
-      - name: Run lint
-        uses: ./.github/actions/lint
-
   preconditions:
     name: Preconditions
     runs-on: ubuntu-latest
@@ -35,9 +26,13 @@ jobs:
       e2e_tests: ${{ steps.filter.outputs.e2e_tests }}
       astradb-dev-region: "us-west-2"
       astradb-dev-cloud: "aws"
+      astradb-prod-region: "us-east-1"
+      astradb-prod-cloud: "aws"
       is-scheduled: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
     steps:
       - uses: actions/checkout@v4
+      - name: Run lint
+        uses: ./.github/actions/lint
       - uses: dorny/paths-filter@v2
         id: filter
         with:
@@ -45,7 +40,7 @@ jobs:
 
   ragstack-dev-dse-tests:
     name: "RAGStack dev / DSE"
-    needs: ["preconditions", "lint"]
+    needs: ["preconditions"]
     if: ${{ needs.preconditions.outputs.is-scheduled == 'true' || needs.preconditions.outputs.e2e_tests == 'true' }}
     uses: ./.github/workflows/_run_e2e_tests.yml
     secrets: inherit
@@ -60,7 +55,7 @@ jobs:
 
   ragstack-dev-astradev-tests:
     name: "RAGStack dev / AstraDB dev"
-    needs: ["preconditions", "lint"]
+    needs: ["preconditions"]
     if: ${{ needs.preconditions.outputs.is-scheduled == 'true' || needs.preconditions.outputs.e2e_tests == 'true' }}
     uses: ./.github/workflows/_run_e2e_tests.yml
     secrets: inherit
@@ -79,7 +74,7 @@ jobs:
 
   langchain-dse-tests:
     name: "LangChain dev / DSE"
-    needs: ["preconditions", "lint"]
+    needs: ["preconditions"]
     if: ${{ needs.preconditions.outputs.is-scheduled == 'true' || needs.preconditions.outputs.e2e_tests == 'true' }}
     uses: ./.github/workflows/_run_e2e_tests.yml
     secrets: inherit
@@ -94,7 +89,7 @@ jobs:
 
   langchain-astradev-tests:
     name: "LangChain dev / AstraDB dev"
-    needs: ["preconditions", "lint"]
+    needs: ["preconditions"]
     if: ${{ needs.preconditions.outputs.is-scheduled == 'true' }}
     uses: ./.github/workflows/_run_e2e_tests.yml
     secrets: inherit
@@ -113,7 +108,7 @@ jobs:
 
   llamaindex-dse-tests:
     name: "LLamaIndex dev / DSE"
-    needs: ["preconditions", "lint"]
+    needs: ["preconditions"]
     if: ${{ needs.preconditions.outputs.is-scheduled == 'true' || needs.preconditions.outputs.e2e_tests == 'true' }}
     uses: ./.github/workflows/_run_e2e_tests.yml
     secrets: inherit
@@ -128,7 +123,7 @@ jobs:
 
   llamaindex-astradev-tests:
     name: "LLamaIndex dev / AstraDB dev"
-    needs: ["preconditions", "lint"]
+    needs: ["preconditions"]
     if: ${{ needs.preconditions.outputs.is-scheduled == 'true' }}
     uses: ./.github/workflows/_run_e2e_tests.yml
     secrets: inherit
@@ -147,7 +142,7 @@ jobs:
 
   ragstack-latest-release-dse-tests:
     name: "RAGStack latest / DSE"
-    needs: ["preconditions", "lint"]
+    needs: ["preconditions"]
     if: ${{ needs.preconditions.outputs.is-scheduled == 'true' || needs.preconditions.outputs.e2e_tests == 'true' }}
     uses: ./.github/workflows/_run_e2e_tests.yml
     secrets: inherit
@@ -162,7 +157,7 @@ jobs:
 
   ragstack-latest-release-astradev-tests:
     name: "RAGStack latest / AstraDB dev"
-    needs: ["preconditions", "lint"]
+    needs: ["preconditions"]
     if: ${{ needs.preconditions.outputs.is-scheduled == 'true' }}
     uses: ./.github/workflows/_run_e2e_tests.yml
     secrets: inherit
@@ -178,3 +173,22 @@ jobs:
       deploy-to-slack: ${{ needs.preconditions.outputs.is-scheduled == 'true' }}
       deploy-to-testspace: ${{ needs.preconditions.outputs.is-scheduled == 'true' }}
       testspace-space: "RAGStack test suite - RAGStack latest - AstraDB"
+
+  notebook-tests:
+    # we run notebook tests only on PROD env since we CassIO need different parameters for DEV, and we don't want to dirty the notebook
+    name: "Notebooks"
+    needs: ["preconditions"]
+    if: ${{ needs.preconditions.outputs.notebooks == 'true' }}
+    uses: ./.github/workflows/_run_e2e_tests.yml
+    secrets: inherit
+    with:
+      title: "Notebooks"
+      astradb: true
+      run-tests: false
+      run-notebooks: true
+      astradb-token-secret-name: "E2E_TESTS_ASTRA_PROD_DB_TOKEN"
+      astradb-env: "PROD"
+      astradb-region: "${{ needs.preconditions.outputs.astradb-prod-region }}"
+      astradb-cloud: "${{ needs.preconditions.outputs.astradb-prod-cloud }}"
+      deploy-to-slack: false
+      deploy-to-testspace: false
