@@ -81,39 +81,21 @@ def test_ingest_errors(environment: Environment):
             storage_context=environment.storage_context,
             service_context=environment.service_context,
         )
+        pytest.fail("Should have thrown ValueError")
     except ValueError as e:
         print("Error:", e)
         if "Cannot build index from nodes with no content. " not in e.args[0]:
             pytest.fail(f"LLama-index should have thrown an error but it was {e}")
 
-    very_long_text = "RAGStack is a framework to run LangChain in production. " * 1000
+    very_long_text = "RAGStack is a framework to run LangChain in production. " * 5000
 
-    # with the default set of transformations this write succeeds because LI automatically does text splitting
+    # if we disable text splitting, this write still pass since the document is not used in the index by default
     documents = [Document(text=very_long_text)]
     VectorStoreIndex.from_documents(
         documents,
         storage_context=environment.storage_context,
-        service_context=environment.service_context,
+        service_context=environment.service_context_no_splitting,
     )
-
-    # if we disable text splitting, this write fails because the document is too long
-    very_long_text = "RAGStack is a framework to run LangChain in production. " * 1000
-    try:
-        documents = [Document(text=very_long_text)]
-
-        VectorStoreIndex.from_documents(
-            documents,
-            storage_context=environment.storage_context,
-            service_context=environment.service_context_no_splitting,
-        )
-        pytest.fail("Should have thrown ValueError")
-    except ValueError as e:
-        print("Error:", e)
-        # API Exception while running bulk insertion: {'errors': [{'message': 'Document size limitation violated: String value length (56000) exceeds maximum allowed (16000)', 'errorCode': 'SHRED_DOC_LIMIT_VIOLATION'}]}
-        if "SHRED_DOC_LIMIT_VIOLATION" not in e.args[0]:
-            pytest.fail(
-                f"Should have thrown ValueError with SHRED_DOC_LIMIT_VIOLATION but it was {e}"
-            )
 
 
 def test_wrong_connection_parameters(environment: Environment):

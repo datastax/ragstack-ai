@@ -3,7 +3,7 @@ import logging
 import os
 import threading
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List, Callable
 
 import cassio
@@ -31,8 +31,8 @@ from astrapy.db import AstraDB as AstraPyClient
 
 @dataclass
 class AstraRef:
-    token: str
-    api_endpoint: str
+    token: str = field(repr=False)
+    api_endpoint: str = field(repr=False)
     collection: str
     id: str
     env: str
