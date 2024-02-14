@@ -17,7 +17,7 @@ from langchain_community.embeddings import OpenAIEmbeddings
 from langchain_core.embeddings import Embeddings
 from langchain_nvidia_ai_endpoints import NVIDIAEmbeddings
 
-from runner import INPUT_PATH
+from runner import INPUT_PATH, TestCase
 
 # Define NeMo microservice API request headers
 HEADERS = {"accept": "application/json", "Content-Type": "application/json"}
@@ -63,6 +63,30 @@ def log_cpu_usage(stop_event, interval, filename):
             f.flush()
 
 
+def _split(chunk_size: int) -> list[str]:
+    start_split = time.time()
+
+    with open(INPUT_PATH, "r") as file:
+        input_data = file.read(CHARS_TO_READ)
+
+    # TODO: NeMo token limit is 512, though using anything above a chunk_size of 300 will result in
+    # sporadic token length errors.
+    text_splitter = TokenTextSplitter(chunk_size=min(chunk_size, 300), chunk_overlap=0)
+    split_texts = text_splitter.split_text(input_data)
+    docs = []
+    for split in split_texts:
+        docs.append(split)
+
+    average_length = sum(len(doc) for doc in docs) / len(docs) if docs else 0
+    logging.info(
+        f"Created number of documents: {len(docs)} with avg chunk size: {average_length:.2f}"
+    )
+    end_split = time.time()
+    split_time = end_split - start_split
+    logging.info(f"Text split time: {split_time:.2f} seconds")
+    return docs
+
+
 async def _aembed(embeddings: Embeddings, docs: list[str], threads: int):
     async def process_chunk(chunk):
         try:
@@ -88,97 +112,8 @@ async def _aembed(embeddings: Embeddings, docs: list[str], threads: int):
     logging.info(f"Inference End: {inference_end}")
 
 
-def _split(chunk_size: int) -> list[str]:
-    start_split = time.time()
-
-    with open(INPUT_PATH, "r") as file:
-        input_data = file.read(CHARS_TO_READ)
-
-    # TODO: NeMo token limit is 512, though using anything above a chunk_size of 300 will result in
-    # sporadic token length errors.
-    text_splitter = TokenTextSplitter(chunk_size=min(chunk_size, 300), chunk_overlap=0)
-    split_texts = text_splitter.split_text(input_data)
-    docs = []
-    for split in split_texts:
-        docs.append(split)
-
-    average_length = sum(len(doc) for doc in docs) / len(docs) if docs else 0
-    logging.info(
-        f"Created number of documents: {len(docs)} with avg chunk size: {average_length:.2f}"
-    )
-    end_split = time.time()
-    split_time = end_split - start_split
-    logging.info(f"Text split time: {split_time:.2f} seconds")
-    return docs
-
-
-def embeddings_batch1_chunk256(embeddings_fn, threads):
-    docs = _split(256)
-    if embeddings_fn is not None:
-        _aembed(embeddings_fn(1), docs, threads)
-    else:
-        _local_nemo_embedding(1, docs, threads)
-
-
-def embeddings_batch1_chunk512(embeddings_fn, threads):
-    logging.info("Test - here")
-    docs = _split(512)
-    if embeddings_fn is not None:
-        _aembed(embeddings_fn(1), docs, threads)
-    else:
-        _local_nemo_embedding(1, docs, threads)
-
-
-def embeddings_batch10_chunk256(embeddings_fn, threads):
-    docs = _split(256)
-    if embeddings_fn is not None:
-        _aembed(embeddings_fn(10), docs, threads)
-    else:
-        _local_nemo_embedding(10, docs, threads)
-
-
-def embeddings_batch10_chunk512(embeddings_fn, threads):
-    docs = _split(512)
-    if embeddings_fn is not None:
-        _aembed(embeddings_fn(10), docs, threads)
-    else:
-        _local_nemo_embedding(10, docs, threads)
-
-
-def embeddings_batch50_chunk256(embeddings_fn, threads):
-    docs = _split(256)
-    if embeddings_fn is not None:
-        _aembed(embeddings_fn(50), docs, threads)
-    else:
-        _local_nemo_embedding(50, docs, threads)
-
-
-def embeddings_batch50_chunk512(embeddings_fn, threads):
-    docs = _split(512)
-    if embeddings_fn is not None:
-        _aembed(embeddings_fn(50), docs, threads)
-    else:
-        _local_nemo_embedding(50, docs, threads)
-
-
-def embeddings_batch100_chunk256(embeddings_fn, threads):
-    docs = _split(256)
-    if embeddings_fn is not None:
-        _aembed(embeddings_fn(100), docs, threads)
-    else:
-        _local_nemo_embedding(100, docs, threads)
-
-
-def embeddings_batch100_chunk512(embeddings_fn, threads):
-    docs = _split(512)
-    if embeddings_fn is not None:
-        _aembed(embeddings_fn(100), docs, threads)
-    else:
-        _local_nemo_embedding(100, docs, threads)
-
-
-def _local_nemo_embedding(batch_size, docs, threads):
-    num_batches = len(docs) // batch_size + (1 if len(docs) % batch_size else 0)
+def _local_nemo_embedding(batch_size, chunks, threads):
+    num_batches = len(chunks) // batch_size + (1 if len(chunks) % batch_size else 0)
     logging.info(
         f"Processing batches of size: {batch_size}, for total num_batches: {num_batches}"
     )
@@ -206,7 +141,7 @@ def _local_nemo_embedding(batch_size, docs, threads):
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=threads) as executor:
         batches = [
-            docs[i * batch_size : (i + 1) * batch_size] for i in range(num_batches)
+            chunks[i * batch_size : (i + 1) * batch_size] for i in range(num_batches)
         ]
         future_to_batch = {
             executor.submit(_process_batch, batch): batch for batch in batches
@@ -257,8 +192,14 @@ def nvidia_nvolveqa40k(batch_size):
     )
 
 
-async def test_async_method(test_case, embedding_fn, threads):
-    time.sleep(10)
+def _eval_embeddings(batch_size, chunk_size, threads):
+    chunks = _split(chunk_size)
+    _local_nemo_embedding(batch_size, chunks, threads)
+
+
+async def _aeval_embeddings(embedding_model, chunk_size, threads):
+    docs = _split(chunk_size)
+    _aembed(embedding_model, docs, threads)
 
 
 if __name__ == "__main__":
@@ -269,12 +210,14 @@ if __name__ == "__main__":
         logs_file = sys.argv[1]
         logging.basicConfig(filename=logs_file, encoding="utf-8", level=logging.INFO)
 
-        test_case = sys.argv[2]
-        embedding_model = sys.argv[3]
-        threads = sys.argv[4]
+        test_name = sys.argv[2]
+        embedding = sys.argv[3]
+        batch_size = sys.argv[4]
+        chunk_size = sys.argv[5]
+        threads = sys.argv[6]
 
-        cpu_logs_file = "-".join([test_case, embedding_model, threads, cpu_suffix])
-        gpu_logs_file = "-".join([test_case, embedding_model, threads, gpu_suffix])
+        cpu_logs_file = "-".join([test_name, embedding, threads, cpu_suffix])
+        gpu_logs_file = "-".join([test_name, embedding, threads, gpu_suffix])
         cpu_logs_file = f"benchmarks/reports/{cpu_logs_file}"
         gpu_logs_file = f"benchmarks/reports/{gpu_logs_file}"
 
@@ -301,17 +244,20 @@ if __name__ == "__main__":
         ]
         nvidia_smi_process = subprocess.Popen(" ".join(nvidia_smi_cmd), shell=True)
 
-        if embedding_model == "nemo_microservice":
+        if embedding == "nemo_microservice":
             logging.info(
-                f"Running test case: {test_case}/{embedding_model}/threads:{threads}"
+                f"Running test case: {test_name}/{embedding}/threads:{threads}"
             )
             embedding_model = None
-            eval(f"{test_case}({embedding_model}, {threads})")
+            _eval_embeddings()
         else:
             logging.info(
-                f"Running test case: {test_case}/{embedding_model}/threads:{threads}"
+                f"Running test case: {test_name}/{embedding}/threads:{threads}"
             )
-            asyncio.run(test_async_method({test_case}, {embedding_model}, {threads}))
+            embedding_model = eval(f"{embedding}({batch_size})")
+            asyncio.run(_aeval_embeddings(embedding_model, chunk_size, threads))
+
+        logging.info("Test case completed successfully")
 
         # Terminate GPU monitor
         nvidia_smi_process.terminate()

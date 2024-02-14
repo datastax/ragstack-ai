@@ -3,19 +3,52 @@ import os
 import subprocess
 import sys
 from datasets import load_dataset
+from enum import Enum
 
 INPUT_PATH = "data/imdb_train.csv"
 
-TEST_CASES = [
-    # "embeddings_batch1_chunk256",
-    "embeddings_batch1_chunk512",
-    # "embeddings_batch10_chunk256",
-    # "embeddings_batch10_chunk512",
-    # "embeddings_batch50_chunk256",
-    # "embeddings_batch50_chunk512",
-    # "embeddings_batch100_chunk256",
-    # "embeddings_batch100_chunk512",
-]
+
+class TestCase(Enum):
+    EMBEDDINGS_BATCH1_CHUNK512 = {
+        "name": "embeddings_batch1_chunk512",
+        "batch_size": 1,
+        "chunk_size": 512,
+    }
+    EMBEDDINGS_BATCH1_CHUNK256 = {
+        "name": "embeddings_batch1_chunk256",
+        "batch_size": 1,
+        "chunk_size": 256,
+    }
+    EMBEDDINGS_BATCH10_CHUNK512 = {
+        "name": "embeddings_batch10_chunk512",
+        "batch_size": 10,
+        "chunk_size": 512,
+    }
+    EMBEDDINGS_BATCH10_CHUNK256 = {
+        "name": "embeddings_batch10_chunk256",
+        "batch_size": 10,
+        "chunk_size": 256,
+    }
+    EMBEDDINGS_BATCH50_CHUNK512 = {
+        "name": "embeddings_batch50_chunk512",
+        "batch_size": 50,
+        "chunk_size": 512,
+    }
+    EMBEDDINGS_BATCH50_CHUNK256 = {
+        "name": "embeddings_batch50_chunk256",
+        "batch_size": 50,
+        "chunk_size": 256,
+    }
+    EMBEDDINGS_BATCH100_CHUNK512 = {
+        "name": "embeddings_batch100_chunk512",
+        "batch_size": 100,
+        "chunk_size": 512,
+    }
+    EMBEDDINGS_BATCH100_CHUNK256 = {
+        "name": "embeddings_batch100_chunk256",
+        "batch_size": 100,
+        "chunk_size": 256,
+    }
 
 
 # Custom type function to convert input string to a list of integers
@@ -28,18 +61,15 @@ def int_list(value):
         )
 
 
-def get_values_for_testcase(test_case):
-    if test_case.startswith("embeddings"):
-        return ["nemo_microservice"]
-        # return ["openai_ada002", "nvidia_nvolveqa40k"]
-        # return ["openai_ada002", "nemo_microservice"]
-        # return ["nvidia_nvolveqa40k", "nemo_microservice"]
-    else:
-        raise ValueError(f"Unknown testcase: {test_case}")
+def embedding_models():
+    # return ["nemo_microservice"]
+    # return ["openai_ada002", "nvidia_nvolveqa40k"]
+    return ["openai_ada002", "nemo_microservice"]
+    # return ["nvidia_nvolveqa40k", "nemo_microservice"]
 
 
 def run_suite(
-    test_case: str,
+    test_case: TestCase,
     loops=1,
     processes=1,
     report_dir=".",
@@ -49,12 +79,12 @@ def run_suite(
     if threads_per_benchmark is None:
         threads_per_benchmark: list[int] = [1]
 
-    all_values = get_values_for_testcase(test_case)
+    embedding_models = embedding_models()
     if only_values_containing is not None:
-        for value in all_values:
+        for embedding_model in embedding_models:
             for filter_by in only_values_containing:
-                if filter_by not in value:
-                    all_values.remove(value)
+                if filter_by not in embedding_model:
+                    embedding_models.remove(embedding_model)
                     break
 
     benchmarks_dir = os.path.dirname(os.path.abspath(__file__))
@@ -63,16 +93,19 @@ def run_suite(
     filenames = []
     logs_file = os.path.join(args.reports_dir, "benchmarks.log")
 
-    for value in all_values:
+    for embedding_model in embedding_models:
         for threads in threads_per_benchmark:
-            filename = f"{test_case}-{value}-{threads}.json"
+            filename = f"{test_case}-{embedding_model}-{threads}.json"
             abs_filename = os.path.join(report_dir, filename)
             os.path.exists(abs_filename) and os.remove(abs_filename)
             filenames.append(abs_filename)
 
-            command = f"{sys.executable} -m pyperf command --copy-env -p {processes} -n 1 -l {loops} -t -o {abs_filename} -- {sys.executable} {benchmarks_dir}/testcases.py {logs_file} {test_case} {value} {threads}"
+            test_name = test_case.value["name"]
+            batch_size = test_case.value["batch_size"]
+            chunk_size = test_case.value["chunk_size"]
+            command = f"{sys.executable} -m pyperf command --copy-env -p {processes} -n 1 -l {loops} -t -o {abs_filename} -- {sys.executable} {benchmarks_dir}/testcases.py {logs_file} {test_name} {embedding_model} {batch_size} {chunk_size} {threads}"
             print(
-                f"Running suite: {test_case} with value: {value} and threads: {threads}"
+                f"Running suite: {test_name} with model: {embedding_model} and threads: {threads}"
             )
             try:
                 subprocess.run(command.split(" "), text=True, check=True)
@@ -103,7 +136,7 @@ if __name__ == "__main__":
     )
 
     test_choices = ["all"]
-    test_choices = test_choices + TEST_CASES
+    test_choices = test_choices + [t.value["name"] for t in TestCase]
     parser.add_argument(
         "-t",
         "--test-case",
@@ -113,11 +146,11 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "-v",
-        "--values",
+        "-m",
+        "--models",
         type=str,
         default="",
-        help="Filter values to run (comma separated). e.g. to run only openai_ada002, use: openai_",
+        help="Filter models to run (comma separated). e.g. to run only openai_ada002, use: openai_",
     )
     parser.add_argument(
         "-r",
@@ -157,9 +190,15 @@ if __name__ == "__main__":
     print(f"Reports dir: {args.reports_dir}")
 
     if args.test_case == "all":
-        tests_to_run = TEST_CASES
+        tests_to_run = [t.value for t in TestCase]
     else:
-        tests_to_run = filter(None, args.test_case.split(","))
+        test_names_to_run = filter(None, args.test_case.split(","))
+        tests_to_run = [
+            test_case
+            for name in test_names_to_run
+            for test_case in TestCase
+            if test_case.value["name"] == name
+        ]
 
     logs_file = os.path.join(args.reports_dir, "benchmarks.log")
     if os.path.exists(logs_file):
