@@ -67,7 +67,8 @@ async def _aembed(embeddings: Embeddings, docs: list[str], threads: int):
     async def process_chunk(chunk):
         try:
             logging.debug(f"Embedding {len(chunk)} documents")
-            await embeddings.aembed_documents(chunk)
+            res = await embeddings.aembed_documents(chunk)
+            logging.info(res)
         except Exception as e:
             logging.error(f"Failed to embed chunk: {e}")
 
