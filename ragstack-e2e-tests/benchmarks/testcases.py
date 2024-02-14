@@ -35,6 +35,12 @@ CHARS_TO_READ = 5000000
 thread_local = threading.local()
 
 
+# Get the logger for the 'httpx' library
+logger = logging.getLogger("httpx")
+# Set the logging level to 'WARNING' to suppress 'INFO' and 'DEBUG' messages
+logger.setLevel(logging.WARNING)
+
+
 def get_session():
     """
     Get a session for the current thread, creating it if needed.
