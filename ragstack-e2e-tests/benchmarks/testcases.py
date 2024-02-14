@@ -22,7 +22,7 @@ from runner import INPUT_PATH
 # Define NeMo microservice API request headers
 HEADERS = {"accept": "application/json", "Content-Type": "application/json"}
 HOSTNAME = "0.0.0.0"
-SERVICE_PORT = 8080
+SERVICE_PORT = 8081
 MODEL_ID = "NV-Embed-QA"
 
 # The number of chars to read of the input file. A smaller value here will
@@ -115,7 +115,7 @@ def _split(chunk_size: int) -> list[str]:
 def embeddings_batch1_chunk256(embeddings_fn, threads):
     docs = _split(256)
     if embeddings_fn is not None:
-        _aembed(embeddings_fn(1, threads), docs, threads)
+        _aembed(embeddings_fn(1), docs, threads)
     else:
         _local_nemo_embedding(1, docs, threads)
 
@@ -124,7 +124,7 @@ def embeddings_batch1_chunk512(embeddings_fn, threads):
     logging.info("Test - here")
     docs = _split(512)
     if embeddings_fn is not None:
-        _aembed(embeddings_fn(1, threads), docs, threads)
+        _aembed(embeddings_fn(1), docs, threads)
     else:
         _local_nemo_embedding(1, docs, threads)
 
@@ -132,7 +132,7 @@ def embeddings_batch1_chunk512(embeddings_fn, threads):
 def embeddings_batch10_chunk256(embeddings_fn, threads):
     docs = _split(256)
     if embeddings_fn is not None:
-        _aembed(embeddings_fn(10, threads), docs, threads)
+        _aembed(embeddings_fn(10), docs, threads)
     else:
         _local_nemo_embedding(10, docs, threads)
 
@@ -140,7 +140,7 @@ def embeddings_batch10_chunk256(embeddings_fn, threads):
 def embeddings_batch10_chunk512(embeddings_fn, threads):
     docs = _split(512)
     if embeddings_fn is not None:
-        _aembed(embeddings_fn(10, threads), docs, threads)
+        _aembed(embeddings_fn(10), docs, threads)
     else:
         _local_nemo_embedding(10, docs, threads)
 
@@ -148,7 +148,7 @@ def embeddings_batch10_chunk512(embeddings_fn, threads):
 def embeddings_batch50_chunk256(embeddings_fn, threads):
     docs = _split(256)
     if embeddings_fn is not None:
-        _aembed(embeddings_fn(50, threads), docs, threads)
+        _aembed(embeddings_fn(50), docs, threads)
     else:
         _local_nemo_embedding(50, docs, threads)
 
@@ -156,7 +156,7 @@ def embeddings_batch50_chunk256(embeddings_fn, threads):
 def embeddings_batch50_chunk512(embeddings_fn, threads):
     docs = _split(512)
     if embeddings_fn is not None:
-        _aembed(embeddings_fn(50, threads), docs, threads)
+        _aembed(embeddings_fn(50), docs, threads)
     else:
         _local_nemo_embedding(50, docs, threads)
 
@@ -164,7 +164,7 @@ def embeddings_batch50_chunk512(embeddings_fn, threads):
 def embeddings_batch100_chunk256(embeddings_fn, threads):
     docs = _split(256)
     if embeddings_fn is not None:
-        _aembed(embeddings_fn(100, threads), docs, threads)
+        _aembed(embeddings_fn(100), docs, threads)
     else:
         _local_nemo_embedding(100, docs, threads)
 
@@ -172,7 +172,7 @@ def embeddings_batch100_chunk256(embeddings_fn, threads):
 def embeddings_batch100_chunk512(embeddings_fn, threads):
     docs = _split(512)
     if embeddings_fn is not None:
-        _aembed(embeddings_fn(100, threads), docs, threads)
+        _aembed(embeddings_fn(100), docs, threads)
     else:
         _local_nemo_embedding(100, docs, threads)
 
@@ -257,6 +257,10 @@ def nvidia_nvolveqa40k(batch_size):
     )
 
 
+async def test_async_method(test_case, embedding_fn, threads):
+    time.sleep(10)
+
+
 if __name__ == "__main__":
     cpu_suffix = "cpu_usage.csv"
     gpu_suffix = "gpu_usage.csv"
@@ -266,11 +270,11 @@ if __name__ == "__main__":
         logging.basicConfig(filename=logs_file, encoding="utf-8", level=logging.INFO)
 
         test_case = sys.argv[2]
-        embeddings = sys.argv[3]
+        embedding_model = sys.argv[3]
         threads = sys.argv[4]
 
-        cpu_logs_file = "-".join([test_case, embeddings, threads, cpu_suffix])
-        gpu_logs_file = "-".join([test_case, embeddings, threads, gpu_suffix])
+        cpu_logs_file = "-".join([test_case, embedding_model, threads, cpu_suffix])
+        gpu_logs_file = "-".join([test_case, embedding_model, threads, gpu_suffix])
         cpu_logs_file = f"benchmarks/reports/{cpu_logs_file}"
         gpu_logs_file = f"benchmarks/reports/{gpu_logs_file}"
 
@@ -297,16 +301,17 @@ if __name__ == "__main__":
         ]
         nvidia_smi_process = subprocess.Popen(" ".join(nvidia_smi_cmd), shell=True)
 
-        if embeddings == "nemo_microservice":
+        if embedding_model == "nemo_microservice":
             logging.info(
-                f"Running test case: {test_case}/{embeddings}/threads:{threads}"
+                f"Running test case: {test_case}/{embedding_model}/threads:{threads}"
             )
-            embeddings = None
+            embedding_model = None
+            eval(f"{test_case}({embedding_model}, {threads})")
         else:
             logging.info(
-                f"Running test case: {test_case}/{embeddings}/threads:{threads}"
+                f"Running test case: {test_case}/{embedding_model}/threads:{threads}"
             )
-            eval(f"{test_case}({embeddings})")
+            asyncio.run(test_async_method({test_case}, {embedding_model}, {threads}))
 
         # Terminate GPU monitor
         nvidia_smi_process.terminate()
