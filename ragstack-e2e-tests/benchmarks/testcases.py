@@ -214,7 +214,7 @@ if __name__ == "__main__":
         embedding = sys.argv[3]
         batch_size = int(sys.argv[4])
         chunk_size = int(sys.argv[5])
-        threads = int(sys.argv[6])
+        threads = sys.argv[6]
 
         cpu_logs_file = "-".join([test_name, embedding, threads, cpu_suffix])
         gpu_logs_file = "-".join([test_name, embedding, threads, gpu_suffix])
