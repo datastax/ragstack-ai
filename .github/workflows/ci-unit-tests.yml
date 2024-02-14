@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   build-docker:
-    name: Build Docker image
+    name: Docker
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
@@ -39,14 +39,18 @@ jobs:
           args: --severity-threshold=high
 
       - name: "Setup: Python 3.11"
+        if: ${{ always() }}
         uses: ./.github/actions/setup-python
 
       - name: Build dev docker image (Dockerfile.dev)
+        if: ${{ always() }}
+        id: build-dev-docker-image
         run: |
           poetry build
           docker build -t datastax/ragstack-ai:latest-dev -f docker/Dockerfile.dev dist
 
       - name: Scan dev docker image
+        if: ${{ always() && steps.build-dev-docker-image.outcome == 'success' }}
         uses: snyk/actions/docker@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
