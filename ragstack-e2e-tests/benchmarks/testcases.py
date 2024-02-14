@@ -159,10 +159,12 @@ def _local_nemo_embedding(batch_size, chunks, threads):
     logging.info(f"Inference End: {inference_end}")
 
 
-def openai_ada002(batch_size):
+def openai_text_embedding_3_small(batch_size):
     # test network latency first -- can subtract this from each call manually for now.
     total_latency = 0
-    bad_embeds = OpenAIEmbeddings(chunk_size=batch_size, api_key="bad_creds")
+    bad_embeds = OpenAIEmbeddings(
+        model="text-embedding-3-small", chunk_size=batch_size, api_key="bad_creds"
+    )
     logging.info("Calling openai with bad credentials")
     for _ in range(10):
         start_time = time.time()

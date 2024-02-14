@@ -63,9 +63,7 @@ def int_list(value):
 
 def get_embedding_models():
     # return ["nemo_microservice"]
-    # return ["openai_ada002", "nvidia_nvolveqa40k"]
-    return ["openai_ada002", "nemo_microservice"]
-    # return ["nvidia_nvolveqa40k", "nemo_microservice"]
+    return ["openai_text_embedding_3_small", "nemo_microservice"]
 
 
 def run_suite(
