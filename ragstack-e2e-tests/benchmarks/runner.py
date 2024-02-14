@@ -61,7 +61,7 @@ def int_list(value):
         )
 
 
-def embedding_models():
+def get_embedding_models():
     # return ["nemo_microservice"]
     # return ["openai_ada002", "nvidia_nvolveqa40k"]
     return ["openai_ada002", "nemo_microservice"]
@@ -79,7 +79,7 @@ def run_suite(
     if threads_per_benchmark is None:
         threads_per_benchmark: list[int] = [1]
 
-    embedding_models = embedding_models()
+    embedding_models = get_embedding_models()
     if only_values_containing is not None:
         for embedding_model in embedding_models:
             for filter_by in only_values_containing:
@@ -95,12 +95,13 @@ def run_suite(
 
     for embedding_model in embedding_models:
         for threads in threads_per_benchmark:
-            filename = f"{test_case}-{embedding_model}-{threads}.json"
+            test_name = test_case.value["name"]
+
+            filename = f"{test_name}-{embedding_model}-{threads}.json"
             abs_filename = os.path.join(report_dir, filename)
             os.path.exists(abs_filename) and os.remove(abs_filename)
             filenames.append(abs_filename)
 
-            test_name = test_case.value["name"]
             batch_size = test_case.value["batch_size"]
             chunk_size = test_case.value["chunk_size"]
             command = f"{sys.executable} -m pyperf command --copy-env -p {processes} -n 1 -l {loops} -t -o {abs_filename} -- {sys.executable} {benchmarks_dir}/testcases.py {logs_file} {test_name} {embedding_model} {batch_size} {chunk_size} {threads}"
@@ -213,7 +214,6 @@ if __name__ == "__main__":
 
         dataset = load_dataset("imdb", split="train")
         dataset.to_csv(INPUT_PATH, index=False)
-
     print("Using dataset: ", INPUT_PATH)
 
     for test_case in tests_to_run:
@@ -222,6 +222,6 @@ if __name__ == "__main__":
             report_dir=args.reports_dir,
             loops=args.loops,
             processes=args.processes,
-            only_values_containing=args.values.split(","),
+            only_values_containing=args.models.split(","),
             threads_per_benchmark=args.num_threads,
         )
