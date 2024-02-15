@@ -28,11 +28,7 @@ try:
     )
 except ImportError:
     # llamaindex 0.10.x
-    from llama_index.core import (
-        ServiceContext,
-        StorageContext,
-        VectorStoreIndex
-    )
+    from llama_index.core import ServiceContext, StorageContext, VectorStoreIndex
     from llama_index.core.embeddings import BaseEmbedding
     from llama_index.core.llms import LLM
     from llama_index.core.node_parser import SimpleNodeParser
