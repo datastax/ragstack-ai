@@ -7,7 +7,7 @@ import sys
 from datasets import load_dataset
 from enum import Enum
 
-from astrapy.db import AsyncAstraDB
+from astrapy.db import AstraDB
 
 INPUT_PATH = "data/imdb_train.csv"
 ASTRA_DB_BATCH_SIZE = 20
@@ -100,7 +100,7 @@ def run_suite(
 
     for embedding_model in embedding_models:
         # Models should produce the same embedding dimensions, so you can create collection here
-        astra = AsyncAstraDB(
+        astra = AstraDB(
             token=os.environ.get("ASTRA_DB_APPLICATION_TOKEN"),
             api_endpoint=os.environ.get("ASTRA_DB_API_ENDPOINT"),
             namespace="default_keyspace",
@@ -108,7 +108,7 @@ def run_suite(
         name = "".join(random.choices(string.ascii_letters, k=10))
         collection = astra.create_collection(
             collection_name=name,
-            dimensions=embedding_model["dimensions"],
+            dimension=embedding_model["dimensions"],
             metric="cosine",
         )
 
