@@ -209,10 +209,7 @@ async def _aembed_nemo_and_store(batch_size, chunks, threads):
             response = response.json()
             embeddings = [item["embedding"] for item in response["data"]]
 
-            ids = await aadd_embeddings(batch, embeddings, threads, ASTRA_DB_BATCH_SIZE)
-            logging.info(f"IDS: {ids}")
-
-            return response
+            await aadd_embeddings(batch, embeddings, threads, ASTRA_DB_BATCH_SIZE)
 
         num_batches = len(chunks) // batch_size + (1 if len(chunks) % batch_size else 0)
         logging.info(
