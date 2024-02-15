@@ -117,8 +117,9 @@ async def _aembed(embeddings: Embeddings, chunks: list[str], threads: int):
 
 
 async def _aembed_nemo(batch_size, chunks, threads):
+    timeout = httpx.Timeout(20.0)
     limits = httpx.Limits(max_connections=threads, max_keepalive_connections=threads)
-    async with httpx.AsyncClient(limits=limits) as client:
+    async with httpx.AsyncClient(timeout=timeout, limits=limits) as client:
         url = f"http://{HOSTNAME}:{SERVICE_PORT}/v1/embeddings"
 
         async def _process_batch(batch):
@@ -183,6 +184,7 @@ def openai_ada002(batch_size):
         api_key=os.environ.get("OPEN_AI_KEY"),
         max_retries=0,  # ensure client doesn't retry requests and skew results. If this fails, we want to see it
         retry_min_seconds=0,
+        retry_max_seconds=1,
     )
 
 
