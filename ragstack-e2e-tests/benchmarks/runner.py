@@ -6,7 +6,7 @@ from datasets import load_dataset
 from enum import Enum
 
 INPUT_PATH = "data/imdb_train.csv"
-ASTRA_DB_BATCH_SIZE = 1
+ASTRA_DB_BATCH_SIZE = 20
 
 
 class TestCase(Enum):
