@@ -4,7 +4,17 @@ import os
 import asyncio
 from itertools import islice
 
-from typing import Iterator, List, Optional, Iterable, Any, Dict, Coroutine, Union
+from typing import (
+    Iterator,
+    List,
+    Optional,
+    Iterable,
+    Any,
+    Dict,
+    Coroutine,
+    Tuple,
+    Union,
+)
 from typing import Callable, Set, Union, TypeVar
 
 from astrapy.db import AsyncAstraDB, AsyncAstraDBCollection
@@ -41,7 +51,7 @@ def async_collection() -> AsyncAstraDBCollection:
     client = AsyncAstraDB(
         token=token,
         api_endpoint=api_endpoint,
-        namespace="default",
+        namespace="default_keyspace",
     )
     return AsyncAstraDBCollection(
         collection_name="test",
@@ -90,6 +100,35 @@ def batch_iterate(size: int, iterable: Iterable[T]) -> Iterator[List[T]]:
         yield chunk
 
 
+def _get_missing_from_batch(
+    document_batch: List[DocDict], insert_result: Dict[str, Any]
+) -> Tuple[List[str], List[DocDict]]:
+    if "status" not in insert_result:
+        raise ValueError(
+            f"API Exception while running bulk insertion: {str(insert_result)}"
+        )
+    batch_inserted = insert_result["status"]["insertedIds"]
+    # estimation of the preexisting documents that failed
+    missed_inserted_ids = {document["_id"] for document in document_batch} - set(
+        batch_inserted
+    )
+    errors = insert_result.get("errors", [])
+    # careful for other sources of error other than "doc already exists"
+    num_errors = len(errors)
+    unexpected_errors = any(
+        error.get("errorCode") != "DOCUMENT_ALREADY_EXISTS" for error in errors
+    )
+    if num_errors != len(missed_inserted_ids) or unexpected_errors:
+        raise ValueError(f"API Exception while running bulk insertion: {str(errors)}")
+    # deal with the missing insertions as upserts
+    missing_from_batch = [
+        document
+        for document in document_batch
+        if document["_id"] in missed_inserted_ids
+    ]
+    return batch_inserted, missing_from_batch
+
+
 async def aadd_embeddings(
     texts: List[str],
     embedding_vectors: List[List[float]],
@@ -100,12 +139,30 @@ async def aadd_embeddings(
     documents_to_insert = _get_documents_to_insert(texts, embedding_vectors)
 
     async def _handle_batch(document_batch: List[DocDict]) -> List[str]:
-        result = await collection.insert_many(
+        im_result = await collection.insert_many(
             documents=document_batch,
             options={"ordered": False},
             partial_failures_allowed=True,
         )
-        logging.info(f"INSERT MANY RESULT: {result}")
+
+        batch_inserted, missing_from_batch = _get_missing_from_batch(
+            document_batch, im_result
+        )
+
+        logging.info(f"Missing from Batch: {missing_from_batch}")
+
+        async def _handle_missing_document(missing_document: DocDict) -> str:
+            replacement_result = await self.async_collection.find_one_and_replace(  # type: ignore[union-attr]
+                filter={"_id": missing_document["_id"]},
+                replacement=missing_document,
+            )
+            return replacement_result["data"]["document"]["_id"]
+
+        batch_replaced = await gather_with_concurrency(
+            batch_concurrency,
+            *[_handle_missing_document(doc) for doc in missing_from_batch],
+        )
+        return batch_inserted + batch_replaced
 
     _b_max_workers = batch_concurrency
     all_ids_nested = await gather_with_concurrency(
