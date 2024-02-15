@@ -1,5 +1,4 @@
-import os
-import random
+import os import random
 import string
 import sys
 import logging
@@ -44,7 +43,7 @@ thread_local = threading.local()
 # Get the logger for the 'httpx' library
 logger = logging.getLogger("httpx")
 # Set the logging level to 'WARNING' to suppress 'INFO' and 'DEBUG' messages
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.WARNING)
 
 
 def get_session():
@@ -149,7 +148,7 @@ async def _aembed_and_store(vector_store: VectorStore, chunks: list[str], thread
 
 
 async def _aembed_nemo(batch_size, chunks, threads):
-    timeout = httpx.Timeout(40.0)
+    timeout = httpx.Timeout(30.0, pool=None)
     limits = httpx.Limits(max_connections=threads, max_keepalive_connections=threads)
     async with httpx.AsyncClient(timeout=timeout, limits=limits) as client:
         url = f"http://{HOSTNAME}:{SERVICE_PORT}/v1/embeddings"
@@ -188,7 +187,7 @@ async def _aembed_nemo(batch_size, chunks, threads):
 
 
 async def _aembed_nemo_and_store(batch_size, chunks, threads):
-    timeout = httpx.Timeout(20.0)
+    timeout = httpx.Timeout(30.0, pool=None)
     limits = httpx.Limits(max_connections=threads, max_keepalive_connections=threads)
     async with httpx.AsyncClient(timeout=timeout, limits=limits) as client:
         url = f"http://{HOSTNAME}:{SERVICE_PORT}/v1/embeddings"
