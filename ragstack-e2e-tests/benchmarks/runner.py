@@ -54,7 +54,8 @@ class TestCase(Enum):
 # Custom type function to convert input string to a list of integers
 def int_list(value):
     try:
-        return [int(item) for item in value.strip("[]").split(",")]
+        items = [item.strip() for item in value.strip("[]").split(",") if item.strip()]
+        return [int(item) for item in items]
     except ValueError:
         raise argparse.ArgumentTypeError(
             f"Value {value} is not a valid list of integers"

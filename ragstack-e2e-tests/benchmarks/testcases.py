@@ -197,7 +197,7 @@ def nvidia_nvolveqa40k(batch_size):
 
 async def _aeval_nemo_embeddings(batch_size, chunk_size, threads):
     chunks = _split(chunk_size)
-    _aembed_nemo(batch_size, chunks, threads)
+    await _aembed_nemo(batch_size, chunks, threads)
 
 
 async def _aeval_embeddings(embedding_model, chunk_size, threads):
@@ -252,7 +252,7 @@ if __name__ == "__main__":
                 f"Running test case: {test_name}/{embedding}/threads:{threads}"
             )
             embedding_model = None
-            _aeval_nemo_embeddings(batch_size, chunk_size, int(threads))
+            asyncio.run(_aeval_nemo_embeddings(batch_size, chunk_size, int(threads)))
         else:
             logging.info(
                 f"Running test case: {test_name}/{embedding}/threads:{threads}"
