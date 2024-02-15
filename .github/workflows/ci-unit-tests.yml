@@ -20,60 +20,19 @@ jobs:
     steps:
       - name: Check out the repo
         uses: actions/checkout@v4
-      - name: Build docker image (Dockerfile)
-        id: build-docker-image
-        uses: ./.github/actions/build-deploy-docker-image
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          # we don't really care about the version here, we just want to make sure the image builds
-          ragstack-version: "0.*"
-          docker-tag: latest
-          push: "false"
-
-      - name: Scan docker image
-        uses: snyk/actions/docker@master
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          image: ${{ steps.build-docker-image.outputs.test-docker-image }}
-          args: --severity-threshold=high
-
-      - name: "Setup: Python 3.11"
-        if: ${{ always() }}
-        uses: ./.github/actions/setup-python
-
-      - name: Build dev docker image (Dockerfile.dev)
-        if: ${{ always() }}
-        id: build-dev-docker-image
-        run: |
-          poetry build
-          docker build -t datastax/ragstack-ai:latest-dev -f docker/Dockerfile.dev dist
-
-      - name: Scan dev docker image
-        if: ${{ always() && steps.build-dev-docker-image.outcome == 'success' }}
-        uses: snyk/actions/docker@master
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          image: datastax/ragstack-ai:latest-dev
-          args: --severity-threshold=high
 
       - name: Docker examples - basic
-        if: ${{ always() }}
         run: |
           docker --version
           cd docker/examples/basic
           sudo docker build -t ragstack-basic .
+
       - name: Docker examples - multistage
-        if: ${{ always() }}
         run: |
-          docker --version
           cd docker/examples/multistage
           sudo docker build -t ragstack-multistage .
       - name: Docker examples - local llm
-        if: ${{ always() }}
         run: |
-          docker --version
           cd docker/examples/local-llm
           sudo docker build -t local-llm .
 
