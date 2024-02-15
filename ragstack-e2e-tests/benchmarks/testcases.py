@@ -349,7 +349,7 @@ if __name__ == "__main__":
             logging.info(
                 f"Running test case: {test_name}/{embedding}/threads:{threads}"
             )
-            if vector_database is not "none":
+            if vector_database != "none":
                 asyncio.run(
                     _aeval_nemo_embeddings_with_vector_store(
                         batch_size, chunk_size, int(threads)
@@ -364,7 +364,7 @@ if __name__ == "__main__":
                 f"Running test case: {test_name}/{embedding}/threads:{threads}"
             )
             embedding_model = eval(f"{embedding}({batch_size})")
-            if vector_database is not "none":
+            if vector_database != "none":
                 vector_store = eval(f"{vector_database}({embedding_model})")
                 asyncio.run(
                     _aeval_embeddings_with_vector_store(
