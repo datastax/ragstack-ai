@@ -189,8 +189,11 @@ async def _aembed_nemo(batch_size, chunks, threads):
 
 async def _aembed_nemo_and_store(batch_size, chunks, threads):
     logging.info("Embedding nemo and storing")
-    timeout = httpx.Timeout(30.0, pool=None)
-    limits = httpx.Limits(max_connections=threads, max_keepalive_connections=10)
+    # timeout = httpx.Timeout(30.0, pool=None)
+    timeout = httpx.Timeout(None)
+    limits = httpx.Limits(
+        max_connections=threads, max_keepalive_connections=10, keepalive_expiry=None
+    )
     async with httpx.AsyncClient(timeout=timeout, limits=limits, http2=True) as client:
         url = f"http://{HOSTNAME}:{SERVICE_PORT}/v1/embeddings"
 
