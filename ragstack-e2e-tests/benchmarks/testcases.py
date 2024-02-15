@@ -1,3 +1,4 @@
+from concurrent.futures import ThreadPoolExecutor
 import os
 import random
 import string
@@ -22,7 +23,7 @@ from langchain_core.embeddings import Embeddings
 from langchain_nvidia_ai_endpoints import NVIDIAEmbeddings
 
 from runner import INPUT_PATH, ASTRA_DB_BATCH_SIZE
-from astra_db import aadd_embeddings
+from astra_db import aadd_embeddings, add_embeddings
 
 
 # Define NeMo microservice API request headers
@@ -212,7 +213,6 @@ async def _aembed_nemo_and_store(batch_size, chunks, threads):
                 )
             response = response.json()
             embeddings = [item["embedding"] for item in response["data"]]
-            logging.info(f"Storing embeddings in AstraDB: {embeddings}")
 
             await aadd_embeddings(batch, embeddings, threads, ASTRA_DB_BATCH_SIZE)
 
@@ -232,6 +232,52 @@ async def _aembed_nemo_and_store(batch_size, chunks, threads):
 
         inference_end = time.time()
         logging.info(f"Inference End: {inference_end}")
+
+
+def _embed_nemo_and_store(batch_size, chunks, threads):
+    import requests
+
+    logging.info("Synchronously Embedding nemo and storing")
+    url = f"http://{HOSTNAME}:{SERVICE_PORT}/v1/embeddings"
+
+    def _process_batch(batch):
+        data = {
+            "input": batch,
+            "model": MODEL_ID,
+            "input_type": "query",
+        }
+        response = requests.post(url, headers=HEADERS, data=json.dumps(data))
+
+        if response.status_code != 200:
+            logging.error(
+                f"Request failed with status code {response.status_code}: {response.text}"
+            )
+        embeddings = [item["embedding"] for item in response.json()["data"]]
+        logging.info(f"Storing embeddings in AstraDB: {embeddings}")
+
+        add_embeddings(batch, embeddings)
+
+    num_batches = len(chunks) // batch_size + (1 if len(chunks) % batch_size else 0)
+    logging.info(
+        f"Processing batches of size: {batch_size}, for total num_batches: {num_batches}"
+    )
+
+    inference_start = time.time()
+    logging.info(f"Inference Start: {inference_start}")
+
+    with ThreadPoolExecutor(max_workers=threads) as executor:
+        futures = [
+            executor.submit(_process_batch, batch)
+            for batch in [
+                chunks[i * batch_size : (i + 1) * batch_size]
+                for i in range(num_batches)
+            ]
+        ]
+        for future in futures:
+            future.result()  # Wait for all futures to complete
+
+    inference_end = time.time()
+    logging.info(f"Inference End: {inference_end}")
 
 
 def openai_ada002(batch_size):
@@ -297,7 +343,8 @@ async def _aeval_nemo_embeddings(batch_size, chunk_size, threads):
 
 async def _aeval_nemo_embeddings_with_vector_store(batch_size, chunk_size, threads):
     chunks = _split(chunk_size)
-    await _aembed_nemo_and_store(batch_size, chunks, threads)
+    # await _aembed_nemo_and_store(batch_size, chunks, threads)
+    _embed_nemo_and_store(batch_size, chunks, threads)
 
 
 async def _aeval_embeddings(embedding_model, chunk_size, threads):

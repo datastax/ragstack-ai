@@ -1,3 +1,4 @@
+from concurrent.futures import ThreadPoolExecutor
 import logging
 import uuid
 import os
@@ -15,7 +16,7 @@ from typing import (
     Union,
 )
 from typing import Set, Union, TypeVar
-from astrapy.db import AsyncAstraDB, AsyncAstraDBCollection
+from astrapy.db import AstraDB, AstraDBCollection, AsyncAstraDB, AsyncAstraDBCollection
 
 
 DocDict = Dict[str, Any]  # dicts expressing entries to insert
@@ -53,6 +54,20 @@ def async_collection() -> AsyncAstraDBCollection:
         namespace="default_keyspace",
     )
     return AsyncAstraDBCollection(
+        collection_name="test",
+        astra_db=client,
+    )
+
+
+def get_collection() -> AstraDBCollection:
+    token = os.environ.get("ASTRA_DB_APPLICATION_TOKEN")
+    api_endpoint = os.environ.get("ASTRA_DB_API_ENDPOINT")
+    client = AstraDB(
+        token=token,
+        api_endpoint=api_endpoint,
+        namespace="default_keyspace",
+    )
+    return AstraDBCollection(
         collection_name="test",
         astra_db=client,
     )
@@ -179,6 +194,64 @@ async def aadd_embeddings(
             )
         ],
     )
+
+    logging.info("Insertion complete")
+    return [iid for id_list in all_ids_nested for iid in id_list]
+
+
+def add_embeddings(
+    texts: List[str],
+    embedding_vectors: List[List[float]],
+    batch_concurrency: int,
+    batch_size: int,
+):
+    # TODO: PAss collection name in here
+    collection = get_collection()
+    documents_to_insert = _get_documents_to_insert(texts, embedding_vectors)
+
+    def _handle_batch(document_batch: List[DocDict]) -> List[str]:
+        logging.info("Inserting many: ", len(document_batch))
+        im_result = collection.insert_many(
+            documents=document_batch,
+            options={"ordered": False},
+            partial_failures_allowed=True,
+        )
+
+        batch_inserted, missing_from_batch = _get_missing_from_batch(
+            document_batch, im_result
+        )
+
+        if len(missing_from_batch) > 0:
+            logging.warn(
+                "Some documents were not inserted, trying to replace them. This may skew results"
+            )
+
+        def _handle_missing_document(missing_document: DocDict) -> str:
+            replacement_result = self.collection.find_one_and_replace(  # type: ignore[union-attr]
+                filter={"_id": missing_document["_id"]},
+                replacement=missing_document,
+            )
+            return replacement_result["data"]["document"]["_id"]
+
+        _u_max_workers = batch_concurrency
+        with ThreadPoolExecutor(max_workers=_u_max_workers) as tpe2:
+            batch_replaced = list(
+                tpe2.map(
+                    _handle_missing_document,
+                    missing_from_batch,
+                )
+            )
+        return batch_inserted + batch_replaced
+
+    _b_max_workers = batch_concurrency
+    with ThreadPoolExecutor(max_workers=_b_max_workers) as tpe:
+        all_ids_nested = tpe.map(
+            _handle_batch,
+            batch_iterate(
+                batch_size,
+                documents_to_insert,
+            ),
+        )
 
     logging.info("Insertion complete")
     return [iid for id_list in all_ids_nested for iid in id_list]
