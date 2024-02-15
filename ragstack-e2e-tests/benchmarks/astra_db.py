@@ -10,6 +10,7 @@ from astrapy.db import AsyncAstraDB, AsyncAstraDBCollection
 
 DocDict = Dict[str, Any]  # dicts expressing entries to insert
 T = TypeVar("T")
+U = TypeVar("U")
 
 
 def _unique_list(lst: List[T], key: Callable[[T], U]) -> List[T]:
