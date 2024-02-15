@@ -1,5 +1,5 @@
 import os
-from random import random
+import random
 import string
 import sys
 import logging
@@ -149,7 +149,7 @@ async def _aembed_and_store(vector_store: VectorStore, chunks: list[str], thread
 
 
 async def _aembed_nemo(batch_size, chunks, threads):
-    timeout = httpx.Timeout(20.0)
+    timeout = httpx.Timeout(40.0)
     limits = httpx.Limits(max_connections=threads, max_keepalive_connections=threads)
     async with httpx.AsyncClient(timeout=timeout, limits=limits) as client:
         url = f"http://{HOSTNAME}:{SERVICE_PORT}/v1/embeddings"
@@ -275,13 +275,17 @@ def nvidia_nvolveqa40k(batch_size):
 
 
 def astra_db(embeddings: Embeddings) -> AstraDB:
+    astra_start = time.time()
     collection = "".join(random.choices(string.ascii_letters, k=10))
-    return AstraDB(
+    db = AstraDB(
         embedding=embeddings,
         collection_name=collection,
         token=os.environ.get("ASTRA_DB_APPLICATION_TOKEN"),
         api_endpoint=os.environ.get("ASTRA_DB_API_ENDPOINT"),
     )
+    astra_setup = time.time() - astra_start
+    logging.info(f"AstraDB setup time: {astra_setup:.2f} seconds")
+    return db
 
 
 async def _aeval_nemo_embeddings(batch_size, chunk_size, threads):
