@@ -114,15 +114,15 @@ def run_suite(
 
         for threads in threads_per_benchmark:
             test_name = test_case["name"]
+            embedding_name = embedding_model["name"]
 
-            filename = f"{test_name}-{embedding_model}-{threads}.json"
+            filename = f"{test_name}-{embedding_name}-{threads}.json"
             abs_filename = os.path.join(report_dir, filename)
             os.path.exists(abs_filename) and os.remove(abs_filename)
             filenames.append(abs_filename)
 
             batch_size = test_case["batch_size"]
             chunk_size = test_case["chunk_size"]
-            embedding_name = embedding_model["name"]
             command = f"{sys.executable} -m pyperf command --copy-env -p {processes} -n 1 -l {loops} -t -o {abs_filename} -- {sys.executable} {benchmarks_dir}/testcases.py {logs_file} {test_name} {embedding_name} {batch_size} {chunk_size} {threads} {vector_database}"
             print(
                 f"Running suite: {test_name} with model: {embedding_model} and threads: {threads}"

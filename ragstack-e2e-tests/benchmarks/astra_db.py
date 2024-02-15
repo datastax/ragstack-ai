@@ -134,10 +134,12 @@ async def aadd_embeddings(
     batch_concurrency: int,
     batch_size: int,
 ):
+    # TODO: PAss collection name in here
     collection = async_collection()
     documents_to_insert = _get_documents_to_insert(texts, embedding_vectors)
 
     async def _handle_batch(document_batch: List[DocDict]) -> List[str]:
+        logging.info("Inserting many: ", len(document_batch))
         im_result = await collection.insert_many(
             documents=document_batch,
             options={"ordered": False},
@@ -178,4 +180,5 @@ async def aadd_embeddings(
         ],
     )
 
+    logging.info("Insertion complete")
     return [iid for id_list in all_ids_nested for iid in id_list]

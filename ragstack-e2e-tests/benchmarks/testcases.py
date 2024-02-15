@@ -188,6 +188,7 @@ async def _aembed_nemo(batch_size, chunks, threads):
 
 
 async def _aembed_nemo_and_store(batch_size, chunks, threads):
+    logging.info("Embedding nemo and storing")
     timeout = httpx.Timeout(30.0, pool=None)
     limits = httpx.Limits(max_connections=threads, max_keepalive_connections=threads)
     async with httpx.AsyncClient(timeout=timeout, limits=limits) as client:
@@ -208,6 +209,7 @@ async def _aembed_nemo_and_store(batch_size, chunks, threads):
                 )
             response = response.json()
             embeddings = [item["embedding"] for item in response["data"]]
+            logging.info(f"Storing embeddings in AstraDB: {embeddings}")
 
             await aadd_embeddings(batch, embeddings, threads, ASTRA_DB_BATCH_SIZE)
 
