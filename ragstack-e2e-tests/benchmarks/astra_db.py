@@ -14,44 +14,25 @@ T = TypeVar("T")
 U = TypeVar("U")
 
 
-def _unique_list(lst: List[T], key: Callable[[T], U]) -> List[T]:
-    visited_keys: Set[U] = set()
-    new_lst = []
-    for item in lst:
-        item_key = key(item)
-        if item_key not in visited_keys:
-            visited_keys.add(item_key)
-            new_lst.append(item)
-    return new_lst
-
-
 def _get_documents_to_insert(
     texts: Iterable[str],
     embedding_vectors: List[List[float]],
 ) -> List[DocDict]:
     ids = [uuid.uuid4().hex for _ in texts]
-    metadatas = [{} for _ in texts]
 
     documents_to_insert = [
         {
             "content": b_txt,
             "_id": b_id,
             "$vector": b_emb,
-            "metadata": b_md,
         }
-        for b_txt, b_emb, b_id, b_md in zip(
+        for b_txt, b_emb, b_id in zip(
             texts,
             embedding_vectors,
             ids,
-            metadatas,
         )
     ]
-    # make unique by id, keeping the last
-    uniqued_documents_to_insert = _unique_list(
-        documents_to_insert[::-1],
-        lambda document: document["_id"],
-    )[::-1]
-    return uniqued_documents_to_insert
+    return documents_to_insert
 
 
 def async_collection() -> AsyncAstraDBCollection:
@@ -60,7 +41,7 @@ def async_collection() -> AsyncAstraDBCollection:
     client = AsyncAstraDB(
         token=token,
         api_endpoint=api_endpoint,
-        namespace="default-namespace",
+        namespace="default",
     )
     return AsyncAstraDBCollection(
         collection_name="test",
