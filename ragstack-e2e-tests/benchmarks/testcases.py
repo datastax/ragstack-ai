@@ -253,9 +253,7 @@ def _embed_nemo_and_store(batch_size, chunks, threads):
                 f"Request failed with status code {response.status_code}: {response.text}"
             )
         embeddings = [item["embedding"] for item in response.json()["data"]]
-        logging.info(f"Storing embeddings in AstraDB: {embeddings}")
-
-        add_embeddings(batch, embeddings)
+        add_embeddings(batch, embeddings, threads, ASTRA_DB_BATCH_SIZE)
 
     num_batches = len(chunks) // batch_size + (1 if len(chunks) % batch_size else 0)
     logging.info(
