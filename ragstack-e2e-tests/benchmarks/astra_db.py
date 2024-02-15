@@ -119,11 +119,12 @@ async def aadd_embeddings(
     documents_to_insert = _get_documents_to_insert(texts, embedding_vectors)
 
     async def _handle_batch(document_batch: List[DocDict]) -> List[str]:
-        await collection.insert_many(
+        result = await collection.insert_many(
             documents=document_batch,
             options={"ordered": False},
             partial_failures_allowed=True,
         )
+        logging.info(f"INSERT MANY RESULT: {result}")
 
     _b_max_workers = batch_concurrency
     all_ids_nested = await gather_with_concurrency(
