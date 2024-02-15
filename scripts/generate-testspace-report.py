@@ -226,7 +226,10 @@ def parse_test_report(input_file: str):
                 failure = test_case.find("failure")
                 failures = []
                 if failure is not None:
-                    failures.append(Failure(title=failure.get("message"), description=failure.text))
+                    # err_desc = failure.text
+                    # while it could be informative, it's better to not risk to expose sensitive data
+                    err_desc = ""
+                    failures.append(Failure(title=failure.get("message"), description=err_desc))
 
                 properties = test_case.find("properties")
                 links = []
