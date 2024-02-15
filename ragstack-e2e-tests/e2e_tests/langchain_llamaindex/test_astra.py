@@ -36,9 +36,6 @@ except ImportError:
     from llama_index.llms.openai import OpenAI
 
 
-
-
-
 from e2e_tests.test_utils import skip_test_due_to_implementation_not_supported
 from e2e_tests.test_utils.astradb_vector_store_handler import (
     AstraDBVectorStoreHandler,
