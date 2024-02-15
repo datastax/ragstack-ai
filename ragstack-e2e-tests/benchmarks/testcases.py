@@ -5,10 +5,10 @@ import requests
 import json
 import time
 import psutil
-import concurrent
 import threading
 import subprocess
 import asyncio
+import httpx
 
 from requests.adapters import HTTPAdapter
 
@@ -38,7 +38,7 @@ thread_local = threading.local()
 # Get the logger for the 'httpx' library
 logger = logging.getLogger("httpx")
 # Set the logging level to 'WARNING' to suppress 'INFO' and 'DEBUG' messages
-logger.setLevel(logging.WARNING)
+logger.setLevel(logging.DEBUG)
 
 
 def get_session():
@@ -116,48 +116,42 @@ async def _aembed(embeddings: Embeddings, chunks: list[str], threads: int):
     logging.info(f"Inference End: {inference_end}")
 
 
-def _local_nemo_embedding(batch_size, chunks, threads):
-    url = f"http://{HOSTNAME}:{SERVICE_PORT}/v1/embeddings"
+async def _aembed_nemo(batch_size, chunks, threads):
+    limits = httpx.Limits(max_connections=threads, max_keepalive_connections=threads)
+    async with httpx.AsyncClient(limits=limits) as client:
+        url = f"http://{HOSTNAME}:{SERVICE_PORT}/v1/embeddings"
 
-    def _process_batch(batch):
-        session = get_session()
-        data = {
-            "input": batch,
-            "model": MODEL_ID,
-            "input_type": "query",
-        }
-        data_json = json.dumps(data)
-        response = session.post(url, headers=HEADERS, data=data_json)
+        async def _process_batch(batch):
+            data = {
+                "input": batch,
+                "model": MODEL_ID,
+                "input_type": "query",
+            }
+            data_json = json.dumps(data)
+            response = await client.post(url, headers=HEADERS, data=data_json)
 
-        if response.status_code != 200:
-            logging.error(
-                f"Request failed with status code {response.status_code}: {response.text}"
-            )
-        return response
+            if response.status_code != 200:
+                logging.error(
+                    f"Request failed with status code {response.status_code}: {response.text}"
+                )
+            return response
 
-    num_batches = len(chunks) // batch_size + (1 if len(chunks) % batch_size else 0)
-    logging.info(
-        f"Processing batches of size: {batch_size}, for total num_batches: {num_batches}"
-    )
+        num_batches = len(chunks) // batch_size + (1 if len(chunks) % batch_size else 0)
+        logging.info(
+            f"Processing batches of size: {batch_size}, for total num_batches: {num_batches}"
+        )
 
-    inference_start = time.time()
-    logging.info(f"Inference Start: {inference_start}")
+        inference_start = time.time()
+        logging.info(f"Inference Start: {inference_start}")
 
-    with concurrent.futures.ThreadPoolExecutor(max_workers=threads) as executor:
         batches = [
             chunks[i * batch_size : (i + 1) * batch_size] for i in range(num_batches)
         ]
-        future_to_batch = {
-            executor.submit(_process_batch, batch): batch for batch in batches
-        }
-        for future in concurrent.futures.as_completed(future_to_batch):
-            try:
-                future.result()
-            except Exception as exc:
-                logging.error(f"Batch generated an exception: {exc}")
 
-    inference_end = time.time()
-    logging.info(f"Inference End: {inference_end}")
+        await asyncio.gather(*(_process_batch(batch) for batch in batches))
+
+        inference_end = time.time()
+        logging.info(f"Inference End: {inference_end}")
 
 
 def openai_ada002(batch_size):
@@ -188,6 +182,7 @@ def openai_ada002(batch_size):
         chunk_size=batch_size,
         api_key=os.environ.get("OPEN_AI_KEY"),
         max_retries=0,  # ensure client doesn't retry requests and skew results. If this fails, we want to see it
+        retry_min_seconds=0,
     )
 
 
@@ -200,9 +195,9 @@ def nvidia_nvolveqa40k(batch_size):
     )
 
 
-def _eval_embeddings(batch_size, chunk_size, threads):
+async def _aeval_nemo_embeddings(batch_size, chunk_size, threads):
     chunks = _split(chunk_size)
-    _local_nemo_embedding(batch_size, chunks, threads)
+    _aembed_nemo(batch_size, chunks, threads)
 
 
 async def _aeval_embeddings(embedding_model, chunk_size, threads):
@@ -257,7 +252,7 @@ if __name__ == "__main__":
                 f"Running test case: {test_name}/{embedding}/threads:{threads}"
             )
             embedding_model = None
-            _eval_embeddings(batch_size, chunk_size, int(threads))
+            _aeval_nemo_embeddings(batch_size, chunk_size, int(threads))
         else:
             logging.info(
                 f"Running test case: {test_name}/{embedding}/threads:{threads}"
