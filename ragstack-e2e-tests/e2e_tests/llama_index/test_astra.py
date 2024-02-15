@@ -31,13 +31,12 @@ except ImportError:
     from llama_index.core import (
         ServiceContext,
         StorageContext,
-        VectorStoreIndex,
-        Document,
+        VectorStoreIndex
     )
     from llama_index.core.embeddings import BaseEmbedding
     from llama_index.core.llms import LLM
     from llama_index.core.node_parser import SimpleNodeParser
-    from llama_index.core.schema import NodeWithScore
+    from llama_index.core.schema import NodeWithScore, Document
     from llama_index.core.vector_stores import (
         MetadataFilters,
         ExactMatchFilter,
