@@ -204,11 +204,13 @@ async def _aembed_nemo_and_store(batch_size, chunks, threads):
                 logging.error(
                     f"Request failed with status code {response.status_code}: {response.text}"
                 )
+            results = response.json()
+            logging.info(f"RESULTS: {results}")
+            embeddings = results["embeddings"]
 
             # TODO: Store the embeddings in the vector store
 
-            logging.info(f"Response: {response}")
-            ids = await aadd_embeddings(batch, response, threads, ASTRA_DB_BATCH_SIZE)
+            ids = await aadd_embeddings(batch, embeddings, threads, ASTRA_DB_BATCH_SIZE)
             logging.info(f"IDS: {ids}")
 
             return response
