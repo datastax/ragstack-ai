@@ -1,7 +1,8 @@
-from itertools import islice
+import logging
 import uuid
 import os
 import asyncio
+from itertools import islice
 
 from typing import Iterator, List, Optional, Iterable, Any, Dict, Coroutine, Union
 from typing import Callable, Set, Union, TypeVar
@@ -135,5 +136,6 @@ async def aadd_embeddings(
             )
         ],
     )
+    logging.info(f"ALL_IDS_NESTED: {all_ids_nested}")
 
     return [iid for id_list in all_ids_nested for iid in id_list]
