@@ -41,6 +41,7 @@ except ImportError:
     from llama_index.llms.bedrock import Bedrock
     from llama_index.llms.huggingface import HuggingFaceInferenceAPI
     from llama_index.llms.gemini import Gemini
+    from llama_index.multi_modal_llms.gemini import GeminiMultiModal
 
 
 from e2e_tests.conftest import (
