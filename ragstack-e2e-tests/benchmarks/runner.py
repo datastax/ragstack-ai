@@ -112,6 +112,7 @@ def run_suite(
                 dimension=embedding_model["dimensions"],
                 metric="cosine",
             )
+            print("Created collection: ", collection.collection_name)
         else:
             collection_name = ""
 
@@ -143,8 +144,9 @@ def run_suite(
 
                 raise Exception("Error running suite")
 
-        # clean up collection (since we have a max of 5 per db)
-        astra.delete_collection(collection.collection_name)
+        if vector_database == "astra_db":
+            print("Deleting collection: ", collection.collection_name)
+            astra.delete_collection(collection.collection_name)
 
     if len(filenames) <= 1:
         print("Not enough files to compare")
