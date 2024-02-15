@@ -198,6 +198,8 @@ if __name__ == "__main__":
         "`ASTRA_DB_API_ENDPOINT`.",
     )
 
+    # TODO: move collection creation and deletion here.
+
     args = parser.parse_args()
     if not os.path.exists(args.reports_dir):
         os.makedirs(args.reports_dir)

@@ -1,4 +1,5 @@
-import os import random
+import os
+import random
 import string
 import sys
 import logging
@@ -294,7 +295,7 @@ async def _aeval_nemo_embeddings_with_vector_store(batch_size, chunk_size, threa
     await _aembed_nemo_and_store(batch_size, chunks, threads)
 
 
-async def _aeval_embeddings(embedding_model, chunk_size, threads, vector_store):
+async def _aeval_embeddings(embedding_model, chunk_size, threads):
     docs = _split(chunk_size)
     await _aembed(embedding_model, docs, threads)
 
