@@ -8,21 +8,38 @@ from e2e_tests.conftest import (
     get_required_env,
     is_astra,
 )
-from llama_index import (
-    ServiceContext,
-    StorageContext,
-    VectorStoreIndex,
-    Document,
-)
-from llama_index.embeddings import BaseEmbedding
-from llama_index.llms import OpenAI, LLM
-from llama_index.node_parser import SimpleNodeParser
-from llama_index.schema import NodeWithScore
-from llama_index.vector_stores import (
-    AstraDBVectorStore,
-    MetadataFilters,
-    ExactMatchFilter,
-)
+
+try:
+    # llamaindex 0.9.x
+    from llama_index import (
+        ServiceContext,
+        StorageContext,
+        VectorStoreIndex,
+        Document,
+    )
+    from llama_index.embeddings import BaseEmbedding
+    from llama_index.llms import OpenAI, LLM
+    from llama_index.node_parser import SimpleNodeParser
+    from llama_index.schema import NodeWithScore
+    from llama_index.vector_stores import (
+        AstraDBVectorStore,
+        MetadataFilters,
+        ExactMatchFilter,
+    )
+except ImportError:
+    # llamaindex 0.10.x
+    from llama_index.core import ServiceContext, StorageContext, VectorStoreIndex
+    from llama_index.core.embeddings import BaseEmbedding
+    from llama_index.core.llms import LLM
+    from llama_index.core.node_parser import SimpleNodeParser
+    from llama_index.core.schema import NodeWithScore, Document
+    from llama_index.core.vector_stores import (
+        MetadataFilters,
+        ExactMatchFilter,
+    )
+    from llama_index.vector_stores.astra import AstraDBVectorStore
+    from llama_index.llms.openai import OpenAI
+
 
 from e2e_tests.test_utils import skip_test_due_to_implementation_not_supported
 from e2e_tests.test_utils.astradb_vector_store_handler import AstraDBVectorStoreHandler

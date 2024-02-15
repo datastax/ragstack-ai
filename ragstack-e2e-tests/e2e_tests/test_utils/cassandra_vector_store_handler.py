@@ -11,11 +11,22 @@ from langchain_community.chat_message_histories import (
 )
 from langchain_community.vectorstores.cassandra import Cassandra
 from langchain_core.chat_history import BaseChatMessageHistory
-from llama_index.schema import TextNode
-from llama_index.vector_stores import CassandraVectorStore
-from llama_index.vector_stores.types import (
-    VectorStoreQuery,
-)
+
+try:
+    # llamaindex 0.9.x
+    from llama_index.schema import TextNode
+    from llama_index.vector_stores import CassandraVectorStore
+    from llama_index.vector_stores.types import (
+        VectorStoreQuery,
+    )
+except ImportError:
+    # llamaindex 0.10.x
+    from llama_index.core.schema import TextNode
+    from llama_index.vector_stores.cassandra import CassandraVectorStore
+    from llama_index.core.vector_stores.types import (
+        VectorStoreQuery,
+    )
+
 
 from e2e_tests.test_utils import (
     random_string,

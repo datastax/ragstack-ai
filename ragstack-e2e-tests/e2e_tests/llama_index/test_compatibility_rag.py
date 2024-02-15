@@ -2,28 +2,47 @@ import logging
 
 import pytest
 from langchain.embeddings import VertexAIEmbeddings, HuggingFaceInferenceAPIEmbeddings
-from llama_index import (
-    VectorStoreIndex,
-    StorageContext,
-    ServiceContext,
-    Document,
-)
-from llama_index.embeddings import (
-    OpenAIEmbedding,
-    AzureOpenAIEmbedding,
-    BedrockEmbedding,
-)
-from llama_index.llms import (
-    OpenAI,
-    AzureOpenAI,
-    Vertex,
-    Bedrock,
-    HuggingFaceInferenceAPI,
-    ChatMessage,
-    Gemini,
-)
-from llama_index.multi_modal_llms import GeminiMultiModal
-from llama_index.schema import ImageNode
+
+try:
+    # llamaindex 0.9.x
+    from llama_index import ServiceContext, StorageContext, VectorStoreIndex, Document
+    from llama_index.embeddings import (
+        OpenAIEmbedding,
+        AzureOpenAIEmbedding,
+        BedrockEmbedding,
+    )
+    from llama_index.llms import (
+        OpenAI,
+        AzureOpenAI,
+        Vertex,
+        Bedrock,
+        HuggingFaceInferenceAPI,
+        ChatMessage,
+        Gemini,
+    )
+    from llama_index.multi_modal_llms import GeminiMultiModal
+    from llama_index.schema import ImageNode
+except ImportError:
+    # llamaindex 0.10.x
+    from llama_index.core import (
+        ServiceContext,
+        StorageContext,
+        VectorStoreIndex,
+        Document,
+    )
+    from llama_index.core.base.llms.types import ChatMessage
+    from llama_index.core.schema import ImageNode
+    from llama_index.llms.openai import OpenAI
+    from llama_index.llms.azure_openai import AzureOpenAI
+    from llama_index.embeddings.openai import OpenAIEmbedding
+    from llama_index.embeddings.azure_openai import AzureOpenAIEmbedding
+    from llama_index.embeddings.bedrock import BedrockEmbedding
+    from llama_index.llms.vertex import Vertex
+    from llama_index.llms.bedrock import Bedrock
+    from llama_index.llms.huggingface import HuggingFaceInferenceAPI
+    from llama_index.llms.gemini import Gemini
+    from llama_index.multi_modal_llms.gemini import GeminiMultiModal
+
 
 from e2e_tests.conftest import (
     set_current_test_info,
