@@ -368,6 +368,7 @@ if __name__ == "__main__":
             )
             embedding_model = eval(f"{embedding}({batch_size})")
             if vector_database != "none":
+                # TODO: you could pas emebdding and bacth size and eval inside astradb
                 vector_store = astra_db(embedding_model)
                 # vector_store = eval(f"{vector_database}({embedding_model})")
                 asyncio.run(

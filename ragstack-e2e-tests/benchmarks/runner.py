@@ -1,9 +1,13 @@
 import argparse
 import os
+import random
+import string
 import subprocess
 import sys
 from datasets import load_dataset
 from enum import Enum
+
+from astrapy.db import AsyncAstraDB
 
 INPUT_PATH = "data/imdb_train.csv"
 ASTRA_DB_BATCH_SIZE = 20
@@ -52,6 +56,11 @@ class TestCase(Enum):
     # }
 
 
+class EmbeddingModels(Enum):
+    NEMO = {"name": "nemo_microservice", "dimensions": 1024}
+    OPENAI = {"name": "openai_ada002", "dimensions": 1536}
+
+
 # Custom type function to convert input string to a list of integers
 def int_list(value):
     try:
@@ -61,11 +70,6 @@ def int_list(value):
         raise argparse.ArgumentTypeError(
             f"Value {value} is not a valid list of integers"
         )
-
-
-def get_embedding_models():
-    # return ["nemo_microservice"]
-    return ["openai_ada002", "nemo_microservice"]
 
 
 def run_suite(
@@ -80,11 +84,11 @@ def run_suite(
     if threads_per_benchmark is None:
         threads_per_benchmark: list[int] = [1]
 
-    embedding_models = get_embedding_models()
+    embedding_models = [EmbeddingModels.value for EmbeddingModels in EmbeddingModels]
     if only_values_containing is not None:
         for embedding_model in embedding_models:
             for filter_by in only_values_containing:
-                if filter_by not in embedding_model:
+                if filter_by not in embedding_model["name"]:
                     embedding_models.remove(embedding_model)
                     break
 
@@ -95,6 +99,19 @@ def run_suite(
     logs_file = os.path.join(args.reports_dir, "benchmarks.log")
 
     for embedding_model in embedding_models:
+        # Models should produce the same embedding dimensions, so you can create collection here
+        astra = AsyncAstraDB(
+            token=os.environ.get("ASTRA_DB_APPLICATION_TOKEN"),
+            api_endpoint=os.environ.get("ASTRA_DB_API_ENDPOINT"),
+            namespace="default_keyspace",
+        )
+        name = "".join(random.choices(string.ascii_letters, k=10))
+        collection = astra.create_collection(
+            collection_name=name,
+            dimensions=embedding_model["dimensions"],
+            metric="cosine",
+        )
+
         for threads in threads_per_benchmark:
             test_name = test_case["name"]
 
@@ -117,6 +134,9 @@ def run_suite(
                     with open(logs_file, "r") as f:
                         print(f.read())
                 raise Exception("Error running suite")
+
+        # clean up collection (since we have a max of 5 per db)
+        astra.delete_collection(collection.collection_name)
 
     if len(filenames) <= 1:
         print("Not enough files to compare")

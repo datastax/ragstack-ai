@@ -7,7 +7,6 @@ from itertools import islice
 from typing import (
     Iterator,
     List,
-    Optional,
     Iterable,
     Any,
     Dict,
@@ -15,9 +14,9 @@ from typing import (
     Tuple,
     Union,
 )
-from typing import Callable, Set, Union, TypeVar
-
+from typing import Set, Union, TypeVar
 from astrapy.db import AsyncAstraDB, AsyncAstraDBCollection
+
 
 DocDict = Dict[str, Any]  # dicts expressing entries to insert
 T = TypeVar("T")
