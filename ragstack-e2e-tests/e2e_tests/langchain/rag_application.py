@@ -1,19 +1,17 @@
 import logging
 import time
 from operator import itemgetter
-from typing import Dict, List, Optional, Sequence, Callable
+from typing import Sequence, Callable
 
 from langchain.evaluation import Criteria
 from langchain.schema.vectorstore import VectorStore
-from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain.prompts import ChatPromptTemplate
 from langchain.schema import Document
 from langchain.schema.language_model import BaseLanguageModel
-from langchain.schema.messages import AIMessage, HumanMessage
 from langchain.schema.output_parser import StrOutputParser
 from langchain.schema.retriever import BaseRetriever
 from langchain.schema.runnable import (
     Runnable,
-    RunnableBranch,
     RunnableLambda,
     RunnableMap,
 )
@@ -21,16 +19,18 @@ from langchain.smith import RunEvalConfig
 from langchain_core.chat_history import BaseChatMessageHistory
 from langchain_core.tracers import ConsoleCallbackHandler
 from langchain import callbacks
-from pydantic import BaseModel
 
-from langchain.prompts import PromptTemplate
 from langchain.chains import ConversationalRetrievalChain
 from langchain.memory import (
     ConversationSummaryMemory,
 )
 
-from e2e_tests.test_utils.tracing import record_langsmith_sharelink, ensure_langsmith_dataset, \
-    run_langchain_chain_on_dataset, get_langsmith_sharelink
+from e2e_tests.test_utils.tracing import (
+    record_langsmith_sharelink,
+    ensure_langsmith_dataset,
+    run_langchain_chain_on_dataset,
+    get_langsmith_sharelink,
+)
 
 BASIC_QA_PROMPT = """
 Answer the question based only on the supplied context. If you don't know the answer, say you don't know the answer.
@@ -92,13 +92,13 @@ def format_docs(docs: Sequence[Document]) -> str:
 
 
 def create_chain(
-        llm: BaseLanguageModel,
-        retriever: BaseRetriever,
+    llm: BaseLanguageModel,
+    retriever: BaseRetriever,
 ) -> Runnable:
     _context = RunnableMap(
         {
             "context": RunnableLambda(itemgetter("question")) | retriever | format_docs,
-            "question": itemgetter("question")
+            "question": itemgetter("question"),
         }
     ).with_config(run_name="RetrieveDocs")
     prompt = ChatPromptTemplate.from_messages(
@@ -111,19 +111,23 @@ def create_chain(
     response_synthesizer = (prompt | llm | StrOutputParser()).with_config(
         run_name="GenerateResponse",
     )
-    return RunnableMap({"answer": (
-            {
-                "question": RunnableLambda(itemgetter("question")).with_config(
-                    run_name="Itemgetter:question"
-                )
-            }
-            | _context
-            | response_synthesizer
-    )})
+    return RunnableMap(
+        {
+            "answer": (
+                {
+                    "question": RunnableLambda(itemgetter("question")).with_config(
+                        run_name="Itemgetter:question"
+                    )
+                }
+                | _context
+                | response_synthesizer
+            )
+        }
+    )
 
 
 def run_rag_custom_chain(
-        vector_store: VectorStore, llm: BaseLanguageModel, record_property: Callable
+    vector_store: VectorStore, llm: BaseLanguageModel, record_property: Callable
 ) -> None:
     vector_store.add_texts(SAMPLE_DATA)
     retriever = vector_store.as_retriever()
@@ -132,34 +136,46 @@ def run_rag_custom_chain(
         retriever,
     )
 
-    ensure_langsmith_dataset(name="ragstack-ci-rag-custom-chain",
-                             input={"question": "When was released MyFakeProductForTesting for the first time ?"},
-                             output={"answer": "MyFakeProductForTesting was released in June 2020"})
+    ensure_langsmith_dataset(
+        name="ragstack-ci-rag-custom-chain",
+        input={
+            "question": "When was released MyFakeProductForTesting for the first time ?"
+        },
+        output={"answer": "MyFakeProductForTesting was released in June 2020"},
+    )
 
-    runs = run_langchain_chain_on_dataset(dataset_name="ragstack-ci-rag-custom-chain",
-                                          chain_factory=lambda: answer_chain,
-                                          run_eval_config=RunEvalConfig(
-                                              evaluators=[
-                                                  "context_qa",
-                                                  "cot_qa",
-                                                  RunEvalConfig.LabeledCriteria(Criteria.RELEVANCE),
-                                                  RunEvalConfig.LabeledCriteria(Criteria.HELPFULNESS),
-                                                  RunEvalConfig.LabeledCriteria(Criteria.COHERENCE)
-                                              ]
-                                          ))
+    runs = run_langchain_chain_on_dataset(
+        dataset_name="ragstack-ci-rag-custom-chain",
+        chain_factory=lambda: answer_chain,
+        run_eval_config=RunEvalConfig(
+            evaluators=[
+                "context_qa",
+                "cot_qa",
+                RunEvalConfig.LabeledCriteria(Criteria.RELEVANCE),
+                RunEvalConfig.LabeledCriteria(Criteria.HELPFULNESS),
+                RunEvalConfig.LabeledCriteria(Criteria.COHERENCE),
+            ]
+        ),
+    )
     if len(runs) != 1:
         raise ValueError(f"Expected 1 run, got {len(runs)}")
     actual_run = runs[0]
-    logging.info("Got response: " + str(actual_run.output) + " error: " + str(actual_run.error))
+    logging.info(
+        "Got response: " + str(actual_run.output) + " error: " + str(actual_run.error)
+    )
     record_langsmith_sharelink(actual_run.run_id, record_property)
 
     for feedback in actual_run.feedbacks:
         logging.info(
-            f"Feedback for {feedback.key} is {feedback.score} with value {feedback.value} for run {actual_run.run_id}")
+            f"Feedback for {feedback.key} is {feedback.score} with value {feedback.value} for run {actual_run.run_id}"
+        )
         xml_key = feedback.key.replace(" ", "_").lower()
         xml_value = f"{feedback.value} (score: {feedback.score})"
         record_property(f"langsmith_feedback_{xml_key}", xml_value)
-        record_property(f"langsmith_feedback_{xml_key}_url", get_langsmith_sharelink(run_id=feedback.eval_run_id))
+        record_property(
+            f"langsmith_feedback_{xml_key}_url",
+            get_langsmith_sharelink(run_id=feedback.eval_run_id),
+        )
 
     assert actual_run.error is None
     assert actual_run.output is not None
@@ -167,10 +183,10 @@ def run_rag_custom_chain(
 
 
 def run_conversational_rag(
-        vector_store: VectorStore,
-        llm: BaseLanguageModel,
-        chat_memory: BaseChatMessageHistory,
-        record_property,
+    vector_store: VectorStore,
+    llm: BaseLanguageModel,
+    chat_memory: BaseChatMessageHistory,
+    record_property,
 ) -> None:
     logging.info("Starting to add texts to vector store")
     start = time.perf_counter_ns()

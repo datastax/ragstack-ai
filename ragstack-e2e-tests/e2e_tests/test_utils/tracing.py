@@ -1,7 +1,7 @@
 import logging
 import time
 from dataclasses import dataclass
-from typing import Callable, Any, List, Union
+from typing import Callable, Any, List
 
 from langchain.smith import RunEvalConfig
 from langsmith import Client
@@ -56,13 +56,14 @@ class LangSmithDatasetRunResult:
     feedbacks: list[LangSmithFeedback]
 
 
-def run_langchain_chain_on_dataset(dataset_name: str, chain_factory: Callable, run_eval_config: RunEvalConfig) -> List[
-    LangSmithDatasetRunResult]:
+def run_langchain_chain_on_dataset(
+    dataset_name: str, chain_factory: Callable, run_eval_config: RunEvalConfig
+) -> List[LangSmithDatasetRunResult]:
     results = LANGSMITH_CLIENT.run_on_dataset(
         dataset_name=dataset_name,
         llm_or_chain_factory=chain_factory,
         evaluation=run_eval_config,
-        verbose=True
+        verbose=True,
     )
 
     runs = []
@@ -74,16 +75,22 @@ def run_langchain_chain_on_dataset(dataset_name: str, chain_factory: Callable, r
             score = feedback.score
             value = feedback.value
             eval_run_id = str(feedback.evaluator_info["__run"].run_id)
-            print(f"Feedback for {key} is {score} with value {value} for run {eval_run_id}")
+            print(
+                f"Feedback for {key} is {score} with value {value} for run {eval_run_id}"
+            )
             feedbacks.append(LangSmithFeedback(key, score, value, eval_run_id))
-        runs.append(LangSmithDatasetRunResult(result["run_id"], result["output"] if "output" in result else None,
-                                              result["Error"] if "Error" in result else None, feedbacks))
+        runs.append(
+            LangSmithDatasetRunResult(
+                result["run_id"],
+                result["output"] if "output" in result else None,
+                result["Error"] if "Error" in result else None,
+                feedbacks,
+            )
+        )
     return runs
 
 
-def record_langsmith_sharelink(
-        run_id: str, record_property: Callable
-) -> None:
+def record_langsmith_sharelink(run_id: str, record_property: Callable) -> None:
     link = get_langsmith_sharelink(run_id=run_id)
     record_property("langsmith_url", link)
 
