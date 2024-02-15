@@ -185,7 +185,7 @@ async def _aembed_nemo(batch_size, chunks, threads):
         logging.info(f"Inference End: {inference_end}")
 
 
-async def _aembed_and_store_nemo(batch_size, chunks, threads):
+async def _aembed_nemo_and_store(batch_size, chunks, threads):
     timeout = httpx.Timeout(20.0)
     limits = httpx.Limits(max_connections=threads, max_keepalive_connections=threads)
     async with httpx.AsyncClient(timeout=timeout, limits=limits) as client:
@@ -287,6 +287,11 @@ async def _aeval_nemo_embeddings(batch_size, chunk_size, threads):
     await _aembed_nemo(batch_size, chunks, threads)
 
 
+async def _aeval_nemo_embeddings_with_vector_store(batch_size, chunk_size, threads):
+    chunks = _split(chunk_size)
+    await _aembed_nemo_and_store(batch_size, chunks, threads)
+
+
 async def _aeval_embeddings(embedding_model, chunk_size, threads, vector_store):
     docs = _split(chunk_size)
     await _aembed(embedding_model, docs, threads)
@@ -344,20 +349,32 @@ if __name__ == "__main__":
             logging.info(
                 f"Running test case: {test_name}/{embedding}/threads:{threads}"
             )
-            asyncio.run(
-                _aeval_nemo_embeddings(batch_size, chunk_size, int(threads)),
-                vector_database,
-            )
+            if vector_database is not "none":
+                asyncio.run(
+                    _aeval_nemo_embeddings_with_vector_store(
+                        batch_size, chunk_size, int(threads)
+                    )
+                )
+            else:
+                asyncio.run(
+                    _aeval_nemo_embeddings(batch_size, chunk_size, int(threads))
+                )
         else:
             logging.info(
                 f"Running test case: {test_name}/{embedding}/threads:{threads}"
             )
             embedding_model = eval(f"{embedding}({batch_size})")
-            vector_store = eval(f"{vector_database}({embedding_model})")
-            asyncio.run(
-                _aeval_embeddings(embedding_model, chunk_size, int(threads)),
-                vector_store,
-            )
+            if vector_database is not "none":
+                vector_store = eval(f"{vector_database}({embedding_model})")
+                asyncio.run(
+                    _aeval_embeddings_with_vector_store(
+                        vector_store, chunk_size, int(threads)
+                    )
+                )
+            else:
+                asyncio.run(
+                    _aeval_embeddings(embedding_model, chunk_size, int(threads))
+                )
 
         logging.info("Test case completed successfully")
 
