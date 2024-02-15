@@ -1,4 +1,6 @@
 import os
+from random import random
+import string
 import sys
 import logging
 import requests
@@ -272,10 +274,11 @@ def nvidia_nvolveqa40k(batch_size):
     )
 
 
-def astra_db(embeddings) -> AstraDB:
+def astra_db(embeddings: Embeddings) -> AstraDB:
+    collection = "".join(random.choices(string.ascii_letters, k=10))
     return AstraDB(
         embedding=embeddings,
-        collection_name="test_collection",
+        collection_name=collection,
         token=os.environ.get("ASTRA_DB_APPLICATION_TOKEN"),
         api_endpoint=os.environ.get("ASTRA_DB_API_ENDPOINT"),
     )
