@@ -28,10 +28,8 @@ def _get_documents_to_insert(
     texts: Iterable[str],
     embedding_vectors: List[List[float]],
 ) -> List[DocDict]:
-    if ids is None:
-        ids = [uuid.uuid4().hex for _ in texts]
-    if metadatas is None:
-        metadatas = [{} for _ in texts]
+    ids = [uuid.uuid4().hex for _ in texts]
+    metadatas = [{} for _ in texts]
 
     documents_to_insert = [
         {
