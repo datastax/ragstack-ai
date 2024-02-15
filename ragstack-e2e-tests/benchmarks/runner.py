@@ -6,6 +6,7 @@ from datasets import load_dataset
 from enum import Enum
 
 INPUT_PATH = "data/imdb_train.csv"
+ASTRA_DB_BATCH_SIZE = 1
 
 
 class TestCase(Enum):
@@ -74,6 +75,7 @@ def run_suite(
     report_dir=".",
     only_values_containing=None,
     threads_per_benchmark=None,
+    vector_database="none",
 ):
     if threads_per_benchmark is None:
         threads_per_benchmark: list[int] = [1]
@@ -103,7 +105,7 @@ def run_suite(
 
             batch_size = test_case["batch_size"]
             chunk_size = test_case["chunk_size"]
-            command = f"{sys.executable} -m pyperf command --copy-env -p {processes} -n 1 -l {loops} -t -o {abs_filename} -- {sys.executable} {benchmarks_dir}/testcases.py {logs_file} {test_name} {embedding_model} {batch_size} {chunk_size} {threads}"
+            command = f"{sys.executable} -m pyperf command --copy-env -p {processes} -n 1 -l {loops} -t -o {abs_filename} -- {sys.executable} {benchmarks_dir}/testcases.py {logs_file} {test_name} {embedding_model} {batch_size} {chunk_size} {threads} {vector_database}"
             print(
                 f"Running suite: {test_name} with model: {embedding_model} and threads: {threads}"
             )
@@ -187,8 +189,13 @@ if __name__ == "__main__":
     parser.add_argument(
         "--vector-database",
         type=str,
+        choices=["none", "astra_db"],
         default="none",
-        help="If not 'none', the benchmark will store the generated embeddings in the given vector database",
+        help="Selects the vector database for storing embeddings. "
+        "'none': No database used."
+        "'astra_db': Stores embeddings in Astra DB. Requires setting "
+        "environment variables `ASTRA_DB_APPLICATION_TOKEN` and "
+        "`ASTRA_DB_API_ENDPOINT`.",
     )
 
     args = parser.parse_args()
@@ -230,4 +237,5 @@ if __name__ == "__main__":
             processes=args.processes,
             only_values_containing=args.models.split(","),
             threads_per_benchmark=args.num_threads,
+            vector_database=args.vector_database,
         )
