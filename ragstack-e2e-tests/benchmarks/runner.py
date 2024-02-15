@@ -39,11 +39,11 @@ class TestCase(Enum):
     #     "batch_size": 50,
     #     "chunk_size": 256,
     # }
-    # EMBEDDINGS_BATCH100_CHUNK512 = {
-    #     "name": "embeddings_batch100_chunk512",
-    #     "batch_size": 100,
-    #     "chunk_size": 512,
-    # }
+    EMBEDDINGS_BATCH100_CHUNK512 = {
+        "name": "embeddings_batch100_chunk512",
+        "batch_size": 100,
+        "chunk_size": 512,
+    }
     # EMBEDDINGS_BATCH100_CHUNK256 = {
     #     "name": "embeddings_batch100_chunk256",
     #     "batch_size": 100,
@@ -181,6 +181,13 @@ if __name__ == "__main__":
         type=int_list,
         default=[1],
         help="Number of threads (concurrent requests) per benchmark",
+    )
+
+    parser.add_argument(
+        "--vector-database",
+        type=str,
+        default="none",
+        help="If not 'none', the benchmark will store the generated embeddings in the given vector database",
     )
 
     args = parser.parse_args()

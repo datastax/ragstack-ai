@@ -104,7 +104,7 @@ async def _aembed(embeddings: Embeddings, chunks: list[str], threads: int):
     batch_size = len(chunks) // threads + (1 if len(chunks) % threads else 0)
     batches = [chunks[i : i + batch_size] for i in range(0, len(chunks), batch_size)]
     logging.info(
-        f"Splitting chunks into batches of size {batch_size} for {threads} threads"
+        f"Splitting chunks into {len(batches)} batches of size {batch_size} for {threads} threads"
     )
 
     inference_start = time.time()
@@ -187,6 +187,7 @@ def openai_ada002(batch_size):
     return OpenAIEmbeddings(
         chunk_size=batch_size,
         api_key=os.environ.get("OPEN_AI_KEY"),
+        max_retries=0,  # ensure client doesn't retry requests and skew results. If this fails, we want to see it
     )
 
 
