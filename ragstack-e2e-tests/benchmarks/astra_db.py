@@ -253,5 +253,4 @@ def add_embeddings(
             ),
         )
 
-    logging.info("Insertion complete")
     return [iid for id_list in all_ids_nested for iid in id_list]

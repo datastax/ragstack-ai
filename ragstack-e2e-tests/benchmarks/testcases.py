@@ -320,12 +320,11 @@ def nvidia_nvolveqa40k(batch_size):
     )
 
 
-def astra_db(embeddings: Embeddings) -> AstraDB:
+def astra_db(embeddings: Embeddings, collection_name: str) -> AstraDB:
     astra_start = time.time()
-    collection = "".join(random.choices(string.ascii_letters, k=10))
     db = AstraDB(
         embedding=embeddings,
-        collection_name=collection,
+        collection_name=collection_name,
         token=os.environ.get("ASTRA_DB_APPLICATION_TOKEN"),
         api_endpoint=os.environ.get("ASTRA_DB_API_ENDPOINT"),
     )
@@ -369,6 +368,7 @@ if __name__ == "__main__":
         chunk_size = int(sys.argv[5])
         threads = sys.argv[6]
         vector_database = sys.argv[7]
+        collection_name = sys.argv[8]
 
         cpu_logs_file = "-".join([test_name, embedding, threads, cpu_suffix])
         gpu_logs_file = "-".join([test_name, embedding, threads, gpu_suffix])
@@ -418,8 +418,8 @@ if __name__ == "__main__":
             )
             embedding_model = eval(f"{embedding}({batch_size})")
             if vector_database != "none":
-                # TODO: you could pas emebdding and bacth size and eval inside astradb
-                vector_store = astra_db(embedding_model)
+                # TODO: you could pass embedding and bacth size and eval inside astradb
+                vector_store = astra_db(embedding_model, collection_name)
                 # vector_store = eval(f"{vector_database}({embedding_model})")
                 asyncio.run(
                     _aeval_embeddings_with_vector_store(

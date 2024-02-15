@@ -100,17 +100,20 @@ def run_suite(
 
     for embedding_model in embedding_models:
         # Models should produce the same embedding dimensions, so you can create collection here
-        astra = AstraDB(
-            token=os.environ.get("ASTRA_DB_APPLICATION_TOKEN"),
-            api_endpoint=os.environ.get("ASTRA_DB_API_ENDPOINT"),
-            namespace="default_keyspace",
-        )
-        name = "".join(random.choices(string.ascii_letters, k=10))
-        collection = astra.create_collection(
-            collection_name=name,
-            dimension=embedding_model["dimensions"],
-            metric="cosine",
-        )
+        if vector_database == "astra_db":
+            astra = AstraDB(
+                token=os.environ.get("ASTRA_DB_APPLICATION_TOKEN"),
+                api_endpoint=os.environ.get("ASTRA_DB_API_ENDPOINT"),
+                namespace="default_keyspace",
+            )
+            collection_name = "".join(random.choices(string.ascii_letters, k=10))
+            collection = astra.create_collection(
+                collection_name=collection_name,
+                dimension=embedding_model["dimensions"],
+                metric="cosine",
+            )
+        else:
+            collection_name = ""
 
         for threads in threads_per_benchmark:
             test_name = test_case["name"]
@@ -123,7 +126,7 @@ def run_suite(
 
             batch_size = test_case["batch_size"]
             chunk_size = test_case["chunk_size"]
-            command = f"{sys.executable} -m pyperf command --copy-env -p {processes} -n 1 -l {loops} -t -o {abs_filename} -- {sys.executable} {benchmarks_dir}/testcases.py {logs_file} {test_name} {embedding_name} {batch_size} {chunk_size} {threads} {vector_database}"
+            command = f"{sys.executable} -m pyperf command --copy-env -p {processes} -n 1 -l {loops} -t -o {abs_filename} -- {sys.executable} {benchmarks_dir}/testcases.py {logs_file} {test_name} {embedding_name} {batch_size} {chunk_size} {threads} {vector_database} {collection_name}"
             print(
                 f"Running suite: {test_name} with model: {embedding_model} and threads: {threads}"
             )
@@ -134,6 +137,10 @@ def run_suite(
                 if os.path.exists(logs_file):
                     with open(logs_file, "r") as f:
                         print(f.read())
+
+                # Still delete collection if it was created
+                astra.delete_collection(collection.collection_name)
+
                 raise Exception("Error running suite")
 
         # clean up collection (since we have a max of 5 per db)
