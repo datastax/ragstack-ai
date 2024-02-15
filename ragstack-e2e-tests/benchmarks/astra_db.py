@@ -149,10 +149,13 @@ async def aadd_embeddings(
             document_batch, im_result
         )
 
-        logging.info(f"Missing from Batch: {missing_from_batch}")
+        if len(missing_from_batch) > 0:
+            logging.warn(
+                "Some documents were not inserted, trying to replace them. This may skew results"
+            )
 
         async def _handle_missing_document(missing_document: DocDict) -> str:
-            replacement_result = await self.async_collection.find_one_and_replace(  # type: ignore[union-attr]
+            replacement_result = await collection.find_one_and_replace(
                 filter={"_id": missing_document["_id"]},
                 replacement=missing_document,
             )
@@ -175,6 +178,5 @@ async def aadd_embeddings(
             )
         ],
     )
-    logging.info(f"ALL_IDS_NESTED: {all_ids_nested}")
 
     return [iid for id_list in all_ids_nested for iid in id_list]
