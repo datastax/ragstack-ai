@@ -14,11 +14,11 @@ ASTRA_DB_BATCH_SIZE = 20
 
 
 class TestCase(Enum):
-    EMBEDDINGS_BATCH1_CHUNK512 = {
-        "name": "embeddings_batch1_chunk512",
-        "batch_size": 1,
-        "chunk_size": 512,
-    }
+    # EMBEDDINGS_BATCH1_CHUNK512 = {
+    #     "name": "embeddings_batch1_chunk512",
+    #     "batch_size": 1,
+    #     "chunk_size": 512,
+    # }
     # EMBEDDINGS_BATCH1_CHUNK256 = {
     #     "name": "embeddings_batch1_chunk256",
     #     "batch_size": 1,
