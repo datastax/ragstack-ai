@@ -23,7 +23,7 @@ from langchain_core.embeddings import Embeddings
 from langchain_nvidia_ai_endpoints import NVIDIAEmbeddings
 
 from runner import INPUT_PATH, ASTRA_DB_BATCH_SIZE
-from astra_db import aadd_embeddings, add_embeddings
+from astra_db import astore_embeddings, store_embeddings
 
 
 # Define NeMo microservice API request headers
@@ -45,7 +45,7 @@ thread_local = threading.local()
 # Get the logger for the 'httpx' library
 logger = logging.getLogger("httpx")
 # Set the logging level to 'WARNING' to suppress 'INFO' and 'DEBUG' messages
-logger.setLevel(logging.WARNING)
+logger.setLevel(logging.INFO)
 
 
 def get_session():
@@ -214,7 +214,7 @@ async def _aembed_nemo_and_store(batch_size, chunks, threads):
             response = response.json()
             embeddings = [item["embedding"] for item in response["data"]]
 
-            await aadd_embeddings(batch, embeddings, threads, ASTRA_DB_BATCH_SIZE)
+            await astore_embeddings(batch, embeddings, threads, ASTRA_DB_BATCH_SIZE)
 
         num_batches = len(chunks) // batch_size + (1 if len(chunks) % batch_size else 0)
         logging.info(
@@ -253,7 +253,8 @@ def _embed_nemo_and_store(batch_size, chunks, threads):
                 f"Request failed with status code {response.status_code}: {response.text}"
             )
         embeddings = [item["embedding"] for item in response.json()["data"]]
-        add_embeddings(batch, embeddings, threads, ASTRA_DB_BATCH_SIZE)
+        embeddings = store_embeddings(batch, embeddings, threads, ASTRA_DB_BATCH_SIZE)
+        logging.info("Stored embeddings: ", embeddings)
 
     num_batches = len(chunks) // batch_size + (1 if len(chunks) % batch_size else 0)
     logging.info(
@@ -418,7 +419,7 @@ if __name__ == "__main__":
             )
             embedding_model = eval(f"{embedding}({batch_size})")
             if vector_database != "none":
-                # TODO: you could pass embedding and bacth size and eval inside astradb
+                # TODO: you could pass embedding and batch size and eval inside astradb
                 vector_store = astra_db(embedding_model, collection_name)
                 # vector_store = eval(f"{vector_database}({embedding_model})")
                 asyncio.run(

@@ -143,7 +143,7 @@ def _get_missing_from_batch(
     return batch_inserted, missing_from_batch
 
 
-async def aadd_embeddings(
+async def astore_embeddings(
     texts: List[str],
     embedding_vectors: List[List[float]],
     batch_concurrency: int,
@@ -195,11 +195,10 @@ async def aadd_embeddings(
         ],
     )
 
-    logging.info("Insertion complete")
     return [iid for id_list in all_ids_nested for iid in id_list]
 
 
-def add_embeddings(
+def store_embeddings(
     texts: List[str],
     embedding_vectors: List[List[float]],
     batch_concurrency: int,
