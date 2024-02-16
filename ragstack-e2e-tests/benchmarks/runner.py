@@ -219,7 +219,7 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "--num_threads",
+        "--threads",
         type=int_list,
         default=[1],
         help="Number of threads (concurrent requests) per benchmark",
@@ -274,6 +274,7 @@ if __name__ == "__main__":
         run_suite(
             test_case=test_case,
             report_dir=args.reports_dir,
+            values_per_benchmark=args.values,
             loops=args.loops,
             processes=args.processes,
             only_values_containing=args.models.split(","),
