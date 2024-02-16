@@ -206,7 +206,6 @@ def store_embeddings(
     batch_size: int,
     collection_name,
 ):
-    # TODO: PAss collection name in here
     collection = get_collection(collection_name=collection_name)
     documents_to_insert = _get_documents_to_insert(texts, embedding_vectors)
 

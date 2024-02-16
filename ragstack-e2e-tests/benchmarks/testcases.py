@@ -1,36 +1,26 @@
-from concurrent.futures import ThreadPoolExecutor
 import os
-import random
-import string
 import sys
 import logging
 import requests
-import json
 import time
 import psutil
 import threading
 import subprocess
 import asyncio
-import httpx
 
 from requests.adapters import HTTPAdapter
 
-from langchain.text_splitter import TokenTextSplitter
 from langchain_community.embeddings import OpenAIEmbeddings
 from langchain_community.vectorstores.astradb import AstraDB
-from langchain_community.vectorstores import VectorStore
 from langchain_core.embeddings import Embeddings
 from langchain_nvidia_ai_endpoints import NVIDIAEmbeddings
 
-from runner import INPUT_PATH, ASTRA_DB_BATCH_SIZE
-from astra_db import astore_embeddings, store_embeddings
+from nemo_evaluations import (
+    aeval_nemo_embeddings,
+    aeval_nemo_embeddings_with_vector_store,
+)
+from evaluations import aeval_embeddings, aeval_embeddings_with_vector_store
 
-
-# Define NeMo microservice API request headers
-HEADERS = {"accept": "application/json", "Content-Type": "application/json"}
-HOSTNAME = "0.0.0.0"
-SERVICE_PORT = 8081
-MODEL_ID = "NV-Embed-QA"
 
 # The number of chars to read of the input file. A smaller value here will
 # result in faster benchmarks, but may affect accuracy if not enough chunks
@@ -74,214 +64,6 @@ def log_cpu_usage(stop_event, interval, filename):
             f.write(f"{time.strftime('%Y-%m-%d %H:%M:%S')} - CPU Usage: {cpu_usage}%\n")
             # Flush the output to ensure it's written to the file
             f.flush()
-
-
-def _split(chunk_size: int) -> list[str]:
-    start_split = time.time()
-
-    logging.info(f"Reading {CHARS_TO_READ} characters from {INPUT_PATH}")
-    with open(INPUT_PATH, "r") as file:
-        input_data = file.read(CHARS_TO_READ)
-
-    # TODO: NeMo token limit is 512, though using anything above a chunk_size of 300 will result in
-    # sporadic token length errors.
-    text_splitter = TokenTextSplitter(chunk_size=min(chunk_size, 300), chunk_overlap=0)
-    split_texts = text_splitter.split_text(input_data)
-    docs = []
-    for split in split_texts:
-        docs.append(split)
-
-    average_length = sum(len(doc) for doc in docs) / len(docs) if docs else 0
-    logging.info(
-        f"Created number of documents: {len(docs)} with avg chunk size: {average_length:.2f}"
-    )
-    end_split = time.time()
-    split_time = end_split - start_split
-    logging.info(f"Text split time: {split_time:.2f} seconds")
-    return docs
-
-
-async def _aembed(embeddings: Embeddings, chunks: list[str], threads: int):
-    """Embeds chunks using the given embeddings model."""
-
-    async def process_batch(batch):
-        try:
-            await embeddings.aembed_documents(batch)
-        except Exception as e:
-            logging.error(f"Failed to embed chunk: {e}")
-
-    batch_size = len(chunks) // threads + (1 if len(chunks) % threads else 0)
-    batches = [chunks[i : i + batch_size] for i in range(0, len(chunks), batch_size)]
-    logging.info(
-        f"Splitting chunks into {len(batches)} batches of size {batch_size} for {threads} threads"
-    )
-
-    inference_start = time.time()
-    logging.info(f"Inference Start: {inference_start}")
-
-    await asyncio.gather(*(process_batch(batch) for batch in batches))
-
-    inference_end = time.time()
-    logging.info(f"Inference End: {inference_end}")
-
-
-async def _aembed_and_store(vector_store: VectorStore, chunks: list[str], threads: int):
-    """Embeds and stores chunks into the vector store."""
-
-    async def process_batch(batch):
-        try:
-            logging.info(f"Storing batch of size: {len(batch)}")
-            await vector_store.aadd_texts(batch)
-        except Exception as e:
-            logging.error(f"Failed to embed chunk: {e}")
-
-    batch_size = len(chunks) // threads + (1 if len(chunks) % threads else 0)
-    batches = [chunks[i : i + batch_size] for i in range(0, len(chunks), batch_size)]
-    logging.info(
-        f"Splitting chunks into {len(batches)} batches of size {batch_size} for {threads} threads"
-    )
-
-    inference_start = time.time()
-    logging.info(f"Inference+Store Start: {inference_start}")
-
-    await asyncio.gather(*(process_batch(batch) for batch in batches))
-
-    inference_end = time.time()
-    logging.info(f"Inference+Store End: {inference_end}")
-
-
-async def _aembed_nemo(batch_size, chunks, threads):
-    timeout = httpx.Timeout(30.0, pool=None)
-    limits = httpx.Limits(max_connections=threads, max_keepalive_connections=threads)
-    async with httpx.AsyncClient(timeout=timeout, limits=limits) as client:
-        url = f"http://{HOSTNAME}:{SERVICE_PORT}/v1/embeddings"
-
-        async def _process_batch(batch):
-            data = {
-                "input": batch,
-                "model": MODEL_ID,
-                "input_type": "query",
-            }
-            data_json = json.dumps(data)
-            response = await client.post(url, headers=HEADERS, data=data_json)
-
-            if response.status_code != 200:
-                logging.error(
-                    f"Request failed with status code {response.status_code}: {response.text}"
-                )
-            return response
-
-        num_batches = len(chunks) // batch_size + (1 if len(chunks) % batch_size else 0)
-        logging.info(
-            f"Processing batches of size: {batch_size}, for total num_batches: {num_batches}"
-        )
-
-        inference_start = time.time()
-        logging.info(f"Inference Start: {inference_start}")
-
-        batches = [
-            chunks[i * batch_size : (i + 1) * batch_size] for i in range(num_batches)
-        ]
-
-        await asyncio.gather(*(_process_batch(batch) for batch in batches))
-
-        inference_end = time.time()
-        logging.info(f"Inference End: {inference_end}")
-
-
-async def _aembed_nemo_and_store(batch_size, chunks, threads, collection_name):
-    logging.info("Embedding nemo and storing")
-    # timeout = httpx.Timeout(30.0, pool=None)
-    timeout = httpx.Timeout(None)
-    limits = httpx.Limits(
-        max_connections=threads, max_keepalive_connections=10, keepalive_expiry=None
-    )
-    async with httpx.AsyncClient(timeout=timeout, limits=limits, http2=True) as client:
-        url = f"http://{HOSTNAME}:{SERVICE_PORT}/v1/embeddings"
-
-        async def _process_batch(batch):
-            data = {
-                "input": batch,
-                "model": MODEL_ID,
-                "input_type": "query",
-            }
-            data_json = json.dumps(data)
-            response = await client.post(url, headers=HEADERS, data=data_json)
-
-            if response.status_code != 200:
-                logging.error(
-                    f"Request failed with status code {response.status_code}: {response.text}"
-                )
-            response = response.json()
-            embeddings = [item["embedding"] for item in response["data"]]
-
-            await astore_embeddings(
-                batch, embeddings, threads, ASTRA_DB_BATCH_SIZE, collection_name
-            )
-
-        num_batches = len(chunks) // batch_size + (1 if len(chunks) % batch_size else 0)
-        logging.info(
-            f"Processing batches of size: {batch_size}, for total num_batches: {num_batches}"
-        )
-
-        inference_start = time.time()
-        logging.info(f"Inference Start: {inference_start}")
-
-        batches = [
-            chunks[i * batch_size : (i + 1) * batch_size] for i in range(num_batches)
-        ]
-
-        await asyncio.gather(*(_process_batch(batch) for batch in batches))
-
-        inference_end = time.time()
-        logging.info(f"Inference End: {inference_end}")
-
-
-def _embed_nemo_and_store(batch_size, chunks, threads, collection_name):
-    import requests
-
-    logging.info("Synchronously Embedding nemo and storing")
-    url = f"http://{HOSTNAME}:{SERVICE_PORT}/v1/embeddings"
-
-    def _process_batch(batch):
-        data = {
-            "input": batch,
-            "model": MODEL_ID,
-            "input_type": "query",
-        }
-        response = requests.post(url, headers=HEADERS, data=json.dumps(data))
-
-        if response.status_code != 200:
-            logging.error(
-                f"Request failed with status code {response.status_code}: {response.text}"
-            )
-        embeddings = [item["embedding"] for item in response.json()["data"]]
-        embeddings = store_embeddings(
-            batch, embeddings, threads, ASTRA_DB_BATCH_SIZE, collection_name
-        )
-        logging.info(f"Stored embeddings: {embeddings}")
-
-    num_batches = len(chunks) // batch_size + (1 if len(chunks) % batch_size else 0)
-    logging.info(
-        f"Processing batches of size: {batch_size}, for total num_batches: {num_batches}"
-    )
-
-    inference_start = time.time()
-    logging.info(f"Inference Start: {inference_start}")
-
-    with ThreadPoolExecutor(max_workers=threads) as executor:
-        futures = [
-            executor.submit(_process_batch, batch)
-            for batch in [
-                chunks[i * batch_size : (i + 1) * batch_size]
-                for i in range(num_batches)
-            ]
-        ]
-        for future in futures:
-            future.result()  # Wait for all futures to complete
-
-    inference_end = time.time()
-    logging.info(f"Inference End: {inference_end}")
 
 
 def openai_ada002(batch_size):
@@ -339,29 +121,6 @@ def astra_db(embeddings: Embeddings, collection_name: str) -> AstraDB:
     return db
 
 
-async def _aeval_nemo_embeddings(batch_size, chunk_size, threads):
-    chunks = _split(chunk_size)
-    await _aembed_nemo(batch_size, chunks, threads)
-
-
-async def _aeval_nemo_embeddings_with_vector_store(
-    batch_size, chunk_size, threads, collection_name
-):
-    chunks = _split(chunk_size)
-    # await _aembed_nemo_and_store(batch_size, chunks, threads, collection_name)
-    _embed_nemo_and_store(batch_size, chunks, threads, collection_name)
-
-
-async def _aeval_embeddings(embedding_model, chunk_size, threads):
-    docs = _split(chunk_size)
-    await _aembed(embedding_model, docs, threads)
-
-
-async def _aeval_embeddings_with_vector_store(vector_store, chunk_size, threads):
-    docs = _split(chunk_size)
-    await _aembed_and_store(vector_store, docs, threads)
-
-
 if __name__ == "__main__":
     cpu_suffix = "cpu_usage.csv"
     gpu_suffix = "gpu_usage.csv"
@@ -412,14 +171,12 @@ if __name__ == "__main__":
             )
             if vector_database != "none":
                 asyncio.run(
-                    _aeval_nemo_embeddings_with_vector_store(
+                    aeval_nemo_embeddings_with_vector_store(
                         batch_size, chunk_size, int(threads), collection_name
                     )
                 )
             else:
-                asyncio.run(
-                    _aeval_nemo_embeddings(batch_size, chunk_size, int(threads))
-                )
+                asyncio.run(aeval_nemo_embeddings(batch_size, chunk_size, int(threads)))
         else:
             logging.info(
                 f"Running test case: {test_name}/{embedding}/threads:{threads}"
@@ -430,14 +187,12 @@ if __name__ == "__main__":
                 vector_store = astra_db(embedding_model, collection_name)
                 # vector_store = eval(f"{vector_database}({embedding_model})")
                 asyncio.run(
-                    _aeval_embeddings_with_vector_store(
+                    aeval_embeddings_with_vector_store(
                         vector_store, chunk_size, int(threads)
                     )
                 )
             else:
-                asyncio.run(
-                    _aeval_embeddings(embedding_model, chunk_size, int(threads))
-                )
+                asyncio.run(aeval_embeddings(embedding_model, chunk_size, int(threads)))
 
         logging.info("Test case completed successfully")
 
