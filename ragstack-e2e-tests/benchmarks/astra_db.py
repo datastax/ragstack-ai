@@ -45,7 +45,7 @@ def _get_documents_to_insert(
     return documents_to_insert
 
 
-def async_collection() -> AsyncAstraDBCollection:
+def async_collection(collection_name) -> AsyncAstraDBCollection:
     token = os.environ.get("ASTRA_DB_APPLICATION_TOKEN")
     api_endpoint = os.environ.get("ASTRA_DB_API_ENDPOINT")
     client = AsyncAstraDB(
@@ -54,12 +54,12 @@ def async_collection() -> AsyncAstraDBCollection:
         namespace="default_keyspace",
     )
     return AsyncAstraDBCollection(
-        collection_name="test",
+        collection_name=collection_name,
         astra_db=client,
     )
 
 
-def get_collection() -> AstraDBCollection:
+def get_collection(collection_name) -> AstraDBCollection:
     token = os.environ.get("ASTRA_DB_APPLICATION_TOKEN")
     api_endpoint = os.environ.get("ASTRA_DB_API_ENDPOINT")
     client = AstraDB(
@@ -68,7 +68,7 @@ def get_collection() -> AstraDBCollection:
         namespace="default_keyspace",
     )
     return AstraDBCollection(
-        collection_name="test",
+        collection_name=collection_name,
         astra_db=client,
     )
 
@@ -148,9 +148,10 @@ async def astore_embeddings(
     embedding_vectors: List[List[float]],
     batch_concurrency: int,
     batch_size: int,
+    collection_name: str,
 ):
     # TODO: PAss collection name in here
-    collection = async_collection()
+    collection = async_collection(collection_name=collection_name)
     documents_to_insert = _get_documents_to_insert(texts, embedding_vectors)
 
     async def _handle_batch(document_batch: List[DocDict]) -> List[str]:

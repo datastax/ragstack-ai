@@ -188,7 +188,7 @@ async def _aembed_nemo(batch_size, chunks, threads):
         logging.info(f"Inference End: {inference_end}")
 
 
-async def _aembed_nemo_and_store(batch_size, chunks, threads):
+async def _aembed_nemo_and_store(batch_size, chunks, threads, collection_name):
     logging.info("Embedding nemo and storing")
     # timeout = httpx.Timeout(30.0, pool=None)
     timeout = httpx.Timeout(None)
@@ -214,7 +214,9 @@ async def _aembed_nemo_and_store(batch_size, chunks, threads):
             response = response.json()
             embeddings = [item["embedding"] for item in response["data"]]
 
-            await astore_embeddings(batch, embeddings, threads, ASTRA_DB_BATCH_SIZE)
+            await astore_embeddings(
+                batch, embeddings, threads, ASTRA_DB_BATCH_SIZE, collection_name
+            )
 
         num_batches = len(chunks) // batch_size + (1 if len(chunks) % batch_size else 0)
         logging.info(
@@ -234,7 +236,7 @@ async def _aembed_nemo_and_store(batch_size, chunks, threads):
         logging.info(f"Inference End: {inference_end}")
 
 
-def _embed_nemo_and_store(batch_size, chunks, threads):
+def _embed_nemo_and_store(batch_size, chunks, threads, collection_name):
     import requests
 
     logging.info("Synchronously Embedding nemo and storing")
@@ -253,7 +255,9 @@ def _embed_nemo_and_store(batch_size, chunks, threads):
                 f"Request failed with status code {response.status_code}: {response.text}"
             )
         embeddings = [item["embedding"] for item in response.json()["data"]]
-        embeddings = store_embeddings(batch, embeddings, threads, ASTRA_DB_BATCH_SIZE)
+        embeddings = store_embeddings(
+            batch, embeddings, threads, ASTRA_DB_BATCH_SIZE, collection_name
+        )
         logging.info("Stored embeddings: ", embeddings)
 
     num_batches = len(chunks) // batch_size + (1 if len(chunks) % batch_size else 0)
@@ -339,10 +343,12 @@ async def _aeval_nemo_embeddings(batch_size, chunk_size, threads):
     await _aembed_nemo(batch_size, chunks, threads)
 
 
-async def _aeval_nemo_embeddings_with_vector_store(batch_size, chunk_size, threads):
+async def _aeval_nemo_embeddings_with_vector_store(
+    batch_size, chunk_size, threads, collection_name
+):
     chunks = _split(chunk_size)
-    # await _aembed_nemo_and_store(batch_size, chunks, threads)
-    _embed_nemo_and_store(batch_size, chunks, threads)
+    # await _aembed_nemo_and_store(batch_size, chunks, threads, collection_name)
+    _embed_nemo_and_store(batch_size, chunks, threads, collection_name)
 
 
 async def _aeval_embeddings(embedding_model, chunk_size, threads):
@@ -406,7 +412,7 @@ if __name__ == "__main__":
             if vector_database != "none":
                 asyncio.run(
                     _aeval_nemo_embeddings_with_vector_store(
-                        batch_size, chunk_size, int(threads)
+                        batch_size, chunk_size, int(threads), collection_name
                     )
                 )
             else:
