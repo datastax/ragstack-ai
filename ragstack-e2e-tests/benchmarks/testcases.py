@@ -130,7 +130,11 @@ async def _aembed_and_store(vector_store: VectorStore, chunks: list[str], thread
 
     async def process_batch(batch):
         try:
+            start_t = time.time()
+            logging.info(f"Storing batch of size: {len(batch)}")
             await vector_store.aadd_texts(batch)
+            finished = time.time() - start_t
+            logging.info(f"Finished storing in time:  {finished}")
         except Exception as e:
             logging.error(f"Failed to embed chunk: {e}")
 
