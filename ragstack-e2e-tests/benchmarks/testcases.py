@@ -22,15 +22,7 @@ from nemo_evaluations import (
 from evaluations import aeval_embeddings, aeval_embeddings_with_vector_store
 
 
-# The number of chars to read of the input file. A smaller value here will
-# result in faster benchmarks, but may affect accuracy if not enough chunks
-# are created.
-#
-# The default file downloaded is 33MB.
-CHARS_TO_READ = 5000000
-
 thread_local = threading.local()
-
 
 # Get the logger for the 'httpx' library
 logger = logging.getLogger("httpx")

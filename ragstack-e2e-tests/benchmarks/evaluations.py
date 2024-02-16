@@ -6,7 +6,7 @@ import asyncio
 from langchain_community.vectorstores import VectorStore
 from langchain_core.embeddings import Embeddings
 
-from benchmark_utils import split
+from benchmark_utils import read_and_split
 
 
 async def _aembed(embeddings: Embeddings, chunks: list[str], threads: int):
@@ -61,7 +61,7 @@ async def _aembed_and_store(vector_store: VectorStore, chunks: list[str], thread
 async def _aeval_embeddings_with_openai_client(chunk_size, threads):
     from openai import AsyncOpenAI
 
-    chunks = split(chunk_size)
+    chunks = read_and_split(chunk_size)
 
     client = AsyncOpenAI(api_key=os.environ.get("OPEN_AI_KEY"))
     model = "text-embedding-ada-002"
@@ -69,10 +69,10 @@ async def _aeval_embeddings_with_openai_client(chunk_size, threads):
 
 
 async def aeval_embeddings(embedding_model, chunk_size, threads):
-    chunks = split(chunk_size)
+    chunks = read_and_split(chunk_size)
     await _aembed(embedding_model, chunks, threads)
 
 
 async def aeval_embeddings_with_vector_store(vector_store, chunk_size, threads):
-    chunks = split(chunk_size)
+    chunks = read_and_split(chunk_size)
     await _aembed_and_store(vector_store, chunks, threads)
