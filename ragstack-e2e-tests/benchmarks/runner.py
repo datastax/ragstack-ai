@@ -139,8 +139,9 @@ def run_suite(
                     with open(logs_file, "r") as f:
                         print(f.read())
 
-                # Still delete collection if it was created
-                astra.delete_collection(collection.collection_name)
+                if vector_database == "astra_db":
+                    print("Deleting collection: ", collection.collection_name)
+                    astra.delete_collection(collection.collection_name)
 
                 raise Exception("Error running suite")
 
