@@ -57,7 +57,7 @@ async def _aembed_nemo(batch_size, chunks, threads):
 
 async def _aembed_nemo_and_store(batch_size, chunks, threads, collection_name):
     """
-    NOTE: Currently experiencing server disconnects when using httpx.
+    NOTE!!!!!!!!!!: Currently experiencing server disconnects when using httpx.
     """
     logging.info("Embedding nemo and storing")
     # timeout = httpx.Timeout(30.0, pool=None)
