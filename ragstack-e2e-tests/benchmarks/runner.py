@@ -113,7 +113,7 @@ def run_suite(
                 dimension=embedding_model["dimensions"],
                 metric="cosine",
             )
-            print("Created collection: ", collection.collection_name)
+            print("Created astra_db collection: ", collection.collection_name)
         else:
             collection_name = ""
 
@@ -132,6 +132,9 @@ def run_suite(
             print(
                 f"Running suite: {test_name} with model: {embedding_model} and threads: {threads}"
             )
+            if vector_database == "astra_db":
+                print(f"Indexing embeddings into {vector_database}/{collection_name}")
+
             try:
                 subprocess.run(command.split(" "), text=True, check=True)
             except Exception as e:
@@ -141,13 +144,13 @@ def run_suite(
                         print(f.read())
 
                 if vector_database == "astra_db":
-                    print("Deleting collection: ", collection.collection_name)
+                    print("Deleting astra_db collection: ", collection.collection_name)
                     astra.delete_collection(collection.collection_name)
 
                 raise Exception("Error running suite")
 
         if vector_database == "astra_db":
-            print("Deleting collection: ", collection.collection_name)
+            print("Deleting astra_db collection: ", collection.collection_name)
             astra.delete_collection(collection.collection_name)
 
     if len(filenames) <= 1:

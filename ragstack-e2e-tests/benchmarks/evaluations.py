@@ -26,12 +26,8 @@ async def _aembed(embeddings: Embeddings, chunks: list[str], threads: int):
     )
 
     inference_start = time.time()
-    logging.info(f"Inference Start: {inference_start}")
-
     await asyncio.gather(*(process_batch(batch) for batch in batches))
-
-    inference_end = time.time()
-    logging.info(f"Inference End: {inference_end}")
+    logging.info(f"Total Inference Time: {time.time() - inference_start}")
 
 
 async def _aembed_and_store(vector_store: VectorStore, chunks: list[str], threads: int):
