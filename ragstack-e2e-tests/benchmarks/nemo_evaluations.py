@@ -42,17 +42,13 @@ async def _aembed_nemo(batch_size, chunks, threads):
             f"Processing batches of size: {batch_size}, for total num_batches: {num_batches}"
         )
 
-        inference_start = time.time()
-        logging.info(f"Inference Start: {inference_start}")
-
         batches = [
             chunks[i * batch_size : (i + 1) * batch_size] for i in range(num_batches)
         ]
 
+        inference_start = time.time()
         await asyncio.gather(*(_process_batch(batch) for batch in batches))
-
-        inference_end = time.time()
-        logging.info(f"Inference End: {inference_end}")
+        logging.info(f"Total Inference Time: {time.time() - inference_start}")
 
 
 async def _aembed_nemo_and_store(batch_size, chunks, threads, collection_name):
@@ -94,22 +90,20 @@ async def _aembed_nemo_and_store(batch_size, chunks, threads, collection_name):
         )
 
         inference_start = time.time()
-        logging.info(f"Inference Start: {inference_start}")
-
         batches = [
             chunks[i * batch_size : (i + 1) * batch_size] for i in range(num_batches)
         ]
 
         await asyncio.gather(*(_process_batch(batch) for batch in batches))
 
-        inference_end = time.time()
-        logging.info(f"Inference End: {inference_end}")
+        logging.info(
+            f"Total Inference + Indexing Time: {time.time() - inference_start}"
+        )
 
 
 def _embed_nemo_and_store(batch_size, chunks, threads, collection_name):
     import requests
 
-    logging.info("Synchronously Embedding nemo and storing")
     url = f"http://{HOSTNAME}:{SERVICE_PORT}/v1/embeddings"
 
     def _process_batch(batch):
@@ -136,8 +130,6 @@ def _embed_nemo_and_store(batch_size, chunks, threads, collection_name):
     )
 
     inference_start = time.time()
-    logging.info(f"Inference Start: {inference_start}")
-
     with ThreadPoolExecutor(max_workers=threads) as executor:
         futures = [
             executor.submit(_process_batch, batch)
@@ -149,8 +141,7 @@ def _embed_nemo_and_store(batch_size, chunks, threads, collection_name):
         for future in futures:
             future.result()  # Wait for all futures to complete
 
-    inference_end = time.time()
-    logging.info(f"Inference End: {inference_end}")
+    logging.info(f"Total Inference + Indexing Time: {time.time() - inference_start}")
 
 
 async def aeval_nemo_embeddings(batch_size, chunk_size, threads):
