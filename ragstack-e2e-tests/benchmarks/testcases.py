@@ -258,7 +258,7 @@ def _embed_nemo_and_store(batch_size, chunks, threads, collection_name):
         embeddings = store_embeddings(
             batch, embeddings, threads, ASTRA_DB_BATCH_SIZE, collection_name
         )
-        logging.info("Stored embeddings: ", embeddings)
+        logging.info(f"Stored embeddings: {embeddings}")
 
     num_batches = len(chunks) // batch_size + (1 if len(chunks) % batch_size else 0)
     logging.info(
