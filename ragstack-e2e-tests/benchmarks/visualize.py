@@ -25,7 +25,9 @@ def extract_values_from_result_file(file_path):
     with open(file_path, "r") as file:
         data = json.load(file)
 
-    all_values = data["benchmarks"][0]["runs"][0]["values"]
+    # Get all values from all runs, then flatten them out to a single list
+    all_values = [run["values"] for run in data["benchmarks"][0]["runs"]]
+    all_values = [v for sublist in all_values for v in sublist]
     percentiles_values = {}
     for p in PERCENTILES:
         percentiles_values["p" + str(p)] = round(np.percentile(all_values, p), 2)
@@ -75,12 +77,16 @@ def render_throughput_plots(values):
 def _render_throughput_plot(sorted_items, name):
     print(f"Rendering plot for {name}")
     threads = [extract_threads(item["name"]) for item in sorted_items]
-    chunk_sizes = [
-        int(item["name"].split("_")[2].split("-")[0].split("chunk")[1])
-        for item in sorted_items
-    ]
-    if len(set(chunk_sizes)) > 1:
-        raise ValueError("Throughput plots only work with a single chunk size")
+    # Ideally, this is the chunk size, but have to figure out why setting
+    # chunk size to 512 is going over token limit
+    # chunk_sizes = [
+    #     int(item["name"].split("_")[2].split("-")[0].split("chunk")[1])
+    #     for item in sorted_items
+    # ]
+    # if len(set(chunk_sizes)) > 1:
+    #     raise ValueError("Throughput plots only work with a single chunk size")
+    chunk_size = input("Chunk size? ")
+    chunk_sizes = [int(chunk_size) for _ in range(len(threads))]
 
     batch_sizes = [
         int(item["name"].split("_")[1].split("batch")[1]) for item in sorted_items

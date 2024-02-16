@@ -29,7 +29,7 @@ def read_and_split(chunk_size: int) -> list[str]:
 
     average_length = sum(len(doc) for doc in docs) / len(docs) if docs else 0
     logging.info(
-        f"Created number of documents: {len(docs)} with avg chunk size: {average_length:.2f}"
+        f"Created number of chunks: {len(docs)} with avg chunk size: {average_length:.2f}"
     )
     end_split = time.time()
     split_time = end_split - start_split
