@@ -79,6 +79,9 @@ async def _aeval_embeddings_and_store_with_astrapy(
     embeddings = await asyncio.gather(*(process_batch(batch) for batch in batches))
     logging.info(f"Total Inference Time: {time.time() - inference_start}")
 
+    # Flatten embeddings
+    embeddings = [item for sublist in embeddings for item in sublist]
+
     indexing_start = time.time()
     await astore_embeddings(chunks, embeddings, threads, batch_size, collection_name)
     logging.info(f"Total Indexing Time: {time.time() - indexing_start}")
