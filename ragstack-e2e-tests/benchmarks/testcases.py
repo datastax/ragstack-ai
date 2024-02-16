@@ -31,7 +31,7 @@ thread_local = threading.local()
 # Get the logger for the 'httpx' library
 logger = logging.getLogger("httpx")
 # Set the logging level to 'WARNING' to suppress 'INFO' and 'DEBUG' messages
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.WARNING)
 
 
 def get_session():
