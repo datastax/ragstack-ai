@@ -3,8 +3,8 @@ import logging
 import time
 import asyncio
 
-from langchain_community.vectorstores import VectorStore
 from langchain_core.embeddings import Embeddings
+from langchain_core.vectorstores import VectorStore
 
 from benchmark_utils import read_and_split
 from astrapy_utils import astore_embeddings
