@@ -17,9 +17,13 @@ from langchain_nvidia_ai_endpoints import NVIDIAEmbeddings
 
 from nemo_evaluations import (
     aeval_nemo_embeddings,
-    aeval_nemo_embeddings_with_vector_store,
+    aeval_nemo_embeddings_with_astrapy_indexing,
 )
-from evaluations import aeval_embeddings, aeval_embeddings_with_vector_store
+from evaluations import (
+    aeval_embeddings,
+    aeval_embeddings_with_vector_store_indexing,
+    aeval_embeddings_with_astrapy,
+)
 
 
 thread_local = threading.local()
@@ -163,7 +167,7 @@ if __name__ == "__main__":
             )
             if vector_database != "none":
                 asyncio.run(
-                    aeval_nemo_embeddings_with_vector_store(
+                    aeval_nemo_embeddings_with_astrapy_indexing(
                         batch_size, chunk_size, int(threads), collection_name
                     )
                 )
@@ -176,11 +180,16 @@ if __name__ == "__main__":
             embedding_model = eval(f"{embedding}({batch_size})")
             if vector_database != "none":
                 # TODO: you could pass embedding and batch size and eval inside astradb
-                vector_store = astra_db(embedding_model, collection_name)
-                # vector_store = eval(f"{vector_database}({embedding_model})")
+                # # vector_store = eval(f"{vector_database}({embedding_model})")
+                # vector_store = astra_db(embedding_model, collection_name)
+                # asyncio.run(
+                #     aeval_embeddings_with_vector_store_indexing(
+                #         vector_store, chunk_size, int(threads)
+                #     )
+                # )
                 asyncio.run(
-                    aeval_embeddings_with_vector_store(
-                        vector_store, chunk_size, int(threads)
+                    aeval_embeddings_with_astrapy(
+                        embedding_model, chunk_size, int(threads), collection_name
                     )
                 )
             else:
