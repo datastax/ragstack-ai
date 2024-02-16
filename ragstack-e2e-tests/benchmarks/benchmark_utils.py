@@ -12,12 +12,12 @@ from runner import INPUT_PATH
 CHARS_TO_READ = 5000000
 
 
-def read_and_split(chunk_size: int, chars_to_read: int) -> list[str]:
+def read_and_split(chunk_size: int) -> list[str]:
     start_split = time.time()
 
-    logging.info(f"Reading {chars_to_read} characters from {INPUT_PATH}")
+    logging.info(f"Reading {CHARS_TO_READ} characters from {INPUT_PATH}")
     with open(INPUT_PATH, "r") as file:
-        input_data = file.read(chars_to_read)
+        input_data = file.read(CHARS_TO_READ)
 
     # TODO: NeMo token limit is 512, though using anything above a chunk_size of 300 will result in
     # sporadic token length errors.
