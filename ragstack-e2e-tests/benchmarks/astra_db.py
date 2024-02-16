@@ -204,9 +204,10 @@ def store_embeddings(
     embedding_vectors: List[List[float]],
     batch_concurrency: int,
     batch_size: int,
+    collection_name,
 ):
     # TODO: PAss collection name in here
-    collection = get_collection()
+    collection = get_collection(collection_name=collection_name)
     documents_to_insert = _get_documents_to_insert(texts, embedding_vectors)
 
     def _handle_batch(document_batch: List[DocDict]) -> List[str]:
