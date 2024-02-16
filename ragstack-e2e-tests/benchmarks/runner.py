@@ -74,6 +74,7 @@ def int_list(value):
 
 def run_suite(
     test_case: TestCase,
+    values_per_benchmark=1,
     loops=1,
     processes=1,
     report_dir=".",
@@ -127,7 +128,7 @@ def run_suite(
 
             batch_size = test_case["batch_size"]
             chunk_size = test_case["chunk_size"]
-            command = f"{sys.executable} -m pyperf command --copy-env -p {processes} -n 1 -l {loops} -t -o {abs_filename} -- {sys.executable} {benchmarks_dir}/testcases.py {logs_file} {test_name} {embedding_name} {batch_size} {chunk_size} {threads} {vector_database} {collection_name}"
+            command = f"{sys.executable} -m pyperf command --copy-env -p {processes} -n {values_per_benchmark} -l {loops} -t -o {abs_filename} -- {sys.executable} {benchmarks_dir}/testcases.py {logs_file} {test_name} {embedding_name} {batch_size} {chunk_size} {threads} {vector_database} {collection_name}"
             print(
                 f"Running suite: {test_name} with model: {embedding_model} and threads: {threads}"
             )
@@ -206,11 +207,18 @@ if __name__ == "__main__":
         "--loops",
         type=int,
         default=1,
-        help="Number of loops to run each benchmark. Results will be statistically computed over each loop.",
+        help="Number of loops a benchmark is executed within a single run. Helps to stabilize a single measurement.",
     )
 
     parser.add_argument(
         "-n",
+        "--values",
+        type=int,
+        default=1,
+        help="Number of values to run each benchmark. Results will be statistically computed over each value. A higher number here improves statistical robustness.",
+    )
+
+    parser.add_argument(
         "--num_threads",
         type=int_list,
         default=[1],
