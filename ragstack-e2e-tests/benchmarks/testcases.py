@@ -89,8 +89,8 @@ def openai_ada002(batch_size):
     return OpenAIEmbeddings(
         chunk_size=batch_size,
         api_key=os.environ.get("OPEN_AI_KEY"),
-        max_retries=0,  # ensure client doesn't retry requests and skew results. If this fails, we want to see it
-        retry_min_seconds=0,
+        max_retries=1,  # ensure client doesn't retry requests and skew results. If this fails, we want to see it
+        retry_min_seconds=1,
         retry_max_seconds=1,
     )
 

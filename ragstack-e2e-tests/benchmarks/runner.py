@@ -278,6 +278,6 @@ if __name__ == "__main__":
             loops=args.loops,
             processes=args.processes,
             only_values_containing=args.models.split(","),
-            threads_per_benchmark=args.num_threads,
+            threads_per_benchmark=args.threads,
             vector_database=args.vector_database,
         )

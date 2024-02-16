@@ -25,7 +25,7 @@ def extract_values_from_result_file(file_path):
     with open(file_path, "r") as file:
         data = json.load(file)
 
-    all_values = [run["values"][0] for run in data["benchmarks"][0]["runs"]]
+    all_values = data["benchmarks"][0]["runs"][0]["values"]
     percentiles_values = {}
     for p in PERCENTILES:
         percentiles_values["p" + str(p)] = round(np.percentile(all_values, p), 2)
