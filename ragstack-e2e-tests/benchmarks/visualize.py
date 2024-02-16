@@ -61,10 +61,15 @@ def render_throughput_plots(values):
     nemo_items = [item for item in values if "nemo" in item["name"]]
     openai_items = [item for item in values if "openai" in item["name"]]
 
-    nemo_items_sorted = sorted(nemo_items, key=lambda x: extract_threads(x["name"]))
-    openai_items_sorted = sorted(openai_items, key=lambda x: extract_threads(x["name"]))
-    _render_throughput_plot(nemo_items_sorted, "NeMo")
-    _render_throughput_plot(openai_items_sorted, "OpenAI")
+    if len(nemo_items) > 0:
+        nemo_items_sorted = sorted(nemo_items, key=lambda x: extract_threads(x["name"]))
+        _render_throughput_plot(nemo_items_sorted, "NeMo")
+
+    if len(openai_items) > 0:
+        openai_items_sorted = sorted(
+            openai_items, key=lambda x: extract_threads(x["name"])
+        )
+        _render_throughput_plot(openai_items_sorted, "OpenAI")
 
 
 def _render_throughput_plot(sorted_items, name):
@@ -88,7 +93,7 @@ def _render_throughput_plot(sorted_items, name):
         gpu = int(gpu)
         gpus = [gpu for _ in range(len(threads))]
     if NUM_CHUNKS == 0:
-        chunk = input("How many chunks were created? ")
+        chunk = input("How many chunks were created (check benchmarks.log)? ")
         chunk = int(chunk)
         chunks = [chunk for _ in range(len(threads))]
 
