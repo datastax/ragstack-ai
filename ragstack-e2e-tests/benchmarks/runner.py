@@ -53,12 +53,14 @@ class TestCase(Enum):
     #     "name": "embeddings_batch100_chunk256",
     #     "batch_size": 100,
     #     "chunk_size": 256,
-    # }
+
+
+# }
 
 
 class EmbeddingModels(Enum):
-    NEMO = {"name": "nemo_microservice", "dimensions": 1024}
-    # OPENAI = {"name": "openai_ada002", "dimensions": 1536}
+    # NEMO = {"name": "nemo_microservice", "dimensions": 1024}
+    OPENAI = {"name": "openai_ada002", "dimensions": 1536}
 
 
 # Custom type function to convert input string to a list of integers
