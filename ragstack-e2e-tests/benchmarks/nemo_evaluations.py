@@ -43,7 +43,10 @@ async def _aembed_nemo(batch_size, chunks, threads):
                 "model": MODEL_ID,
                 "input_type": INPUT_TYPE,
             }
-            logging.info(f"FRAZ - chunk with headers: {len(encoding.encode(data2))}")
+            data2_json = json.dumps(data2)
+            logging.info(
+                f"FRAZ - chunk with headers: {len(encoding.encode(data2_json))}"
+            )
 
             response = await client.post(url, headers=HEADERS, data=data_json)
             if response.status_code != 200:
