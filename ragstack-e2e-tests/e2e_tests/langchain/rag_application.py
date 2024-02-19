@@ -24,7 +24,7 @@ from langchain.chains import ConversationalRetrievalChain
 from langchain.memory import (
     ConversationSummaryMemory,
 )
-from langchain_openai import AzureChatOpenAI
+from langchain_openai import ChatOpenAI
 
 from e2e_tests.conftest import get_current_test_info, get_required_env
 from e2e_tests.test_utils.tracing import (
@@ -43,12 +43,11 @@ CUSTOM_CHAIN_SECOND_QUESTION = (
     "Could MyFakeProductForTesting helps me with bug resolution?"
 )
 
-run_eval_llm = AzureChatOpenAI(
-    azure_deployment=get_required_env("AZURE_OPEN_AI_CHAT_MODEL_DEPLOYMENT"),
-    openai_api_base=get_required_env("AZURE_OPEN_AI_ENDPOINT"),
-    openai_api_key=get_required_env("AZURE_OPEN_AI_KEY"),
-    openai_api_type="azure",
-    openai_api_version="2023-07-01-preview",
+run_eval_llm = ChatOpenAI(
+        openai_api_key=get_required_env("OPEN_AI_KEY"),
+        model="gpt-3.5-turbo-16k",
+        streaming=False,
+        temperature=0,
 )
 
 
