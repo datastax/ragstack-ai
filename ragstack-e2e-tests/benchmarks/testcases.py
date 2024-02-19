@@ -7,7 +7,7 @@ import threading
 import subprocess
 import asyncio
 
-from langchain_community.embeddings import OpenAIEmbeddings
+from langchain_community.embeddings import OpenAIEmbeddings, AzureOpenAIEmbeddings
 from langchain_community.vectorstores.astradb import AstraDB
 from langchain_core.embeddings import Embeddings
 from langchain_nvidia_ai_endpoints import NVIDIAEmbeddings
@@ -63,11 +63,11 @@ def azure_openai_ada002(batch_size):
     return AzureOpenAIEmbeddings(
         model=model,
         chunk_size=batch_size,
-        api_key=os.environ.get("OPEN_AI_KEY"),
+        api_key=os.environ.get("AZURE_OPEN_AI_KEY"),
         max_retries=0,
         retry_min_seconds=1,
         retry_max_seconds=1,
-        request_timeout=request_timoeut,
+        request_timeout=request_timeout,
     )
 
 

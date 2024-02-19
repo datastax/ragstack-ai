@@ -22,12 +22,11 @@ def read_and_split(chunk_size: int) -> list[str]:
     with open(INPUT_PATH, "r") as file:
         input_data = file.read(CHARS_TO_READ)
 
-    # TODO: NeMo token limit is 512, though using anything above a chunk_size of 300 will result in
-    # sporadic token length errors.
-    # text_splitter = TokenTextSplitter(chunk_size=min(chunk_size, 300), chunk_overlap=0)
-
+    # TODO: NeMo token limit is 512. There is some weird padding or encoding unknowns happening
+    # as setting chunk_size to 512 does produce chunks of 512 tokens (per tiktoken.cl100k_base),
+    # but when sending them to the model, it reports ~600 tokens. Need to investigate this.
     text_splitter = TokenTextSplitter(
-        chunk_size=chunk_size,
+        chunk_size=min(300, chunk_size),
         chunk_overlap=0,
         encoding_name="cl100k_base",
     )
