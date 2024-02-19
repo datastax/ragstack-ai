@@ -1,11 +1,12 @@
 import logging
 import time
+import uuid
 from dataclasses import dataclass
-from typing import Callable, Any, List
+from typing import Callable, Any, List, Optional, Mapping
 
 from langchain.smith import RunEvalConfig
 from langsmith import Client
-from langsmith.schemas import Dataset
+from langsmith.schemas import Dataset, Example as LangsmithExample
 
 LANGSMITH_CLIENT = Client()
 
@@ -23,22 +24,36 @@ def _create_langsmith_dataset(name: str) -> Dataset:
     return LANGSMITH_CLIENT.read_dataset(dataset_name=name)
 
 
-def ensure_langsmith_dataset(name: str, input: Any, output: Any) -> None:
+@dataclass
+class Example:
+    input: Mapping[str, Any]
+    output: Mapping[str, Any]
+
+    def __eq__(self, __value):
+        return self.input == __value.input and self.output == __value.output
+
+
+@dataclass
+class ExampleWithID(Example):
+    id: str
+def ensure_langsmith_dataset(name: str, examples: List[Example]) -> None:
     dataset = _create_langsmith_dataset(name)
-    found = False
-    examples = LANGSMITH_CLIENT.list_examples(dataset_id=dataset.id)
-    for ex in examples:
-        if ex.inputs == input and ex.outputs == output:
-            found = True
-            continue
-        LANGSMITH_CLIENT.delete_example(ex.id)
-    if not found:
+
+    current_examples = LANGSMITH_CLIENT.list_examples(dataset_id=dataset.id)
+    current_conv = [ExampleWithID(input=ex.inputs, output=ex.outputs, id=str(ex.id)) for ex in current_examples]
+
+    to_create: List[Example] = [x for x in examples if x not in current_conv]
+    to_delete: List[ExampleWithID] = [x for x in current_conv if x not in examples]
+    for d in to_delete:
+        LANGSMITH_CLIENT.delete_example(d.id)
+    for c in to_create:
         LANGSMITH_CLIENT.create_example(
-            inputs=input,
-            outputs=output,
+            inputs=c.input,
+            outputs=c.output,
             dataset_id=dataset.id,
         )
-
+    new_len = len(list(LANGSMITH_CLIENT.list_examples(dataset_id=dataset.id)))
+    assert new_len == len(examples), f"Expected {len(examples)} examples, got {new_len}"
 
 @dataclass
 class LangSmithFeedback:
@@ -51,19 +66,24 @@ class LangSmithFeedback:
 @dataclass
 class LangSmithDatasetRunResult:
     run_id: str
+    input: Any
     output: Any
     error: Any
     feedbacks: list[LangSmithFeedback]
 
 
 def run_langchain_chain_on_dataset(
-    dataset_name: str, chain_factory: Callable, run_eval_config: RunEvalConfig
-) -> List[LangSmithDatasetRunResult]:
+        dataset_name: str, chain_factory: Callable, run_eval_config: RunEvalConfig, project_base_name: str,
+        project_metadata: Optional[dict]) -> List[LangSmithDatasetRunResult]:
+    project_name = f"{project_base_name}-{str(uuid.uuid4()).split('-')[0]}"
+
     results = LANGSMITH_CLIENT.run_on_dataset(
         dataset_name=dataset_name,
         llm_or_chain_factory=chain_factory,
         evaluation=run_eval_config,
         verbose=True,
+        project_name=project_name,
+        project_metadata=project_metadata or {},
     )
 
     runs = []
@@ -82,6 +102,7 @@ def run_langchain_chain_on_dataset(
         runs.append(
             LangSmithDatasetRunResult(
                 result["run_id"],
+                result["input"],
                 result["output"] if "output" in result else None,
                 result["Error"] if "Error" in result else None,
                 feedbacks,
@@ -90,9 +111,9 @@ def run_langchain_chain_on_dataset(
     return runs
 
 
-def record_langsmith_sharelink(run_id: str, record_property: Callable) -> None:
+def record_langsmith_sharelink(run_index: int, run_id: str, record_property: Callable) -> None:
     link = get_langsmith_sharelink(run_id=run_id)
-    record_property("langsmith_url", link)
+    record_property(f"langsmith_url_{run_index}", link)
 
 
 def get_langsmith_sharelink(run_id: str, tries: int = 6) -> str:

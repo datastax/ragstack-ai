@@ -25,12 +25,17 @@ from langchain.memory import (
     ConversationSummaryMemory,
 )
 
+from e2e_tests.conftest import get_current_test_info
 from e2e_tests.test_utils.tracing import (
     record_langsmith_sharelink,
     ensure_langsmith_dataset,
     run_langchain_chain_on_dataset,
-    get_langsmith_sharelink,
+    get_langsmith_sharelink, Example,
 )
+
+CUSTOM_CHAIN_DATASET_NAME = "ragstack-ci-rag-custom-chain"
+CUSTOM_CHAIN_FIRST_QUESTION = "When was released MyFakeProductForTesting for the first time ?"
+CUSTOM_CHAIN_SECOND_QUESTION = "Could MyFakeProductForTesting helps me with bug resolution?"
 
 BASIC_QA_PROMPT = """
 Answer the question based only on the supplied context. If you don't know the answer, say you don't know the answer.
@@ -92,8 +97,8 @@ def format_docs(docs: Sequence[Document]) -> str:
 
 
 def create_chain(
-    llm: BaseLanguageModel,
-    retriever: BaseRetriever,
+        llm: BaseLanguageModel,
+        retriever: BaseRetriever,
 ) -> Runnable:
     _context = RunnableMap(
         {
@@ -114,20 +119,20 @@ def create_chain(
     return RunnableMap(
         {
             "answer": (
-                {
-                    "question": RunnableLambda(itemgetter("question")).with_config(
-                        run_name="Itemgetter:question"
-                    )
-                }
-                | _context
-                | response_synthesizer
+                    {
+                        "question": RunnableLambda(itemgetter("question")).with_config(
+                            run_name="Itemgetter:question"
+                        )
+                    }
+                    | _context
+                    | response_synthesizer
             )
         }
     )
 
 
 def run_rag_custom_chain(
-    vector_store: VectorStore, llm: BaseLanguageModel, record_property: Callable
+        vector_store: VectorStore, llm: BaseLanguageModel, record_property: Callable
 ) -> None:
     vector_store.add_texts(SAMPLE_DATA)
     retriever = vector_store.as_retriever()
@@ -136,16 +141,26 @@ def run_rag_custom_chain(
         retriever,
     )
 
+
     ensure_langsmith_dataset(
-        name="ragstack-ci-rag-custom-chain",
-        input={
-            "question": "When was released MyFakeProductForTesting for the first time ?"
-        },
-        output={"answer": "MyFakeProductForTesting was released in June 2020"},
+        name=CUSTOM_CHAIN_DATASET_NAME,
+        examples=[
+            Example(input={"question": CUSTOM_CHAIN_FIRST_QUESTION},
+                    output={"answer": "MyFakeProductForTesting was released in June 2020"}),
+            Example(input={"question": CUSTOM_CHAIN_SECOND_QUESTION},
+                    output={"answer": "Yes, MyFakeProductForTesting includes a bug detection module."})
+        ]
     )
 
+    current_test_info = get_current_test_info() or "unknown"
+    project_metadata = {
+        "vector_store": vector_store.__class__.__name__,
+        "llm": llm.__class__.__name__,
+        "embeddings": vector_store.embeddings.__class__.__name__
+    }
+
     runs = run_langchain_chain_on_dataset(
-        dataset_name="ragstack-ci-rag-custom-chain",
+        dataset_name=CUSTOM_CHAIN_DATASET_NAME,
         chain_factory=lambda: answer_chain,
         run_eval_config=RunEvalConfig(
             evaluators=[
@@ -156,37 +171,43 @@ def run_rag_custom_chain(
                 RunEvalConfig.LabeledCriteria(Criteria.COHERENCE),
             ]
         ),
+        project_base_name=current_test_info,
+        project_metadata=project_metadata
     )
-    if len(runs) != 1:
-        raise ValueError(f"Expected 1 run, got {len(runs)}")
-    actual_run = runs[0]
-    logging.info(
-        "Got response: " + str(actual_run.output) + " error: " + str(actual_run.error)
-    )
-    record_langsmith_sharelink(actual_run.run_id, record_property)
-
-    for feedback in actual_run.feedbacks:
+    for index, run in enumerate(runs):
         logging.info(
-            f"Feedback for {feedback.key} is {feedback.score} with value {feedback.value} for run {actual_run.run_id}"
+            "Got response: " + str(run.output) + " error: " + str(run.error)
         )
-        xml_key = feedback.key.replace(" ", "_").lower()
-        xml_value = f"{feedback.value} (score: {feedback.score})"
-        record_property(f"langsmith_feedback_{xml_key}", xml_value)
-        record_property(
-            f"langsmith_feedback_{xml_key}_url",
-            get_langsmith_sharelink(run_id=feedback.eval_run_id),
-        )
+        record_langsmith_sharelink(index, run.run_id, record_property)
 
-    assert actual_run.error is None
-    assert actual_run.output is not None
-    assert "2020" in actual_run.output["answer"]
+        for feedback in run.feedbacks:
+            logging.info(
+                f"Feedback for {feedback.key} is {feedback.score} with value {feedback.value} for run {run.run_id}"
+            )
+            xml_key = feedback.key.replace(" ", "_").lower()
+            xml_value = f"{feedback.value} (score: {feedback.score})"
+            record_property(f"langsmith_feedback_{index}_{xml_key}", xml_value)
+            record_property(
+                f"langsmith_feedback_{index}_{xml_key}_url",
+                get_langsmith_sharelink(run_id=feedback.eval_run_id),
+            )
+
+        assert run.error is None, f"Got error: {run.error}"
+        assert run.output is not None, "Expected output but got None"
+        output = run.output["answer"].lower()
+        if run.input["question"] == CUSTOM_CHAIN_FIRST_QUESTION:
+            assert "2020" in output, f"Expected 2020 in the answer but got: {output}"
+        elif run.input["question"] == CUSTOM_CHAIN_SECOND_QUESTION:
+            assert "yes" in output, f"Expected 'yes' in the answer but got: {output}"
+        else:
+            raise AssertionError(f"Unexpected question: {run.input['question']}")
 
 
 def run_conversational_rag(
-    vector_store: VectorStore,
-    llm: BaseLanguageModel,
-    chat_memory: BaseChatMessageHistory,
-    record_property,
+        vector_store: VectorStore,
+        llm: BaseLanguageModel,
+        chat_memory: BaseChatMessageHistory,
+        record_property,
 ) -> None:
     logging.info("Starting to add texts to vector store")
     start = time.perf_counter_ns()
@@ -210,13 +231,13 @@ def run_conversational_rag(
     with callbacks.collect_runs() as cb:
         result = conversation.invoke({"question": "what is MyFakeProductForTesting?"})
         run_id = cb.traced_runs[0].id
-        record_langsmith_sharelink(run_id, record_property)
+        record_langsmith_sharelink(0, run_id, record_property)
         logging.info("First result: " + str(result))
 
     with callbacks.collect_runs() as cb:
         result = conversation.invoke({"question": "and when was it released?"})
         run_id = cb.traced_runs[0].id
-        record_langsmith_sharelink(run_id, record_property)
+        record_langsmith_sharelink(1, run_id, record_property)
         logging.info("Second result: " + str(result))
 
     assert "2020" in result["answer"]

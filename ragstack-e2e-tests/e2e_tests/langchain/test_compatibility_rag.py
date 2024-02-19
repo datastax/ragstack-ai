@@ -337,7 +337,7 @@ def test_multimodal(vector_store, embedding, llm, request, record_property):
     with callbacks.collect_runs() as cb:
         response = resolved_llm([message])
         run_id = cb.traced_runs[0].id
-        record_langsmith_sharelink(run_id, record_property)
+        record_langsmith_sharelink(0, run_id, record_property)
         assert "Coffee Machine Ultra Cool" in response.content
 
 
@@ -355,5 +355,5 @@ def test_chat(chat, request, record_property):
     with callbacks.collect_runs() as cb:
         response = chain.invoke({})
         run_id = cb.traced_runs[0].id
-        record_langsmith_sharelink(run_id, record_property)
+        record_langsmith_sharelink(0, run_id, record_property)
         assert "Syracuse" in response.content

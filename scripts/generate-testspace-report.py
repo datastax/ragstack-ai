@@ -240,19 +240,21 @@ def parse_test_report(input_file: str):
 
                     for prop in properties.iter("property"):
                         name = prop.get("name")
-                        if name == "langsmith_url":
+                        index = name.split("_")[-1]
+                        if name.startswith("langsmith_url"):
                             links.append(
-                                Link(name="LangSmith trace", url=prop.get("value"), level="info", description=""))
+                                Link(name=f"LangSmith trace #{index}", url=prop.get("value"), level="info", description=""))
                         elif name.startswith("langsmith_feedback_"):
                             if not name.endswith("url"):
                                 url_name = name + "_url"
                                 url_value = ""
                                 if url_name in prop_map:
                                     url_value = prop_map[url_name]
-                                fname = beatify_xml_name(name.replace("langsmith_feedback_", ""))
+                                index = name.split("_")[-2]
+                                fname = beatify_xml_name(name.replace(f"langsmith_feedback_{index}_", ""))
                                 desc = f"{fname}: {prop.get('value')}"
                                 links.append(
-                                    Link(name="LangSmith feedback", url=url_value, level="info", description=desc))
+                                    Link(name=f"LangSmith feedback #{index}", url=url_value, level="info", description=desc))
 
                 report_test_case = TestCase(
                     name=rewrite_test_case_name(test_case.get("name")),

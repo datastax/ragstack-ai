@@ -2,9 +2,9 @@ import logging
 import os
 import pathlib
 import time
+from typing import Optional
 
 import pytest
-
 
 from e2e_tests.test_utils.astradb_vector_store_handler import AstraDBVectorStoreHandler
 from e2e_tests.test_utils.cassandra_vector_store_handler import (
@@ -35,13 +35,11 @@ def _load_env() -> None:
 
 _load_env()
 
-
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
     handlers=[logging.StreamHandler()],
 )
-
 
 # Comment/uncomment to enable debug logging on Astra calls
 logging.getLogger("astrapy.utils").setLevel(logging.INFO)
@@ -59,7 +57,7 @@ is_astra = vector_database_type == "astradb"
 
 
 def get_vector_store_handler(
-    implementation: VectorStoreImplementation,
+        implementation: VectorStoreImplementation,
 ) -> VectorStoreHandler:
     if vector_database_type == "astradb":
         return AstraDBVectorStoreHandler(implementation)
@@ -85,8 +83,8 @@ def pytest_runtest_makereport(item, call):
     # also get the setup phase if failed
     if rep.outcome != "passed" or rep.when == "call":
         if (
-            "RAGSTACK_E2E_TESTS_TEST_START" not in os.environ
-            or not os.environ["RAGSTACK_E2E_TESTS_TEST_START"]
+                "RAGSTACK_E2E_TESTS_TEST_START" not in os.environ
+                or not os.environ["RAGSTACK_E2E_TESTS_TEST_START"]
         ):
             total_time = "?"
         else:
@@ -95,7 +93,7 @@ def pytest_runtest_makereport(item, call):
 
         os.environ["RAGSTACK_E2E_TESTS_TEST_START"] = ""
 
-        info = os.getenv("RAGSTACK_E2E_TESTS_TEST_INFO", "")
+        info = os.getenv("RAGSTACK_E2E_TESTS_TEST_NAME", "")
         if not info:
             test_path = pathlib.PurePath(item.path)
             info = test_path.parent.name + "::" + test_path.name + "::" + item.name
@@ -122,8 +120,8 @@ def pytest_runtest_makereport(item, call):
         result = " " + str(call.excinfo) if call.excinfo else ""
         report_line = f"{info} -> {test_outcome}{result} ({total_time} s)"
         skip_report_line = rep.outcome == "skipped" and (
-            is_skipped_due_to_implementation_not_supported(result)
-            or "unconditional skip" in result
+                is_skipped_due_to_implementation_not_supported(result)
+                or "unconditional skip" in result
         )
         if not skip_report_line:
             logging.info("Test report line: " + report_line)
@@ -149,15 +147,21 @@ def pytest_runtest_makereport(item, call):
                 llamaindex_report_lines.append(report_line)
         else:
             logging.info("Skipping test report line: " + result)
+        os.environ["RAGSTACK_E2E_TESTS_TEST_NAME"] = ""
         os.environ["RAGSTACK_E2E_TESTS_TEST_INFO"] = ""
 
     if rep.when == "call":
         os.environ["RAGSTACK_E2E_TESTS_TEST_START"] = str(time.perf_counter_ns())
 
 
-def set_current_test_info(test_name: str, test_info: str):
+def set_current_test_info(test_name: str, test_info: str) -> None:
     test_info = test_info.replace("_", "-")
-    os.environ["RAGSTACK_E2E_TESTS_TEST_INFO"] = f"{test_name}::{test_info}"
+    os.environ["RAGSTACK_E2E_TESTS_TEST_NAME"] = f"{test_name}::{test_info}"
+    os.environ["RAGSTACK_E2E_TESTS_TEST_INFO"] = test_info
+
+
+def get_current_test_info() -> Optional[str]:
+    return os.getenv("RAGSTACK_E2E_TESTS_TEST_INFO", None)
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -169,13 +173,13 @@ def dump_report():
     logging.info("\n".join(failed_report_lines))
 
     stats_str = (
-        "Tests passed: "
-        + str(tests_stats["passed"])
-        + ", failed: "
-        + str(tests_stats["failed"])
-        + ", skipped: "
-        + str(tests_stats["skipped"])
-        + "\n"
+            "Tests passed: "
+            + str(tests_stats["passed"])
+            + ", failed: "
+            + str(tests_stats["failed"])
+            + ", skipped: "
+            + str(tests_stats["skipped"])
+            + "\n"
     )
     _report_to_file(stats_str, "all-tests-report.txt", all_report_lines)
     _report_to_file(stats_str, "failed-tests-report.txt", failed_report_lines)
