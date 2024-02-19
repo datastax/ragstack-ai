@@ -3,6 +3,7 @@ import json
 import time
 import asyncio
 import httpx
+import tiktoken
 
 from concurrent.futures import ThreadPoolExecutor
 from astrapy_utils import astore_embeddings, store_embeddings
@@ -24,6 +25,7 @@ ASTRA_DB_BATCH_SIZE = 20
 async def _aembed_nemo(batch_size, chunks, threads):
     timeout = httpx.Timeout(30.0, pool=None)
     limits = httpx.Limits(max_connections=threads, max_keepalive_connections=threads)
+    encoding = tiktoken.get_encoding("cl100k_base")
     async with httpx.AsyncClient(timeout=timeout, limits=limits) as client:
         url = f"http://{HOSTNAME}:{SERVICE_PORT}/v1/embeddings"
 
@@ -34,8 +36,7 @@ async def _aembed_nemo(batch_size, chunks, threads):
                 "input_type": INPUT_TYPE,
             }
             data_json = json.dumps(data)
-            logging.info(f"FRAZ - length data to nemo: {len(data_json)}")
-            logging.info(f"FRAZ - individual chunk: {len(batch[0])}")
+            logging.info(f"FRAZ - individual chunk: {len(encoding.encode(batch[0]))}")
 
             response = await client.post(url, headers=HEADERS, data=data_json)
             if response.status_code != 200:

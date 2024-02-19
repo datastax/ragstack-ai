@@ -42,7 +42,7 @@ def read_and_split(chunk_size: int) -> list[str]:
     encoding = tiktoken.get_encoding("cl100k_base")
     texts = []
     for split in split_texts:
-        num_tokens = num_tokens(encoding.encode(split))
+        num_tokens = len(encoding.encode(split))
         logging.info(f"TOKEN LENGTH: {num_tokens}")
         if num_tokens > 512:
             logging.error(f"Token length of {num_tokens} exceeds 512")
