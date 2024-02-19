@@ -30,12 +30,17 @@ from e2e_tests.test_utils.tracing import (
     record_langsmith_sharelink,
     ensure_langsmith_dataset,
     run_langchain_chain_on_dataset,
-    get_langsmith_sharelink, Example,
+    get_langsmith_sharelink,
+    Example,
 )
 
 CUSTOM_CHAIN_DATASET_NAME = "ragstack-ci-rag-custom-chain"
-CUSTOM_CHAIN_FIRST_QUESTION = "When was released MyFakeProductForTesting for the first time ?"
-CUSTOM_CHAIN_SECOND_QUESTION = "Could MyFakeProductForTesting helps me with bug resolution?"
+CUSTOM_CHAIN_FIRST_QUESTION = (
+    "When was released MyFakeProductForTesting for the first time ?"
+)
+CUSTOM_CHAIN_SECOND_QUESTION = (
+    "Could MyFakeProductForTesting helps me with bug resolution?"
+)
 
 BASIC_QA_PROMPT = """
 Answer the question based only on the supplied context. If you don't know the answer, say you don't know the answer.
@@ -97,8 +102,8 @@ def format_docs(docs: Sequence[Document]) -> str:
 
 
 def create_chain(
-        llm: BaseLanguageModel,
-        retriever: BaseRetriever,
+    llm: BaseLanguageModel,
+    retriever: BaseRetriever,
 ) -> Runnable:
     _context = RunnableMap(
         {
@@ -119,20 +124,20 @@ def create_chain(
     return RunnableMap(
         {
             "answer": (
-                    {
-                        "question": RunnableLambda(itemgetter("question")).with_config(
-                            run_name="Itemgetter:question"
-                        )
-                    }
-                    | _context
-                    | response_synthesizer
+                {
+                    "question": RunnableLambda(itemgetter("question")).with_config(
+                        run_name="Itemgetter:question"
+                    )
+                }
+                | _context
+                | response_synthesizer
             )
         }
     )
 
 
 def run_rag_custom_chain(
-        vector_store: VectorStore, llm: BaseLanguageModel, record_property: Callable
+    vector_store: VectorStore, llm: BaseLanguageModel, record_property: Callable
 ) -> None:
     vector_store.add_texts(SAMPLE_DATA)
     retriever = vector_store.as_retriever()
@@ -141,22 +146,27 @@ def run_rag_custom_chain(
         retriever,
     )
 
-
     ensure_langsmith_dataset(
         name=CUSTOM_CHAIN_DATASET_NAME,
         examples=[
-            Example(input={"question": CUSTOM_CHAIN_FIRST_QUESTION},
-                    output={"answer": "MyFakeProductForTesting was released in June 2020"}),
-            Example(input={"question": CUSTOM_CHAIN_SECOND_QUESTION},
-                    output={"answer": "Yes, MyFakeProductForTesting includes a bug detection module."})
-        ]
+            Example(
+                input={"question": CUSTOM_CHAIN_FIRST_QUESTION},
+                output={"answer": "MyFakeProductForTesting was released in June 2020"},
+            ),
+            Example(
+                input={"question": CUSTOM_CHAIN_SECOND_QUESTION},
+                output={
+                    "answer": "Yes, MyFakeProductForTesting includes a bug detection module."
+                },
+            ),
+        ],
     )
 
     current_test_info = get_current_test_info() or "unknown"
     project_metadata = {
         "vector_store": vector_store.__class__.__name__,
         "llm": llm.__class__.__name__,
-        "embeddings": vector_store.embeddings.__class__.__name__
+        "embeddings": vector_store.embeddings.__class__.__name__,
     }
 
     runs = run_langchain_chain_on_dataset(
@@ -172,12 +182,10 @@ def run_rag_custom_chain(
             ]
         ),
         project_base_name=current_test_info,
-        project_metadata=project_metadata
+        project_metadata=project_metadata,
     )
     for index, run in enumerate(runs):
-        logging.info(
-            "Got response: " + str(run.output) + " error: " + str(run.error)
-        )
+        logging.info("Got response: " + str(run.output) + " error: " + str(run.error))
         record_langsmith_sharelink(index, run.run_id, record_property)
 
         for feedback in run.feedbacks:
@@ -204,10 +212,10 @@ def run_rag_custom_chain(
 
 
 def run_conversational_rag(
-        vector_store: VectorStore,
-        llm: BaseLanguageModel,
-        chat_memory: BaseChatMessageHistory,
-        record_property,
+    vector_store: VectorStore,
+    llm: BaseLanguageModel,
+    chat_memory: BaseChatMessageHistory,
+    record_property,
 ) -> None:
     logging.info("Starting to add texts to vector store")
     start = time.perf_counter_ns()

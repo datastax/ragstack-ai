@@ -6,7 +6,7 @@ from typing import Callable, Any, List, Optional, Mapping
 
 from langchain.smith import RunEvalConfig
 from langsmith import Client
-from langsmith.schemas import Dataset, Example as LangsmithExample
+from langsmith.schemas import Dataset
 
 LANGSMITH_CLIENT = Client()
 
@@ -36,11 +36,16 @@ class Example:
 @dataclass
 class ExampleWithID(Example):
     id: str
+
+
 def ensure_langsmith_dataset(name: str, examples: List[Example]) -> None:
     dataset = _create_langsmith_dataset(name)
 
     current_examples = LANGSMITH_CLIENT.list_examples(dataset_id=dataset.id)
-    current_conv = [ExampleWithID(input=ex.inputs, output=ex.outputs, id=str(ex.id)) for ex in current_examples]
+    current_conv = [
+        ExampleWithID(input=ex.inputs, output=ex.outputs, id=str(ex.id))
+        for ex in current_examples
+    ]
 
     to_create: List[Example] = [x for x in examples if x not in current_conv]
     to_delete: List[ExampleWithID] = [x for x in current_conv if x not in examples]
@@ -54,6 +59,7 @@ def ensure_langsmith_dataset(name: str, examples: List[Example]) -> None:
         )
     new_len = len(list(LANGSMITH_CLIENT.list_examples(dataset_id=dataset.id)))
     assert new_len == len(examples), f"Expected {len(examples)} examples, got {new_len}"
+
 
 @dataclass
 class LangSmithFeedback:
@@ -73,8 +79,12 @@ class LangSmithDatasetRunResult:
 
 
 def run_langchain_chain_on_dataset(
-        dataset_name: str, chain_factory: Callable, run_eval_config: RunEvalConfig, project_base_name: str,
-        project_metadata: Optional[dict]) -> List[LangSmithDatasetRunResult]:
+    dataset_name: str,
+    chain_factory: Callable,
+    run_eval_config: RunEvalConfig,
+    project_base_name: str,
+    project_metadata: Optional[dict],
+) -> List[LangSmithDatasetRunResult]:
     project_name = f"{project_base_name}-{str(uuid.uuid4()).split('-')[0]}"
 
     results = LANGSMITH_CLIENT.run_on_dataset(
@@ -111,7 +121,9 @@ def run_langchain_chain_on_dataset(
     return runs
 
 
-def record_langsmith_sharelink(run_index: int, run_id: str, record_property: Callable) -> None:
+def record_langsmith_sharelink(
+    run_index: int, run_id: str, record_property: Callable
+) -> None:
     link = get_langsmith_sharelink(run_id=run_id)
     record_property(f"langsmith_url_{run_index}", link)
 
