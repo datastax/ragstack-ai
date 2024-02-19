@@ -1,7 +1,7 @@
 import logging
 import time
 
-# import tiktoken
+import tiktoken
 from langchain.text_splitter import TokenTextSplitter
 from transformers import AutoTokenizer
 
@@ -39,13 +39,22 @@ def read_and_split(chunk_size: int) -> list[str]:
     #     input_data, max_length=chunk_size, padding=True, truncation=True
     # )
 
+    encoding = tiktoken.get_encoding("cl100k_base")
     texts = []
     for split in split_texts:
+        num_tokens = num_tokens(encoding.encode(split))
+        logging.info(f"TOKEN LENGTH: {num_tokens}")
+        if num_tokens > 512:
+            logging.error(f"Token length of {num_tokens} exceeds 512")
+            raise Exception("no")
+
         texts.append(split)
 
-    average_length = sum(len(t) for t in texts) / len(texts) if texts else 0
+    average_length = (
+        sum(num_tokens(t) for t in texts) / num_tokens(texts) if texts else 0
+    )
     logging.info(
-        f"Created number of chunks: {len(texts)} with avg chunk size: {average_length:.2f}"
+        f"Created number of chunks: {num_tokens(texts)} with avg chunk size: {average_length:.2f}"
     )
     logging.info(f"Total time to read and split: {time.time() - start:.2f} seconds")
     return texts
