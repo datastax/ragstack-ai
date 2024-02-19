@@ -46,7 +46,7 @@ async def _aembed_nemo(batch_size, chunks, threads):
 
         num_batches = len(chunks) // batch_size + (1 if len(chunks) % batch_size else 0)
         logging.info(
-            f"Processing batches of size: {batch_size}, for total num_batches: {num_batches}"
+            f"Processing batches of size: {batch_size}, for total num_batches: {num_batches}, across {threads} connections"
         )
 
         batches = [
@@ -93,7 +93,7 @@ async def _aembed_nemo_and_store(batch_size, chunks, threads, collection_name):
 
         num_batches = len(chunks) // batch_size + (1 if len(chunks) % batch_size else 0)
         logging.info(
-            f"Processing batches of size: {batch_size}, for total num_batches: {num_batches}"
+            f"Processing batches of size: {batch_size}, for total num_batches: {num_batches}, across {threads} connections"
         )
 
         inference_start = time.time()
@@ -132,7 +132,7 @@ def _embed_nemo_and_store(batch_size, chunks, threads, collection_name):
 
     num_batches = len(chunks) // batch_size + (1 if len(chunks) % batch_size else 0)
     logging.info(
-        f"Processing batches of size: {batch_size}, for total num_batches: {num_batches}"
+        f"Processing batches of size: {batch_size}, for total num_batches: {num_batches}, across {threads} connections"
     )
 
     inference_start = time.time()

@@ -56,6 +56,21 @@ def openai_ada002(batch_size):
     )
 
 
+def azure_openai_ada002(batch_size):
+    model = "text-embedding-ada-002"
+    request_timeout = 7
+    logging.info(f"Setting open ai request timeout to {request_timeout}")
+    return AzureOpenAIEmbeddings(
+        model=model,
+        chunk_size=batch_size,
+        api_key=os.environ.get("OPEN_AI_KEY"),
+        max_retries=0,
+        retry_min_seconds=1,
+        retry_max_seconds=1,
+        request_timeout=request_timoeut,
+    )
+
+
 def nvidia_nvolveqa40k(batch_size):
     # 50 is the max supported batch size
     return NVIDIAEmbeddings(
