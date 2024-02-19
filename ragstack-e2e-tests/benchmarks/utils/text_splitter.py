@@ -40,7 +40,6 @@ def read_and_split(chunk_size: int) -> list[str]:
 
     texts = []
     for split in split_texts:
-        logging.info(f"split: {split}")
         texts.append(split)
 
     average_length = sum(len(t) for t in texts) / len(texts) if texts else 0
