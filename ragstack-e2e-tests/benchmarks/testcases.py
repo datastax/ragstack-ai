@@ -64,35 +64,15 @@ def log_cpu_usage(stop_event, interval, filename):
 
 def openai_ada002(batch_size):
     model = "text-embedding-ada-002"
-    # test network latency first -- can subtract this from each call manually for now.
-    # total_latency = 0
-    # bad_embeds = OpenAIEmbeddings(
-    #     model=model, chunk_size=batch_size, api_key="bad_creds"
-    # )
-    # logging.info("Calling openai with bad credentials")
-    # for _ in range(10):
-    #     start_time = time.time()
-    #     try:
-    #         bad_embeds.embed_documents(["expect unauthorized error"])
-    #     except Exception as e:
-    #         end_time = time.time()
-    #         network_latency = end_time - start_time
-    #         total_latency += network_latency
-
-    # if total_latency == 0:
-    #     logging.error("expected openai requests to fail and log network latency")
-    #     raise Exception("failed to get network latency from OpenAI")
-
-    # average_latency = total_latency / 10
-    # logging.info(f"OpenAI Average Network Latency (s): {average_latency}")
-
+    # Benchmarks are often skewed by server-side timeouts, so we set a relatively low
+    # timeout that still allows for a reasonable period of time for inference.
     request_timeout = 7
     logging.info(f"Setting open ai request timeout to {request_timeout}")
     return OpenAIEmbeddings(
         model=model,
         chunk_size=batch_size,
         api_key=os.environ.get("OPEN_AI_KEY"),
-        max_retries=0,  # ensure client doesn't retry requests and skew results. If this fails, we want to see it
+        max_retries=0,
         retry_min_seconds=1,
         retry_max_seconds=1,
         request_timeout=request_timeout,

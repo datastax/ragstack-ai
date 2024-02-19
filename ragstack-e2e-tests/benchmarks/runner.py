@@ -102,7 +102,8 @@ def run_suite(
     logs_file = os.path.join(args.reports_dir, "benchmarks.log")
 
     for embedding_model in embedding_models:
-        # Models should produce the same embedding dimensions, so you can create collection here
+        # Models should produce the same embedding dimensions, so create one collection here
+        # and reuse it across for tests that reuse the model.
         if vector_database == "astra_db":
             astra = AstraDB(
                 token=os.environ.get("ASTRA_DB_APPLICATION_TOKEN"),
