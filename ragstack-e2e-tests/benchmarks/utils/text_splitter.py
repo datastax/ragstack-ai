@@ -42,19 +42,14 @@ def read_and_split(chunk_size: int) -> list[str]:
     encoding = tiktoken.get_encoding("cl100k_base")
     texts = []
     for split in split_texts:
-        num_tokens = len(encoding.encode(split))
-        logging.info(f"TOKEN LENGTH: {num_tokens}")
-        if num_tokens > 512:
-            logging.error(f"Token length of {num_tokens} exceeds 512")
-            raise Exception("no")
+        # len = len(encoding.encode(split))
+        # logging.info(f"TOKEN LENGTH: {len}")
 
         texts.append(split)
 
-    average_length = (
-        sum(num_tokens(t) for t in texts) / num_tokens(texts) if texts else 0
-    )
+    average_length = sum(len(t) for t in texts) / len(texts) if texts else 0
     logging.info(
-        f"Created number of chunks: {num_tokens(texts)} with avg chunk size: {average_length:.2f}"
+        f"Created number of chunks: {len(texts)} with avg chunk size: {average_length:.2f}"
     )
     logging.info(f"Total time to read and split: {time.time() - start:.2f} seconds")
     return texts
