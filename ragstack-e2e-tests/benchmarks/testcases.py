@@ -57,13 +57,17 @@ def openai_ada002(batch_size):
 
 
 def azure_openai_ada002(batch_size):
-    model = "text-embedding-ada-002"
+    model_and_deployment = "text-emebdding-ada-002"
     request_timeout = 7
-    logging.info(f"Setting open ai request timeout to {request_timeout}")
+
     return AzureOpenAIEmbeddings(
-        model=model,
+        model=model_and_deployment,
+        deployment=model_and_deployment,
+        openai_api_key=os.environ["AZURE_OPENAI_API_KEY"],
+        openai_api_base=os.environ["AZURE_OPENAI_ENDPOINT"],
+        openai_api_type="azure",
+        openai_api_version="2023-05-15",
         chunk_size=batch_size,
-        api_key=os.environ.get("AZURE_OPEN_AI_KEY"),
         max_retries=0,
         retry_min_seconds=1,
         retry_max_seconds=1,
