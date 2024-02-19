@@ -24,8 +24,9 @@ from langchain.chains import ConversationalRetrievalChain
 from langchain.memory import (
     ConversationSummaryMemory,
 )
+from langchain_openai import AzureChatOpenAI
 
-from e2e_tests.conftest import get_current_test_info
+from e2e_tests.conftest import get_current_test_info, get_required_env
 from e2e_tests.test_utils.tracing import (
     record_langsmith_sharelink,
     ensure_langsmith_dataset,
@@ -41,6 +42,15 @@ CUSTOM_CHAIN_FIRST_QUESTION = (
 CUSTOM_CHAIN_SECOND_QUESTION = (
     "Could MyFakeProductForTesting helps me with bug resolution?"
 )
+
+run_eval_llm = AzureChatOpenAI(
+        azure_deployment=get_required_env("AZURE_OPEN_AI_CHAT_MODEL_DEPLOYMENT"),
+        openai_api_base=get_required_env("AZURE_OPEN_AI_ENDPOINT"),
+        openai_api_key=get_required_env("AZURE_OPEN_AI_KEY"),
+        openai_api_type="azure",
+        openai_api_version="2023-07-01-preview",
+    )
+
 
 BASIC_QA_PROMPT = """
 Answer the question based only on the supplied context. If you don't know the answer, say you don't know the answer.
@@ -179,7 +189,8 @@ def run_rag_custom_chain(
                 RunEvalConfig.LabeledCriteria(Criteria.RELEVANCE),
                 RunEvalConfig.LabeledCriteria(Criteria.HELPFULNESS),
                 RunEvalConfig.LabeledCriteria(Criteria.COHERENCE),
-            ]
+            ],
+            eval_llm=run_eval_llm,
         ),
         project_base_name=current_test_info,
         project_metadata=project_metadata,
