@@ -44,10 +44,10 @@ CUSTOM_CHAIN_SECOND_QUESTION = (
 )
 
 run_eval_llm = ChatOpenAI(
-        openai_api_key=get_required_env("OPEN_AI_KEY"),
-        model="gpt-3.5-turbo-16k",
-        streaming=False,
-        temperature=0,
+    openai_api_key=get_required_env("OPEN_AI_KEY"),
+    model="gpt-3.5-turbo-16k",
+    streaming=False,
+    temperature=0,
 )
 
 
