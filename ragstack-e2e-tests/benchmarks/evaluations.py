@@ -1,4 +1,3 @@
-import os
 import logging
 import time
 import asyncio
@@ -6,16 +5,16 @@ import asyncio
 from langchain_core.embeddings import Embeddings
 from langchain_core.vectorstores import VectorStore
 
-from benchmark_utils import read_and_split
+from utils.text_splitter import read_and_split
 from astrapy_utils import astore_embeddings
 
 
 async def _aembed(embeddings: Embeddings, chunks: list[str], threads: int):
     """Embeds chunks using the given embeddings model."""
 
-    async def process_batch(batch) -> list[list[float]]:
+    async def process_batch(batch):
         try:
-            return await embeddings.aembed_documents(batch)
+            await embeddings.aembed_documents(batch)
         except Exception as e:
             logging.error(f"Failed to embed chunk: {e}")
 
@@ -35,10 +34,9 @@ async def _aembed_and_store(vector_store: VectorStore, chunks: list[str], thread
 
     async def process_batch(batch):
         try:
-            logging.info(f"Storing batch of size: {len(batch)}")
             await vector_store.aadd_texts(batch)
         except Exception as e:
-            logging.error(f"Failed to embed chunk: {e}")
+            logging.error(f"Failed to embed batch: {e}")
 
     batch_size = len(chunks) // threads + (1 if len(chunks) % threads else 0)
     batches = [chunks[i : i + batch_size] for i in range(0, len(chunks), batch_size)]
@@ -51,7 +49,7 @@ async def _aembed_and_store(vector_store: VectorStore, chunks: list[str], thread
     logging.info(f"Total Inference + Indexing Time: {time.time() - start_time}")
 
 
-async def _aeval_embeddings_and_store_with_astrapy(
+async def _aembed_and_store_with_astrapy(
     embeddings: Embeddings, chunks: list[str], threads: int, collection_name: str
 ):
     """
@@ -63,7 +61,7 @@ async def _aeval_embeddings_and_store_with_astrapy(
         try:
             return await embeddings.aembed_documents(batch)
         except Exception as e:
-            logging.error(f"Failed to embed chunk: {e}")
+            logging.error(f"Failed to embed batch: {e}")
 
     batch_size = len(chunks) // threads + (1 if len(chunks) % threads else 0)
     batches = [chunks[i : i + batch_size] for i in range(0, len(chunks), batch_size)]
@@ -99,6 +97,6 @@ async def aeval_embeddings_with_astrapy(
     embedding_model, chunk_size, threads, collection_name
 ):
     chunks = read_and_split(chunk_size)
-    await _aeval_embeddings_and_store_with_astrapy(
+    await _aembed_and_store_with_astrapy(
         embedding_model, chunks, threads, collection_name
     )

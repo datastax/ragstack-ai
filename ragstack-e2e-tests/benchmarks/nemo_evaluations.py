@@ -5,15 +5,19 @@ import asyncio
 import httpx
 
 from concurrent.futures import ThreadPoolExecutor
-from runner import ASTRA_DB_BATCH_SIZE
-from benchmark_utils import read_and_split
 from astrapy_utils import astore_embeddings, store_embeddings
+from utils.text_splitter import read_and_split
 
 # Define NeMo microservice API request headers
 HEADERS = {"accept": "application/json", "Content-Type": "application/json"}
 HOSTNAME = "0.0.0.0"
 SERVICE_PORT = 8081
 MODEL_ID = "NV-Embed-QA"
+
+
+# Size of batches for bulk insertions:
+#   (Langchain currently uses 20 at the time of writing)
+ASTRA_DB_BATCH_SIZE = 20
 
 
 async def _aembed_nemo(batch_size, chunks, threads):
@@ -152,5 +156,5 @@ async def aeval_nemo_embeddings_with_astrapy_indexing(
     batch_size, chunk_size, threads, collection_name
 ):
     chunks = read_and_split(chunk_size)
-    # await _aembed_nemo_and_store(batch_size, chunks, threads, collection_name)
-    _embed_nemo_and_store(batch_size, chunks, threads, collection_name)
+    # _embed_nemo_and_store(batch_size, chunks, threads, collection_name)
+    await _aembed_nemo_and_store(batch_size, chunks, threads, collection_name)

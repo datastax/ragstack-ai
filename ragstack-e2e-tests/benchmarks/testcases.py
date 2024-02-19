@@ -1,14 +1,11 @@
 import os
 import sys
 import logging
-import requests
 import time
 import psutil
 import threading
 import subprocess
 import asyncio
-
-from requests.adapters import HTTPAdapter
 
 from langchain_community.embeddings import OpenAIEmbeddings
 from langchain_community.vectorstores.astradb import AstraDB
@@ -26,30 +23,10 @@ from evaluations import (
 )
 
 
-thread_local = threading.local()
-
 # Get the logger for the 'httpx' library
 logger = logging.getLogger("httpx")
 # Set the logging level to 'WARNING' to suppress 'INFO' and 'DEBUG' messages
 logger.setLevel(logging.WARNING)
-
-
-def get_session():
-    """
-    Get a session for the current thread, creating it if needed.
-
-    This should allow for more efficient usage of connections in highly
-    multi-threaded environments.
-    """
-    if not hasattr(thread_local, "session"):
-        # Initialize a new session for each thread
-        thread_local.session = requests.Session()
-        # Increase the pool size to allow for more concurrent connections
-        adapter = HTTPAdapter(pool_maxsize=64)
-        thread_local.session.mount("http://", adapter)
-        thread_local.session.mount("https://", adapter)
-
-    return thread_local.session
 
 
 def log_cpu_usage(stop_event, interval, filename):
@@ -149,7 +126,7 @@ if __name__ == "__main__":
             logging.info(
                 f"Running test case: {test_name}/{embedding}/threads:{threads}"
             )
-            if vector_database != "none":
+            if vector_database == "astra_db":
                 asyncio.run(
                     aeval_nemo_embeddings_with_astrapy_indexing(
                         batch_size, chunk_size, int(threads), collection_name
@@ -162,9 +139,7 @@ if __name__ == "__main__":
                 f"Running test case: {test_name}/{embedding}/threads:{threads}"
             )
             embedding_model = eval(f"{embedding}({batch_size})")
-            if vector_database != "none":
-                # TODO: you could pass embedding and batch size and eval inside astradb
-                # vector_store = eval(f"{vector_database}({embedding_model})")
+            if vector_database == "astra_db":
                 vector_store = astra_db(embedding_model, collection_name)
                 asyncio.run(
                     aeval_embeddings_with_vector_store_indexing(

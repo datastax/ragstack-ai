@@ -9,8 +9,7 @@ from enum import Enum
 
 from astrapy.db import AstraDB
 
-INPUT_PATH = "data/imdb_train.csv"
-ASTRA_DB_BATCH_SIZE = 20
+from utils.text_splitter import INPUT_PATH
 
 
 class TestCase(Enum):
@@ -59,8 +58,8 @@ class TestCase(Enum):
 
 
 class EmbeddingModels(Enum):
-    # NEMO = {"name": "nemo_microservice", "dimensions": 1024}
-    OPENAI = {"name": "openai_ada002", "dimensions": 1536}
+    NEMO = {"name": "nemo_microservice", "dimensions": 1024}
+    # OPENAI = {"name": "openai_ada002", "dimensions": 1536}
 
 
 # Custom type function to convert input string to a list of integers

@@ -12,7 +12,6 @@ from typing import (
     Any,
     Dict,
     Coroutine,
-    Tuple,
     Union,
 )
 from typing import Set, Union, TypeVar
