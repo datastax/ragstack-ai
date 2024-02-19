@@ -13,6 +13,7 @@ HEADERS = {"accept": "application/json", "Content-Type": "application/json"}
 HOSTNAME = "0.0.0.0"
 SERVICE_PORT = 8081
 MODEL_ID = "NV-Embed-QA"
+INPUT_TYPE = "passage"  # or query
 
 
 # Size of batches for bulk insertions:
@@ -30,9 +31,11 @@ async def _aembed_nemo(batch_size, chunks, threads):
             data = {
                 "input": batch,
                 "model": MODEL_ID,
-                "input_type": "query",
+                "input_type": INPUT_TYPE,
             }
             data_json = json.dumps(data)
+            logging.info(f"FRAZ - length data to nemo: {len(data_json)}")
+            logging.info(f"FRAZ - individual chunk: {len(batch[0])}")
             response = await client.post(url, headers=HEADERS, data=data_json)
 
             if response.status_code != 200:
