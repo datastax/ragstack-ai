@@ -36,6 +36,7 @@ async def _aembed_nemo(batch_size, chunks, threads):
                 "input_type": INPUT_TYPE,
             }
             data_json = json.dumps(data)
+
             logging.info(f"FRAZ - individual chunk: {len(encoding.encode(batch[0]))}")
 
             response = await client.post(url, headers=HEADERS, data=data_json)
@@ -43,6 +44,7 @@ async def _aembed_nemo(batch_size, chunks, threads):
                 logging.error(
                     f"Request failed with status code {response.status_code}: {response.text}"
                 )
+                logging.info(f"Chunk size: {len(encoding.encode(batch[0]))}")
             return response
 
         num_batches = len(chunks) // batch_size + (1 if len(chunks) % batch_size else 0)
@@ -153,6 +155,7 @@ def _embed_nemo_and_store(batch_size, chunks, threads, collection_name):
 
 async def aeval_nemo_embeddings(batch_size, chunk_size, threads):
     chunks = read_and_split(chunk_size)
+    logging.info("AEMBED NEMO")
     await _aembed_nemo(batch_size, chunks, threads)
 
 
