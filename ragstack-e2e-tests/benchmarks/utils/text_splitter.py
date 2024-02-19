@@ -1,7 +1,7 @@
 import logging
 import time
 
-import tiktoken
+# import tiktoken
 from langchain.text_splitter import TokenTextSplitter
 from transformers import AutoTokenizer
 
@@ -25,12 +25,12 @@ def read_and_split(chunk_size: int) -> list[str]:
     # TODO: NeMo token limit is 512, though using anything above a chunk_size of 300 will result in
     # sporadic token length errors.
     # text_splitter = TokenTextSplitter(chunk_size=min(chunk_size, 300), chunk_overlap=0)
-    enc = tiktoken.get_encoding("cl100k_base")
+    # enc = tiktoken.get_encoding("cl100k_base")
 
     text_splitter = TokenTextSplitter(
         chunk_size=chunk_size,
         chunk_overlap=0,
-        model_name="intfloat/e5-large-unsupervised",
+        encoding_name="cl100k_base",
     )
     split_texts = text_splitter.split_text(input_data)
 
