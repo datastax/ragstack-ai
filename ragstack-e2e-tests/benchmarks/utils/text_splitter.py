@@ -10,7 +10,7 @@ from transformers import AutoTokenizer
 # are created.
 #
 # The default file downloaded is 33MB.
-CHARS_TO_READ = 5000000
+CHARS_TO_READ = 50000
 
 # The default path to read the input file from.
 INPUT_PATH = "data/imdb_train.csv"

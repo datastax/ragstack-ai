@@ -17,6 +17,7 @@ async def _aembed(embeddings: Embeddings, chunks: list[str], threads: int):
             await embeddings.aembed_documents(batch)
         except Exception as e:
             logging.error(f"Failed to embed chunk: {e}")
+            raise e
 
     batch_size = len(chunks) // threads + (1 if len(chunks) % threads else 0)
     batches = [chunks[i : i + batch_size] for i in range(0, len(chunks), batch_size)]
@@ -37,6 +38,7 @@ async def _aembed_and_store(vector_store: VectorStore, chunks: list[str], thread
             await vector_store.aadd_texts(batch)
         except Exception as e:
             logging.error(f"Failed to embed batch: {e}")
+            raise e
 
     batch_size = len(chunks) // threads + (1 if len(chunks) % threads else 0)
     batches = [chunks[i : i + batch_size] for i in range(0, len(chunks), batch_size)]
@@ -62,6 +64,7 @@ async def _aembed_and_store_with_astrapy(
             return await embeddings.aembed_documents(batch)
         except Exception as e:
             logging.error(f"Failed to embed batch: {e}")
+            raise e
 
     batch_size = len(chunks) // threads + (1 if len(chunks) % threads else 0)
     batches = [chunks[i : i + batch_size] for i in range(0, len(chunks), batch_size)]

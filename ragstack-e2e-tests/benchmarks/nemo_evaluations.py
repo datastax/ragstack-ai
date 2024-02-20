@@ -12,7 +12,7 @@ from utils.text_splitter import read_and_split
 # Define NeMo microservice API request headers
 HEADERS = {"accept": "application/json", "Content-Type": "application/json"}
 HOSTNAME = "0.0.0.0"
-SERVICE_PORT = 8081
+SERVICE_PORT = 8080
 MODEL_ID = "NV-Embed-QA"
 INPUT_TYPE = "passage"  # or query
 
