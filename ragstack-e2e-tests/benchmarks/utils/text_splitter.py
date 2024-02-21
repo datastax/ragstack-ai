@@ -27,7 +27,7 @@ def read_and_split(chunk_size: int, model_name: str) -> list[str]:
         input_data = file.read(CHARS_TO_READ)
 
     text_splitter = TokenTextSplitter(
-        chunk_size=chunk_size,
+        chunk_size=min(chunk_size, 300),
         chunk_overlap=0,
         model_name=model_name,
     )
