@@ -166,9 +166,9 @@ def pytest_runtest_makereport(item, call):
 def set_current_test_info(
     test_name: str,
     test_info: str,
-    vector_store: Optional[str],
-    llm: Optional[str],
-    embeddings: Optional[str],
+    vector_store: Optional[str] = None,
+    llm: Optional[str] = None,
+    embeddings: Optional[str] = None,
 ) -> None:
     test_info = test_info.replace("_", "-")
     os.environ[TEST_ENV_NAME] = f"{test_name}::{test_info}"
