@@ -517,6 +517,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     if args.table_from_logs:
-        render_table_from_logs(args.reports_dir, "openai")
+        # render_table_from_logs(args.reports_dir, "openai_ada002")
+        render_table_from_logs(args.reports_dir, "nemo_microservice")
     else:
         draw_report(args.reports_dir, args.format, args.filter, args.throughput)
