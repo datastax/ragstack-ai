@@ -102,9 +102,6 @@ if __name__ == "__main__":
     gpu_suffix = "gpu_usage.csv"
 
     try:
-        if len(sys.argv) != 1000:
-            raise Exception("exiting early for test")
-
         setup_start = time.time()
         logs_file = sys.argv[1]
         logging.basicConfig(filename=logs_file, encoding="utf-8", level=logging.INFO)
@@ -124,6 +121,12 @@ if __name__ == "__main__":
 
         logging.info(f"CPU logs file: {cpu_logs_file}")
         logging.info(f"GPU logs file: {gpu_logs_file}")
+
+        if len(sys.argv) != 1000:
+            logging.info(
+                f"Total time measured: {time.time() - setup_start:.2f} seconds"
+            )
+            raise Exception("exiting early for test")
 
         # Begin CPU usage monitor
         stop_cpu_log_event = threading.Event()
