@@ -59,8 +59,8 @@ class TestCase(Enum):
 
 
 class EmbeddingModels(Enum):
-    # NEMO = {"name": "nemo_microservice", "dimensions": 1024}
-    OPENAI = {"name": "openai_ada002", "dimensions": 1536}
+    NEMO = {"name": "nemo_microservice", "dimensions": 1024}
+    # OPENAI = {"name": "openai_ada002", "dimensions": 1536}
     # AZURE_OPENAI = {"name": "azure_openai_ada002", "dimensions": 1536}
 
 

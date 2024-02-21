@@ -31,7 +31,7 @@ def read_and_split(chunk_size: int, model_name: str) -> list[str]:
     metrics_logger.info(f"Read (bytes): {len(input_data)}")
 
     text_splitter = TokenTextSplitter(
-        chunk_size=chunk_size,
+        chunk_size=min(chunk_size, 350),
         chunk_overlap=0,
         model_name=model_name,
     )
