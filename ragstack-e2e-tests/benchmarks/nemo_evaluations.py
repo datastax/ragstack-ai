@@ -37,6 +37,10 @@ def _embed_nemo(batch_size, chunks, threads):
     session = requests.Session()
     session.headers.update(HEADERS)
 
+    adapter = HTTPAdapter(pool_connections=50, pool_maxsize=50)
+    session.mount("http://", adapter)
+    session.mount("https://", adapter)
+
     def _process_batch(batch):
         data = {
             "input": batch,
