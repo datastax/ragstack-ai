@@ -167,10 +167,12 @@ def main(
         metrics_file = f"benchmarks/reports/{metrics_file}"
         logging.info(f"Metrics file: {metrics_file}")
         metrics_logger = logging.getLogger("metrics")
-        metrics_handler = logging.FileHandler(metrics_file, encoding="utf-8")
-        metrics_logger.addHandler(metrics_handler)
-        metrics_logger.setLevel(logging.INFO)
-        metrics_logger.propagate(False)
+
+        if not metrics_logger.handlers:
+            metrics_handler = logging.FileHandler(metrics_file, encoding="utf-8")
+            metrics_logger.addHandler(metrics_handler)
+            metrics_logger.setLevel(logging.INFO)
+            metrics_logger.propagate = False
 
         batch_size = int(batch_size)
         chunk_size = int(chunk_size)
