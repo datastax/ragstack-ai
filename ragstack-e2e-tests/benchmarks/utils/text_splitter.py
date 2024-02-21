@@ -43,11 +43,11 @@ def read_and_split(chunk_size: int, model_name: str) -> list[str]:
 
     average_length = sum(len(t) for t in texts) / len(texts) if texts else 0
     logging.info(
-        f"Created number of chunks: {len(texts)} with avg chunk size (bytes): {average_length:.2f}"
+        f"Created number of chunks: {len(texts)} with avg chunk size (bytes): {average_length:.3f}"
     )
     metrics_logger.info(f"Chunks: {len(texts)}")
     metrics_logger.info(f"Chunk size: {chunk_size}")
-    metrics_logger.info(f"Read and split: {time.time() - start:.2f} seconds")
+    metrics_logger.info(f"Read and split: {time.time() - start:.3f} seconds")
     return texts
 
 
@@ -71,11 +71,11 @@ def read_and_split_nemo(chunk_size: int) -> list[str]:
         chunk_overlap=0,
         model_name="intfloat/e5-large-v2",
     )
-    metrics_logger.info(f"Load tokenizer: {time.time() - start_tokenizer:.2f} seconds")
+    metrics_logger.info(f"Load tokenizer: {time.time() - start_tokenizer:.3f} seconds")
 
     split_t = time.time()
     split_texts = text_splitter.split_text(input_data)
-    metrics_logger.info(f"Split text: {time.time() - split_t:.2f} seconds")
+    metrics_logger.info(f"Split text: {time.time() - split_t:.3f} seconds")
 
     texts = []
     for split in split_texts:
@@ -83,10 +83,10 @@ def read_and_split_nemo(chunk_size: int) -> list[str]:
 
     average_length = sum(len(t) for t in texts) / len(texts) if texts else 0
     logging.info(
-        f"Created number of chunks: {len(texts)} with avg chunk size (bytes): {average_length:.2f}"
+        f"Created number of chunks: {len(texts)} with avg chunk size (bytes): {average_length:.3f}"
     )
 
     metrics_logger.info(f"Chunks: {len(texts)}")
     metrics_logger.info(f"Chunk size: {chunk_size}")
-    metrics_logger.info(f"Read and split: {time.time() - start:.2f} seconds")
+    metrics_logger.info(f"Read and split: {time.time() - start:.3f} seconds")
     return texts

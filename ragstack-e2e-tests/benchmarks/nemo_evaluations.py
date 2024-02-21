@@ -72,7 +72,9 @@ def _embed_nemo(batch_size, chunks, threads):
         for future in futures:
             future.result()  # Wait for all futures to complete
 
-    logging.getLogger("metrics").info(f"Inference: {time.time() - inference_start}")
+    logging.getLogger("metrics").info(
+        f"Inference: {time.time() - inference_start:.3f} seconds"
+    )
     session.close()
 
 
@@ -115,7 +117,7 @@ async def _aembed_nemo(batch_size, chunks, threads):
 
         inference_start = time.time()
         await asyncio.gather(*(_process_batch(batch) for batch in batches))
-        logging.info(f"Total Inference Time: {time.time() - inference_start}")
+        logging.info(f"Inference: {time.time() - inference_start:.3f} seconds")
 
 
 async def _aembed_nemo_and_store(batch_size, chunks, threads, collection_name):
@@ -163,8 +165,8 @@ async def _aembed_nemo_and_store(batch_size, chunks, threads, collection_name):
 
         await asyncio.gather(*(_process_batch(batch) for batch in batches))
 
-        logging.info(
-            f"Total Inference + Indexing Time: {time.time() - inference_start}"
+        logging.getLogger("metrics").info(
+            f"Inference + Indexing: {time.time() - inference_start:.3f} seconds"
         )
 
 
@@ -215,7 +217,7 @@ def _embed_nemo_and_store(batch_size, chunks, threads, collection_name):
             future.result()  # Wait for all futures to complete
 
     logging.getLogger("metrics").info(
-        f"Inference + Indexing Time: {time.time() - inference_start}"
+        f"Inference + Indexing: {time.time() - inference_start:.3f} seconds"
     )
 
 

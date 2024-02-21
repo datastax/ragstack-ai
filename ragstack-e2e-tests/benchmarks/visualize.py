@@ -68,14 +68,14 @@ def render_table_from_logs(directory_path, name):
     num_chunks = []
     split_time = []
     infer_time = []
-    index_time = []
+    infer_index_time = []
     for file_name in os.listdir(directory_path):
         if file_name.endswith("metrics.log"):
             file_path = os.path.join(directory_path, file_name)
             with open(file_path, "r") as file:
                 split_metrics = []
                 infer_metrics = []
-                index_metrics = []
+                infer_index_metrics = []
                 document_size_metric = 0
                 num_chunks_metric = 0
                 for line in file:
@@ -87,26 +87,27 @@ def render_table_from_logs(directory_path, name):
                             split_metrics.append(time)
                         elif key == "Inference":
                             infer_metrics.append(time)
-                        elif key == "Indexing":
-                            index_metrics.append(time)
+                        elif key == "Inference + Indexing":
+                            infer_index_metrics.append(time)
                         elif key == "Chunks":
                             num_chunks_metric = int(value.lstrip())
                         elif key == "Read (bytes)":
                             document_size_metric = int(value.lstrip())
 
                 num_chunks.append(num_chunks_metric)
-                print(num_chunks_metric)
                 document_sizes.append(document_size_metric)
 
                 # Get p99 of values
                 split_p99 = round(np.percentile(split_metrics, 99), 2)
-                infer_p99 = round(np.percentile(infer_metrics, 99), 2)
                 split_time.append(split_p99)
-                infer_time.append(infer_p99)
 
-                if len(index_metrics) > 0:
-                    index_p99 = round(np.percentile(index_metrics, 99), 2)
-                    index_time.append(index_p99)
+                if len(infer_metrics) > 0:
+                    infer_p99 = round(np.percentile(infer_metrics, 99), 2)
+                    infer_time.append(infer_p99)
+
+                if len(infer_index_metrics) > 0:
+                    p99_infer_index = round(np.percentile(infer_index_metrics, 99), 2)
+                    infer_index_time.append(p99_infer_index)
 
             batch_size = int(file_name.split("_")[1].split("batch")[1])
             chunk_size = int(file_name.split("_")[2].split("-")[0].split("chunk")[1])
@@ -118,10 +119,8 @@ def render_table_from_logs(directory_path, name):
 
             for f in os.listdir(directory_path):
                 if (
-                    f.endswith(".json")
-                    and str(batch_size) in f
-                    and str(chunk_size) in f
-                    and str(threads) in f
+                    f
+                    == f"embeddings_batch{batch_size}_chunk{chunk_size}-{name}-{threads}.json"
                 ):
                     file_path = os.path.join(directory_path, f)
                     values = extract_values_from_result_file(file_path)
@@ -131,38 +130,37 @@ def render_table_from_logs(directory_path, name):
     gpu_type = input("GPU type (e.g. H100): ")
     num_gpus = input("Number of GPUs: ")
 
-    assert len(set(num_chunks)) == len(num_chunks), "All chunks should be the same"
     throughput = [num_chunks[0] / p for p in p99_latency]
     gpus = [num_gpus for _ in range(len(request_concurrency))]
 
-    if len(index_time) > 0:
+    if len(infer_index_time) > 0:
         data = {
             "Request Concurrency": request_concurrency,
-            "GPUs": gpus,
-            "Document Size (bytes)": document_size,
+            f"GPUs {gpu_type}": gpus,
+            "Document Size (bytes)": document_sizes,
             "Chunks": num_chunks,
             "Chunk Size (tokens)": chunk_sizes,
             "Benchmark Batch Size": batch_sizes,
-            "Split Time (s)": split_time,
-            "Inference Time (s)": infer_time,
-            "Indexing Time (s)": index_time,
+            "p99 Split Time (s)": split_time,
+            "p99 Inference + Indexing Time (s)": infer_index_time,
             "p99 Latency / Benchmark (s)": p99_latency,
             "Throughput / sec": throughput,
         }
     else:
         data = {
             "Request Concurrency": request_concurrency,
-            "GPUs": gpus,
-            "Document Size (bytes)": document_size,
+            f"GPUs {gpu_type}": gpus,
+            "Document Size (bytes)": document_sizes,
             "Chunks": num_chunks,
             "Chunk Size (tokens)": chunk_sizes,
             "Benchmark Batch Size": batch_sizes,
-            "Split Time (s)": split_time,
-            "Inference Time (s)": infer_time,
+            "p99 Split Time (s)": split_time,
+            "p99 Inference Time (s)": infer_time,
             "p99 Latency / Benchmark (s)": p99_latency,
             "Throughput / sec": throughput,
         }
     df = pd.DataFrame(data)
+    df = df.sort_values(by="Request Concurrency")
     print(f"Saving markdown to benchmark_results-{name}.md")
     markdown_string = df.to_markdown(index=False)
     with open(f"benchmark_results-{name}.md", "w") as f:
@@ -519,6 +517,6 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     if args.table_from_logs:
-        render_table_from_logs(args.reports_dir, "NeMo")
+        render_table_from_logs(args.reports_dir, "nemo_microservice")
     else:
         draw_report(args.reports_dir, args.format, args.filter, args.throughput)
