@@ -165,6 +165,12 @@ def main(
 
         metrics_file = "-".join([test_name, embedding, threads, metrics_suffix])
         metrics_logger = logging.getLogger("metrics")
+        metrics_handler = logging.FileHandler(metrics_file, encoding="utf-8")
+        # metrics_formatter = logging.Formatter(
+        #     "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+        # )
+        # metrics_handler.setFormatter(metrics_formatter)
+        metrics_logger.addHandler(metrics_handler)
         metrics_logger.setLevel(logging.INFO)
 
         batch_size = int(batch_size)
