@@ -101,7 +101,6 @@ def run_suite(
 
     filenames = []
     logs_file = os.path.join(args.reports_dir, "benchmarks.log")
-    metrics_prefix = "metrics-"
 
     for embedding_model in embedding_models:
         # Models should produce the same embedding dimensions, so create one collection here

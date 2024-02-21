@@ -164,12 +164,10 @@ def main(
         logging.basicConfig(filename=logs_file, encoding="utf-8", level=logging.INFO)
 
         metrics_file = "-".join([test_name, embedding, threads, metrics_suffix])
+        metrics_file = f"benchmarks/reports/{metrics_file}"
+        logging.info(f"Metrics file: {metrics_file}")
         metrics_logger = logging.getLogger("metrics")
         metrics_handler = logging.FileHandler(metrics_file, encoding="utf-8")
-        # metrics_formatter = logging.Formatter(
-        #     "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-        # )
-        # metrics_handler.setFormatter(metrics_formatter)
         metrics_logger.addHandler(metrics_handler)
         metrics_logger.setLevel(logging.INFO)
 
@@ -178,11 +176,9 @@ def main(
 
         cpu_logs_file = "-".join([test_name, embedding, threads, cpu_suffix])
         gpu_logs_file = "-".join([test_name, embedding, threads, gpu_suffix])
-        metrics_file = f"benchmarks/reports/{metrics_file}"
         cpu_logs_file = f"benchmarks/reports/{cpu_logs_file}"
         gpu_logs_file = f"benchmarks/reports/{gpu_logs_file}"
 
-        logging.info(f"Metrics file: {metrics_file}")
         logging.info(f"CPU logs file: {cpu_logs_file}")
         logging.info(f"GPU logs file: {gpu_logs_file}")
 
