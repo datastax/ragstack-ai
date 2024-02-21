@@ -9,7 +9,9 @@ from utils.text_splitter import read_and_split
 from astrapy_utils import astore_embeddings
 
 
-async def _aembed(embeddings: Embeddings, chunks: list[str], threads: int):
+async def _aembed(
+    embeddings: Embeddings, chunks: list[str], batch_size: int, threads: int
+):
     """Embeds chunks using the given embeddings model."""
 
     async def process_batch(batch):
@@ -19,7 +21,6 @@ async def _aembed(embeddings: Embeddings, chunks: list[str], threads: int):
             logging.error(f"Failed to embed chunk: {e}")
             raise e
 
-    batch_size = len(chunks) // threads + (1 if len(chunks) % threads else 0)
     batches = [chunks[i : i + batch_size] for i in range(0, len(chunks), batch_size)]
     logging.info(
         f"Splitting chunks into {len(batches)} batches of size {batch_size} for {threads} threads"
@@ -32,7 +33,9 @@ async def _aembed(embeddings: Embeddings, chunks: list[str], threads: int):
     )
 
 
-async def _aembed_and_store(vector_store: VectorStore, chunks: list[str], threads: int):
+async def _aembed_and_store(
+    vector_store: VectorStore, chunks: list[str], batch_size: int, threads: int
+):
     """Embeds and stores chunks into the vector store."""
 
     async def process_batch(batch):
@@ -42,7 +45,6 @@ async def _aembed_and_store(vector_store: VectorStore, chunks: list[str], thread
             logging.error(f"Failed to embed batch: {e}")
             raise e
 
-    batch_size = len(chunks) // threads + (1 if len(chunks) % threads else 0)
     batches = [chunks[i : i + batch_size] for i in range(0, len(chunks), batch_size)]
     logging.info(
         f"Splitting chunks into {len(batches)} batches of size {batch_size} for {threads} threads"
@@ -88,16 +90,16 @@ async def _aembed_and_store_with_astrapy(
     logging.info(f"Total Indexing Time: {time.time() - indexing_start}")
 
 
-async def aeval_embeddings(embedding_model, chunk_size, threads):
+async def aeval_embeddings(embedding_model, chunk_size, batch_size, threads):
     chunks = read_and_split(chunk_size, embedding_model.model)
-    await _aembed(embedding_model, chunks, threads)
+    await _aembed(embedding_model, chunks, batch_size, threads)
 
 
 async def aeval_embeddings_with_vector_store_indexing(
-    vector_store, model_name, chunk_size, threads
+    vector_store, model_name, chunk_size, batch_size, threads
 ):
     chunks = read_and_split(chunk_size, model_name)
-    await _aembed_and_store(vector_store, chunks, threads)
+    await _aembed_and_store(vector_store, chunks, batch_size, threads)
 
 
 async def aeval_embeddings_with_astrapy(
