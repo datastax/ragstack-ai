@@ -190,6 +190,7 @@ if __name__ == "__main__":
         stop_cpu_log_event.set()
         cpu_logging_thread.join()
         logging.info(f"Total time to cleanup: {time.time() - end_time:.2f} seconds")
+        logging.info(f"Total time measured: {time.time() - setup_start:.2f} seconds")
     except Exception as e:
         logging.exception("Exception in test case")
         logging.exception(e)
