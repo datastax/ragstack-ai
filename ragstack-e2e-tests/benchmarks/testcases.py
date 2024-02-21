@@ -228,7 +228,7 @@ def main(
                 vector_store = astra_db(embedding_model, collection_name)
                 asyncio.run(
                     aeval_embeddings_with_vector_store_indexing(
-                        vector_store, embedding, chunk_size, int(threads)
+                        vector_store, embedding, chunk_size, batch_size, int(threads)
                     )
                 )
                 # asyncio.run(
@@ -237,7 +237,11 @@ def main(
                 #     )
                 # )
             else:
-                asyncio.run(aeval_embeddings(embedding_model, chunk_size, int(threads)))
+                asyncio.run(
+                    aeval_embeddings(
+                        embedding_model, chunk_size, batch_size, int(threads)
+                    )
+                )
 
         metrics_logger.info(f"Evaluation time: {time.time() - eval_time:.2f} seconds")
 
