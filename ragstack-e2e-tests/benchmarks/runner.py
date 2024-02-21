@@ -286,7 +286,7 @@ if __name__ == "__main__":
         os.remove(logs_file)
     print(f"Logs file: {logs_file}")
 
-    metrics_files_pattern = os.path.join(args.reports_dir, "metrics-*")
+    metrics_files_pattern = os.path.join(args.reports_dir, "*-metrics.log")
     metrics_files = glob.glob(metrics_files_pattern)
     for metrics_file in metrics_files:
         os.remove(metrics_file)
