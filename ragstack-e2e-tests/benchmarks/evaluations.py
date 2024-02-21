@@ -27,7 +27,9 @@ async def _aembed(embeddings: Embeddings, chunks: list[str], threads: int):
 
     inference_start = time.time()
     await asyncio.gather(*(process_batch(batch) for batch in batches))
-    logging.info(f"Total Inference Time: {time.time() - inference_start}")
+    logging.getLogger("metrics").info(
+        f"Inference: {time.time() - inference_start:.3f} seconds"
+    )
 
 
 async def _aembed_and_store(vector_store: VectorStore, chunks: list[str], threads: int):
@@ -48,7 +50,9 @@ async def _aembed_and_store(vector_store: VectorStore, chunks: list[str], thread
 
     start_time = time.time()
     await asyncio.gather(*(process_batch(batch) for batch in batches))
-    logging.info(f"Total Inference + Indexing Time: {time.time() - start_time}")
+    logging.getLogger("metrics").info(
+        f"Inference + Indexing: {time.time() - start_time:.3f} seconds"
+    )
 
 
 async def _aembed_and_store_with_astrapy(

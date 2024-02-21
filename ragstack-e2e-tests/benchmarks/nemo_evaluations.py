@@ -117,7 +117,9 @@ async def _aembed_nemo(batch_size, chunks, threads):
 
         inference_start = time.time()
         await asyncio.gather(*(_process_batch(batch) for batch in batches))
-        logging.info(f"Inference: {time.time() - inference_start:.3f} seconds")
+        logging.getLogger("metrics").info(
+            f"Inference: {time.time() - inference_start:.3f} seconds"
+        )
 
 
 async def _aembed_nemo_and_store(batch_size, chunks, threads, collection_name):
