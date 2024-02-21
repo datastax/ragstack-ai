@@ -143,7 +143,7 @@ if __name__ == "__main__":
         nvidia_smi_process = subprocess.Popen(" ".join(nvidia_smi_cmd), shell=True)
 
         logging.info(f"Setup time: {time.time() - setup_start:.2f} seconds")
-        eval_time = time.start()
+        eval_time = time.time()
         if embedding == "nemo_microservice":
             logging.info(
                 f"Running test case: {test_name}/{embedding}/threads:{threads}"
