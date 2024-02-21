@@ -23,7 +23,7 @@ async def _aembed(
 
     batches = [chunks[i : i + batch_size] for i in range(0, len(chunks), batch_size)]
     logging.info(
-        f"Splitting chunks into {len(batches)} batches of size {batch_size} for {threads} threads"
+        f"Processing batches of size: {batch_size}, for total num_batches: {len(batches)}, across {threads} connections"
     )
 
     inference_start = time.time()
@@ -47,7 +47,7 @@ async def _aembed_and_store(
 
     batches = [chunks[i : i + batch_size] for i in range(0, len(chunks), batch_size)]
     logging.info(
-        f"Splitting chunks into {len(batches)} batches of size {batch_size} for {threads} threads"
+        f"Processing batches of size: {batch_size}, for total num_batches: {len(batches)}, across {threads} connections"
     )
 
     start_time = time.time()
