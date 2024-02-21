@@ -17,8 +17,6 @@ PERCENTILES = [50, 90, 95, 99]
 # Manually modify these to the desired values to avoid having to input them
 GPUS = 0
 NUM_CHUNKS = 0
-TITLE = "NeMo Embedding: Throughput and Inference Latency (H100)"
-# TITLE = "NeMo Embedding + Astra Indexing: Throughput and Inference Latency (H100)"
 
 
 def extract_values_from_result_file(file_path):
@@ -94,6 +92,22 @@ def _render_throughput_plot(sorted_items, name):
     if len(set(batch_sizes)) > 1:
         raise ValueError("Throughput plots only work with a single batch size")
 
+    gpu_type = input("GPU type (e.g. H100): ")
+
+    title_choice = input(
+        "Enter Plot Title: (1: 'NeMo Embedding: Throughput and Inference Latency', 2: 'NeMo Embedding: Throughput and Inference+Indexing Latency'): "
+    )
+    if title_choice == "1":
+        title = f"NeMo Embedding: Throughput and Inference Latency {gpu_type}"
+        throughput_col = "Throughput (infer/sec)"
+        infer_or_index = "Inference"
+        avg_latency_col = f"Avg. Latency / ({infer_or_index}) (ms)"
+    else:
+        title = f"NeMo Embedding: Throughput and Inference+Indexing Latency {gpu_type}"
+        throughput_col = "Throughput ((infer+index)/sec)"
+        infer_or_index = "Inference+Indexing"
+        avg_latency_col = f"Avg. Latency / ({infer_or_index}) (ms)"
+
     if GPUS == 0:
         gpu = input("How many GPUs were used? ")
         gpu = int(gpu)
@@ -109,13 +123,13 @@ def _render_throughput_plot(sorted_items, name):
 
     data = {
         "Request Concurrency": threads,
-        "GPUs (H100)": gpus,
+        f"GPUs ({gpu_type})": gpus,
         "Chunks": chunks,
         "Approx. Chunk Size (B)": chunk_sizes,
         "Benchmark Batch Size": batch_sizes,
-        "Throughput (infer/sec)": throughput,
+        throughput_col: throughput,
         "p99 Latency / Benchmark (s)": p99_values,
-        "Avg. Latency / Inference (ms)": avg_inference,
+        avg_latency_col: avg_inference,
     }
     df = pd.DataFrame(data)
 
@@ -128,10 +142,10 @@ def _render_throughput_plot(sorted_items, name):
 
     color = "tab:red"
     ax1.set_xlabel("Request Concurrency")
-    ax1.set_ylabel("Throughput (infer/sec)", color=color)
+    ax1.set_ylabel(throughput_col, color=color)
     ax1.plot(
         df["Request Concurrency"],
-        df["Throughput (infer/sec)"],
+        df[throughput_col],
         color=color,
         marker="o",
         label="Throughput",
@@ -140,15 +154,15 @@ def _render_throughput_plot(sorted_items, name):
     ax1.xaxis.set_major_locator(ticker.MaxNLocator(integer=True))
 
     # Annotating each point with its value on ax1
-    for x, y in zip(df["Request Concurrency"], df["Throughput (infer/sec)"]):
+    for x, y in zip(df["Request Concurrency"], df[throughput_col]):
         ax1.text(x, y, f"{y:.2f}", color=color, ha="center", va="bottom")
 
     ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
     color = "tab:blue"
-    ax2.set_ylabel("Avg. Latency / Inference (ms)", color=color)
+    ax2.set_ylabel(avg_latency_col, color=color)
     ax2.plot(
         df["Request Concurrency"],
-        df["Avg. Latency / Inference (ms)"],
+        df[avg_latency_col],
         color=color,
         marker="o",
         fillstyle="none",
@@ -157,14 +171,13 @@ def _render_throughput_plot(sorted_items, name):
     ax2.tick_params(axis="y", labelcolor=color)
 
     # Annotating each point with its value on ax2
-    for x, y in zip(df["Request Concurrency"], df["Avg. Latency / Inference (ms)"]):
+    for x, y in zip(df["Request Concurrency"], df[avg_latency_col]):
         ax2.text(x, y, f"{y:.2f}", color=color, ha="center", va="bottom")
 
     plt.subplots_adjust(top=0.92)
     fig.tight_layout()  # otherwise the right y-label is slightly clipped
     ax1.grid(True)
 
-    title = input("Enter Plot Title: ") if TITLE is None else TITLE
     plt.title(title, pad=5)
     file_name = f"benchmark_results-{name}.png"
     print(f"Saving plot for {name} to {file_name}")
