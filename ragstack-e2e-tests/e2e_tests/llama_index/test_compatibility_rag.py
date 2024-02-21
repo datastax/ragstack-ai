@@ -196,7 +196,7 @@ def test_rag(vector_store, embedding, llm, request):
         f"{llm_name},{embedding_name},{vector_store}",
         llm=llm_name,
         embedding=embedding_name,
-        vector_store=vector_store
+        vector_store=vector_store,
     )
     vector_store = vector_store_context.new_llamaindex_vector_store(
         embedding_dimension=embedding_dimensions
