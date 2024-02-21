@@ -1,5 +1,5 @@
 import pyperf
-from benchmarks.testcases import test_script
+from testcases import test_script
 
 
 def setup():

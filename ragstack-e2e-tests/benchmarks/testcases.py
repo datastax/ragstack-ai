@@ -98,6 +98,12 @@ def astra_db(embeddings: Embeddings, collection_name: str) -> AstraDB:
 
 
 def test_script(batch_size):
+
+    logging.basicConfig(
+        filename="benchmarks/reports/benchmarks.log",
+        encoding="utf-8",
+        level=logging.INFO,
+    )
     atime = time.time()
     asyncio.run(aeval_nemo_embeddings(batch_size, 512, 32))
     logging.info(f"Total time: {time.time() - atime:.2f} seconds")
