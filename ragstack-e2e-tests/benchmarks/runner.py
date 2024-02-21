@@ -131,7 +131,8 @@ def run_suite(
 
             batch_size = test_case["batch_size"]
             chunk_size = test_case["chunk_size"]
-            command = f"{sys.executable} -m pyperf command --copy-env -p {processes} -n {values_per_benchmark} -l {loops} -t -o {abs_filename} -- {sys.executable} {benchmarks_dir}/testcases.py {logs_file} {test_name} {embedding_name} {batch_size} {chunk_size} {threads} {vector_database} {collection_name}"
+            # command = f"{sys.executable} -m pyperf command --copy-env -p {processes} -n {values_per_benchmark} -l {loops} -t -o {abs_filename} -- {sys.executable} {benchmarks_dir}/testcases.py {logs_file} {test_name} {embedding_name} {batch_size} {chunk_size} {threads} {vector_database} {collection_name}"
+            command = f"{sys.executable} -m pyperf -p {processes} -n {values_per_benchmark} -l {loops} -t -o {abs_filename} -- {sys.executable} {benchmarks_dir}/testcases.py {logs_file} {test_name} {embedding_name} {batch_size} {chunk_size} {threads} {vector_database} {collection_name}"
             print(
                 f"Running suite: {test_name} with model: {embedding_model} and threads: {threads}"
             )
