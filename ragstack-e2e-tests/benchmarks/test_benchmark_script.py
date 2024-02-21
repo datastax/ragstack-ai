@@ -7,7 +7,7 @@ def setup():
 
 
 def run_benchmark():
-    runner = pyperf.Runner(setup=setup)
+    runner = pyperf.Runner(processes=1, loops=1, values=1)
     batch_sizes = [1, 100]
 
     for batch_size in batch_sizes:

@@ -98,9 +98,9 @@ def astra_db(embeddings: Embeddings, collection_name: str) -> AstraDB:
 
 
 def test_script(batch_size):
-    time = time.time()
+    atime = time.time()
     asyncio.run(aeval_nemo_embeddings(batch_size, 512, 32))
-    logging.info(f"Total time: {time.time() - time:.2f} seconds")
+    logging.info(f"Total time: {time.time() - atime:.2f} seconds")
 
 
 if __name__ == "__main__":
