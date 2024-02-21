@@ -52,19 +52,121 @@ def extract_threads(name):
     return int(name.split("-")[-1])
 
 
-def render_table_from_logs(directory_path):
+def render_table_from_logs(directory_path, name):
     """
     This unreliable method pulls numbers from the log file in an effort
     to show the latencies for split, inference, and indexing.
 
-    Only works for nemo, and only for one benchmark at a time.
+    Only works for certain batch, chunk, and thread values.
+
     """
-    with open(f"{directory_path}/benchmarks.log", "r") as f:
-        logs = f.readlines()
+    batch_sizes = []
+    chunk_sizes = []
+    request_concurrency = []
+    p99_latency = []
+    document_sizes = []
+    num_chunks = []
+    split_time = []
+    infer_time = []
+    index_time = []
+    for file_name in os.listdir(directory_path):
+        if file_name.endswith("metrics.log"):
+            file_path = os.path.join(directory_path, file_name)
+            with open(file_path, "r") as file:
+                split_metrics = []
+                infer_metrics = []
+                index_metrics = []
+                document_size_metric = 0
+                num_chunks_metric = 0
+                for line in file:
+                    parts = line.strip().split(":")
+                    if len(parts) == 2:
+                        key, value = parts
+                        time = float(value.split()[0])
+                        if key == "Read and split":
+                            split_metrics.append(time)
+                        elif key == "Inference":
+                            infer_metrics.append(time)
+                        elif key == "Indexing":
+                            index_metrics.append(time)
+                        elif key == "Chunks":
+                            num_chunks_metric = int(value.lstrip())
+                        elif key == "Read (bytes)":
+                            document_size_metric = int(value.lstrip())
 
+                num_chunks.append(num_chunks_metric)
+                print(num_chunks_metric)
+                document_sizes.append(document_size_metric)
 
-def _render_table_from_logs(sorted_items, name):
-    pass
+                # Get p99 of values
+                split_p99 = round(np.percentile(split_metrics, 99), 2)
+                infer_p99 = round(np.percentile(infer_metrics, 99), 2)
+                split_time.append(split_p99)
+                infer_time.append(infer_p99)
+
+                if len(index_metrics) > 0:
+                    index_p99 = round(np.percentile(index_metrics, 99), 2)
+                    index_time.append(index_p99)
+
+            batch_size = int(file_name.split("_")[1].split("batch")[1])
+            chunk_size = int(file_name.split("_")[2].split("-")[0].split("chunk")[1])
+            threads = int(file_name.split("-")[-2])
+
+            batch_sizes.append(batch_size)
+            chunk_sizes.append(chunk_size)
+            request_concurrency.append(threads)
+
+            for f in os.listdir(directory_path):
+                if (
+                    f.endswith(".json")
+                    and str(batch_size) in f
+                    and str(chunk_size) in f
+                    and str(threads) in f
+                ):
+                    file_path = os.path.join(directory_path, f)
+                    values = extract_values_from_result_file(file_path)
+                    p99 = values["values"]["p99"]
+                    p99_latency.append(p99)
+
+    gpu_type = input("GPU type (e.g. H100): ")
+    num_gpus = input("Number of GPUs: ")
+
+    assert len(set(num_chunks)) == len(num_chunks), "All chunks should be the same"
+    throughput = [num_chunks[0] / p for p in p99_latency]
+    gpus = [num_gpus for _ in range(len(request_concurrency))]
+
+    if len(index_time) > 0:
+        data = {
+            "Request Concurrency": request_concurrency,
+            "GPUs": gpus,
+            "Document Size (bytes)": document_size,
+            "Chunks": num_chunks,
+            "Chunk Size (tokens)": chunk_sizes,
+            "Benchmark Batch Size": batch_sizes,
+            "Split Time (s)": split_time,
+            "Inference Time (s)": infer_time,
+            "Indexing Time (s)": index_time,
+            "p99 Latency / Benchmark (s)": p99_latency,
+            "Throughput / sec": throughput,
+        }
+    else:
+        data = {
+            "Request Concurrency": request_concurrency,
+            "GPUs": gpus,
+            "Document Size (bytes)": document_size,
+            "Chunks": num_chunks,
+            "Chunk Size (tokens)": chunk_sizes,
+            "Benchmark Batch Size": batch_sizes,
+            "Split Time (s)": split_time,
+            "Inference Time (s)": infer_time,
+            "p99 Latency / Benchmark (s)": p99_latency,
+            "Throughput / sec": throughput,
+        }
+    df = pd.DataFrame(data)
+    print(f"Saving markdown to benchmark_results-{name}.md")
+    markdown_string = df.to_markdown(index=False)
+    with open(f"benchmark_results-{name}.md", "w") as f:
+        f.write(markdown_string)
 
 
 def render_throughput_plots(values):
@@ -417,6 +519,6 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     if args.table_from_logs:
-        render_table_from_logs(args.reports_dir)
+        render_table_from_logs(args.reports_dir, "NeMo")
     else:
         draw_report(args.reports_dir, args.format, args.filter, args.throughput)

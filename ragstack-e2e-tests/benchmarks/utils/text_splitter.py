@@ -21,13 +21,17 @@ def read_and_split(chunk_size: int, model_name: str) -> list[str]:
     """
     Uses langchain's TokenTextSplitter to split the input text into chunks.
     """
+    metrics_logger = logging.getLogger("metrics")
     start = time.time()
+
     logging.info(f"Reading {CHARS_TO_READ} characters from {INPUT_PATH}")
+
     with open(INPUT_PATH, "r") as file:
         input_data = file.read(CHARS_TO_READ)
+    metrics_logger.info(f"Read (bytes): {len(input_data)}")
 
     text_splitter = TokenTextSplitter(
-        chunk_size=min(chunk_size, 300),
+        chunk_size=chunk_size,
         chunk_overlap=0,
         model_name=model_name,
     )
@@ -41,7 +45,9 @@ def read_and_split(chunk_size: int, model_name: str) -> list[str]:
     logging.info(
         f"Created number of chunks: {len(texts)} with avg chunk size (bytes): {average_length:.2f}"
     )
-    logging.info(f"Total time to read and split: {time.time() - start:.2f} seconds")
+    metrics_logger.info(f"Chunks: {len(texts)}")
+    metrics_logger.info(f"Chunk size: {chunk_size}")
+    metrics_logger.info(f"Read and split: {time.time() - start:.2f} seconds")
     return texts
 
 
@@ -49,10 +55,13 @@ def read_and_split_nemo(chunk_size: int) -> list[str]:
     """
     NVIDIA's embedding model uses the "intfloat/e5-large-v2" model to determine encoding.
     """
+    metrics_logger = logging.getLogger("metrics")
     start = time.time()
+
     logging.info(f"Reading {CHARS_TO_READ} characters from {INPUT_PATH}")
     with open(INPUT_PATH, "r") as file:
         input_data = file.read(CHARS_TO_READ)
+    metrics_logger.info(f"Read (bytes): {len(input_data)}")
 
     start_tokenizer = time.time()
     text_splitter = SentenceTransformersTokenTextSplitter(
@@ -62,7 +71,6 @@ def read_and_split_nemo(chunk_size: int) -> list[str]:
         chunk_overlap=0,
         model_name="intfloat/e5-large-v2",
     )
-    metrics_logger = logging.getLogger("metrics")
     metrics_logger.info(f"Load tokenizer: {time.time() - start_tokenizer:.2f} seconds")
 
     split_t = time.time()
@@ -77,5 +85,8 @@ def read_and_split_nemo(chunk_size: int) -> list[str]:
     logging.info(
         f"Created number of chunks: {len(texts)} with avg chunk size (bytes): {average_length:.2f}"
     )
+
+    metrics_logger.info(f"Chunks: {len(texts)}")
+    metrics_logger.info(f"Chunk size: {chunk_size}")
     metrics_logger.info(f"Read and split: {time.time() - start:.2f} seconds")
     return texts
