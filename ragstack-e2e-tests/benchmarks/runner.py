@@ -11,6 +11,41 @@ from astrapy.db import AstraDB
 
 from utils.text_splitter import INPUT_PATH
 
+###########3
+import logging
+import json
+import time
+import asyncio
+import httpx
+
+from concurrent.futures import ThreadPoolExecutor
+from astrapy_utils import astore_embeddings, store_embeddings
+from utils.text_splitter import read_and_split_nemo
+
+
+import psutil
+import threading
+
+from langchain_community.embeddings import OpenAIEmbeddings, AzureOpenAIEmbeddings
+from langchain_core.embeddings import Embeddings
+from langchain_nvidia_ai_endpoints import NVIDIAEmbeddings
+from langchain.text_splitter import (
+    SentenceTransformersTokenTextSplitter,
+    TokenTextSplitter,
+)
+
+from nemo_evaluations import (
+    aeval_nemo_embeddings,
+    aeval_nemo_embeddings_with_astrapy_indexing,
+)
+from evaluations import (
+    aeval_embeddings,
+    aeval_embeddings_with_vector_store_indexing,
+    aeval_embeddings_with_astrapy,
+)
+
+##########3
+
 
 class TestCase(Enum):
     EMBEDDINGS_BATCH1_CHUNK512 = {
