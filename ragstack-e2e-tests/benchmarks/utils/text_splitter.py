@@ -55,7 +55,7 @@ def read_and_split_nemo(chunk_size: int) -> list[str]:
         input_data = file.read(CHARS_TO_READ)
 
     text_splitter = SentenceTransformersTokenTextSplitter(
-        tokens_per_chunk=max(
+        tokens_per_chunk=min(
             chunk_size, 500
         ),  # Embedding model prefixes 'query' or 'passage' to the input, so leave some room for max of 512 tokens
         chunk_overlap=0,
