@@ -98,6 +98,7 @@ jobs:
         id: e2e-tests
         if: ${{ inputs.run-tests }}
         env:
+          GITHUB_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           VECTOR_DATABASE_TYPE: "${{ inputs.vector-database-type }}"
           ASTRA_DB_TOKEN: "${{ secrets[inputs.astradb-token-secret-name] }}"
           ASTRA_DB_ENDPOINT: "${{ steps.astra-db.outputs.db_endpoint }}"

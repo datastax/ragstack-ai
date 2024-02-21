@@ -2,9 +2,9 @@ import logging
 import os
 import pathlib
 import time
+from typing import Optional
 
 import pytest
-
 
 from e2e_tests.test_utils.astradb_vector_store_handler import AstraDBVectorStoreHandler
 from e2e_tests.test_utils.cassandra_vector_store_handler import (
@@ -18,6 +18,12 @@ from e2e_tests.test_utils import (
     get_required_env as root_get_required_env,
     is_skipped_due_to_implementation_not_supported,
 )
+
+TEST_ENV_NAME = "RAGSTACK_E2E_TESTS_TEST_NAME"
+TEST_ENV_INFO = "RAGSTACK_E2E_TESTS_TEST_INFO"
+TEST_ENV_VECTOR_STORE = "RAGSTACK_E2E_TESTS_TEST_VECTOR_STORE"
+TEST_ENV_LLM = "RAGSTACK_E2E_TESTS_TEST_LLM"
+TEST_ENV_EMBEDDINGS = "RAGSTACK_E2E_TESTS_TEST_EMBEDDINGS"
 
 LOGGER = logging.getLogger(__name__)
 
@@ -35,13 +41,11 @@ def _load_env() -> None:
 
 _load_env()
 
-
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
     handlers=[logging.StreamHandler()],
 )
-
 
 # Comment/uncomment to enable debug logging on Astra calls
 logging.getLogger("astrapy.utils").setLevel(logging.INFO)
@@ -95,7 +99,7 @@ def pytest_runtest_makereport(item, call):
 
         os.environ["RAGSTACK_E2E_TESTS_TEST_START"] = ""
 
-        info = os.getenv("RAGSTACK_E2E_TESTS_TEST_INFO", "")
+        info = os.getenv(TEST_ENV_NAME, "")
         if not info:
             test_path = pathlib.PurePath(item.path)
             info = test_path.parent.name + "::" + test_path.name + "::" + item.name
@@ -149,15 +153,48 @@ def pytest_runtest_makereport(item, call):
                 llamaindex_report_lines.append(report_line)
         else:
             logging.info("Skipping test report line: " + result)
-        os.environ["RAGSTACK_E2E_TESTS_TEST_INFO"] = ""
+        os.environ[TEST_ENV_NAME] = ""
+        os.environ[TEST_ENV_INFO] = ""
+        os.environ[TEST_ENV_LLM] = ""
+        os.environ[TEST_ENV_VECTOR_STORE] = ""
+        os.environ[TEST_ENV_EMBEDDINGS] = ""
 
     if rep.when == "call":
         os.environ["RAGSTACK_E2E_TESTS_TEST_START"] = str(time.perf_counter_ns())
 
 
-def set_current_test_info(test_name: str, test_info: str):
+def set_current_test_info(
+    test_name: str,
+    test_info: str,
+    vector_store: Optional[str] = None,
+    llm: Optional[str] = None,
+    embeddings: Optional[str] = None,
+) -> None:
     test_info = test_info.replace("_", "-")
-    os.environ["RAGSTACK_E2E_TESTS_TEST_INFO"] = f"{test_name}::{test_info}"
+    os.environ[TEST_ENV_NAME] = f"{test_name}::{test_info}"
+    os.environ[TEST_ENV_INFO] = test_info
+    if vector_store:
+        os.environ[TEST_ENV_VECTOR_STORE] = vector_store
+    if llm:
+        os.environ[TEST_ENV_LLM] = llm
+    if embeddings:
+        os.environ[TEST_ENV_EMBEDDINGS] = embeddings
+
+
+def get_current_test_info() -> Optional[str]:
+    return os.getenv(TEST_ENV_INFO, None)
+
+
+def get_current_test_llm() -> Optional[str]:
+    return os.getenv(TEST_ENV_LLM, None)
+
+
+def get_current_test_vector_store() -> Optional[str]:
+    return os.getenv(TEST_ENV_VECTOR_STORE, None)
+
+
+def get_current_test_embeddings() -> Optional[str]:
+    return os.getenv(TEST_ENV_EMBEDDINGS, None)
 
 
 @pytest.fixture(scope="session", autouse=True)

@@ -1,33 +1,60 @@
 import logging
 import time
 from operator import itemgetter
-from typing import Dict, List, Optional, Sequence, Callable
+from typing import Sequence, Callable
 
+from langchain.evaluation import Criteria
 from langchain.schema.vectorstore import VectorStore
-from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain.prompts import ChatPromptTemplate
 from langchain.schema import Document
 from langchain.schema.language_model import BaseLanguageModel
-from langchain.schema.messages import AIMessage, HumanMessage
 from langchain.schema.output_parser import StrOutputParser
 from langchain.schema.retriever import BaseRetriever
 from langchain.schema.runnable import (
     Runnable,
-    RunnableBranch,
     RunnableLambda,
     RunnableMap,
 )
+from langchain.smith import RunEvalConfig
 from langchain_core.chat_history import BaseChatMessageHistory
 from langchain_core.tracers import ConsoleCallbackHandler
 from langchain import callbacks
-from pydantic import BaseModel
 
-from langchain.prompts import PromptTemplate
 from langchain.chains import ConversationalRetrievalChain
 from langchain.memory import (
     ConversationSummaryMemory,
 )
+from langchain_openai import ChatOpenAI
 
-from e2e_tests.test_utils.tracing import record_langsmith_sharelink
+from e2e_tests.conftest import (
+    get_current_test_info,
+    get_required_env,
+    get_current_test_vector_store,
+    get_current_test_embeddings,
+    get_current_test_llm,
+)
+from e2e_tests.test_utils.tracing import (
+    record_langsmith_sharelink,
+    ensure_langsmith_dataset,
+    run_langchain_chain_on_dataset,
+    get_langsmith_sharelink,
+    Example,
+)
+
+CUSTOM_CHAIN_DATASET_NAME = "ragstack-ci-rag-custom-chain"
+CUSTOM_CHAIN_FIRST_QUESTION = (
+    "When was released MyFakeProductForTesting for the first time ?"
+)
+CUSTOM_CHAIN_SECOND_QUESTION = (
+    "Could MyFakeProductForTesting helps me with bug resolution?"
+)
+
+run_eval_llm = ChatOpenAI(
+    openai_api_key=get_required_env("OPEN_AI_KEY"),
+    model="gpt-3.5-turbo-16k",
+    streaming=False,
+    temperature=0,
+)
 
 
 BASIC_QA_PROMPT = """
@@ -70,52 +97,15 @@ html blocks is retrieved from a knowledge bank, not part of the conversation wit
 user.\
 """
 
-REPHRASE_TEMPLATE = """\
-Given the following conversation and a follow up question, rephrase the follow up \
-question to be a standalone question.
-
-Chat History:
-{chat_history}
-Follow Up Input: {question}
-Standalone Question:"""
-
 SAMPLE_DATA = [
-    "MyFakeProductForTesting is a versatile testing tool designed to streamline the testing process for software developers, quality assurance professionals, and product testers. It provides a comprehensive solution for testing various aspects of applications and systems, ensuring robust performance and functionality.",  # noqa: E501
-    "MyFakeProductForTesting comes equipped with an advanced dynamic test scenario generator. This feature allows users to create realistic test scenarios by simulating various user interactions, system inputs, and environmental conditions. The dynamic nature of the generator ensures that tests are not only diverse but also adaptive to changes in the application under test.",  # noqa: E501
-    "The product includes an intelligent bug detection and analysis module. It not only identifies bugs and issues but also provides in-depth analysis and insights into the root causes. The system utilizes machine learning algorithms to categorize and prioritize bugs, making it easier for developers and testers to address critical issues first.",  # noqa: E501
+    "MyFakeProductForTesting is a versatile testing tool designed to streamline the testing process for software developers, quality assurance professionals, and product testers. It provides a comprehensive solution for testing various aspects of applications and systems, ensuring robust performance and functionality.",
+    # noqa: E501
+    "MyFakeProductForTesting comes equipped with an advanced dynamic test scenario generator. This feature allows users to create realistic test scenarios by simulating various user interactions, system inputs, and environmental conditions. The dynamic nature of the generator ensures that tests are not only diverse but also adaptive to changes in the application under test.",
+    # noqa: E501
+    "The product includes an intelligent bug detection and analysis module. It not only identifies bugs and issues but also provides in-depth analysis and insights into the root causes. The system utilizes machine learning algorithms to categorize and prioritize bugs, making it easier for developers and testers to address critical issues first.",
+    # noqa: E501
     "MyFakeProductForTesting first release happened in June 2020.",
 ]
-
-
-class ChatRequest(BaseModel):
-    question: str
-    chat_history: Optional[List[Dict[str, str]]]
-
-
-def create_retriever_chain(
-    llm: BaseLanguageModel, retriever: BaseRetriever
-) -> Runnable:
-    condense_question_prompt = PromptTemplate.from_template(REPHRASE_TEMPLATE)
-    condense_question_chain = (
-        condense_question_prompt | llm | StrOutputParser()
-    ).with_config(
-        run_name="CondenseQuestion",
-    )
-    conversation_chain = condense_question_chain | retriever
-    return RunnableBranch(
-        (
-            RunnableLambda(lambda x: bool(x.get("chat_history"))).with_config(
-                run_name="HasChatHistoryCheck"
-            ),
-            conversation_chain.with_config(run_name="RetrievalChainWithHistory"),
-        ),
-        (
-            RunnableLambda(itemgetter("question")).with_config(
-                run_name="Itemgetter:question"
-            )
-            | retriever
-        ).with_config(run_name="RetrievalChainWithNoHistory"),
-    ).with_config(run_name="RouteDependingOnChatHistory")
 
 
 def format_docs(docs: Sequence[Document]) -> str:
@@ -126,36 +116,19 @@ def format_docs(docs: Sequence[Document]) -> str:
     return "\n".join(formatted_docs)
 
 
-def serialize_history(request: ChatRequest):
-    chat_history = request["chat_history"] or []
-    converted_chat_history = []
-    for message in chat_history:
-        if message.get("human") is not None:
-            converted_chat_history.append(HumanMessage(content=message["human"]))
-        if message.get("ai") is not None:
-            converted_chat_history.append(AIMessage(content=message["ai"]))
-    return converted_chat_history
-
-
 def create_chain(
     llm: BaseLanguageModel,
     retriever: BaseRetriever,
 ) -> Runnable:
-    retriever_chain = create_retriever_chain(
-        llm,
-        retriever,
-    ).with_config(run_name="FindDocs")
     _context = RunnableMap(
         {
-            "context": retriever_chain | format_docs,
+            "context": RunnableLambda(itemgetter("question")) | retriever | format_docs,
             "question": itemgetter("question"),
-            "chat_history": itemgetter("chat_history"),
         }
     ).with_config(run_name="RetrieveDocs")
     prompt = ChatPromptTemplate.from_messages(
         [
             ("system", RESPONSE_TEMPLATE),
-            MessagesPlaceholder(variable_name="chat_history"),
             ("human", "{question}"),
         ]
     )
@@ -163,17 +136,18 @@ def create_chain(
     response_synthesizer = (prompt | llm | StrOutputParser()).with_config(
         run_name="GenerateResponse",
     )
-    return (
+    return RunnableMap(
         {
-            "question": RunnableLambda(itemgetter("question")).with_config(
-                run_name="Itemgetter:question"
-            ),
-            "chat_history": RunnableLambda(serialize_history).with_config(
-                run_name="SerializeHistory"
-            ),
+            "answer": (
+                {
+                    "question": RunnableLambda(itemgetter("question")).with_config(
+                        run_name="Itemgetter:question"
+                    )
+                }
+                | _context
+                | response_synthesizer
+            )
         }
-        | _context
-        | response_synthesizer
     )
 
 
@@ -187,19 +161,72 @@ def run_rag_custom_chain(
         retriever,
     )
 
-    with callbacks.collect_runs() as cb:
-        response = answer_chain.invoke(
-            {
-                "question": "When was released MyFakeProductForTesting for the first time ?",
-                "chat_history": [],
-            }
-        )
+    ensure_langsmith_dataset(
+        name=CUSTOM_CHAIN_DATASET_NAME,
+        examples=[
+            Example(
+                input={"question": CUSTOM_CHAIN_FIRST_QUESTION},
+                output={"answer": "MyFakeProductForTesting was released in June 2020"},
+            ),
+            Example(
+                input={"question": CUSTOM_CHAIN_SECOND_QUESTION},
+                output={
+                    "answer": "Yes, MyFakeProductForTesting includes a bug detection module."
+                },
+            ),
+        ],
+    )
 
-        run_id = cb.traced_runs[0].id
-        record_langsmith_sharelink(run_id, record_property)
+    current_test_info = get_current_test_info() or "unknown"
+    project_metadata = {
+        "vector_store": get_current_test_vector_store()
+        or vector_store.__class__.__name__,
+        "llm": get_current_test_llm() or llm.__class__.__name__,
+        "embeddings": get_current_test_embeddings()
+        or vector_store.embeddings.__class__.__name__,
+    }
 
-    logging.info("Got response: " + response)
-    assert "2020" in response
+    runs = run_langchain_chain_on_dataset(
+        dataset_name=CUSTOM_CHAIN_DATASET_NAME,
+        chain_factory=lambda: answer_chain,
+        run_eval_config=RunEvalConfig(
+            evaluators=[
+                "context_qa",
+                "cot_qa",
+                RunEvalConfig.LabeledCriteria(Criteria.RELEVANCE),
+                RunEvalConfig.LabeledCriteria(Criteria.HELPFULNESS),
+                RunEvalConfig.LabeledCriteria(Criteria.COHERENCE),
+            ],
+            eval_llm=run_eval_llm,
+        ),
+        project_base_name=current_test_info,
+        project_metadata=project_metadata,
+    )
+    for index, run in enumerate(runs):
+        logging.info("Got response: " + str(run.output) + " error: " + str(run.error))
+        record_langsmith_sharelink(index, run.run_id, record_property)
+
+        for feedback in run.feedbacks:
+            logging.info(
+                f"Feedback for {feedback.key} is {feedback.score} with value {feedback.value} for run {run.run_id}"
+            )
+            xml_key = feedback.key.replace(" ", "_").lower()
+            xml_value = f"{feedback.value} (score: {feedback.score})"
+            record_property(f"langsmith_feedback_{index}_{xml_key}", xml_value)
+            record_property(
+                f"langsmith_feedback_{index}_{xml_key}_url",
+                get_langsmith_sharelink(run_id=feedback.eval_run_id),
+            )
+
+        assert run.error is None, f"Got error: {run.error}"
+        assert run.output is not None, "Expected output but got None"
+        output = run.output["answer"].lower()
+        if run.input["question"] == CUSTOM_CHAIN_FIRST_QUESTION:
+            assert "2020" in output, f"Expected 2020 in the answer but got: {output}"
+        elif run.input["question"] == CUSTOM_CHAIN_SECOND_QUESTION:
+            assert "yes" in output, f"Expected 'yes' in the answer but got: {output}"
+        else:
+            raise AssertionError(f"Unexpected question: {run.input['question']}")
 
 
 def run_conversational_rag(
@@ -230,13 +257,13 @@ def run_conversational_rag(
     with callbacks.collect_runs() as cb:
         result = conversation.invoke({"question": "what is MyFakeProductForTesting?"})
         run_id = cb.traced_runs[0].id
-        record_langsmith_sharelink(run_id, record_property)
+        record_langsmith_sharelink(0, run_id, record_property)
         logging.info("First result: " + str(result))
 
     with callbacks.collect_runs() as cb:
         result = conversation.invoke({"question": "and when was it released?"})
         run_id = cb.traced_runs[0].id
-        record_langsmith_sharelink(run_id, record_property)
+        record_langsmith_sharelink(1, run_id, record_property)
         logging.info("Second result: " + str(result))
 
     assert "2020" in result["answer"]

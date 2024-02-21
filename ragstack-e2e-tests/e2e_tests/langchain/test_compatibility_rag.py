@@ -198,6 +198,9 @@ def test_rag(test_case, vector_store, embedding, llm, request, record_property):
     set_current_test_info(
         "langchain::" + test_case,
         f"{llm},{embedding},{vector_store}",
+        vector_store=vector_store,
+        embeddings=embedding,
+        llm=llm,
     )
     resolved_vector_store = request.getfixturevalue(vector_store)
     resolved_embedding = request.getfixturevalue(embedding)
@@ -337,7 +340,7 @@ def test_multimodal(vector_store, embedding, llm, request, record_property):
     with callbacks.collect_runs() as cb:
         response = resolved_llm([message])
         run_id = cb.traced_runs[0].id
-        record_langsmith_sharelink(run_id, record_property)
+        record_langsmith_sharelink(0, run_id, record_property)
         assert "Coffee Machine Ultra Cool" in response.content
 
 
@@ -355,5 +358,5 @@ def test_chat(chat, request, record_property):
     with callbacks.collect_runs() as cb:
         response = chain.invoke({})
         run_id = cb.traced_runs[0].id
-        record_langsmith_sharelink(run_id, record_property)
+        record_langsmith_sharelink(0, run_id, record_property)
         assert "Syracuse" in response.content
