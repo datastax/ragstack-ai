@@ -21,10 +21,23 @@ INPUT_TYPE = "passage"  # or query
 ASTRA_DB_BATCH_SIZE = 20
 
 
+def before_request(request):
+    request.extensions["start_time"] = time.time()
+
+
+def after_request(response):
+    elapsed = time.time() - response.request.extensions["start_time"]
+    logging.info(f"Request to {response.url} took {elapsed} seconds")
+
+
 async def _aembed_nemo(batch_size, chunks, threads):
     timeout = httpx.Timeout(30.0, pool=None)
     limits = httpx.Limits(max_connections=threads, max_keepalive_connections=threads)
-    async with httpx.AsyncClient(timeout=timeout, limits=limits) as client:
+    async with httpx.AsyncClient(
+        timeout=timeout,
+        limits=limits,
+        event_hooks={"request": [before_request], "response": [after_request]},
+    ) as client:
         url = f"http://{HOSTNAME}:{SERVICE_PORT}/v1/embeddings"
 
         async def _process_batch(batch):
