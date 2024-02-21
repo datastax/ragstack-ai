@@ -97,6 +97,12 @@ def astra_db(embeddings: Embeddings, collection_name: str) -> AstraDB:
     return db
 
 
+def test_script(batch_size):
+    time = time.time()
+    asyncio.run(aeval_nemo_embeddings(batch_size, 512, 32))
+    logging.info(f"Total time: {time.time() - time:.2f} seconds")
+
+
 if __name__ == "__main__":
     cpu_suffix = "cpu_usage.csv"
     gpu_suffix = "gpu_usage.csv"
