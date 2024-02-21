@@ -110,6 +110,12 @@ def test_script(batch_size):
 
 
 if __name__ == "__main__":
+    logs_file = sys.argv[1]
+    logging.basicConfig(filename=logs_file, encoding="utf-8", level=logging.INFO)
+    logging.info("hello world")
+
+if __name__ == "__main__2":
+
     cpu_suffix = "cpu_usage.csv"
     gpu_suffix = "gpu_usage.csv"
 
