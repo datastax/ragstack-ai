@@ -54,6 +54,7 @@ def read_and_split_nemo(chunk_size: int) -> list[str]:
     with open(INPUT_PATH, "r") as file:
         input_data = file.read(CHARS_TO_READ)
 
+    start_tokenizer = time.time()
     text_splitter = SentenceTransformersTokenTextSplitter(
         tokens_per_chunk=min(
             chunk_size, 500
@@ -61,6 +62,8 @@ def read_and_split_nemo(chunk_size: int) -> list[str]:
         chunk_overlap=0,
         model_name="intfloat/e5-large-v2",
     )
+    logging.info(f"Time to load tokenizer: {time.time() - start_tokenizer:.2f} seconds")
+
     split_texts = text_splitter.split_text(input_data)
 
     texts = []
