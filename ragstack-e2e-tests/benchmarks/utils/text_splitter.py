@@ -11,7 +11,7 @@ from langchain.text_splitter import (
 # are created.
 #
 # The default file downloaded is 33MB.
-CHARS_TO_READ = 70000
+CHARS_TO_READ = 204000
 
 # The default path to read the input file from.
 INPUT_PATH = "data/imdb_train.csv"
@@ -62,11 +62,12 @@ def read_and_split_nemo(chunk_size: int) -> list[str]:
         chunk_overlap=0,
         model_name="intfloat/e5-large-v2",
     )
-    logging.info(f"Time to load tokenizer: {time.time() - start_tokenizer:.2f} seconds")
+    metrics_logger = logging.getLogger("metrics")
+    metrics_logger.info(f"Load tokenizer: {time.time() - start_tokenizer:.2f} seconds")
 
     split_t = time.time()
     split_texts = text_splitter.split_text(input_data)
-    logging.info(f"Time to split text: {time.time() - split_t:.2f} seconds")
+    metrics_logger.info(f"Split text: {time.time() - split_t:.2f} seconds")
 
     texts = []
     for split in split_texts:
@@ -76,5 +77,5 @@ def read_and_split_nemo(chunk_size: int) -> list[str]:
     logging.info(
         f"Created number of chunks: {len(texts)} with avg chunk size (bytes): {average_length:.2f}"
     )
-    logging.info(f"Total time to read and split: {time.time() - start:.2f} seconds")
+    metrics_logger.info(f"Read and split: {time.time() - start:.2f} seconds")
     return texts

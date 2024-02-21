@@ -72,7 +72,7 @@ def _embed_nemo(batch_size, chunks, threads):
         for future in futures:
             future.result()  # Wait for all futures to complete
 
-    logging.info(f"Total Inference Time: {time.time() - inference_start}")
+    logging.getLogger("metrics").info(f"Inference: {time.time() - inference_start}")
     session.close()
 
 
@@ -214,7 +214,9 @@ def _embed_nemo_and_store(batch_size, chunks, threads, collection_name):
         for future in futures:
             future.result()  # Wait for all futures to complete
 
-    logging.info(f"Total Inference + Indexing Time: {time.time() - inference_start}")
+    logging.getLogger("metrics").info(
+        f"Inference + Indexing Time: {time.time() - inference_start}"
+    )
 
 
 async def aeval_nemo_embeddings(batch_size, chunk_size, threads):

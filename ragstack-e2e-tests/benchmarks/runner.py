@@ -1,4 +1,5 @@
 import sys
+import glob
 import argparse
 import os
 import random
@@ -100,6 +101,7 @@ def run_suite(
 
     filenames = []
     logs_file = os.path.join(args.reports_dir, "benchmarks.log")
+    metrics_prefix = "metrics-"
 
     for embedding_model in embedding_models:
         # Models should produce the same embedding dimensions, so create one collection here
@@ -284,6 +286,11 @@ if __name__ == "__main__":
     if os.path.exists(logs_file):
         os.remove(logs_file)
     print(f"Logs file: {logs_file}")
+
+    metrics_files_pattern = os.path.join(args.reports_dir, "metrics-*")
+    metrics_files = glob.glob(metrics_files_pattern)
+    for metrics_file in metrics_files:
+        os.remove(metrics_file)
 
     # Download the dataset to use
     if not os.path.exists(INPUT_PATH):

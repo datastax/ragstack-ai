@@ -52,6 +52,21 @@ def extract_threads(name):
     return int(name.split("-")[-1])
 
 
+def render_table_from_logs(directory_path):
+    """
+    This unreliable method pulls numbers from the log file in an effort
+    to show the latencies for split, inference, and indexing.
+
+    Only works for nemo, and only for one benchmark at a time.
+    """
+    with open(f"{directory_path}/benchmarks.log", "r") as f:
+        logs = f.readlines()
+
+
+def _render_table_from_logs(sorted_items, name):
+    pass
+
+
 def render_throughput_plots(values):
     """
     Renders throughput and latency plots.
@@ -393,5 +408,15 @@ if __name__ == "__main__":
         help="If this flag is set, more parameters to the markdown and plots will be required and added. Only `markdown` and `plot` is supported",
     )
 
+    parser.add_argument(
+        "-j",
+        "--table-from-logs",
+        action="store_true",
+        help="If this flag is set, the table will be generated from the logs instead of the benchmark results",
+    )
+
     args = parser.parse_args()
-    draw_report(args.reports_dir, args.format, args.filter, args.throughput)
+    if args.table_from_logs:
+        render_table_from_logs(args.reports_dir)
+    else:
+        draw_report(args.reports_dir, args.format, args.filter, args.throughput)

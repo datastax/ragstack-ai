@@ -94,19 +94,8 @@ def astra_db(embeddings: Embeddings, collection_name: str) -> AstraDB:
     )
     astra_setup = time.time() - astra_start
     logging.info(f"AstraDB setup time: {astra_setup:.2f} seconds")
+    logging.getLogger("metrics").info(f"AstraDB setup time: {astra_setup:.2f} seconds")
     return db
-
-
-def test_script(batch_size):
-
-    logging.basicConfig(
-        filename="benchmarks/reports/benchmarks.log",
-        encoding="utf-8",
-        level=logging.INFO,
-    )
-    atime = time.time()
-    asyncio.run(aeval_nemo_embeddings(batch_size, 512, 32))
-    logging.info(f"Total time: {time.time() - atime:.2f} seconds")
 
 
 def setup():
@@ -168,19 +157,26 @@ def main(
 ):
     cpu_suffix = "cpu_usage.csv"
     gpu_suffix = "gpu_usage.csv"
+    metrics_suffix = "metrics.log"
 
     try:
         setup_start = time.time()
         logging.basicConfig(filename=logs_file, encoding="utf-8", level=logging.INFO)
+
+        metrics_file = "-".join([test_name, embedding, threads, metrics_suffix])
+        metrics_logger = logging.getLogger("metrics")
+        metrics_logger.setLevel(logging.INFO)
 
         batch_size = int(batch_size)
         chunk_size = int(chunk_size)
 
         cpu_logs_file = "-".join([test_name, embedding, threads, cpu_suffix])
         gpu_logs_file = "-".join([test_name, embedding, threads, gpu_suffix])
+        metrics_file = f"benchmarks/reports/{metrics_file}"
         cpu_logs_file = f"benchmarks/reports/{cpu_logs_file}"
         gpu_logs_file = f"benchmarks/reports/{gpu_logs_file}"
 
+        logging.info(f"Metrics file: {metrics_file}")
         logging.info(f"CPU logs file: {cpu_logs_file}")
         logging.info(f"GPU logs file: {gpu_logs_file}")
 
@@ -204,7 +200,7 @@ def main(
         ]
         nvidia_smi_process = subprocess.Popen(" ".join(nvidia_smi_cmd), shell=True)
 
-        logging.info(f"Setup time: {time.time() - setup_start:.2f} seconds")
+        metrics_logger.info(f"Setup time: {time.time() - setup_start:.2f} seconds")
         eval_time = time.time()
         if embedding == "nemo_microservice":
             logging.info(
@@ -238,7 +234,7 @@ def main(
             else:
                 asyncio.run(aeval_embeddings(embedding_model, chunk_size, int(threads)))
 
-        logging.info(f"Evaluation time: {time.time() - eval_time:.2f} seconds")
+        metrics_logger.info(f"Evaluation time: {time.time() - eval_time:.2f} seconds")
 
         teardown_time = time.time()
         logging.info("Test case completed successfully")
@@ -250,8 +246,8 @@ def main(
         # Terminate CPU monitor
         stop_cpu_log_event.set()
         cpu_logging_thread.join()
-        logging.info(f"Teardown time: {time.time() - teardown_time:.2f} seconds")
-        logging.info(f"Total time: {time.time() - setup_start:.2f} seconds")
+        metrics_logger.info(f"Teardown time: {time.time() - teardown_time:.2f} seconds")
+        metrics_logger.info(f"Total time: {time.time() - setup_start:.2f} seconds")
     except Exception as e:
         logging.exception("Exception in test case")
         logging.exception(e)
