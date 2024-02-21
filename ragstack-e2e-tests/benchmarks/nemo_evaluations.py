@@ -170,8 +170,15 @@ async def _aembed_nemo_and_store(batch_size, chunks, threads, collection_name):
 
 def _embed_nemo_and_store(batch_size, chunks, threads, collection_name):
     import requests
+    from requests.adapters import HTTPAdapter
 
     url = f"http://{HOSTNAME}:{SERVICE_PORT}/v1/embeddings"
+    session = requests.Session()
+    session.headers.update(HEADERS)
+
+    adapter = HTTPAdapter(pool_connections=threads, pool_maxsize=threads)
+    session.mount("http://", adapter)
+    session.mount("https://", adapter)
 
     def _process_batch(batch):
         data = {
@@ -179,7 +186,7 @@ def _embed_nemo_and_store(batch_size, chunks, threads, collection_name):
             "model": MODEL_ID,
             "input_type": "query",
         }
-        response = requests.post(url, headers=HEADERS, data=json.dumps(data))
+        response = session.post(url, headers=HEADERS, data=json.dumps(data))
 
         if response.status_code != 200:
             logging.error(
