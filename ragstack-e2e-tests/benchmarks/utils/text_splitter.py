@@ -64,7 +64,9 @@ def read_and_split_nemo(chunk_size: int) -> list[str]:
     )
     logging.info(f"Time to load tokenizer: {time.time() - start_tokenizer:.2f} seconds")
 
+    split_t = time.time()
     split_texts = text_splitter.split_text(input_data)
+    logging.info(f"Time to split text: {time.time() - split_t:.2f} seconds")
 
     texts = []
     for split in split_texts:
