@@ -27,7 +27,7 @@ def run_benchmark():
         runner.bench_func(
             f"test_bench_test_{batch_size}",
             test_script,
-            batch_sizes,
+            batch_size,
         )
 
 
