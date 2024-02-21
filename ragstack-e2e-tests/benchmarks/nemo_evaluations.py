@@ -222,5 +222,5 @@ async def aeval_nemo_embeddings_with_astrapy_indexing(
 ):
     # chunks = read_and_split_nemo(chunk_size)
     chunks = read_and_split(chunk_size, "text-embedding-ada-002")
-    # _embed_nemo_and_store(batch_size, chunks, threads, collection_name)
-    await _aembed_nemo_and_store(batch_size, chunks, threads, collection_name)
+    _embed_nemo_and_store(batch_size, chunks, threads, collection_name)
+    # await _aembed_nemo_and_store(batch_size, chunks, threads, collection_name)

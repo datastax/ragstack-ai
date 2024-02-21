@@ -17,8 +17,8 @@ PERCENTILES = [50, 90, 95, 99]
 # Manually modify these to the desired values to avoid having to input them
 GPUS = 0
 NUM_CHUNKS = 0
-TITLE = None
-TITLE = "NeMo Embedding + Astra Indexing: Throughput and Inference Latency (V100)"
+TITLE = "NeMo Embedding: Throughput and Inference Latency (H100)"
+# TITLE = "NeMo Embedding + Astra Indexing: Throughput and Inference Latency (H100)"
 
 
 def extract_values_from_result_file(file_path):
@@ -109,7 +109,7 @@ def _render_throughput_plot(sorted_items, name):
 
     data = {
         "Request Concurrency": threads,
-        "GPUs (V100)": gpus,
+        "GPUs (H100)": gpus,
         "Chunks": chunks,
         "Approx. Chunk Size (B)": chunk_sizes,
         "Benchmark Batch Size": batch_sizes,
