@@ -85,21 +85,21 @@ async def _aembed_and_store_with_astrapy(
 
 
 async def aeval_embeddings(embedding_model, chunk_size, threads):
-    chunks = read_and_split(chunk_size)
+    chunks = read_and_split(chunk_size, embedding_model.model)
     await _aembed(embedding_model, chunks, threads)
 
 
 async def aeval_embeddings_with_vector_store_indexing(
-    vector_store, chunk_size, threads
+    vector_store, model_name, chunk_size, threads
 ):
-    chunks = read_and_split(chunk_size)
+    chunks = read_and_split(chunk_size, model_name)
     await _aembed_and_store(vector_store, chunks, threads)
 
 
 async def aeval_embeddings_with_astrapy(
     embedding_model, chunk_size, threads, collection_name
 ):
-    chunks = read_and_split(chunk_size)
+    chunks = read_and_split(chunk_size, embedding_model.model)
     await _aembed_and_store_with_astrapy(
         embedding_model, chunks, threads, collection_name
     )

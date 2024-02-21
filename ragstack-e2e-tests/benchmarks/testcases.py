@@ -162,7 +162,7 @@ if __name__ == "__main__":
                 vector_store = astra_db(embedding_model, collection_name)
                 asyncio.run(
                     aeval_embeddings_with_vector_store_indexing(
-                        vector_store, chunk_size, int(threads)
+                        vector_store, embedding, chunk_size, int(threads)
                     )
                 )
                 # asyncio.run(
