@@ -170,6 +170,7 @@ def main(
         metrics_handler = logging.FileHandler(metrics_file, encoding="utf-8")
         metrics_logger.addHandler(metrics_handler)
         metrics_logger.setLevel(logging.INFO)
+        metrics_logger.propagate(False)
 
         batch_size = int(batch_size)
         chunk_size = int(chunk_size)
