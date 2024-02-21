@@ -122,12 +122,6 @@ if __name__ == "__main__":
         logging.info(f"CPU logs file: {cpu_logs_file}")
         logging.info(f"GPU logs file: {gpu_logs_file}")
 
-        if len(sys.argv) != 1000:
-            logging.info(
-                f"Total time measured: {time.time() - setup_start:.2f} seconds"
-            )
-            raise Exception("exiting early for test")
-
         # Begin CPU usage monitor
         stop_cpu_log_event = threading.Event()
         cpu_logging_thread = threading.Thread(
@@ -162,9 +156,7 @@ if __name__ == "__main__":
             else:
                 aeval_nemo_start = time.time()
                 asyncio.run(aeval_nemo_embeddings(batch_size, chunk_size, int(threads)))
-                logging.info(
-                    f"Time to run aeval_nemo_embeddings: {time.time() - aeval_nemo_start:.2f} seconds"
-                )
+                logging.info(f": {time.time() - aeval_nemo_start:.2f} seconds")
         else:
             logging.info(
                 f"Running test case: {test_name}/{embedding}/threads:{threads}"
@@ -200,5 +192,4 @@ if __name__ == "__main__":
     except Exception as e:
         logging.exception("Exception in test case")
         logging.exception(e)
-
-        # raise
+        raise
