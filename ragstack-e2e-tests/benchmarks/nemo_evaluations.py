@@ -30,6 +30,44 @@ async def after_request(response):
     logging.info(f"Request to {response.url} took {elapsed} seconds")
 
 
+def _embed_nemo(batch_size, chunks, threads):
+    import requests
+
+    url = f"http://{HOSTNAME}:{SERVICE_PORT}/v1/embeddings"
+
+    def _process_batch(batch):
+        data = {
+            "input": batch,
+            "model": MODEL_ID,
+            "input_type": "query",
+        }
+        response = requests.post(url, headers=HEADERS, data=json.dumps(data))
+
+        if response.status_code != 200:
+            logging.error(
+                f"Request failed with status code {response.status_code}: {response.text}"
+            )
+
+    num_batches = len(chunks) // batch_size + (1 if len(chunks) % batch_size else 0)
+    logging.info(
+        f"Processing batches of size: {batch_size}, for total num_batches: {num_batches}, across {threads} connections"
+    )
+
+    inference_start = time.time()
+    with ThreadPoolExecutor(max_workers=threads) as executor:
+        futures = [
+            executor.submit(_process_batch, batch)
+            for batch in [
+                chunks[i * batch_size : (i + 1) * batch_size]
+                for i in range(num_batches)
+            ]
+        ]
+        for future in futures:
+            future.result()  # Wait for all futures to complete
+
+    logging.info(f"Total Inference Time: {time.time() - inference_start}")
+
+
 async def _aembed_nemo(batch_size, chunks, threads):
     timeout = httpx.Timeout(30.0, pool=None)
     limits = httpx.Limits(max_connections=threads, max_keepalive_connections=threads)
@@ -163,7 +201,8 @@ def _embed_nemo_and_store(batch_size, chunks, threads, collection_name):
 
 async def aeval_nemo_embeddings(batch_size, chunk_size, threads):
     chunks = read_and_split_nemo(chunk_size)
-    await _aembed_nemo(batch_size, chunks, threads)
+    _embed_nemo(batch_size, chunks, threads)
+    # await _aembed_nemo(batch_size, chunks, threads)
 
 
 async def aeval_nemo_embeddings_with_astrapy_indexing(
