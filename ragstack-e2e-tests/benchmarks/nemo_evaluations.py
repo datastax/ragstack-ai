@@ -21,11 +21,11 @@ INPUT_TYPE = "passage"  # or query
 ASTRA_DB_BATCH_SIZE = 20
 
 
-def before_request(request):
+async def before_request(request):
     request.extensions["start_time"] = time.time()
 
 
-def after_request(response):
+async def after_request(response):
     elapsed = time.time() - response.request.extensions["start_time"]
     logging.info(f"Request to {response.url} took {elapsed} seconds")
 
