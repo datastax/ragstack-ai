@@ -14,11 +14,11 @@ from utils.text_splitter import INPUT_PATH
 
 
 class TestCase(Enum):
-    EMBEDDINGS_BATCH1_CHUNK512 = {
-        "name": "embeddings_batch1_chunk512",
-        "batch_size": 1,
-        "chunk_size": 512,
-    }
+    # EMBEDDINGS_BATCH1_CHUNK512 = {
+    #     "name": "embeddings_batch1_chunk512",
+    #     "batch_size": 1,
+    #     "chunk_size": 512,
+    # }
     # EMBEDDINGS_BATCH1_CHUNK256 = {
     #     "name": "embeddings_batch1_chunk256",
     #     "batch_size": 1,
@@ -44,11 +44,11 @@ class TestCase(Enum):
     #     "batch_size": 50,
     #     "chunk_size": 256,
     # }
-    # EMBEDDINGS_BATCH100_CHUNK512 = {
-    #     "name": "embeddings_batch100_chunk512",
-    #     "batch_size": 100,
-    #     "chunk_size": 512,
-    # }
+    EMBEDDINGS_BATCH100_CHUNK512 = {
+        "name": "embeddings_batch100_chunk512",
+        "batch_size": 100,
+        "chunk_size": 512,
+    }
     # EMBEDDINGS_BATCH100_CHUNK256 = {
     #     "name": "embeddings_batch100_chunk256",
     #     "batch_size": 100,
@@ -59,8 +59,8 @@ class TestCase(Enum):
 
 
 class EmbeddingModels(Enum):
-    NEMO = {"name": "nemo_microservice", "dimensions": 1024}
-    # OPENAI = {"name": "openai_ada002", "dimensions": 1536}
+    # NEMO = {"name": "nemo_microservice", "dimensions": 1024}
+    OPENAI = {"name": "openai_ada002", "dimensions": 1536}
     # AZURE_OPENAI = {"name": "azure_openai_ada002", "dimensions": 1536}
 
 

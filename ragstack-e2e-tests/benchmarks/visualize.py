@@ -98,15 +98,15 @@ def render_table_from_logs(directory_path, name):
                 document_sizes.append(document_size_metric)
 
                 # Get p99 of values
-                split_p99 = round(np.percentile(split_metrics, 99), 2)
+                split_p99 = round(np.percentile(split_metrics, 99), 3)
                 split_time.append(split_p99)
 
                 if len(infer_metrics) > 0:
-                    infer_p99 = round(np.percentile(infer_metrics, 99), 2)
+                    infer_p99 = round(np.percentile(infer_metrics, 99), 3)
                     infer_time.append(infer_p99)
 
                 if len(infer_index_metrics) > 0:
-                    p99_infer_index = round(np.percentile(infer_index_metrics, 99), 2)
+                    p99_infer_index = round(np.percentile(infer_index_metrics, 99), 3)
                     infer_index_time.append(p99_infer_index)
 
             batch_size = int(file_name.split("_")[1].split("batch")[1])
@@ -517,6 +517,6 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     if args.table_from_logs:
-        render_table_from_logs(args.reports_dir, "nemo_microservice")
+        render_table_from_logs(args.reports_dir, "openai")
     else:
         draw_report(args.reports_dir, args.format, args.filter, args.throughput)
