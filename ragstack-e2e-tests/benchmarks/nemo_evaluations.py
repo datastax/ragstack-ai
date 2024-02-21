@@ -34,6 +34,8 @@ def _embed_nemo(batch_size, chunks, threads):
     import requests
 
     url = f"http://{HOSTNAME}:{SERVICE_PORT}/v1/embeddings"
+    session = requests.Session()
+    session.headers.update(HEADERS)
 
     def _process_batch(batch):
         data = {
@@ -41,7 +43,7 @@ def _embed_nemo(batch_size, chunks, threads):
             "model": MODEL_ID,
             "input_type": "query",
         }
-        response = requests.post(url, headers=HEADERS, data=json.dumps(data))
+        response = session.post(url, data=json.dumps(data))
 
         if response.status_code != 200:
             logging.error(
@@ -66,9 +68,13 @@ def _embed_nemo(batch_size, chunks, threads):
             future.result()  # Wait for all futures to complete
 
     logging.info(f"Total Inference Time: {time.time() - inference_start}")
+    session.close()
 
 
 async def _aembed_nemo(batch_size, chunks, threads):
+    """
+    TODO: Seeing significantly slower performance with httpx. Investigate.
+    """
     timeout = httpx.Timeout(30.0, pool=None)
     limits = httpx.Limits(max_connections=threads, max_keepalive_connections=threads)
     async with httpx.AsyncClient(
