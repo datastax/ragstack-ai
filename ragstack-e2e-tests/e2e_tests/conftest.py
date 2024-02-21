@@ -19,6 +19,12 @@ from e2e_tests.test_utils import (
     is_skipped_due_to_implementation_not_supported,
 )
 
+TEST_ENV_NAME = "RAGSTACK_E2E_TESTS_TEST_NAME"
+TEST_ENV_INFO = "RAGSTACK_E2E_TESTS_TEST_INFO"
+TEST_ENV_VECTOR_STORE = "RAGSTACK_E2E_TESTS_TEST_VECTOR_STORE"
+TEST_ENV_LLM = "RAGSTACK_E2E_TESTS_TEST_LLM"
+TEST_ENV_EMBEDDINGS = "RAGSTACK_E2E_TESTS_TEST_EMBEDDINGS"
+
 LOGGER = logging.getLogger(__name__)
 
 DIR_PATH = os.path.dirname(os.path.abspath(__file__))
@@ -57,7 +63,7 @@ is_astra = vector_database_type == "astradb"
 
 
 def get_vector_store_handler(
-    implementation: VectorStoreImplementation,
+        implementation: VectorStoreImplementation,
 ) -> VectorStoreHandler:
     if vector_database_type == "astradb":
         return AstraDBVectorStoreHandler(implementation)
@@ -83,8 +89,8 @@ def pytest_runtest_makereport(item, call):
     # also get the setup phase if failed
     if rep.outcome != "passed" or rep.when == "call":
         if (
-            "RAGSTACK_E2E_TESTS_TEST_START" not in os.environ
-            or not os.environ["RAGSTACK_E2E_TESTS_TEST_START"]
+                "RAGSTACK_E2E_TESTS_TEST_START" not in os.environ
+                or not os.environ["RAGSTACK_E2E_TESTS_TEST_START"]
         ):
             total_time = "?"
         else:
@@ -93,7 +99,7 @@ def pytest_runtest_makereport(item, call):
 
         os.environ["RAGSTACK_E2E_TESTS_TEST_START"] = ""
 
-        info = os.getenv("RAGSTACK_E2E_TESTS_TEST_NAME", "")
+        info = os.getenv(TEST_ENV_NAME, "")
         if not info:
             test_path = pathlib.PurePath(item.path)
             info = test_path.parent.name + "::" + test_path.name + "::" + item.name
@@ -120,8 +126,8 @@ def pytest_runtest_makereport(item, call):
         result = " " + str(call.excinfo) if call.excinfo else ""
         report_line = f"{info} -> {test_outcome}{result} ({total_time} s)"
         skip_report_line = rep.outcome == "skipped" and (
-            is_skipped_due_to_implementation_not_supported(result)
-            or "unconditional skip" in result
+                is_skipped_due_to_implementation_not_supported(result)
+                or "unconditional skip" in result
         )
         if not skip_report_line:
             logging.info("Test report line: " + report_line)
@@ -147,21 +153,43 @@ def pytest_runtest_makereport(item, call):
                 llamaindex_report_lines.append(report_line)
         else:
             logging.info("Skipping test report line: " + result)
-        os.environ["RAGSTACK_E2E_TESTS_TEST_NAME"] = ""
-        os.environ["RAGSTACK_E2E_TESTS_TEST_INFO"] = ""
+        os.environ[TEST_ENV_NAME] = ""
+        os.environ[TEST_ENV_INFO] = ""
+        os.environ[TEST_ENV_LLM] = ""
+        os.environ[TEST_ENV_VECTOR_STORE] = ""
+        os.environ[TEST_ENV_EMBEDDINGS] = ""
 
     if rep.when == "call":
         os.environ["RAGSTACK_E2E_TESTS_TEST_START"] = str(time.perf_counter_ns())
 
 
-def set_current_test_info(test_name: str, test_info: str) -> None:
+def set_current_test_info(test_name: str, test_info: str, vector_store: Optional[str], llm: Optional[str],
+                          embeddings: Optional[str]) -> None:
     test_info = test_info.replace("_", "-")
-    os.environ["RAGSTACK_E2E_TESTS_TEST_NAME"] = f"{test_name}::{test_info}"
-    os.environ["RAGSTACK_E2E_TESTS_TEST_INFO"] = test_info
+    os.environ[TEST_ENV_NAME] = f"{test_name}::{test_info}"
+    os.environ[TEST_ENV_INFO] = test_info
+    if vector_store:
+        os.environ[TEST_ENV_VECTOR_STORE] = vector_store
+    if llm:
+        os.environ[TEST_ENV_LLM] = llm
+    if embeddings:
+        os.environ[TEST_ENV_EMBEDDINGS] = embeddings
 
 
 def get_current_test_info() -> Optional[str]:
-    return os.getenv("RAGSTACK_E2E_TESTS_TEST_INFO", None)
+    return os.getenv(TEST_ENV_INFO, None)
+
+
+def get_current_test_llm() -> Optional[str]:
+    return os.getenv(TEST_ENV_LLM, None)
+
+
+def get_current_test_vector_store() -> Optional[str]:
+    return os.getenv(TEST_ENV_VECTOR_STORE, None)
+
+
+def get_current_test_embeddings() -> Optional[str]:
+    return os.getenv(TEST_ENV_EMBEDDINGS, None)
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -173,13 +201,13 @@ def dump_report():
     logging.info("\n".join(failed_report_lines))
 
     stats_str = (
-        "Tests passed: "
-        + str(tests_stats["passed"])
-        + ", failed: "
-        + str(tests_stats["failed"])
-        + ", skipped: "
-        + str(tests_stats["skipped"])
-        + "\n"
+            "Tests passed: "
+            + str(tests_stats["passed"])
+            + ", failed: "
+            + str(tests_stats["failed"])
+            + ", skipped: "
+            + str(tests_stats["skipped"])
+            + "\n"
     )
     _report_to_file(stats_str, "all-tests-report.txt", all_report_lines)
     _report_to_file(stats_str, "failed-tests-report.txt", failed_report_lines)

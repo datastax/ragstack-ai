@@ -26,7 +26,8 @@ from langchain.memory import (
 )
 from langchain_openai import ChatOpenAI
 
-from e2e_tests.conftest import get_current_test_info, get_required_env
+from e2e_tests.conftest import get_current_test_info, get_required_env, get_current_test_vector_store, \
+    get_current_test_embeddings, get_current_test_llm
 from e2e_tests.test_utils.tracing import (
     record_langsmith_sharelink,
     ensure_langsmith_dataset,
@@ -173,9 +174,9 @@ def run_rag_custom_chain(
 
     current_test_info = get_current_test_info() or "unknown"
     project_metadata = {
-        "vector_store": vector_store.__class__.__name__,
-        "llm": llm.__class__.__name__,
-        "embeddings": vector_store.embeddings.__class__.__name__,
+        "vector_store": get_current_test_vector_store() or vector_store.__class__.__name__,
+        "llm": get_current_test_llm() or llm.__class__.__name__,
+        "embeddings": get_current_test_embeddings() or vector_store.embeddings.__class__.__name__,
     }
 
     runs = run_langchain_chain_on_dataset(

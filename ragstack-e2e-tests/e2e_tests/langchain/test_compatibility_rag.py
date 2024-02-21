@@ -198,6 +198,9 @@ def test_rag(test_case, vector_store, embedding, llm, request, record_property):
     set_current_test_info(
         "langchain::" + test_case,
         f"{llm},{embedding},{vector_store}",
+        vector_store=vector_store,
+        embeddings=embedding,
+        llm=llm,
     )
     resolved_vector_store = request.getfixturevalue(vector_store)
     resolved_embedding = request.getfixturevalue(embedding)
