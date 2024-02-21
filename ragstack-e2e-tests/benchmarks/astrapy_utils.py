@@ -1,9 +1,9 @@
-from concurrent.futures import ThreadPoolExecutor
 import logging
 import uuid
 import os
 import asyncio
 from itertools import islice
+from concurrent.futures import ThreadPoolExecutor
 
 from typing import (
     Iterator,

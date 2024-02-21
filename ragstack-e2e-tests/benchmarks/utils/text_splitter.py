@@ -11,7 +11,7 @@ from langchain.text_splitter import (
 # are created.
 #
 # The default file downloaded is 33MB.
-CHARS_TO_READ = 204000
+CHARS_TO_READ = 1500000
 
 # The default path to read the input file from.
 INPUT_PATH = "data/imdb_train.csv"

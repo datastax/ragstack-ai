@@ -110,6 +110,9 @@ def test_script(batch_size):
 
 
 def setup():
+    """
+    Do some initial imports and setup that run before the benchmarks start.
+    """
     import os
     import sys
     import logging
@@ -123,7 +126,14 @@ def setup():
     from langchain_community.vectorstores.astradb import AstraDB
     from langchain_core.embeddings import Embeddings
     from langchain_nvidia_ai_endpoints import NVIDIAEmbeddings
+    from langchain_core.vectorstores import VectorStore
 
+    from astrapy.db import (
+        AstraDB,
+        AstraDBCollection,
+        AsyncAstraDB,
+        AsyncAstraDBCollection,
+    )
     from nemo_evaluations import (
         aeval_nemo_embeddings,
         aeval_nemo_embeddings_with_astrapy_indexing,
@@ -138,6 +148,7 @@ def setup():
         TokenTextSplitter,
     )
 
+    # initial load of this model takes a bit, so we do it in setup to cache it
     SentenceTransformersTokenTextSplitter(
         tokens_per_chunk=500,
         chunk_overlap=0,
