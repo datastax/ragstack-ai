@@ -1,50 +1,15 @@
+import sys
 import argparse
 import os
 import random
 import string
 import subprocess
-import sys
 from datasets import load_dataset
 from enum import Enum
 
 from astrapy.db import AstraDB
 
 from utils.text_splitter import INPUT_PATH
-
-###########3
-import logging
-import json
-import time
-import asyncio
-import httpx
-
-from concurrent.futures import ThreadPoolExecutor
-from astrapy_utils import astore_embeddings, store_embeddings
-from utils.text_splitter import read_and_split_nemo
-
-
-import psutil
-import threading
-
-from langchain_community.embeddings import OpenAIEmbeddings, AzureOpenAIEmbeddings
-from langchain_core.embeddings import Embeddings
-from langchain_nvidia_ai_endpoints import NVIDIAEmbeddings
-from langchain.text_splitter import (
-    SentenceTransformersTokenTextSplitter,
-    TokenTextSplitter,
-)
-
-from nemo_evaluations import (
-    aeval_nemo_embeddings,
-    aeval_nemo_embeddings_with_astrapy_indexing,
-)
-from evaluations import (
-    aeval_embeddings,
-    aeval_embeddings_with_vector_store_indexing,
-    aeval_embeddings_with_astrapy,
-)
-
-##########3
 
 
 class TestCase(Enum):
@@ -166,8 +131,28 @@ def run_suite(
 
             batch_size = test_case["batch_size"]
             chunk_size = test_case["chunk_size"]
-            command = f"{sys.executable} -m pyperf command --copy-env --stats -p {processes} -n {values_per_benchmark} -l {loops} -o {abs_filename} -- {sys.executable} {benchmarks_dir}/testcases.py {logs_file} {test_name} {embedding_name} {batch_size} {chunk_size} {threads} {vector_database} {collection_name}"
-            # command = f"{sys.executable} -m pyperf command --copy-env --stats -p {processes} -n {values_per_benchmark} -l {loops} -o {abs_filename} -- {sys.executable} {benchmarks_dir}/test.py {logs_file} {test_name} {embedding_name} {batch_size} {chunk_size} {threads} {vector_database} {collection_name}"
+            command = [
+                sys.executable,
+                "-m",
+                "pyperf",
+                "timeit",
+                "--copy-env",
+                "--stats",
+                "-p",
+                str(processes),
+                "-n",
+                str(values_per_benchmark),
+                "-l",
+                str(loops),
+                "-o",
+                abs_filename,
+                "--setup",
+                'import os, sys; cur = os.path.abspath(os.getcwd()); cur = cur + "/benchmarks"; sys.path.append(cur); from testcases import setup; setup()',
+                "from testcases import main as benchmark_func; benchmark_func("
+                + f'"{logs_file}","{test_name}","{embedding_name}",'
+                + f'{batch_size},{chunk_size},"{threads}","{vector_database}","{collection_name}")',
+            ]
+
             print(
                 f"Running suite: {test_name} with model: {embedding_model} and threads: {threads}"
             )
@@ -175,7 +160,7 @@ def run_suite(
                 print(f"Indexing embeddings into {vector_database}/{collection_name}")
 
             try:
-                subprocess.run(command.split(" "), text=True, check=True)
+                subprocess.run(command, text=True, check=True)
             except Exception as e:
                 print(f"Error running suite: {e.args[0]}")
                 if os.path.exists(logs_file):

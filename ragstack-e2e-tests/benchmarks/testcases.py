@@ -109,23 +109,61 @@ def test_script(batch_size):
     logging.info(f"Total time: {time.time() - atime:.2f} seconds")
 
 
-if __name__ == "__main__":
+def setup():
+    import os
+    import sys
+    import logging
+    import time
+    import psutil
+    import threading
+    import subprocess
+    import asyncio
 
+    from langchain_community.embeddings import OpenAIEmbeddings, AzureOpenAIEmbeddings
+    from langchain_community.vectorstores.astradb import AstraDB
+    from langchain_core.embeddings import Embeddings
+    from langchain_nvidia_ai_endpoints import NVIDIAEmbeddings
+
+    from nemo_evaluations import (
+        aeval_nemo_embeddings,
+        aeval_nemo_embeddings_with_astrapy_indexing,
+    )
+    from evaluations import (
+        aeval_embeddings,
+        aeval_embeddings_with_vector_store_indexing,
+        aeval_embeddings_with_astrapy,
+    )
+    from langchain.text_splitter import (
+        SentenceTransformersTokenTextSplitter,
+        TokenTextSplitter,
+    )
+
+    SentenceTransformersTokenTextSplitter(
+        tokens_per_chunk=500,
+        chunk_overlap=0,
+        model_name="intfloat/e5-large-v2",
+    )
+
+
+def main(
+    logs_file,
+    test_name,
+    embedding,
+    batch_size,
+    chunk_size,
+    threads,
+    vector_database,
+    collection_name,
+):
     cpu_suffix = "cpu_usage.csv"
     gpu_suffix = "gpu_usage.csv"
 
     try:
         setup_start = time.time()
-        logs_file = sys.argv[1]
         logging.basicConfig(filename=logs_file, encoding="utf-8", level=logging.INFO)
 
-        test_name = sys.argv[2]
-        embedding = sys.argv[3]
-        batch_size = int(sys.argv[4])
-        chunk_size = int(sys.argv[5])
-        threads = sys.argv[6]
-        vector_database = sys.argv[7]
-        collection_name = sys.argv[8]
+        batch_size = int(batch_size)
+        chunk_size = int(chunk_size)
 
         cpu_logs_file = "-".join([test_name, embedding, threads, cpu_suffix])
         gpu_logs_file = "-".join([test_name, embedding, threads, gpu_suffix])
