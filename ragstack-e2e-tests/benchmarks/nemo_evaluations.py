@@ -32,12 +32,13 @@ async def after_request(response):
 
 def _embed_nemo(batch_size, chunks, threads):
     import requests
+    from requests.adapters import HTTPAdapter
 
     url = f"http://{HOSTNAME}:{SERVICE_PORT}/v1/embeddings"
     session = requests.Session()
     session.headers.update(HEADERS)
 
-    adapter = HTTPAdapter(pool_connections=50, pool_maxsize=50)
+    adapter = HTTPAdapter(pool_connections=threads, pool_maxsize=threads)
     session.mount("http://", adapter)
     session.mount("https://", adapter)
 
