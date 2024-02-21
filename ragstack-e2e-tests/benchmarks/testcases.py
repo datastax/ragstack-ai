@@ -102,6 +102,7 @@ if __name__ == "__main__":
     gpu_suffix = "gpu_usage.csv"
 
     try:
+        setup_start = time.time()
         logs_file = sys.argv[1]
         logging.basicConfig(filename=logs_file, encoding="utf-8", level=logging.INFO)
 
@@ -141,6 +142,7 @@ if __name__ == "__main__":
         ]
         nvidia_smi_process = subprocess.Popen(" ".join(nvidia_smi_cmd), shell=True)
 
+        logging.info(f"Setup time: {time.time() - setup_start:.2f} seconds")
         if embedding == "nemo_microservice":
             logging.info(
                 f"Running test case: {test_name}/{embedding}/threads:{threads}"
@@ -152,7 +154,11 @@ if __name__ == "__main__":
                     )
                 )
             else:
+                aeval_nemo_start = time.time()
                 asyncio.run(aeval_nemo_embeddings(batch_size, chunk_size, int(threads)))
+                logging.info(
+                    f"Time to run aeval_nemo_embeddings: {time.time() - aeval_nemo_start:.2f} seconds"
+                )
         else:
             logging.info(
                 f"Running test case: {test_name}/{embedding}/threads:{threads}"
@@ -173,6 +179,7 @@ if __name__ == "__main__":
             else:
                 asyncio.run(aeval_embeddings(embedding_model, chunk_size, int(threads)))
 
+        end_time = time.time()
         logging.info("Test case completed successfully")
 
         # Terminate GPU monitor
@@ -182,6 +189,7 @@ if __name__ == "__main__":
         # Terminate CPU monitor
         stop_cpu_log_event.set()
         cpu_logging_thread.join()
+        logging.info(f"Total time to cleanup: {time.time() - end_time:.2f} seconds")
     except Exception as e:
         logging.exception("Exception in test case")
         logging.exception(e)
