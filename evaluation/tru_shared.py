@@ -155,7 +155,7 @@ def get_azure_embeddings_model(framework: Framework):
             openai_api_version="2023-05-15"
         )
     elif framework == Framework.LLAMA_INDEX:
-        return AzureOpenAIEmbedding(
+        return LlamaAzureOpenAIEmbedding(
             deployment_name="text-embedding-ada-002",
             model="text-embedding-ada-002",
             api_key=os.getenv("AZURE_OPENAI_API_KEY"),
