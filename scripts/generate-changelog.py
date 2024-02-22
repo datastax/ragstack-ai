@@ -5,7 +5,7 @@ except ImportError:
     exit(1)
 import sys
 
-IMPORTANT_DEPENDENCIES = ["langchain", "llama-index", "astrapy", "cassio", "unstructured"]
+IMPORTANT_DEPENDENCIES = ["langchain", "llama-index", "astrapy", "cassio"]
 
 
 def main():
