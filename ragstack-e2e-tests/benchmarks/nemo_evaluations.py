@@ -46,7 +46,7 @@ def _embed_nemo(batch_size, chunks, threads):
         data = {
             "input": batch,
             "model": MODEL_ID,
-            "input_type": "query",
+            "input_type": INPUT_TYPE,
         }
         response = session.post(url, data=json.dumps(data))
 
