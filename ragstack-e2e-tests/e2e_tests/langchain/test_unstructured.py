@@ -76,5 +76,4 @@ def test_unstructured_api(vector_store, unstructured_mode, request):
         | StrOutputParser()
     )
     response = chain.invoke("What was Eldenroot?")
-    print(response)
     assert len(response) > 0
