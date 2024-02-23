@@ -43,7 +43,7 @@ def cassandra():
 @pytest.mark.parametrize("unstructured_mode", ["single", "elements"])
 def test_unstructured(vector_store, unstructured_mode, request):
     set_current_test_info(
-        "lang_chain::unstructured",
+        "langchain::unstructured-api",
         f"{unstructured_mode},{vector_store}",
     )
 
