@@ -339,7 +339,9 @@ def test_multimodal(vector_store, embedding, llm, request, record_property):
         run_id = cb.traced_runs[0].id
         record_langsmith_sharelink(run_id, record_property)
         answer = str(response.content)
-        assert "Coffee Machine Ultra Cool" in answer, f"Expected Coffee Machine Ultra Cool in the answer but got: {answer}"
+        assert (
+            "Coffee Machine Ultra Cool" in answer
+        ), f"Expected Coffee Machine Ultra Cool in the answer but got: {answer}"
 
 
 @pytest.mark.parametrize("chat", ["vertex_gemini_pro_llm", "gemini_pro_llm"])
@@ -357,4 +359,6 @@ def test_chat(chat, request, record_property):
         response = chain.invoke({})
         run_id = cb.traced_runs[0].id
         record_langsmith_sharelink(run_id, record_property)
-        assert "Syracuse" in str(response.content), f"Expected Syracuse in the answer but got: {str(response.content)}"
+        assert "Syracuse" in str(
+            response.content
+        ), f"Expected Syracuse in the answer but got: {str(response.content)}"
