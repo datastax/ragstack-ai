@@ -6,6 +6,7 @@ from langchain.schema.output_parser import StrOutputParser
 from langchain.prompts import PromptTemplate
 from langchain_core.runnables import RunnablePassthrough
 from langchain.chat_models import ChatOpenAI
+from langchain.embeddings import OpenAIEmbeddings
 
 from e2e_tests.langchain.rag_application import BASIC_QA_PROMPT
 from e2e_tests.test_utils import get_local_resource_path
@@ -47,9 +48,8 @@ def test_unstructured(vector_store, unstructured_mode, request):
     )
 
     vector_store_context: VectorStoreTestContext = request.getfixturevalue(vector_store)
-    vector_store = vector_store_context.new_langchain_vector_store(
-        embedding_dimension=1536
-    )
+    embedding = OpenAIEmbeddings(openai_api_key=get_required_env("OPEN_AI_KEY"))
+    vector_store = vector_store_context.new_langchain_vector_store(embedding=embedding)
 
     loader = UnstructuredAPIFileLoader(
         file_path=get_local_resource_path("tree.pdf"),
