@@ -223,7 +223,7 @@ def test_rag(vector_store, embedding, llm, request):
         "When was released MyFakeProductForTesting for the first time ?"
     ).response
     print(f"Got response ${response}")
-    assert "2020" in response
+    assert "2020" in response, f"Expected 2020 in response, got {response}"
 
 
 @pytest.fixture
@@ -341,7 +341,7 @@ def test_multimodal(vector_store, embedding, llm, request):
     prompt = f"Tell me which one of these products it is part of. Only include product from the ones below: {docs_str}."
     logging.info(f"Prompt: {prompt}")
     response = llm_complete_fn(resolved_llm, prompt, query_image_path)
-    assert "Coffee Machine Ultra Cool" in response
+    assert "Coffee Machine Ultra Cool" in response, f"Expected Coffee Machine Ultra Cool in response, got {response}"
 
 
 @pytest.mark.parametrize(
@@ -352,4 +352,4 @@ def test_chat(chat, request):
     set_current_test_info("llama_index::chat", chat)
     chat_model = request.getfixturevalue(chat)
     response = chat_model.complete("Hello! Where Archimede was born?")
-    assert "Syracuse" in response.text
+    assert "Syracuse" in response.text, f"Expected Syracuse in response, got {response.text}"
