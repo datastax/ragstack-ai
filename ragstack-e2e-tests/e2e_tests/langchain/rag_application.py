@@ -199,7 +199,7 @@ def run_rag_custom_chain(
         record_langsmith_sharelink(run_id, record_property)
 
     logging.info("Got response: " + response)
-    assert "2020" in response
+    assert "2020" in response, f"Expected 2020 in the answer but got: {response}"
 
 
 def run_conversational_rag(
@@ -239,4 +239,5 @@ def run_conversational_rag(
         record_langsmith_sharelink(run_id, record_property)
         logging.info("Second result: " + str(result))
 
-    assert "2020" in result["answer"]
+    answer = result["answer"]
+    assert "2020" in answer, f"Expected 2020 in the answer but got: {answer}"
