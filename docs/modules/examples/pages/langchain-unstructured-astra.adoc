@@ -1,0 +1,316 @@
+= RAG with Unstructured and AstraDB
+
+image::https://colab.research.google.com/assets/colab-badge.svg[align="left",link="https://colab.research.google.com/github/datastax/ragstack-ai/blob/main/examples/notebooks/langchain-unstructured-astra.ipynb"]
+
+Build a RAG pipeline with RAGStack, AstraDB, and Unstructured.
+
+This example demonstrates loading and parsing a PDF document with Unstructured into an Astra DB vector store, then querying the index with LangChain.
+
+== Prerequisites
+
+You will need a vector-enabled Astra database.
+
+* Create an https://docs.datastax.com/en/astra-serverless/docs/getting-started/create-db-choices.html[Astra
+vector database].
+* Within your database, create an https://docs.datastax.com/en/astra-serverless/docs/manage/org/manage-tokens.html[Astra
+DB Access Token] with Database Administrator permissions.
+* Get your Astra DB Endpoint:
+** `+https://<ASTRA_DB_ID>-<ASTRA_DB_REGION>.apps.astra.datastax.com+`
+* Create an API key at https://cloud.llamaindex.ai/[LlamaIndex.ai].
+Install the following dependencies:
+[source,python]
+----
+pip install ragstack-ai python-dotenv
+----
+See the https://docs.datastax.com/en/ragstack/docs/prerequisites.html[Prerequisites] page for more details.
+
+== Set up your environment
+
+Create a `.env` file in your application with the following environment variables:
+[source,bash]
+----
+UNSTRUCTURED_API_KEY=...
+ASTRA_DB_API_ENDPOINT=https://<ASTRA_DB_ID>-<ASTRA_DB_REGION>.apps.astra.datastax.com
+ASTRA_DB_APPLICATION_TOKEN=AstraCS:...
+OPENAI_API_KEY=sk-...
+----
+
+If you're using Google Colab, you'll be prompted for these values in the Colab environment.
+
+See the https://docs.datastax.com/en/ragstack/docs/prerequisites.html[Prerequisites] page for more details.
+
+== Create RAG pipeline
+
+. Import dependencies and load environment variables.
++
+[source,python]
+----
+import os
+import requests
+
+from dotenv import load_dotenv
+from langchain_community.vectorstores import AstraDB
+from langchain_core.documents import Document
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.prompts import PromptTemplate
+from langchain_core.runnables import RunnablePassthrough
+
+from langchain_community.document_loaders import (
+    unstructured,
+    UnstructuredAPIFileLoader,
+)
+
+from langchain_openai import (
+    ChatOpenAI,
+    OpenAIEmbeddings,
+)
+
+load_dotenv()
+----
++
+. For this example we will focus on pages 9 & 10 of a PDF about attention mechanisms in transformer model architectures. The original source of the paper is available here: https://arxiv.org/pdf/1706.03762.pdf
++
+[source,python]
+----
+url = "https://raw.githubusercontent.com/datastax/ragstack-ai/48bc55e7dc4de6a8b79fcebcedd242dc1254dd63/examples/notebooks/resources/attention_pages_9_10.pdf"
+file_path = "./attention_pages_9_10.pdf"
+
+response = requests.get(url)
+if response.status_code == 200:
+    with open(file_path, "wb") as file:
+        file.write(response.content)
+    print("Download complete.")
+else:
+    print("Error downloading the file.")
+----
++
+. Parse the downloaded PDF with Unstructured into elements for indexing. Choose either _Simple Parsing_ or _Advanced Parsing_:
++
+**Simple Parsing:**
++
+This works well if your document doesn't contain any complex formatting or tables.
++
+[source,python]
+----
+loader = UnstructuredAPIFileLoader(
+    file_path="./attention_pages_9_10.pdf",
+    api_key=os.getenv("UNSTRUCTURED_API_KEY"),
+)
+simple_docs = loader.load()
+
+print(len(simple_docs))
+print(simple_docs[0].page_content[0:400])
+----
++
+By default, the parser returns 1 document per pdf file. The sample output of the document contents shows the first table's description, and the start of a poorly formatted table.
++
+**Advanced Parsing:**
++
+By changing the processing strategy and response mode, we can get more detailed document structure. Unstructured can break the document into elements of different types, which can be helpful for improving your RAG system.
++
+For example, the `Table` element type includes the table formatted as simple html, which can help the LLM answer questions from the table data, and we could exclude elements of type `Footer` from our vector store.
++
+A list of all the different element types can be found here: https://unstructured-io.github.io/unstructured/introduction/overview.html#id1
++
+[source,python]
+----
+elements = unstructured.get_elements_from_api(
+    file_path="./attention_pages_9_10.pdf",
+    api_key=os.getenv("UNSTRUCTURED_API_KEY"),
+    strategy="hi_res", # default "auto"
+    pdf_infer_table_structure=True,
+)
+
+print(len(elements))
+tables = [el for el in elements if el.category == "Table"]
+print(tables[1].metadata.text_as_html)
+----
++
+In the Advanced Parsing mode, we now get 27 elements instead of a single document, and table structure is available as html.
++
+See the Colab notebook linked at the top of this page for a more detailed investigation into the benefits of using the Advanced Parsing mode.
++
+. Create an AstraDB vector store instance.
++
+[source,python]
+----
+astra_db_store = AstraDB(
+    collection_name="langchain_unstructured",
+    embedding=OpenAIEmbeddings(),
+    token=os.getenv("ASTRA_DB_APPLICATION_TOKEN"),
+    api_endpoint=os.getenv("ASTRA_DB_API_ENDPOINT")
+)
+----
++
+. Create LangChain documents by chunking the text after `Table` elements and before `Title` elements. Use the html output format for table data. Insert the documents into Astra.
++
+[source,python]
+----
+documents = []
+current_doc = None
+
+for el in elements:
+    if el.category in ["Header", "Footer"]:
+        continue # skip these
+    if el.category == "Title":
+        documents.append(current_doc)
+        current_doc = None
+    if not current_doc:
+        current_doc = Document(page_content="", metadata=el.metadata.to_dict())
+    current_doc.page_content += el.metadata.text_as_html if el.category == "Table" else el.text
+    if el.category == "Table":
+        documents.append(current_doc)
+        current_doc = None
+
+astra_db_store.add_documents(documents)
+----
+. Build a RAG pipeline using the populated Astra vector store.
++
+[source,python]
+----
+prompt = """
+Answer the question based only on the supplied context. If you don't know the answer, say "I don't know".
+Context: {context}
+Question: {question}
+Your answer:
+"""
+
+llm = ChatOpenAI(model="gpt-3.5-turbo-16k", streaming=False, temperature=0)
+
+chain = (
+    {"context": astra_db_store.as_retriever(), "question": RunnablePassthrough()}
+    | PromptTemplate.from_template(prompt)
+    | llm
+    | StrOutputParser()
+)
+----
+
+== Execute queries
+
+. Ask a question that should be answered by the text of the document - this query should return a relevant response.
++
+[source,python]
+----
+response_1 = chain.invoke("What does reducing the attention key size do?")
+print("\n***********New Unstructured Basic Query Engine***********")
+print(response_1)
+----
++
+. Ask a question that can be answered from the table data. This highlights the power of using Unstructured.
++
+[source,python]
+----
+response_2 = chain.invoke("For the transformer to English constituency results, what was the 'WSJ 23 F1' value for 'Dyer et al. (2016) (5]'?")
+print("\n***********New Unstructured Basic Query Engine***********")
+print(response_2)
+----
+. Ask a question with an expected lack of context.
+This query should return `I don't know. The context does not provide any information about George Washington's birthdate.` because your document does not contain information about the George Washington.
++
+[source,python]
+----
+response_3 = chain.invoke("When was George Washington born?")
+print("\n***********New Unstructured Basic Query Engine***********")
+print(response_3)
+----
+
+== Complete code (Advanced Parsing)
+
+.Python
+[%collapsible%open]
+====
+[source,python]
+----
+import os
+import requests
+
+from dotenv import load_dotenv
+from langchain_community.document_loaders import unstructured
+from langchain_community.vectorstores import AstraDB
+from langchain_core.documents import Document
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.prompts import PromptTemplate
+from langchain_core.runnables import RunnablePassthrough
+
+from langchain_openai import (
+    ChatOpenAI,
+    OpenAIEmbeddings,
+)
+
+load_dotenv()
+
+url = "https://raw.githubusercontent.com/datastax/ragstack-ai/48bc55e7dc4de6a8b79fcebcedd242dc1254dd63/examples/notebooks/resources/attention_pages_9_10.pdf"
+file_path = "./attention_pages_9_10.pdf"
+
+response = requests.get(url)
+if response.status_code == 200:
+    with open(file_path, "wb") as file:
+        file.write(response.content)
+    print("Download complete.")
+else:
+    print("Error downloading the file.")
+    exit(1)
+
+elements = unstructured.get_elements_from_api(
+    file_path="./attention_pages_9_10.pdf",
+    api_key=os.getenv("UNSTRUCTURED_API_KEY"),
+    strategy="hi_res", # default "auto"
+    pdf_infer_table_structure=True,
+)
+
+astra_db_store = AstraDB(
+    collection_name="langchain_unstructured",
+    embedding=OpenAIEmbeddings(),
+    token=os.getenv("ASTRA_DB_APPLICATION_TOKEN"),
+    api_endpoint=os.getenv("ASTRA_DB_API_ENDPOINT")
+)
+
+documents = []
+current_doc = None
+
+for el in elements:
+    if el.category in ["Header", "Footer"]:
+        continue # skip these
+    if el.category == "Title":
+        documents.append(current_doc)
+        current_doc = None
+    if not current_doc:
+        current_doc = Document(page_content="", metadata=el.metadata.to_dict())
+    current_doc.page_content += el.metadata.text_as_html if el.category == "Table" else el.text
+    if el.category == "Table":
+        documents.append(current_doc)
+        current_doc = None
+
+astra_db_store.add_documents(documents)
+
+prompt = """
+Answer the question based only on the supplied context. If you don't know the answer, say "I don't know".
+Context: {context}
+Question: {question}
+Your answer:
+"""
+
+llm = ChatOpenAI(model="gpt-3.5-turbo-16k", streaming=False, temperature=0)
+
+chain = (
+    {"context": astra_db_store.as_retriever(), "question": RunnablePassthrough()}
+    | PromptTemplate.from_template(prompt)
+    | llm
+    | StrOutputParser()
+)
+
+response_1 = chain.invoke("What does reducing the attention key size do?")
+print("\n***********New Unstructured Basic Query Engine***********")
+print(response_1)
+
+response_2 = chain.invoke("For the transformer to English constituency results, what was the 'WSJ 23 F1' value for 'Dyer et al. (2016) (5]'?")
+print("\n***********New Unstructured Basic Query Engine***********")
+print(response_2)
+
+response_3 = chain.invoke("When was George Washington born?")
+print("\n***********New Unstructured Basic Query Engine***********")
+print(response_3)
+
+----
+====
+
