@@ -155,3 +155,12 @@ print("Done!")
 # Issue parsing file data/patronus_ai_financebench/source_files/2963986444829225983.pdf with llm-sherpa
 # It took 2713.345549106598 seconds to load the documents via llm_sherpa.
 # It took 4754.554449558258 seconds to load the documents via unstructured.
+
+# It took 14544.898947954178 seconds to load the documents via llama_parse-markdown.
+# Issue parsing file data/patronus_ai_financebench/source_files/-1259278093432956000.pdf with llm-sherpa
+# Issue parsing file data/patronus_ai_financebench/source_files/-496066814727482612.pdf with llm-sherpa
+# Issue parsing file data/patronus_ai_financebench/source_files/-5211952102302999032.pdf with llm-sherpa
+# Issue parsing file data/patronus_ai_financebench/source_files/1492918447230031624.pdf with llm-sherpa
+# Issue parsing file data/patronus_ai_financebench/source_files/2963986444829225983.pdf with llm-sherpa
+# It took 2717.7810583114624 seconds to load the documents via llm_sherpa.
+# It took 4727.107539892197 seconds to load the documents via unstructured.
