@@ -38,6 +38,7 @@ Create a `.env` file in your application with the following environment variable
 [source,bash]
 ----
 UNSTRUCTURED_API_KEY=...
+UNSTRUCTURED_API_URL=https://api.unstructured.io/general/v0/general 
 ASTRA_DB_API_ENDPOINT=https://<ASTRA_DB_ID>-<ASTRA_DB_REGION>.apps.astra.datastax.com
 ASTRA_DB_APPLICATION_TOKEN=AstraCS:...
 OPENAI_API_KEY=sk-...
@@ -103,6 +104,7 @@ This works well if your document doesn't contain any complex formatting or table
 loader = UnstructuredAPIFileLoader(
     file_path="./attention_pages_9_10.pdf",
     api_key=os.getenv("UNSTRUCTURED_API_KEY"),
+    url = os.getenv("UNSTRUCTURED_API_URL"),
 )
 simple_docs = loader.load()
 
@@ -125,6 +127,7 @@ A list of all the different element types can be found here: https://unstructure
 elements = unstructured.get_elements_from_api(
     file_path="./attention_pages_9_10.pdf",
     api_key=os.getenv("UNSTRUCTURED_API_KEY"),
+    api_url=os.getenv("UNSTRUCTURED_API_URL"),
     strategy="hi_res", # default "auto"
     pdf_infer_table_structure=True,
 )
@@ -262,6 +265,7 @@ else:
 elements = unstructured.get_elements_from_api(
     file_path="./attention_pages_9_10.pdf",
     api_key=os.getenv("UNSTRUCTURED_API_KEY"),
+    api_url=os.getenv("UNSTRUCTURED_API_URL"),
     strategy="hi_res", # default "auto"
     pdf_infer_table_structure=True,
 )

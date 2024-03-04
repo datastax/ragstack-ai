@@ -59,6 +59,7 @@ def test_unstructured_api(vector_store, unstructured_mode, request):
         mode=unstructured_mode,
         strategy="auto",
         api_key=get_required_env("UNSTRUCTURED_API_KEY"),
+        api_url=f"{get_required_env("UNSTRUCTURED_API_URL")}",
     )
 
     splitter = TokenTextSplitter(chunk_size=512, chunk_overlap=0)
