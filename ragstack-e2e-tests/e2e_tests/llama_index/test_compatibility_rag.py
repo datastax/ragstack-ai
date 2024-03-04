@@ -154,7 +154,7 @@ def bedrock_cohere_embedding():
 
 
 @pytest.fixture
-def huggingface_hub_llm():
+def huggingface_hub_flant5xxl_llm():
     return "huggingface-hub", HuggingFaceInferenceAPI(
         model_name="google/flan-t5-xxl",
         token=get_required_env("HUGGINGFACE_HUB_KEY"),
@@ -162,7 +162,7 @@ def huggingface_hub_llm():
 
 
 @pytest.fixture
-def huggingface_hub_embedding():
+def huggingface_hub_minilml6v2_embedding():
     # There's a bug in Llama-Index HuggingFace Hub embedding
     # so we use LangChain's wrapped one for now
     return (
@@ -184,7 +184,7 @@ def huggingface_hub_embedding():
         ("vertex_embedding", "vertex_llm"),
         ("bedrock_titan_embedding", "bedrock_anthropic_llm"),
         ("bedrock_cohere_embedding", "bedrock_meta_llm"),
-        ("huggingface_hub_embedding", "huggingface_hub_llm"),
+        ("huggingface_hub_minilml6v2_embedding", "huggingface_hub_flant5xxl_llm"),
     ],
 )
 def test_rag(vector_store, embedding, llm, request):
