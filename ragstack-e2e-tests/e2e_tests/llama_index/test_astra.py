@@ -37,7 +37,7 @@ except ImportError:
         MetadataFilters,
         ExactMatchFilter,
     )
-    from llama_index.vector_stores.astra import AstraDBVectorStore
+    from llama_index.vector_stores.astra_db import AstraDBVectorStore
     from llama_index.llms.openai import OpenAI
 
 
