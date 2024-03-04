@@ -144,7 +144,7 @@ def bedrock_cohere_embedding():
 
 
 @pytest.fixture
-def huggingface_hub_llm():
+def huggingface_hub_flant5xxl_llm():
     return HuggingFaceHub(
         repo_id="google/flan-t5-xxl",
         huggingfacehub_api_token=get_required_env("HUGGINGFACE_HUB_KEY"),
@@ -153,7 +153,7 @@ def huggingface_hub_llm():
 
 
 @pytest.fixture
-def huggingface_hub_embedding():
+def huggingface_hub_minilml6v2_embedding():
     return HuggingFaceInferenceAPIEmbeddings(
         api_key=get_required_env("HUGGINGFACE_HUB_KEY"),
         model_name="sentence-transformers/all-MiniLM-l6-v2",
@@ -190,7 +190,7 @@ def nvidia_mixtral_llm():
         ("vertex_embedding", "vertex_llm"),
         ("bedrock_titan_embedding", "bedrock_anthropic_llm"),
         ("bedrock_cohere_embedding", "bedrock_meta_llm"),
-        ("huggingface_hub_embedding", "huggingface_hub_llm"),
+        ("huggingface_hub_flant5xxl_llm", "huggingface_hub_minilml6v2_embedding"),
         ("nvidia_embedding", "nvidia_mixtral_llm"),
     ],
 )
