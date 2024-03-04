@@ -5,7 +5,7 @@ from llama_index.core import SimpleDirectoryReader
 
 from llama_index.core.node_parser import TokenTextSplitter
 from llama_index.core.ingestion import IngestionPipeline
-from llama_index.core import VectorStoreIndex, StorageContext, ServiceContext
+from llama_index.core import Settings, StorageContext, VectorStoreIndex
 from llama_index.core.schema import Document
 
 from llmsherpa.readers import LayoutPDFReader
@@ -98,10 +98,7 @@ def get_docs_via_unstructured():
 
 
 def load_docs_into_vector_store(collection_name, docs):
-    service_context = ServiceContext.from_defaults(
-        llm=tru_shared.get_azure_chat_model(framework, "gpt-35-turbo", "0613"),
-        embed_model=tru_shared.get_azure_embeddings_model(framework),
-    )
+    embed_model = tru_shared.get_azure_embeddings_model(framework)
 
     storage_context = StorageContext.from_defaults(
         vector_store=tru_shared.get_astra_vector_store(
@@ -114,7 +111,7 @@ def load_docs_into_vector_store(collection_name, docs):
     VectorStoreIndex(
         nodes=pipeline.run(documents=docs),
         storage_context=storage_context,
-        service_context=service_context,
+        embed_model=embed_model,
     )
 
 
@@ -128,20 +125,20 @@ load_docs_into_vector_store("llama_parse_markdown", get_docs_via_llama_parse("ma
 duration = time.time() - start_time
 print(f"It took {duration} seconds to load the documents via llama_parse-markdown.")
 
-start_time = time.time()
-load_docs_into_vector_store("baseline", get_docs_via_baseline())
-duration = time.time() - start_time
-print(f"It took {duration} seconds to load the documents via baseline.")
+# start_time = time.time()
+# load_docs_into_vector_store("baseline", get_docs_via_baseline())
+# duration = time.time() - start_time
+# print(f"It took {duration} seconds to load the documents via baseline.")
 
-start_time = time.time()
-load_docs_into_vector_store("llm_sherpa", get_docs_via_llm_sherpa())
-duration = time.time() - start_time
-print(f"It took {duration} seconds to load the documents via llm_sherpa.")
+# start_time = time.time()
+# load_docs_into_vector_store("llm_sherpa", get_docs_via_llm_sherpa())
+# duration = time.time() - start_time
+# print(f"It took {duration} seconds to load the documents via llm_sherpa.")
 
-start_time = time.time()
-load_docs_into_vector_store("unstructured", get_docs_via_unstructured())
-duration = time.time() - start_time
-print(f"It took {duration} seconds to load the documents via unstructured.")
+# start_time = time.time()
+# load_docs_into_vector_store("unstructured", get_docs_via_unstructured())
+# duration = time.time() - start_time
+# print(f"It took {duration} seconds to load the documents via unstructured.")
 
 print("Done!")
 
