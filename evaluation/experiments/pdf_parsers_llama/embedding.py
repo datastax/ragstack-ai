@@ -1,12 +1,12 @@
 import tru_shared
 
 from llama_parse import LlamaParse
-from llama_index import SimpleDirectoryReader
+from llama_index.core import SimpleDirectoryReader
 
-from llama_index.node_parser import TokenTextSplitter
-from llama_index.ingestion import IngestionPipeline
-from llama_index import VectorStoreIndex, StorageContext, ServiceContext
-from llama_index.schema import Document
+from llama_index.core.node_parser import TokenTextSplitter
+from llama_index.core.ingestion import IngestionPipeline
+from llama_index.core import VectorStoreIndex, StorageContext, ServiceContext
+from llama_index.core.schema import Document
 
 from llmsherpa.readers import LayoutPDFReader
 

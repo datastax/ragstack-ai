@@ -11,12 +11,14 @@ from trulens_eval.app import App
 from trulens_eval.feedback.provider import AzureOpenAI
 from trulens_eval.feedback import Groundedness, GroundTruthAgreement
 
-from llama_index.embeddings import AzureOpenAIEmbedding as LlamaAzureOpenAIEmbedding
-from llama_index.llms import AzureOpenAI as LlamaAzureChatOpenAI
-from llama_index.vector_stores import AstraDBVectorStore
+from llama_index.embeddings.azure_openai import AzureOpenAIEmbedding as LlamaAzureOpenAIEmbedding
+from llama_index.llms.azure_openai import AzureOpenAI as LlamaAzureChatOpenAI
 
-from langchain_openai import AzureOpenAIEmbeddings, AzureChatOpenAI
-from langchain.vectorstores.astradb import AstraDB
+from llama_index.vector_stores.astra import AstraDBVectorStore
+
+from langchain_community.embeddings.azure_openai import AzureOpenAIEmbeddings
+from langchain_community.chat_models.azure_openai import AzureChatOpenAI
+from langchain_community.vectorstores.astradb import AstraDB
 
 # this code assumes the following env vars exist in a .env file:
 #
