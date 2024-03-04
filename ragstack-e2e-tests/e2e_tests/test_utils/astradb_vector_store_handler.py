@@ -14,7 +14,7 @@ from langchain_core.chat_history import BaseChatMessageHistory
 try:
     from llama_index.vector_stores import AstraDBVectorStore
 except ImportError:
-    from llama_index.vector_stores.astra import AstraDBVectorStore
+    from llama_index.vector_stores.astra_db import AstraDBVectorStore
 
 from e2e_tests.test_utils import get_required_env, random_string
 from e2e_tests.test_utils.vector_store_handler import (
