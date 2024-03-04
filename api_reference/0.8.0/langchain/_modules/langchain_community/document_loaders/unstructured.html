@@ -1,0 +1,604 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>langchain_community.document_loaders.unstructured &mdash; 🦜🔗 LangChain 0.1.4</title>
+  
+  <link rel="canonical" href="https://api.python.langchain.com/en/latest/_modules/langchain_community/document_loaders/unstructured.html" />
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/vendor/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/autodoc_pydantic.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/sphinx-dropdown.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/panels-bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+<script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+<script src="../../../_static/jquery.js"></script> 
+</head>
+<body>
+
+
+<nav id="navbar" class="sk-docs-navbar navbar navbar-expand-md navbar-light bg-light py-0">
+  <div class="container-fluid sk-docs-container px-0">
+    <button
+      id="sk-navbar-toggler"
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="sk-navbar-collapse collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../langchain_api_reference.html">LangChain</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../core_api_reference.html">Core</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../community_api_reference.html">Community</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../experimental_api_reference.html">Experimental</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../../../exa_api_reference.html">exa</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../../../google_genai_api_reference.html">google-genai</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../../../nvidia_trt_api_reference.html">nvidia-trt</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../../../openai_api_reference.html">openai</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../../../together_api_reference.html">together</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../../../robocorp_api_reference.html">robocorp</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../../../nvidia_ai_endpoints_api_reference.html">nvidia-ai-endpoints</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../../../anthropic_api_reference.html">anthropic</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../../../google_vertexai_api_reference.html">google-vertexai</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link nav-more-item-mobile-items" href="../../../mistralai_api_reference.html">mistralai</a>
+        </li>
+        <li class="nav-item dropdown nav-more-item-dropdown">
+          <a class="sk-nav-link nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Partner libs</a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+              <a class="sk-nav-dropdown-item dropdown-item" href="../../../exa_api_reference.html">exa</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../../../google_genai_api_reference.html">google-genai</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../../../nvidia_trt_api_reference.html">nvidia-trt</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../../../openai_api_reference.html">openai</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../../../together_api_reference.html">together</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../../../robocorp_api_reference.html">robocorp</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../../../nvidia_ai_endpoints_api_reference.html">nvidia-ai-endpoints</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../../../anthropic_api_reference.html">anthropic</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../../../google_vertexai_api_reference.html">google-vertexai</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="../../../mistralai_api_reference.html">mistralai</a>
+          </div>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" target="_blank" rel="noopener noreferrer" href="https://python.langchain.com/">Docs</a>
+        </li>
+      </ul>
+      <div id="searchbox" role="search">
+          <div class="searchformwrapper">
+          <form class="search" action="../../../search.html" method="get">
+            <input class="sk-search-text-input" type="text" name="q" aria-labelledby="searchlabel" />
+            <input class="sk-search-text-btn" type="submit" value="Go" />
+          </form>
+          </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="d-flex" id="sk-doc-wrapper">
+    <input type="checkbox" name="sk-toggle-checkbox" id="sk-toggle-checkbox">
+    <label id="sk-sidemenu-toggle" class="sk-btn-toggle-toc btn sk-btn-primary" for="sk-toggle-checkbox">Toggle Menu</label>
+    <div id="sk-sidebar-wrapper" class="border-right">
+      <div class="sk-sidebar-toc-wrapper">
+        <div class="btn-group w-100 mb-2" role="group" aria-label="rellinks">
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Prev</a><a href="../../index.html" role="button" class="btn sk-btn-rellink py-1" sk-rellink-tooltip="Module code">Up</a>
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Next</a>
+        </div>
+            <div class="sk-sidebar-toc">
+              
+            </div>
+      </div>
+    </div>
+    <div id="sk-page-content-wrapper">
+      <div class="sk-page-content container-fluid body px-md-3" role="main">
+        
+  <h1>Source code for langchain_community.document_loaders.unstructured</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Loader that uses unstructured to load files.&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">collections</span>
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">IO</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">from</span> <span class="nn">langchain_core.documents</span> <span class="kn">import</span> <span class="n">Document</span>
+
+<span class="kn">from</span> <span class="nn">langchain_community.document_loaders.base</span> <span class="kn">import</span> <span class="n">BaseLoader</span>
+
+
+<div class="viewcode-block" id="satisfies_min_unstructured_version"><a class="viewcode-back" href="../../../document_loaders/langchain_community.document_loaders.unstructured.satisfies_min_unstructured_version.html#langchain_community.document_loaders.rst.satisfies_min_unstructured_version">[docs]</a><span class="k">def</span> <span class="nf">satisfies_min_unstructured_version</span><span class="p">(</span><span class="n">min_version</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check if the installed `Unstructured` version exceeds the minimum version</span>
+<span class="sd">    for the feature in question.&quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">unstructured.__version__</span> <span class="kn">import</span> <span class="n">__version__</span> <span class="k">as</span> <span class="n">__unstructured_version__</span>
+
+    <span class="n">min_version_tuple</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">([</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">min_version</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)])</span>
+
+    <span class="c1"># NOTE(MthwRobinson) - enables the loader to work when you&#39;re using pre-release</span>
+    <span class="c1"># versions of unstructured like 0.4.17-dev1</span>
+    <span class="n">_unstructured_version</span> <span class="o">=</span> <span class="n">__unstructured_version__</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">unstructured_version_tuple</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+        <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">_unstructured_version</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)]</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">unstructured_version_tuple</span> <span class="o">&gt;=</span> <span class="n">min_version_tuple</span></div>
+
+
+<div class="viewcode-block" id="validate_unstructured_version"><a class="viewcode-back" href="../../../document_loaders/langchain_community.document_loaders.unstructured.validate_unstructured_version.html#langchain_community.document_loaders.rst.validate_unstructured_version">[docs]</a><span class="k">def</span> <span class="nf">validate_unstructured_version</span><span class="p">(</span><span class="n">min_unstructured_version</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Raise an error if the `Unstructured` version does not exceed the</span>
+<span class="sd">    specified minimum.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">satisfies_min_unstructured_version</span><span class="p">(</span><span class="n">min_unstructured_version</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;unstructured&gt;=</span><span class="si">{</span><span class="n">min_unstructured_version</span><span class="si">}</span><span class="s2"> is required in this loader.&quot;</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="UnstructuredBaseLoader"><a class="viewcode-back" href="../../../document_loaders/langchain_community.document_loaders.unstructured.UnstructuredBaseLoader.html#langchain_community.document_loaders.rst.UnstructuredBaseLoader">[docs]</a><span class="k">class</span> <span class="nc">UnstructuredBaseLoader</span><span class="p">(</span><span class="n">BaseLoader</span><span class="p">,</span> <span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base Loader that uses `Unstructured`.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="UnstructuredBaseLoader.__init__"><a class="viewcode-back" href="../../../document_loaders/langchain_community.document_loaders.unstructured.UnstructuredBaseLoader.html#langchain_community.document_loaders.rst.UnstructuredBaseLoader.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;single&quot;</span><span class="p">,</span>
+        <span class="n">post_processors</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Callable</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">unstructured_kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize with file path.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">import</span> <span class="nn">unstructured</span>  <span class="c1"># noqa:F401</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;unstructured package not found, please install it with &quot;</span>
+                <span class="s2">&quot;`pip install unstructured`&quot;</span>
+            <span class="p">)</span>
+        <span class="n">_valid_modes</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;single&quot;</span><span class="p">,</span> <span class="s2">&quot;elements&quot;</span><span class="p">,</span> <span class="s2">&quot;paged&quot;</span><span class="p">}</span>
+        <span class="k">if</span> <span class="n">mode</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_valid_modes</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Got </span><span class="si">{</span><span class="n">mode</span><span class="si">}</span><span class="s2"> for `mode`, but should be one of `</span><span class="si">{</span><span class="n">_valid_modes</span><span class="si">}</span><span class="s2">`&quot;</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="n">mode</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">satisfies_min_unstructured_version</span><span class="p">(</span><span class="s2">&quot;0.5.4&quot;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="s2">&quot;strategy&quot;</span> <span class="ow">in</span> <span class="n">unstructured_kwargs</span><span class="p">:</span>
+                <span class="n">unstructured_kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;strategy&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">unstructured_kwargs</span> <span class="o">=</span> <span class="n">unstructured_kwargs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">post_processors</span> <span class="o">=</span> <span class="n">post_processors</span> <span class="ow">or</span> <span class="p">[]</span></div>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">_get_elements</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get elements.&quot;&quot;&quot;</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">_get_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get metadata.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">_post_process_elements</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">elements</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Applies post processing functions to extracted unstructured elements.</span>
+<span class="sd">        Post processing functions are str -&gt; str callables are passed</span>
+<span class="sd">        in using the post_processors kwarg when the loader is instantiated.&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">elements</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">post_processor</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">post_processors</span><span class="p">:</span>
+                <span class="n">element</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">post_processor</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">elements</span>
+
+<div class="viewcode-block" id="UnstructuredBaseLoader.load"><a class="viewcode-back" href="../../../document_loaders/langchain_community.document_loaders.unstructured.UnstructuredBaseLoader.html#langchain_community.document_loaders.rst.UnstructuredBaseLoader.load">[docs]</a>    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load file.&quot;&quot;&quot;</span>
+        <span class="n">elements</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_elements</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_post_process_elements</span><span class="p">(</span><span class="n">elements</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;elements&quot;</span><span class="p">:</span>
+            <span class="n">docs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">elements</span><span class="p">:</span>
+                <span class="n">metadata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_metadata</span><span class="p">()</span>
+                <span class="c1"># NOTE(MthwRobinson) - the attribute check is for backward compatibility</span>
+                <span class="c1"># with unstructured&lt;0.4.9. The metadata attributed was added in 0.4.9.</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">element</span><span class="p">,</span> <span class="s2">&quot;metadata&quot;</span><span class="p">):</span>
+                    <span class="n">metadata</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">element</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">to_dict</span><span class="p">())</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">element</span><span class="p">,</span> <span class="s2">&quot;category&quot;</span><span class="p">):</span>
+                    <span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;category&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">element</span><span class="o">.</span><span class="n">category</span>
+                <span class="n">docs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Document</span><span class="p">(</span><span class="n">page_content</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">element</span><span class="p">),</span> <span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;paged&quot;</span><span class="p">:</span>
+            <span class="n">text_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">meta_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+            <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">element</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">elements</span><span class="p">):</span>
+                <span class="n">metadata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_metadata</span><span class="p">()</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">element</span><span class="p">,</span> <span class="s2">&quot;metadata&quot;</span><span class="p">):</span>
+                    <span class="n">metadata</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">element</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">to_dict</span><span class="p">())</span>
+                <span class="n">page_number</span> <span class="o">=</span> <span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;page_number&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+                <span class="c1"># Check if this page_number already exists in docs_dict</span>
+                <span class="k">if</span> <span class="n">page_number</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">text_dict</span><span class="p">:</span>
+                    <span class="c1"># If not, create new entry with initial text and metadata</span>
+                    <span class="n">text_dict</span><span class="p">[</span><span class="n">page_number</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">element</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span>
+                    <span class="n">meta_dict</span><span class="p">[</span><span class="n">page_number</span><span class="p">]</span> <span class="o">=</span> <span class="n">metadata</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># If exists, append to text and update the metadata</span>
+                    <span class="n">text_dict</span><span class="p">[</span><span class="n">page_number</span><span class="p">]</span> <span class="o">+=</span> <span class="nb">str</span><span class="p">(</span><span class="n">element</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span>
+                    <span class="n">meta_dict</span><span class="p">[</span><span class="n">page_number</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">metadata</span><span class="p">)</span>
+
+            <span class="c1"># Convert the dict to a list of Document objects</span>
+            <span class="n">docs</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">Document</span><span class="p">(</span><span class="n">page_content</span><span class="o">=</span><span class="n">text_dict</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">metadata</span><span class="o">=</span><span class="n">meta_dict</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+                <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">text_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+            <span class="p">]</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;single&quot;</span><span class="p">:</span>
+            <span class="n">metadata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_metadata</span><span class="p">()</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">el</span><span class="p">)</span> <span class="k">for</span> <span class="n">el</span> <span class="ow">in</span> <span class="n">elements</span><span class="p">])</span>
+            <span class="n">docs</span> <span class="o">=</span> <span class="p">[</span><span class="n">Document</span><span class="p">(</span><span class="n">page_content</span><span class="o">=</span><span class="n">text</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span><span class="p">)]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;mode of </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">mode</span><span class="si">}</span><span class="s2"> not supported.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">docs</span></div></div>
+
+
+<div class="viewcode-block" id="UnstructuredFileLoader"><a class="viewcode-back" href="../../../document_loaders/langchain_community.document_loaders.unstructured.UnstructuredFileLoader.html#langchain_community.document_loaders.rst.UnstructuredFileLoader">[docs]</a><span class="k">class</span> <span class="nc">UnstructuredFileLoader</span><span class="p">(</span><span class="n">UnstructuredBaseLoader</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Load files using `Unstructured`.</span>
+
+<span class="sd">    The file loader uses the</span>
+<span class="sd">    unstructured partition function and will automatically detect the file</span>
+<span class="sd">    type. You can run the loader in one of two modes: &quot;single&quot; and &quot;elements&quot;.</span>
+<span class="sd">    If you use &quot;single&quot; mode, the document will be returned as a single</span>
+<span class="sd">    langchain Document object. If you use &quot;elements&quot; mode, the unstructured</span>
+<span class="sd">    library will split the document into elements such as Title and NarrativeText.</span>
+<span class="sd">    You can pass in additional unstructured kwargs after mode to apply</span>
+<span class="sd">    different unstructured settings.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    from langchain_community.document_loaders import UnstructuredFileLoader</span>
+
+<span class="sd">    loader = UnstructuredFileLoader(</span>
+<span class="sd">        &quot;example.pdf&quot;, mode=&quot;elements&quot;, strategy=&quot;fast&quot;,</span>
+<span class="sd">    )</span>
+<span class="sd">    docs = loader.load()</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    https://unstructured-io.github.io/unstructured/bricks.html#partition</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="UnstructuredFileLoader.__init__"><a class="viewcode-back" href="../../../document_loaders/langchain_community.document_loaders.unstructured.UnstructuredFileLoader.html#langchain_community.document_loaders.rst.UnstructuredFileLoader.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">file_path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]],</span>
+        <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;single&quot;</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">unstructured_kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize with file path.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">file_path</span> <span class="o">=</span> <span class="n">file_path</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">,</span> <span class="o">**</span><span class="n">unstructured_kwargs</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_get_elements</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">unstructured.partition.auto</span> <span class="kn">import</span> <span class="n">partition</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file_path</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="n">elements</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_path</span><span class="p">:</span>
+                <span class="n">elements</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">partition</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">file</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">unstructured_kwargs</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">elements</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">partition</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">file_path</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">unstructured_kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_path</span><span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="get_elements_from_api"><a class="viewcode-back" href="../../../document_loaders/langchain_community.document_loaders.unstructured.get_elements_from_api.html#langchain_community.document_loaders.rst.get_elements_from_api">[docs]</a><span class="k">def</span> <span class="nf">get_elements_from_api</span><span class="p">(</span>
+    <span class="n">file_path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">file</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">IO</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">IO</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">api_url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;https://api.unstructured.io/general/v0/general&quot;</span><span class="p">,</span>
+    <span class="n">api_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">unstructured_kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Retrieve a list of elements from the `Unstructured API`.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="n">collections</span><span class="o">.</span><span class="n">abc</span><span class="o">.</span><span class="n">Sequence</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">unstructured.partition.api</span> <span class="kn">import</span> <span class="n">partition_multiple_via_api</span>
+
+        <span class="n">_doc_elements</span> <span class="o">=</span> <span class="n">partition_multiple_via_api</span><span class="p">(</span>
+            <span class="n">filenames</span><span class="o">=</span><span class="n">file_path</span><span class="p">,</span>
+            <span class="n">files</span><span class="o">=</span><span class="n">file</span><span class="p">,</span>
+            <span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">,</span>
+            <span class="n">api_url</span><span class="o">=</span><span class="n">api_url</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">unstructured_kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">elements</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">_elements</span> <span class="ow">in</span> <span class="n">_doc_elements</span><span class="p">:</span>
+            <span class="n">elements</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">_elements</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">elements</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">unstructured.partition.api</span> <span class="kn">import</span> <span class="n">partition_via_api</span>
+
+        <span class="k">return</span> <span class="n">partition_via_api</span><span class="p">(</span>
+            <span class="n">filename</span><span class="o">=</span><span class="n">file_path</span><span class="p">,</span>
+            <span class="n">file</span><span class="o">=</span><span class="n">file</span><span class="p">,</span>
+            <span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">,</span>
+            <span class="n">api_url</span><span class="o">=</span><span class="n">api_url</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">unstructured_kwargs</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="UnstructuredAPIFileLoader"><a class="viewcode-back" href="../../../document_loaders/langchain_community.document_loaders.unstructured.UnstructuredAPIFileLoader.html#langchain_community.document_loaders.rst.UnstructuredAPIFileLoader">[docs]</a><span class="k">class</span> <span class="nc">UnstructuredAPIFileLoader</span><span class="p">(</span><span class="n">UnstructuredFileLoader</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Load files using `Unstructured` API.</span>
+
+<span class="sd">    By default, the loader makes a call to the hosted Unstructured API.</span>
+<span class="sd">    If you are running the unstructured API locally, you can change the</span>
+<span class="sd">    API rule by passing in the url parameter when you initialize the loader.</span>
+<span class="sd">    The hosted Unstructured API requires an API key. See</span>
+<span class="sd">    https://www.unstructured.io/api-key/ if you need to generate a key.</span>
+
+<span class="sd">    You can run the loader in one of two modes: &quot;single&quot; and &quot;elements&quot;.</span>
+<span class="sd">    If you use &quot;single&quot; mode, the document will be returned as a single</span>
+<span class="sd">    langchain Document object. If you use &quot;elements&quot; mode, the unstructured</span>
+<span class="sd">    library will split the document into elements such as Title and NarrativeText.</span>
+<span class="sd">    You can pass in additional unstructured kwargs after mode to apply</span>
+<span class="sd">    different unstructured settings.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    ```python</span>
+<span class="sd">    from langchain_community.document_loaders import UnstructuredAPIFileLoader</span>
+
+<span class="sd">    loader = UnstructuredFileAPILoader(</span>
+<span class="sd">        &quot;example.pdf&quot;, mode=&quot;elements&quot;, strategy=&quot;fast&quot;, api_key=&quot;MY_API_KEY&quot;,</span>
+<span class="sd">    )</span>
+<span class="sd">    docs = loader.load()</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    https://unstructured-io.github.io/unstructured/bricks.html#partition</span>
+<span class="sd">    https://www.unstructured.io/api-key/</span>
+<span class="sd">    https://github.com/Unstructured-IO/unstructured-api</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="UnstructuredAPIFileLoader.__init__"><a class="viewcode-back" href="../../../document_loaders/langchain_community.document_loaders.unstructured.UnstructuredAPIFileLoader.html#langchain_community.document_loaders.rst.UnstructuredAPIFileLoader.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">file_path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;single&quot;</span><span class="p">,</span>
+        <span class="n">url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;https://api.unstructured.io/general/v0/general&quot;</span><span class="p">,</span>
+        <span class="n">api_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">unstructured_kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize with file path.&quot;&quot;&quot;</span>
+
+        <span class="n">validate_unstructured_version</span><span class="p">(</span><span class="n">min_unstructured_version</span><span class="o">=</span><span class="s2">&quot;0.10.15&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">url</span> <span class="o">=</span> <span class="n">url</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">api_key</span> <span class="o">=</span> <span class="n">api_key</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">file_path</span><span class="o">=</span><span class="n">file_path</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">,</span> <span class="o">**</span><span class="n">unstructured_kwargs</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_get_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_path</span><span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">_get_elements</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">get_elements_from_api</span><span class="p">(</span>
+            <span class="n">file_path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">file_path</span><span class="p">,</span>
+            <span class="n">api_key</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">api_key</span><span class="p">,</span>
+            <span class="n">api_url</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">,</span>
+            <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">unstructured_kwargs</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="UnstructuredFileIOLoader"><a class="viewcode-back" href="../../../document_loaders/langchain_community.document_loaders.unstructured.UnstructuredFileIOLoader.html#langchain_community.document_loaders.rst.UnstructuredFileIOLoader">[docs]</a><span class="k">class</span> <span class="nc">UnstructuredFileIOLoader</span><span class="p">(</span><span class="n">UnstructuredBaseLoader</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Load files using `Unstructured`.</span>
+
+<span class="sd">    The file loader</span>
+<span class="sd">    uses the unstructured partition function and will automatically detect the file</span>
+<span class="sd">    type. You can run the loader in one of two modes: &quot;single&quot; and &quot;elements&quot;.</span>
+<span class="sd">    If you use &quot;single&quot; mode, the document will be returned as a single</span>
+<span class="sd">    langchain Document object. If you use &quot;elements&quot; mode, the unstructured</span>
+<span class="sd">    library will split the document into elements such as Title and NarrativeText.</span>
+<span class="sd">    You can pass in additional unstructured kwargs after mode to apply</span>
+<span class="sd">    different unstructured settings.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    from langchain_community.document_loaders import UnstructuredFileIOLoader</span>
+
+<span class="sd">    with open(&quot;example.pdf&quot;, &quot;rb&quot;) as f:</span>
+<span class="sd">        loader = UnstructuredFileIOLoader(</span>
+<span class="sd">            f, mode=&quot;elements&quot;, strategy=&quot;fast&quot;,</span>
+<span class="sd">        )</span>
+<span class="sd">        docs = loader.load()</span>
+
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    https://unstructured-io.github.io/unstructured/bricks.html#partition</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="UnstructuredFileIOLoader.__init__"><a class="viewcode-back" href="../../../document_loaders/langchain_community.document_loaders.unstructured.UnstructuredFileIOLoader.html#langchain_community.document_loaders.rst.UnstructuredFileIOLoader.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">file</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">IO</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">IO</span><span class="p">]],</span>
+        <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;single&quot;</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">unstructured_kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize with file path.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">file</span> <span class="o">=</span> <span class="n">file</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">,</span> <span class="o">**</span><span class="n">unstructured_kwargs</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_get_elements</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">unstructured.partition.auto</span> <span class="kn">import</span> <span class="n">partition</span>
+
+        <span class="k">return</span> <span class="n">partition</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">unstructured_kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">{}</span></div>
+
+
+<div class="viewcode-block" id="UnstructuredAPIFileIOLoader"><a class="viewcode-back" href="../../../document_loaders/langchain_community.document_loaders.unstructured.UnstructuredAPIFileIOLoader.html#langchain_community.document_loaders.rst.UnstructuredAPIFileIOLoader">[docs]</a><span class="k">class</span> <span class="nc">UnstructuredAPIFileIOLoader</span><span class="p">(</span><span class="n">UnstructuredFileIOLoader</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Load files using `Unstructured` API.</span>
+
+<span class="sd">    By default, the loader makes a call to the hosted Unstructured API.</span>
+<span class="sd">    If you are running the unstructured API locally, you can change the</span>
+<span class="sd">    API rule by passing in the url parameter when you initialize the loader.</span>
+<span class="sd">    The hosted Unstructured API requires an API key. See</span>
+<span class="sd">    https://www.unstructured.io/api-key/ if you need to generate a key.</span>
+
+<span class="sd">    You can run the loader in one of two modes: &quot;single&quot; and &quot;elements&quot;.</span>
+<span class="sd">    If you use &quot;single&quot; mode, the document will be returned as a single</span>
+<span class="sd">    langchain Document object. If you use &quot;elements&quot; mode, the unstructured</span>
+<span class="sd">    library will split the document into elements such as Title and NarrativeText.</span>
+<span class="sd">    You can pass in additional unstructured kwargs after mode to apply</span>
+<span class="sd">    different unstructured settings.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    from langchain_community.document_loaders import UnstructuredAPIFileLoader</span>
+
+<span class="sd">    with open(&quot;example.pdf&quot;, &quot;rb&quot;) as f:</span>
+<span class="sd">        loader = UnstructuredFileAPILoader(</span>
+<span class="sd">            f, mode=&quot;elements&quot;, strategy=&quot;fast&quot;, api_key=&quot;MY_API_KEY&quot;,</span>
+<span class="sd">        )</span>
+<span class="sd">        docs = loader.load()</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    https://unstructured-io.github.io/unstructured/bricks.html#partition</span>
+<span class="sd">    https://www.unstructured.io/api-key/</span>
+<span class="sd">    https://github.com/Unstructured-IO/unstructured-api</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="UnstructuredAPIFileIOLoader.__init__"><a class="viewcode-back" href="../../../document_loaders/langchain_community.document_loaders.unstructured.UnstructuredAPIFileIOLoader.html#langchain_community.document_loaders.rst.UnstructuredAPIFileIOLoader.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">file</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">IO</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">IO</span><span class="p">]],</span>
+        <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;single&quot;</span><span class="p">,</span>
+        <span class="n">url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;https://api.unstructured.io/general/v0/general&quot;</span><span class="p">,</span>
+        <span class="n">api_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">unstructured_kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize with file path.&quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="n">collections</span><span class="o">.</span><span class="n">abc</span><span class="o">.</span><span class="n">Sequence</span><span class="p">):</span>
+            <span class="n">validate_unstructured_version</span><span class="p">(</span><span class="n">min_unstructured_version</span><span class="o">=</span><span class="s2">&quot;0.6.3&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">file</span><span class="p">:</span>
+            <span class="n">validate_unstructured_version</span><span class="p">(</span><span class="n">min_unstructured_version</span><span class="o">=</span><span class="s2">&quot;0.6.2&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">url</span> <span class="o">=</span> <span class="n">url</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">api_key</span> <span class="o">=</span> <span class="n">api_key</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="n">file</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">,</span> <span class="o">**</span><span class="n">unstructured_kwargs</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_get_elements</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">get_elements_from_api</span><span class="p">(</span>
+            <span class="n">file</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="p">,</span>
+            <span class="n">api_key</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">api_key</span><span class="p">,</span>
+            <span class="n">api_url</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">,</span>
+            <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">unstructured_kwargs</span><span class="p">,</span>
+        <span class="p">)</span></div>
+</pre></div>
+
+      </div>
+    <div class="container">
+      <footer class="sk-content-footer">
+            &copy; 2023, LangChain, Inc..
+          Last updated on Mar 04, 2024.
+      </footer>
+    </div>
+  </div>
+</div>
+<script src="../../../_static/js/vendor/bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    /* Add a [>>>] button on the top-right corner of code samples to hide
+     * the >>> and ... prompts and the output and thus make the code
+     * copyable. */
+    var div = $('.highlight-python .highlight,' +
+                '.highlight-python3 .highlight,' +
+                '.highlight-pycon .highlight,' +
+		'.highlight-default .highlight')
+    var pre = div.find('pre');
+
+    // get the styles from the current theme
+    pre.parent().parent().css('position', 'relative');
+    var hide_text = 'Hide prompts and outputs';
+    var show_text = 'Show prompts and outputs';
+
+    // create and add the button to all the code blocks that contain >>>
+    div.each(function(index) {
+        var jthis = $(this);
+        if (jthis.find('.gp').length > 0) {
+            var button = $('<span class="copybutton">&gt;&gt;&gt;</span>');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+            jthis.prepend(button);
+        }
+        // tracebacks (.gt) contain bare text elements that need to be
+        // wrapped in a span to work with .nextUntil() (see later)
+        jthis.find('pre:has(.gt)').contents().filter(function() {
+            return ((this.nodeType == 3) && (this.data.trim().length > 0));
+        }).wrap('<span>');
+    });
+
+    // define the behavior of the button when it's clicked
+    $('.copybutton').click(function(e){
+        e.preventDefault();
+        var button = $(this);
+        if (button.data('hidden') === 'false') {
+            // hide the code output
+            button.parent().find('.go, .gp, .gt').hide();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'hidden');
+            button.css('text-decoration', 'line-through');
+            button.attr('title', show_text);
+            button.data('hidden', 'true');
+        } else {
+            // show the code output
+            button.parent().find('.go, .gp, .gt').show();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'visible');
+            button.css('text-decoration', 'none');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+        }
+    });
+
+	/*** Add permalink buttons next to glossary terms ***/
+	$('dl.glossary > dt[id]').append(function() {
+		return ('<a class="headerlink" href="#' +
+			    this.getAttribute('id') +
+			    '" title="Permalink to this term">¶</a>');
+	});
+});
+
+</script>
+    
+</body>
+</html>
