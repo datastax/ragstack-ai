@@ -4,11 +4,11 @@ image::https://colab.research.google.com/assets/colab-badge.svg[align="left",lin
 
 Build a RAG pipeline with RAGStack, Astra DB, and LlamaIndex.
 
-This example demonstrates loading and parsing a PDF document with LLamaParse into an Astra DB vector store, then querying the index with LlamaIndex.
+This example demonstrates loading and parsing a PDF document with LLamaParse into an {db-serverless} vector store, then querying the index with LlamaIndex.
 
 == Prerequisites
 
-You will need an {db-vector} database.
+You will need an vector-enabled {db-serverless} database.
 
 * Create an https://docs.datastax.com/en/astra-serverless/docs/getting-started/create-db-choices.html[Astra
 vector database].
@@ -87,7 +87,7 @@ documents = LlamaParse(result_type="text").load_data(file_path)
 print(documents[0].get_content()[10000:11000])
 ----
 +
-. Create an Astra DB vector store instance.
+. Create an {db-serverless} vector store instance.
 +
 [source,python]
 ----
@@ -125,7 +125,7 @@ query_engine = index.as_query_engine(similarity_top_k=15, service_context=servic
 
 == Execute a query
 
-. Query the Astra DB vector store for an example with expected context - this query should return a relevant response.
+. Query the {db-serverless} vector store for an example with expected context - this query should return a relevant response.
 +
 [source,python]
 ----
@@ -135,7 +135,7 @@ print("\n***********New LlamaParse+ Basic Query Engine***********")
 print(response_1)
 ----
 +
-. Query the Astra DB vector store for an example with expected lack of context.
+. Query the {db-serverless} vector store for an example with expected lack of context.
 This query should return `The context does not provide information about the color of the sky` because your document does not contain information about the color of the sky.
 +
 [source,python]
