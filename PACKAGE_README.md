@@ -3,7 +3,7 @@
 [![Downloads](https://static.pepy.tech/badge/ragstack-ai/month)](https://www.pepy.tech/projects/ragstack-ai)
 [![License: Business Source License](https://img.shields.io/badge/License-BSL-yellow.svg)](https://github.com/datastax/ragstack-ai/blob/main/LICENSE.txt)
 [![GitHub star chart](https://img.shields.io/github/stars/datastax/ragstack-ai?style=social)](https://star-history.com/#datastax/ragstack-ai)
-[![Tests Dashboard](https://img.shields.io/badge/Tests%20Dashboard-333)](https://ragstack-ai.testspace.com/projects/67980/spaces)
+[![Tests Dashboard](https://img.shields.io/badge/Tests%20Dashboard-333)](https://ragstack-ai.testspace.com)
 
 [RAGStack](https://www.datastax.com/products/ragstack) is an out-of-the-box solution simplifying Retrieval Augmented Generation (RAG) in GenAI apps.
 
