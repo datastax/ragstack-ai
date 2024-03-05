@@ -1,12 +1,12 @@
-= Knowledge Base Search on Proprietary Data powered by Astra DB
+= Knowledge Base Search on Proprietary Data powered by {db-serverless}
 
 image::https://colab.research.google.com/assets/colab-badge.svg[align="left",link="https://colab.research.google.com/github/datastax/ragstack-ai/blob/main/examples/notebooks/QA_with_cassio.ipynb"]
 
-This notebook guides you through setting up RAGStack using https://docs.datastax.com/en/astra-serverless/docs/vector-search/overview.html[Astra Vector Search], https://platform.openai.com[OpenAI], and https://cassio.org/[CassIO] to implement a generative Q&A over your own documentation.
+This notebook guides you through setting up RAGStack using https://docs.datastax.com/en/astra-serverless/docs/vector-search/overview.html[{db-serverless} Search], https://platform.openai.com[OpenAI], and https://cassio.org/[CassIO] to implement a generative Q&A over your own documentation.
 
 ChatGPT excels at answering questions and offers a nice dialog interface to ask questions and get answers, but it only knows about topics from its training data.
 
-What do you do when you have your own documents? How can you leverage GenAI and LLM models to get insights into those? You can use Retrieval Augmented Generation (RAG) to create a Q/A Bot to answer specific questions over your documentation.
+What do you do when you have your own documents? How can you leverage GenAI and LLM models to get insights into those? You can use Retrieval-Augmented Generation (RAG) to create a Q/A Bot to answer specific questions over your documentation.
 
 You can create this in two steps:
 +
@@ -15,7 +15,7 @@ You can create this in two steps:
 +
 Ideally, you embed the data as vectors and store them in a vector database, then use the LLM models on top of that database.
 
-This notebook demonstrates a basic two-step RAG technique for enabling GPT to answer questions using a library of reference on your own documentation using Astra DB Vector Search.
+This notebook demonstrates a basic two-step RAG technique for enabling GPT to answer questions using a library of reference on your own documentation using {db-serverless} Search.
 
 == Get started with this notebook
 
@@ -70,7 +70,7 @@ curl https://raw.githubusercontent.com/CassioML/cassio-website/main/docs/framewo
 SAMPLEDATA = ["amontillado.txt"]
 ----
 +
-. Connect to Astra DB.
+. Connect to {db-serverless}.
 +
 [source,python]
 ----
@@ -79,7 +79,7 @@ cluster = Cluster(cloud={"secure_connect_bundle": ASTRA_DB_SECURE_BUNDLE_PATH},
 session = cluster.connect()
 ----
 
-== Read files, create embeddings, and store in vector DB
+== Read files, create embeddings, and store in {db-serverless}
 CassIO seamlessly integrates with RAGStack and LangChain, offering Cassandra-specific tools for many tasks.
 This example uses vector stores, indexers, embeddings, and queries, with OpenAI for LLM services.
 
