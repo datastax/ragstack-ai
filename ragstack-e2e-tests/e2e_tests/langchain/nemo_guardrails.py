@@ -50,7 +50,6 @@ def _colang() -> str:
         user ask about product
         $answer = execute rag()
         bot $answer
-
     """
 
 
