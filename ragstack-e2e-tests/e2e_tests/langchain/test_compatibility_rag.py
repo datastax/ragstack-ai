@@ -190,7 +190,7 @@ def nvidia_mixtral_llm():
         ("vertex_embedding", "vertex_llm"),
         ("bedrock_titan_embedding", "bedrock_anthropic_llm"),
         ("bedrock_cohere_embedding", "bedrock_meta_llm"),
-        ("huggingface_hub_flant5xxl_llm", "huggingface_hub_minilml6v2_embedding"),
+        ("huggingface_hub_minilml6v2_embedding", "huggingface_hub_flant5xxl_llm"),
         ("nvidia_embedding", "nvidia_mixtral_llm"),
     ],
 )
