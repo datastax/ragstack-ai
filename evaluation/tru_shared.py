@@ -207,11 +207,11 @@ def execute_experiment(framework: Framework, pipeline, experiment_name: str, all
     # use a short uuid to ensure that multiple experiments with the same name don't collide in the DB
     shortUuid = str(uuid.uuid4())[9:13]
     datasets, golden_set = get_test_data()
-
     for dataset_name in datasets:
         if allowed_datasets is not None and dataset_name not in allowed_datasets:
             continue
 
+        print(f"starting on dataset: {dataset_name}")
         app_id = f"{experiment_name}#{shortUuid}#{dataset_name}"
         tru_recorder = get_recorder(framework, pipeline, app_id, golden_set)
         for query in datasets[dataset_name]:

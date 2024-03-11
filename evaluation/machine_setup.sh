@@ -13,4 +13,6 @@ pip3 install python-dotenv pypdf pdfminer.six trulens_eval psycopg2 psutil \
     IPython langchain langchain-community llama-index astrapy langchain-openai \
     plotly nbformat sentence-transformers llama-parse langchain-astradb \
     llama-index-embeddings-azure-openai llama-index-llms-azure-openai \
-    llama-index-vector-stores-astra llama-index-core
+    llama-index-vector-stores-astra llama-index-core \
+    git+https://github.com/zzzming/colbert2#subdirectory=webserver \
+    arize-phoenix-evals matplotlib pycm scikit-learn tiktoken nest_asyncio
