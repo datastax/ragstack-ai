@@ -148,9 +148,9 @@ def bedrock_anthropic_claudev2_llm():
 
 
 @pytest.fixture
-def bedrock_mistral_mistral7b_llm():
+def bedrock_ai21_jurassic2mid_llm():
     return _bedrock_llm(
-        model="mistral.mistral-7b-instruct-v0:2",
+        model="ai21.j2-mid-v1",
     )
 
 
