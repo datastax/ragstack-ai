@@ -1,0 +1,57 @@
+#
+# this is RAGStack specific modules workflow
+#
+
+name: RAGStack Modules and Adapter CI
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "ragstack/**"
+  pull_request:
+    paths:
+      - "ragstack/**"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.10'
+
+    - name: Cache Poetry virtualenv and dependencies
+      uses: actions/cache@v2
+      with:
+        path: |
+          ~/.cache/pypoetry/virtualenvs
+          **/poetry.lock
+        key: ${{ runner.os }}-poetry-${{ hashFiles('**/pyproject.toml') }}
+        restore-keys: |
+          ${{ runner.os }}-poetry-
+
+    - name: Install Poetry
+      run: |
+        curl -sSL https://install.python-poetry.org | python3 -
+        echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+    - name: Install dependencies
+      run: |
+        cd ragstack/colbertbase
+        poetry install
+
+#    - name: Lint with flake8
+#      run: |
+#        cd ragstack
+#        poetry run flake8 .
+
+    - name: Test with pytest
+      run: |
+        cd ragstack/colbertbase
+        poetry run pytest
