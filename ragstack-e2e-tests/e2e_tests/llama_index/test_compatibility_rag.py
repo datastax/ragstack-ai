@@ -43,7 +43,6 @@ except ImportError:
     from llama_index.llms.gemini import Gemini
     from llama_index.multi_modal_llms.gemini import GeminiMultiModal
 
-
 from e2e_tests.conftest import (
     set_current_test_info,
     get_required_env,
@@ -56,19 +55,44 @@ from e2e_tests.test_utils.vector_store_handler import (
 )
 
 
-@pytest.fixture
-def openai_llm():
-    return "openai", OpenAI(api_key=get_required_env("OPEN_AI_KEY"))
+def _openai_llm(**kwargs) -> OpenAI:
+    return OpenAI(api_key=get_required_env("OPEN_AI_KEY"), **kwargs)
 
 
 @pytest.fixture
-def openai_embedding():
-    return "openai", 1536, OpenAIEmbedding(api_key=get_required_env("OPEN_AI_KEY"))
+def openai_gpt35turbo_llm():
+    return _openai_llm(model="gpt-3.5-turbo")
 
 
 @pytest.fixture
-def azure_openai_llm():
-    return "azure-openai", AzureOpenAI(
+def openai_gpt4_llm():
+    return _openai_llm(model="gpt-4")
+
+
+def _openai_embeddings(**kwargs) -> OpenAIEmbedding:
+    return OpenAIEmbedding(api_key=get_required_env("OPEN_AI_KEY"), **kwargs)
+
+
+@pytest.fixture
+def openai_ada002_embedding():
+    return 1536, _openai_embeddings(model="text-embedding-ada-002")
+
+
+@pytest.fixture
+def openai_3small_embedding():
+    return 1536, _openai_embeddings(model="text-embedding-3-small")
+
+
+@pytest.fixture
+def openai_3large_embedding():
+    return 3072, _openai_embeddings(model="text-embedding-3-large")
+
+
+@pytest.fixture
+def azure_openai_gpt35turbo_llm():
+    # model is configurable because it can be different from the deployment
+    # but the targeting model must be gpt-35-turbo
+    return AzureOpenAI(
         azure_deployment=get_required_env("AZURE_OPEN_AI_CHAT_MODEL_DEPLOYMENT"),
         azure_endpoint=get_required_env("AZURE_OPEN_AI_ENDPOINT"),
         api_key=get_required_env("AZURE_OPEN_AI_KEY"),
@@ -77,10 +101,12 @@ def azure_openai_llm():
 
 
 @pytest.fixture
-def azure_openai_embedding():
+def azure_openai_ada002_embedding():
+    # model is configurable because it can be different from the deployment
+    # but the targeting model must be ada-002
+
     model_and_deployment = get_required_env("AZURE_OPEN_AI_EMBEDDINGS_MODEL_DEPLOYMENT")
     return (
-        "azure-openai",
         1536,
         AzureOpenAIEmbedding(
             model=model_and_deployment,
@@ -94,41 +120,48 @@ def azure_openai_embedding():
 
 
 @pytest.fixture
-def vertex_llm():
-    return "vertex-ai", Vertex(model="chat-bison")
+def vertex_bison_llm():
+    return Vertex(model="chat-bison")
 
 
 @pytest.fixture
-def vertex_embedding():
+def vertex_gecko_langchain_embedding():
     # Llama-Index doesn't have Vertex AI embedding
     # so we use LangChain's wrapped one
-    return "vertex-ai", 768, VertexAIEmbeddings(model_name="textembedding-gecko")
+    return 768, VertexAIEmbeddings(model_name="textembedding-gecko")
+
+
+def _bedrock_llm(**kwargs):
+    return Bedrock(
+        aws_access_key_id=get_required_env("AWS_ACCESS_KEY_ID"),
+        aws_secret_access_key=get_required_env("AWS_SECRET_ACCESS_KEY"),
+        region_name=get_required_env("BEDROCK_AWS_REGION"),
+        **kwargs,
+    )
 
 
 @pytest.fixture
-def bedrock_anthropic_llm():
-    return "bedrock-anthropic", Bedrock(
+def bedrock_anthropic_claudev2_llm():
+    return _bedrock_llm(
         model="anthropic.claude-v2",
-        aws_access_key_id=get_required_env("AWS_ACCESS_KEY_ID"),
-        aws_secret_access_key=get_required_env("AWS_SECRET_ACCESS_KEY"),
-        region_name=get_required_env("BEDROCK_AWS_REGION"),
     )
 
 
 @pytest.fixture
-def bedrock_meta_llm():
-    return "bedrock-meta", Bedrock(
-        model="meta.llama2-13b-chat-v1",
-        aws_access_key_id=get_required_env("AWS_ACCESS_KEY_ID"),
-        aws_secret_access_key=get_required_env("AWS_SECRET_ACCESS_KEY"),
-        region_name=get_required_env("BEDROCK_AWS_REGION"),
+def bedrock_ai21_jurassic2mid_llm():
+    return _bedrock_llm(
+        model="ai21.j2-mid-v1",
     )
+
+
+@pytest.fixture
+def bedrock_meta_llama2_llm():
+    return _bedrock_llm(model="meta.llama2-13b-chat-v1")
 
 
 @pytest.fixture
 def bedrock_titan_embedding():
     return (
-        "bedrock-titan",
         1536,
         BedrockEmbedding.from_credentials(
             model_name="amazon.titan-embed-text-v1",
@@ -142,7 +175,6 @@ def bedrock_cohere_embedding():
     import boto3
 
     return (
-        "bedrock-cohere",
         1024,
         BedrockEmbedding(
             client=boto3.Session(
@@ -155,7 +187,7 @@ def bedrock_cohere_embedding():
 
 @pytest.fixture
 def huggingface_hub_flant5xxl_llm():
-    return "huggingface-hub", HuggingFaceInferenceAPI(
+    return HuggingFaceInferenceAPI(
         model_name="google/flan-t5-xxl",
         token=get_required_env("HUGGINGFACE_HUB_KEY"),
     )
@@ -166,7 +198,6 @@ def huggingface_hub_minilml6v2_embedding():
     # There's a bug in Llama-Index HuggingFace Hub embedding
     # so we use LangChain's wrapped one for now
     return (
-        "huggingface-hub",
         384,
         HuggingFaceInferenceAPIEmbeddings(
             api_key=get_required_env("HUGGINGFACE_HUB_KEY"),
@@ -179,22 +210,25 @@ def huggingface_hub_minilml6v2_embedding():
 @pytest.mark.parametrize(
     "embedding,llm",
     [
-        ("openai_embedding", "openai_llm"),
-        ("azure_openai_embedding", "azure_openai_llm"),
-        ("vertex_embedding", "vertex_llm"),
-        ("bedrock_titan_embedding", "bedrock_anthropic_llm"),
-        ("bedrock_cohere_embedding", "bedrock_meta_llm"),
+        ("openai_ada002_embedding", "openai_gpt35turbo_llm"),
+        ("openai_3large_embedding", "openai_gpt4_llm"),
+        ("openai_3small_embedding", "openai_gpt4_llm"),
+        ("azure_openai_ada002_embedding", "azure_openai_gpt35turbo_llm"),
+        ("vertex_gecko_langchain_embedding", "vertex_bison_llm"),
+        ("bedrock_titan_embedding", "bedrock_anthropic_claudev2_llm"),
+        ("bedrock_cohere_embedding", "bedrock_ai21_jurassic2mid_llm"),
+        ("bedrock_cohere_embedding", "bedrock_meta_llama2_llm"),
         ("huggingface_hub_minilml6v2_embedding", "huggingface_hub_flant5xxl_llm"),
     ],
 )
 def test_rag(vector_store, embedding, llm, request):
-    embedding_name, embedding_dimensions, embedding = request.getfixturevalue(embedding)
-    vector_store_context: VectorStoreTestContext = request.getfixturevalue(vector_store)
-    llm_name, llm = request.getfixturevalue(llm)
     set_current_test_info(
         "llama_index::rag",
-        f"{llm_name},{embedding_name},{vector_store}",
+        f"{llm},{embedding},{vector_store}",
     )
+    embedding_dimensions, embedding = request.getfixturevalue(embedding)
+    vector_store_context: VectorStoreTestContext = request.getfixturevalue(vector_store)
+    llm = request.getfixturevalue(llm)
     vector_store = vector_store_context.new_llamaindex_vector_store(
         embedding_dimension=embedding_dimensions
     )
@@ -203,13 +237,16 @@ def test_rag(vector_store, embedding, llm, request):
 
     documents = [
         Document(
-            text="MyFakeProductForTesting is a versatile testing tool designed to streamline the testing process for software developers, quality assurance professionals, and product testers. It provides a comprehensive solution for testing various aspects of applications and systems, ensuring robust performance and functionality."  # noqa: E501
+            text="MyFakeProductForTesting is a versatile testing tool designed to streamline the testing process for software developers, quality assurance professionals, and product testers. It provides a comprehensive solution for testing various aspects of applications and systems, ensuring robust performance and functionality."
+            # noqa: E501
         ),
         Document(
-            text="MyFakeProductForTesting comes equipped with an advanced dynamic test scenario generator. This feature allows users to create realistic test scenarios by simulating various user interactions, system inputs, and environmental conditions. The dynamic nature of the generator ensures that tests are not only diverse but also adaptive to changes in the application under test."  # noqa: E501
+            text="MyFakeProductForTesting comes equipped with an advanced dynamic test scenario generator. This feature allows users to create realistic test scenarios by simulating various user interactions, system inputs, and environmental conditions. The dynamic nature of the generator ensures that tests are not only diverse but also adaptive to changes in the application under test."
+            # noqa: E501
         ),
         Document(
-            text="The product includes an intelligent bug detection and analysis module. It not only identifies bugs and issues but also provides in-depth analysis and insights into the root causes. The system utilizes machine learning algorithms to categorize and prioritize bugs, making it easier for developers and testers to address critical issues first."  # noqa: E501
+            text="The product includes an intelligent bug detection and analysis module. It not only identifies bugs and issues but also provides in-depth analysis and insights into the root causes. The system utilizes machine learning algorithms to categorize and prioritize bugs, making it easier for developers and testers to address critical issues first."
+            # noqa: E501
         ),
         Document(text="MyFakeProductForTesting first release happened in June 2020."),
     ]

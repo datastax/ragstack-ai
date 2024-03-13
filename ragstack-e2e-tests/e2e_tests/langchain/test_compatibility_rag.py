@@ -51,33 +51,50 @@ def cassandra():
     handler.after_test()
 
 
-@pytest.fixture
-def openai_llm():
+def _chat_openai(**kwargs) -> ChatOpenAI:
     return ChatOpenAI(
-        openai_api_key=get_required_env("OPEN_AI_KEY"),
-        model="gpt-3.5-turbo-16k",
-        streaming=False,
-        temperature=0,
+        openai_api_key=get_required_env("OPEN_AI_KEY"), temperature=0, **kwargs
     )
 
 
 @pytest.fixture
-def openai_llm_streaming():
-    return ChatOpenAI(
-        openai_api_key=get_required_env("OPEN_AI_KEY"),
-        model="gpt-3.5-turbo-16k",
-        streaming=True,
-        temperature=0,
-    )
+def openai_gpt35turbo_llm():
+    return _chat_openai(model="gpt-3.5-turbo", streaming=False)
 
 
 @pytest.fixture
-def openai_embedding():
-    return OpenAIEmbeddings(openai_api_key=get_required_env("OPEN_AI_KEY"))
+def openai_gpt4_llm():
+    return _chat_openai(model="gpt-4", streaming=False)
 
 
 @pytest.fixture
-def azure_openai_llm():
+def openai_gpt4_llm_streaming():
+    return _chat_openai(model="gpt-4", streaming=True)
+
+
+def _openai_embeddings(**kwargs) -> OpenAIEmbeddings:
+    return OpenAIEmbeddings(openai_api_key=get_required_env("OPEN_AI_KEY"), **kwargs)
+
+
+@pytest.fixture
+def openai_ada002_embedding():
+    return _openai_embeddings(model="text-embedding-ada-002")
+
+
+@pytest.fixture
+def openai_3small_embedding():
+    return _openai_embeddings(model="text-embedding-3-small")
+
+
+@pytest.fixture
+def openai_3large_embedding():
+    return _openai_embeddings(model="text-embedding-3-large")
+
+
+@pytest.fixture
+def azure_openai_gpt35turbo_llm():
+    # model is configurable because it can be different from the deployment
+    # but the targeting model must be gpt-35-turbo
     return AzureChatOpenAI(
         azure_deployment=get_required_env("AZURE_OPEN_AI_CHAT_MODEL_DEPLOYMENT"),
         openai_api_base=get_required_env("AZURE_OPEN_AI_ENDPOINT"),
@@ -88,7 +105,10 @@ def azure_openai_llm():
 
 
 @pytest.fixture
-def azure_openai_embedding():
+def azure_openai_ada002_embedding():
+    # model is configurable because it can be different from the deployment
+    # but the targeting model must be ada-002
+
     model_and_deployment = get_required_env("AZURE_OPEN_AI_EMBEDDINGS_MODEL_DEPLOYMENT")
     return AzureOpenAIEmbeddings(
         model=model_and_deployment,
@@ -102,29 +122,36 @@ def azure_openai_embedding():
 
 
 @pytest.fixture
-def vertex_llm():
-    return ChatVertexAI()
+def vertex_bison_llm():
+    return ChatVertexAI(model_name="chat-bison")
 
 
 @pytest.fixture
-def vertex_embedding():
+def vertex_gecko_embedding():
     return VertexAIEmbeddings(model_name="textembedding-gecko")
 
 
+def _bedrock_chat(**kwargs) -> BedrockChat:
+    return BedrockChat(region_name=get_required_env("BEDROCK_AWS_REGION"), **kwargs)
+
+
 @pytest.fixture
-def bedrock_anthropic_llm():
-    return BedrockChat(
+def bedrock_anthropic_claudev2_llm():
+    return _bedrock_chat(
         model_id="anthropic.claude-v2",
-        region_name=get_required_env("BEDROCK_AWS_REGION"),
     )
 
 
 @pytest.fixture
-def bedrock_meta_llm():
-    return BedrockChat(
-        model_id="meta.llama2-13b-chat-v1",
-        region_name=get_required_env("BEDROCK_AWS_REGION"),
+def bedrock_mistral_mistral7b_llm():
+    return _bedrock_chat(
+        model_id="mistral.mistral-7b-instruct-v0:2",
     )
+
+
+@pytest.fixture
+def bedrock_meta_llama2_llm():
+    return _bedrock_chat(model_id="meta.llama2-13b-chat-v1")
 
 
 @pytest.fixture
@@ -161,7 +188,7 @@ def huggingface_hub_minilml6v2_embedding():
 
 
 @pytest.fixture
-def nvidia_embedding():
+def nvidia_aifoundation_nvolveqa40k_embedding():
     get_required_env("NVIDIA_API_KEY")
     from langchain_nvidia_ai_endpoints import NVIDIAEmbeddings
 
@@ -169,7 +196,7 @@ def nvidia_embedding():
 
 
 @pytest.fixture
-def nvidia_mixtral_llm():
+def nvidia_aifoundation_mixtral8x7b_llm():
     get_required_env("NVIDIA_API_KEY")
     from langchain_nvidia_ai_endpoints import ChatNVIDIA
 
@@ -184,14 +211,19 @@ def nvidia_mixtral_llm():
 @pytest.mark.parametrize(
     "embedding,llm",
     [
-        ("openai_embedding", "openai_llm"),
-        ("openai_embedding", "openai_llm_streaming"),
-        ("azure_openai_embedding", "azure_openai_llm"),
-        ("vertex_embedding", "vertex_llm"),
-        ("bedrock_titan_embedding", "bedrock_anthropic_llm"),
-        ("bedrock_cohere_embedding", "bedrock_meta_llm"),
+        ("openai_ada002_embedding", "openai_gpt35turbo_llm"),
+        ("openai_3small_embedding", "openai_gpt4_llm"),
+        ("openai_3large_embedding", "openai_gpt4_llm_streaming"),
+        ("azure_openai_ada002_embedding", "azure_openai_gpt35turbo_llm"),
+        ("vertex_gecko_embedding", "vertex_bison_llm"),
+        ("bedrock_titan_embedding", "bedrock_anthropic_claudev2_llm"),
+        ("bedrock_cohere_embedding", "bedrock_mistral_mistral7b_llm"),
+        ("bedrock_cohere_embedding", "bedrock_meta_llama2_llm"),
         ("huggingface_hub_minilml6v2_embedding", "huggingface_hub_flant5xxl_llm"),
-        ("nvidia_embedding", "nvidia_mixtral_llm"),
+        (
+            "nvidia_aifoundation_nvolveqa40k_embedding",
+            "nvidia_aifoundation_mixtral8x7b_llm",
+        ),
     ],
 )
 def test_rag(test_case, vector_store, embedding, llm, request, record_property):
