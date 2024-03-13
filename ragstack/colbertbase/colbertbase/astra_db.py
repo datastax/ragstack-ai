@@ -19,8 +19,7 @@ class AstraDB:
             verbose: bool=False,
             timeout: int=60,
             **kwargs,
-        ):
-        
+    ):
         required_cred(secure_connect_bundle)
         required_cred(astra_token)
 
@@ -88,7 +87,6 @@ class AstraDB:
         self.query_part_by_pk_stmt = self.session.prepare(query_part_by_pk)
 
         print("statements are prepared")
-    
 
     def create_tables(self):
         self.session.execute(f"""
@@ -163,7 +161,7 @@ class AstraDB:
         # insert colbert embeddings
         for passageEmbd in embeddings:
             title = passageEmbd.title()
-            parameters = [(title, e[1].part, e[1].id, e[1].get_embeddings()) for e in enumerate(passageEmbd.get_all_token_embeddings())] 
+            parameters = [(title, e[1].part, e[1].id, e[1].get_embeddings()) for e in enumerate(passageEmbd.get_all_token_embeddings())]
             execute_concurrent_with_args(self.session, self.insert_colbert_stmt, parameters)
 
     def delete_title(self, title: str):

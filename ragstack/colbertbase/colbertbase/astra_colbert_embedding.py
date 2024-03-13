@@ -3,6 +3,7 @@ import datetime
 import itertools
 import torch  # it should part of colbert dependencies
 import uuid
+import os
 from .token_embedding import TokenEmbeddings, PerTokenEmbeddings, PassageEmbeddings
 
 
@@ -54,14 +55,6 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
     @classmethod
     def validate_environment(self, values: Dict) -> Dict:
         """Validate colbert and its dependency is installed."""
-        try:
-            from colbert import CollectionEncoder
-        except ImportError as exc:
-            raise ImportError(
-                "Could not import colbert library. "
-                "Please install it with `pip install colbert`"
-            ) from exc
-
         try:
             import torch
             if torch.cuda.is_available():
@@ -160,7 +153,7 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
     def encode(self, texts: List[str], title: str="") -> List[PassageEmbeddings]:
         # collection = Collection(texts)
         # batches = collection.enumerate_batches(rank=Run().rank)
-        ''' 
+        '''
         config = ColBERTConfig(
             doc_maxlen=self.__doc_maxlen,
             nbits=self.__nbits,
@@ -176,7 +169,6 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
         # split up embeddings by counts, a list of the number of tokens in each passage
         start_indices = [0] + list(itertools.accumulate(count[:-1]))
         embeddings_by_part = [embeddings[start:start+count] for start, count in zip(start_indices, count)]
-        size = len(embeddings_by_part)
         for part, embedding in enumerate(embeddings_by_part):
             collectionEmbd = PassageEmbeddings(text=texts[part], title=title, part=part)
             pid = collectionEmbd.id()

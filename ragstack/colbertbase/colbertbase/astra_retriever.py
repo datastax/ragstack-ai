@@ -2,7 +2,6 @@ from .astra_colbert_embedding import ColbertTokenEmbeddings
 
 from .astra_db import AstraDB
 from torch import tensor
-from typing import List
 import torch
 import math
 
@@ -124,7 +123,7 @@ class ColbertAstraRetriever():
             rows = self.astra.session.execute(self.astra.query_colbert_parts_stmt, [title, part])
             embeddings_for_part = [tensor(row.bert_embedding) for row in rows]
             # score based on The function returns the highest similarity score
-            #(i.e., the maximum dot product value) between the query vector and any of the embedding vectors in the list.
+            # (i.e., the maximum dot product value) between the query vector and any of the embedding vectors in the list.
             scores[(title, part)] = sum(max_similarity_torch(qv, embeddings_for_part, self.is_cuda) for qv in query_encodings)
         # load the source chunk for the top k documents
         docs_by_score = sorted(scores, key=scores.get, reverse=True)[:k]

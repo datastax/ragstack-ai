@@ -2,7 +2,7 @@
 # this is a base class for ColBERT per token based embedding
 
 from abc import ABC, abstractmethod
-from typing import Any, List
+from typing import List
 import uuid
 
 class PerTokenEmbeddings():
@@ -22,7 +22,7 @@ class PerTokenEmbeddings():
         self.title = title
         self.part =part
 
-    def add_embeddings(self, embeddings: List[float]): 
+    def add_embeddings(self, embeddings: List[float]):
         self.__embeddings = embeddings
 
     def get_embeddings(self) -> List[float]:
@@ -52,7 +52,6 @@ class PassageEmbeddings():
             model: str = "colbert-ir/colbertv2.0",
             dim: int = 128,
         ):
-        #self.token_ids = token_ids
         self.__text = text
         self.__token_embeddings = []
         if id is None:
@@ -62,7 +61,7 @@ class PassageEmbeddings():
         self.__model = model
         self.__dim = dim
         self.__title = title
-        self.__part  =  part 
+        self.__part  =  part
 
     def model(self):
         return self.__model
