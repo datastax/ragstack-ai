@@ -11,13 +11,14 @@ from trulens_eval.app import App
 from trulens_eval.feedback.provider import AzureOpenAI
 from trulens_eval.feedback import Groundedness, GroundTruthAgreement
 
-from llama_index.embeddings import AzureOpenAIEmbedding
-from llama_index.llms import AzureOpenAI as LlamaAzureChatOpenAI
-from llama_index.vector_stores import AstraDBVectorStore
+from llama_index.embeddings.azure_openai import AzureOpenAIEmbedding as LlamaAzureOpenAIEmbedding
+from llama_index.llms.azure_openai import AzureOpenAI as LlamaAzureChatOpenAI
 
-from langchain_community.chat_models import AzureChatOpenAI
-from langchain_community.embeddings import AzureOpenAIEmbeddings
-from langchain_astradb import AstraDBVectorStore as LangChainAstraDBVectorStore
+from llama_index.vector_stores.astra import AstraDBVectorStore
+
+from langchain_community.embeddings.azure_openai import AzureOpenAIEmbeddings
+from langchain_community.chat_models.azure_openai import AzureChatOpenAI
+from langchain_community.vectorstores.astradb import AstraDB
 
 # this code assumes the following env vars exist in a .env file:
 #
@@ -31,7 +32,6 @@ from langchain_astradb import AstraDBVectorStore as LangChainAstraDBVectorStore
 load_dotenv()
 
 temperature = 0
-
 
 class Framework(Enum):
     LANG_CHAIN = "langChain"
@@ -70,7 +70,7 @@ def init_tru():
 
 def get_feedback_functions(pipeline, golden_set):
     # Initialize provider class
-    azureOpenAI = AzureOpenAI(deployment_name="gpt-35-turbo")
+    azureOpenAI = AzureOpenAI(deployment_name="gpt-35-turbo-16k")
 
     context = App.select_context(pipeline)
 
@@ -109,13 +109,7 @@ def get_feedback_functions(pipeline, golden_set):
     ]
 
 
-def get_recorder(
-    framework: Framework,
-    pipeline,
-    app_id: str,
-    golden_set: [],
-    feedback_mode: str = "deferred",
-):
+def get_recorder(framework: Framework, pipeline, app_id: str, golden_set : [], feedback_mode : str = "deferred"):
     feedbacks = get_feedback_functions(pipeline, golden_set)
     if framework == Framework.LANG_CHAIN:
         return TruChain(
@@ -164,7 +158,7 @@ def get_azure_embeddings_model(framework: Framework):
             azure_deployment="text-embedding-ada-002", openai_api_version="2023-05-15"
         )
     elif framework == Framework.LLAMA_INDEX:
-        return AzureOpenAIEmbedding(
+        return LlamaAzureOpenAIEmbedding(
             deployment_name="text-embedding-ada-002",
             model="text-embedding-ada-002",
             api_key=os.getenv("AZURE_OPENAI_API_KEY"),
@@ -208,14 +202,18 @@ def execute_query(framework: Framework, pipeline, query):
 
 
 # runs the pipeline across all queries in all known datasets
-def execute_experiment(framework: Framework, pipeline, experiment_name: str):
+# unless allowed_datasets is passed... then limit to only the listed datasets
+def execute_experiment(framework: Framework, pipeline, experiment_name: str, allowed_datasets: [] = None):
     tru = init_tru()
 
     # use a short uuid to ensure that multiple experiments with the same name don't collide in the DB
     shortUuid = str(uuid.uuid4())[9:13]
     datasets, golden_set = get_test_data()
-
     for dataset_name in datasets:
+        if allowed_datasets is not None and dataset_name not in allowed_datasets:
+            continue
+
+        print(f"starting on dataset: {dataset_name}")
         app_id = f"{experiment_name}#{shortUuid}#{dataset_name}"
         tru_recorder = get_recorder(framework, pipeline, app_id, golden_set)
         for query in datasets[dataset_name]:
