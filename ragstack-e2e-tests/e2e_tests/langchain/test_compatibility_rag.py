@@ -59,10 +59,7 @@ def _chat_openai(**kwargs) -> ChatOpenAI:
 
 @pytest.fixture
 def openai_gpt35turbo_llm():
-    return _chat_openai(
-        model="gpt-3.5-turbo",
-        streaming=False
-    )
+    return _chat_openai(model="gpt-3.5-turbo", streaming=False)
 
 
 @pytest.fixture
@@ -145,7 +142,6 @@ def bedrock_anthropic_claudev2_llm():
     )
 
 
-
 @pytest.fixture
 def bedrock_mistral_mistral7b_llm():
     return _bedrock_chat(
@@ -209,9 +205,7 @@ def nvidia_aifoundation_mixtral8x7b_llm():
 
 @pytest.mark.parametrize(
     "test_case",
-    ["rag_custom_chain",
-     # "conversational_rag", "trulens"
-     ],
+    ["rag_custom_chain", "conversational_rag", "trulens"],
 )
 @pytest.mark.parametrize("vector_store", ["astra_db", "cassandra"])
 @pytest.mark.parametrize(
@@ -227,8 +221,8 @@ def nvidia_aifoundation_mixtral8x7b_llm():
         ("bedrock_cohere_embedding", "bedrock_meta_llama2_llm"),
         ("huggingface_hub_minilml6v2_embedding", "huggingface_hub_flant5xxl_llm"),
         (
-                "nvidia_aifoundation_nvolveqa40k_embedding",
-                "nvidia_aifoundation_mixtral8x7b_llm",
+            "nvidia_aifoundation_nvolveqa40k_embedding",
+            "nvidia_aifoundation_mixtral8x7b_llm",
         ),
     ],
 )
@@ -378,7 +372,7 @@ def test_multimodal(vector_store, embedding, llm, request, record_property):
         record_langsmith_sharelink(run_id, record_property)
         answer = str(response.content)
         assert (
-                "Coffee Machine Ultra Cool" in answer
+            "Coffee Machine Ultra Cool" in answer
         ), f"Expected Coffee Machine Ultra Cool in the answer but got: {answer}"
 
 
