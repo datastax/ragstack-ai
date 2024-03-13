@@ -34,7 +34,7 @@ except ImportError:
     from llama_index.core.schema import ImageNode
     from llama_index.llms.openai import OpenAI
     from llama_index.llms.azure_openai import AzureOpenAI
-    from llama_index.embeddings.openai import OpenAIEmbedding, OpenAIEmbeddingModelType
+    from llama_index.embeddings.openai import OpenAIEmbedding
     from llama_index.embeddings.azure_openai import AzureOpenAIEmbedding
     from llama_index.embeddings.bedrock import BedrockEmbedding
     from llama_index.llms.vertex import Vertex
@@ -75,17 +75,17 @@ def _openai_embeddings(**kwargs) -> OpenAIEmbedding:
 
 @pytest.fixture
 def openai_ada002_embedding():
-    return 1536, _openai_embeddings(model=OpenAIEmbeddingModelType.TEXT_EMBED_ADA_002)
+    return 1536, _openai_embeddings(model="text-embedding-ada-002")
 
 
 @pytest.fixture
 def openai_3small_embedding():
-    return 1536, _openai_embeddings(model=OpenAIEmbeddingModelType.TEXT_EMBED_3_SMALL)
+    return 1536, _openai_embeddings(model="text-embedding-3-small")
 
 
 @pytest.fixture
 def openai_3large_embedding():
-    return 3072, _openai_embeddings(model=OpenAIEmbeddingModelType.TEXT_EMBED_3_LARGE)
+    return 3072, _openai_embeddings(model="text-embedding-3-large")
 
 
 @pytest.fixture
@@ -216,7 +216,7 @@ def huggingface_hub_minilml6v2_embedding():
         ("azure_openai_ada002_embedding", "azure_openai_gpt35turbo_llm"),
         ("vertex_gecko_langchain_embedding", "vertex_bison_llm"),
         ("bedrock_titan_embedding", "bedrock_anthropic_claudev2_llm"),
-        ("bedrock_cohere_embedding", "bedrock_mistral_mistral7b_llm"),
+        ("bedrock_cohere_embedding", "bedrock_ai21_jurassic2mid_llm"),
         ("bedrock_cohere_embedding", "bedrock_meta_llama2_llm"),
         ("huggingface_hub_minilml6v2_embedding", "huggingface_hub_flant5xxl_llm"),
     ],
