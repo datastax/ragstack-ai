@@ -53,9 +53,7 @@ def cassandra():
 
 def _chat_openai(**kwargs) -> ChatOpenAI:
     return ChatOpenAI(
-        openai_api_key=get_required_env("OPEN_AI_KEY"),
-        temperature=0,
-        **kwargs
+        openai_api_key=get_required_env("OPEN_AI_KEY"), temperature=0, **kwargs
     )
 
 
@@ -70,25 +68,16 @@ def openai_gpt35turbo_llm():
 
 @pytest.fixture
 def openai_gpt4_llm():
-    return _chat_openai(
-        model="gpt-4",
-        streaming=False
-    )
+    return _chat_openai(model="gpt-4", streaming=False)
 
 
 @pytest.fixture
 def openai_gpt4_llm_streaming():
-    return _chat_openai(
-        model="gpt-4",
-        streaming=True
-    )
+    return _chat_openai(model="gpt-4", streaming=True)
 
 
 def _openai_embeddings(**kwargs) -> OpenAIEmbeddings:
-    return OpenAIEmbeddings(
-        openai_api_key=get_required_env("OPEN_AI_KEY"),
-        **kwargs
-    )
+    return OpenAIEmbeddings(openai_api_key=get_required_env("OPEN_AI_KEY"), **kwargs)
 
 
 @pytest.fixture
@@ -139,6 +128,8 @@ def azure_openai_ada002_embedding():
 @pytest.fixture
 def vertex_bison_llm():
     return ChatVertexAI(model_name="chat-bison")
+
+
 @pytest.fixture
 def vertex_geminipro_llm():
     return ChatVertexAI(model_name="gemini-pro")
@@ -150,10 +141,8 @@ def vertex_gecko_embedding():
 
 
 def _bedrock_chat(**kwargs) -> BedrockChat:
-    return BedrockChat(
-        region_name=get_required_env("BEDROCK_AWS_REGION"),
-        **kwargs
-    )
+    return BedrockChat(region_name=get_required_env("BEDROCK_AWS_REGION"), **kwargs)
+
 
 @pytest.fixture
 def bedrock_anthropic_claudev2_llm():
@@ -161,11 +150,13 @@ def bedrock_anthropic_claudev2_llm():
         model_id="anthropic.claude-v2",
     )
 
+
 @pytest.fixture
 def bedrock_anthropic_claudev3_llm():
     return _bedrock_chat(
         model_id="anthropic.claude-3-sonnet-20240229-v1:0",
     )
+
 
 @pytest.fixture
 def bedrock_mistral_mistral7b_llm():
@@ -176,16 +167,12 @@ def bedrock_mistral_mistral7b_llm():
 
 @pytest.fixture
 def bedrock_meta_llama2_llm():
-    return _bedrock_chat(
-        model_id="meta.llama2-13b-chat-v1"
-    )
+    return _bedrock_chat(model_id="meta.llama2-13b-chat-v1")
 
 
 @pytest.fixture
 def bedrock_meta_llama2_llm():
-    return _bedrock_chat(
-        model_id="meta.llama2-13b-chat-v1"
-    )
+    return _bedrock_chat(model_id="meta.llama2-13b-chat-v1")
 
 
 @pytest.fixture
@@ -256,7 +243,10 @@ def nvidia_aifoundation_mixtral8x7b_llm():
         ("bedrock_cohere_embedding", "bedrock_mistral_mistral7b_llm"),
         ("bedrock_cohere_embedding", "bedrock_meta_llama2_llm"),
         ("huggingface_hub_minilml6v2_embedding", "huggingface_hub_flant5xxl_llm"),
-        ("nvidia_aifoundation_nvolveqa40k_embedding", "nvidia_aifoundation_mixtral8x7b_llm"),
+        (
+            "nvidia_aifoundation_nvolveqa40k_embedding",
+            "nvidia_aifoundation_mixtral8x7b_llm",
+        ),
     ],
 )
 def test_rag(test_case, vector_store, embedding, llm, request, record_property):
@@ -405,7 +395,7 @@ def test_multimodal(vector_store, embedding, llm, request, record_property):
         record_langsmith_sharelink(run_id, record_property)
         answer = str(response.content)
         assert (
-                "Coffee Machine Ultra Cool" in answer
+            "Coffee Machine Ultra Cool" in answer
         ), f"Expected Coffee Machine Ultra Cool in the answer but got: {answer}"
 
 
