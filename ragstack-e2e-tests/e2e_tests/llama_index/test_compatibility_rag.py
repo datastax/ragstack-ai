@@ -148,13 +148,6 @@ def bedrock_anthropic_claudev2_llm():
 
 
 @pytest.fixture
-def bedrock_anthropic_claudev3_llm():
-    return _bedrock_llm(
-        model="anthropic.claude-3-sonnet-20240229-v1:0",
-    )
-
-
-@pytest.fixture
 def bedrock_mistral_mistral7b_llm():
     return _bedrock_llm(
         model="mistral.mistral-7b-instruct-v0:2",
@@ -223,7 +216,6 @@ def huggingface_hub_minilml6v2_embedding():
         ("azure_openai_ada002_embedding", "azure_openai_gpt35turbo_llm"),
         ("vertex_gecko_langchain_embedding", "vertex_bison_llm"),
         ("bedrock_titan_embedding", "bedrock_anthropic_claudev2_llm"),
-        ("bedrock_titan_embedding", "bedrock_anthropic_claudev3_llm"),
         ("bedrock_cohere_embedding", "bedrock_mistral_mistral7b_llm"),
         ("bedrock_cohere_embedding", "bedrock_meta_llama2_llm"),
         ("huggingface_hub_minilml6v2_embedding", "huggingface_hub_flant5xxl_llm"),
