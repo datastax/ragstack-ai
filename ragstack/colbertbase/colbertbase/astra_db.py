@@ -1,11 +1,10 @@
-from typing import Any, Dict, List
+from typing import List
 from cassandra.cluster import Cluster
-from cassandra.query import SimpleStatement
 from cassandra.auth import PlainTextAuthProvider
 from cassandra import InvalidRequest
 from cassandra.concurrent import execute_concurrent_with_args
 
-from .token_embedding import PassageEmbeddings, PerTokenEmbeddings
+from .token_embedding import PassageEmbeddings
 
 def required_cred(cred: str):
     if cred is None or cred == "":

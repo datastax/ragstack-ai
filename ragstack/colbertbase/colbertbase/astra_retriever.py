@@ -7,7 +7,8 @@ import torch
 import math
 
 # max similarity between a query vector and a list of embeddings
-# The function returns the highest similarity score (i.e., the maximum dot product value) between the query vector and any of the embedding vectors in the list.
+# The function returns the highest similarity score (i.e., the maximum dot product value)
+# between the query vector and any of the embedding vectors in the list.
 
 '''
 # The function iterates over each embedding vector (e) in the embeddings.
@@ -47,7 +48,8 @@ def max_similarity_torch(query_vector, embedding_list, is_cuda: bool=False):
     - embedding_list: A list of PyTorch tensors, each representing an embedding vector.
 
     Returns:
-    - max_sim: A float representing the highest similarity (dot product) score between the query vector and the embedding vectors in the list, computed on the GPU.
+    - max_sim: A float representing the highest similarity (dot product) score between the query vector
+               and the embedding vectors in the list, computed on the GPU.
     """
     # stacks the list of embedding tensors into a single tensor
     if is_cuda:
@@ -117,7 +119,6 @@ class ColbertAstraRetriever():
             docparts.update((row.title, row.part) for row in rows)
         # score each document
         scores = {}
-        import time
         for title, part in docparts:
             # find all the found parts so that we can do max similarity search
             rows = self.astra.session.execute(self.astra.query_colbert_parts_stmt, [title, part])

@@ -1,17 +1,14 @@
 from typing import Any, Dict, List, Union
 import datetime
 import itertools
-import torch # it should part of colbert dependencies
+import torch  # it should part of colbert dependencies
 import uuid
 from .token_embedding import TokenEmbeddings, PerTokenEmbeddings, PassageEmbeddings
 
 
-from colbert.indexing.collection_indexer import CollectionIndexer
 from colbert.infra import Run, RunConfig, ColBERTConfig
-from colbert.data import Queries
 from colbert.indexing.collection_encoder import CollectionEncoder
 from colbert.modeling.checkpoint import Checkpoint
-
 
 
 class ColbertTokenEmbeddings(TokenEmbeddings):
@@ -19,7 +16,7 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
     Colbert embeddings model.
 
     The embedding runs locally and requires the colbert library to be installed.
-    
+
     Example:
     Currently the pyarrow module requires a specific version to be installed.
 
@@ -58,37 +55,29 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
     def validate_environment(self, values: Dict) -> Dict:
         """Validate colbert and its dependency is installed."""
         try:
-            from colbert import Indexer
+            from colbert import CollectionEncoder
         except ImportError as exc:
             raise ImportError(
                 "Could not import colbert library. "
                 "Please install it with `pip install colbert`"
             ) from exc
-        
+
         try:
             import torch
             if torch.cuda.is_available():
                 self.__is_cuda = True
-                try:
-                    import faiss
-                except ImportError as e:
-                    raise ImportError(
-                        "Could not import faiss library. "
-                        "Please install it with `pip install faiss-gpu`"
-                    ) from e
-                    
+
         except ImportError as exc:
             raise ImportError(
                 "Could not import torch library. "
                 "Please install it with `pip install torch`"
             ) from exc
-        
+
         return values
 
-    
     def __init__(
             self,
-            checkpoint: str = "colbert-ir/colbertv2.0", 
+            checkpoint: str = "colbert-ir/colbertv2.0",
             doc_maxlen: int = 220,
             nbits: int = 1,
             kmeans_niters: int = 4,
@@ -97,15 +86,15 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
             **data: Any,
     ):
         self.__cuda = torch.cuda.is_available()
-        total_visible_gpus=0
+        total_visible_gpus = 0
         if self.__cuda:
             self.__cuda_device_count = torch.cuda.device_count()
             self.__cuda_device_name = torch.cuda.get_device_name()
             print(f"nrank {nranks}")
             if nranks < 1:
-                nranks=self.__cuda_device_count
+                nranks = self.__cuda_device_count
             if nranks > 1:
-                total_visible_gpus=self.__cuda_device_count
+                total_visible_gpus = self.__cuda_device_count
             print(f"run on {self.__cuda_device_count} gpus and visible {total_visible_gpus} gpus embeddings on {nranks} gpus")
         else:
             if nranks < 1:
@@ -136,13 +125,11 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
 
         self.print_memory_stats("ColbertTokenEmbeddings")
 
-
     def embed_documents(self, texts: List[str], title: str="") -> List[PassageEmbeddings]:
         if title == "":
             title = str(uuid.uuid4())
         """Embed search docs."""
         return self.encode(texts, title)
-
 
     def embed_query(self, text: str, title: str) -> PassageEmbeddings:
         return self.embed_documents([text], title)[0]
@@ -169,7 +156,6 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
         ):
         Q = self.encode_queries(query, full_length_search, query_maxlen=query_maxlen)
         return Q[0]
-
 
     def encode(self, texts: List[str], title: str="") -> List[PassageEmbeddings]:
         # collection = Collection(texts)

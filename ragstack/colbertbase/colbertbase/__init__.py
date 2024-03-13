@@ -9,7 +9,7 @@ __all__ = (
     ColbertTokenEmbeddings, AstraDB,
     ColbertAstraRetriever,
     max_similarity_torch,
-    PerTokenEmbeddings, 
+    PerTokenEmbeddings,
     PassageEmbeddings, TokenEmbeddings,
     DEFAULT_COLBERT_MODEL, DEFAULT_COLBERT_DIM,
 )
