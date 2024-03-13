@@ -31,12 +31,24 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           generateReleaseNotes: true
           prerelease: false
-
       - name: Compute release number
         id: release-number
         shell: bash
         run: |
-            echo "release-number=$(echo ${{ github.ref }} | sed -e 's/refs\/tags\/ragstack-ai-//')" >> $GITHUB_OUTPUT
+          echo "release-number=$(echo ${{ github.ref }} | sed -e 's/refs\/tags\/ragstack-ai-//')" >> $GITHUB_OUTPUT
+
+      - name: Wait for PIP package to be available
+        shell: bash
+        run: |
+            v="${{ steps.release-number.outputs.release-number }}"
+            while true; do
+                if pip install ragstack-ai==${v}; then
+                    break
+                else
+                    echo "Package not available yet, retrying in 30 seconds"
+                    sleep 30
+                fi
+            done
 
       - name: Docker
         uses: ./.github/actions/build-deploy-docker-image
