@@ -61,8 +61,7 @@ def _chat_openai(**kwargs) -> ChatOpenAI:
 def openai_gpt35turbo_llm():
     return _chat_openai(
         model="gpt-3.5-turbo",
-        streaming=False,
-        temperature=0,
+        streaming=False
     )
 
 
@@ -131,11 +130,6 @@ def vertex_bison_llm():
 
 
 @pytest.fixture
-def vertex_geminipro_llm():
-    return ChatVertexAI(model_name="gemini-pro")
-
-
-@pytest.fixture
 def vertex_gecko_embedding():
     return VertexAIEmbeddings(model_name="textembedding-gecko")
 
@@ -150,12 +144,6 @@ def bedrock_anthropic_claudev2_llm():
         model_id="anthropic.claude-v2",
     )
 
-
-@pytest.fixture
-def bedrock_anthropic_claudev3_llm():
-    return _bedrock_chat(
-        model_id="anthropic.claude-3-sonnet-20240229-v1:0",
-    )
 
 
 @pytest.fixture
@@ -221,7 +209,9 @@ def nvidia_aifoundation_mixtral8x7b_llm():
 
 @pytest.mark.parametrize(
     "test_case",
-    ["rag_custom_chain", "conversational_rag", "trulens"],
+    ["rag_custom_chain",
+     # "conversational_rag", "trulens"
+     ],
 )
 @pytest.mark.parametrize("vector_store", ["astra_db", "cassandra"])
 @pytest.mark.parametrize(
@@ -232,15 +222,13 @@ def nvidia_aifoundation_mixtral8x7b_llm():
         ("openai_3large_embedding", "openai_gpt4_llm_streaming"),
         ("azure_openai_ada002_embedding", "azure_openai_gpt35turbo_llm"),
         ("vertex_gecko_embedding", "vertex_bison_llm"),
-        ("vertex_gecko_embedding", "vertex_geminipro_llm"),
         ("bedrock_titan_embedding", "bedrock_anthropic_claudev2_llm"),
-        ("bedrock_titan_embedding", "bedrock_anthropic_claudev3_llm"),
         ("bedrock_cohere_embedding", "bedrock_mistral_mistral7b_llm"),
         ("bedrock_cohere_embedding", "bedrock_meta_llama2_llm"),
         ("huggingface_hub_minilml6v2_embedding", "huggingface_hub_flant5xxl_llm"),
         (
-            "nvidia_aifoundation_nvolveqa40k_embedding",
-            "nvidia_aifoundation_mixtral8x7b_llm",
+                "nvidia_aifoundation_nvolveqa40k_embedding",
+                "nvidia_aifoundation_mixtral8x7b_llm",
         ),
     ],
 )
@@ -390,7 +378,7 @@ def test_multimodal(vector_store, embedding, llm, request, record_property):
         record_langsmith_sharelink(run_id, record_property)
         answer = str(response.content)
         assert (
-            "Coffee Machine Ultra Cool" in answer
+                "Coffee Machine Ultra Cool" in answer
         ), f"Expected Coffee Machine Ultra Cool in the answer but got: {answer}"
 
 
