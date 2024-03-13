@@ -222,13 +222,13 @@ def huggingface_hub_minilml6v2_embedding():
     ],
 )
 def test_rag(vector_store, embedding, llm, request):
-    embedding_dimensions, embedding = request.getfixturevalue(embedding)
-    vector_store_context: VectorStoreTestContext = request.getfixturevalue(vector_store)
-    llm = request.getfixturevalue(llm)
     set_current_test_info(
         "llama_index::rag",
         f"{llm},{embedding},{vector_store}",
     )
+    embedding_dimensions, embedding = request.getfixturevalue(embedding)
+    vector_store_context: VectorStoreTestContext = request.getfixturevalue(vector_store)
+    llm = request.getfixturevalue(llm)
     vector_store = vector_store_context.new_llamaindex_vector_store(
         embedding_dimension=embedding_dimensions
     )
