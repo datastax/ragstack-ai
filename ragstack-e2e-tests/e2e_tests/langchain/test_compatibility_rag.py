@@ -171,11 +171,6 @@ def bedrock_meta_llama2_llm():
 
 
 @pytest.fixture
-def bedrock_meta_llama2_llm():
-    return _bedrock_chat(model_id="meta.llama2-13b-chat-v1")
-
-
-@pytest.fixture
 def bedrock_titan_embedding():
     return BedrockEmbeddings(
         model_id="amazon.titan-embed-text-v1",
