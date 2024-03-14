@@ -128,7 +128,7 @@ def azure_openai_ada002_embedding():
         model=model_and_deployment,
         deployment=model_and_deployment,
         openai_api_key=get_required_env("AZURE_OPENAI_API_KEY"),
-        openai_api_base=get_required_env("AZURE_OPENAI_ENDPOINT"),
+        azure_endpoint=get_required_env("AZURE_OPENAI_ENDPOINT"),
         openai_api_type="azure",
         openai_api_version="2023-05-15",
         chunk_size=1,
