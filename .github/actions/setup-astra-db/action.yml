@@ -60,13 +60,7 @@ runs:
           echo "Database creation failed, status: $status"
           exit 1
         done
-        status=$(echo "$describe_out" | jq -r '.data.status')
-        if [ "$status" != "ACTIVE" ]; then
-          echo "Database is not active, status: $status"
-          
-        fi
 
-        
         echo "Found database id: $database_id"
         domain="astra"
         if [ "${{ inputs.env }}" == "DEV" ]; then
