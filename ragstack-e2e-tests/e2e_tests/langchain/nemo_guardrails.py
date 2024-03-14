@@ -98,7 +98,6 @@ def _try_runnable_rails(config: RailsConfig, retriever: BaseRetriever) -> None:
             }
         ]
     )
-    print(response)
     assert "Hello! I hope to answer all your questions" in response["content"]
 
     response = rails.generate(
@@ -109,7 +108,6 @@ def _try_runnable_rails(config: RailsConfig, retriever: BaseRetriever) -> None:
             }
         ]
     )
-    print(response)
     assert "2020" in response["content"]
 
 

@@ -60,15 +60,19 @@ def _chat_openai(**kwargs) -> ChatOpenAI:
 
 @pytest.fixture
 def openai_gpt35turbo_llm():
-    return _chat_openai(model="gpt-3.5-turbo", streaming=False)
+    model = "gpt-3.5-turbo"
+    return {
+        "llm": _chat_openai(model=model, streaming=False),
+        "nemo_config": {"engine": "openai", "model": model},
+    }
 
 
 @pytest.fixture
 def openai_gpt4_llm():
+    model = "gpt-4"
     return {
-        "llm": _chat_openai(model="gpt-4", streaming=False),
-        "engine": "openai",
-        "model": "gpt-4",
+        "llm": _chat_openai(model=model, streaming=False),
+        "nemo_config": {"engine": "openai", "model": model},
     }
 
 
@@ -79,10 +83,10 @@ def openai_embedding():
 
 @pytest.fixture
 def openai_gpt4_llm_streaming():
+    model = "gpt-4"
     return {
-        "llm": _chat_openai(model="gpt-4", streaming=True),
-        "engine": "openai",
-        "model": "gpt-4",
+        "llm": _chat_openai(model=model, streaming=True),
+        "nemo_config": {"engine": "openai", "model": model},
     }
 
 
@@ -117,8 +121,10 @@ def azure_openai_gpt35turbo_llm():
             openai_api_type="azure",
             openai_api_version="2023-07-01-preview",
         ),
-        "engine": "azure",
-        "model": "gpt-3.5-turbo",
+        "nemo_config": {
+            "engine": "azure",
+            "model": "gpt-3.5-turbo",
+        },
     }
 
 
@@ -141,7 +147,7 @@ def azure_openai_ada002_embedding():
 
 @pytest.fixture
 def vertex_bison_llm():
-    return ChatVertexAI(model_name="chat-bison")
+    return {"llm": ChatVertexAI(model_name="chat-bison"), "nemo_config": None}
 
 
 @pytest.fixture
@@ -155,21 +161,30 @@ def _bedrock_chat(**kwargs) -> BedrockChat:
 
 @pytest.fixture
 def bedrock_anthropic_claudev2_llm():
-    return _bedrock_chat(
-        model_id="anthropic.claude-v2",
-    )
+    return {
+        "llm": _bedrock_chat(
+            model_id="anthropic.claude-v2",
+        ),
+        "nemo_config": None,
+    }
 
 
 @pytest.fixture
 def bedrock_mistral_mistral7b_llm():
-    return _bedrock_chat(
-        model_id="mistral.mistral-7b-instruct-v0:2",
-    )
+    return {
+        "llm": _bedrock_chat(
+            model_id="mistral.mistral-7b-instruct-v0:2",
+        ),
+        "nemo_config": None,
+    }
 
 
 @pytest.fixture
 def bedrock_meta_llama2_llm():
-    return _bedrock_chat(model_id="meta.llama2-13b-chat-v1")
+    return {
+        "llm": _bedrock_chat(model_id="meta.llama2-13b-chat-v1"),
+        "nemo_config": None,
+    }
 
 
 @pytest.fixture
@@ -190,11 +205,14 @@ def bedrock_cohere_embedding():
 
 @pytest.fixture
 def huggingface_hub_flant5xxl_llm():
-    return HuggingFaceHub(
-        repo_id="google/flan-t5-xxl",
-        huggingfacehub_api_token=get_required_env("HUGGINGFACE_HUB_KEY"),
-        model_kwargs={"temperature": 1, "max_length": 256},
-    )
+    return {
+        "llm": HuggingFaceHub(
+            repo_id="google/flan-t5-xxl",
+            huggingfacehub_api_token=get_required_env("HUGGINGFACE_HUB_KEY"),
+            model_kwargs={"temperature": 1, "max_length": 256},
+        ),
+        "nemo_config": None,
+    }
 
 
 @pytest.fixture
@@ -218,23 +236,20 @@ def nvidia_aifoundation_mixtral8x7b_llm():
     get_required_env("NVIDIA_API_KEY")
     from langchain_nvidia_ai_endpoints import ChatNVIDIA
 
-    return ChatNVIDIA(model="playground_mixtral_8x7b")
+    return {"llm": ChatNVIDIA(model="playground_mixtral_8x7b"), "nemo_config": None}
 
 
 @pytest.mark.parametrize(
     "test_case",
-    # ["rag_custom_chain", "conversational_rag", "trulens", "nemo_guardrails"],
-    ["nemo_guardrails"],
+    ["rag_custom_chain", "conversational_rag", "trulens", "nemo_guardrails"],
 )
 @pytest.mark.parametrize(
     "vector_store",
-    # ["astra_db", "cassandra"],
-    ["cassandra"],
+    ["astra_db", "cassandra"],
 )
 @pytest.mark.parametrize(
-    "embedding,llm,config",
+    "embedding,llm",
     [
-        ("openai_embedding", "openai_llm", "openai_nemo"),
         ("openai_ada002_embedding", "openai_gpt35turbo_llm"),
         ("openai_3small_embedding", "openai_gpt4_llm"),
         ("openai_3large_embedding", "openai_gpt4_llm_streaming"),
@@ -250,7 +265,7 @@ def nvidia_aifoundation_mixtral8x7b_llm():
         ),
     ],
 )
-def test_rag(test_case, vector_store, embedding, llm, config, request, record_property):
+def test_rag(test_case, vector_store, embedding, llm, request, record_property):
     set_current_test_info(
         "langchain::" + test_case,
         f"{llm},{embedding},{vector_store}",
@@ -258,13 +273,11 @@ def test_rag(test_case, vector_store, embedding, llm, config, request, record_pr
     resolved_vector_store = request.getfixturevalue(vector_store)
     resolved_embedding = request.getfixturevalue(embedding)
     resolved_llm = request.getfixturevalue(llm)
-    resolved_config = request.getfixturevalue(config)
     _run_test(
         test_case,
         resolved_vector_store,
         resolved_embedding,
         resolved_llm,
-        resolved_config,
         record_property,
     )
 
@@ -273,11 +286,11 @@ def _run_test(
     test_case: str,
     vector_store_context,
     embedding,
-    llm,
-    resolved_config,
+    resolved_llm,
     record_property,
 ):
     vector_store = vector_store_context.new_langchain_vector_store(embedding=embedding)
+    llm = resolved_llm["llm"]
     if test_case == "rag_custom_chain":
         run_rag_custom_chain(
             vector_store=vector_store, llm=llm, record_property=record_property
@@ -293,11 +306,13 @@ def _run_test(
     elif test_case == "trulens":
         run_trulens_evaluation(vector_store=vector_store, llm=llm)
     elif test_case == "nemo_guardrails":
-        run_nemo_guardrails(
-            vector_store=vector_store,
-            llm=llm,
-            config=resolved_config,
-        )
+        config = resolved_llm["nemo_config"]
+        if config:
+            # NeMo creates the LLM internally using the config
+            run_nemo_guardrails(
+                vector_store=vector_store,
+                config=config,
+            )
     else:
         raise ValueError(f"Unknown test case: {test_case}")
 
