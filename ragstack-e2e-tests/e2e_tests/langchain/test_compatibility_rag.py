@@ -75,11 +75,6 @@ def openai_gpt4_llm():
 
 
 @pytest.fixture
-def openai_embedding():
-    return OpenAIEmbeddings(openai_api_key=get_required_env("OPEN_AI_KEY"))
-
-
-@pytest.fixture
 def openai_gpt4_llm_streaming():
     model = "gpt-4"
     return {
@@ -308,6 +303,8 @@ def _run_test(
                 vector_store=vector_store,
                 config=config,
             )
+        else:
+            pytest.skip("Skipping NeMo test for this configuration")
     else:
         raise ValueError(f"Unknown test case: {test_case}")
 
