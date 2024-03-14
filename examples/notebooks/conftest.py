@@ -28,7 +28,7 @@ client = AstraDB(
 )
 
 
-def try_delete_with_backoff(collection: str, sleep=1, max_tries=5):
+def try_delete_with_backoff(collection: str, sleep=1, max_tries=2):
     try:
         logging.info(f"deleting collection {collection}")
         response = client.delete_collection(
