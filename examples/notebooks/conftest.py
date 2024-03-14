@@ -28,7 +28,7 @@ client = AstraDB(
 )
 
 
-def try_delete_with_backoff(collection: str, sleep=1, max_tries=5):
+def try_delete_with_backoff(collection: str, sleep=1, max_tries=2):
     try:
         logging.info(f"deleting collection {collection}")
         response = client.delete_collection(
@@ -45,10 +45,8 @@ def try_delete_with_backoff(collection: str, sleep=1, max_tries=5):
         try_delete_with_backoff(collection, sleep * 2, max_tries)
 
 
-@pytest.fixture
-def cleanup_astra():
+def before_notebook():
     collections = client.get_collections().get("status").get("collections")
     logging.info(f"Existing collections: {collections}")
     for collection in collections:
         try_delete_with_backoff(collection)
-    yield
