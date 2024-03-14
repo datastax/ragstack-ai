@@ -1,21 +1,16 @@
 from e2e_tests.langchain.rag_application import (
     BASIC_QA_PROMPT,
     SAMPLE_DATA,
-    format_docs,
 )
 
 from langchain.schema.vectorstore import VectorStore
-from langchain.schema.language_model import BaseLanguageModel
 from langchain.schema.output_parser import StrOutputParser
 from langchain.schema.retriever import BaseRetriever
-from langchain.schema.runnable import Runnable
-from langchain_core.runnables import RunnablePassthrough
 from langchain.prompts import PromptTemplate
 from langchain.llms.base import BaseLLM
 
 
 from nemoguardrails import RailsConfig, LLMRails
-from nemoguardrails.integrations.langchain.runnable_rails import RunnableRails
 from nemoguardrails.actions.actions import ActionResult
 
 
@@ -29,7 +24,7 @@ def _config(engine, model) -> str:
 
 
 def _colang() -> str:
-    return f"""
+    return """
     define user express greeting
         "Hi, how are you?"
 
