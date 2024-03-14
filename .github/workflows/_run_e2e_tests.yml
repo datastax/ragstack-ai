@@ -82,12 +82,9 @@ jobs:
       - name: Run notebook tests
         if: ${{ inputs.run-notebooks }}
         env:
-          ASTRA_DB_TOKEN: "${{ secrets[inputs.astradb-token-secret-name] }}"
           ASTRA_DB_APPLICATION_TOKEN: "${{ secrets[inputs.astradb-token-secret-name] }}"
-          ASTRA_DB_ENDPOINT: "${{ steps.astra-db.outputs.db_endpoint }}"
           ASTRA_DB_API_ENDPOINT: "${{ steps.astra-db.outputs.db_endpoint }}"
           ASTRA_DB_ID: "${{ steps.astra-db.outputs.db_id }}"
-          OPEN_AI_KEY: "${{ secrets.E2E_TESTS_OPEN_AI_KEY }}"
           OPENAI_API_KEY: "${{ secrets.E2E_TESTS_OPEN_AI_KEY }}"
           LANGCHAIN_API_KEY: "${{ secrets.E2E_TESTS_LANGCHAIN_API_KEY }}"
           LLAMA_CLOUD_API_KEY: "${{ secrets.E2E_TESTS_LLAMA_CLOUD_API_KEY }}"
@@ -104,14 +101,13 @@ jobs:
         if: ${{ inputs.run-tests }}
         env:
           VECTOR_DATABASE_TYPE: "${{ inputs.vector-database-type }}"
-          ASTRA_DB_TOKEN: "${{ secrets[inputs.astradb-token-secret-name] }}"
-          ASTRA_DB_ENDPOINT: "${{ steps.astra-db.outputs.db_endpoint }}"
+          ASTRA_DB_APPLICATION_TOKEN: "${{ secrets[inputs.astradb-token-secret-name] }}"
+          ASTRA_DB_API_ENDPOINT: "${{ steps.astra-db.outputs.db_endpoint }}"
           ASTRA_DB_ID: "${{ steps.astra-db.outputs.db_id }}"
           ASTRA_DB_ENV: "${{ inputs.astradb-env }}"
-          OPEN_AI_KEY: "${{ secrets.E2E_TESTS_OPEN_AI_KEY }}"
           OPENAI_API_KEY: "${{ secrets.E2E_TESTS_OPEN_AI_KEY }}"
-          AZURE_OPEN_AI_KEY: "${{ secrets.E2E_TESTS_AZURE_OPEN_AI_KEY }}"
-          AZURE_OPEN_AI_ENDPOINT: "${{ secrets.E2E_TESTS_AZURE_OPEN_AI_ENDPOINT }}"
+          AZURE_OPENAI_API_KEY: "${{ secrets.E2E_TESTS_AZURE_OPENAI_API_KEY }}"
+          AZURE_OPENAI_ENDPOINT: "${{ secrets.E2E_TESTS_AZURE_OPEN_AI_ENDPOINT }}"
           AZURE_BLOB_STORAGE_CONNECTION_STRING: "${{ secrets.E2E_TESTS_AZURE_BLOB_STORAGE_CONNECTION_STRING }}"
           GCLOUD_ACCOUNT_KEY_JSON: "${{ secrets.E2E_TESTS_GCLOUD_ACCOUNT_KEY_JSON }}"
           GOOGLE_API_KEY: "${{ secrets.E2E_TESTS_GOOGLE_API_KEY }}"

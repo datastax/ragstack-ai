@@ -241,8 +241,8 @@ class AstraDBVectorStoreHandler(VectorStoreHandler):
     @classmethod
     def initialize(cls):
         if not cls.token:
-            cls.token = get_required_env("ASTRA_DB_TOKEN")
-            cls.api_endpoint = get_required_env("ASTRA_DB_ENDPOINT")
+            cls.token = get_required_env("ASTRA_DB_APPLICATION_TOKEN")
+            cls.api_endpoint = get_required_env("ASTRA_DB_API_ENDPOINT")
             cls.env = os.environ.get("ASTRA_DB_ENV", "prod").lower()
             cls.database_id = get_required_env("ASTRA_DB_ID")
             cls.default_astra_client = AstraDB(

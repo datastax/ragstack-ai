@@ -23,17 +23,15 @@ if "GOOGLE_APPLICATION_CREDENTIALS" not in os.environ:
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/tmp/gcloud-account-key.json"
 
 client = AstraDB(
-    token=get_required_env("ASTRA_DB_TOKEN"),
-    api_endpoint=get_required_env("ASTRA_DB_ENDPOINT")
+    token=get_required_env("ASTRA_DB_APPLICATION_TOKEN"),
+    api_endpoint=get_required_env("ASTRA_DB_API_ENDPOINT"),
 )
 
 
 def try_delete_with_backoff(collection: str, sleep=1, max_tries=2):
     try:
         logging.info(f"deleting collection {collection}")
-        response = client.delete_collection(
-            collection
-        )
+        response = client.delete_collection(collection)
         logging.info(f"delete collection {collection} response: {str(response)}")
     except Exception as e:
         max_tries -= 1
