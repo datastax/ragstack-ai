@@ -36,19 +36,38 @@ runs:
       run: |
         set -x
         (curl -Ls "https://dtsx.io/get-astra-cli" | bash) || true
-        /home/runner/.astra/cli/astra db create -v "${{ inputs.db-name }}" \
+        # now catch error
+        (/home/runner/.astra/cli/astra db create -v "${{ inputs.db-name }}" \
           --env "${{ inputs.env }}" \
           -k default_keyspace \
           --token "${{ inputs.astra-token }}" \
           --vector \
           --region "${{ inputs.region }}" \
           --cloud "${{ inputs.cloud }}" \
-          --timeout 600
+          --timeout 1200) || "Failed to create database, check if creation is still in progress"
 
-        describe_out=$(/home/runner/.astra/cli/astra db describe "${{ inputs.db-name }}" \
-         --token "${{ inputs.astra-token }}" --env "${{ inputs.env }}" -o json)
+        while true; do
+          describe_out=$(/home/runner/.astra/cli/astra db describe "${{ inputs.db-name }}" \
+              --token "${{ inputs.astra-token }}" --env "${{ inputs.env }}" -o json)
+          status=$(echo "$describe_out" | jq -r '.data.status')
+          database_id=$(echo "$describe_out" | jq -r '.data.id')
+          if [ "$status" == "ACTIVE" ]; then
+            break
+          fi
+          if [ "$status" == "INITIALIZING" ]; then
+            echo "Database is not active, status: $status"
+            sleep 10
+          fi
+          echo "Database creation failed, status: $status"
+          exit 1
+        done
+        status=$(echo "$describe_out" | jq -r '.data.status')
+        if [ "$status" != "ACTIVE" ]; then
+          echo "Database is not active, status: $status"
+          
+        fi
 
-        database_id=$(echo "$describe_out" | jq -r '.data.id')
+        
         echo "Found database id: $database_id"
         domain="astra"
         if [ "${{ inputs.env }}" == "DEV" ]; then
