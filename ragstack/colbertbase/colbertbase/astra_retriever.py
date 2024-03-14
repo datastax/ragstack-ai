@@ -118,9 +118,15 @@ class ColbertAstraRetriever():
             docparts.update((row.title, row.part) for row in rows)
         # score each document
         scores = {}
+        futures = []
         for title, part in docparts:
+            future = self.astra.session.execute_async(self.astra.query_colbert_parts_stmt, [title, part])
+            futures.append((future, title, part))
+
+        for title, part in docparts:
+            # blocking call until the future is done
+            rows = future.result()
             # find all the found parts so that we can do max similarity search
-            rows = self.astra.session.execute(self.astra.query_colbert_parts_stmt, [title, part])
             embeddings_for_part = [tensor(row.bert_embedding) for row in rows]
             # score based on The function returns the highest similarity score
             # (i.e., the maximum dot product value) between the query vector and any of the embedding vectors in the list.
