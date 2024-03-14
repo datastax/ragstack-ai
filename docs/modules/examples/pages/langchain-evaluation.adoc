@@ -38,7 +38,7 @@ pip install ragstack-ai langchain[openai]
 import os
 from dotenv import load_dotenv
 from langchain.embeddings.openai import OpenAIEmbeddings
-from langchain_community.vectorstores import AstraDB
+from langchain_astradb import AstraDBVectorStore
 from langchain_community.document_loaders import TextLoader
 from langchain_community.document_loaders import PyPDFLoader
 from langchain.evaluation import EvaluatorType
@@ -55,7 +55,7 @@ from langchain.chains import RetrievalQA
 [source,python]
 ----
 embedding = OpenAIEmbeddings(openai_api_key=openai_api_key)
-vstore = AstraDB(
+vstore = AstraDBVectorStore(
     collection_name=collection,
     embedding=embedding,
     token=astra_token,

@@ -57,7 +57,7 @@ import os
 import requests
 
 from dotenv import load_dotenv
-from langchain_community.vectorstores import AstraDB
+from langchain_astradb import AstraDBVectorStore
 from langchain_core.documents import Document
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import PromptTemplate
@@ -144,7 +144,7 @@ See the Colab notebook linked at the top of this page for a more detailed invest
 +
 [source,python]
 ----
-astra_db_store = AstraDB(
+astra_db_store = AstraDBVectorStore(
     collection_name="langchain_unstructured",
     embedding=OpenAIEmbeddings(),
     token=os.getenv("ASTRA_DB_APPLICATION_TOKEN"),
@@ -236,7 +236,7 @@ import requests
 
 from dotenv import load_dotenv
 from langchain_community.document_loaders import unstructured
-from langchain_community.vectorstores import AstraDB
+from langchain_astradb import AstraDBVectorStore
 from langchain_core.documents import Document
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import PromptTemplate
@@ -269,7 +269,7 @@ elements = unstructured.get_elements_from_api(
     pdf_infer_table_structure=True,
 )
 
-astra_db_store = AstraDB(
+astra_db_store = AstraDBVectorStore(
     collection_name="langchain_unstructured",
     embedding=OpenAIEmbeddings(),
     token=os.getenv("ASTRA_DB_APPLICATION_TOKEN"),

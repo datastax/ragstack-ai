@@ -69,9 +69,9 @@ embedding = NVIDIAEmbeddings(
 [source,python]
 ----
 import os
-from langchain.vectorstores.astradb import AstraDB
+from langchain_astradb import AstraDBVectorStore
 
-vstore = AstraDB(
+vstore = AstraDBVectorStore(
     collection_name=collection,
     embedding=embedding,
     token=os.getenv("ASTRA_DB_APPLICATION_TOKEN"),
@@ -194,7 +194,7 @@ vstore.delete_collection()
 ----
 from datasets import load_dataset
 from langchain_nvidia_ai_endpoints import NVIDIAEmbeddings, ChatNVIDIA
-from langchain.vectorstores.astradb import AstraDB
+from langchain_astradb import AstraDBVectorStore
 from langchain.schema import Document
 from langchain.prompts import ChatPromptTemplate
 from langchain.chat_models import ChatOpenAI
@@ -210,7 +210,7 @@ embedding = NVIDIAEmbeddings(nvidia_api_key=nvidia_api_key, model="nvolveqa_40k"
 collection_name = "test"
 astra_token = os.getenv("ASTRA_DB_APPLICATION_TOKEN")
 astra_api_endpoint = os.getenv("ASTRA_DB_API_ENDPOINT")
-vstore = AstraDB(collection_name=collection_name, embedding=embedding, 
+vstore = AstraDBVectorStore(collection_name=collection_name, embedding=embedding,
                  token=astra_token, api_endpoint=astra_api_endpoint)
 print("Astra vector store configured")
 

@@ -17,7 +17,7 @@ from llama_index.vector_stores import AstraDBVectorStore
 
 from langchain_community.chat_models import AzureChatOpenAI
 from langchain_community.embeddings import AzureOpenAIEmbeddings
-from langchain.vectorstores.astradb import AstraDB
+from langchain_astradb import AstraDBVectorStore as LangChainAstraDBVectorStore
 
 # this code assumes the following env vars exist in a .env file:
 #
@@ -171,7 +171,7 @@ def get_azure_embeddings_model(framework: Framework):
 
 def get_astra_vector_store(framework: Framework, collection_name: str):
     if framework == Framework.LANG_CHAIN:
-        return AstraDB(
+        return LangChainAstraDBVectorStore(
             collection_name=collection_name,
             embedding=get_azure_embeddings_model(framework),
             token=os.getenv("ASTRA_DB_TOKEN"),

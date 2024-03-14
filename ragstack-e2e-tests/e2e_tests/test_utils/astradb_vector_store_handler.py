@@ -8,7 +8,7 @@ from typing import List, Callable
 
 import cassio
 from langchain_community.chat_message_histories import AstraDBChatMessageHistory
-from langchain_community.vectorstores.astradb import AstraDB
+from langchain_astradb import AstraDBVectorStore as LangChainVectorStore
 from langchain_core.chat_history import BaseChatMessageHistory
 
 try:
@@ -30,7 +30,7 @@ from e2e_tests.test_utils.cassandra_vector_store_handler import (
     CassandraChatMessageHistory,
 )
 
-from astrapy.db import AstraDB as AstraPyClient
+from astrapy.db import AstraDB
 
 
 @dataclass
@@ -94,7 +94,9 @@ class DeleteCollectionHandler:
         self.executor.shutdown(wait=wait)
 
 
-class EnhancedAstraDBLangChainVectorStore(EnhancedLangChainVectorStore, AstraDB):
+class EnhancedAstraDBLangChainVectorStore(
+    EnhancedLangChainVectorStore, LangChainVectorStore
+):
     def put_document(
         self, doc_id: str, document: str, metadata: dict, vector: List[float]
     ) -> None:
@@ -121,7 +123,6 @@ class EnhancedAstraDBLangChainVectorStore(EnhancedLangChainVectorStore, AstraDB)
 class EnhancedAstraDBLlamaIndexVectorStore(
     AstraDBVectorStore, EnhancedLlamaIndexVectorStore
 ):
-
     def put_document(
         self, doc_id: str, document: str, metadata: dict, vector: List[float]
     ) -> None:
@@ -244,7 +245,7 @@ class AstraDBVectorStoreHandler(VectorStoreHandler):
             cls.api_endpoint = get_required_env("ASTRA_DB_ENDPOINT")
             cls.env = os.environ.get("ASTRA_DB_ENV", "prod").lower()
             cls.database_id = get_required_env("ASTRA_DB_ID")
-            cls.default_astra_client = AstraPyClient(
+            cls.default_astra_client = AstraDB(
                 api_endpoint=cls.api_endpoint, token=cls.token
             )
             cls.delete_collection_handler = DeleteCollectionHandler(
