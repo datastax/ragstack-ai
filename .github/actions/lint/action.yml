@@ -15,3 +15,13 @@ runs:
       run: |
         tox -c ragstack-e2e-tests -e lint
         tox -e lint-yaml
+
+    - name: Notebook
+      shell: bash
+      run: |
+        python scripts/format-example-notebooks.py
+        if [ -n "$(git status --porcelain)" ]; then
+          echo "Notebooks are not formatted"
+          echo "Please run 'python scripts/format-example-notebooks.py' and commit the changes."
+          exit 1
+        fi
