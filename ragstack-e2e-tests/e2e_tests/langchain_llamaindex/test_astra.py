@@ -6,7 +6,7 @@ from e2e_tests.conftest import get_required_env, is_astra
 from langchain.chains import ConversationalRetrievalChain
 from langchain.chat_models import ChatOpenAI
 from langchain.embeddings import OpenAIEmbeddings
-from langchain.vectorstores.astradb import AstraDB
+from langchain_astradb import AstraDBVectorStore as LangChainAstraDBVectorStore
 
 try:
     # llamaindex 0.9.x
@@ -54,7 +54,7 @@ def test_ingest_llama_retrieve_langchain(astra_ref: AstraRef):
 
     langchain_embeddings = OpenAIEmbeddings(openai_api_key=openai_key)
 
-    langchain_vector_db = AstraDB(
+    langchain_vector_db = LangChainAstraDBVectorStore(
         collection_name=collection,
         embedding=langchain_embeddings,
         token=token,
@@ -157,7 +157,7 @@ def test_ingest_langchain_retrieve_llama_index(astra_ref: AstraRef):
 
     langchain_embeddings = OpenAIEmbeddings(openai_api_key=openai_key)
 
-    vector_db = AstraDB(
+    vector_db = LangChainAstraDBVectorStore(
         collection_name=collection,
         embedding=langchain_embeddings,
         token=token,
