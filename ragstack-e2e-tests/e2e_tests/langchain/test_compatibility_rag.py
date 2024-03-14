@@ -121,10 +121,7 @@ def azure_openai_gpt35turbo_llm():
             openai_api_type="azure",
             openai_api_version="2023-07-01-preview",
         ),
-        "nemo_config": {
-            "engine": "azure",
-            "model": "gpt-3.5-turbo",
-        },
+        "nemo_config": None,
     }
 
 
