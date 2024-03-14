@@ -48,7 +48,7 @@ def test_ingest_llama_retrieve_langchain(astra_ref: AstraRef):
     print("Running test_ingest_llama_retrieve_langchain")
     token = astra_ref.token
     api_endpoint = astra_ref.api_endpoint
-    openai_key = get_required_env("OPEN_AI_KEY")
+    openai_key = get_required_env("OPENAI_API_KEY")
     collection = astra_ref.collection
     llm_model = "gpt-3.5-turbo"
 
@@ -145,7 +145,7 @@ def test_ingest_langchain_retrieve_llama_index(astra_ref: AstraRef):
     print("Running test_ingest_langchain_retrieve_llama_index")
     token = astra_ref.token
     api_endpoint = astra_ref.api_endpoint
-    openai_key = get_required_env("OPEN_AI_KEY")
+    openai_key = get_required_env("OPENAI_API_KEY")
     collection = astra_ref.collection
     llm_model = "gpt-3.5-turbo"
 

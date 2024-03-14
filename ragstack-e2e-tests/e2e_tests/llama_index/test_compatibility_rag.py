@@ -56,7 +56,7 @@ from e2e_tests.test_utils.vector_store_handler import (
 
 
 def _openai_llm(**kwargs) -> OpenAI:
-    return OpenAI(api_key=get_required_env("OPEN_AI_KEY"), **kwargs)
+    return OpenAI(api_key=get_required_env("OPENAI_API_KEY"), **kwargs)
 
 
 @pytest.fixture
@@ -70,7 +70,7 @@ def openai_gpt4_llm():
 
 
 def _openai_embeddings(**kwargs) -> OpenAIEmbedding:
-    return OpenAIEmbedding(api_key=get_required_env("OPEN_AI_KEY"), **kwargs)
+    return OpenAIEmbedding(api_key=get_required_env("OPENAI_API_KEY"), **kwargs)
 
 
 @pytest.fixture
@@ -94,8 +94,8 @@ def azure_openai_gpt35turbo_llm():
     # but the targeting model must be gpt-35-turbo
     return AzureOpenAI(
         azure_deployment=get_required_env("AZURE_OPEN_AI_CHAT_MODEL_DEPLOYMENT"),
-        azure_endpoint=get_required_env("AZURE_OPEN_AI_ENDPOINT"),
-        api_key=get_required_env("AZURE_OPEN_AI_KEY"),
+        azure_endpoint=get_required_env("AZURE_OPENAI_ENDPOINT"),
+        api_key=get_required_env("AZURE_OPENAI_API_KEY"),
         api_version="2023-07-01-preview",
     )
 
@@ -111,8 +111,8 @@ def azure_openai_ada002_embedding():
         AzureOpenAIEmbedding(
             model=model_and_deployment,
             deployment_name=model_and_deployment,
-            api_key=get_required_env("AZURE_OPEN_AI_KEY"),
-            azure_endpoint=get_required_env("AZURE_OPEN_AI_ENDPOINT"),
+            api_key=get_required_env("AZURE_OPENAI_API_KEY"),
+            azure_endpoint=get_required_env("AZURE_OPENAI_ENDPOINT"),
             api_version="2023-05-15",
             embed_batch_size=1,
         ),

@@ -54,7 +54,7 @@ def cassandra():
 
 def _chat_openai(**kwargs) -> ChatOpenAI:
     return ChatOpenAI(
-        openai_api_key=get_required_env("OPEN_AI_KEY"), temperature=0, **kwargs
+        openai_api_key=get_required_env("OPENAI_API_KEY"), temperature=0, **kwargs
     )
 
 
@@ -84,7 +84,7 @@ def openai_gpt4_llm_streaming():
 
 
 def _openai_embeddings(**kwargs) -> OpenAIEmbeddings:
-    return OpenAIEmbeddings(openai_api_key=get_required_env("OPEN_AI_KEY"), **kwargs)
+    return OpenAIEmbeddings(openai_api_key=get_required_env("OPENAI_API_KEY"), **kwargs)
 
 
 @pytest.fixture
@@ -109,8 +109,8 @@ def azure_openai_gpt35turbo_llm():
     return {
         "llm": AzureChatOpenAI(
             azure_deployment=get_required_env("AZURE_OPEN_AI_CHAT_MODEL_DEPLOYMENT"),
-            openai_api_base=get_required_env("AZURE_OPEN_AI_ENDPOINT"),
-            openai_api_key=get_required_env("AZURE_OPEN_AI_KEY"),
+            azure_endpoint=get_required_env("AZURE_OPENAI_ENDPOINT"),
+            openai_api_key=get_required_env("AZURE_OPENAI_API_KEY"),
             openai_api_type="azure",
             openai_api_version="2023-07-01-preview",
         ),
@@ -127,8 +127,8 @@ def azure_openai_ada002_embedding():
     return AzureOpenAIEmbeddings(
         model=model_and_deployment,
         deployment=model_and_deployment,
-        openai_api_key=get_required_env("AZURE_OPEN_AI_KEY"),
-        openai_api_base=get_required_env("AZURE_OPEN_AI_ENDPOINT"),
+        openai_api_key=get_required_env("AZURE_OPENAI_API_KEY"),
+        azure_endpoint=get_required_env("AZURE_OPENAI_ENDPOINT"),
         openai_api_type="azure",
         openai_api_version="2023-05-15",
         chunk_size=1,

@@ -46,8 +46,8 @@ def llama_parse_markdown():
 def test_llama_parse(vector_store, llama_parse_instance, request):
     vector_store_context: VectorStoreTestContext = request.getfixturevalue(vector_store)
     lp_type, lp = request.getfixturevalue(llama_parse_instance)
-    llm = OpenAI(api_key=get_required_env("OPEN_AI_KEY"))
-    embedding = OpenAIEmbedding(api_key=get_required_env("OPEN_AI_KEY"))
+    llm = OpenAI(api_key=get_required_env("OPENAI_API_KEY"))
+    embedding = OpenAIEmbedding(api_key=get_required_env("OPENAI_API_KEY"))
 
     set_current_test_info(
         "llama_index::llama_parse",
