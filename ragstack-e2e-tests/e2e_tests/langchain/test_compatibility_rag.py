@@ -109,6 +109,7 @@ def azure_openai_gpt35turbo_llm():
     return {
         "llm": AzureChatOpenAI(
             azure_deployment=get_required_env("AZURE_OPEN_AI_CHAT_MODEL_DEPLOYMENT"),
+            azure_endpoint=get_required_env("AZURE_OPENAI_ENDPOINT"),
             openai_api_key=get_required_env("AZURE_OPENAI_API_KEY"),
             openai_api_type="azure",
             openai_api_version="2023-07-01-preview",
