@@ -112,10 +112,16 @@ class ColbertAstraRetriever():
 
         # find the most relevant documents
         docparts = set()
+        doc_futures = []
         for qv in query_encodings:
             # per token based retrieval
-            rows = self.astra.session.execute(self.astra.query_colbert_ann_stmt, [list(qv), top_k])
+            doc_future = self.astra.session.execute_async(self.astra.query_colbert_ann_stmt, [list(qv), top_k])
+            doc_futures.append(doc_future)
+
+        for future in doc_futures:
+            rows = future.result()
             docparts.update((row.title, row.part) for row in rows)
+
         # score each document
         scores = {}
         futures = []
