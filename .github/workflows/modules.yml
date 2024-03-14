@@ -19,39 +19,39 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-    - name: Set up Python 3.10
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.10'
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.10"
 
-    - name: Cache Poetry virtualenv and dependencies
-      uses: actions/cache@v2
-      with:
-        path: |
-          ~/.cache/pypoetry/virtualenvs
-          **/poetry.lock
-        key: ${{ runner.os }}-poetry-${{ hashFiles('**/pyproject.toml') }}
-        restore-keys: |
-          ${{ runner.os }}-poetry-
+      - name: Cache Poetry virtualenv and dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cache/pypoetry/virtualenvs
+            **/poetry.lock
+          key: ${{ runner.os }}-poetry-${{ hashFiles('**/pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-poetry-
 
-    - name: Install Poetry
-      run: |
-        curl -sSL https://install.python-poetry.org | python3 -
-        echo "$HOME/.local/bin" >> $GITHUB_PATH
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
 
-    - name: Install dependencies
-      run: |
-        cd ragstack/colbertbase
-        poetry install
+      - name: Install dependencies
+        run: |
+          cd ragstack/colbertbase
+          poetry install
 
-    - name: Lint with flake8
-      run: |
-        cd ragstack/colbertbase
-        poetry run flake8 ./colbertbase
+      - name: Lint with flake8
+        run: |
+          cd ragstack/colbertbase
+          poetry run flake8 ./colbertbase
 
-    - name: Test with pytest
-      run: |
-        cd ragstack/colbertbase
-        poetry run pytest
+      - name: Test with pytest
+        run: |
+          cd ragstack/colbertbase
+          poetry run pytest
