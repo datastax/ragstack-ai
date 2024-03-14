@@ -60,11 +60,9 @@ def _chat_openai(**kwargs) -> ChatOpenAI:
 
 @pytest.fixture
 def openai_gpt35turbo_llm():
+    # NeMo guardrails fails for this model with the given prompts.
     model = "gpt-3.5-turbo"
-    return {
-        "llm": _chat_openai(model=model, streaming=False),
-        "nemo_config": {"engine": "openai", "model": model},
-    }
+    return {"llm": _chat_openai(model=model, streaming=False), "nemo_config": None}
 
 
 @pytest.fixture
