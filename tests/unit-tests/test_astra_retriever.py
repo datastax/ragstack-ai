@@ -1,7 +1,7 @@
 import torch
 import pytest
 
-from colbertbase import max_similarity_torch 
+from ragstack.colbert.astra_retriever import max_similarity_torch 
 
 def test_max_similarity_torch():
     # Example query vector and embedding list

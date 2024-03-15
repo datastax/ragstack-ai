@@ -3,24 +3,25 @@
 
 from abc import ABC, abstractmethod
 from typing import List
+from .constant import DEFAULT_COLBERT_DIM, DEFAULT_COLBERT_MODEL
 import uuid
 
-class PerTokenEmbeddings():
 
+class PerTokenEmbeddings:
     __embeddings: List[float]
 
     def __init__(
-            self,
-            id: int,
-            part: int,
-            parent_id: uuid.UUID = None,
-            title: str = "",
-        ):
+        self,
+        id: int,
+        part: int,
+        parent_id: uuid.UUID = None,
+        title: str = "",
+    ):
         self.id = id
         self.parent_id = parent_id
         self.__embeddings = []
         self.title = title
-        self.part =part
+        self.part = part
 
     def add_embeddings(self, embeddings: List[float]):
         self.__embeddings = embeddings
@@ -37,21 +38,22 @@ class PerTokenEmbeddings():
     def part(self):
         return self.part
 
-class PassageEmbeddings():
+
+class PassageEmbeddings:
     __token_embeddings: List[PerTokenEmbeddings]
     __text: str
     __title: str
     __id: uuid.UUID
 
     def __init__(
-            self,
-            text: str,
-            title: str = "",
-            part: int = 0,
-            id: uuid.UUID = None,
-            model: str = "colbert-ir/colbertv2.0",
-            dim: int = 128,
-        ):
+        self,
+        text: str,
+        title: str = "",
+        part: int = 0,
+        id: uuid.UUID = None,
+        model: str = DEFAULT_COLBERT_MODEL,
+        dim: int = DEFAULT_COLBERT_DIM,
+    ):
         self.__text = text
         self.__token_embeddings = []
         if id is None:
@@ -61,7 +63,7 @@ class PassageEmbeddings():
         self.__model = model
         self.__dim = dim
         self.__title = title
-        self.__part  =  part
+        self.__part = part
 
     def model(self):
         return self.__model
@@ -80,7 +82,7 @@ class PassageEmbeddings():
 
     def id(self):
         return self.__id
-    
+
     def part(self):
         return self.__part
 
@@ -92,16 +94,20 @@ class PassageEmbeddings():
             if token.token_id == token_id:
                 return token
         return None
-    
+
     def get_all_token_embeddings(self) -> List[PerTokenEmbeddings]:
         return self.__token_embeddings
 
     def get_text(self):
         return self.__text
-    
-#
-# This is the base class for token based embedding
-# ColBERT token embeddings is an example of a class that inherits from this class
+
+
+"""
+This is the base class for token based embedding
+ColBERT token embeddings is an example of a class that inherits from this class
+"""
+
+
 class TokenEmbeddings(ABC):
     """Interface for token embedding models."""
 

@@ -6,32 +6,29 @@ from cassandra.concurrent import execute_concurrent_with_args
 
 from .token_embedding import PassageEmbeddings
 
+
 def required_cred(cred: str):
     if cred is None or cred == "":
         raise ValueError("Please provide credentials")
 
+
 class AstraDB:
     def __init__(
-            self,
-            secure_connect_bundle: str="",
-            astra_token: str=None,
-            keyspace: str="colbert128",
-            verbose: bool=False,
-            timeout: int=60,
-            **kwargs,
+        self,
+        secure_connect_bundle: str = "",
+        astra_token: str = None,
+        keyspace: str = "colbert128",
+        verbose: bool = False,
+        timeout: int = 60,
+        **kwargs,
     ):
         required_cred(secure_connect_bundle)
         required_cred(astra_token)
 
         # self.cluster = Cluster(**kwargs)
         self.cluster = Cluster(
-            cloud={
-                'secure_connect_bundle': secure_connect_bundle
-            },
-            auth_provider=PlainTextAuthProvider(
-                'token',
-                astra_token
-            )
+            cloud={"secure_connect_bundle": secure_connect_bundle},
+            auth_provider=PlainTextAuthProvider("token", astra_token),
         )
         self.keyspace = keyspace
         self.session = self.cluster.connect()
@@ -41,16 +38,13 @@ class AstraDB:
         print(f"set up keyspace {keyspace}, tables and indexes...")
 
         if keyspace not in self.cluster.metadata.keyspaces.keys():
-            raise ValueError(f"Keyspace '{keyspace}' does not exist. please create it first.")
+            raise ValueError(
+                f"Keyspace '{keyspace}' does not exist. please create it first."
+            )
 
         self.create_tables()
 
         # prepare statements
-
-        chunk_counts_cql = f"""
-        SELECT COUNT(*) FROM {keyspace}.chunks
-        """
-        self.chunk_counts_stmt = self.session.prepare(chunk_counts_cql)
 
         insert_chunk_cql = f"""
         INSERT INTO {keyspace}.chunks (title, part, body)
@@ -89,22 +83,27 @@ class AstraDB:
         print("statements are prepared")
 
     def create_tables(self):
-        self.session.execute(f"""
+        self.session.execute(
+            f"""
             use {self.keyspace};
-        """)
+        """
+        )
         print(f"Using keyspace {self.keyspace}")
 
-        self.session.execute("""
+        self.session.execute(
+            """
             CREATE TABLE IF NOT EXISTS chunks(
                 title text,
                 part int,
                 body text,
                 PRIMARY KEY (title, part)
             );
-        """)
+        """
+        )
         print("Created chunks table")
 
-        self.session.execute("""
+        self.session.execute(
+            """
             CREATE TABLE IF NOT EXISTS colbert_embeddings (
                 title text,
                 part int,
@@ -112,15 +111,18 @@ class AstraDB:
                 bert_embedding vector<float, 128>,
                 PRIMARY KEY (title, part, embedding_id)
             );
-        """)
+        """
+        )
         print("Created colbert_embeddings table")
 
-        self.create_index("""
+        self.create_index(
+            """
             CREATE CUSTOM INDEX colbert_ann ON colbert_embeddings(bert_embedding) USING 'StorageAttachedIndex'
   WITH OPTIONS = { 'similarity_function': 'DOT_PRODUCT' };
-        """)
+        """
+        )
         print("Created index on colbert_embeddings table")
-                             
+
     def create_index(self, command: str):
         try:
             self.session.execute(command)
@@ -135,14 +137,11 @@ class AstraDB:
     def ping(self):
         self.session.execute("select release_version from system.local").one()
 
-
     def insert_chunk(self, title: str, part: int, body: str):
         self.session.execute(self.insert_chunk_stmt, (title, part, body))
-    
+
     def insert_colbert_embeddings_chunks(
-        self,
-        embeddings: List[PassageEmbeddings],
-        delete_existed_passage: bool = False
+        self, embeddings: List[PassageEmbeddings], delete_existed_passage: bool = False
     ) -> None:
         if delete_existed_passage:
             for p in embeddings:
@@ -155,21 +154,28 @@ class AstraDB:
         # insert chunks
         p_parameters = [(p.title(), p.part(), p.get_text()) for p in embeddings]
         execute_concurrent_with_args(self.session, self.insert_chunk_stmt, p_parameters)
-        if (self.verbose):
+        if self.verbose:
             print(f"inserting chunks {p_parameters}")
 
         # insert colbert embeddings
         for passageEmbd in embeddings:
             title = passageEmbd.title()
-            parameters = [(title, e[1].part, e[1].id, e[1].get_embeddings()) for e in enumerate(passageEmbd.get_all_token_embeddings())]
-            execute_concurrent_with_args(self.session, self.insert_colbert_stmt, parameters)
+            parameters = [
+                (title, e[1].part, e[1].id, e[1].get_embeddings())
+                for e in enumerate(passageEmbd.get_all_token_embeddings())
+            ]
+            execute_concurrent_with_args(
+                self.session, self.insert_colbert_stmt, parameters
+            )
 
     def delete_title(self, title: str):
         # Assuming `title` is a variable holding the title you want to delete
         query = "DELETE FROM {}.chunks WHERE title = %s".format(self.keyspace)
         self.session.execute(query, (title,))
 
-        query = "DELETE FROM {}.colbert_embeddings WHERE title = %s".format(self.keyspace)
+        query = "DELETE FROM {}.colbert_embeddings WHERE title = %s".format(
+            self.keyspace
+        )
         self.session.execute(query, (title,))
 
     def close(self):

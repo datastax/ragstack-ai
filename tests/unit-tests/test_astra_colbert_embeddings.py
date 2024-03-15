@@ -1,7 +1,8 @@
 # test_embeddings.py
 
-from colbertbase import ColbertTokenEmbeddings
-from colbertbase import DEFAULT_COLBERT_MODEL, DEFAULT_COLBERT_DIM
+from ragstack.colbert.astra_colbert_embedding import ColbertTokenEmbeddings
+from ragstack.colbert.constant import DEFAULT_COLBERT_MODEL, DEFAULT_COLBERT_DIM
+import torch
 
 def test_colbert_token_embeddings():
     colbert = ColbertTokenEmbeddings()
@@ -24,15 +25,8 @@ def test_colbert_token_embeddings():
     assert passageEmbeddings[0].title() == "test-title"
     assert passageEmbeddings[1].title() == "test-title"
 
-    # test query embedding
-    # queryEmbeddings = colbert.embed_query(text="test-query", title="test-title")
-
     tokenEmbeddings = passagesEmbeddings[0].get_all_token_embeddings()
     assert len(tokenEmbeddings[0].get_embeddings()) == DEFAULT_COLBERT_DIM
-
-    # test query encoding
-    queryEncoding = colbert.encode_query("test-query", query_maxlen=512)
-    assert len(queryEncoding) == 512
 
 
 def test_colbert_token_embeddings_with_params():
@@ -55,6 +49,18 @@ def test_colbert_token_embeddings_with_params():
     tokenEmbeddings = passagesEmbeddings[0].get_all_token_embeddings()
     assert len(tokenEmbeddings) > 1
     assert len(tokenEmbeddings[0].get_embeddings()) == DEFAULT_COLBERT_DIM
+
+def test_colbert_query_embeddings():
+    colbert = ColbertTokenEmbeddings()
+
+    queryTensor = colbert.embed_query("who is the president of the united states?")
+    assert isinstance(queryTensor, torch.Tensor)
+    assert queryTensor.shape == (11, 128)
+
+
+    # test query encoding
+    queryEncoding = colbert.encode_query("test-query", query_maxlen=512)
+    assert len(queryEncoding) == 512
 
 
 
