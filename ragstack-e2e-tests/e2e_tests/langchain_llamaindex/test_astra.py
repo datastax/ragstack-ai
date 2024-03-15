@@ -6,9 +6,9 @@ from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 
 from e2e_tests.conftest import get_required_env, is_astra
 from langchain.chains import ConversationalRetrievalChain
-from langchain.chat_models import ChatOpenAI
-from langchain.embeddings import OpenAIEmbeddings
-from langchain.vectorstores.astradb import AstraDBVectorStore as LangChainAstraDBVectorStore
+from langchain.vectorstores.astradb import (
+    AstraDBVectorStore as LangChainAstraDBVectorStore,
+)
 
 try:
     # llamaindex 0.9.x
