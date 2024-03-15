@@ -17,12 +17,12 @@ from llama_index.vector_stores import AstraDBVectorStore
 
 from langchain_community.chat_models import AzureChatOpenAI
 from langchain_community.embeddings import AzureOpenAIEmbeddings
-from langchain.vectorstores.astradb import AstraDB
+from langchain_astradb import AstraDBVectorStore as LangChainAstraDBVectorStore
 
 # this code assumes the following env vars exist in a .env file:
 #
-# ASTRA_DB_ENDPOINT
-# ASTRA_DB_TOKEN
+# ASTRA_DB_API_ENDPOINT
+# ASTRA_DB_APPLICATION_TOKEN
 # AZURE_OPENAI_ENDPOINT
 # AZURE_OPENAI_API_KEY
 # OPENAI_API_VERSION
@@ -48,13 +48,15 @@ def get_test_data():
         if os.path.isdir(os.path.join(base_path, name)):
             datasets[name] = []
             with open(os.path.join(base_path, name, "rag_dataset.json")) as f:
-                examples = json.load(f)['examples']
+                examples = json.load(f)["examples"]
                 for e in examples:
                     datasets[name].append(e["query"])
-                    golden_set.append({
-                        "query": e["query"],
-                        "response": e["reference_answer"],
-                    })
+                    golden_set.append(
+                        {
+                            "query": e["query"],
+                            "response": e["reference_answer"],
+                        }
+                    )
                 print("Loaded dataset: ", name)
     return datasets, golden_set
 
@@ -75,39 +77,45 @@ def get_feedback_functions(pipeline, golden_set):
     # Define a groundedness feedback function
     grounded = Groundedness(groundedness_provider=azureOpenAI)
     f_groundedness = (
-        Feedback(grounded.groundedness_measure_with_cot_reasons,
-                 name="groundedness")
-        .on(context.collect()).on_output()
+        Feedback(grounded.groundedness_measure_with_cot_reasons, name="groundedness")
+        .on(context.collect())
+        .on_output()
         .aggregate(grounded.grounded_statements_aggregator)
     )
 
     # Question/answer relevance between overall question and answer.
-    f_answer_relevance = (
-        Feedback(azureOpenAI.relevance_with_cot_reasons,
-                 name="answer_relevance")
-        .on_input_output()
-    )
+    f_answer_relevance = Feedback(
+        azureOpenAI.relevance_with_cot_reasons, name="answer_relevance"
+    ).on_input_output()
 
     # Question/statement relevance between question and each context chunk.
     f_context_relevance = (
-        Feedback(azureOpenAI.qs_relevance_with_cot_reasons,
-                 name="context_relevance")
-        .on_input().on(context)
+        Feedback(azureOpenAI.qs_relevance_with_cot_reasons, name="context_relevance")
+        .on_input()
+        .on(context)
         .aggregate(np.mean)
     )
 
     # GroundTruth for comparing the Answer to the Ground-Truth Answer
-    ground_truth_collection = GroundTruthAgreement(
-        golden_set, provider=azureOpenAI)
-    f_answer_correctness = (
-        Feedback(ground_truth_collection.agreement_measure,
-                 name="answer_correctness")
-        .on_input_output()
-    )
-    return [f_answer_relevance, f_context_relevance, f_groundedness, f_answer_correctness]
+    ground_truth_collection = GroundTruthAgreement(golden_set, provider=azureOpenAI)
+    f_answer_correctness = Feedback(
+        ground_truth_collection.agreement_measure, name="answer_correctness"
+    ).on_input_output()
+    return [
+        f_answer_relevance,
+        f_context_relevance,
+        f_groundedness,
+        f_answer_correctness,
+    ]
 
 
-def get_recorder(framework: Framework, pipeline, app_id: str, golden_set: [], feedback_mode: str = "deferred"):
+def get_recorder(
+    framework: Framework,
+    pipeline,
+    app_id: str,
+    golden_set: [],
+    feedback_mode: str = "deferred",
+):
     feedbacks = get_feedback_functions(pipeline, golden_set)
     if framework == Framework.LANG_CHAIN:
         return TruChain(
@@ -124,11 +132,12 @@ def get_recorder(framework: Framework, pipeline, app_id: str, golden_set: [], fe
             feedback_mode=feedback_mode,
         )
     else:
-        raise Exception(
-            f"Unknown framework: {framework} specified for get_recorder()")
+        raise Exception(f"Unknown framework: {framework} specified for get_recorder()")
 
 
-def get_azure_chat_model(framework: Framework, deployment_name: str, model_version: str):
+def get_azure_chat_model(
+    framework: Framework, deployment_name: str, model_version: str
+):
     if framework == Framework.LANG_CHAIN:
         return AzureChatOpenAI(
             azure_deployment=deployment_name,
@@ -146,15 +155,13 @@ def get_azure_chat_model(framework: Framework, deployment_name: str, model_versi
             temperature=temperature,
         )
     else:
-        raise Exception(
-            f"Unknown framework: {framework} specified for getChatModel()")
+        raise Exception(f"Unknown framework: {framework} specified for getChatModel()")
 
 
 def get_azure_embeddings_model(framework: Framework):
     if framework == Framework.LANG_CHAIN:
         return AzureOpenAIEmbeddings(
-            azure_deployment="text-embedding-ada-002",
-            openai_api_version="2023-05-15"
+            azure_deployment="text-embedding-ada-002", openai_api_version="2023-05-15"
         )
     elif framework == Framework.LLAMA_INDEX:
         return AzureOpenAIEmbedding(
@@ -166,27 +173,29 @@ def get_azure_embeddings_model(framework: Framework):
         )
     else:
         raise Exception(
-            f"Unknown framework: {framework} specified for getEmbeddingsModel()")
+            f"Unknown framework: {framework} specified for getEmbeddingsModel()"
+        )
 
 
 def get_astra_vector_store(framework: Framework, collection_name: str):
     if framework == Framework.LANG_CHAIN:
-        return AstraDB(
+        return LangChainAstraDBVectorStore(
             collection_name=collection_name,
             embedding=get_azure_embeddings_model(framework),
-            token=os.getenv("ASTRA_DB_TOKEN"),
-            api_endpoint=os.getenv("ASTRA_DB_ENDPOINT")
+            token=os.getenv("ASTRA_DB_APPLICATION_TOKEN"),
+            api_endpoint=os.getenv("ASTRA_DB_API_ENDPOINT"),
         )
     elif framework == Framework.LLAMA_INDEX:
         return AstraDBVectorStore(
             collection_name=collection_name,
-            api_endpoint=os.getenv("ASTRA_DB_ENDPOINT"),
-            token=os.getenv("ASTRA_DB_TOKEN"),
+            api_endpoint=os.getenv("ASTRA_DB_API_ENDPOINT"),
+            token=os.getenv("ASTRA_DB_APPLICATION_TOKEN"),
             embedding_dimension=1536,
         )
     else:
         raise Exception(
-            f"Unknown framework: {framework} specified for get_astra_vector_store()")
+            f"Unknown framework: {framework} specified for get_astra_vector_store()"
+        )
 
 
 def execute_query(framework: Framework, pipeline, query):
@@ -195,8 +204,7 @@ def execute_query(framework: Framework, pipeline, query):
     elif framework == Framework.LLAMA_INDEX:
         pipeline.query(query)
     else:
-        raise Exception(
-            f"Unknown framework: {framework} specified for execute_query()")
+        raise Exception(f"Unknown framework: {framework} specified for execute_query()")
 
 
 # runs the pipeline across all queries in all known datasets

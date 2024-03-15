@@ -51,7 +51,7 @@ def test_unstructured_api(vector_store, unstructured_mode, request):
     )
 
     vector_store_context: VectorStoreTestContext = request.getfixturevalue(vector_store)
-    embedding = OpenAIEmbeddings(openai_api_key=get_required_env("OPEN_AI_KEY"))
+    embedding = OpenAIEmbeddings(openai_api_key=get_required_env("OPENAI_API_KEY"))
     vector_store = vector_store_context.new_langchain_vector_store(embedding=embedding)
 
     loader = UnstructuredAPIFileLoader(
@@ -67,7 +67,7 @@ def test_unstructured_api(vector_store, unstructured_mode, request):
 
     prompt = PromptTemplate.from_template(BASIC_QA_PROMPT)
     llm = ChatOpenAI(
-        openai_api_key=get_required_env("OPEN_AI_KEY"),
+        openai_api_key=get_required_env("OPENAI_API_KEY"),
         model="gpt-3.5-turbo-16k",
         streaming=False,
         temperature=0,

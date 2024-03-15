@@ -228,7 +228,7 @@ def environment() -> Environment:
     handler = AstraDBVectorStoreHandler(VectorStoreImplementation.ASTRADB)
     vector_db = handler.before_test().new_llamaindex_vector_store(embedding_dimension=3)
     llm = OpenAI(
-        api_key=get_required_env("OPEN_AI_KEY"),
+        api_key=get_required_env("OPENAI_API_KEY"),
         model="gpt-3.5-turbo-16k",
         streaming=False,
         temperature=0,
