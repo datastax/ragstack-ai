@@ -1,7 +1,8 @@
 import logging
 
 import pytest
-from langchain.embeddings import VertexAIEmbeddings, HuggingFaceInferenceAPIEmbeddings
+from langchain.embeddings import HuggingFaceInferenceAPIEmbeddings
+from langchain_google_vertexai import VertexAIEmbeddings
 
 try:
     # llamaindex 0.9.x

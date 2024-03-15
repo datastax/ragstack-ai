@@ -8,12 +8,13 @@ from urllib.parse import urlparse
 import boto3
 import pytest
 from azure.storage.blob import ContainerClient
+from langchain_astradb import AstraDBLoader
+
 from e2e_tests.conftest import set_current_test_info, get_required_env, is_astra
 
 from langchain.document_loaders import CSVLoader, WebBaseLoader, S3DirectoryLoader
 from langchain_community.document_loaders import (
-    AzureBlobStorageContainerLoader,
-    AstraDBLoader,
+    AzureBlobStorageContainerLoader
 )
 
 from e2e_tests.test_utils.astradb_vector_store_handler import AstraDBVectorStoreHandler
@@ -161,7 +162,7 @@ def test_astradb_loader() -> None:
         projection={"foo": 1},
         find_options={"limit": 22},
         filter_criteria={"foo": "bar"},
-        extraction_function=lambda r: "Payload: " + json.dumps(r),
+        page_content_mapper=lambda r: "Payload: " + json.dumps(r),
     )
     docs = loader.load()
 
