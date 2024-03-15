@@ -1,0 +1,400 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>langchain_text_splitters.markdown &mdash; 🦜🔗 LangChain 0.1.12</title>
+  
+  <link rel="canonical" href="https://api.python.langchain.com/en/latest/_modules/langchain_text_splitters/markdown.html" />
+
+  
+
+  <link rel="stylesheet" href="../../_static/css/vendor/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/autodoc_pydantic.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/sphinx-dropdown.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/panels-bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/css/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+<script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+<script src="../../_static/jquery.js"></script> 
+</head>
+<body>
+
+
+<nav id="navbar" class="sk-docs-navbar navbar navbar-expand-md navbar-light bg-light py-0">
+  <div class="container-fluid sk-docs-container px-0">
+    <button
+      id="sk-navbar-toggler"
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="sk-navbar-collapse collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../langchain_api_reference.html">LangChain</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../core_api_reference.html">Core</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../community_api_reference.html">Community</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../experimental_api_reference.html">Experimental</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../text_splitters_api_reference.html">Text splitters</a>
+        </li>
+        <li class="nav-item dropdown nav-more-item-dropdown">
+          <a class="sk-nav-link nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Partner libs</a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+          </div>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" target="_blank" rel="noopener noreferrer" href="https://python.langchain.com/">Docs</a>
+        </li>
+      </ul>
+      <div id="searchbox" role="search">
+          <div class="searchformwrapper">
+          <form class="search" action="../../search.html" method="get">
+            <input class="sk-search-text-input" type="text" name="q" aria-labelledby="searchlabel" />
+            <input class="sk-search-text-btn" type="submit" value="Go" />
+          </form>
+          </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="d-flex" id="sk-doc-wrapper">
+    <input type="checkbox" name="sk-toggle-checkbox" id="sk-toggle-checkbox">
+    <label id="sk-sidemenu-toggle" class="sk-btn-toggle-toc btn sk-btn-primary" for="sk-toggle-checkbox">Toggle Menu</label>
+    <div id="sk-sidebar-wrapper" class="border-right">
+      <div class="sk-sidebar-toc-wrapper">
+        <div class="btn-group w-100 mb-2" role="group" aria-label="rellinks">
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Prev</a><a href="../index.html" role="button" class="btn sk-btn-rellink py-1" sk-rellink-tooltip="Module code">Up</a>
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Next</a>
+        </div>
+            <div class="sk-sidebar-toc">
+              
+            </div>
+      </div>
+    </div>
+    <div id="sk-page-content-wrapper">
+      <div class="sk-page-content container-fluid body px-md-3" role="main">
+        
+  <h1>Source code for langchain_text_splitters.markdown</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">TypedDict</span>
+
+<span class="kn">from</span> <span class="nn">langchain_core.documents</span> <span class="kn">import</span> <span class="n">Document</span>
+
+<span class="kn">from</span> <span class="nn">langchain_text_splitters.base</span> <span class="kn">import</span> <span class="n">Language</span>
+<span class="kn">from</span> <span class="nn">langchain_text_splitters.character</span> <span class="kn">import</span> <span class="n">RecursiveCharacterTextSplitter</span>
+
+
+<div class="viewcode-block" id="MarkdownTextSplitter"><a class="viewcode-back" href="../../markdown/langchain_text_splitters.markdown.MarkdownTextSplitter.html#langchain_text_splitters.markdown.MarkdownTextSplitter">[docs]</a><span class="k">class</span> <span class="nc">MarkdownTextSplitter</span><span class="p">(</span><span class="n">RecursiveCharacterTextSplitter</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Attempts to split the text along Markdown-formatted headings.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="MarkdownTextSplitter.__init__"><a class="viewcode-back" href="../../markdown/langchain_text_splitters.markdown.MarkdownTextSplitter.html#langchain_text_splitters.markdown.MarkdownTextSplitter.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize a MarkdownTextSplitter.&quot;&quot;&quot;</span>
+        <span class="n">separators</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_separators_for_language</span><span class="p">(</span><span class="n">Language</span><span class="o">.</span><span class="n">MARKDOWN</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">separators</span><span class="o">=</span><span class="n">separators</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="MarkdownHeaderTextSplitter"><a class="viewcode-back" href="../../markdown/langchain_text_splitters.markdown.MarkdownHeaderTextSplitter.html#langchain_text_splitters.markdown.MarkdownHeaderTextSplitter">[docs]</a><span class="k">class</span> <span class="nc">MarkdownHeaderTextSplitter</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Splitting markdown files based on specified headers.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="MarkdownHeaderTextSplitter.__init__"><a class="viewcode-back" href="../../markdown/langchain_text_splitters.markdown.MarkdownHeaderTextSplitter.html#langchain_text_splitters.markdown.MarkdownHeaderTextSplitter.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">headers_to_split_on</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]],</span>
+        <span class="n">return_each_line</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">strip_headers</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a new MarkdownHeaderTextSplitter.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            headers_to_split_on: Headers we want to track</span>
+<span class="sd">            return_each_line: Return each line w/ associated headers</span>
+<span class="sd">            strip_headers: Strip split headers from the content of the chunk</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Output line-by-line or aggregated into chunks w/ common headers</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">return_each_line</span> <span class="o">=</span> <span class="n">return_each_line</span>
+        <span class="c1"># Given the headers we want to split on,</span>
+        <span class="c1"># (e.g., &quot;#, ##, etc&quot;) order by length</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">headers_to_split_on</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
+            <span class="n">headers_to_split_on</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">split</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">split</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span>
+        <span class="c1"># Strip headers split headers from the content of the chunk</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">strip_headers</span> <span class="o">=</span> <span class="n">strip_headers</span></div>
+
+<div class="viewcode-block" id="MarkdownHeaderTextSplitter.aggregate_lines_to_chunks"><a class="viewcode-back" href="../../markdown/langchain_text_splitters.markdown.MarkdownHeaderTextSplitter.html#langchain_text_splitters.markdown.MarkdownHeaderTextSplitter.aggregate_lines_to_chunks">[docs]</a>    <span class="k">def</span> <span class="nf">aggregate_lines_to_chunks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lines</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">LineType</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Combine lines with common metadata into chunks</span>
+<span class="sd">        Args:</span>
+<span class="sd">            lines: Line of text / associated header metadata</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">aggregated_chunks</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">LineType</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span>
+                <span class="n">aggregated_chunks</span>
+                <span class="ow">and</span> <span class="n">aggregated_chunks</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s2">&quot;metadata&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">line</span><span class="p">[</span><span class="s2">&quot;metadata&quot;</span><span class="p">]</span>
+            <span class="p">):</span>
+                <span class="c1"># If the last line in the aggregated list</span>
+                <span class="c1"># has the same metadata as the current line,</span>
+                <span class="c1"># append the current content to the last lines&#39;s content</span>
+                <span class="n">aggregated_chunks</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s2">&quot;content&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="s2">&quot;  </span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">line</span><span class="p">[</span><span class="s2">&quot;content&quot;</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="p">(</span>
+                <span class="n">aggregated_chunks</span>
+                <span class="ow">and</span> <span class="n">aggregated_chunks</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s2">&quot;metadata&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="n">line</span><span class="p">[</span><span class="s2">&quot;metadata&quot;</span><span class="p">]</span>
+                <span class="c1"># may be issues if other metadata is present</span>
+                <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">aggregated_chunks</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s2">&quot;metadata&quot;</span><span class="p">])</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">line</span><span class="p">[</span><span class="s2">&quot;metadata&quot;</span><span class="p">])</span>
+                <span class="ow">and</span> <span class="n">aggregated_chunks</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s2">&quot;content&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;#&quot;</span>
+                <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">strip_headers</span>
+            <span class="p">):</span>
+                <span class="c1"># If the last line in the aggregated list</span>
+                <span class="c1"># has different metadata as the current line,</span>
+                <span class="c1"># and has shallower header level than the current line,</span>
+                <span class="c1"># and the last line is a header,</span>
+                <span class="c1"># and we are not stripping headers,</span>
+                <span class="c1"># append the current content to the last line&#39;s content</span>
+                <span class="n">aggregated_chunks</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s2">&quot;content&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="s2">&quot;  </span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">line</span><span class="p">[</span><span class="s2">&quot;content&quot;</span><span class="p">]</span>
+                <span class="c1"># and update the last line&#39;s metadata</span>
+                <span class="n">aggregated_chunks</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s2">&quot;metadata&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">line</span><span class="p">[</span><span class="s2">&quot;metadata&quot;</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Otherwise, append the current line to the aggregated list</span>
+                <span class="n">aggregated_chunks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">[</span>
+            <span class="n">Document</span><span class="p">(</span><span class="n">page_content</span><span class="o">=</span><span class="n">chunk</span><span class="p">[</span><span class="s2">&quot;content&quot;</span><span class="p">],</span> <span class="n">metadata</span><span class="o">=</span><span class="n">chunk</span><span class="p">[</span><span class="s2">&quot;metadata&quot;</span><span class="p">])</span>
+            <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">aggregated_chunks</span>
+        <span class="p">]</span></div>
+
+<div class="viewcode-block" id="MarkdownHeaderTextSplitter.split_text"><a class="viewcode-back" href="../../markdown/langchain_text_splitters.markdown.MarkdownHeaderTextSplitter.html#langchain_text_splitters.markdown.MarkdownHeaderTextSplitter.split_text">[docs]</a>    <span class="k">def</span> <span class="nf">split_text</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Split markdown file</span>
+<span class="sd">        Args:</span>
+<span class="sd">            text: Markdown file&quot;&quot;&quot;</span>
+
+        <span class="c1"># Split the input text by newline character (&quot;\n&quot;).</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="c1"># Final output</span>
+        <span class="n">lines_with_metadata</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">LineType</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1"># Content and metadata of the chunk currently being processed</span>
+        <span class="n">current_content</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">current_metadata</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="c1"># Keep track of the nested header structure</span>
+        <span class="c1"># header_stack: List[Dict[str, Union[int, str]]] = []</span>
+        <span class="n">header_stack</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">HeaderType</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">initial_metadata</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="n">in_code_block</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">opening_fence</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
+            <span class="n">stripped_line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">in_code_block</span><span class="p">:</span>
+                <span class="c1"># Exclude inline code spans</span>
+                <span class="k">if</span> <span class="n">stripped_line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;```&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">stripped_line</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s2">&quot;```&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">in_code_block</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="n">opening_fence</span> <span class="o">=</span> <span class="s2">&quot;```&quot;</span>
+                <span class="k">elif</span> <span class="n">stripped_line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;~~~&quot;</span><span class="p">):</span>
+                    <span class="n">in_code_block</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="n">opening_fence</span> <span class="o">=</span> <span class="s2">&quot;~~~&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">stripped_line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">opening_fence</span><span class="p">):</span>
+                    <span class="n">in_code_block</span> <span class="o">=</span> <span class="kc">False</span>
+                    <span class="n">opening_fence</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+            <span class="k">if</span> <span class="n">in_code_block</span><span class="p">:</span>
+                <span class="n">current_content</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stripped_line</span><span class="p">)</span>
+                <span class="k">continue</span>
+
+            <span class="c1"># Check each line against each of the header types (e.g., #, ##)</span>
+            <span class="k">for</span> <span class="n">sep</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">headers_to_split_on</span><span class="p">:</span>
+                <span class="c1"># Check if line starts with a header that we intend to split on</span>
+                <span class="k">if</span> <span class="n">stripped_line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">sep</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span>
+                    <span class="c1"># Header with no text OR header is followed by space</span>
+                    <span class="c1"># Both are valid conditions that sep is being used a header</span>
+                    <span class="nb">len</span><span class="p">(</span><span class="n">stripped_line</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">sep</span><span class="p">)</span> <span class="ow">or</span> <span class="n">stripped_line</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">sep</span><span class="p">)]</span> <span class="o">==</span> <span class="s2">&quot; &quot;</span>
+                <span class="p">):</span>
+                    <span class="c1"># Ensure we are tracking the header as metadata</span>
+                    <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="c1"># Get the current header level</span>
+                        <span class="n">current_header_level</span> <span class="o">=</span> <span class="n">sep</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s2">&quot;#&quot;</span><span class="p">)</span>
+
+                        <span class="c1"># Pop out headers of lower or same level from the stack</span>
+                        <span class="k">while</span> <span class="p">(</span>
+                            <span class="n">header_stack</span>
+                            <span class="ow">and</span> <span class="n">header_stack</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s2">&quot;level&quot;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">current_header_level</span>
+                        <span class="p">):</span>
+                            <span class="c1"># We have encountered a new header</span>
+                            <span class="c1"># at the same or higher level</span>
+                            <span class="n">popped_header</span> <span class="o">=</span> <span class="n">header_stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+                            <span class="c1"># Clear the metadata for the</span>
+                            <span class="c1"># popped header in initial_metadata</span>
+                            <span class="k">if</span> <span class="n">popped_header</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="ow">in</span> <span class="n">initial_metadata</span><span class="p">:</span>
+                                <span class="n">initial_metadata</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">popped_header</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">])</span>
+
+                        <span class="c1"># Push the current header to the stack</span>
+                        <span class="n">header</span><span class="p">:</span> <span class="n">HeaderType</span> <span class="o">=</span> <span class="p">{</span>
+                            <span class="s2">&quot;level&quot;</span><span class="p">:</span> <span class="n">current_header_level</span><span class="p">,</span>
+                            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+                            <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="n">stripped_line</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">sep</span><span class="p">)</span> <span class="p">:]</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span>
+                        <span class="p">}</span>
+                        <span class="n">header_stack</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">header</span><span class="p">)</span>
+                        <span class="c1"># Update initial_metadata with the current header</span>
+                        <span class="n">initial_metadata</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">header</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">]</span>
+
+                    <span class="c1"># Add the previous line to the lines_with_metadata</span>
+                    <span class="c1"># only if current_content is not empty</span>
+                    <span class="k">if</span> <span class="n">current_content</span><span class="p">:</span>
+                        <span class="n">lines_with_metadata</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                            <span class="p">{</span>
+                                <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">current_content</span><span class="p">),</span>
+                                <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="n">current_metadata</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
+                            <span class="p">}</span>
+                        <span class="p">)</span>
+                        <span class="n">current_content</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+
+                    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">strip_headers</span><span class="p">:</span>
+                        <span class="n">current_content</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stripped_line</span><span class="p">)</span>
+
+                    <span class="k">break</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">stripped_line</span><span class="p">:</span>
+                    <span class="n">current_content</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stripped_line</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">current_content</span><span class="p">:</span>
+                    <span class="n">lines_with_metadata</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                        <span class="p">{</span>
+                            <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">current_content</span><span class="p">),</span>
+                            <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="n">current_metadata</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
+                        <span class="p">}</span>
+                    <span class="p">)</span>
+                    <span class="n">current_content</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+
+            <span class="n">current_metadata</span> <span class="o">=</span> <span class="n">initial_metadata</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">current_content</span><span class="p">:</span>
+            <span class="n">lines_with_metadata</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="p">{</span><span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">current_content</span><span class="p">),</span> <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="n">current_metadata</span><span class="p">}</span>
+            <span class="p">)</span>
+
+        <span class="c1"># lines_with_metadata has each line with associated header metadata</span>
+        <span class="c1"># aggregate these into chunks based on common metadata</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">return_each_line</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">aggregate_lines_to_chunks</span><span class="p">(</span><span class="n">lines_with_metadata</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span>
+                <span class="n">Document</span><span class="p">(</span><span class="n">page_content</span><span class="o">=</span><span class="n">chunk</span><span class="p">[</span><span class="s2">&quot;content&quot;</span><span class="p">],</span> <span class="n">metadata</span><span class="o">=</span><span class="n">chunk</span><span class="p">[</span><span class="s2">&quot;metadata&quot;</span><span class="p">])</span>
+                <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">lines_with_metadata</span>
+            <span class="p">]</span></div></div>
+
+
+<div class="viewcode-block" id="LineType"><a class="viewcode-back" href="../../markdown/langchain_text_splitters.markdown.LineType.html#langchain_text_splitters.markdown.LineType">[docs]</a><span class="k">class</span> <span class="nc">LineType</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Line type as typed dict.&quot;&quot;&quot;</span>
+
+    <span class="n">metadata</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span>
+    <span class="n">content</span><span class="p">:</span> <span class="nb">str</span></div>
+
+
+<div class="viewcode-block" id="HeaderType"><a class="viewcode-back" href="../../markdown/langchain_text_splitters.markdown.HeaderType.html#langchain_text_splitters.markdown.HeaderType">[docs]</a><span class="k">class</span> <span class="nc">HeaderType</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Header type as typed dict.&quot;&quot;&quot;</span>
+
+    <span class="n">level</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">data</span><span class="p">:</span> <span class="nb">str</span></div>
+</pre></div>
+
+      </div>
+    <div class="container">
+      <footer class="sk-content-footer">
+            &copy; 2023, LangChain, Inc..
+          Last updated on Mar 15, 2024.
+      </footer>
+    </div>
+  </div>
+</div>
+<script src="../../_static/js/vendor/bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    /* Add a [>>>] button on the top-right corner of code samples to hide
+     * the >>> and ... prompts and the output and thus make the code
+     * copyable. */
+    var div = $('.highlight-python .highlight,' +
+                '.highlight-python3 .highlight,' +
+                '.highlight-pycon .highlight,' +
+		'.highlight-default .highlight')
+    var pre = div.find('pre');
+
+    // get the styles from the current theme
+    pre.parent().parent().css('position', 'relative');
+    var hide_text = 'Hide prompts and outputs';
+    var show_text = 'Show prompts and outputs';
+
+    // create and add the button to all the code blocks that contain >>>
+    div.each(function(index) {
+        var jthis = $(this);
+        if (jthis.find('.gp').length > 0) {
+            var button = $('<span class="copybutton">&gt;&gt;&gt;</span>');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+            jthis.prepend(button);
+        }
+        // tracebacks (.gt) contain bare text elements that need to be
+        // wrapped in a span to work with .nextUntil() (see later)
+        jthis.find('pre:has(.gt)').contents().filter(function() {
+            return ((this.nodeType == 3) && (this.data.trim().length > 0));
+        }).wrap('<span>');
+    });
+
+    // define the behavior of the button when it's clicked
+    $('.copybutton').click(function(e){
+        e.preventDefault();
+        var button = $(this);
+        if (button.data('hidden') === 'false') {
+            // hide the code output
+            button.parent().find('.go, .gp, .gt').hide();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'hidden');
+            button.css('text-decoration', 'line-through');
+            button.attr('title', show_text);
+            button.data('hidden', 'true');
+        } else {
+            // show the code output
+            button.parent().find('.go, .gp, .gt').show();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'visible');
+            button.css('text-decoration', 'none');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+        }
+    });
+
+	/*** Add permalink buttons next to glossary terms ***/
+	$('dl.glossary > dt[id]').append(function() {
+		return ('<a class="headerlink" href="#' +
+			    this.getAttribute('id') +
+			    '" title="Permalink to this term">¶</a>');
+	});
+});
+
+</script>
+    
+</body>
+</html>

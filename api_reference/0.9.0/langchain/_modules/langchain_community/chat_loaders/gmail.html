@@ -1,0 +1,291 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>langchain_community.chat_loaders.gmail &mdash; 🦜🔗 LangChain 0.1.12</title>
+  
+  <link rel="canonical" href="https://api.python.langchain.com/en/latest/_modules/langchain_community/chat_loaders/gmail.html" />
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/vendor/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/autodoc_pydantic.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/sphinx-dropdown.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/panels-bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+<script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+<script src="../../../_static/jquery.js"></script> 
+</head>
+<body>
+
+
+<nav id="navbar" class="sk-docs-navbar navbar navbar-expand-md navbar-light bg-light py-0">
+  <div class="container-fluid sk-docs-container px-0">
+    <button
+      id="sk-navbar-toggler"
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="sk-navbar-collapse collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../langchain_api_reference.html">LangChain</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../core_api_reference.html">Core</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../community_api_reference.html">Community</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../experimental_api_reference.html">Experimental</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../text_splitters_api_reference.html">Text splitters</a>
+        </li>
+        <li class="nav-item dropdown nav-more-item-dropdown">
+          <a class="sk-nav-link nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Partner libs</a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+          </div>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" target="_blank" rel="noopener noreferrer" href="https://python.langchain.com/">Docs</a>
+        </li>
+      </ul>
+      <div id="searchbox" role="search">
+          <div class="searchformwrapper">
+          <form class="search" action="../../../search.html" method="get">
+            <input class="sk-search-text-input" type="text" name="q" aria-labelledby="searchlabel" />
+            <input class="sk-search-text-btn" type="submit" value="Go" />
+          </form>
+          </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="d-flex" id="sk-doc-wrapper">
+    <input type="checkbox" name="sk-toggle-checkbox" id="sk-toggle-checkbox">
+    <label id="sk-sidemenu-toggle" class="sk-btn-toggle-toc btn sk-btn-primary" for="sk-toggle-checkbox">Toggle Menu</label>
+    <div id="sk-sidebar-wrapper" class="border-right">
+      <div class="sk-sidebar-toc-wrapper">
+        <div class="btn-group w-100 mb-2" role="group" aria-label="rellinks">
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Prev</a><a href="../../index.html" role="button" class="btn sk-btn-rellink py-1" sk-rellink-tooltip="Module code">Up</a>
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Next</a>
+        </div>
+            <div class="sk-sidebar-toc">
+              
+            </div>
+      </div>
+    </div>
+    <div id="sk-page-content-wrapper">
+      <div class="sk-page-content container-fluid body px-md-3" role="main">
+        
+  <h1>Source code for langchain_community.chat_loaders.gmail</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">base64</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Iterator</span>
+
+<span class="kn">from</span> <span class="nn">langchain_core.chat_sessions</span> <span class="kn">import</span> <span class="n">ChatSession</span>
+<span class="kn">from</span> <span class="nn">langchain_core.messages</span> <span class="kn">import</span> <span class="n">HumanMessage</span>
+
+<span class="kn">from</span> <span class="nn">langchain_community.chat_loaders.base</span> <span class="kn">import</span> <span class="n">BaseChatLoader</span>
+
+
+<span class="k">def</span> <span class="nf">_extract_email_content</span><span class="p">(</span><span class="n">msg</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">HumanMessage</span><span class="p">:</span>
+    <span class="n">from_email</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">for</span> <span class="n">values</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">[</span><span class="s2">&quot;payload&quot;</span><span class="p">][</span><span class="s2">&quot;headers&quot;</span><span class="p">]:</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;From&quot;</span><span class="p">:</span>
+            <span class="n">from_email</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">from_email</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span>
+    <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">[</span><span class="s2">&quot;payload&quot;</span><span class="p">][</span><span class="s2">&quot;parts&quot;</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="n">part</span><span class="p">[</span><span class="s2">&quot;mimeType&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;text/plain&quot;</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">part</span><span class="p">[</span><span class="s2">&quot;body&quot;</span><span class="p">][</span><span class="s2">&quot;data&quot;</span><span class="p">]</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">base64</span><span class="o">.</span><span class="n">urlsafe_b64decode</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+            <span class="c1"># Regular expression to split the email body at the first</span>
+            <span class="c1"># occurrence of a line that starts with &quot;On ... wrote:&quot;</span>
+            <span class="n">pattern</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;\r\nOn .+(\r\n)*wrote:\r\n&quot;</span><span class="p">)</span>
+            <span class="c1"># Split the email body and extract the first part</span>
+            <span class="n">newest_response</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">data</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="n">HumanMessage</span><span class="p">(</span>
+                <span class="n">content</span><span class="o">=</span><span class="n">newest_response</span><span class="p">,</span> <span class="n">additional_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;sender&quot;</span><span class="p">:</span> <span class="n">from_email</span><span class="p">}</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="n">message</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span>
+
+
+<span class="k">def</span> <span class="nf">_get_message_data</span><span class="p">(</span><span class="n">service</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ChatSession</span><span class="p">:</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="n">service</span><span class="o">.</span><span class="n">users</span><span class="p">()</span><span class="o">.</span><span class="n">messages</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">userId</span><span class="o">=</span><span class="s2">&quot;me&quot;</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="n">message</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+    <span class="n">message_content</span> <span class="o">=</span> <span class="n">_extract_email_content</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="n">in_reply_to</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">email_data</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s2">&quot;payload&quot;</span><span class="p">][</span><span class="s2">&quot;headers&quot;</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">values</span> <span class="ow">in</span> <span class="n">email_data</span><span class="p">:</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;In-Reply-To&quot;</span><span class="p">:</span>
+            <span class="n">in_reply_to</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">in_reply_to</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span>
+
+    <span class="n">thread_id</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s2">&quot;threadId&quot;</span><span class="p">]</span>
+
+    <span class="n">thread</span> <span class="o">=</span> <span class="n">service</span><span class="o">.</span><span class="n">users</span><span class="p">()</span><span class="o">.</span><span class="n">threads</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">userId</span><span class="o">=</span><span class="s2">&quot;me&quot;</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="n">thread_id</span><span class="p">)</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+    <span class="n">messages</span> <span class="o">=</span> <span class="n">thread</span><span class="p">[</span><span class="s2">&quot;messages&quot;</span><span class="p">]</span>
+
+    <span class="n">response_email</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">for</span> <span class="n">message</span> <span class="ow">in</span> <span class="n">messages</span><span class="p">:</span>
+        <span class="n">email_data</span> <span class="o">=</span> <span class="n">message</span><span class="p">[</span><span class="s2">&quot;payload&quot;</span><span class="p">][</span><span class="s2">&quot;headers&quot;</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">values</span> <span class="ow">in</span> <span class="n">email_data</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Message-ID&quot;</span><span class="p">:</span>
+                <span class="n">message_id</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">message_id</span> <span class="o">==</span> <span class="n">in_reply_to</span><span class="p">:</span>
+                    <span class="n">response_email</span> <span class="o">=</span> <span class="n">message</span>
+    <span class="k">if</span> <span class="n">response_email</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span>
+    <span class="n">starter_content</span> <span class="o">=</span> <span class="n">_extract_email_content</span><span class="p">(</span><span class="n">response_email</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">ChatSession</span><span class="p">(</span><span class="n">messages</span><span class="o">=</span><span class="p">[</span><span class="n">starter_content</span><span class="p">,</span> <span class="n">message_content</span><span class="p">])</span>
+
+
+<div class="viewcode-block" id="GMailLoader"><a class="viewcode-back" href="../../../chat_loaders/langchain_community.chat_loaders.gmail.GMailLoader.html#langchain_community.chat_loaders.gmail.GMailLoader">[docs]</a><span class="k">class</span> <span class="nc">GMailLoader</span><span class="p">(</span><span class="n">BaseChatLoader</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Load data from `GMail`.</span>
+
+<span class="sd">    There are many ways you could want to load data from GMail.</span>
+<span class="sd">    This loader is currently fairly opinionated in how to do so.</span>
+<span class="sd">    The way it does it is it first looks for all messages that you have sent.</span>
+<span class="sd">    It then looks for messages where you are responding to a previous email.</span>
+<span class="sd">    It then fetches that previous email, and creates a training example</span>
+<span class="sd">    of that email, followed by your email.</span>
+
+<span class="sd">    Note that there are clear limitations here. For example,</span>
+<span class="sd">    all examples created are only looking at the previous email for context.</span>
+
+<span class="sd">    To use:</span>
+
+<span class="sd">    - Set up a Google Developer Account:</span>
+<span class="sd">        Go to the Google Developer Console, create a project,</span>
+<span class="sd">        and enable the Gmail API for that project.</span>
+<span class="sd">        This will give you a credentials.json file that you&#39;ll need later.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="GMailLoader.__init__"><a class="viewcode-back" href="../../../chat_loaders/langchain_community.chat_loaders.gmail.GMailLoader.html#langchain_community.chat_loaders.gmail.GMailLoader.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">creds</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span> <span class="n">raise_error</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">creds</span> <span class="o">=</span> <span class="n">creds</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">=</span> <span class="n">n</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">raise_error</span> <span class="o">=</span> <span class="n">raise_error</span></div>
+
+<div class="viewcode-block" id="GMailLoader.lazy_load"><a class="viewcode-back" href="../../../chat_loaders/langchain_community.chat_loaders.gmail.GMailLoader.html#langchain_community.chat_loaders.gmail.GMailLoader.lazy_load">[docs]</a>    <span class="k">def</span> <span class="nf">lazy_load</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">ChatSession</span><span class="p">]:</span>
+        <span class="kn">from</span> <span class="nn">googleapiclient.discovery</span> <span class="kn">import</span> <span class="n">build</span>
+
+        <span class="n">service</span> <span class="o">=</span> <span class="n">build</span><span class="p">(</span><span class="s2">&quot;gmail&quot;</span><span class="p">,</span> <span class="s2">&quot;v1&quot;</span><span class="p">,</span> <span class="n">credentials</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">creds</span><span class="p">)</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">service</span><span class="o">.</span><span class="n">users</span><span class="p">()</span>
+            <span class="o">.</span><span class="n">messages</span><span class="p">()</span>
+            <span class="o">.</span><span class="n">list</span><span class="p">(</span><span class="n">userId</span><span class="o">=</span><span class="s2">&quot;me&quot;</span><span class="p">,</span> <span class="n">labelIds</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;SENT&quot;</span><span class="p">],</span> <span class="n">maxResults</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+        <span class="p">)</span>
+        <span class="n">messages</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;messages&quot;</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="k">for</span> <span class="n">message</span> <span class="ow">in</span> <span class="n">messages</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">_get_message_data</span><span class="p">(</span><span class="n">service</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="c1"># TODO: handle errors better</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">raise_error</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">e</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">pass</span></div></div>
+</pre></div>
+
+      </div>
+    <div class="container">
+      <footer class="sk-content-footer">
+            &copy; 2023, LangChain, Inc..
+          Last updated on Mar 15, 2024.
+      </footer>
+    </div>
+  </div>
+</div>
+<script src="../../../_static/js/vendor/bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    /* Add a [>>>] button on the top-right corner of code samples to hide
+     * the >>> and ... prompts and the output and thus make the code
+     * copyable. */
+    var div = $('.highlight-python .highlight,' +
+                '.highlight-python3 .highlight,' +
+                '.highlight-pycon .highlight,' +
+		'.highlight-default .highlight')
+    var pre = div.find('pre');
+
+    // get the styles from the current theme
+    pre.parent().parent().css('position', 'relative');
+    var hide_text = 'Hide prompts and outputs';
+    var show_text = 'Show prompts and outputs';
+
+    // create and add the button to all the code blocks that contain >>>
+    div.each(function(index) {
+        var jthis = $(this);
+        if (jthis.find('.gp').length > 0) {
+            var button = $('<span class="copybutton">&gt;&gt;&gt;</span>');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+            jthis.prepend(button);
+        }
+        // tracebacks (.gt) contain bare text elements that need to be
+        // wrapped in a span to work with .nextUntil() (see later)
+        jthis.find('pre:has(.gt)').contents().filter(function() {
+            return ((this.nodeType == 3) && (this.data.trim().length > 0));
+        }).wrap('<span>');
+    });
+
+    // define the behavior of the button when it's clicked
+    $('.copybutton').click(function(e){
+        e.preventDefault();
+        var button = $(this);
+        if (button.data('hidden') === 'false') {
+            // hide the code output
+            button.parent().find('.go, .gp, .gt').hide();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'hidden');
+            button.css('text-decoration', 'line-through');
+            button.attr('title', show_text);
+            button.data('hidden', 'true');
+        } else {
+            // show the code output
+            button.parent().find('.go, .gp, .gt').show();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'visible');
+            button.css('text-decoration', 'none');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+        }
+    });
+
+	/*** Add permalink buttons next to glossary terms ***/
+	$('dl.glossary > dt[id]').append(function() {
+		return ('<a class="headerlink" href="#' +
+			    this.getAttribute('id') +
+			    '" title="Permalink to this term">¶</a>');
+	});
+});
+
+</script>
+    
+</body>
+</html>

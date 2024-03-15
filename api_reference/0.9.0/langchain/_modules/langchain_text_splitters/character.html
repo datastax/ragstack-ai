@@ -1,0 +1,758 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>langchain_text_splitters.character &mdash; 🦜🔗 LangChain 0.1.12</title>
+  
+  <link rel="canonical" href="https://api.python.langchain.com/en/latest/_modules/langchain_text_splitters/character.html" />
+
+  
+
+  <link rel="stylesheet" href="../../_static/css/vendor/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/autodoc_pydantic.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/sphinx-dropdown.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/panels-bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/css/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+<script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+<script src="../../_static/jquery.js"></script> 
+</head>
+<body>
+
+
+<nav id="navbar" class="sk-docs-navbar navbar navbar-expand-md navbar-light bg-light py-0">
+  <div class="container-fluid sk-docs-container px-0">
+    <button
+      id="sk-navbar-toggler"
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="sk-navbar-collapse collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../langchain_api_reference.html">LangChain</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../core_api_reference.html">Core</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../community_api_reference.html">Community</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../experimental_api_reference.html">Experimental</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../text_splitters_api_reference.html">Text splitters</a>
+        </li>
+        <li class="nav-item dropdown nav-more-item-dropdown">
+          <a class="sk-nav-link nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Partner libs</a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+          </div>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" target="_blank" rel="noopener noreferrer" href="https://python.langchain.com/">Docs</a>
+        </li>
+      </ul>
+      <div id="searchbox" role="search">
+          <div class="searchformwrapper">
+          <form class="search" action="../../search.html" method="get">
+            <input class="sk-search-text-input" type="text" name="q" aria-labelledby="searchlabel" />
+            <input class="sk-search-text-btn" type="submit" value="Go" />
+          </form>
+          </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="d-flex" id="sk-doc-wrapper">
+    <input type="checkbox" name="sk-toggle-checkbox" id="sk-toggle-checkbox">
+    <label id="sk-sidemenu-toggle" class="sk-btn-toggle-toc btn sk-btn-primary" for="sk-toggle-checkbox">Toggle Menu</label>
+    <div id="sk-sidebar-wrapper" class="border-right">
+      <div class="sk-sidebar-toc-wrapper">
+        <div class="btn-group w-100 mb-2" role="group" aria-label="rellinks">
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Prev</a><a href="../index.html" role="button" class="btn sk-btn-rellink py-1" sk-rellink-tooltip="Module code">Up</a>
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Next</a>
+        </div>
+            <div class="sk-sidebar-toc">
+              
+            </div>
+      </div>
+    </div>
+    <div id="sk-page-content-wrapper">
+      <div class="sk-page-content container-fluid body px-md-3" role="main">
+        
+  <h1>Source code for langchain_text_splitters.character</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="kn">from</span> <span class="nn">langchain_text_splitters.base</span> <span class="kn">import</span> <span class="n">Language</span><span class="p">,</span> <span class="n">TextSplitter</span>
+
+
+<div class="viewcode-block" id="CharacterTextSplitter"><a class="viewcode-back" href="../../character/langchain_text_splitters.character.CharacterTextSplitter.html#langchain_text_splitters.python.CharacterTextSplitter">[docs]</a><span class="k">class</span> <span class="nc">CharacterTextSplitter</span><span class="p">(</span><span class="n">TextSplitter</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Splitting text that looks at characters.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="CharacterTextSplitter.__init__"><a class="viewcode-back" href="../../character/langchain_text_splitters.character.CharacterTextSplitter.html#langchain_text_splitters.python.CharacterTextSplitter.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">separator</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">is_separator_regex</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a new TextSplitter.&quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_separator</span> <span class="o">=</span> <span class="n">separator</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_separator_regex</span> <span class="o">=</span> <span class="n">is_separator_regex</span></div>
+
+<div class="viewcode-block" id="CharacterTextSplitter.split_text"><a class="viewcode-back" href="../../character/langchain_text_splitters.character.CharacterTextSplitter.html#langchain_text_splitters.python.CharacterTextSplitter.split_text">[docs]</a>    <span class="k">def</span> <span class="nf">split_text</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Split incoming text and return chunks.&quot;&quot;&quot;</span>
+        <span class="c1"># First we naively split the large input into a bunch of smaller ones.</span>
+        <span class="n">separator</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_separator</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_separator_regex</span> <span class="k">else</span> <span class="n">re</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_separator</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">splits</span> <span class="o">=</span> <span class="n">_split_text_with_regex</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">separator</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_keep_separator</span><span class="p">)</span>
+        <span class="n">_separator</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_keep_separator</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">_separator</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_merge_splits</span><span class="p">(</span><span class="n">splits</span><span class="p">,</span> <span class="n">_separator</span><span class="p">)</span></div></div>
+
+
+<span class="k">def</span> <span class="nf">_split_text_with_regex</span><span class="p">(</span>
+    <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">separator</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">keep_separator</span><span class="p">:</span> <span class="nb">bool</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="c1"># Now that we have the separator, split the text</span>
+    <span class="k">if</span> <span class="n">separator</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">keep_separator</span><span class="p">:</span>
+            <span class="c1"># The parentheses in the pattern keep the delimiters in the result.</span>
+            <span class="n">_splits</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="n">separator</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>
+            <span class="n">splits</span> <span class="o">=</span> <span class="p">[</span><span class="n">_splits</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">_splits</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">_splits</span><span class="p">),</span> <span class="mi">2</span><span class="p">)]</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">_splits</span><span class="p">)</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">splits</span> <span class="o">+=</span> <span class="n">_splits</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">:]</span>
+            <span class="n">splits</span> <span class="o">=</span> <span class="p">[</span><span class="n">_splits</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">+</span> <span class="n">splits</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">splits</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">separator</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">splits</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">splits</span> <span class="k">if</span> <span class="n">s</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="RecursiveCharacterTextSplitter"><a class="viewcode-back" href="../../character/langchain_text_splitters.character.RecursiveCharacterTextSplitter.html#langchain_text_splitters.python.RecursiveCharacterTextSplitter">[docs]</a><span class="k">class</span> <span class="nc">RecursiveCharacterTextSplitter</span><span class="p">(</span><span class="n">TextSplitter</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Splitting text by recursively look at characters.</span>
+
+<span class="sd">    Recursively tries to split by different characters to find one</span>
+<span class="sd">    that works.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="RecursiveCharacterTextSplitter.__init__"><a class="viewcode-back" href="../../character/langchain_text_splitters.character.RecursiveCharacterTextSplitter.html#langchain_text_splitters.python.RecursiveCharacterTextSplitter.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">separators</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">keep_separator</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">is_separator_regex</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a new TextSplitter.&quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">keep_separator</span><span class="o">=</span><span class="n">keep_separator</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_separators</span> <span class="o">=</span> <span class="n">separators</span> <span class="ow">or</span> <span class="p">[</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_separator_regex</span> <span class="o">=</span> <span class="n">is_separator_regex</span></div>
+
+    <span class="k">def</span> <span class="nf">_split_text</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">separators</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Split incoming text and return chunks.&quot;&quot;&quot;</span>
+        <span class="n">final_chunks</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1"># Get appropriate separator to use</span>
+        <span class="n">separator</span> <span class="o">=</span> <span class="n">separators</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">new_separators</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">_s</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">separators</span><span class="p">):</span>
+            <span class="n">_separator</span> <span class="o">=</span> <span class="n">_s</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_separator_regex</span> <span class="k">else</span> <span class="n">re</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">_s</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">_s</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                <span class="n">separator</span> <span class="o">=</span> <span class="n">_s</span>
+                <span class="k">break</span>
+            <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">_separator</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
+                <span class="n">separator</span> <span class="o">=</span> <span class="n">_s</span>
+                <span class="n">new_separators</span> <span class="o">=</span> <span class="n">separators</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span> <span class="p">:]</span>
+                <span class="k">break</span>
+
+        <span class="n">_separator</span> <span class="o">=</span> <span class="n">separator</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_separator_regex</span> <span class="k">else</span> <span class="n">re</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">separator</span><span class="p">)</span>
+        <span class="n">splits</span> <span class="o">=</span> <span class="n">_split_text_with_regex</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">_separator</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_keep_separator</span><span class="p">)</span>
+
+        <span class="c1"># Now go merging things, recursively splitting longer texts.</span>
+        <span class="n">_good_splits</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">_separator</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_keep_separator</span> <span class="k">else</span> <span class="n">separator</span>
+        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">splits</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_length_function</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_chunk_size</span><span class="p">:</span>
+                <span class="n">_good_splits</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">_good_splits</span><span class="p">:</span>
+                    <span class="n">merged_text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_merge_splits</span><span class="p">(</span><span class="n">_good_splits</span><span class="p">,</span> <span class="n">_separator</span><span class="p">)</span>
+                    <span class="n">final_chunks</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">merged_text</span><span class="p">)</span>
+                    <span class="n">_good_splits</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">new_separators</span><span class="p">:</span>
+                    <span class="n">final_chunks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">other_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_split_text</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">new_separators</span><span class="p">)</span>
+                    <span class="n">final_chunks</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">other_info</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">_good_splits</span><span class="p">:</span>
+            <span class="n">merged_text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_merge_splits</span><span class="p">(</span><span class="n">_good_splits</span><span class="p">,</span> <span class="n">_separator</span><span class="p">)</span>
+            <span class="n">final_chunks</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">merged_text</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">final_chunks</span>
+
+<div class="viewcode-block" id="RecursiveCharacterTextSplitter.split_text"><a class="viewcode-back" href="../../character/langchain_text_splitters.character.RecursiveCharacterTextSplitter.html#langchain_text_splitters.python.RecursiveCharacterTextSplitter.split_text">[docs]</a>    <span class="k">def</span> <span class="nf">split_text</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_split_text</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_separators</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="RecursiveCharacterTextSplitter.from_language"><a class="viewcode-back" href="../../character/langchain_text_splitters.character.RecursiveCharacterTextSplitter.html#langchain_text_splitters.python.RecursiveCharacterTextSplitter.from_language">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_language</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span> <span class="n">language</span><span class="p">:</span> <span class="n">Language</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RecursiveCharacterTextSplitter</span><span class="p">:</span>
+        <span class="n">separators</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">get_separators_for_language</span><span class="p">(</span><span class="n">language</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">separators</span><span class="o">=</span><span class="n">separators</span><span class="p">,</span> <span class="n">is_separator_regex</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="RecursiveCharacterTextSplitter.get_separators_for_language"><a class="viewcode-back" href="../../character/langchain_text_splitters.character.RecursiveCharacterTextSplitter.html#langchain_text_splitters.python.RecursiveCharacterTextSplitter.get_separators_for_language">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">get_separators_for_language</span><span class="p">(</span><span class="n">language</span><span class="p">:</span> <span class="n">Language</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="n">language</span> <span class="o">==</span> <span class="n">Language</span><span class="o">.</span><span class="n">CPP</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span>
+                <span class="c1"># Split along class definitions</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">class &quot;</span><span class="p">,</span>
+                <span class="c1"># Split along function definitions</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">void &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">int &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">float &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">double &quot;</span><span class="p">,</span>
+                <span class="c1"># Split along control flow statements</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">if &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">for &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">while &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">switch &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">case &quot;</span><span class="p">,</span>
+                <span class="c1"># Split by the normal type of lines</span>
+                <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot; &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="p">]</span>
+        <span class="k">elif</span> <span class="n">language</span> <span class="o">==</span> <span class="n">Language</span><span class="o">.</span><span class="n">GO</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span>
+                <span class="c1"># Split along function definitions</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">func &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">var &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">const &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">type &quot;</span><span class="p">,</span>
+                <span class="c1"># Split along control flow statements</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">if &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">for &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">switch &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">case &quot;</span><span class="p">,</span>
+                <span class="c1"># Split by the normal type of lines</span>
+                <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot; &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="p">]</span>
+        <span class="k">elif</span> <span class="n">language</span> <span class="o">==</span> <span class="n">Language</span><span class="o">.</span><span class="n">JAVA</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span>
+                <span class="c1"># Split along class definitions</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">class &quot;</span><span class="p">,</span>
+                <span class="c1"># Split along method definitions</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">public &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">protected &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">private &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">static &quot;</span><span class="p">,</span>
+                <span class="c1"># Split along control flow statements</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">if &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">for &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">while &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">switch &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">case &quot;</span><span class="p">,</span>
+                <span class="c1"># Split by the normal type of lines</span>
+                <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot; &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="p">]</span>
+        <span class="k">elif</span> <span class="n">language</span> <span class="o">==</span> <span class="n">Language</span><span class="o">.</span><span class="n">KOTLIN</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span>
+                <span class="c1"># Split along class definitions</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">class &quot;</span><span class="p">,</span>
+                <span class="c1"># Split along method definitions</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">public &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">protected &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">private &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">internal &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">companion &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">fun &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">val &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">var &quot;</span><span class="p">,</span>
+                <span class="c1"># Split along control flow statements</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">if &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">for &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">while &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">when &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">case &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">else &quot;</span><span class="p">,</span>
+                <span class="c1"># Split by the normal type of lines</span>
+                <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot; &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="p">]</span>
+        <span class="k">elif</span> <span class="n">language</span> <span class="o">==</span> <span class="n">Language</span><span class="o">.</span><span class="n">JS</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span>
+                <span class="c1"># Split along function definitions</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">function &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">const &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">let &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">var &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">class &quot;</span><span class="p">,</span>
+                <span class="c1"># Split along control flow statements</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">if &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">for &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">while &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">switch &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">case &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">default &quot;</span><span class="p">,</span>
+                <span class="c1"># Split by the normal type of lines</span>
+                <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot; &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="p">]</span>
+        <span class="k">elif</span> <span class="n">language</span> <span class="o">==</span> <span class="n">Language</span><span class="o">.</span><span class="n">TS</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">enum &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">interface &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">namespace &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">type &quot;</span><span class="p">,</span>
+                <span class="c1"># Split along class definitions</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">class &quot;</span><span class="p">,</span>
+                <span class="c1"># Split along function definitions</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">function &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">const &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">let &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">var &quot;</span><span class="p">,</span>
+                <span class="c1"># Split along control flow statements</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">if &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">for &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">while &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">switch &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">case &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">default &quot;</span><span class="p">,</span>
+                <span class="c1"># Split by the normal type of lines</span>
+                <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot; &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="p">]</span>
+        <span class="k">elif</span> <span class="n">language</span> <span class="o">==</span> <span class="n">Language</span><span class="o">.</span><span class="n">PHP</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span>
+                <span class="c1"># Split along function definitions</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">function &quot;</span><span class="p">,</span>
+                <span class="c1"># Split along class definitions</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">class &quot;</span><span class="p">,</span>
+                <span class="c1"># Split along control flow statements</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">if &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">foreach &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">while &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">do &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">switch &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">case &quot;</span><span class="p">,</span>
+                <span class="c1"># Split by the normal type of lines</span>
+                <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot; &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="p">]</span>
+        <span class="k">elif</span> <span class="n">language</span> <span class="o">==</span> <span class="n">Language</span><span class="o">.</span><span class="n">PROTO</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span>
+                <span class="c1"># Split along message definitions</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">message &quot;</span><span class="p">,</span>
+                <span class="c1"># Split along service definitions</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">service &quot;</span><span class="p">,</span>
+                <span class="c1"># Split along enum definitions</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">enum &quot;</span><span class="p">,</span>
+                <span class="c1"># Split along option definitions</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">option &quot;</span><span class="p">,</span>
+                <span class="c1"># Split along import statements</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">import &quot;</span><span class="p">,</span>
+                <span class="c1"># Split along syntax declarations</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">syntax &quot;</span><span class="p">,</span>
+                <span class="c1"># Split by the normal type of lines</span>
+                <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot; &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="p">]</span>
+        <span class="k">elif</span> <span class="n">language</span> <span class="o">==</span> <span class="n">Language</span><span class="o">.</span><span class="n">PYTHON</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span>
+                <span class="c1"># First, try to split along class definitions</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">class &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">def &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n\t</span><span class="s2">def &quot;</span><span class="p">,</span>
+                <span class="c1"># Now split by the normal type of lines</span>
+                <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot; &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="p">]</span>
+        <span class="k">elif</span> <span class="n">language</span> <span class="o">==</span> <span class="n">Language</span><span class="o">.</span><span class="n">RST</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span>
+                <span class="c1"># Split along section titles</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">=+</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">-+</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n\\</span><span class="s2">*+</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="c1"># Split along directive markers</span>
+                <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">.. *</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="c1"># Split by the normal type of lines</span>
+                <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot; &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="p">]</span>
+        <span class="k">elif</span> <span class="n">language</span> <span class="o">==</span> <span class="n">Language</span><span class="o">.</span><span class="n">RUBY</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span>
+                <span class="c1"># Split along method definitions</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">def &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">class &quot;</span><span class="p">,</span>
+                <span class="c1"># Split along control flow statements</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">if &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">unless &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">while &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">for &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">do &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">begin &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">rescue &quot;</span><span class="p">,</span>
+                <span class="c1"># Split by the normal type of lines</span>
+                <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot; &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="p">]</span>
+        <span class="k">elif</span> <span class="n">language</span> <span class="o">==</span> <span class="n">Language</span><span class="o">.</span><span class="n">RUST</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span>
+                <span class="c1"># Split along function definitions</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">fn &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">const &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">let &quot;</span><span class="p">,</span>
+                <span class="c1"># Split along control flow statements</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">if &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">while &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">for &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">loop &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">match &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">const &quot;</span><span class="p">,</span>
+                <span class="c1"># Split by the normal type of lines</span>
+                <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot; &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="p">]</span>
+        <span class="k">elif</span> <span class="n">language</span> <span class="o">==</span> <span class="n">Language</span><span class="o">.</span><span class="n">SCALA</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span>
+                <span class="c1"># Split along class definitions</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">class &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">object &quot;</span><span class="p">,</span>
+                <span class="c1"># Split along method definitions</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">def &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">val &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">var &quot;</span><span class="p">,</span>
+                <span class="c1"># Split along control flow statements</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">if &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">for &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">while &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">match &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">case &quot;</span><span class="p">,</span>
+                <span class="c1"># Split by the normal type of lines</span>
+                <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot; &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="p">]</span>
+        <span class="k">elif</span> <span class="n">language</span> <span class="o">==</span> <span class="n">Language</span><span class="o">.</span><span class="n">SWIFT</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span>
+                <span class="c1"># Split along function definitions</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">func &quot;</span><span class="p">,</span>
+                <span class="c1"># Split along class definitions</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">class &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">struct &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">enum &quot;</span><span class="p">,</span>
+                <span class="c1"># Split along control flow statements</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">if &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">for &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">while &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">do &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">switch &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">case &quot;</span><span class="p">,</span>
+                <span class="c1"># Split by the normal type of lines</span>
+                <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot; &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="p">]</span>
+        <span class="k">elif</span> <span class="n">language</span> <span class="o">==</span> <span class="n">Language</span><span class="o">.</span><span class="n">MARKDOWN</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span>
+                <span class="c1"># First, try to split along Markdown headings (starting with level 2)</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">#{1,6} &quot;</span><span class="p">,</span>
+                <span class="c1"># Note the alternative syntax for headings (below) is not handled here</span>
+                <span class="c1"># Heading level 2</span>
+                <span class="c1"># ---------------</span>
+                <span class="c1"># End of code block</span>
+                <span class="s2">&quot;```</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="c1"># Horizontal lines</span>
+                <span class="s2">&quot;</span><span class="se">\n\\</span><span class="s2">*</span><span class="se">\\</span><span class="s2">*</span><span class="se">\\</span><span class="s2">*+</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">---+</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">___+</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="c1"># Note that this splitter doesn&#39;t handle horizontal lines defined</span>
+                <span class="c1"># by *three or more* of ***, ---, or ___, but this is not handled</span>
+                <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot; &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="p">]</span>
+        <span class="k">elif</span> <span class="n">language</span> <span class="o">==</span> <span class="n">Language</span><span class="o">.</span><span class="n">LATEX</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span>
+                <span class="c1"># First, try to split along Latex sections</span>
+                <span class="s2">&quot;</span><span class="se">\n\\\\</span><span class="s2">chapter{&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n\\\\</span><span class="s2">section{&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n\\\\</span><span class="s2">subsection{&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n\\\\</span><span class="s2">subsubsection{&quot;</span><span class="p">,</span>
+                <span class="c1"># Now split by environments</span>
+                <span class="s2">&quot;</span><span class="se">\n\\\\</span><span class="s2">begin</span><span class="si">{enumerate}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n\\\\</span><span class="s2">begin</span><span class="si">{itemize}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n\\\\</span><span class="s2">begin</span><span class="si">{description}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n\\\\</span><span class="s2">begin</span><span class="si">{list}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n\\\\</span><span class="s2">begin</span><span class="si">{quote}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n\\\\</span><span class="s2">begin</span><span class="si">{quotation}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n\\\\</span><span class="s2">begin</span><span class="si">{verse}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n\\\\</span><span class="s2">begin</span><span class="si">{verbatim}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="c1"># Now split by math environments</span>
+                <span class="s2">&quot;</span><span class="se">\n\\\b</span><span class="s2">egin</span><span class="si">{align}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;$$&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;$&quot;</span><span class="p">,</span>
+                <span class="c1"># Now split by the normal type of lines</span>
+                <span class="s2">&quot; &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="p">]</span>
+        <span class="k">elif</span> <span class="n">language</span> <span class="o">==</span> <span class="n">Language</span><span class="o">.</span><span class="n">HTML</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span>
+                <span class="c1"># First, try to split along HTML tags</span>
+                <span class="s2">&quot;&lt;body&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;&lt;div&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;&lt;p&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;&lt;br&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;&lt;li&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;&lt;h1&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;&lt;h2&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;&lt;h3&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;&lt;h4&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;&lt;h5&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;&lt;h6&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;&lt;span&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;&lt;table&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;&lt;tr&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;&lt;td&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;&lt;th&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;&lt;ul&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;&lt;ol&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;&lt;header&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;&lt;footer&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;&lt;nav&quot;</span><span class="p">,</span>
+                <span class="c1"># Head</span>
+                <span class="s2">&quot;&lt;head&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;&lt;style&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;&lt;script&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;&lt;meta&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;&lt;title&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="p">]</span>
+        <span class="k">elif</span> <span class="n">language</span> <span class="o">==</span> <span class="n">Language</span><span class="o">.</span><span class="n">CSHARP</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">interface &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">enum &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">implements &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">delegate &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">event &quot;</span><span class="p">,</span>
+                <span class="c1"># Split along class definitions</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">class &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">abstract &quot;</span><span class="p">,</span>
+                <span class="c1"># Split along method definitions</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">public &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">protected &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">private &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">static &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">return &quot;</span><span class="p">,</span>
+                <span class="c1"># Split along control flow statements</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">if &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">continue &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">for &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">foreach &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">while &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">switch &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">break &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">case &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">else &quot;</span><span class="p">,</span>
+                <span class="c1"># Split by exceptions</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">try &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">throw &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">finally &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">catch &quot;</span><span class="p">,</span>
+                <span class="c1"># Split by the normal type of lines</span>
+                <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot; &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="p">]</span>
+        <span class="k">elif</span> <span class="n">language</span> <span class="o">==</span> <span class="n">Language</span><span class="o">.</span><span class="n">SOL</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span>
+                <span class="c1"># Split along compiler information definitions</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">pragma &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">using &quot;</span><span class="p">,</span>
+                <span class="c1"># Split along contract definitions</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">contract &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">interface &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">library &quot;</span><span class="p">,</span>
+                <span class="c1"># Split along method definitions</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">constructor &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">type &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">function &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">event &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">modifier &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">error &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">struct &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">enum &quot;</span><span class="p">,</span>
+                <span class="c1"># Split along control flow statements</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">if &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">for &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">while &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">do while &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">assembly &quot;</span><span class="p">,</span>
+                <span class="c1"># Split by the normal type of lines</span>
+                <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot; &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="p">]</span>
+        <span class="k">elif</span> <span class="n">language</span> <span class="o">==</span> <span class="n">Language</span><span class="o">.</span><span class="n">COBOL</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span>
+                <span class="c1"># Split along divisions</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">IDENTIFICATION DIVISION.&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">ENVIRONMENT DIVISION.&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">DATA DIVISION.&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">PROCEDURE DIVISION.&quot;</span><span class="p">,</span>
+                <span class="c1"># Split along sections within DATA DIVISION</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">WORKING-STORAGE SECTION.&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">LINKAGE SECTION.&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">FILE SECTION.&quot;</span><span class="p">,</span>
+                <span class="c1"># Split along sections within PROCEDURE DIVISION</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">INPUT-OUTPUT SECTION.&quot;</span><span class="p">,</span>
+                <span class="c1"># Split along paragraphs and common statements</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">OPEN &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">CLOSE &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">READ &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">WRITE &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">IF &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">ELSE &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">MOVE &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">PERFORM &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">UNTIL &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">VARYING &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">ACCEPT &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">DISPLAY &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">STOP RUN.&quot;</span><span class="p">,</span>
+                <span class="c1"># Split by the normal type of lines</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot; &quot;</span><span class="p">,</span>
+                <span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="p">]</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Language </span><span class="si">{</span><span class="n">language</span><span class="si">}</span><span class="s2"> is not supported! &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Please choose from </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">Language</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span></div></div>
+</pre></div>
+
+      </div>
+    <div class="container">
+      <footer class="sk-content-footer">
+            &copy; 2023, LangChain, Inc..
+          Last updated on Mar 15, 2024.
+      </footer>
+    </div>
+  </div>
+</div>
+<script src="../../_static/js/vendor/bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    /* Add a [>>>] button on the top-right corner of code samples to hide
+     * the >>> and ... prompts and the output and thus make the code
+     * copyable. */
+    var div = $('.highlight-python .highlight,' +
+                '.highlight-python3 .highlight,' +
+                '.highlight-pycon .highlight,' +
+		'.highlight-default .highlight')
+    var pre = div.find('pre');
+
+    // get the styles from the current theme
+    pre.parent().parent().css('position', 'relative');
+    var hide_text = 'Hide prompts and outputs';
+    var show_text = 'Show prompts and outputs';
+
+    // create and add the button to all the code blocks that contain >>>
+    div.each(function(index) {
+        var jthis = $(this);
+        if (jthis.find('.gp').length > 0) {
+            var button = $('<span class="copybutton">&gt;&gt;&gt;</span>');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+            jthis.prepend(button);
+        }
+        // tracebacks (.gt) contain bare text elements that need to be
+        // wrapped in a span to work with .nextUntil() (see later)
+        jthis.find('pre:has(.gt)').contents().filter(function() {
+            return ((this.nodeType == 3) && (this.data.trim().length > 0));
+        }).wrap('<span>');
+    });
+
+    // define the behavior of the button when it's clicked
+    $('.copybutton').click(function(e){
+        e.preventDefault();
+        var button = $(this);
+        if (button.data('hidden') === 'false') {
+            // hide the code output
+            button.parent().find('.go, .gp, .gt').hide();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'hidden');
+            button.css('text-decoration', 'line-through');
+            button.attr('title', show_text);
+            button.data('hidden', 'true');
+        } else {
+            // show the code output
+            button.parent().find('.go, .gp, .gt').show();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'visible');
+            button.css('text-decoration', 'none');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+        }
+    });
+
+	/*** Add permalink buttons next to glossary terms ***/
+	$('dl.glossary > dt[id]').append(function() {
+		return ('<a class="headerlink" href="#' +
+			    this.getAttribute('id') +
+			    '" title="Permalink to this term">¶</a>');
+	});
+});
+
+</script>
+    
+</body>
+</html>

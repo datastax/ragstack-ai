@@ -1,0 +1,409 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>langchain.output_parsers.retry &mdash; 🦜🔗 LangChain 0.1.12</title>
+  
+  <link rel="canonical" href="https://api.python.langchain.com/en/latest/_modules/langchain/output_parsers/retry.html" />
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/vendor/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/autodoc_pydantic.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/sphinx-dropdown.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/panels-bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+<script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+<script src="../../../_static/jquery.js"></script> 
+</head>
+<body>
+
+
+<nav id="navbar" class="sk-docs-navbar navbar navbar-expand-md navbar-light bg-light py-0">
+  <div class="container-fluid sk-docs-container px-0">
+    <button
+      id="sk-navbar-toggler"
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="sk-navbar-collapse collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../langchain_api_reference.html">LangChain</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../core_api_reference.html">Core</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../community_api_reference.html">Community</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../experimental_api_reference.html">Experimental</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../text_splitters_api_reference.html">Text splitters</a>
+        </li>
+        <li class="nav-item dropdown nav-more-item-dropdown">
+          <a class="sk-nav-link nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Partner libs</a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+          </div>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" target="_blank" rel="noopener noreferrer" href="https://python.langchain.com/">Docs</a>
+        </li>
+      </ul>
+      <div id="searchbox" role="search">
+          <div class="searchformwrapper">
+          <form class="search" action="../../../search.html" method="get">
+            <input class="sk-search-text-input" type="text" name="q" aria-labelledby="searchlabel" />
+            <input class="sk-search-text-btn" type="submit" value="Go" />
+          </form>
+          </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="d-flex" id="sk-doc-wrapper">
+    <input type="checkbox" name="sk-toggle-checkbox" id="sk-toggle-checkbox">
+    <label id="sk-sidemenu-toggle" class="sk-btn-toggle-toc btn sk-btn-primary" for="sk-toggle-checkbox">Toggle Menu</label>
+    <div id="sk-sidebar-wrapper" class="border-right">
+      <div class="sk-sidebar-toc-wrapper">
+        <div class="btn-group w-100 mb-2" role="group" aria-label="rellinks">
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Prev</a><a href="../../index.html" role="button" class="btn sk-btn-rellink py-1" sk-rellink-tooltip="Module code">Up</a>
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Next</a>
+        </div>
+            <div class="sk-sidebar-toc">
+              
+            </div>
+      </div>
+    </div>
+    <div id="sk-page-content-wrapper">
+      <div class="sk-page-content container-fluid body px-md-3" role="main">
+        
+  <h1>Source code for langchain.output_parsers.retry</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">TypeVar</span>
+
+<span class="kn">from</span> <span class="nn">langchain_core.exceptions</span> <span class="kn">import</span> <span class="n">OutputParserException</span>
+<span class="kn">from</span> <span class="nn">langchain_core.language_models</span> <span class="kn">import</span> <span class="n">BaseLanguageModel</span>
+<span class="kn">from</span> <span class="nn">langchain_core.output_parsers</span> <span class="kn">import</span> <span class="n">BaseOutputParser</span>
+<span class="kn">from</span> <span class="nn">langchain_core.prompt_values</span> <span class="kn">import</span> <span class="n">PromptValue</span>
+<span class="kn">from</span> <span class="nn">langchain_core.prompts</span> <span class="kn">import</span> <span class="n">BasePromptTemplate</span><span class="p">,</span> <span class="n">PromptTemplate</span>
+
+<span class="n">NAIVE_COMPLETION_RETRY</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;Prompt:</span>
+<span class="si">{prompt}</span>
+<span class="s2">Completion:</span>
+<span class="si">{completion}</span>
+
+<span class="s2">Above, the Completion did not satisfy the constraints given in the Prompt.</span>
+<span class="s2">Please try again:&quot;&quot;&quot;</span>
+
+<span class="n">NAIVE_COMPLETION_RETRY_WITH_ERROR</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;Prompt:</span>
+<span class="si">{prompt}</span>
+<span class="s2">Completion:</span>
+<span class="si">{completion}</span>
+
+<span class="s2">Above, the Completion did not satisfy the constraints given in the Prompt.</span>
+<span class="s2">Details: </span><span class="si">{error}</span>
+<span class="s2">Please try again:&quot;&quot;&quot;</span>
+
+<span class="n">NAIVE_RETRY_PROMPT</span> <span class="o">=</span> <span class="n">PromptTemplate</span><span class="o">.</span><span class="n">from_template</span><span class="p">(</span><span class="n">NAIVE_COMPLETION_RETRY</span><span class="p">)</span>
+<span class="n">NAIVE_RETRY_WITH_ERROR_PROMPT</span> <span class="o">=</span> <span class="n">PromptTemplate</span><span class="o">.</span><span class="n">from_template</span><span class="p">(</span>
+    <span class="n">NAIVE_COMPLETION_RETRY_WITH_ERROR</span>
+<span class="p">)</span>
+
+<span class="n">T</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;T&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="RetryOutputParser"><a class="viewcode-back" href="../../../output_parsers/langchain.output_parsers.retry.RetryOutputParser.html#langchain.output_parsers.retry.RetryOutputParser">[docs]</a><span class="k">class</span> <span class="nc">RetryOutputParser</span><span class="p">(</span><span class="n">BaseOutputParser</span><span class="p">[</span><span class="n">T</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Wraps a parser and tries to fix parsing errors.</span>
+
+<span class="sd">    Does this by passing the original prompt and the completion to another</span>
+<span class="sd">    LLM, and telling it the completion did not satisfy criteria in the prompt.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">parser</span><span class="p">:</span> <span class="n">BaseOutputParser</span><span class="p">[</span><span class="n">T</span><span class="p">]</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The parser to use to parse the output.&quot;&quot;&quot;</span>
+    <span class="c1"># Should be an LLMChain but we want to avoid top-level imports from langchain.chains</span>
+    <span class="n">retry_chain</span><span class="p">:</span> <span class="n">Any</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The LLMChain to use to retry the completion.&quot;&quot;&quot;</span>
+    <span class="n">max_retries</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The maximum number of times to retry the parse.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="RetryOutputParser.from_llm"><a class="viewcode-back" href="../../../output_parsers/langchain.output_parsers.retry.RetryOutputParser.html#langchain.output_parsers.retry.RetryOutputParser.from_llm">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_llm</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">llm</span><span class="p">:</span> <span class="n">BaseLanguageModel</span><span class="p">,</span>
+        <span class="n">parser</span><span class="p">:</span> <span class="n">BaseOutputParser</span><span class="p">[</span><span class="n">T</span><span class="p">],</span>
+        <span class="n">prompt</span><span class="p">:</span> <span class="n">BasePromptTemplate</span> <span class="o">=</span> <span class="n">NAIVE_RETRY_PROMPT</span><span class="p">,</span>
+        <span class="n">max_retries</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RetryOutputParser</span><span class="p">[</span><span class="n">T</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create an RetryOutputParser from a language model and a parser.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            llm: llm to use for fixing</span>
+<span class="sd">            parser: parser to use for parsing</span>
+<span class="sd">            prompt: prompt to use for fixing</span>
+<span class="sd">            max_retries: Maximum number of retries to parse.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            RetryOutputParser</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">langchain.chains.llm</span> <span class="kn">import</span> <span class="n">LLMChain</span>
+
+        <span class="n">chain</span> <span class="o">=</span> <span class="n">LLMChain</span><span class="p">(</span><span class="n">llm</span><span class="o">=</span><span class="n">llm</span><span class="p">,</span> <span class="n">prompt</span><span class="o">=</span><span class="n">prompt</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">parser</span><span class="o">=</span><span class="n">parser</span><span class="p">,</span> <span class="n">retry_chain</span><span class="o">=</span><span class="n">chain</span><span class="p">,</span> <span class="n">max_retries</span><span class="o">=</span><span class="n">max_retries</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="RetryOutputParser.parse_with_prompt"><a class="viewcode-back" href="../../../output_parsers/langchain.output_parsers.retry.RetryOutputParser.html#langchain.output_parsers.retry.RetryOutputParser.parse_with_prompt">[docs]</a>    <span class="k">def</span> <span class="nf">parse_with_prompt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">completion</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">prompt_value</span><span class="p">:</span> <span class="n">PromptValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Parse the output of an LLM call using a wrapped parser.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            completion: The chain completion to parse.</span>
+<span class="sd">            prompt_value: The prompt to use to parse the completion.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The parsed completion.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">retries</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">while</span> <span class="n">retries</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_retries</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">completion</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">OutputParserException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">retries</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_retries</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">e</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">retries</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="n">completion</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">retry_chain</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+                        <span class="n">prompt</span><span class="o">=</span><span class="n">prompt_value</span><span class="o">.</span><span class="n">to_string</span><span class="p">(),</span> <span class="n">completion</span><span class="o">=</span><span class="n">completion</span>
+                    <span class="p">)</span>
+
+        <span class="k">raise</span> <span class="n">OutputParserException</span><span class="p">(</span><span class="s2">&quot;Failed to parse&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="RetryOutputParser.aparse_with_prompt"><a class="viewcode-back" href="../../../output_parsers/langchain.output_parsers.retry.RetryOutputParser.html#langchain.output_parsers.retry.RetryOutputParser.aparse_with_prompt">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">aparse_with_prompt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">completion</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">prompt_value</span><span class="p">:</span> <span class="n">PromptValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Parse the output of an LLM call using a wrapped parser.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            completion: The chain completion to parse.</span>
+<span class="sd">            prompt_value: The prompt to use to parse the completion.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The parsed completion.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">retries</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">while</span> <span class="n">retries</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_retries</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">aparse</span><span class="p">(</span><span class="n">completion</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">OutputParserException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">retries</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_retries</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">e</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">retries</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="n">completion</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">retry_chain</span><span class="o">.</span><span class="n">arun</span><span class="p">(</span>
+                        <span class="n">prompt</span><span class="o">=</span><span class="n">prompt_value</span><span class="o">.</span><span class="n">to_string</span><span class="p">(),</span> <span class="n">completion</span><span class="o">=</span><span class="n">completion</span>
+                    <span class="p">)</span>
+
+        <span class="k">raise</span> <span class="n">OutputParserException</span><span class="p">(</span><span class="s2">&quot;Failed to parse&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="RetryOutputParser.parse"><a class="viewcode-back" href="../../../output_parsers/langchain.output_parsers.retry.RetryOutputParser.html#langchain.output_parsers.retry.RetryOutputParser.parse">[docs]</a>    <span class="k">def</span> <span class="nf">parse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">completion</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="s2">&quot;This OutputParser can only be called by the `parse_with_prompt` method.&quot;</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="RetryOutputParser.get_format_instructions"><a class="viewcode-back" href="../../../output_parsers/langchain.output_parsers.retry.RetryOutputParser.html#langchain.output_parsers.retry.RetryOutputParser.get_format_instructions">[docs]</a>    <span class="k">def</span> <span class="nf">get_format_instructions</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">get_format_instructions</span><span class="p">()</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;retry&quot;</span></div>
+
+
+<div class="viewcode-block" id="RetryWithErrorOutputParser"><a class="viewcode-back" href="../../../output_parsers/langchain.output_parsers.retry.RetryWithErrorOutputParser.html#langchain.output_parsers.retry.RetryWithErrorOutputParser">[docs]</a><span class="k">class</span> <span class="nc">RetryWithErrorOutputParser</span><span class="p">(</span><span class="n">BaseOutputParser</span><span class="p">[</span><span class="n">T</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Wraps a parser and tries to fix parsing errors.</span>
+
+<span class="sd">    Does this by passing the original prompt, the completion, AND the error</span>
+<span class="sd">    that was raised to another language model and telling it that the completion</span>
+<span class="sd">    did not work, and raised the given error. Differs from RetryOutputParser</span>
+<span class="sd">    in that this implementation provides the error that was raised back to the</span>
+<span class="sd">    LLM, which in theory should give it more information on how to fix it.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">parser</span><span class="p">:</span> <span class="n">BaseOutputParser</span><span class="p">[</span><span class="n">T</span><span class="p">]</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The parser to use to parse the output.&quot;&quot;&quot;</span>
+    <span class="c1"># Should be an LLMChain but we want to avoid top-level imports from langchain.chains</span>
+    <span class="n">retry_chain</span><span class="p">:</span> <span class="n">Any</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The LLMChain to use to retry the completion.&quot;&quot;&quot;</span>
+    <span class="n">max_retries</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The maximum number of times to retry the parse.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="RetryWithErrorOutputParser.from_llm"><a class="viewcode-back" href="../../../output_parsers/langchain.output_parsers.retry.RetryWithErrorOutputParser.html#langchain.output_parsers.retry.RetryWithErrorOutputParser.from_llm">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_llm</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">llm</span><span class="p">:</span> <span class="n">BaseLanguageModel</span><span class="p">,</span>
+        <span class="n">parser</span><span class="p">:</span> <span class="n">BaseOutputParser</span><span class="p">[</span><span class="n">T</span><span class="p">],</span>
+        <span class="n">prompt</span><span class="p">:</span> <span class="n">BasePromptTemplate</span> <span class="o">=</span> <span class="n">NAIVE_RETRY_WITH_ERROR_PROMPT</span><span class="p">,</span>
+        <span class="n">max_retries</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RetryWithErrorOutputParser</span><span class="p">[</span><span class="n">T</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a RetryWithErrorOutputParser from an LLM.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            llm: The LLM to use to retry the completion.</span>
+<span class="sd">            parser: The parser to use to parse the output.</span>
+<span class="sd">            prompt: The prompt to use to retry the completion.</span>
+<span class="sd">            max_retries: The maximum number of times to retry the completion.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A RetryWithErrorOutputParser.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">langchain.chains.llm</span> <span class="kn">import</span> <span class="n">LLMChain</span>
+
+        <span class="n">chain</span> <span class="o">=</span> <span class="n">LLMChain</span><span class="p">(</span><span class="n">llm</span><span class="o">=</span><span class="n">llm</span><span class="p">,</span> <span class="n">prompt</span><span class="o">=</span><span class="n">prompt</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">parser</span><span class="o">=</span><span class="n">parser</span><span class="p">,</span> <span class="n">retry_chain</span><span class="o">=</span><span class="n">chain</span><span class="p">,</span> <span class="n">max_retries</span><span class="o">=</span><span class="n">max_retries</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="RetryWithErrorOutputParser.parse_with_prompt"><a class="viewcode-back" href="../../../output_parsers/langchain.output_parsers.retry.RetryWithErrorOutputParser.html#langchain.output_parsers.retry.RetryWithErrorOutputParser.parse_with_prompt">[docs]</a>    <span class="k">def</span> <span class="nf">parse_with_prompt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">completion</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">prompt_value</span><span class="p">:</span> <span class="n">PromptValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
+        <span class="n">retries</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">while</span> <span class="n">retries</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_retries</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">completion</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">OutputParserException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">retries</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_retries</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">e</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">retries</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="n">completion</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">retry_chain</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+                        <span class="n">prompt</span><span class="o">=</span><span class="n">prompt_value</span><span class="o">.</span><span class="n">to_string</span><span class="p">(),</span>
+                        <span class="n">completion</span><span class="o">=</span><span class="n">completion</span><span class="p">,</span>
+                        <span class="n">error</span><span class="o">=</span><span class="nb">repr</span><span class="p">(</span><span class="n">e</span><span class="p">),</span>
+                    <span class="p">)</span>
+
+        <span class="k">raise</span> <span class="n">OutputParserException</span><span class="p">(</span><span class="s2">&quot;Failed to parse&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="RetryWithErrorOutputParser.aparse_with_prompt"><a class="viewcode-back" href="../../../output_parsers/langchain.output_parsers.retry.RetryWithErrorOutputParser.html#langchain.output_parsers.retry.RetryWithErrorOutputParser.aparse_with_prompt">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">aparse_with_prompt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">completion</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">prompt_value</span><span class="p">:</span> <span class="n">PromptValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
+        <span class="n">retries</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">while</span> <span class="n">retries</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_retries</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">aparse</span><span class="p">(</span><span class="n">completion</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">OutputParserException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">retries</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_retries</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">e</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">retries</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="n">completion</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">retry_chain</span><span class="o">.</span><span class="n">arun</span><span class="p">(</span>
+                        <span class="n">prompt</span><span class="o">=</span><span class="n">prompt_value</span><span class="o">.</span><span class="n">to_string</span><span class="p">(),</span>
+                        <span class="n">completion</span><span class="o">=</span><span class="n">completion</span><span class="p">,</span>
+                        <span class="n">error</span><span class="o">=</span><span class="nb">repr</span><span class="p">(</span><span class="n">e</span><span class="p">),</span>
+                    <span class="p">)</span>
+
+        <span class="k">raise</span> <span class="n">OutputParserException</span><span class="p">(</span><span class="s2">&quot;Failed to parse&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="RetryWithErrorOutputParser.parse"><a class="viewcode-back" href="../../../output_parsers/langchain.output_parsers.retry.RetryWithErrorOutputParser.html#langchain.output_parsers.retry.RetryWithErrorOutputParser.parse">[docs]</a>    <span class="k">def</span> <span class="nf">parse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">completion</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="s2">&quot;This OutputParser can only be called by the `parse_with_prompt` method.&quot;</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="RetryWithErrorOutputParser.get_format_instructions"><a class="viewcode-back" href="../../../output_parsers/langchain.output_parsers.retry.RetryWithErrorOutputParser.html#langchain.output_parsers.retry.RetryWithErrorOutputParser.get_format_instructions">[docs]</a>    <span class="k">def</span> <span class="nf">get_format_instructions</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">get_format_instructions</span><span class="p">()</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;retry_with_error&quot;</span></div>
+</pre></div>
+
+      </div>
+    <div class="container">
+      <footer class="sk-content-footer">
+            &copy; 2023, LangChain, Inc..
+          Last updated on Mar 15, 2024.
+      </footer>
+    </div>
+  </div>
+</div>
+<script src="../../../_static/js/vendor/bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    /* Add a [>>>] button on the top-right corner of code samples to hide
+     * the >>> and ... prompts and the output and thus make the code
+     * copyable. */
+    var div = $('.highlight-python .highlight,' +
+                '.highlight-python3 .highlight,' +
+                '.highlight-pycon .highlight,' +
+		'.highlight-default .highlight')
+    var pre = div.find('pre');
+
+    // get the styles from the current theme
+    pre.parent().parent().css('position', 'relative');
+    var hide_text = 'Hide prompts and outputs';
+    var show_text = 'Show prompts and outputs';
+
+    // create and add the button to all the code blocks that contain >>>
+    div.each(function(index) {
+        var jthis = $(this);
+        if (jthis.find('.gp').length > 0) {
+            var button = $('<span class="copybutton">&gt;&gt;&gt;</span>');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+            jthis.prepend(button);
+        }
+        // tracebacks (.gt) contain bare text elements that need to be
+        // wrapped in a span to work with .nextUntil() (see later)
+        jthis.find('pre:has(.gt)').contents().filter(function() {
+            return ((this.nodeType == 3) && (this.data.trim().length > 0));
+        }).wrap('<span>');
+    });
+
+    // define the behavior of the button when it's clicked
+    $('.copybutton').click(function(e){
+        e.preventDefault();
+        var button = $(this);
+        if (button.data('hidden') === 'false') {
+            // hide the code output
+            button.parent().find('.go, .gp, .gt').hide();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'hidden');
+            button.css('text-decoration', 'line-through');
+            button.attr('title', show_text);
+            button.data('hidden', 'true');
+        } else {
+            // show the code output
+            button.parent().find('.go, .gp, .gt').show();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'visible');
+            button.css('text-decoration', 'none');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+        }
+    });
+
+	/*** Add permalink buttons next to glossary terms ***/
+	$('dl.glossary > dt[id]').append(function() {
+		return ('<a class="headerlink" href="#' +
+			    this.getAttribute('id') +
+			    '" title="Permalink to this term">¶</a>');
+	});
+});
+
+</script>
+    
+</body>
+</html>

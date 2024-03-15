@@ -1,0 +1,485 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>langchain_core.runnables.graph_ascii &mdash; 🦜🔗 LangChain 0.1.12</title>
+  
+  <link rel="canonical" href="https://api.python.langchain.com/en/latest/_modules/langchain_core/runnables/graph_ascii.html" />
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/vendor/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/autodoc_pydantic.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/sphinx-dropdown.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/panels-bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+<script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+<script src="../../../_static/jquery.js"></script> 
+</head>
+<body>
+
+
+<nav id="navbar" class="sk-docs-navbar navbar navbar-expand-md navbar-light bg-light py-0">
+  <div class="container-fluid sk-docs-container px-0">
+    <button
+      id="sk-navbar-toggler"
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="sk-navbar-collapse collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../langchain_api_reference.html">LangChain</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../core_api_reference.html">Core</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../community_api_reference.html">Community</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../experimental_api_reference.html">Experimental</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../text_splitters_api_reference.html">Text splitters</a>
+        </li>
+        <li class="nav-item dropdown nav-more-item-dropdown">
+          <a class="sk-nav-link nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Partner libs</a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+          </div>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" target="_blank" rel="noopener noreferrer" href="https://python.langchain.com/">Docs</a>
+        </li>
+      </ul>
+      <div id="searchbox" role="search">
+          <div class="searchformwrapper">
+          <form class="search" action="../../../search.html" method="get">
+            <input class="sk-search-text-input" type="text" name="q" aria-labelledby="searchlabel" />
+            <input class="sk-search-text-btn" type="submit" value="Go" />
+          </form>
+          </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="d-flex" id="sk-doc-wrapper">
+    <input type="checkbox" name="sk-toggle-checkbox" id="sk-toggle-checkbox">
+    <label id="sk-sidemenu-toggle" class="sk-btn-toggle-toc btn sk-btn-primary" for="sk-toggle-checkbox">Toggle Menu</label>
+    <div id="sk-sidebar-wrapper" class="border-right">
+      <div class="sk-sidebar-toc-wrapper">
+        <div class="btn-group w-100 mb-2" role="group" aria-label="rellinks">
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Prev</a><a href="../../index.html" role="button" class="btn sk-btn-rellink py-1" sk-rellink-tooltip="Module code">Up</a>
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Next</a>
+        </div>
+            <div class="sk-sidebar-toc">
+              
+            </div>
+      </div>
+    </div>
+    <div id="sk-page-content-wrapper">
+      <div class="sk-page-content container-fluid body px-md-3" role="main">
+        
+  <h1>Source code for langchain_core.runnables.graph_ascii</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Draws DAG in ASCII.</span>
+<span class="sd">Adapted from https://github.com/iterative/dvc/blob/main/dvc/dagascii.py&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Tuple</span>
+
+
+<div class="viewcode-block" id="VertexViewer"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.graph_ascii.VertexViewer.html#langchain_core.runnables.graph_ascii.VertexViewer">[docs]</a><span class="k">class</span> <span class="nc">VertexViewer</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Class to define vertex box boundaries that will be accounted for during</span>
+<span class="sd">    graph building by grandalf.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        name (str): name of the vertex.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">HEIGHT</span> <span class="o">=</span> <span class="mi">3</span>  <span class="c1"># top and bottom box edges + text</span>
+
+<div class="viewcode-block" id="VertexViewer.__init__"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.graph_ascii.VertexViewer.html#langchain_core.runnables.graph_ascii.VertexViewer.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_h</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">HEIGHT</span>  <span class="c1"># top and bottom box edges + text</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_w</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span>  <span class="c1"># right and left bottom edges + text</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">h</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Height of the box.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_h</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">w</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Width of the box.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_w</span></div>
+
+
+<div class="viewcode-block" id="AsciiCanvas"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.graph_ascii.AsciiCanvas.html#langchain_core.runnables.graph_ascii.AsciiCanvas">[docs]</a><span class="k">class</span> <span class="nc">AsciiCanvas</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Class for drawing in ASCII.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        cols (int): number of columns in the canvas. Should be &gt; 1.</span>
+<span class="sd">        lines (int): number of lines in the canvas. Should be &gt; 1.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">TIMEOUT</span> <span class="o">=</span> <span class="mi">10</span>
+
+<div class="viewcode-block" id="AsciiCanvas.__init__"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.graph_ascii.AsciiCanvas.html#langchain_core.runnables.graph_ascii.AsciiCanvas.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cols</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">lines</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="n">cols</span> <span class="o">&gt;</span> <span class="mi">1</span>
+        <span class="k">assert</span> <span class="n">lines</span> <span class="o">&gt;</span> <span class="mi">1</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">cols</span> <span class="o">=</span> <span class="n">cols</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lines</span> <span class="o">=</span> <span class="n">lines</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span> <span class="o">=</span> <span class="p">[[</span><span class="s2">&quot; &quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">cols</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">lines</span><span class="p">)]</span></div>
+
+<div class="viewcode-block" id="AsciiCanvas.draw"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.graph_ascii.AsciiCanvas.html#langchain_core.runnables.graph_ascii.AsciiCanvas.draw">[docs]</a>    <span class="k">def</span> <span class="nf">draw</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Draws ASCII canvas on the screen.&quot;&quot;&quot;</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">linesep</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AsciiCanvas.point"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.graph_ascii.AsciiCanvas.html#langchain_core.runnables.graph_ascii.AsciiCanvas.point">[docs]</a>    <span class="k">def</span> <span class="nf">point</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">char</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a point on ASCII canvas.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x (int): x coordinate. Should be &gt;= 0 and &lt; number of columns in</span>
+<span class="sd">                the canvas.</span>
+<span class="sd">            y (int): y coordinate. Should be &gt;= 0 an &lt; number of lines in the</span>
+<span class="sd">                canvas.</span>
+<span class="sd">            char (str): character to place in the specified point on the</span>
+<span class="sd">                canvas.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">char</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+        <span class="k">assert</span> <span class="n">x</span> <span class="o">&gt;=</span> <span class="mi">0</span>
+        <span class="k">assert</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
+        <span class="k">assert</span> <span class="n">y</span> <span class="o">&gt;=</span> <span class="mi">0</span>
+        <span class="k">assert</span> <span class="n">y</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">lines</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="p">[</span><span class="n">y</span><span class="p">][</span><span class="n">x</span><span class="p">]</span> <span class="o">=</span> <span class="n">char</span></div>
+
+<div class="viewcode-block" id="AsciiCanvas.line"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.graph_ascii.AsciiCanvas.html#langchain_core.runnables.graph_ascii.AsciiCanvas.line">[docs]</a>    <span class="k">def</span> <span class="nf">line</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x0</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">y0</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">x1</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">y1</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">char</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a line on ASCII canvas.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x0 (int): x coordinate where the line should start.</span>
+<span class="sd">            y0 (int): y coordinate where the line should start.</span>
+<span class="sd">            x1 (int): x coordinate where the line should end.</span>
+<span class="sd">            y1 (int): y coordinate where the line should end.</span>
+<span class="sd">            char (str): character to draw the line with.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">x0</span> <span class="o">&gt;</span> <span class="n">x1</span><span class="p">:</span>
+            <span class="n">x1</span><span class="p">,</span> <span class="n">x0</span> <span class="o">=</span> <span class="n">x0</span><span class="p">,</span> <span class="n">x1</span>
+            <span class="n">y1</span><span class="p">,</span> <span class="n">y0</span> <span class="o">=</span> <span class="n">y0</span><span class="p">,</span> <span class="n">y1</span>
+
+        <span class="n">dx</span> <span class="o">=</span> <span class="n">x1</span> <span class="o">-</span> <span class="n">x0</span>
+        <span class="n">dy</span> <span class="o">=</span> <span class="n">y1</span> <span class="o">-</span> <span class="n">y0</span>
+
+        <span class="k">if</span> <span class="n">dx</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">dy</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">point</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">,</span> <span class="n">char</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">abs</span><span class="p">(</span><span class="n">dx</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">dy</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">x1</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">dx</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">y</span> <span class="o">=</span> <span class="n">y0</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">y</span> <span class="o">=</span> <span class="n">y0</span> <span class="o">+</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">((</span><span class="n">x</span> <span class="o">-</span> <span class="n">x0</span><span class="p">)</span> <span class="o">*</span> <span class="n">dy</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">dx</span><span class="p">)))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">point</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">char</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">y0</span> <span class="o">&lt;</span> <span class="n">y1</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">y0</span><span class="p">,</span> <span class="n">y1</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">dy</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">x</span> <span class="o">=</span> <span class="n">x0</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">x</span> <span class="o">=</span> <span class="n">x0</span> <span class="o">+</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">((</span><span class="n">y</span> <span class="o">-</span> <span class="n">y0</span><span class="p">)</span> <span class="o">*</span> <span class="n">dx</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">dy</span><span class="p">)))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">point</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">char</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">y1</span><span class="p">,</span> <span class="n">y0</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">dy</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">x</span> <span class="o">=</span> <span class="n">x0</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">x</span> <span class="o">=</span> <span class="n">x1</span> <span class="o">+</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">((</span><span class="n">y</span> <span class="o">-</span> <span class="n">y1</span><span class="p">)</span> <span class="o">*</span> <span class="n">dx</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">dy</span><span class="p">)))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">point</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">char</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AsciiCanvas.text"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.graph_ascii.AsciiCanvas.html#langchain_core.runnables.graph_ascii.AsciiCanvas.text">[docs]</a>    <span class="k">def</span> <span class="nf">text</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Print a text on ASCII canvas.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x (int): x coordinate where the text should start.</span>
+<span class="sd">            y (int): y coordinate where the text should start.</span>
+<span class="sd">            text (str): string that should be printed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">char</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">point</span><span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="n">i</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">char</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AsciiCanvas.box"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.graph_ascii.AsciiCanvas.html#langchain_core.runnables.graph_ascii.AsciiCanvas.box">[docs]</a>    <span class="k">def</span> <span class="nf">box</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x0</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">y0</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">width</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">height</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a box on ASCII canvas.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x0 (int): x coordinate of the box corner.</span>
+<span class="sd">            y0 (int): y coordinate of the box corner.</span>
+<span class="sd">            width (int): box width.</span>
+<span class="sd">            height (int): box height.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="n">width</span> <span class="o">&gt;</span> <span class="mi">1</span>
+        <span class="k">assert</span> <span class="n">height</span> <span class="o">&gt;</span> <span class="mi">1</span>
+
+        <span class="n">width</span> <span class="o">-=</span> <span class="mi">1</span>
+        <span class="n">height</span> <span class="o">-=</span> <span class="mi">1</span>
+
+        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">x0</span> <span class="o">+</span> <span class="n">width</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">point</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y0</span><span class="p">,</span> <span class="s2">&quot;-&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">point</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y0</span> <span class="o">+</span> <span class="n">height</span><span class="p">,</span> <span class="s2">&quot;-&quot;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">y0</span><span class="p">,</span> <span class="n">y0</span> <span class="o">+</span> <span class="n">height</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">point</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="s2">&quot;|&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">point</span><span class="p">(</span><span class="n">x0</span> <span class="o">+</span> <span class="n">width</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="s2">&quot;|&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">point</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">,</span> <span class="s2">&quot;+&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">point</span><span class="p">(</span><span class="n">x0</span> <span class="o">+</span> <span class="n">width</span><span class="p">,</span> <span class="n">y0</span><span class="p">,</span> <span class="s2">&quot;+&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">point</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">y0</span> <span class="o">+</span> <span class="n">height</span><span class="p">,</span> <span class="s2">&quot;+&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">point</span><span class="p">(</span><span class="n">x0</span> <span class="o">+</span> <span class="n">width</span><span class="p">,</span> <span class="n">y0</span> <span class="o">+</span> <span class="n">height</span><span class="p">,</span> <span class="s2">&quot;+&quot;</span><span class="p">)</span></div></div>
+
+
+<span class="k">def</span> <span class="nf">_build_sugiyama_layout</span><span class="p">(</span>
+    <span class="n">vertices</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">edges</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">grandalf.graphs</span> <span class="kn">import</span> <span class="n">Edge</span><span class="p">,</span> <span class="n">Graph</span><span class="p">,</span> <span class="n">Vertex</span>  <span class="c1"># type: ignore[import]</span>
+        <span class="kn">from</span> <span class="nn">grandalf.layouts</span> <span class="kn">import</span> <span class="n">SugiyamaLayout</span>  <span class="c1"># type: ignore[import]</span>
+        <span class="kn">from</span> <span class="nn">grandalf.routing</span> <span class="kn">import</span> <span class="p">(</span>  <span class="c1"># type: ignore[import]</span>
+            <span class="n">EdgeViewer</span><span class="p">,</span>
+            <span class="n">route_with_lines</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+            <span class="s2">&quot;Install grandalf to draw graphs: `pip install grandalf`.&quot;</span>
+        <span class="p">)</span> <span class="kn">from</span> <span class="nn">exc</span>
+
+    <span class="c1">#</span>
+    <span class="c1"># Just a reminder about naming conventions:</span>
+    <span class="c1"># +------------X</span>
+    <span class="c1"># |</span>
+    <span class="c1"># |</span>
+    <span class="c1"># |</span>
+    <span class="c1"># |</span>
+    <span class="c1"># Y</span>
+    <span class="c1">#</span>
+
+    <span class="n">vertices_</span> <span class="o">=</span> <span class="p">{</span><span class="nb">id</span><span class="p">:</span> <span class="n">Vertex</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">data</span><span class="si">}</span><span class="s2"> &quot;</span><span class="p">)</span> <span class="k">for</span> <span class="nb">id</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">vertices</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+    <span class="n">edges_</span> <span class="o">=</span> <span class="p">[</span><span class="n">Edge</span><span class="p">(</span><span class="n">vertices_</span><span class="p">[</span><span class="n">s</span><span class="p">],</span> <span class="n">vertices_</span><span class="p">[</span><span class="n">e</span><span class="p">])</span> <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">edges</span><span class="p">]</span>
+    <span class="n">vertices_list</span> <span class="o">=</span> <span class="n">vertices_</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+    <span class="n">graph</span> <span class="o">=</span> <span class="n">Graph</span><span class="p">(</span><span class="n">vertices_list</span><span class="p">,</span> <span class="n">edges_</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">vertex</span> <span class="ow">in</span> <span class="n">vertices_list</span><span class="p">:</span>
+        <span class="n">vertex</span><span class="o">.</span><span class="n">view</span> <span class="o">=</span> <span class="n">VertexViewer</span><span class="p">(</span><span class="n">vertex</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="c1"># NOTE: determine min box length to create the best layout</span>
+    <span class="n">minw</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">view</span><span class="o">.</span><span class="n">w</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">vertices_list</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">edges_</span><span class="p">:</span>
+        <span class="n">edge</span><span class="o">.</span><span class="n">view</span> <span class="o">=</span> <span class="n">EdgeViewer</span><span class="p">()</span>
+
+    <span class="n">sug</span> <span class="o">=</span> <span class="n">SugiyamaLayout</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">C</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">graph</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">C</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">roots</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">e_in</span><span class="p">())</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="n">graph</span><span class="o">.</span><span class="n">sV</span><span class="p">))</span>
+
+    <span class="n">sug</span><span class="o">.</span><span class="n">init_all</span><span class="p">(</span><span class="n">roots</span><span class="o">=</span><span class="n">roots</span><span class="p">,</span> <span class="n">optimize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">sug</span><span class="o">.</span><span class="n">yspace</span> <span class="o">=</span> <span class="n">VertexViewer</span><span class="o">.</span><span class="n">HEIGHT</span>
+    <span class="n">sug</span><span class="o">.</span><span class="n">xspace</span> <span class="o">=</span> <span class="n">minw</span>
+    <span class="n">sug</span><span class="o">.</span><span class="n">route_edge</span> <span class="o">=</span> <span class="n">route_with_lines</span>
+
+    <span class="n">sug</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">sug</span>
+
+
+<div class="viewcode-block" id="draw_ascii"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.graph_ascii.draw_ascii.html#langchain_core.runnables.graph_ascii.draw_ascii">[docs]</a><span class="k">def</span> <span class="nf">draw_ascii</span><span class="p">(</span><span class="n">vertices</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">edges</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build a DAG and draw it in ASCII.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        vertices (list): list of graph vertices.</span>
+<span class="sd">        edges (list): list of graph edges.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: ASCII representation</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; from dvc.dagascii import draw</span>
+<span class="sd">        &gt;&gt;&gt; vertices = [1, 2, 3, 4]</span>
+<span class="sd">        &gt;&gt;&gt; edges = [(1, 2), (2, 3), (2, 4), (1, 4)]</span>
+<span class="sd">        &gt;&gt;&gt; print(draw(vertices, edges))</span>
+<span class="sd">        +---+     +---+</span>
+<span class="sd">        | 3 |     | 4 |</span>
+<span class="sd">        +---+    *+---+</span>
+<span class="sd">          *    **   *</span>
+<span class="sd">          *  **     *</span>
+<span class="sd">          * *       *</span>
+<span class="sd">        +---+       *</span>
+<span class="sd">        | 2 |      *</span>
+<span class="sd">        +---+     *</span>
+<span class="sd">             *    *</span>
+<span class="sd">              *  *</span>
+<span class="sd">               **</span>
+<span class="sd">             +---+</span>
+<span class="sd">             | 1 |</span>
+<span class="sd">             +---+</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># NOTE: coordinates might me negative, so we need to shift</span>
+    <span class="c1"># everything to the positive plane before we actually draw it.</span>
+    <span class="n">Xs</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># noqa: N806</span>
+    <span class="n">Ys</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># noqa: N806</span>
+
+    <span class="n">sug</span> <span class="o">=</span> <span class="n">_build_sugiyama_layout</span><span class="p">(</span><span class="n">vertices</span><span class="p">,</span> <span class="n">edges</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">vertex</span> <span class="ow">in</span> <span class="n">sug</span><span class="o">.</span><span class="n">g</span><span class="o">.</span><span class="n">sV</span><span class="p">:</span>
+        <span class="c1"># NOTE: moving boxes w/2 to the left</span>
+        <span class="n">Xs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vertex</span><span class="o">.</span><span class="n">view</span><span class="o">.</span><span class="n">xy</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">vertex</span><span class="o">.</span><span class="n">view</span><span class="o">.</span><span class="n">w</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">)</span>
+        <span class="n">Xs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vertex</span><span class="o">.</span><span class="n">view</span><span class="o">.</span><span class="n">xy</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">vertex</span><span class="o">.</span><span class="n">view</span><span class="o">.</span><span class="n">w</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">)</span>
+        <span class="n">Ys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vertex</span><span class="o">.</span><span class="n">view</span><span class="o">.</span><span class="n">xy</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">Ys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vertex</span><span class="o">.</span><span class="n">view</span><span class="o">.</span><span class="n">xy</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">vertex</span><span class="o">.</span><span class="n">view</span><span class="o">.</span><span class="n">h</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">sug</span><span class="o">.</span><span class="n">g</span><span class="o">.</span><span class="n">sE</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">edge</span><span class="o">.</span><span class="n">view</span><span class="o">.</span><span class="n">_pts</span><span class="p">:</span>
+            <span class="n">Xs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+            <span class="n">Ys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+
+    <span class="n">minx</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">Xs</span><span class="p">)</span>
+    <span class="n">miny</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">Ys</span><span class="p">)</span>
+    <span class="n">maxx</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">Xs</span><span class="p">)</span>
+    <span class="n">maxy</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">Ys</span><span class="p">)</span>
+
+    <span class="n">canvas_cols</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">maxx</span><span class="p">)</span> <span class="o">-</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">minx</span><span class="p">)))</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="n">canvas_lines</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">maxy</span> <span class="o">-</span> <span class="n">miny</span><span class="p">))</span>
+
+    <span class="n">canvas</span> <span class="o">=</span> <span class="n">AsciiCanvas</span><span class="p">(</span><span class="n">canvas_cols</span><span class="p">,</span> <span class="n">canvas_lines</span><span class="p">)</span>
+
+    <span class="c1"># NOTE: first draw edges so that node boxes could overwrite them</span>
+    <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">sug</span><span class="o">.</span><span class="n">g</span><span class="o">.</span><span class="n">sE</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">edge</span><span class="o">.</span><span class="n">view</span><span class="o">.</span><span class="n">_pts</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span>
+        <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">edge</span><span class="o">.</span><span class="n">view</span><span class="o">.</span><span class="n">_pts</span><span class="p">)):</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="n">edge</span><span class="o">.</span><span class="n">view</span><span class="o">.</span><span class="n">_pts</span><span class="p">[</span><span class="n">index</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+            <span class="n">end</span> <span class="o">=</span> <span class="n">edge</span><span class="o">.</span><span class="n">view</span><span class="o">.</span><span class="n">_pts</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+
+            <span class="n">start_x</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">start</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">minx</span><span class="p">))</span>
+            <span class="n">start_y</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">start</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">miny</span><span class="p">))</span>
+            <span class="n">end_x</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">end</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">minx</span><span class="p">))</span>
+            <span class="n">end_y</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">end</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">miny</span><span class="p">))</span>
+
+            <span class="k">assert</span> <span class="n">start_x</span> <span class="o">&gt;=</span> <span class="mi">0</span>
+            <span class="k">assert</span> <span class="n">start_y</span> <span class="o">&gt;=</span> <span class="mi">0</span>
+            <span class="k">assert</span> <span class="n">end_x</span> <span class="o">&gt;=</span> <span class="mi">0</span>
+            <span class="k">assert</span> <span class="n">end_y</span> <span class="o">&gt;=</span> <span class="mi">0</span>
+
+            <span class="n">canvas</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="n">start_x</span><span class="p">,</span> <span class="n">start_y</span><span class="p">,</span> <span class="n">end_x</span><span class="p">,</span> <span class="n">end_y</span><span class="p">,</span> <span class="s2">&quot;*&quot;</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">vertex</span> <span class="ow">in</span> <span class="n">sug</span><span class="o">.</span><span class="n">g</span><span class="o">.</span><span class="n">sV</span><span class="p">:</span>
+        <span class="c1"># NOTE: moving boxes w/2 to the left</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">vertex</span><span class="o">.</span><span class="n">view</span><span class="o">.</span><span class="n">xy</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">vertex</span><span class="o">.</span><span class="n">view</span><span class="o">.</span><span class="n">w</span> <span class="o">/</span> <span class="mf">2.0</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">vertex</span><span class="o">.</span><span class="n">view</span><span class="o">.</span><span class="n">xy</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="n">canvas</span><span class="o">.</span><span class="n">box</span><span class="p">(</span>
+            <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">minx</span><span class="p">)),</span>
+            <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="n">miny</span><span class="p">)),</span>
+            <span class="n">vertex</span><span class="o">.</span><span class="n">view</span><span class="o">.</span><span class="n">w</span><span class="p">,</span>
+            <span class="n">vertex</span><span class="o">.</span><span class="n">view</span><span class="o">.</span><span class="n">h</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">canvas</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">minx</span><span class="p">))</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="n">miny</span><span class="p">))</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">vertex</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">canvas</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span></div>
+</pre></div>
+
+      </div>
+    <div class="container">
+      <footer class="sk-content-footer">
+            &copy; 2023, LangChain, Inc..
+          Last updated on Mar 15, 2024.
+      </footer>
+    </div>
+  </div>
+</div>
+<script src="../../../_static/js/vendor/bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    /* Add a [>>>] button on the top-right corner of code samples to hide
+     * the >>> and ... prompts and the output and thus make the code
+     * copyable. */
+    var div = $('.highlight-python .highlight,' +
+                '.highlight-python3 .highlight,' +
+                '.highlight-pycon .highlight,' +
+		'.highlight-default .highlight')
+    var pre = div.find('pre');
+
+    // get the styles from the current theme
+    pre.parent().parent().css('position', 'relative');
+    var hide_text = 'Hide prompts and outputs';
+    var show_text = 'Show prompts and outputs';
+
+    // create and add the button to all the code blocks that contain >>>
+    div.each(function(index) {
+        var jthis = $(this);
+        if (jthis.find('.gp').length > 0) {
+            var button = $('<span class="copybutton">&gt;&gt;&gt;</span>');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+            jthis.prepend(button);
+        }
+        // tracebacks (.gt) contain bare text elements that need to be
+        // wrapped in a span to work with .nextUntil() (see later)
+        jthis.find('pre:has(.gt)').contents().filter(function() {
+            return ((this.nodeType == 3) && (this.data.trim().length > 0));
+        }).wrap('<span>');
+    });
+
+    // define the behavior of the button when it's clicked
+    $('.copybutton').click(function(e){
+        e.preventDefault();
+        var button = $(this);
+        if (button.data('hidden') === 'false') {
+            // hide the code output
+            button.parent().find('.go, .gp, .gt').hide();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'hidden');
+            button.css('text-decoration', 'line-through');
+            button.attr('title', show_text);
+            button.data('hidden', 'true');
+        } else {
+            // show the code output
+            button.parent().find('.go, .gp, .gt').show();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'visible');
+            button.css('text-decoration', 'none');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+        }
+    });
+
+	/*** Add permalink buttons next to glossary terms ***/
+	$('dl.glossary > dt[id]').append(function() {
+		return ('<a class="headerlink" href="#' +
+			    this.getAttribute('id') +
+			    '" title="Permalink to this term">¶</a>');
+	});
+});
+
+</script>
+    
+</body>
+</html>

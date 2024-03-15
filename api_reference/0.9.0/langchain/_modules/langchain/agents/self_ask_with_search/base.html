@@ -1,0 +1,382 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>langchain.agents.self_ask_with_search.base &mdash; 🦜🔗 LangChain 0.1.12</title>
+  
+  <link rel="canonical" href="https://api.python.langchain.com/en/latest/_modules/langchain/agents/self_ask_with_search/base.html" />
+
+  
+
+  <link rel="stylesheet" href="../../../../_static/css/vendor/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/autodoc_pydantic.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/sphinx-dropdown.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/panels-bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/css/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+<script id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+<script src="../../../../_static/jquery.js"></script> 
+</head>
+<body>
+
+
+<nav id="navbar" class="sk-docs-navbar navbar navbar-expand-md navbar-light bg-light py-0">
+  <div class="container-fluid sk-docs-container px-0">
+    <button
+      id="sk-navbar-toggler"
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="sk-navbar-collapse collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../../langchain_api_reference.html">LangChain</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../../core_api_reference.html">Core</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../../community_api_reference.html">Community</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../../experimental_api_reference.html">Experimental</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../../text_splitters_api_reference.html">Text splitters</a>
+        </li>
+        <li class="nav-item dropdown nav-more-item-dropdown">
+          <a class="sk-nav-link nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Partner libs</a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+          </div>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" target="_blank" rel="noopener noreferrer" href="https://python.langchain.com/">Docs</a>
+        </li>
+      </ul>
+      <div id="searchbox" role="search">
+          <div class="searchformwrapper">
+          <form class="search" action="../../../../search.html" method="get">
+            <input class="sk-search-text-input" type="text" name="q" aria-labelledby="searchlabel" />
+            <input class="sk-search-text-btn" type="submit" value="Go" />
+          </form>
+          </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="d-flex" id="sk-doc-wrapper">
+    <input type="checkbox" name="sk-toggle-checkbox" id="sk-toggle-checkbox">
+    <label id="sk-sidemenu-toggle" class="sk-btn-toggle-toc btn sk-btn-primary" for="sk-toggle-checkbox">Toggle Menu</label>
+    <div id="sk-sidebar-wrapper" class="border-right">
+      <div class="sk-sidebar-toc-wrapper">
+        <div class="btn-group w-100 mb-2" role="group" aria-label="rellinks">
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Prev</a><a href="../../../index.html" role="button" class="btn sk-btn-rellink py-1" sk-rellink-tooltip="Module code">Up</a>
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Next</a>
+        </div>
+            <div class="sk-sidebar-toc">
+              
+            </div>
+      </div>
+    </div>
+    <div id="sk-page-content-wrapper">
+      <div class="sk-page-content container-fluid body px-md-3" role="main">
+        
+  <h1>Source code for langchain.agents.self_ask_with_search.base</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Chain that does self-ask with search.&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">from</span> <span class="nn">langchain_community.utilities.google_serper</span> <span class="kn">import</span> <span class="n">GoogleSerperAPIWrapper</span>
+<span class="kn">from</span> <span class="nn">langchain_community.utilities.searchapi</span> <span class="kn">import</span> <span class="n">SearchApiAPIWrapper</span>
+<span class="kn">from</span> <span class="nn">langchain_community.utilities.serpapi</span> <span class="kn">import</span> <span class="n">SerpAPIWrapper</span>
+<span class="kn">from</span> <span class="nn">langchain_core._api</span> <span class="kn">import</span> <span class="n">deprecated</span>
+<span class="kn">from</span> <span class="nn">langchain_core.language_models</span> <span class="kn">import</span> <span class="n">BaseLanguageModel</span>
+<span class="kn">from</span> <span class="nn">langchain_core.prompts</span> <span class="kn">import</span> <span class="n">BasePromptTemplate</span>
+<span class="kn">from</span> <span class="nn">langchain_core.pydantic_v1</span> <span class="kn">import</span> <span class="n">Field</span>
+<span class="kn">from</span> <span class="nn">langchain_core.runnables</span> <span class="kn">import</span> <span class="n">Runnable</span><span class="p">,</span> <span class="n">RunnablePassthrough</span>
+<span class="kn">from</span> <span class="nn">langchain_core.tools</span> <span class="kn">import</span> <span class="n">BaseTool</span><span class="p">,</span> <span class="n">Tool</span>
+
+<span class="kn">from</span> <span class="nn">langchain.agents.agent</span> <span class="kn">import</span> <span class="n">Agent</span><span class="p">,</span> <span class="n">AgentExecutor</span><span class="p">,</span> <span class="n">AgentOutputParser</span>
+<span class="kn">from</span> <span class="nn">langchain.agents.agent_types</span> <span class="kn">import</span> <span class="n">AgentType</span>
+<span class="kn">from</span> <span class="nn">langchain.agents.format_scratchpad</span> <span class="kn">import</span> <span class="n">format_log_to_str</span>
+<span class="kn">from</span> <span class="nn">langchain.agents.self_ask_with_search.output_parser</span> <span class="kn">import</span> <span class="n">SelfAskOutputParser</span>
+<span class="kn">from</span> <span class="nn">langchain.agents.self_ask_with_search.prompt</span> <span class="kn">import</span> <span class="n">PROMPT</span>
+<span class="kn">from</span> <span class="nn">langchain.agents.utils</span> <span class="kn">import</span> <span class="n">validate_tools_single_input</span>
+
+
+<div class="viewcode-block" id="SelfAskWithSearchAgent"><a class="viewcode-back" href="../../../../agents/langchain.agents.self_ask_with_search.base.SelfAskWithSearchAgent.html#langchain.agents.self_ask_with_search.base.SelfAskWithSearchAgent">[docs]</a><span class="nd">@deprecated</span><span class="p">(</span><span class="s2">&quot;0.1.0&quot;</span><span class="p">,</span> <span class="n">alternative</span><span class="o">=</span><span class="s2">&quot;create_self_ask_with_search&quot;</span><span class="p">,</span> <span class="n">removal</span><span class="o">=</span><span class="s2">&quot;0.2.0&quot;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">SelfAskWithSearchAgent</span><span class="p">(</span><span class="n">Agent</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Agent for the self-ask-with-search paper.&quot;&quot;&quot;</span>
+
+    <span class="n">output_parser</span><span class="p">:</span> <span class="n">AgentOutputParser</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">SelfAskOutputParser</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_get_default_output_parser</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AgentOutputParser</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">SelfAskOutputParser</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_agent_type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return Identifier of an agent type.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">AgentType</span><span class="o">.</span><span class="n">SELF_ASK_WITH_SEARCH</span>
+
+<div class="viewcode-block" id="SelfAskWithSearchAgent.create_prompt"><a class="viewcode-back" href="../../../../agents/langchain.agents.self_ask_with_search.base.SelfAskWithSearchAgent.html#langchain.agents.self_ask_with_search.base.SelfAskWithSearchAgent.create_prompt">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">create_prompt</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">tools</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">BaseTool</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">BasePromptTemplate</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Prompt does not depend on tools.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">PROMPT</span></div>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_validate_tools</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">tools</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">BaseTool</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">validate_tools_single_input</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">tools</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_validate_tools</span><span class="p">(</span><span class="n">tools</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tools</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Exactly one tool must be specified, but got </span><span class="si">{</span><span class="n">tools</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">tool_names</span> <span class="o">=</span> <span class="p">{</span><span class="n">tool</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">tool</span> <span class="ow">in</span> <span class="n">tools</span><span class="p">}</span>
+        <span class="k">if</span> <span class="n">tool_names</span> <span class="o">!=</span> <span class="p">{</span><span class="s2">&quot;Intermediate Answer&quot;</span><span class="p">}:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Tool name should be Intermediate Answer, got </span><span class="si">{</span><span class="n">tool_names</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">observation_prefix</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Prefix to append the observation with.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s2">&quot;Intermediate answer: &quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">llm_prefix</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Prefix to append the LLM call with.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s2">&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="SelfAskWithSearchChain"><a class="viewcode-back" href="../../../../agents/langchain.agents.self_ask_with_search.base.SelfAskWithSearchChain.html#langchain.agents.self_ask_with_search.base.SelfAskWithSearchChain">[docs]</a><span class="nd">@deprecated</span><span class="p">(</span><span class="s2">&quot;0.1.0&quot;</span><span class="p">,</span> <span class="n">removal</span><span class="o">=</span><span class="s2">&quot;0.2.0&quot;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">SelfAskWithSearchChain</span><span class="p">(</span><span class="n">AgentExecutor</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;[Deprecated] Chain that does self-ask with search.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">llm</span><span class="p">:</span> <span class="n">BaseLanguageModel</span><span class="p">,</span>
+        <span class="n">search_chain</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span>
+            <span class="n">GoogleSerperAPIWrapper</span><span class="p">,</span> <span class="n">SearchApiAPIWrapper</span><span class="p">,</span> <span class="n">SerpAPIWrapper</span>
+        <span class="p">],</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize only with an LLM and a search chain.&quot;&quot;&quot;</span>
+        <span class="n">search_tool</span> <span class="o">=</span> <span class="n">Tool</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Intermediate Answer&quot;</span><span class="p">,</span>
+            <span class="n">func</span><span class="o">=</span><span class="n">search_chain</span><span class="o">.</span><span class="n">run</span><span class="p">,</span>
+            <span class="n">coroutine</span><span class="o">=</span><span class="n">search_chain</span><span class="o">.</span><span class="n">arun</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Search&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">agent</span> <span class="o">=</span> <span class="n">SelfAskWithSearchAgent</span><span class="o">.</span><span class="n">from_llm_and_tools</span><span class="p">(</span><span class="n">llm</span><span class="p">,</span> <span class="p">[</span><span class="n">search_tool</span><span class="p">])</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">agent</span><span class="o">=</span><span class="n">agent</span><span class="p">,</span> <span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="n">search_tool</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="create_self_ask_with_search_agent"><a class="viewcode-back" href="../../../../agents/langchain.agents.self_ask_with_search.base.create_self_ask_with_search_agent.html#langchain.agents.self_ask_with_search.base.create_self_ask_with_search_agent">[docs]</a><span class="k">def</span> <span class="nf">create_self_ask_with_search_agent</span><span class="p">(</span>
+    <span class="n">llm</span><span class="p">:</span> <span class="n">BaseLanguageModel</span><span class="p">,</span> <span class="n">tools</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">BaseTool</span><span class="p">],</span> <span class="n">prompt</span><span class="p">:</span> <span class="n">BasePromptTemplate</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Runnable</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create an agent that uses self-ask with search prompting.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        llm: LLM to use as the agent.</span>
+<span class="sd">        tools: List of tools. Should just be of length 1, with that tool having</span>
+<span class="sd">            name `Intermediate Answer`</span>
+<span class="sd">        prompt: The prompt to use, must have input key `agent_scratchpad` which will</span>
+<span class="sd">            contain agent actions and tool outputs.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A Runnable sequence representing an agent. It takes as input all the same input</span>
+<span class="sd">        variables as the prompt passed in does. It returns as output either an</span>
+<span class="sd">        AgentAction or AgentFinish.</span>
+
+<span class="sd">    Examples:</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            from langchain import hub</span>
+<span class="sd">            from langchain_community.chat_models import ChatAnthropic</span>
+<span class="sd">            from langchain.agents import (</span>
+<span class="sd">                AgentExecutor, create_self_ask_with_search_agent</span>
+<span class="sd">            )</span>
+
+<span class="sd">            prompt = hub.pull(&quot;hwchase17/self-ask-with-search&quot;)</span>
+<span class="sd">            model = ChatAnthropic()</span>
+<span class="sd">            tools = [...]  # Should just be one tool with name `Intermediate Answer`</span>
+
+<span class="sd">            agent = create_self_ask_with_search_agent(model, tools, prompt)</span>
+<span class="sd">            agent_executor = AgentExecutor(agent=agent, tools=tools)</span>
+
+<span class="sd">            agent_executor.invoke({&quot;input&quot;: &quot;hi&quot;})</span>
+
+<span class="sd">    Prompt:</span>
+
+<span class="sd">        The prompt must have input key `agent_scratchpad` which will</span>
+<span class="sd">            contain agent actions and tool outputs as a string.</span>
+
+<span class="sd">        Here&#39;s an example:</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            from langchain_core.prompts import PromptTemplate</span>
+
+<span class="sd">            template = &#39;&#39;&#39;Question: Who lived longer, Muhammad Ali or Alan Turing?</span>
+<span class="sd">            Are follow up questions needed here: Yes.</span>
+<span class="sd">            Follow up: How old was Muhammad Ali when he died?</span>
+<span class="sd">            Intermediate answer: Muhammad Ali was 74 years old when he died.</span>
+<span class="sd">            Follow up: How old was Alan Turing when he died?</span>
+<span class="sd">            Intermediate answer: Alan Turing was 41 years old when he died.</span>
+<span class="sd">            So the final answer is: Muhammad Ali</span>
+
+<span class="sd">            Question: When was the founder of craigslist born?</span>
+<span class="sd">            Are follow up questions needed here: Yes.</span>
+<span class="sd">            Follow up: Who was the founder of craigslist?</span>
+<span class="sd">            Intermediate answer: Craigslist was founded by Craig Newmark.</span>
+<span class="sd">            Follow up: When was Craig Newmark born?</span>
+<span class="sd">            Intermediate answer: Craig Newmark was born on December 6, 1952.</span>
+<span class="sd">            So the final answer is: December 6, 1952</span>
+
+<span class="sd">            Question: Who was the maternal grandfather of George Washington?</span>
+<span class="sd">            Are follow up questions needed here: Yes.</span>
+<span class="sd">            Follow up: Who was the mother of George Washington?</span>
+<span class="sd">            Intermediate answer: The mother of George Washington was Mary Ball Washington.</span>
+<span class="sd">            Follow up: Who was the father of Mary Ball Washington?</span>
+<span class="sd">            Intermediate answer: The father of Mary Ball Washington was Joseph Ball.</span>
+<span class="sd">            So the final answer is: Joseph Ball</span>
+
+<span class="sd">            Question: Are both the directors of Jaws and Casino Royale from the same country?</span>
+<span class="sd">            Are follow up questions needed here: Yes.</span>
+<span class="sd">            Follow up: Who is the director of Jaws?</span>
+<span class="sd">            Intermediate answer: The director of Jaws is Steven Spielberg.</span>
+<span class="sd">            Follow up: Where is Steven Spielberg from?</span>
+<span class="sd">            Intermediate answer: The United States.</span>
+<span class="sd">            Follow up: Who is the director of Casino Royale?</span>
+<span class="sd">            Intermediate answer: The director of Casino Royale is Martin Campbell.</span>
+<span class="sd">            Follow up: Where is Martin Campbell from?</span>
+<span class="sd">            Intermediate answer: New Zealand.</span>
+<span class="sd">            So the final answer is: No</span>
+
+<span class="sd">            Question: {input}</span>
+<span class="sd">            Are followup questions needed here:{agent_scratchpad}&#39;&#39;&#39;</span>
+
+<span class="sd">            prompt = PromptTemplate.from_template(template)</span>
+<span class="sd">    &quot;&quot;&quot;</span>  <span class="c1"># noqa: E501</span>
+    <span class="n">missing_vars</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;agent_scratchpad&quot;</span><span class="p">}</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="n">prompt</span><span class="o">.</span><span class="n">input_variables</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">missing_vars</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Prompt missing required variables: </span><span class="si">{</span><span class="n">missing_vars</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tools</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;This agent expects exactly one tool&quot;</span><span class="p">)</span>
+    <span class="n">tool</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">tools</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">tool</span><span class="o">.</span><span class="n">name</span> <span class="o">!=</span> <span class="s2">&quot;Intermediate Answer&quot;</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;This agent expects the tool to be named `Intermediate Answer`&quot;</span>
+        <span class="p">)</span>
+
+    <span class="n">llm_with_stop</span> <span class="o">=</span> <span class="n">llm</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">stop</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Intermediate answer:&quot;</span><span class="p">])</span>
+    <span class="n">agent</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">RunnablePassthrough</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span>
+            <span class="n">agent_scratchpad</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">format_log_to_str</span><span class="p">(</span>
+                <span class="n">x</span><span class="p">[</span><span class="s2">&quot;intermediate_steps&quot;</span><span class="p">],</span>
+                <span class="n">observation_prefix</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Intermediate answer: &quot;</span><span class="p">,</span>
+                <span class="n">llm_prefix</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="c1"># Give it a default</span>
+            <span class="n">chat_history</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;chat_history&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="o">|</span> <span class="n">prompt</span>
+        <span class="o">|</span> <span class="n">llm_with_stop</span>
+        <span class="o">|</span> <span class="n">SelfAskOutputParser</span><span class="p">()</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">agent</span></div>
+</pre></div>
+
+      </div>
+    <div class="container">
+      <footer class="sk-content-footer">
+            &copy; 2023, LangChain, Inc..
+          Last updated on Mar 15, 2024.
+      </footer>
+    </div>
+  </div>
+</div>
+<script src="../../../../_static/js/vendor/bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    /* Add a [>>>] button on the top-right corner of code samples to hide
+     * the >>> and ... prompts and the output and thus make the code
+     * copyable. */
+    var div = $('.highlight-python .highlight,' +
+                '.highlight-python3 .highlight,' +
+                '.highlight-pycon .highlight,' +
+		'.highlight-default .highlight')
+    var pre = div.find('pre');
+
+    // get the styles from the current theme
+    pre.parent().parent().css('position', 'relative');
+    var hide_text = 'Hide prompts and outputs';
+    var show_text = 'Show prompts and outputs';
+
+    // create and add the button to all the code blocks that contain >>>
+    div.each(function(index) {
+        var jthis = $(this);
+        if (jthis.find('.gp').length > 0) {
+            var button = $('<span class="copybutton">&gt;&gt;&gt;</span>');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+            jthis.prepend(button);
+        }
+        // tracebacks (.gt) contain bare text elements that need to be
+        // wrapped in a span to work with .nextUntil() (see later)
+        jthis.find('pre:has(.gt)').contents().filter(function() {
+            return ((this.nodeType == 3) && (this.data.trim().length > 0));
+        }).wrap('<span>');
+    });
+
+    // define the behavior of the button when it's clicked
+    $('.copybutton').click(function(e){
+        e.preventDefault();
+        var button = $(this);
+        if (button.data('hidden') === 'false') {
+            // hide the code output
+            button.parent().find('.go, .gp, .gt').hide();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'hidden');
+            button.css('text-decoration', 'line-through');
+            button.attr('title', show_text);
+            button.data('hidden', 'true');
+        } else {
+            // show the code output
+            button.parent().find('.go, .gp, .gt').show();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'visible');
+            button.css('text-decoration', 'none');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+        }
+    });
+
+	/*** Add permalink buttons next to glossary terms ***/
+	$('dl.glossary > dt[id]').append(function() {
+		return ('<a class="headerlink" href="#' +
+			    this.getAttribute('id') +
+			    '" title="Permalink to this term">¶</a>');
+	});
+});
+
+</script>
+    
+</body>
+</html>

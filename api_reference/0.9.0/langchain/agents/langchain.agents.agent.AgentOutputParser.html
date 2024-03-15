@@ -1,0 +1,1457 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>langchain.agents.agent.AgentOutputParser &mdash; 🦜🔗 LangChain 0.1.12</title>
+  
+  <link rel="canonical" href="https://api.python.langchain.com/en/latest/agents/langchain.agents.agent.AgentOutputParser.html" />
+
+  
+
+  <link rel="stylesheet" href="../_static/css/vendor/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/autodoc_pydantic.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/sphinx-dropdown.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/panels-bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+<script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+<script src="../_static/jquery.js"></script> 
+</head>
+<body>
+
+
+<nav id="navbar" class="sk-docs-navbar navbar navbar-expand-md navbar-light bg-light py-0">
+  <div class="container-fluid sk-docs-container px-0">
+    <button
+      id="sk-navbar-toggler"
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="sk-navbar-collapse collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../langchain_api_reference.html">LangChain</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../core_api_reference.html">Core</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../community_api_reference.html">Community</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../experimental_api_reference.html">Experimental</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../text_splitters_api_reference.html">Text splitters</a>
+        </li>
+        <li class="nav-item dropdown nav-more-item-dropdown">
+          <a class="sk-nav-link nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Partner libs</a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+          </div>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" target="_blank" rel="noopener noreferrer" href="https://python.langchain.com/">Docs</a>
+        </li>
+      </ul>
+      <div id="searchbox" role="search">
+          <div class="searchformwrapper">
+          <form class="search" action="../search.html" method="get">
+            <input class="sk-search-text-input" type="text" name="q" aria-labelledby="searchlabel" />
+            <input class="sk-search-text-btn" type="submit" value="Go" />
+          </form>
+          </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="d-flex" id="sk-doc-wrapper">
+    <input type="checkbox" name="sk-toggle-checkbox" id="sk-toggle-checkbox">
+    <label id="sk-sidemenu-toggle" class="sk-btn-toggle-toc btn sk-btn-primary" for="sk-toggle-checkbox">Toggle Menu</label>
+    <div id="sk-sidebar-wrapper" class="border-right">
+      <div class="sk-sidebar-toc-wrapper">
+        <div class="btn-group w-100 mb-2" role="group" aria-label="rellinks">
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Prev</a>
+            <a href="#" role="button" class="btn sk-btn-rellink disabled py-1">Up</a>
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Next</a>
+        </div>
+            <div class="sk-sidebar-toc">
+              <ul>
+<li><a class="reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">langchain.agents.agent</span></code>.AgentOutputParser</a><ul>
+<li><a class="reference internal" href="#langchain.agents.agent.AgentOutputParser"><code class="docutils literal notranslate"><span class="pre">AgentOutputParser</span></code></a><ul>
+<li><a class="reference internal" href="#langchain.agents.agent.AgentOutputParser.abatch"><code class="docutils literal notranslate"><span class="pre">AgentOutputParser.abatch()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.agents.agent.AgentOutputParser.ainvoke"><code class="docutils literal notranslate"><span class="pre">AgentOutputParser.ainvoke()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.agents.agent.AgentOutputParser.aparse"><code class="docutils literal notranslate"><span class="pre">AgentOutputParser.aparse()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.agents.agent.AgentOutputParser.aparse_result"><code class="docutils literal notranslate"><span class="pre">AgentOutputParser.aparse_result()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.agents.agent.AgentOutputParser.assign"><code class="docutils literal notranslate"><span class="pre">AgentOutputParser.assign()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.agents.agent.AgentOutputParser.astream"><code class="docutils literal notranslate"><span class="pre">AgentOutputParser.astream()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.agents.agent.AgentOutputParser.astream_events"><code class="docutils literal notranslate"><span class="pre">AgentOutputParser.astream_events()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.agents.agent.AgentOutputParser.astream_log"><code class="docutils literal notranslate"><span class="pre">AgentOutputParser.astream_log()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.agents.agent.AgentOutputParser.atransform"><code class="docutils literal notranslate"><span class="pre">AgentOutputParser.atransform()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.agents.agent.AgentOutputParser.batch"><code class="docutils literal notranslate"><span class="pre">AgentOutputParser.batch()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.agents.agent.AgentOutputParser.bind"><code class="docutils literal notranslate"><span class="pre">AgentOutputParser.bind()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.agents.agent.AgentOutputParser.config_schema"><code class="docutils literal notranslate"><span class="pre">AgentOutputParser.config_schema()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.agents.agent.AgentOutputParser.configurable_alternatives"><code class="docutils literal notranslate"><span class="pre">AgentOutputParser.configurable_alternatives()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.agents.agent.AgentOutputParser.configurable_fields"><code class="docutils literal notranslate"><span class="pre">AgentOutputParser.configurable_fields()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.agents.agent.AgentOutputParser.construct"><code class="docutils literal notranslate"><span class="pre">AgentOutputParser.construct()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.agents.agent.AgentOutputParser.copy"><code class="docutils literal notranslate"><span class="pre">AgentOutputParser.copy()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.agents.agent.AgentOutputParser.dict"><code class="docutils literal notranslate"><span class="pre">AgentOutputParser.dict()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.agents.agent.AgentOutputParser.from_orm"><code class="docutils literal notranslate"><span class="pre">AgentOutputParser.from_orm()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.agents.agent.AgentOutputParser.get_format_instructions"><code class="docutils literal notranslate"><span class="pre">AgentOutputParser.get_format_instructions()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.agents.agent.AgentOutputParser.get_graph"><code class="docutils literal notranslate"><span class="pre">AgentOutputParser.get_graph()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.agents.agent.AgentOutputParser.get_input_schema"><code class="docutils literal notranslate"><span class="pre">AgentOutputParser.get_input_schema()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.agents.agent.AgentOutputParser.get_lc_namespace"><code class="docutils literal notranslate"><span class="pre">AgentOutputParser.get_lc_namespace()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.agents.agent.AgentOutputParser.get_name"><code class="docutils literal notranslate"><span class="pre">AgentOutputParser.get_name()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.agents.agent.AgentOutputParser.get_output_schema"><code class="docutils literal notranslate"><span class="pre">AgentOutputParser.get_output_schema()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.agents.agent.AgentOutputParser.get_prompts"><code class="docutils literal notranslate"><span class="pre">AgentOutputParser.get_prompts()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.agents.agent.AgentOutputParser.invoke"><code class="docutils literal notranslate"><span class="pre">AgentOutputParser.invoke()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.agents.agent.AgentOutputParser.is_lc_serializable"><code class="docutils literal notranslate"><span class="pre">AgentOutputParser.is_lc_serializable()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.agents.agent.AgentOutputParser.json"><code class="docutils literal notranslate"><span class="pre">AgentOutputParser.json()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.agents.agent.AgentOutputParser.lc_id"><code class="docutils literal notranslate"><span class="pre">AgentOutputParser.lc_id()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.agents.agent.AgentOutputParser.map"><code class="docutils literal notranslate"><span class="pre">AgentOutputParser.map()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.agents.agent.AgentOutputParser.parse"><code class="docutils literal notranslate"><span class="pre">AgentOutputParser.parse()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.agents.agent.AgentOutputParser.parse_file"><code class="docutils literal notranslate"><span class="pre">AgentOutputParser.parse_file()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.agents.agent.AgentOutputParser.parse_obj"><code class="docutils literal notranslate"><span class="pre">AgentOutputParser.parse_obj()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.agents.agent.AgentOutputParser.parse_raw"><code class="docutils literal notranslate"><span class="pre">AgentOutputParser.parse_raw()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.agents.agent.AgentOutputParser.parse_result"><code class="docutils literal notranslate"><span class="pre">AgentOutputParser.parse_result()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.agents.agent.AgentOutputParser.parse_with_prompt"><code class="docutils literal notranslate"><span class="pre">AgentOutputParser.parse_with_prompt()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.agents.agent.AgentOutputParser.pick"><code class="docutils literal notranslate"><span class="pre">AgentOutputParser.pick()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.agents.agent.AgentOutputParser.pipe"><code class="docutils literal notranslate"><span class="pre">AgentOutputParser.pipe()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.agents.agent.AgentOutputParser.schema"><code class="docutils literal notranslate"><span class="pre">AgentOutputParser.schema()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.agents.agent.AgentOutputParser.schema_json"><code class="docutils literal notranslate"><span class="pre">AgentOutputParser.schema_json()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.agents.agent.AgentOutputParser.stream"><code class="docutils literal notranslate"><span class="pre">AgentOutputParser.stream()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.agents.agent.AgentOutputParser.to_json"><code class="docutils literal notranslate"><span class="pre">AgentOutputParser.to_json()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.agents.agent.AgentOutputParser.to_json_not_implemented"><code class="docutils literal notranslate"><span class="pre">AgentOutputParser.to_json_not_implemented()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.agents.agent.AgentOutputParser.transform"><code class="docutils literal notranslate"><span class="pre">AgentOutputParser.transform()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.agents.agent.AgentOutputParser.update_forward_refs"><code class="docutils literal notranslate"><span class="pre">AgentOutputParser.update_forward_refs()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.agents.agent.AgentOutputParser.validate"><code class="docutils literal notranslate"><span class="pre">AgentOutputParser.validate()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.agents.agent.AgentOutputParser.with_config"><code class="docutils literal notranslate"><span class="pre">AgentOutputParser.with_config()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.agents.agent.AgentOutputParser.with_fallbacks"><code class="docutils literal notranslate"><span class="pre">AgentOutputParser.with_fallbacks()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.agents.agent.AgentOutputParser.with_listeners"><code class="docutils literal notranslate"><span class="pre">AgentOutputParser.with_listeners()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.agents.agent.AgentOutputParser.with_retry"><code class="docutils literal notranslate"><span class="pre">AgentOutputParser.with_retry()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.agents.agent.AgentOutputParser.with_types"><code class="docutils literal notranslate"><span class="pre">AgentOutputParser.with_types()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.agents.agent.AgentOutputParser.InputType"><code class="docutils literal notranslate"><span class="pre">AgentOutputParser.InputType</span></code></a></li>
+<li><a class="reference internal" href="#langchain.agents.agent.AgentOutputParser.OutputType"><code class="docutils literal notranslate"><span class="pre">AgentOutputParser.OutputType</span></code></a></li>
+<li><a class="reference internal" href="#langchain.agents.agent.AgentOutputParser.config_specs"><code class="docutils literal notranslate"><span class="pre">AgentOutputParser.config_specs</span></code></a></li>
+<li><a class="reference internal" href="#langchain.agents.agent.AgentOutputParser.input_schema"><code class="docutils literal notranslate"><span class="pre">AgentOutputParser.input_schema</span></code></a></li>
+<li><a class="reference internal" href="#langchain.agents.agent.AgentOutputParser.lc_attributes"><code class="docutils literal notranslate"><span class="pre">AgentOutputParser.lc_attributes</span></code></a></li>
+<li><a class="reference internal" href="#langchain.agents.agent.AgentOutputParser.lc_secrets"><code class="docutils literal notranslate"><span class="pre">AgentOutputParser.lc_secrets</span></code></a></li>
+<li><a class="reference internal" href="#langchain.agents.agent.AgentOutputParser.name"><code class="docutils literal notranslate"><span class="pre">AgentOutputParser.name</span></code></a></li>
+<li><a class="reference internal" href="#langchain.agents.agent.AgentOutputParser.output_schema"><code class="docutils literal notranslate"><span class="pre">AgentOutputParser.output_schema</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            </div>
+      </div>
+    </div>
+    <div id="sk-page-content-wrapper">
+      <div class="sk-page-content container-fluid body px-md-3" role="main">
+        
+  <section id="langchain-agents-agent-agentoutputparser">
+<h1><code class="xref py py-mod docutils literal notranslate"><span class="pre">langchain.agents.agent</span></code>.AgentOutputParser<a class="headerlink" href="#langchain-agents-agent-agentoutputparser" title="Permalink to this heading">¶</a></h1>
+<dl class="py class pydantic_model">
+<dt class="sig sig-object py" id="langchain.agents.agent.AgentOutputParser">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">langchain.agents.agent.</span></span><span class="sig-name descname"><span class="pre">AgentOutputParser</span></span><a class="reference internal" href="../_modules/langchain/agents/agent.html#AgentOutputParser"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain.agents.agent.AgentOutputParser" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="../output_parsers/langchain_core.output_parsers.base.BaseOutputParser.html#langchain_core.output_parsers.base.BaseOutputParser" title="langchain_core.output_parsers.base.BaseOutputParser"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseOutputParser</span></code></a>[<code class="xref py py-obj docutils literal notranslate"><span class="pre">Union</span></code>[<a class="reference internal" href="langchain_core.agents.AgentAction.html#langchain_core.agents.AgentAction" title="langchain_core.agents.AgentAction"><code class="xref py py-class docutils literal notranslate"><span class="pre">AgentAction</span></code></a>, <a class="reference internal" href="langchain_core.agents.AgentFinish.html#langchain_core.agents.AgentFinish" title="langchain_core.agents.AgentFinish"><code class="xref py py-class docutils literal notranslate"><span class="pre">AgentFinish</span></code></a>]]</p>
+<p>Base class for parsing agent output into agent action/finish.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.agents.agent.AgentOutputParser.abatch">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">abatch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Input</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../runnables/langchain_core.runnables.config.RunnableConfig.html#langchain_core.runnables.config.RunnableConfig" title="langchain_core.runnables.config.RunnableConfig"><span class="pre">RunnableConfig</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../runnables/langchain_core.runnables.config.RunnableConfig.html#langchain_core.runnables.config.RunnableConfig" title="langchain_core.runnables.config.RunnableConfig"><span class="pre">RunnableConfig</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_exceptions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Output</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#langchain.agents.agent.AgentOutputParser.abatch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Default implementation runs ainvoke in parallel using asyncio.gather.</p>
+<p>The default implementation of batch works well for IO bound runnables.</p>
+<p>Subclasses should override this method if they can batch more efficiently;
+e.g., if the underlying runnable uses an API which supports a batch mode.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>inputs</strong> (<em>List</em><em>[</em><em>Input</em><em>]</em>) – </p></li>
+<li><p><strong>config</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><a class="reference internal" href="../runnables/langchain_core.runnables.config.RunnableConfig.html#langchain_core.runnables.config.RunnableConfig" title="langchain_core.runnables.config.RunnableConfig"><em>RunnableConfig</em></a><em>, </em><em>List</em><em>[</em><a class="reference internal" href="../runnables/langchain_core.runnables.config.RunnableConfig.html#langchain_core.runnables.config.RunnableConfig" title="langchain_core.runnables.config.RunnableConfig"><em>RunnableConfig</em></a><em>]</em><em>]</em><em>]</em>) – </p></li>
+<li><p><strong>return_exceptions</strong> (<em>bool</em>) – </p></li>
+<li><p><strong>kwargs</strong> (<em>Optional</em><em>[</em><em>Any</em><em>]</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><em>List</em>[<em>Output</em>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.agents.agent.AgentOutputParser.ainvoke">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ainvoke</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../messages/langchain_core.messages.base.BaseMessage.html#langchain_core.messages.base.BaseMessage" title="langchain_core.messages.base.BaseMessage"><span class="pre">BaseMessage</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../runnables/langchain_core.runnables.config.RunnableConfig.html#langchain_core.runnables.config.RunnableConfig" title="langchain_core.runnables.config.RunnableConfig"><span class="pre">RunnableConfig</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">T</span></span></span><a class="headerlink" href="#langchain.agents.agent.AgentOutputParser.ainvoke" title="Permalink to this definition">¶</a></dt>
+<dd><p>Default implementation of ainvoke, calls invoke from a thread.</p>
+<p>The default implementation allows usage of async code even if
+the runnable did not implement a native async version of invoke.</p>
+<p>Subclasses should override this method if they can run asynchronously.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input</strong> (<em>Union</em><em>[</em><em>str</em><em>, </em><a class="reference internal" href="../messages/langchain_core.messages.base.BaseMessage.html#langchain_core.messages.base.BaseMessage" title="langchain_core.messages.base.BaseMessage"><em>BaseMessage</em></a><em>]</em>) – </p></li>
+<li><p><strong>config</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="../runnables/langchain_core.runnables.config.RunnableConfig.html#langchain_core.runnables.config.RunnableConfig" title="langchain_core.runnables.config.RunnableConfig"><em>RunnableConfig</em></a><em>]</em>) – </p></li>
+<li><p><strong>kwargs</strong> (<em>Optional</em><em>[</em><em>Any</em><em>]</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><em>T</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.agents.agent.AgentOutputParser.aparse">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">aparse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">T</span></span></span><a class="headerlink" href="#langchain.agents.agent.AgentOutputParser.aparse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse a single string model output into some structure.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>text</strong> (<em>str</em>) – String output of a language model.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Structured output.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><em>T</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.agents.agent.AgentOutputParser.aparse_result">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">aparse_result</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../outputs/langchain_core.outputs.generation.Generation.html#langchain_core.outputs.generation.Generation" title="langchain_core.outputs.generation.Generation"><span class="pre">Generation</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">partial</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">T</span></span></span><a class="headerlink" href="#langchain.agents.agent.AgentOutputParser.aparse_result" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse a list of candidate model Generations into a specific format.</p>
+<dl class="simple">
+<dt>The return value is parsed from only the first Generation in the result, which</dt><dd><p>is assumed to be the highest-likelihood Generation.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>result</strong> (<em>List</em><em>[</em><a class="reference internal" href="../outputs/langchain_core.outputs.generation.Generation.html#langchain_core.outputs.generation.Generation" title="langchain_core.outputs.generation.Generation"><em>Generation</em></a><em>]</em>) – A list of Generations to be parsed. The Generations are assumed
+to be different candidate outputs for a single model input.</p></li>
+<li><p><strong>partial</strong> (<em>bool</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Structured output.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><em>T</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.agents.agent.AgentOutputParser.assign">
+<span class="sig-name descname"><span class="pre">assign</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../runnables/langchain_core.runnables.base.Runnable.html#langchain_core.runnables.base.Runnable" title="langchain_core.runnables.base.Runnable"><span class="pre">Runnable</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../runnables/langchain_core.runnables.base.Runnable.html#langchain_core.runnables.base.Runnable" title="langchain_core.runnables.base.Runnable"><span class="pre">Runnable</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../runnables/langchain_core.runnables.base.RunnableSerializable.html#langchain_core.runnables.base.RunnableSerializable" title="langchain_core.runnables.base.RunnableSerializable"><span class="pre">RunnableSerializable</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#langchain.agents.agent.AgentOutputParser.assign" title="Permalink to this definition">¶</a></dt>
+<dd><p>Assigns new fields to the dict output of this runnable.
+Returns a new runnable.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>kwargs</strong> (<em>Union</em><em>[</em><a class="reference internal" href="../runnables/langchain_core.runnables.base.Runnable.html#langchain_core.runnables.base.Runnable" title="langchain_core.runnables.base.Runnable"><em>Runnable</em></a><em>[</em><em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em><em>, </em><em>Any</em><em>]</em><em>, </em><em>Callable</em><em>[</em><em>[</em><em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em><em>]</em><em>, </em><em>Any</em><em>]</em><em>, </em><em>Mapping</em><em>[</em><em>str</em><em>, </em><em>Union</em><em>[</em><a class="reference internal" href="../runnables/langchain_core.runnables.base.Runnable.html#langchain_core.runnables.base.Runnable" title="langchain_core.runnables.base.Runnable"><em>Runnable</em></a><em>[</em><em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em><em>, </em><em>Any</em><em>]</em><em>, </em><em>Callable</em><em>[</em><em>[</em><em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em><em>]</em><em>, </em><em>Any</em><em>]</em><em>]</em><em>]</em><em>]</em>) – </p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="../runnables/langchain_core.runnables.base.RunnableSerializable.html#langchain_core.runnables.base.RunnableSerializable" title="langchain_core.runnables.base.RunnableSerializable"><em>RunnableSerializable</em></a>[<em>Any</em>, <em>Any</em>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.agents.agent.AgentOutputParser.astream">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">astream</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../runnables/langchain_core.runnables.config.RunnableConfig.html#langchain_core.runnables.config.RunnableConfig" title="langchain_core.runnables.config.RunnableConfig"><span class="pre">RunnableConfig</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">AsyncIterator</span><span class="p"><span class="pre">[</span></span><span class="pre">Output</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#langchain.agents.agent.AgentOutputParser.astream" title="Permalink to this definition">¶</a></dt>
+<dd><p>Default implementation of astream, which calls ainvoke.
+Subclasses should override this method if they support streaming output.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input</strong> (<em>Input</em>) – </p></li>
+<li><p><strong>config</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="../runnables/langchain_core.runnables.config.RunnableConfig.html#langchain_core.runnables.config.RunnableConfig" title="langchain_core.runnables.config.RunnableConfig"><em>RunnableConfig</em></a><em>]</em>) – </p></li>
+<li><p><strong>kwargs</strong> (<em>Optional</em><em>[</em><em>Any</em><em>]</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><em>AsyncIterator</em>[<em>Output</em>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.agents.agent.AgentOutputParser.astream_events">
+<span class="sig-name descname"><span class="pre">astream_events</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../runnables/langchain_core.runnables.config.RunnableConfig.html#langchain_core.runnables.config.RunnableConfig" title="langchain_core.runnables.config.RunnableConfig"><span class="pre">RunnableConfig</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'v1'</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_names</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_types</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_tags</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exclude_names</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exclude_types</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exclude_tags</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">AsyncIterator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../runnables/langchain_core.runnables.schema.StreamEvent.html#langchain_core.runnables.schema.StreamEvent" title="langchain_core.runnables.schema.StreamEvent"><span class="pre">StreamEvent</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#langchain.agents.agent.AgentOutputParser.astream_events" title="Permalink to this definition">¶</a></dt>
+<dd><p>[<em>Beta</em>] Generate a stream of events.</p>
+<p>Use to create an iterator over StreamEvents that provide real-time information
+about the progress of the runnable, including StreamEvents from intermediate
+results.</p>
+<p>A StreamEvent is a dictionary with the following schema:</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">event</span></code>: <strong>str</strong> - Event names are of the</dt><dd><p>format: on_[runnable_type]_(start|stream|end).</p>
+</dd>
+</dl>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">name</span></code>: <strong>str</strong> - The name of the runnable that generated the event.</p></li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">run_id</span></code>: <strong>str</strong> - randomly generated ID associated with the given execution of</dt><dd><p>the runnable that emitted the event.
+A child runnable that gets invoked as part of the execution of a
+parent runnable is assigned its own unique ID.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">tags</span></code>: <strong>Optional[List[str]]</strong> - The tags of the runnable that generated</dt><dd><p>the event.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">metadata</span></code>: <strong>Optional[Dict[str, Any]]</strong> - The metadata of the runnable</dt><dd><p>that generated the event.</p>
+</dd>
+</dl>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data</span></code>: <strong>Dict[str, Any]</strong></p></li>
+</ul>
+<p>Below is a table that illustrates some evens that might be emitted by various
+chains. Metadata fields have been omitted from the table for brevity.
+Chain definitions have been included after the table.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 13%" />
+<col style="width: 11%" />
+<col style="width: 20%" />
+<col style="width: 28%" />
+<col style="width: 29%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>event</p></th>
+<th class="head"><p>name</p></th>
+<th class="head"><p>chunk</p></th>
+<th class="head"><p>input</p></th>
+<th class="head"><p>output</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>on_chat_model_start</p></td>
+<td><p>[model name]</p></td>
+<td></td>
+<td><p>{“messages”: [[SystemMessage, HumanMessage]]}</p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>on_chat_model_stream</p></td>
+<td><p>[model name]</p></td>
+<td><p>AIMessageChunk(content=”hello”)</p></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>on_chat_model_end</p></td>
+<td><p>[model name]</p></td>
+<td></td>
+<td><p>{“messages”: [[SystemMessage, HumanMessage]]}</p></td>
+<td><p>{“generations”: […], “llm_output”: None, …}</p></td>
+</tr>
+<tr class="row-odd"><td><p>on_llm_start</p></td>
+<td><p>[model name]</p></td>
+<td></td>
+<td><p>{‘input’: ‘hello’}</p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>on_llm_stream</p></td>
+<td><p>[model name]</p></td>
+<td><p>‘Hello’</p></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>on_llm_end</p></td>
+<td><p>[model name]</p></td>
+<td></td>
+<td><p>‘Hello human!’</p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>on_chain_start</p></td>
+<td><p>format_docs</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>on_chain_stream</p></td>
+<td><p>format_docs</p></td>
+<td><p>“hello world!, goodbye world!”</p></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>on_chain_end</p></td>
+<td><p>format_docs</p></td>
+<td></td>
+<td><p>[Document(…)]</p></td>
+<td><p>“hello world!, goodbye world!”</p></td>
+</tr>
+<tr class="row-odd"><td><p>on_tool_start</p></td>
+<td><p>some_tool</p></td>
+<td></td>
+<td><p>{“x”: 1, “y”: “2”}</p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>on_tool_stream</p></td>
+<td><p>some_tool</p></td>
+<td><p>{“x”: 1, “y”: “2”}</p></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>on_tool_end</p></td>
+<td><p>some_tool</p></td>
+<td></td>
+<td></td>
+<td><p>{“x”: 1, “y”: “2”}</p></td>
+</tr>
+<tr class="row-even"><td><p>on_retriever_start</p></td>
+<td><p>[retriever name]</p></td>
+<td></td>
+<td><p>{“query”: “hello”}</p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>on_retriever_chunk</p></td>
+<td><p>[retriever name]</p></td>
+<td><p>{documents: […]}</p></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>on_retriever_end</p></td>
+<td><p>[retriever name]</p></td>
+<td></td>
+<td><p>{“query”: “hello”}</p></td>
+<td><p>{documents: […]}</p></td>
+</tr>
+<tr class="row-odd"><td><p>on_prompt_start</p></td>
+<td><p>[template_name]</p></td>
+<td></td>
+<td><p>{“question”: “hello”}</p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>on_prompt_end</p></td>
+<td><p>[template_name]</p></td>
+<td></td>
+<td><p>{“question”: “hello”}</p></td>
+<td><p>ChatPromptValue(messages: [SystemMessage, …])</p></td>
+</tr>
+</tbody>
+</table>
+<p>Here are declarations associated with the events shown above:</p>
+<p><cite>format_docs</cite>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">format_docs</span><span class="p">(</span><span class="n">docs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;Format the docs.&#39;&#39;&#39;</span>
+    <span class="k">return</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">doc</span><span class="o">.</span><span class="n">page_content</span> <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="n">docs</span><span class="p">])</span>
+
+<span class="n">format_docs</span> <span class="o">=</span> <span class="n">RunnableLambda</span><span class="p">(</span><span class="n">format_docs</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><cite>some_tool</cite>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@tool</span>
+<span class="k">def</span> <span class="nf">some_tool</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;Some_tool.&#39;&#39;&#39;</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="n">x</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="n">y</span><span class="p">}</span>
+</pre></div>
+</div>
+<p><cite>prompt</cite>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">template</span> <span class="o">=</span> <span class="n">ChatPromptTemplate</span><span class="o">.</span><span class="n">from_messages</span><span class="p">(</span>
+    <span class="p">[(</span><span class="s2">&quot;system&quot;</span><span class="p">,</span> <span class="s2">&quot;You are Cat Agent 007&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;human&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">{question}</span><span class="s2">&quot;</span><span class="p">)]</span>
+<span class="p">)</span><span class="o">.</span><span class="n">with_config</span><span class="p">({</span><span class="s2">&quot;run_name&quot;</span><span class="p">:</span> <span class="s2">&quot;my_template&quot;</span><span class="p">,</span> <span class="s2">&quot;tags&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;my_template&quot;</span><span class="p">]})</span>
+</pre></div>
+</div>
+<p>Example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">langchain_core.runnables</span> <span class="kn">import</span> <span class="n">RunnableLambda</span>
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">reverse</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">s</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+<span class="n">chain</span> <span class="o">=</span> <span class="n">RunnableLambda</span><span class="p">(</span><span class="n">func</span><span class="o">=</span><span class="n">reverse</span><span class="p">)</span>
+
+<span class="n">events</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">event</span> <span class="k">async</span> <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">chain</span><span class="o">.</span><span class="n">astream_events</span><span class="p">(</span><span class="s2">&quot;hello&quot;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="s2">&quot;v1&quot;</span><span class="p">)</span>
+<span class="p">]</span>
+
+<span class="c1"># will produce the following events (run_id has been omitted for brevity):</span>
+<span class="p">[</span>
+    <span class="p">{</span>
+        <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;input&quot;</span><span class="p">:</span> <span class="s2">&quot;hello&quot;</span><span class="p">},</span>
+        <span class="s2">&quot;event&quot;</span><span class="p">:</span> <span class="s2">&quot;on_chain_start&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{},</span>
+        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;reverse&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tags&quot;</span><span class="p">:</span> <span class="p">[],</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+        <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;chunk&quot;</span><span class="p">:</span> <span class="s2">&quot;olleh&quot;</span><span class="p">},</span>
+        <span class="s2">&quot;event&quot;</span><span class="p">:</span> <span class="s2">&quot;on_chain_stream&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{},</span>
+        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;reverse&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tags&quot;</span><span class="p">:</span> <span class="p">[],</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+        <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;output&quot;</span><span class="p">:</span> <span class="s2">&quot;olleh&quot;</span><span class="p">},</span>
+        <span class="s2">&quot;event&quot;</span><span class="p">:</span> <span class="s2">&quot;on_chain_end&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{},</span>
+        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;reverse&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tags&quot;</span><span class="p">:</span> <span class="p">[],</span>
+    <span class="p">},</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input</strong> (<em>Any</em>) – The input to the runnable.</p></li>
+<li><p><strong>config</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="../runnables/langchain_core.runnables.config.RunnableConfig.html#langchain_core.runnables.config.RunnableConfig" title="langchain_core.runnables.config.RunnableConfig"><em>RunnableConfig</em></a><em>]</em>) – The config to use for the runnable.</p></li>
+<li><p><strong>version</strong> (<em>Literal</em><em>[</em><em>'v1'</em><em>]</em>) – The version of the schema to use.
+Currently only version 1 is available.
+No default will be assigned until the API is stabilized.</p></li>
+<li><p><strong>include_names</strong> (<em>Optional</em><em>[</em><em>Sequence</em><em>[</em><em>str</em><em>]</em><em>]</em>) – Only include events from runnables with matching names.</p></li>
+<li><p><strong>include_types</strong> (<em>Optional</em><em>[</em><em>Sequence</em><em>[</em><em>str</em><em>]</em><em>]</em>) – Only include events from runnables with matching types.</p></li>
+<li><p><strong>include_tags</strong> (<em>Optional</em><em>[</em><em>Sequence</em><em>[</em><em>str</em><em>]</em><em>]</em>) – Only include events from runnables with matching tags.</p></li>
+<li><p><strong>exclude_names</strong> (<em>Optional</em><em>[</em><em>Sequence</em><em>[</em><em>str</em><em>]</em><em>]</em>) – Exclude events from runnables with matching names.</p></li>
+<li><p><strong>exclude_types</strong> (<em>Optional</em><em>[</em><em>Sequence</em><em>[</em><em>str</em><em>]</em><em>]</em>) – Exclude events from runnables with matching types.</p></li>
+<li><p><strong>exclude_tags</strong> (<em>Optional</em><em>[</em><em>Sequence</em><em>[</em><em>str</em><em>]</em><em>]</em>) – Exclude events from runnables with matching tags.</p></li>
+<li><p><strong>kwargs</strong> (<em>Any</em>) – Additional keyword arguments to pass to the runnable.
+These will be passed to astream_log as this implementation
+of astream_events is built on top of astream_log.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>An async stream of StreamEvents.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><em>AsyncIterator</em>[<a class="reference internal" href="../runnables/langchain_core.runnables.schema.StreamEvent.html#langchain_core.runnables.schema.StreamEvent" title="langchain_core.runnables.schema.StreamEvent"><em>StreamEvent</em></a>]</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.agents.agent.AgentOutputParser.astream_log">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">astream_log</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../runnables/langchain_core.runnables.config.RunnableConfig.html#langchain_core.runnables.config.RunnableConfig" title="langchain_core.runnables.config.RunnableConfig"><span class="pre">RunnableConfig</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">diff</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_streamed_output_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_names</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_types</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_tags</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exclude_names</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exclude_types</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exclude_tags</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">AsyncIterator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../tracers/langchain_core.tracers.log_stream.RunLogPatch.html#langchain_core.tracers.log_stream.RunLogPatch" title="langchain_core.tracers.log_stream.RunLogPatch"><span class="pre">RunLogPatch</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">AsyncIterator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../tracers/langchain_core.tracers.log_stream.RunLog.html#langchain_core.tracers.log_stream.RunLog" title="langchain_core.tracers.log_stream.RunLog"><span class="pre">RunLog</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#langchain.agents.agent.AgentOutputParser.astream_log" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stream all output from a runnable, as reported to the callback system.
+This includes all inner runs of LLMs, Retrievers, Tools, etc.</p>
+<p>Output is streamed as Log objects, which include a list of
+jsonpatch ops that describe how the state of the run has changed in each
+step, and the final state of the run.</p>
+<p>The jsonpatch ops can be applied in order to construct state.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input</strong> (<em>Any</em>) – The input to the runnable.</p></li>
+<li><p><strong>config</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="../runnables/langchain_core.runnables.config.RunnableConfig.html#langchain_core.runnables.config.RunnableConfig" title="langchain_core.runnables.config.RunnableConfig"><em>RunnableConfig</em></a><em>]</em>) – The config to use for the runnable.</p></li>
+<li><p><strong>diff</strong> (<em>bool</em>) – Whether to yield diffs between each step, or the current state.</p></li>
+<li><p><strong>with_streamed_output_list</strong> (<em>bool</em>) – Whether to yield the streamed_output list.</p></li>
+<li><p><strong>include_names</strong> (<em>Optional</em><em>[</em><em>Sequence</em><em>[</em><em>str</em><em>]</em><em>]</em>) – Only include logs with these names.</p></li>
+<li><p><strong>include_types</strong> (<em>Optional</em><em>[</em><em>Sequence</em><em>[</em><em>str</em><em>]</em><em>]</em>) – Only include logs with these types.</p></li>
+<li><p><strong>include_tags</strong> (<em>Optional</em><em>[</em><em>Sequence</em><em>[</em><em>str</em><em>]</em><em>]</em>) – Only include logs with these tags.</p></li>
+<li><p><strong>exclude_names</strong> (<em>Optional</em><em>[</em><em>Sequence</em><em>[</em><em>str</em><em>]</em><em>]</em>) – Exclude logs with these names.</p></li>
+<li><p><strong>exclude_types</strong> (<em>Optional</em><em>[</em><em>Sequence</em><em>[</em><em>str</em><em>]</em><em>]</em>) – Exclude logs with these types.</p></li>
+<li><p><strong>exclude_tags</strong> (<em>Optional</em><em>[</em><em>Sequence</em><em>[</em><em>str</em><em>]</em><em>]</em>) – Exclude logs with these tags.</p></li>
+<li><p><strong>kwargs</strong> (<em>Any</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>Union[AsyncIterator[<a class="reference internal" href="../tracers/langchain_core.tracers.log_stream.RunLogPatch.html#langchain_core.tracers.log_stream.RunLogPatch" title="langchain_core.tracers.log_stream.RunLogPatch">RunLogPatch</a>], AsyncIterator[<a class="reference internal" href="../tracers/langchain_core.tracers.log_stream.RunLog.html#langchain_core.tracers.log_stream.RunLog" title="langchain_core.tracers.log_stream.RunLog">RunLog</a>]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.agents.agent.AgentOutputParser.atransform">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">atransform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">AsyncIterator</span><span class="p"><span class="pre">[</span></span><span class="pre">Input</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../runnables/langchain_core.runnables.config.RunnableConfig.html#langchain_core.runnables.config.RunnableConfig" title="langchain_core.runnables.config.RunnableConfig"><span class="pre">RunnableConfig</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">AsyncIterator</span><span class="p"><span class="pre">[</span></span><span class="pre">Output</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#langchain.agents.agent.AgentOutputParser.atransform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Default implementation of atransform, which buffers input and calls astream.
+Subclasses should override this method if they can start producing output while
+input is still being generated.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input</strong> (<em>AsyncIterator</em><em>[</em><em>Input</em><em>]</em>) – </p></li>
+<li><p><strong>config</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="../runnables/langchain_core.runnables.config.RunnableConfig.html#langchain_core.runnables.config.RunnableConfig" title="langchain_core.runnables.config.RunnableConfig"><em>RunnableConfig</em></a><em>]</em>) – </p></li>
+<li><p><strong>kwargs</strong> (<em>Optional</em><em>[</em><em>Any</em><em>]</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><em>AsyncIterator</em>[<em>Output</em>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.agents.agent.AgentOutputParser.batch">
+<span class="sig-name descname"><span class="pre">batch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Input</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../runnables/langchain_core.runnables.config.RunnableConfig.html#langchain_core.runnables.config.RunnableConfig" title="langchain_core.runnables.config.RunnableConfig"><span class="pre">RunnableConfig</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../runnables/langchain_core.runnables.config.RunnableConfig.html#langchain_core.runnables.config.RunnableConfig" title="langchain_core.runnables.config.RunnableConfig"><span class="pre">RunnableConfig</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_exceptions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Output</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#langchain.agents.agent.AgentOutputParser.batch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Default implementation runs invoke in parallel using a thread pool executor.</p>
+<p>The default implementation of batch works well for IO bound runnables.</p>
+<p>Subclasses should override this method if they can batch more efficiently;
+e.g., if the underlying runnable uses an API which supports a batch mode.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>inputs</strong> (<em>List</em><em>[</em><em>Input</em><em>]</em>) – </p></li>
+<li><p><strong>config</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><a class="reference internal" href="../runnables/langchain_core.runnables.config.RunnableConfig.html#langchain_core.runnables.config.RunnableConfig" title="langchain_core.runnables.config.RunnableConfig"><em>RunnableConfig</em></a><em>, </em><em>List</em><em>[</em><a class="reference internal" href="../runnables/langchain_core.runnables.config.RunnableConfig.html#langchain_core.runnables.config.RunnableConfig" title="langchain_core.runnables.config.RunnableConfig"><em>RunnableConfig</em></a><em>]</em><em>]</em><em>]</em>) – </p></li>
+<li><p><strong>return_exceptions</strong> (<em>bool</em>) – </p></li>
+<li><p><strong>kwargs</strong> (<em>Optional</em><em>[</em><em>Any</em><em>]</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><em>List</em>[<em>Output</em>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.agents.agent.AgentOutputParser.bind">
+<span class="sig-name descname"><span class="pre">bind</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../runnables/langchain_core.runnables.base.Runnable.html#langchain_core.runnables.base.Runnable" title="langchain_core.runnables.base.Runnable"><span class="pre">Runnable</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Input</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Output</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#langchain.agents.agent.AgentOutputParser.bind" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bind arguments to a Runnable, returning a new Runnable.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>kwargs</strong> (<em>Any</em>) – </p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="../runnables/langchain_core.runnables.base.Runnable.html#langchain_core.runnables.base.Runnable" title="langchain_core.runnables.base.Runnable"><em>Runnable</em></a>[<em>Input</em>, <em>Output</em>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.agents.agent.AgentOutputParser.config_schema">
+<span class="sig-name descname"><span class="pre">config_schema</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">BaseModel</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#langchain.agents.agent.AgentOutputParser.config_schema" title="Permalink to this definition">¶</a></dt>
+<dd><p>The type of config this runnable accepts specified as a pydantic model.</p>
+<p>To mark a field as configurable, see the <cite>configurable_fields</cite>
+and <cite>configurable_alternatives</cite> methods.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>include</strong> (<em>Optional</em><em>[</em><em>Sequence</em><em>[</em><em>str</em><em>]</em><em>]</em>) – A list of fields to include in the config schema.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A pydantic model that can be used to validate config.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><em>Type</em>[<em>BaseModel</em>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.agents.agent.AgentOutputParser.configurable_alternatives">
+<span class="sig-name descname"><span class="pre">configurable_alternatives</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">which</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../runnables/langchain_core.runnables.utils.ConfigurableField.html#langchain_core.runnables.utils.ConfigurableField" title="langchain_core.runnables.utils.ConfigurableField"><span class="pre">ConfigurableField</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'default'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prefix_keys</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../runnables/langchain_core.runnables.base.Runnable.html#langchain_core.runnables.base.Runnable" title="langchain_core.runnables.base.Runnable"><span class="pre">Runnable</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Input</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Output</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../runnables/langchain_core.runnables.base.Runnable.html#langchain_core.runnables.base.Runnable" title="langchain_core.runnables.base.Runnable"><span class="pre">Runnable</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Input</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Output</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../runnables/langchain_core.runnables.base.RunnableSerializable.html#langchain_core.runnables.base.RunnableSerializable" title="langchain_core.runnables.base.RunnableSerializable"><span class="pre">RunnableSerializable</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Input</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Output</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#langchain.agents.agent.AgentOutputParser.configurable_alternatives" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>which</strong> (<a class="reference internal" href="../runnables/langchain_core.runnables.utils.ConfigurableField.html#langchain_core.runnables.utils.ConfigurableField" title="langchain_core.runnables.utils.ConfigurableField"><em>ConfigurableField</em></a>) – </p></li>
+<li><p><strong>default_key</strong> (<em>str</em>) – </p></li>
+<li><p><strong>prefix_keys</strong> (<em>bool</em>) – </p></li>
+<li><p><strong>kwargs</strong> (<em>Union</em><em>[</em><a class="reference internal" href="../runnables/langchain_core.runnables.base.Runnable.html#langchain_core.runnables.base.Runnable" title="langchain_core.runnables.base.Runnable"><em>Runnable</em></a><em>[</em><em>Input</em><em>, </em><em>Output</em><em>]</em><em>, </em><em>Callable</em><em>[</em><em>[</em><em>]</em><em>, </em><a class="reference internal" href="../runnables/langchain_core.runnables.base.Runnable.html#langchain_core.runnables.base.Runnable" title="langchain_core.runnables.base.Runnable"><em>Runnable</em></a><em>[</em><em>Input</em><em>, </em><em>Output</em><em>]</em><em>]</em><em>]</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="../runnables/langchain_core.runnables.base.RunnableSerializable.html#langchain_core.runnables.base.RunnableSerializable" title="langchain_core.runnables.base.RunnableSerializable"><em>RunnableSerializable</em></a>[<em>Input</em>, <em>Output</em>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.agents.agent.AgentOutputParser.configurable_fields">
+<span class="sig-name descname"><span class="pre">configurable_fields</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../runnables/langchain_core.runnables.utils.ConfigurableField.html#langchain_core.runnables.utils.ConfigurableField" title="langchain_core.runnables.utils.ConfigurableField"><span class="pre">ConfigurableField</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../runnables/langchain_core.runnables.utils.ConfigurableFieldSingleOption.html#langchain_core.runnables.utils.ConfigurableFieldSingleOption" title="langchain_core.runnables.utils.ConfigurableFieldSingleOption"><span class="pre">ConfigurableFieldSingleOption</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../runnables/langchain_core.runnables.utils.ConfigurableFieldMultiOption.html#langchain_core.runnables.utils.ConfigurableFieldMultiOption" title="langchain_core.runnables.utils.ConfigurableFieldMultiOption"><span class="pre">ConfigurableFieldMultiOption</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../runnables/langchain_core.runnables.base.RunnableSerializable.html#langchain_core.runnables.base.RunnableSerializable" title="langchain_core.runnables.base.RunnableSerializable"><span class="pre">RunnableSerializable</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Input</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Output</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#langchain.agents.agent.AgentOutputParser.configurable_fields" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>kwargs</strong> (<em>Union</em><em>[</em><a class="reference internal" href="../runnables/langchain_core.runnables.utils.ConfigurableField.html#langchain_core.runnables.utils.ConfigurableField" title="langchain_core.runnables.utils.ConfigurableField"><em>ConfigurableField</em></a><em>, </em><a class="reference internal" href="../runnables/langchain_core.runnables.utils.ConfigurableFieldSingleOption.html#langchain_core.runnables.utils.ConfigurableFieldSingleOption" title="langchain_core.runnables.utils.ConfigurableFieldSingleOption"><em>ConfigurableFieldSingleOption</em></a><em>, </em><a class="reference internal" href="../runnables/langchain_core.runnables.utils.ConfigurableFieldMultiOption.html#langchain_core.runnables.utils.ConfigurableFieldMultiOption" title="langchain_core.runnables.utils.ConfigurableFieldMultiOption"><em>ConfigurableFieldMultiOption</em></a><em>]</em>) – </p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="../runnables/langchain_core.runnables.base.RunnableSerializable.html#langchain_core.runnables.base.RunnableSerializable" title="langchain_core.runnables.base.RunnableSerializable"><em>RunnableSerializable</em></a>[<em>Input</em>, <em>Output</em>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.agents.agent.AgentOutputParser.construct">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">construct</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_fields_set</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">SetStr</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Model</span></span></span><a class="headerlink" href="#langchain.agents.agent.AgentOutputParser.construct" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a new model setting __dict__ and __fields_set__ from trusted or pre-validated data.
+Default values are respected, but no other validation is performed.
+Behaves as if <cite>Config.extra = ‘allow’</cite> was set since it adds all passed values</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_fields_set</strong> (<em>Optional</em><em>[</em><em>SetStr</em><em>]</em>) – </p></li>
+<li><p><strong>values</strong> (<em>Any</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>Model</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.agents.agent.AgentOutputParser.copy">
+<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">AbstractSetIntStr</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">MappingIntStrAny</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exclude</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">AbstractSetIntStr</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">MappingIntStrAny</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">update</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">DictStrAny</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deep</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Model</span></span></span><a class="headerlink" href="#langchain.agents.agent.AgentOutputParser.copy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Duplicate a model, optionally choose which fields to include, exclude and change.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>include</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><em>AbstractSetIntStr</em><em>, </em><em>MappingIntStrAny</em><em>]</em><em>]</em>) – fields to include in new model</p></li>
+<li><p><strong>exclude</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><em>AbstractSetIntStr</em><em>, </em><em>MappingIntStrAny</em><em>]</em><em>]</em>) – fields to exclude from new model, as with values this takes precedence over include</p></li>
+<li><p><strong>update</strong> (<em>Optional</em><em>[</em><em>DictStrAny</em><em>]</em>) – values to change/add in the new model. Note: the data is not validated before creating
+the new model: you should trust this data</p></li>
+<li><p><strong>deep</strong> (<em>bool</em>) – set to <cite>True</cite> to make a deep copy of the model</p></li>
+<li><p><strong>self</strong> (<em>Model</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>new model instance</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Model</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.agents.agent.AgentOutputParser.dict">
+<span class="sig-name descname"><span class="pre">dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span></span></span><a class="headerlink" href="#langchain.agents.agent.AgentOutputParser.dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return dictionary representation of output parser.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>kwargs</strong> (<em>Any</em>) – </p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><em>Dict</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.agents.agent.AgentOutputParser.from_orm">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_orm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Model</span></span></span><a class="headerlink" href="#langchain.agents.agent.AgentOutputParser.from_orm" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>obj</strong> (<em>Any</em>) – </p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>Model</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.agents.agent.AgentOutputParser.get_format_instructions">
+<span class="sig-name descname"><span class="pre">get_format_instructions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#langchain.agents.agent.AgentOutputParser.get_format_instructions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Instructions on how the LLM output should be formatted.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.agents.agent.AgentOutputParser.get_graph">
+<span class="sig-name descname"><span class="pre">get_graph</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../runnables/langchain_core.runnables.config.RunnableConfig.html#langchain_core.runnables.config.RunnableConfig" title="langchain_core.runnables.config.RunnableConfig"><span class="pre">RunnableConfig</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../runnables/langchain_core.runnables.graph.Graph.html#langchain_core.runnables.graph.Graph" title="langchain_core.runnables.graph.Graph"><span class="pre">Graph</span></a></span></span><a class="headerlink" href="#langchain.agents.agent.AgentOutputParser.get_graph" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a graph representation of this runnable.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>config</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="../runnables/langchain_core.runnables.config.RunnableConfig.html#langchain_core.runnables.config.RunnableConfig" title="langchain_core.runnables.config.RunnableConfig"><em>RunnableConfig</em></a><em>]</em>) – </p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="../runnables/langchain_core.runnables.graph.Graph.html#langchain_core.runnables.graph.Graph" title="langchain_core.runnables.graph.Graph"><em>Graph</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.agents.agent.AgentOutputParser.get_input_schema">
+<span class="sig-name descname"><span class="pre">get_input_schema</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../runnables/langchain_core.runnables.config.RunnableConfig.html#langchain_core.runnables.config.RunnableConfig" title="langchain_core.runnables.config.RunnableConfig"><span class="pre">RunnableConfig</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">BaseModel</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#langchain.agents.agent.AgentOutputParser.get_input_schema" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a pydantic model that can be used to validate input to the runnable.</p>
+<p>Runnables that leverage the configurable_fields and configurable_alternatives
+methods will have a dynamic input schema that depends on which
+configuration the runnable is invoked with.</p>
+<p>This method allows to get an input schema for a specific configuration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>config</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="../runnables/langchain_core.runnables.config.RunnableConfig.html#langchain_core.runnables.config.RunnableConfig" title="langchain_core.runnables.config.RunnableConfig"><em>RunnableConfig</em></a><em>]</em>) – A config to use when generating the schema.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A pydantic model that can be used to validate input.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><em>Type</em>[<em>BaseModel</em>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.agents.agent.AgentOutputParser.get_lc_namespace">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_lc_namespace</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#langchain.agents.agent.AgentOutputParser.get_lc_namespace" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the namespace of the langchain object.</p>
+<p>For example, if the class is <cite>langchain.llms.openai.OpenAI</cite>, then the
+namespace is [“langchain”, “llms”, “openai”]</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><em>List</em>[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.agents.agent.AgentOutputParser.get_name">
+<span class="sig-name descname"><span class="pre">get_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">suffix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#langchain.agents.agent.AgentOutputParser.get_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the name of the runnable.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>suffix</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – </p></li>
+<li><p><strong>name</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.agents.agent.AgentOutputParser.get_output_schema">
+<span class="sig-name descname"><span class="pre">get_output_schema</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../runnables/langchain_core.runnables.config.RunnableConfig.html#langchain_core.runnables.config.RunnableConfig" title="langchain_core.runnables.config.RunnableConfig"><span class="pre">RunnableConfig</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">BaseModel</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#langchain.agents.agent.AgentOutputParser.get_output_schema" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a pydantic model that can be used to validate output to the runnable.</p>
+<p>Runnables that leverage the configurable_fields and configurable_alternatives
+methods will have a dynamic output schema that depends on which
+configuration the runnable is invoked with.</p>
+<p>This method allows to get an output schema for a specific configuration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>config</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="../runnables/langchain_core.runnables.config.RunnableConfig.html#langchain_core.runnables.config.RunnableConfig" title="langchain_core.runnables.config.RunnableConfig"><em>RunnableConfig</em></a><em>]</em>) – A config to use when generating the schema.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A pydantic model that can be used to validate output.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><em>Type</em>[<em>BaseModel</em>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.agents.agent.AgentOutputParser.get_prompts">
+<span class="sig-name descname"><span class="pre">get_prompts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../runnables/langchain_core.runnables.config.RunnableConfig.html#langchain_core.runnables.config.RunnableConfig" title="langchain_core.runnables.config.RunnableConfig"><span class="pre">RunnableConfig</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../prompts/langchain_core.prompts.base.BasePromptTemplate.html#langchain_core.prompts.base.BasePromptTemplate" title="langchain_core.prompts.base.BasePromptTemplate"><span class="pre">BasePromptTemplate</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#langchain.agents.agent.AgentOutputParser.get_prompts" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>config</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="../runnables/langchain_core.runnables.config.RunnableConfig.html#langchain_core.runnables.config.RunnableConfig" title="langchain_core.runnables.config.RunnableConfig"><em>RunnableConfig</em></a><em>]</em>) – </p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>List[<a class="reference internal" href="../prompts/langchain_core.prompts.base.BasePromptTemplate.html#langchain_core.prompts.base.BasePromptTemplate" title="langchain_core.prompts.base.BasePromptTemplate">BasePromptTemplate</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.agents.agent.AgentOutputParser.invoke">
+<span class="sig-name descname"><span class="pre">invoke</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../messages/langchain_core.messages.base.BaseMessage.html#langchain_core.messages.base.BaseMessage" title="langchain_core.messages.base.BaseMessage"><span class="pre">BaseMessage</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../runnables/langchain_core.runnables.config.RunnableConfig.html#langchain_core.runnables.config.RunnableConfig" title="langchain_core.runnables.config.RunnableConfig"><span class="pre">RunnableConfig</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">T</span></span></span><a class="headerlink" href="#langchain.agents.agent.AgentOutputParser.invoke" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transform a single input into an output. Override to implement.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input</strong> (<em>Union</em><em>[</em><em>str</em><em>, </em><a class="reference internal" href="../messages/langchain_core.messages.base.BaseMessage.html#langchain_core.messages.base.BaseMessage" title="langchain_core.messages.base.BaseMessage"><em>BaseMessage</em></a><em>]</em>) – The input to the runnable.</p></li>
+<li><p><strong>config</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="../runnables/langchain_core.runnables.config.RunnableConfig.html#langchain_core.runnables.config.RunnableConfig" title="langchain_core.runnables.config.RunnableConfig"><em>RunnableConfig</em></a><em>]</em>) – A config to use when invoking the runnable.
+The config supports standard keys like ‘tags’, ‘metadata’ for tracing
+purposes, ‘max_concurrency’ for controlling how much work to do
+in parallel, and other keys. Please refer to the RunnableConfig
+for more details.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The output of the runnable.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><em>T</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.agents.agent.AgentOutputParser.is_lc_serializable">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_lc_serializable</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#langchain.agents.agent.AgentOutputParser.is_lc_serializable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Is this class serializable?</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.agents.agent.AgentOutputParser.json">
+<span class="sig-name descname"><span class="pre">json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">AbstractSetIntStr</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">MappingIntStrAny</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exclude</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">AbstractSetIntStr</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">MappingIntStrAny</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">by_alias</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_defaults</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exclude_unset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exclude_defaults</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exclude_none</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encoder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">models_as_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">dumps_kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">unicode</span></span></span><a class="headerlink" href="#langchain.agents.agent.AgentOutputParser.json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a JSON representation of the model, <cite>include</cite> and <cite>exclude</cite> arguments as per <cite>dict()</cite>.</p>
+<p><cite>encoder</cite> is an optional function to supply as <cite>default</cite> to json.dumps(), other arguments as per <cite>json.dumps()</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>include</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><em>AbstractSetIntStr</em><em>, </em><em>MappingIntStrAny</em><em>]</em><em>]</em>) – </p></li>
+<li><p><strong>exclude</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><em>AbstractSetIntStr</em><em>, </em><em>MappingIntStrAny</em><em>]</em><em>]</em>) – </p></li>
+<li><p><strong>by_alias</strong> (<em>bool</em>) – </p></li>
+<li><p><strong>skip_defaults</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – </p></li>
+<li><p><strong>exclude_unset</strong> (<em>bool</em>) – </p></li>
+<li><p><strong>exclude_defaults</strong> (<em>bool</em>) – </p></li>
+<li><p><strong>exclude_none</strong> (<em>bool</em>) – </p></li>
+<li><p><strong>encoder</strong> (<em>Optional</em><em>[</em><em>Callable</em><em>[</em><em>[</em><em>Any</em><em>]</em><em>, </em><em>Any</em><em>]</em><em>]</em>) – </p></li>
+<li><p><strong>models_as_dict</strong> (<em>bool</em>) – </p></li>
+<li><p><strong>dumps_kwargs</strong> (<em>Any</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>unicode</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.agents.agent.AgentOutputParser.lc_id">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">lc_id</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#langchain.agents.agent.AgentOutputParser.lc_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>A unique identifier for this class for serialization purposes.</p>
+<p>The unique identifier is a list of strings that describes the path
+to the object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><em>List</em>[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.agents.agent.AgentOutputParser.map">
+<span class="sig-name descname"><span class="pre">map</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../runnables/langchain_core.runnables.base.Runnable.html#langchain_core.runnables.base.Runnable" title="langchain_core.runnables.base.Runnable"><span class="pre">Runnable</span></a><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Input</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Output</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#langchain.agents.agent.AgentOutputParser.map" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a new Runnable that maps a list of inputs to a list of outputs,
+by calling invoke() with each input.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="../runnables/langchain_core.runnables.base.Runnable.html#langchain_core.runnables.base.Runnable" title="langchain_core.runnables.base.Runnable"><em>Runnable</em></a>[<em>List</em>[<em>Input</em>], <em>List</em>[<em>Output</em>]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.agents.agent.AgentOutputParser.parse">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">parse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="langchain_core.agents.AgentAction.html#langchain_core.agents.AgentAction" title="langchain_core.agents.AgentAction"><span class="pre">AgentAction</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="langchain_core.agents.AgentFinish.html#langchain_core.agents.AgentFinish" title="langchain_core.agents.AgentFinish"><span class="pre">AgentFinish</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/langchain/agents/agent.html#AgentOutputParser.parse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain.agents.agent.AgentOutputParser.parse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse text into agent action/finish.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>text</strong> (<em>str</em>) – </p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><em>Union</em>[<a class="reference internal" href="langchain_core.agents.AgentAction.html#langchain_core.agents.AgentAction" title="langchain_core.agents.AgentAction"><em>AgentAction</em></a>, <a class="reference internal" href="langchain_core.agents.AgentFinish.html#langchain_core.agents.AgentFinish" title="langchain_core.agents.AgentFinish"><em>AgentFinish</em></a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.agents.agent.AgentOutputParser.parse_file">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">parse_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Path</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">content_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">unicode</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encoding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">unicode</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'utf8'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">proto</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Protocol</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_pickle</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Model</span></span></span><a class="headerlink" href="#langchain.agents.agent.AgentOutputParser.parse_file" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> (<em>Union</em><em>[</em><em>str</em><em>, </em><em>Path</em><em>]</em>) – </p></li>
+<li><p><strong>content_type</strong> (<em>unicode</em>) – </p></li>
+<li><p><strong>encoding</strong> (<em>unicode</em>) – </p></li>
+<li><p><strong>proto</strong> (<em>Protocol</em>) – </p></li>
+<li><p><strong>allow_pickle</strong> (<em>bool</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>Model</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.agents.agent.AgentOutputParser.parse_obj">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">parse_obj</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Model</span></span></span><a class="headerlink" href="#langchain.agents.agent.AgentOutputParser.parse_obj" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>obj</strong> (<em>Any</em>) – </p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>Model</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.agents.agent.AgentOutputParser.parse_raw">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">parse_raw</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">b</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bytes</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">content_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">unicode</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encoding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">unicode</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'utf8'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">proto</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Protocol</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_pickle</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Model</span></span></span><a class="headerlink" href="#langchain.agents.agent.AgentOutputParser.parse_raw" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>b</strong> (<em>Union</em><em>[</em><em>str</em><em>, </em><em>bytes</em><em>]</em>) – </p></li>
+<li><p><strong>content_type</strong> (<em>unicode</em>) – </p></li>
+<li><p><strong>encoding</strong> (<em>unicode</em>) – </p></li>
+<li><p><strong>proto</strong> (<em>Protocol</em>) – </p></li>
+<li><p><strong>allow_pickle</strong> (<em>bool</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>Model</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.agents.agent.AgentOutputParser.parse_result">
+<span class="sig-name descname"><span class="pre">parse_result</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../outputs/langchain_core.outputs.generation.Generation.html#langchain_core.outputs.generation.Generation" title="langchain_core.outputs.generation.Generation"><span class="pre">Generation</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">partial</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">T</span></span></span><a class="headerlink" href="#langchain.agents.agent.AgentOutputParser.parse_result" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse a list of candidate model Generations into a specific format.</p>
+<dl class="simple">
+<dt>The return value is parsed from only the first Generation in the result, which</dt><dd><p>is assumed to be the highest-likelihood Generation.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>result</strong> (<em>List</em><em>[</em><a class="reference internal" href="../outputs/langchain_core.outputs.generation.Generation.html#langchain_core.outputs.generation.Generation" title="langchain_core.outputs.generation.Generation"><em>Generation</em></a><em>]</em>) – A list of Generations to be parsed. The Generations are assumed
+to be different candidate outputs for a single model input.</p></li>
+<li><p><strong>partial</strong> (<em>bool</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Structured output.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><em>T</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.agents.agent.AgentOutputParser.parse_with_prompt">
+<span class="sig-name descname"><span class="pre">parse_with_prompt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">completion</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prompt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../prompt_values/langchain_core.prompt_values.PromptValue.html#langchain_core.prompt_values.PromptValue" title="langchain_core.prompt_values.PromptValue"><span class="pre">PromptValue</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#langchain.agents.agent.AgentOutputParser.parse_with_prompt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse the output of an LLM call with the input prompt for context.</p>
+<p>The prompt is largely provided in the event the OutputParser wants
+to retry or fix the output in some way, and needs information from
+the prompt to do so.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>completion</strong> (<em>str</em>) – String output of a language model.</p></li>
+<li><p><strong>prompt</strong> (<a class="reference internal" href="../prompt_values/langchain_core.prompt_values.PromptValue.html#langchain_core.prompt_values.PromptValue" title="langchain_core.prompt_values.PromptValue"><em>PromptValue</em></a>) – Input PromptValue.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Structured output</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Any</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.agents.agent.AgentOutputParser.pick">
+<span class="sig-name descname"><span class="pre">pick</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">keys</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../runnables/langchain_core.runnables.base.RunnableSerializable.html#langchain_core.runnables.base.RunnableSerializable" title="langchain_core.runnables.base.RunnableSerializable"><span class="pre">RunnableSerializable</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#langchain.agents.agent.AgentOutputParser.pick" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pick keys from the dict output of this runnable.
+Returns a new runnable.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>keys</strong> (<em>Union</em><em>[</em><em>str</em><em>, </em><em>List</em><em>[</em><em>str</em><em>]</em><em>]</em>) – </p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="../runnables/langchain_core.runnables.base.RunnableSerializable.html#langchain_core.runnables.base.RunnableSerializable" title="langchain_core.runnables.base.RunnableSerializable"><em>RunnableSerializable</em></a>[<em>Any</em>, <em>Any</em>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.agents.agent.AgentOutputParser.pipe">
+<span class="sig-name descname"><span class="pre">pipe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">others</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../runnables/langchain_core.runnables.base.Runnable.html#langchain_core.runnables.base.Runnable" title="langchain_core.runnables.base.Runnable"><span class="pre">Runnable</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Other</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Other</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../runnables/langchain_core.runnables.base.RunnableSerializable.html#langchain_core.runnables.base.RunnableSerializable" title="langchain_core.runnables.base.RunnableSerializable"><span class="pre">RunnableSerializable</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Input</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Other</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#langchain.agents.agent.AgentOutputParser.pipe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compose this runnable with another object to create a RunnableSequence.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>others</strong> (<em>Union</em><em>[</em><a class="reference internal" href="../runnables/langchain_core.runnables.base.Runnable.html#langchain_core.runnables.base.Runnable" title="langchain_core.runnables.base.Runnable"><em>Runnable</em></a><em>[</em><em>Any</em><em>, </em><em>Other</em><em>]</em><em>, </em><em>Callable</em><em>[</em><em>[</em><em>Any</em><em>]</em><em>, </em><em>Other</em><em>]</em><em>]</em>) – </p></li>
+<li><p><strong>name</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="../runnables/langchain_core.runnables.base.RunnableSerializable.html#langchain_core.runnables.base.RunnableSerializable" title="langchain_core.runnables.base.RunnableSerializable"><em>RunnableSerializable</em></a>[<em>Input</em>, <em>Other</em>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.agents.agent.AgentOutputParser.schema">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">schema</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">by_alias</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ref_template</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">unicode</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'#/definitions/{model}'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DictStrAny</span></span></span><a class="headerlink" href="#langchain.agents.agent.AgentOutputParser.schema" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>by_alias</strong> (<em>bool</em>) – </p></li>
+<li><p><strong>ref_template</strong> (<em>unicode</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>DictStrAny</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.agents.agent.AgentOutputParser.schema_json">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">schema_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">by_alias</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ref_template</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">unicode</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'#/definitions/{model}'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">dumps_kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">unicode</span></span></span><a class="headerlink" href="#langchain.agents.agent.AgentOutputParser.schema_json" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>by_alias</strong> (<em>bool</em>) – </p></li>
+<li><p><strong>ref_template</strong> (<em>unicode</em>) – </p></li>
+<li><p><strong>dumps_kwargs</strong> (<em>Any</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>unicode</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.agents.agent.AgentOutputParser.stream">
+<span class="sig-name descname"><span class="pre">stream</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../runnables/langchain_core.runnables.config.RunnableConfig.html#langchain_core.runnables.config.RunnableConfig" title="langchain_core.runnables.config.RunnableConfig"><span class="pre">RunnableConfig</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">Output</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#langchain.agents.agent.AgentOutputParser.stream" title="Permalink to this definition">¶</a></dt>
+<dd><p>Default implementation of stream, which calls invoke.
+Subclasses should override this method if they support streaming output.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input</strong> (<em>Input</em>) – </p></li>
+<li><p><strong>config</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="../runnables/langchain_core.runnables.config.RunnableConfig.html#langchain_core.runnables.config.RunnableConfig" title="langchain_core.runnables.config.RunnableConfig"><em>RunnableConfig</em></a><em>]</em>) – </p></li>
+<li><p><strong>kwargs</strong> (<em>Optional</em><em>[</em><em>Any</em><em>]</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><em>Iterator</em>[<em>Output</em>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.agents.agent.AgentOutputParser.to_json">
+<span class="sig-name descname"><span class="pre">to_json</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../load/langchain_core.load.serializable.SerializedConstructor.html#langchain_core.load.serializable.SerializedConstructor" title="langchain_core.load.serializable.SerializedConstructor"><span class="pre">SerializedConstructor</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../load/langchain_core.load.serializable.SerializedNotImplemented.html#langchain_core.load.serializable.SerializedNotImplemented" title="langchain_core.load.serializable.SerializedNotImplemented"><span class="pre">SerializedNotImplemented</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#langchain.agents.agent.AgentOutputParser.to_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Serialize the runnable to JSON.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><em>Union</em>[<a class="reference internal" href="../load/langchain_core.load.serializable.SerializedConstructor.html#langchain_core.load.serializable.SerializedConstructor" title="langchain_core.load.serializable.SerializedConstructor"><em>SerializedConstructor</em></a>, <a class="reference internal" href="../load/langchain_core.load.serializable.SerializedNotImplemented.html#langchain_core.load.serializable.SerializedNotImplemented" title="langchain_core.load.serializable.SerializedNotImplemented"><em>SerializedNotImplemented</em></a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.agents.agent.AgentOutputParser.to_json_not_implemented">
+<span class="sig-name descname"><span class="pre">to_json_not_implemented</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../load/langchain_core.load.serializable.SerializedNotImplemented.html#langchain_core.load.serializable.SerializedNotImplemented" title="langchain_core.load.serializable.SerializedNotImplemented"><span class="pre">SerializedNotImplemented</span></a></span></span><a class="headerlink" href="#langchain.agents.agent.AgentOutputParser.to_json_not_implemented" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="../load/langchain_core.load.serializable.SerializedNotImplemented.html#langchain_core.load.serializable.SerializedNotImplemented" title="langchain_core.load.serializable.SerializedNotImplemented"><em>SerializedNotImplemented</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.agents.agent.AgentOutputParser.transform">
+<span class="sig-name descname"><span class="pre">transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">Input</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../runnables/langchain_core.runnables.config.RunnableConfig.html#langchain_core.runnables.config.RunnableConfig" title="langchain_core.runnables.config.RunnableConfig"><span class="pre">RunnableConfig</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">Output</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#langchain.agents.agent.AgentOutputParser.transform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Default implementation of transform, which buffers input and then calls stream.
+Subclasses should override this method if they can start producing output while
+input is still being generated.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input</strong> (<em>Iterator</em><em>[</em><em>Input</em><em>]</em>) – </p></li>
+<li><p><strong>config</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="../runnables/langchain_core.runnables.config.RunnableConfig.html#langchain_core.runnables.config.RunnableConfig" title="langchain_core.runnables.config.RunnableConfig"><em>RunnableConfig</em></a><em>]</em>) – </p></li>
+<li><p><strong>kwargs</strong> (<em>Optional</em><em>[</em><em>Any</em><em>]</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><em>Iterator</em>[<em>Output</em>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.agents.agent.AgentOutputParser.update_forward_refs">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">update_forward_refs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">localns</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#langchain.agents.agent.AgentOutputParser.update_forward_refs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Try to update ForwardRefs on fields based on this Model, globalns and localns.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>localns</strong> (<em>Any</em>) – </p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.agents.agent.AgentOutputParser.validate">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">validate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Model</span></span></span><a class="headerlink" href="#langchain.agents.agent.AgentOutputParser.validate" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>value</strong> (<em>Any</em>) – </p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>Model</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.agents.agent.AgentOutputParser.with_config">
+<span class="sig-name descname"><span class="pre">with_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../runnables/langchain_core.runnables.config.RunnableConfig.html#langchain_core.runnables.config.RunnableConfig" title="langchain_core.runnables.config.RunnableConfig"><span class="pre">RunnableConfig</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../runnables/langchain_core.runnables.base.Runnable.html#langchain_core.runnables.base.Runnable" title="langchain_core.runnables.base.Runnable"><span class="pre">Runnable</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Input</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Output</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#langchain.agents.agent.AgentOutputParser.with_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bind config to a Runnable, returning a new Runnable.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="../runnables/langchain_core.runnables.config.RunnableConfig.html#langchain_core.runnables.config.RunnableConfig" title="langchain_core.runnables.config.RunnableConfig"><em>RunnableConfig</em></a><em>]</em>) – </p></li>
+<li><p><strong>kwargs</strong> (<em>Any</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="../runnables/langchain_core.runnables.base.Runnable.html#langchain_core.runnables.base.Runnable" title="langchain_core.runnables.base.Runnable"><em>Runnable</em></a>[<em>Input</em>, <em>Output</em>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.agents.agent.AgentOutputParser.with_fallbacks">
+<span class="sig-name descname"><span class="pre">with_fallbacks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">fallbacks:</span> <span class="pre">Sequence[Runnable[Input,</span> <span class="pre">Output]],</span> <span class="pre">*,</span> <span class="pre">exceptions_to_handle:</span> <span class="pre">Tuple[Type[BaseException],</span> <span class="pre">...]</span> <span class="pre">=</span> <span class="pre">(&lt;class</span> <span class="pre">'Exception'&gt;,),</span> <span class="pre">exception_key:</span> <span class="pre">Optional[str]</span> <span class="pre">=</span> <span class="pre">None</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">RunnableWithFallbacksT</span><span class="p"><span class="pre">[</span></span><span class="pre">Input</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Output</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#langchain.agents.agent.AgentOutputParser.with_fallbacks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add fallbacks to a runnable, returning a new Runnable.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fallbacks</strong> (<em>Sequence</em><em>[</em><a class="reference internal" href="../runnables/langchain_core.runnables.base.Runnable.html#langchain_core.runnables.base.Runnable" title="langchain_core.runnables.base.Runnable"><em>Runnable</em></a><em>[</em><em>Input</em><em>, </em><em>Output</em><em>]</em><em>]</em>) – A sequence of runnables to try if the original runnable fails.</p></li>
+<li><p><strong>exceptions_to_handle</strong> (<em>Tuple</em><em>[</em><em>Type</em><em>[</em><em>BaseException</em><em>]</em><em>, </em><em>...</em><em>]</em>) – A tuple of exception types to handle.</p></li>
+<li><p><strong>exception_key</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – If string is specified then handled exceptions will be passed
+to fallbacks as part of the input under the specified key. If None,
+exceptions will not be passed to fallbacks. If used, the base runnable
+and its fallbacks must accept a dictionary as input.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A new Runnable that will try the original runnable, and then each
+fallback in order, upon failures.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>RunnableWithFallbacksT[Input, Output]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.agents.agent.AgentOutputParser.with_listeners">
+<span class="sig-name descname"><span class="pre">with_listeners</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">on_start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Listener</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">on_end</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Listener</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">on_error</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Listener</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../runnables/langchain_core.runnables.base.Runnable.html#langchain_core.runnables.base.Runnable" title="langchain_core.runnables.base.Runnable"><span class="pre">Runnable</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Input</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Output</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#langchain.agents.agent.AgentOutputParser.with_listeners" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bind lifecycle listeners to a Runnable, returning a new Runnable.</p>
+<p>on_start: Called before the runnable starts running, with the Run object.
+on_end: Called after the runnable finishes running, with the Run object.
+on_error: Called if the runnable throws an error, with the Run object.</p>
+<p>The Run object contains information about the run, including its id,
+type, input, output, error, start_time, end_time, and any tags or metadata
+added to the run.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>on_start</strong> (<em>Optional</em><em>[</em><em>Listener</em><em>]</em>) – </p></li>
+<li><p><strong>on_end</strong> (<em>Optional</em><em>[</em><em>Listener</em><em>]</em>) – </p></li>
+<li><p><strong>on_error</strong> (<em>Optional</em><em>[</em><em>Listener</em><em>]</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="../runnables/langchain_core.runnables.base.Runnable.html#langchain_core.runnables.base.Runnable" title="langchain_core.runnables.base.Runnable">Runnable</a>[Input, Output]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.agents.agent.AgentOutputParser.with_retry">
+<span class="sig-name descname"><span class="pre">with_retry</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">*,</span> <span class="pre">retry_if_exception_type:</span> <span class="pre">~typing.Tuple[~typing.Type[BaseException],</span> <span class="pre">...]</span> <span class="pre">=</span> <span class="pre">(&lt;class</span> <span class="pre">'Exception'&gt;,),</span> <span class="pre">wait_exponential_jitter:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">True,</span> <span class="pre">stop_after_attempt:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">3</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../runnables/langchain_core.runnables.base.Runnable.html#langchain_core.runnables.base.Runnable" title="langchain_core.runnables.base.Runnable"><span class="pre">Runnable</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Input</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Output</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#langchain.agents.agent.AgentOutputParser.with_retry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new Runnable that retries the original runnable on exceptions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>retry_if_exception_type</strong> (<em>Tuple</em><em>[</em><em>Type</em><em>[</em><em>BaseException</em><em>]</em><em>, </em><em>...</em><em>]</em>) – A tuple of exception types to retry on</p></li>
+<li><p><strong>wait_exponential_jitter</strong> (<em>bool</em>) – Whether to add jitter to the wait time
+between retries</p></li>
+<li><p><strong>stop_after_attempt</strong> (<em>int</em>) – The maximum number of attempts to make before giving up</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A new Runnable that retries the original runnable on exceptions.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="../runnables/langchain_core.runnables.base.Runnable.html#langchain_core.runnables.base.Runnable" title="langchain_core.runnables.base.Runnable"><em>Runnable</em></a>[<em>Input</em>, <em>Output</em>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.agents.agent.AgentOutputParser.with_types">
+<span class="sig-name descname"><span class="pre">with_types</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">Input</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">Output</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../runnables/langchain_core.runnables.base.Runnable.html#langchain_core.runnables.base.Runnable" title="langchain_core.runnables.base.Runnable"><span class="pre">Runnable</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Input</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Output</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#langchain.agents.agent.AgentOutputParser.with_types" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bind input and output types to a Runnable, returning a new Runnable.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_type</strong> (<em>Optional</em><em>[</em><em>Type</em><em>[</em><em>Input</em><em>]</em><em>]</em>) – </p></li>
+<li><p><strong>output_type</strong> (<em>Optional</em><em>[</em><em>Type</em><em>[</em><em>Output</em><em>]</em><em>]</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="../runnables/langchain_core.runnables.base.Runnable.html#langchain_core.runnables.base.Runnable" title="langchain_core.runnables.base.Runnable"><em>Runnable</em></a>[<em>Input</em>, <em>Output</em>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="langchain.agents.agent.AgentOutputParser.InputType">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">InputType</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Any</span></em><a class="headerlink" href="#langchain.agents.agent.AgentOutputParser.InputType" title="Permalink to this definition">¶</a></dt>
+<dd><p>The type of input this runnable accepts specified as a type annotation.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="langchain.agents.agent.AgentOutputParser.OutputType">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">OutputType</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">T</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#langchain.agents.agent.AgentOutputParser.OutputType" title="Permalink to this definition">¶</a></dt>
+<dd><p>The type of output this runnable produces specified as a type annotation.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="langchain.agents.agent.AgentOutputParser.config_specs">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">config_specs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../runnables/langchain_core.runnables.utils.ConfigurableFieldSpec.html#langchain_core.runnables.utils.ConfigurableFieldSpec" title="langchain_core.runnables.utils.ConfigurableFieldSpec"><span class="pre">ConfigurableFieldSpec</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#langchain.agents.agent.AgentOutputParser.config_specs" title="Permalink to this definition">¶</a></dt>
+<dd><p>List configurable fields for this runnable.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="langchain.agents.agent.AgentOutputParser.input_schema">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">input_schema</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">BaseModel</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#langchain.agents.agent.AgentOutputParser.input_schema" title="Permalink to this definition">¶</a></dt>
+<dd><p>The type of input this runnable accepts specified as a pydantic model.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="langchain.agents.agent.AgentOutputParser.lc_attributes">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">lc_attributes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span></em><a class="headerlink" href="#langchain.agents.agent.AgentOutputParser.lc_attributes" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of attribute names that should be included in the serialized kwargs.</p>
+<p>These attributes must be accepted by the constructor.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="langchain.agents.agent.AgentOutputParser.lc_secrets">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">lc_secrets</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#langchain.agents.agent.AgentOutputParser.lc_secrets" title="Permalink to this definition">¶</a></dt>
+<dd><p>A map of constructor argument names to secret ids.</p>
+<dl class="simple">
+<dt>For example,</dt><dd><p>{“openai_api_key”: “OPENAI_API_KEY”}</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="langchain.agents.agent.AgentOutputParser.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#langchain.agents.agent.AgentOutputParser.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of the runnable. Used for debugging and tracing.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="langchain.agents.agent.AgentOutputParser.output_schema">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">output_schema</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">BaseModel</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#langchain.agents.agent.AgentOutputParser.output_schema" title="Permalink to this definition">¶</a></dt>
+<dd><p>The type of output this runnable produces specified as a pydantic model.</p>
+</dd></dl>
+
+</dd></dl>
+
+<h1>Examples using AgentOutputParser<a class="headerlink" href="#langchain-agents-agent-agentoutputparser" title="Permalink to this heading">¶</a></h1>
+<ul class="simple">
+<li><p><a class="reference external" href="https://python.langchain.com/docs/use_cases/more/agents/agents/custom_agent_with_plugin_retrieval">Custom Agent with PlugIn Retrieval</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/modules/agents/how_to/custom_agent_with_tool_retrieval">Custom agent with tool retrieval</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/use_cases/more/agents/agents/custom_agent_with_plugin_retrieval_using_plugnplai">Plug-and-Plai</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/use_cases/more/agents/agents/sales_agent_with_context">SalesGPT - Your Context-Aware AI Sales Assistant With Knowledge Base</a></p></li>
+<li><p><a class="reference external" href="https://python.langchain.com/docs/use_cases/more/agents/agents/wikibase_agent">Wikibase Agent</a></p></li>
+</ul>
+</section>
+
+
+      </div>
+    <div class="container">
+      <footer class="sk-content-footer">
+            &copy; 2023, LangChain, Inc..
+          Last updated on Mar 15, 2024.
+      </footer>
+    </div>
+  </div>
+</div>
+<script src="../_static/js/vendor/bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    /* Add a [>>>] button on the top-right corner of code samples to hide
+     * the >>> and ... prompts and the output and thus make the code
+     * copyable. */
+    var div = $('.highlight-python .highlight,' +
+                '.highlight-python3 .highlight,' +
+                '.highlight-pycon .highlight,' +
+		'.highlight-default .highlight')
+    var pre = div.find('pre');
+
+    // get the styles from the current theme
+    pre.parent().parent().css('position', 'relative');
+    var hide_text = 'Hide prompts and outputs';
+    var show_text = 'Show prompts and outputs';
+
+    // create and add the button to all the code blocks that contain >>>
+    div.each(function(index) {
+        var jthis = $(this);
+        if (jthis.find('.gp').length > 0) {
+            var button = $('<span class="copybutton">&gt;&gt;&gt;</span>');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+            jthis.prepend(button);
+        }
+        // tracebacks (.gt) contain bare text elements that need to be
+        // wrapped in a span to work with .nextUntil() (see later)
+        jthis.find('pre:has(.gt)').contents().filter(function() {
+            return ((this.nodeType == 3) && (this.data.trim().length > 0));
+        }).wrap('<span>');
+    });
+
+    // define the behavior of the button when it's clicked
+    $('.copybutton').click(function(e){
+        e.preventDefault();
+        var button = $(this);
+        if (button.data('hidden') === 'false') {
+            // hide the code output
+            button.parent().find('.go, .gp, .gt').hide();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'hidden');
+            button.css('text-decoration', 'line-through');
+            button.attr('title', show_text);
+            button.data('hidden', 'true');
+        } else {
+            // show the code output
+            button.parent().find('.go, .gp, .gt').show();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'visible');
+            button.css('text-decoration', 'none');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+        }
+    });
+
+	/*** Add permalink buttons next to glossary terms ***/
+	$('dl.glossary > dt[id]').append(function() {
+		return ('<a class="headerlink" href="#' +
+			    this.getAttribute('id') +
+			    '" title="Permalink to this term">¶</a>');
+	});
+});
+
+</script>
+    
+</body>
+</html>

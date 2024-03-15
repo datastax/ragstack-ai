@@ -1,0 +1,666 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>langchain_community.llms.ollama &mdash; 🦜🔗 LangChain 0.1.12</title>
+  
+  <link rel="canonical" href="https://api.python.langchain.com/en/latest/_modules/langchain_community/llms/ollama.html" />
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/vendor/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/autodoc_pydantic.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/sphinx-dropdown.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/panels-bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+<script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+<script src="../../../_static/jquery.js"></script> 
+</head>
+<body>
+
+
+<nav id="navbar" class="sk-docs-navbar navbar navbar-expand-md navbar-light bg-light py-0">
+  <div class="container-fluid sk-docs-container px-0">
+    <button
+      id="sk-navbar-toggler"
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="sk-navbar-collapse collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../langchain_api_reference.html">LangChain</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../core_api_reference.html">Core</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../community_api_reference.html">Community</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../experimental_api_reference.html">Experimental</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../text_splitters_api_reference.html">Text splitters</a>
+        </li>
+        <li class="nav-item dropdown nav-more-item-dropdown">
+          <a class="sk-nav-link nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Partner libs</a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+          </div>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" target="_blank" rel="noopener noreferrer" href="https://python.langchain.com/">Docs</a>
+        </li>
+      </ul>
+      <div id="searchbox" role="search">
+          <div class="searchformwrapper">
+          <form class="search" action="../../../search.html" method="get">
+            <input class="sk-search-text-input" type="text" name="q" aria-labelledby="searchlabel" />
+            <input class="sk-search-text-btn" type="submit" value="Go" />
+          </form>
+          </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="d-flex" id="sk-doc-wrapper">
+    <input type="checkbox" name="sk-toggle-checkbox" id="sk-toggle-checkbox">
+    <label id="sk-sidemenu-toggle" class="sk-btn-toggle-toc btn sk-btn-primary" for="sk-toggle-checkbox">Toggle Menu</label>
+    <div id="sk-sidebar-wrapper" class="border-right">
+      <div class="sk-sidebar-toc-wrapper">
+        <div class="btn-group w-100 mb-2" role="group" aria-label="rellinks">
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Prev</a><a href="../../index.html" role="button" class="btn sk-btn-rellink py-1" sk-rellink-tooltip="Module code">Up</a>
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Next</a>
+        </div>
+            <div class="sk-sidebar-toc">
+              
+            </div>
+      </div>
+    </div>
+    <div id="sk-page-content-wrapper">
+      <div class="sk-page-content container-fluid body px-md-3" role="main">
+        
+  <h1>Source code for langchain_community.llms.ollama</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">AsyncIterator</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="kn">import</span> <span class="nn">aiohttp</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">from</span> <span class="nn">langchain_core.callbacks</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AsyncCallbackManagerForLLMRun</span><span class="p">,</span>
+    <span class="n">CallbackManagerForLLMRun</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">langchain_core.language_models</span> <span class="kn">import</span> <span class="n">BaseLanguageModel</span>
+<span class="kn">from</span> <span class="nn">langchain_core.language_models.llms</span> <span class="kn">import</span> <span class="n">BaseLLM</span>
+<span class="kn">from</span> <span class="nn">langchain_core.outputs</span> <span class="kn">import</span> <span class="n">GenerationChunk</span><span class="p">,</span> <span class="n">LLMResult</span>
+<span class="kn">from</span> <span class="nn">langchain_core.pydantic_v1</span> <span class="kn">import</span> <span class="n">Extra</span>
+
+
+<span class="k">def</span> <span class="nf">_stream_response_to_generation_chunk</span><span class="p">(</span>
+    <span class="n">stream_response</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GenerationChunk</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert a stream response to a generation chunk.&quot;&quot;&quot;</span>
+    <span class="n">parsed_response</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">stream_response</span><span class="p">)</span>
+    <span class="n">generation_info</span> <span class="o">=</span> <span class="n">parsed_response</span> <span class="k">if</span> <span class="n">parsed_response</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;done&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">True</span> <span class="k">else</span> <span class="kc">None</span>
+    <span class="k">return</span> <span class="n">GenerationChunk</span><span class="p">(</span>
+        <span class="n">text</span><span class="o">=</span><span class="n">parsed_response</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;response&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span> <span class="n">generation_info</span><span class="o">=</span><span class="n">generation_info</span>
+    <span class="p">)</span>
+
+
+<div class="viewcode-block" id="OllamaEndpointNotFoundError"><a class="viewcode-back" href="../../../llms/langchain_community.llms.ollama.OllamaEndpointNotFoundError.html#langchain_community.llms.ollama.OllamaEndpointNotFoundError">[docs]</a><span class="k">class</span> <span class="nc">OllamaEndpointNotFoundError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Raised when the Ollama endpoint is not found.&quot;&quot;&quot;</span></div>
+
+
+<span class="k">class</span> <span class="nc">_OllamaCommon</span><span class="p">(</span><span class="n">BaseLanguageModel</span><span class="p">):</span>
+    <span class="n">base_url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;http://localhost:11434&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base url the model is hosted under.&quot;&quot;&quot;</span>
+
+    <span class="n">model</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;llama2&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Model name to use.&quot;&quot;&quot;</span>
+
+    <span class="n">mirostat</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Enable Mirostat sampling for controlling perplexity.</span>
+<span class="sd">    (default: 0, 0 = disabled, 1 = Mirostat, 2 = Mirostat 2.0)&quot;&quot;&quot;</span>
+
+    <span class="n">mirostat_eta</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Influences how quickly the algorithm responds to feedback</span>
+<span class="sd">    from the generated text. A lower learning rate will result in</span>
+<span class="sd">    slower adjustments, while a higher learning rate will make</span>
+<span class="sd">    the algorithm more responsive. (Default: 0.1)&quot;&quot;&quot;</span>
+
+    <span class="n">mirostat_tau</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Controls the balance between coherence and diversity</span>
+<span class="sd">    of the output. A lower value will result in more focused and</span>
+<span class="sd">    coherent text. (Default: 5.0)&quot;&quot;&quot;</span>
+
+    <span class="n">num_ctx</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Sets the size of the context window used to generate the</span>
+<span class="sd">    next token. (Default: 2048)	&quot;&quot;&quot;</span>
+
+    <span class="n">num_gpu</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The number of GPUs to use. On macOS it defaults to 1 to</span>
+<span class="sd">    enable metal support, 0 to disable.&quot;&quot;&quot;</span>
+
+    <span class="n">num_thread</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Sets the number of threads to use during computation.</span>
+<span class="sd">    By default, Ollama will detect this for optimal performance.</span>
+<span class="sd">    It is recommended to set this value to the number of physical</span>
+<span class="sd">    CPU cores your system has (as opposed to the logical number of cores).&quot;&quot;&quot;</span>
+
+    <span class="n">num_predict</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Maximum number of tokens to predict when generating text.</span>
+<span class="sd">    (Default: 128, -1 = infinite generation, -2 = fill context)&quot;&quot;&quot;</span>
+
+    <span class="n">repeat_last_n</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Sets how far back for the model to look back to prevent</span>
+<span class="sd">    repetition. (Default: 64, 0 = disabled, -1 = num_ctx)&quot;&quot;&quot;</span>
+
+    <span class="n">repeat_penalty</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Sets how strongly to penalize repetitions. A higher value (e.g., 1.5)</span>
+<span class="sd">    will penalize repetitions more strongly, while a lower value (e.g., 0.9)</span>
+<span class="sd">    will be more lenient. (Default: 1.1)&quot;&quot;&quot;</span>
+
+    <span class="n">temperature</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The temperature of the model. Increasing the temperature will</span>
+<span class="sd">    make the model answer more creatively. (Default: 0.8)&quot;&quot;&quot;</span>
+
+    <span class="n">stop</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Sets the stop tokens to use.&quot;&quot;&quot;</span>
+
+    <span class="n">tfs_z</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Tail free sampling is used to reduce the impact of less probable</span>
+<span class="sd">    tokens from the output. A higher value (e.g., 2.0) will reduce the</span>
+<span class="sd">    impact more, while a value of 1.0 disables this setting. (default: 1)&quot;&quot;&quot;</span>
+
+    <span class="n">top_k</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Reduces the probability of generating nonsense. A higher value (e.g. 100)</span>
+<span class="sd">    will give more diverse answers, while a lower value (e.g. 10)</span>
+<span class="sd">    will be more conservative. (Default: 40)&quot;&quot;&quot;</span>
+
+    <span class="n">top_p</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Works together with top-k. A higher value (e.g., 0.95) will lead</span>
+<span class="sd">    to more diverse text, while a lower value (e.g., 0.5) will</span>
+<span class="sd">    generate more focused and conservative text. (Default: 0.9)&quot;&quot;&quot;</span>
+
+    <span class="n">system</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;system prompt (overrides what is defined in the Modelfile)&quot;&quot;&quot;</span>
+
+    <span class="n">template</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;full prompt or prompt template (overrides what is defined in the Modelfile)&quot;&quot;&quot;</span>
+
+    <span class="nb">format</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Specify the format of the output (e.g., json)&quot;&quot;&quot;</span>
+
+    <span class="n">timeout</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Timeout for the request stream&quot;&quot;&quot;</span>
+
+    <span class="n">headers</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Additional headers to pass to endpoint (e.g. Authorization, Referer).</span>
+<span class="sd">    This is useful when Ollama is hosted on cloud services that require</span>
+<span class="sd">    tokens for authentication.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_default_params</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the default parameters for calling Ollama.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
+            <span class="s2">&quot;format&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">format</span><span class="p">,</span>
+            <span class="s2">&quot;options&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;mirostat&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">mirostat</span><span class="p">,</span>
+                <span class="s2">&quot;mirostat_eta&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">mirostat_eta</span><span class="p">,</span>
+                <span class="s2">&quot;mirostat_tau&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">mirostat_tau</span><span class="p">,</span>
+                <span class="s2">&quot;num_ctx&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_ctx</span><span class="p">,</span>
+                <span class="s2">&quot;num_gpu&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_gpu</span><span class="p">,</span>
+                <span class="s2">&quot;num_thread&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_thread</span><span class="p">,</span>
+                <span class="s2">&quot;num_predict&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_predict</span><span class="p">,</span>
+                <span class="s2">&quot;repeat_last_n&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">repeat_last_n</span><span class="p">,</span>
+                <span class="s2">&quot;repeat_penalty&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">repeat_penalty</span><span class="p">,</span>
+                <span class="s2">&quot;temperature&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">temperature</span><span class="p">,</span>
+                <span class="s2">&quot;stop&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">,</span>
+                <span class="s2">&quot;tfs_z&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">tfs_z</span><span class="p">,</span>
+                <span class="s2">&quot;top_k&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">top_k</span><span class="p">,</span>
+                <span class="s2">&quot;top_p&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">top_p</span><span class="p">,</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;system&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="p">,</span>
+            <span class="s2">&quot;template&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">template</span><span class="p">,</span>
+        <span class="p">}</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_identifying_params</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the identifying parameters.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span><span class="o">**</span><span class="p">{</span><span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="s2">&quot;format&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">format</span><span class="p">},</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_default_params</span><span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">_create_generate_stream</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">stop</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">images</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="n">payload</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;prompt&quot;</span><span class="p">:</span> <span class="n">prompt</span><span class="p">,</span> <span class="s2">&quot;images&quot;</span><span class="p">:</span> <span class="n">images</span><span class="p">}</span>
+        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_stream</span><span class="p">(</span>
+            <span class="n">payload</span><span class="o">=</span><span class="n">payload</span><span class="p">,</span>
+            <span class="n">stop</span><span class="o">=</span><span class="n">stop</span><span class="p">,</span>
+            <span class="n">api_url</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">base_url</span><span class="si">}</span><span class="s2">/api/generate&quot;</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_acreate_generate_stream</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">stop</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">images</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="n">payload</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;prompt&quot;</span><span class="p">:</span> <span class="n">prompt</span><span class="p">,</span> <span class="s2">&quot;images&quot;</span><span class="p">:</span> <span class="n">images</span><span class="p">}</span>
+        <span class="k">async</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_acreate_stream</span><span class="p">(</span>
+            <span class="n">payload</span><span class="o">=</span><span class="n">payload</span><span class="p">,</span>
+            <span class="n">stop</span><span class="o">=</span><span class="n">stop</span><span class="p">,</span>
+            <span class="n">api_url</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">base_url</span><span class="si">}</span><span class="s2">/api/generate&quot;</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">):</span>
+            <span class="k">yield</span> <span class="n">item</span>
+
+    <span class="k">def</span> <span class="nf">_create_stream</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">api_url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">payload</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+        <span class="n">stop</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">stop</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;`stop` found in both the input and default params.&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">stop</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop</span>
+        <span class="k">elif</span> <span class="n">stop</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">stop</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_default_params</span>
+
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_default_params</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+                <span class="n">params</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="s2">&quot;options&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">params</span><span class="p">[</span><span class="s2">&quot;options&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;options&quot;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">params</span><span class="p">[</span><span class="s2">&quot;options&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="o">**</span><span class="n">params</span><span class="p">[</span><span class="s2">&quot;options&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;stop&quot;</span><span class="p">:</span> <span class="n">stop</span><span class="p">,</span>
+                <span class="o">**</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_default_params</span><span class="p">},</span>
+            <span class="p">}</span>
+
+        <span class="k">if</span> <span class="n">payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;messages&quot;</span><span class="p">):</span>
+            <span class="n">request_payload</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;messages&quot;</span><span class="p">:</span> <span class="n">payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;messages&quot;</span><span class="p">,</span> <span class="p">[]),</span> <span class="o">**</span><span class="n">params</span><span class="p">}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">request_payload</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;prompt&quot;</span><span class="p">:</span> <span class="n">payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;prompt&quot;</span><span class="p">),</span>
+                <span class="s2">&quot;images&quot;</span><span class="p">:</span> <span class="n">payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;images&quot;</span><span class="p">,</span> <span class="p">[]),</span>
+                <span class="o">**</span><span class="n">params</span><span class="p">,</span>
+            <span class="p">}</span>
+
+        <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
+            <span class="n">url</span><span class="o">=</span><span class="n">api_url</span><span class="p">,</span>
+            <span class="n">headers</span><span class="o">=</span><span class="p">{</span>
+                <span class="s2">&quot;Content-Type&quot;</span><span class="p">:</span> <span class="s2">&quot;application/json&quot;</span><span class="p">,</span>
+                <span class="o">**</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">headers</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">headers</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="k">else</span> <span class="p">{}),</span>
+            <span class="p">},</span>
+            <span class="n">json</span><span class="o">=</span><span class="n">request_payload</span><span class="p">,</span>
+            <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">timeout</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">timeout</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">response</span><span class="o">.</span><span class="n">encoding</span> <span class="o">=</span> <span class="s2">&quot;utf-8&quot;</span>
+        <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">!=</span> <span class="mi">200</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">404</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">OllamaEndpointNotFoundError</span><span class="p">(</span>
+                    <span class="s2">&quot;Ollama call failed with status code 404. &quot;</span>
+                    <span class="s2">&quot;Maybe your model is not found &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;and you should pull the model with `ollama pull </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="si">}</span><span class="s2">`.&quot;</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">optional_detail</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">text</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Ollama call failed with status code </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="s2">.&quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot; Details: </span><span class="si">{</span><span class="n">optional_detail</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+        <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">iter_lines</span><span class="p">(</span><span class="n">decode_unicode</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_acreate_stream</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">api_url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">payload</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+        <span class="n">stop</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">stop</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;`stop` found in both the input and default params.&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">stop</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop</span>
+        <span class="k">elif</span> <span class="n">stop</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">stop</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_default_params</span>
+
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_default_params</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+                <span class="n">params</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="s2">&quot;options&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">params</span><span class="p">[</span><span class="s2">&quot;options&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;options&quot;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">params</span><span class="p">[</span><span class="s2">&quot;options&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="o">**</span><span class="n">params</span><span class="p">[</span><span class="s2">&quot;options&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;stop&quot;</span><span class="p">:</span> <span class="n">stop</span><span class="p">,</span>
+                <span class="o">**</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_default_params</span><span class="p">},</span>
+            <span class="p">}</span>
+
+        <span class="k">if</span> <span class="n">payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;messages&quot;</span><span class="p">):</span>
+            <span class="n">request_payload</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;messages&quot;</span><span class="p">:</span> <span class="n">payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;messages&quot;</span><span class="p">,</span> <span class="p">[]),</span> <span class="o">**</span><span class="n">params</span><span class="p">}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">request_payload</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;prompt&quot;</span><span class="p">:</span> <span class="n">payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;prompt&quot;</span><span class="p">),</span>
+                <span class="s2">&quot;images&quot;</span><span class="p">:</span> <span class="n">payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;images&quot;</span><span class="p">,</span> <span class="p">[]),</span>
+                <span class="o">**</span><span class="n">params</span><span class="p">,</span>
+            <span class="p">}</span>
+
+        <span class="k">async</span> <span class="k">with</span> <span class="n">aiohttp</span><span class="o">.</span><span class="n">ClientSession</span><span class="p">()</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
+            <span class="k">async</span> <span class="k">with</span> <span class="n">session</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
+                <span class="n">url</span><span class="o">=</span><span class="n">api_url</span><span class="p">,</span>
+                <span class="n">headers</span><span class="o">=</span><span class="p">{</span>
+                    <span class="s2">&quot;Content-Type&quot;</span><span class="p">:</span> <span class="s2">&quot;application/json&quot;</span><span class="p">,</span>
+                    <span class="o">**</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">headers</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">headers</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="k">else</span> <span class="p">{}),</span>
+                <span class="p">},</span>
+                <span class="n">json</span><span class="o">=</span><span class="n">request_payload</span><span class="p">,</span>
+                <span class="n">timeout</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">timeout</span><span class="p">,</span>
+            <span class="p">)</span> <span class="k">as</span> <span class="n">response</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status</span> <span class="o">!=</span> <span class="mi">200</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="mi">404</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="n">OllamaEndpointNotFoundError</span><span class="p">(</span>
+                            <span class="s2">&quot;Ollama call failed with status code 404.&quot;</span>
+                        <span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">optional_detail</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">text</span>
+                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;Ollama call failed with status code </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">status</span><span class="si">}</span><span class="s2">.&quot;</span>
+                            <span class="sa">f</span><span class="s2">&quot; Details: </span><span class="si">{</span><span class="n">optional_detail</span><span class="si">}</span><span class="s2">&quot;</span>
+                        <span class="p">)</span>
+                <span class="k">async</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">content</span><span class="p">:</span>
+                    <span class="k">yield</span> <span class="n">line</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_stream_with_aggregation</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">stop</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">run_manager</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">CallbackManagerForLLMRun</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GenerationChunk</span><span class="p">:</span>
+        <span class="n">final_chunk</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">GenerationChunk</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">stream_resp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_generate_stream</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">stream_resp</span><span class="p">:</span>
+                <span class="n">chunk</span> <span class="o">=</span> <span class="n">_stream_response_to_generation_chunk</span><span class="p">(</span><span class="n">stream_resp</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">final_chunk</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">final_chunk</span> <span class="o">=</span> <span class="n">chunk</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">final_chunk</span> <span class="o">+=</span> <span class="n">chunk</span>
+                <span class="k">if</span> <span class="n">run_manager</span><span class="p">:</span>
+                    <span class="n">run_manager</span><span class="o">.</span><span class="n">on_llm_new_token</span><span class="p">(</span>
+                        <span class="n">chunk</span><span class="o">.</span><span class="n">text</span><span class="p">,</span>
+                        <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
+                    <span class="p">)</span>
+        <span class="k">if</span> <span class="n">final_chunk</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No data received from Ollama stream.&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">final_chunk</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_astream_with_aggregation</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">stop</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">run_manager</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AsyncCallbackManagerForLLMRun</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GenerationChunk</span><span class="p">:</span>
+        <span class="n">final_chunk</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">GenerationChunk</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">async</span> <span class="k">for</span> <span class="n">stream_resp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_acreate_generate_stream</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">stream_resp</span><span class="p">:</span>
+                <span class="n">chunk</span> <span class="o">=</span> <span class="n">_stream_response_to_generation_chunk</span><span class="p">(</span><span class="n">stream_resp</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">final_chunk</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">final_chunk</span> <span class="o">=</span> <span class="n">chunk</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">final_chunk</span> <span class="o">+=</span> <span class="n">chunk</span>
+                <span class="k">if</span> <span class="n">run_manager</span><span class="p">:</span>
+                    <span class="k">await</span> <span class="n">run_manager</span><span class="o">.</span><span class="n">on_llm_new_token</span><span class="p">(</span>
+                        <span class="n">chunk</span><span class="o">.</span><span class="n">text</span><span class="p">,</span>
+                        <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
+                    <span class="p">)</span>
+        <span class="k">if</span> <span class="n">final_chunk</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No data received from Ollama stream.&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">final_chunk</span>
+
+
+<div class="viewcode-block" id="Ollama"><a class="viewcode-back" href="../../../llms/langchain_community.llms.ollama.Ollama.html#langchain_community.llms.ollama.Ollama">[docs]</a><span class="k">class</span> <span class="nc">Ollama</span><span class="p">(</span><span class="n">BaseLLM</span><span class="p">,</span> <span class="n">_OllamaCommon</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Ollama locally runs large language models.</span>
+
+<span class="sd">    To use, follow the instructions at https://ollama.ai/.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            from langchain_community.llms import Ollama</span>
+<span class="sd">            ollama = Ollama(model=&quot;llama2&quot;)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">class</span> <span class="nc">Config</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Configuration for this pydantic object.&quot;&quot;&quot;</span>
+
+        <span class="n">extra</span> <span class="o">=</span> <span class="n">Extra</span><span class="o">.</span><span class="n">forbid</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_llm_type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return type of llm.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s2">&quot;ollama-llm&quot;</span>
+
+    <span class="k">def</span> <span class="nf">_generate</span><span class="p">(</span>  <span class="c1"># type: ignore[override]</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">prompts</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">stop</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">images</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">run_manager</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">CallbackManagerForLLMRun</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LLMResult</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Call out to Ollama&#39;s generate endpoint.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            prompt: The prompt to pass into the model.</span>
+<span class="sd">            stop: Optional list of stop words to use when generating.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The string generated by the model.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            .. code-block:: python</span>
+
+<span class="sd">                response = ollama(&quot;Tell me a joke.&quot;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># TODO: add caching here.</span>
+        <span class="n">generations</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">prompt</span> <span class="ow">in</span> <span class="n">prompts</span><span class="p">:</span>
+            <span class="n">final_chunk</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_stream_with_aggregation</span><span class="p">(</span>
+                <span class="n">prompt</span><span class="p">,</span>
+                <span class="n">stop</span><span class="o">=</span><span class="n">stop</span><span class="p">,</span>
+                <span class="n">images</span><span class="o">=</span><span class="n">images</span><span class="p">,</span>
+                <span class="n">run_manager</span><span class="o">=</span><span class="n">run_manager</span><span class="p">,</span>
+                <span class="n">verbose</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">,</span>
+                <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">generations</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">final_chunk</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">LLMResult</span><span class="p">(</span><span class="n">generations</span><span class="o">=</span><span class="n">generations</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_agenerate</span><span class="p">(</span>  <span class="c1"># type: ignore[override]</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">prompts</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">stop</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">images</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">run_manager</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">CallbackManagerForLLMRun</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LLMResult</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Call out to Ollama&#39;s generate endpoint.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            prompt: The prompt to pass into the model.</span>
+<span class="sd">            stop: Optional list of stop words to use when generating.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The string generated by the model.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            .. code-block:: python</span>
+
+<span class="sd">                response = ollama(&quot;Tell me a joke.&quot;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># TODO: add caching here.</span>
+        <span class="n">generations</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">prompt</span> <span class="ow">in</span> <span class="n">prompts</span><span class="p">:</span>
+            <span class="n">final_chunk</span> <span class="o">=</span> <span class="k">await</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_astream_with_aggregation</span><span class="p">(</span>
+                <span class="n">prompt</span><span class="p">,</span>
+                <span class="n">stop</span><span class="o">=</span><span class="n">stop</span><span class="p">,</span>
+                <span class="n">images</span><span class="o">=</span><span class="n">images</span><span class="p">,</span>
+                <span class="n">run_manager</span><span class="o">=</span><span class="n">run_manager</span><span class="p">,</span>  <span class="c1"># type: ignore[arg-type]</span>
+                <span class="n">verbose</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">,</span>
+                <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">generations</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">final_chunk</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">LLMResult</span><span class="p">(</span><span class="n">generations</span><span class="o">=</span><span class="n">generations</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_stream</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">stop</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">run_manager</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">CallbackManagerForLLMRun</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">GenerationChunk</span><span class="p">]:</span>
+        <span class="k">for</span> <span class="n">stream_resp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_generate_stream</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">stream_resp</span><span class="p">:</span>
+                <span class="n">chunk</span> <span class="o">=</span> <span class="n">_stream_response_to_generation_chunk</span><span class="p">(</span><span class="n">stream_resp</span><span class="p">)</span>
+                <span class="k">yield</span> <span class="n">chunk</span>
+                <span class="k">if</span> <span class="n">run_manager</span><span class="p">:</span>
+                    <span class="n">run_manager</span><span class="o">.</span><span class="n">on_llm_new_token</span><span class="p">(</span>
+                        <span class="n">chunk</span><span class="o">.</span><span class="n">text</span><span class="p">,</span>
+                        <span class="n">verbose</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">,</span>
+                    <span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_astream</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">stop</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">run_manager</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AsyncCallbackManagerForLLMRun</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">GenerationChunk</span><span class="p">]:</span>
+        <span class="k">async</span> <span class="k">for</span> <span class="n">stream_resp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_acreate_generate_stream</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">stream_resp</span><span class="p">:</span>
+                <span class="n">chunk</span> <span class="o">=</span> <span class="n">_stream_response_to_generation_chunk</span><span class="p">(</span><span class="n">stream_resp</span><span class="p">)</span>
+                <span class="k">yield</span> <span class="n">chunk</span>
+                <span class="k">if</span> <span class="n">run_manager</span><span class="p">:</span>
+                    <span class="k">await</span> <span class="n">run_manager</span><span class="o">.</span><span class="n">on_llm_new_token</span><span class="p">(</span>
+                        <span class="n">chunk</span><span class="o">.</span><span class="n">text</span><span class="p">,</span>
+                        <span class="n">verbose</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">,</span>
+                    <span class="p">)</span></div>
+</pre></div>
+
+      </div>
+    <div class="container">
+      <footer class="sk-content-footer">
+            &copy; 2023, LangChain, Inc..
+          Last updated on Mar 15, 2024.
+      </footer>
+    </div>
+  </div>
+</div>
+<script src="../../../_static/js/vendor/bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    /* Add a [>>>] button on the top-right corner of code samples to hide
+     * the >>> and ... prompts and the output and thus make the code
+     * copyable. */
+    var div = $('.highlight-python .highlight,' +
+                '.highlight-python3 .highlight,' +
+                '.highlight-pycon .highlight,' +
+		'.highlight-default .highlight')
+    var pre = div.find('pre');
+
+    // get the styles from the current theme
+    pre.parent().parent().css('position', 'relative');
+    var hide_text = 'Hide prompts and outputs';
+    var show_text = 'Show prompts and outputs';
+
+    // create and add the button to all the code blocks that contain >>>
+    div.each(function(index) {
+        var jthis = $(this);
+        if (jthis.find('.gp').length > 0) {
+            var button = $('<span class="copybutton">&gt;&gt;&gt;</span>');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+            jthis.prepend(button);
+        }
+        // tracebacks (.gt) contain bare text elements that need to be
+        // wrapped in a span to work with .nextUntil() (see later)
+        jthis.find('pre:has(.gt)').contents().filter(function() {
+            return ((this.nodeType == 3) && (this.data.trim().length > 0));
+        }).wrap('<span>');
+    });
+
+    // define the behavior of the button when it's clicked
+    $('.copybutton').click(function(e){
+        e.preventDefault();
+        var button = $(this);
+        if (button.data('hidden') === 'false') {
+            // hide the code output
+            button.parent().find('.go, .gp, .gt').hide();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'hidden');
+            button.css('text-decoration', 'line-through');
+            button.attr('title', show_text);
+            button.data('hidden', 'true');
+        } else {
+            // show the code output
+            button.parent().find('.go, .gp, .gt').show();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'visible');
+            button.css('text-decoration', 'none');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+        }
+    });
+
+	/*** Add permalink buttons next to glossary terms ***/
+	$('dl.glossary > dt[id]').append(function() {
+		return ('<a class="headerlink" href="#' +
+			    this.getAttribute('id') +
+			    '" title="Permalink to this term">¶</a>');
+	});
+});
+
+</script>
+    
+</body>
+</html>

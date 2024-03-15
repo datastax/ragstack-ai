@@ -1,0 +1,1199 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>langchain_community.vectorstores.lantern &mdash; 🦜🔗 LangChain 0.1.12</title>
+  
+  <link rel="canonical" href="https://api.python.langchain.com/en/latest/_modules/langchain_community/vectorstores/lantern.html" />
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/vendor/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/autodoc_pydantic.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/sphinx-dropdown.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/panels-bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+<script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+<script src="../../../_static/jquery.js"></script> 
+</head>
+<body>
+
+
+<nav id="navbar" class="sk-docs-navbar navbar navbar-expand-md navbar-light bg-light py-0">
+  <div class="container-fluid sk-docs-container px-0">
+    <button
+      id="sk-navbar-toggler"
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="sk-navbar-collapse collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../langchain_api_reference.html">LangChain</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../core_api_reference.html">Core</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../community_api_reference.html">Community</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../experimental_api_reference.html">Experimental</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../text_splitters_api_reference.html">Text splitters</a>
+        </li>
+        <li class="nav-item dropdown nav-more-item-dropdown">
+          <a class="sk-nav-link nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Partner libs</a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+          </div>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" target="_blank" rel="noopener noreferrer" href="https://python.langchain.com/">Docs</a>
+        </li>
+      </ul>
+      <div id="searchbox" role="search">
+          <div class="searchformwrapper">
+          <form class="search" action="../../../search.html" method="get">
+            <input class="sk-search-text-input" type="text" name="q" aria-labelledby="searchlabel" />
+            <input class="sk-search-text-btn" type="submit" value="Go" />
+          </form>
+          </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="d-flex" id="sk-doc-wrapper">
+    <input type="checkbox" name="sk-toggle-checkbox" id="sk-toggle-checkbox">
+    <label id="sk-sidemenu-toggle" class="sk-btn-toggle-toc btn sk-btn-primary" for="sk-toggle-checkbox">Toggle Menu</label>
+    <div id="sk-sidebar-wrapper" class="border-right">
+      <div class="sk-sidebar-toc-wrapper">
+        <div class="btn-group w-100 mb-2" role="group" aria-label="rellinks">
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Prev</a><a href="../../index.html" role="button" class="btn sk-btn-rellink py-1" sk-rellink-tooltip="Module code">Up</a>
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Next</a>
+        </div>
+            <div class="sk-sidebar-toc">
+              
+            </div>
+      </div>
+    </div>
+    <div id="sk-page-content-wrapper">
+      <div class="sk-page-content container-fluid body px-md-3" role="main">
+        
+  <h1>Source code for langchain_community.vectorstores.lantern</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span> <span class="nn">contextlib</span>
+<span class="kn">import</span> <span class="nn">enum</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">uuid</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Any</span><span class="p">,</span>
+    <span class="n">Callable</span><span class="p">,</span>
+    <span class="n">Dict</span><span class="p">,</span>
+    <span class="n">Generator</span><span class="p">,</span>
+    <span class="n">Iterable</span><span class="p">,</span>
+    <span class="n">List</span><span class="p">,</span>
+    <span class="n">Optional</span><span class="p">,</span>
+    <span class="n">Tuple</span><span class="p">,</span>
+    <span class="n">Type</span><span class="p">,</span>
+    <span class="n">Union</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">sqlalchemy</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">delete</span><span class="p">,</span> <span class="n">func</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy.dialects.postgresql</span> <span class="kn">import</span> <span class="n">JSON</span><span class="p">,</span> <span class="n">UUID</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy.exc</span> <span class="kn">import</span> <span class="n">ProgrammingError</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy.orm</span> <span class="kn">import</span> <span class="n">Session</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy.sql</span> <span class="kn">import</span> <span class="n">quoted_name</span>
+
+<span class="kn">from</span> <span class="nn">langchain_community.vectorstores.utils</span> <span class="kn">import</span> <span class="n">maximal_marginal_relevance</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">sqlalchemy.orm</span> <span class="kn">import</span> <span class="n">declarative_base</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">sqlalchemy.ext.declarative</span> <span class="kn">import</span> <span class="n">declarative_base</span>
+
+<span class="kn">from</span> <span class="nn">langchain_core.documents</span> <span class="kn">import</span> <span class="n">Document</span>
+<span class="kn">from</span> <span class="nn">langchain_core.embeddings</span> <span class="kn">import</span> <span class="n">Embeddings</span>
+<span class="kn">from</span> <span class="nn">langchain_core.utils</span> <span class="kn">import</span> <span class="n">get_from_dict_or_env</span>
+<span class="kn">from</span> <span class="nn">langchain_core.vectorstores</span> <span class="kn">import</span> <span class="n">VectorStore</span>
+
+<span class="n">ADA_TOKEN_COUNT</span> <span class="o">=</span> <span class="mi">1536</span>
+<span class="n">_LANGCHAIN_DEFAULT_COLLECTION_NAME</span> <span class="o">=</span> <span class="s2">&quot;langchain&quot;</span>
+
+
+<span class="k">def</span> <span class="nf">_results_to_docs</span><span class="p">(</span><span class="n">docs_and_scores</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return docs from docs and scores.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">doc</span> <span class="k">for</span> <span class="n">doc</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">docs_and_scores</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="BaseEmbeddingStore"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.lantern.BaseEmbeddingStore.html#langchain_community.vectorstores.lantern.BaseEmbeddingStore">[docs]</a><span class="k">class</span> <span class="nc">BaseEmbeddingStore</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for the Lantern embedding store.&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="get_embedding_store"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.lantern.get_embedding_store.html#langchain_community.vectorstores.lantern.get_embedding_store">[docs]</a><span class="k">def</span> <span class="nf">get_embedding_store</span><span class="p">(</span>
+    <span class="n">distance_strategy</span><span class="p">:</span> <span class="n">DistanceStrategy</span><span class="p">,</span> <span class="n">collection_name</span><span class="p">:</span> <span class="nb">str</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the embedding store class.&quot;&quot;&quot;</span>
+
+    <span class="n">embedding_type</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">if</span> <span class="n">distance_strategy</span> <span class="o">==</span> <span class="n">DistanceStrategy</span><span class="o">.</span><span class="n">HAMMING</span><span class="p">:</span>
+        <span class="n">embedding_type</span> <span class="o">=</span> <span class="n">sqlalchemy</span><span class="o">.</span><span class="n">INTEGER</span>  <span class="c1"># type: ignore</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">embedding_type</span> <span class="o">=</span> <span class="n">sqlalchemy</span><span class="o">.</span><span class="n">REAL</span>  <span class="c1"># type: ignore</span>
+
+    <span class="n">DynamicBase</span> <span class="o">=</span> <span class="n">declarative_base</span><span class="p">(</span><span class="n">class_registry</span><span class="o">=</span><span class="nb">dict</span><span class="p">())</span>  <span class="c1"># type: Any</span>
+
+    <span class="k">class</span> <span class="nc">EmbeddingStore</span><span class="p">(</span><span class="n">DynamicBase</span><span class="p">,</span> <span class="n">BaseEmbeddingStore</span><span class="p">):</span>
+        <span class="n">__tablename__</span> <span class="o">=</span> <span class="n">collection_name</span>
+        <span class="n">uuid</span> <span class="o">=</span> <span class="n">sqlalchemy</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+            <span class="n">UUID</span><span class="p">(</span><span class="n">as_uuid</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span>
+        <span class="p">)</span>
+        <span class="n">__table_args__</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;extend_existing&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
+        <span class="n">document</span> <span class="o">=</span> <span class="n">sqlalchemy</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">sqlalchemy</span><span class="o">.</span><span class="n">String</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">cmetadata</span> <span class="o">=</span> <span class="n">sqlalchemy</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">JSON</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="c1"># custom_id : any user defined id</span>
+        <span class="n">custom_id</span> <span class="o">=</span> <span class="n">sqlalchemy</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">sqlalchemy</span><span class="o">.</span><span class="n">String</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">embedding</span> <span class="o">=</span> <span class="n">sqlalchemy</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">sqlalchemy</span><span class="o">.</span><span class="n">ARRAY</span><span class="p">(</span><span class="n">embedding_type</span><span class="p">))</span>  <span class="c1"># type: ignore</span>
+
+    <span class="k">return</span> <span class="n">EmbeddingStore</span></div>
+
+
+<div class="viewcode-block" id="QueryResult"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.lantern.QueryResult.html#langchain_community.vectorstores.lantern.QueryResult">[docs]</a><span class="k">class</span> <span class="nc">QueryResult</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Result from a query.&quot;&quot;&quot;</span>
+
+    <span class="n">EmbeddingStore</span><span class="p">:</span> <span class="n">BaseEmbeddingStore</span>
+    <span class="n">distance</span><span class="p">:</span> <span class="nb">float</span></div>
+
+
+<div class="viewcode-block" id="DistanceStrategy"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.lantern.DistanceStrategy.html#langchain_community.vectorstores.lantern.DistanceStrategy">[docs]</a><span class="k">class</span> <span class="nc">DistanceStrategy</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">enum</span><span class="o">.</span><span class="n">Enum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Enumerator of the Distance strategies.&quot;&quot;&quot;</span>
+
+    <span class="n">EUCLIDEAN</span> <span class="o">=</span> <span class="s2">&quot;l2sq&quot;</span>
+    <span class="n">COSINE</span> <span class="o">=</span> <span class="s2">&quot;cosine&quot;</span>
+    <span class="n">HAMMING</span> <span class="o">=</span> <span class="s2">&quot;hamming&quot;</span></div>
+
+
+<span class="n">DEFAULT_DISTANCE_STRATEGY</span> <span class="o">=</span> <span class="n">DistanceStrategy</span><span class="o">.</span><span class="n">COSINE</span>
+
+
+<div class="viewcode-block" id="Lantern"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.lantern.Lantern.html#langchain_community.vectorstores.lantern.Lantern">[docs]</a><span class="k">class</span> <span class="nc">Lantern</span><span class="p">(</span><span class="n">VectorStore</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;`Postgres` with the `lantern` extension as a vector store.</span>
+
+<span class="sd">    lantern uses sequential scan by default. but you can create a HNSW index</span>
+<span class="sd">    using the create_hnsw_index method.</span>
+<span class="sd">    - `connection_string` is a postgres connection string.</span>
+<span class="sd">    - `embedding_function` any embedding function implementing</span>
+<span class="sd">        `langchain.embeddings.base.Embeddings` interface.</span>
+<span class="sd">    - `collection_name` is the name of the collection to use. (default: langchain)</span>
+<span class="sd">        - NOTE: This is the name of the table in which embedding data will be stored</span>
+<span class="sd">            The table will be created when initializing the store (if not exists)</span>
+<span class="sd">            So, make sure the user has the right permissions to create tables.</span>
+<span class="sd">    - `distance_strategy` is the distance strategy to use. (default: EUCLIDEAN)</span>
+<span class="sd">        - `EUCLIDEAN` is the euclidean distance.</span>
+<span class="sd">        - `COSINE` is the cosine distance.</span>
+<span class="sd">        - `HAMMING` is the hamming distance.</span>
+<span class="sd">    - `pre_delete_collection` if True, will delete the collection if it exists.</span>
+<span class="sd">        (default: False)</span>
+<span class="sd">        - Useful for testing.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Lantern.__init__"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.lantern.Lantern.html#langchain_community.vectorstores.lantern.Lantern.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">connection_string</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">embedding_function</span><span class="p">:</span> <span class="n">Embeddings</span><span class="p">,</span>
+        <span class="n">distance_strategy</span><span class="p">:</span> <span class="n">DistanceStrategy</span> <span class="o">=</span> <span class="n">DEFAULT_DISTANCE_STRATEGY</span><span class="p">,</span>
+        <span class="n">collection_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_LANGCHAIN_DEFAULT_COLLECTION_NAME</span><span class="p">,</span>
+        <span class="n">collection_metadata</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">pre_delete_collection</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">logger</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">logging</span><span class="o">.</span><span class="n">Logger</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">relevance_score_fn</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">float</span><span class="p">],</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connection_string</span> <span class="o">=</span> <span class="n">connection_string</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">embedding_function</span> <span class="o">=</span> <span class="n">embedding_function</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">collection_name</span> <span class="o">=</span> <span class="n">collection_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">collection_metadata</span> <span class="o">=</span> <span class="n">collection_metadata</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_distance_strategy</span> <span class="o">=</span> <span class="n">distance_strategy</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pre_delete_collection</span> <span class="o">=</span> <span class="n">pre_delete_collection</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logger</span> <span class="ow">or</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">override_relevance_score_fn</span> <span class="o">=</span> <span class="n">relevance_score_fn</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">EmbeddingStore</span> <span class="o">=</span> <span class="n">get_embedding_store</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">distance_strategy</span><span class="p">,</span> <span class="n">collection_name</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__post_init__</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">__post_init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_conn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">create_hnsw_extension</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">create_collection</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">distance_strategy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DistanceStrategy</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_distance_strategy</span><span class="p">,</span> <span class="n">DistanceStrategy</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_distance_strategy</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_distance_strategy</span> <span class="o">==</span> <span class="n">DistanceStrategy</span><span class="o">.</span><span class="n">EUCLIDEAN</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">DistanceStrategy</span><span class="o">.</span><span class="n">EUCLIDEAN</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_distance_strategy</span> <span class="o">==</span> <span class="n">DistanceStrategy</span><span class="o">.</span><span class="n">COSINE</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">DistanceStrategy</span><span class="o">.</span><span class="n">COSINE</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_distance_strategy</span> <span class="o">==</span> <span class="n">DistanceStrategy</span><span class="o">.</span><span class="n">HAMMING</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">DistanceStrategy</span><span class="o">.</span><span class="n">HAMMING</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Got unexpected value for distance: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_distance_strategy</span><span class="si">}</span><span class="s2">. &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Should be one of </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">ds</span><span class="o">.</span><span class="n">value</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">ds</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">DistanceStrategy</span><span class="p">])</span><span class="si">}</span><span class="s2">.&quot;</span>
+            <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">embeddings</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Embeddings</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">embedding_function</span>
+
+<div class="viewcode-block" id="Lantern.connection_string_from_db_params"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.lantern.Lantern.html#langchain_community.vectorstores.lantern.Lantern.connection_string_from_db_params">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">connection_string_from_db_params</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">driver</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">host</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">port</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">database</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">user</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">password</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return connection string from database parameters.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;postgresql+</span><span class="si">{</span><span class="n">driver</span><span class="si">}</span><span class="s2">://</span><span class="si">{</span><span class="n">user</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">password</span><span class="si">}</span><span class="s2">@</span><span class="si">{</span><span class="n">host</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">port</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">database</span><span class="si">}</span><span class="s2">&quot;</span></div>
+
+<div class="viewcode-block" id="Lantern.connect"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.lantern.Lantern.html#langchain_community.vectorstores.lantern.Lantern.connect">[docs]</a>    <span class="k">def</span> <span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">sqlalchemy</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">Connection</span><span class="p">:</span>
+        <span class="n">engine</span> <span class="o">=</span> <span class="n">sqlalchemy</span><span class="o">.</span><span class="n">create_engine</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">connection_string</span><span class="p">)</span>
+        <span class="n">conn</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">conn</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">distance_function</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance_strategy</span> <span class="o">==</span> <span class="n">DistanceStrategy</span><span class="o">.</span><span class="n">EUCLIDEAN</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;l2sq_dist&quot;</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance_strategy</span> <span class="o">==</span> <span class="n">DistanceStrategy</span><span class="o">.</span><span class="n">COSINE</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;cos_dist&quot;</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance_strategy</span> <span class="o">==</span> <span class="n">DistanceStrategy</span><span class="o">.</span><span class="n">HAMMING</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;hamming_dist&quot;</span>
+
+<div class="viewcode-block" id="Lantern.create_hnsw_extension"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.lantern.Lantern.html#langchain_community.vectorstores.lantern.Lantern.create_hnsw_extension">[docs]</a>    <span class="k">def</span> <span class="nf">create_hnsw_extension</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">Session</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_conn</span><span class="p">)</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
+                <span class="n">statement</span> <span class="o">=</span> <span class="n">sqlalchemy</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="s2">&quot;CREATE EXTENSION IF NOT EXISTS lantern&quot;</span><span class="p">)</span>
+                <span class="n">session</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">statement</span><span class="p">)</span>
+                <span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">e</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Lantern.create_tables_if_not_exists"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.lantern.Lantern.html#langchain_community.vectorstores.lantern.Lantern.create_tables_if_not_exists">[docs]</a>    <span class="k">def</span> <span class="nf">create_tables_if_not_exists</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">create_collection</span><span class="p">()</span>
+        <span class="k">except</span> <span class="n">ProgrammingError</span><span class="p">:</span>
+            <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="Lantern.drop_table"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.lantern.Lantern.html#langchain_community.vectorstores.lantern.Lantern.drop_table">[docs]</a>    <span class="k">def</span> <span class="nf">drop_table</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">EmbeddingStore</span><span class="o">.</span><span class="n">__table__</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_conn</span><span class="o">.</span><span class="n">engine</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">ProgrammingError</span><span class="p">:</span>
+            <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="Lantern.drop_tables"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.lantern.Lantern.html#langchain_community.vectorstores.lantern.Lantern.drop_tables">[docs]</a>    <span class="k">def</span> <span class="nf">drop_tables</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">drop_table</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">_hamming_relevance_score_fn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">distance</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">distance</span>
+
+    <span class="k">def</span> <span class="nf">_select_relevance_score_fn</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">float</span><span class="p">],</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The &#39;correct&#39; relevance function</span>
+<span class="sd">        may differ depending on a few things, including:</span>
+<span class="sd">        - the distance / similarity metric used by the VectorStore</span>
+<span class="sd">        - the scale of your embeddings (OpenAI&#39;s are unit normed. Many others are not!)</span>
+<span class="sd">        - embedding dimensionality</span>
+<span class="sd">        - etc.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">override_relevance_score_fn</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">override_relevance_score_fn</span>
+
+        <span class="c1"># Default strategy is to rely on distance strategy provided</span>
+        <span class="c1"># in vectorstore constructor</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance_strategy</span> <span class="o">==</span> <span class="n">DistanceStrategy</span><span class="o">.</span><span class="n">COSINE</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cosine_relevance_score_fn</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance_strategy</span> <span class="o">==</span> <span class="n">DistanceStrategy</span><span class="o">.</span><span class="n">EUCLIDEAN</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_euclidean_relevance_score_fn</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance_strategy</span> <span class="o">==</span> <span class="n">DistanceStrategy</span><span class="o">.</span><span class="n">HAMMING</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hamming_relevance_score_fn</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;No supported normalization function&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot; for distance_strategy of </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_distance_strategy</span><span class="si">}</span><span class="s2">.&quot;</span>
+                <span class="s2">&quot;Consider providing relevance_score_fn to Lantern constructor.&quot;</span>
+            <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_op_class</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance_strategy</span> <span class="o">==</span> <span class="n">DistanceStrategy</span><span class="o">.</span><span class="n">COSINE</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;dist_cos_ops&quot;</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance_strategy</span> <span class="o">==</span> <span class="n">DistanceStrategy</span><span class="o">.</span><span class="n">EUCLIDEAN</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;dist_l2sq_ops&quot;</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance_strategy</span> <span class="o">==</span> <span class="n">DistanceStrategy</span><span class="o">.</span><span class="n">HAMMING</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;dist_hamming_ops&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;No supported operator class&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot; for distance_strategy of </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_distance_strategy</span><span class="si">}</span><span class="s2">.&quot;</span>
+            <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_operator</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance_strategy</span> <span class="o">==</span> <span class="n">DistanceStrategy</span><span class="o">.</span><span class="n">COSINE</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;&lt;=&gt;&quot;</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance_strategy</span> <span class="o">==</span> <span class="n">DistanceStrategy</span><span class="o">.</span><span class="n">EUCLIDEAN</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;&lt;-&gt;&quot;</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance_strategy</span> <span class="o">==</span> <span class="n">DistanceStrategy</span><span class="o">.</span><span class="n">HAMMING</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;&lt;+&gt;&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;No supported operator&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot; for distance_strategy of </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_distance_strategy</span><span class="si">}</span><span class="s2">.&quot;</span>
+            <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_typed_arg_for_distance</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">embedding</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance_strategy</span> <span class="o">==</span> <span class="n">DistanceStrategy</span><span class="o">.</span><span class="n">HAMMING</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">embedding</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">embedding</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_index_name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;langchain_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">collection_name</span><span class="si">}</span><span class="s2">_idx&quot;</span>
+
+<div class="viewcode-block" id="Lantern.create_hnsw_index"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.lantern.Lantern.html#langchain_community.vectorstores.lantern.Lantern.create_hnsw_index">[docs]</a>    <span class="k">def</span> <span class="nf">create_hnsw_index</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">dims</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">ADA_TOKEN_COUNT</span><span class="p">,</span>
+        <span class="n">m</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">16</span><span class="p">,</span>
+        <span class="n">ef_construction</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">64</span><span class="p">,</span>
+        <span class="n">ef_search</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">64</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">_kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create HNSW index on collection.</span>
+
+<span class="sd">        Optional Keyword Args for HNSW Index:</span>
+<span class="sd">            engine: &quot;nmslib&quot;, &quot;faiss&quot;, &quot;lucene&quot;; default: &quot;nmslib&quot;</span>
+
+<span class="sd">            ef: Size of the dynamic list used during k-NN searches. Higher values</span>
+<span class="sd">            lead to more accurate but slower searches; default: 64</span>
+
+<span class="sd">            ef_construction: Size of the dynamic list used during k-NN graph creation.</span>
+<span class="sd">            Higher values lead to more accurate graph but slower indexing speed;</span>
+<span class="sd">            default: 64</span>
+
+<span class="sd">            m: Number of bidirectional links created for each new element. Large impact</span>
+<span class="sd">            on memory consumption. Between 2 and 100; default: 16</span>
+
+<span class="sd">            dims: Dimensions of the vectors in collection. default: 1536</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">create_index_query</span> <span class="o">=</span> <span class="n">sqlalchemy</span><span class="o">.</span><span class="n">text</span><span class="p">(</span>
+            <span class="s2">&quot;CREATE INDEX IF NOT EXISTS </span><span class="si">{}</span><span class="s2"> &quot;</span>
+            <span class="s2">&quot;ON </span><span class="si">{}</span><span class="s2"> USING hnsw (embedding </span><span class="si">{}</span><span class="s2">) &quot;</span>
+            <span class="s2">&quot;WITH (&quot;</span>
+            <span class="s2">&quot;dim = :dim, &quot;</span>
+            <span class="s2">&quot;m = :m, &quot;</span>
+            <span class="s2">&quot;ef_construction = :ef_construction, &quot;</span>
+            <span class="s2">&quot;ef = :ef&quot;</span>
+            <span class="s2">&quot;);&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">quoted_name</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_index_name</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span>
+                <span class="n">quoted_name</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">collection_name</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_get_op_class</span><span class="p">(),</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="k">with</span> <span class="n">Session</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_conn</span><span class="p">)</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
+            <span class="c1"># Create the HNSW index</span>
+            <span class="n">session</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                <span class="n">create_index_query</span><span class="p">,</span>
+                <span class="p">{</span>
+                    <span class="s2">&quot;dim&quot;</span><span class="p">:</span> <span class="n">dims</span><span class="p">,</span>
+                    <span class="s2">&quot;m&quot;</span><span class="p">:</span> <span class="n">m</span><span class="p">,</span>
+                    <span class="s2">&quot;ef_construction&quot;</span><span class="p">:</span> <span class="n">ef_construction</span><span class="p">,</span>
+                    <span class="s2">&quot;ef&quot;</span><span class="p">:</span> <span class="n">ef_search</span><span class="p">,</span>
+                <span class="p">},</span>
+            <span class="p">)</span>
+            <span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;HNSW extension and index created successfully.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Lantern.drop_index"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.lantern.Lantern.html#langchain_community.vectorstores.lantern.Lantern.drop_index">[docs]</a>    <span class="k">def</span> <span class="nf">drop_index</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">Session</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_conn</span><span class="p">)</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
+            <span class="c1"># Drop the HNSW index</span>
+            <span class="n">session</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                <span class="n">sqlalchemy</span><span class="o">.</span><span class="n">text</span><span class="p">(</span>
+                    <span class="s2">&quot;DROP INDEX IF EXISTS </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                        <span class="n">quoted_name</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_index_name</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Lantern.create_collection"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.lantern.Lantern.html#langchain_community.vectorstores.lantern.Lantern.create_collection">[docs]</a>    <span class="k">def</span> <span class="nf">create_collection</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pre_delete_collection</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">delete_collection</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">drop_table</span><span class="p">()</span>
+
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_conn</span><span class="o">.</span><span class="n">begin</span><span class="p">():</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">EmbeddingStore</span><span class="o">.</span><span class="n">__table__</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_conn</span><span class="o">.</span><span class="n">engine</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">ProgrammingError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="c1"># Duplicate table</span>
+                <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">code</span> <span class="o">==</span> <span class="s2">&quot;f405&quot;</span><span class="p">:</span>
+                    <span class="k">pass</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">e</span></div>
+
+<div class="viewcode-block" id="Lantern.delete_collection"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.lantern.Lantern.html#langchain_community.vectorstores.lantern.Lantern.delete_collection">[docs]</a>    <span class="k">def</span> <span class="nf">delete_collection</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Trying to delete collection&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">drop_table</span><span class="p">()</span></div>
+
+    <span class="nd">@contextlib</span><span class="o">.</span><span class="n">contextmanager</span>
+    <span class="k">def</span> <span class="nf">_make_session</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">Session</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a context manager for the session, bind to _conn string.&quot;&quot;&quot;</span>
+        <span class="k">yield</span> <span class="n">Session</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_conn</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Lantern.delete"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.lantern.Lantern.html#langchain_community.vectorstores.lantern.Lantern.delete">[docs]</a>    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">ids</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Delete vectors by ids or uuids.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            ids: List of ids to delete.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="n">Session</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_conn</span><span class="p">)</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">ids</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                    <span class="s2">&quot;Trying to delete vectors by ids (represented by the model &quot;</span>
+                    <span class="s2">&quot;using the custom ids field)&quot;</span>
+                <span class="p">)</span>
+                <span class="n">stmt</span> <span class="o">=</span> <span class="n">delete</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">EmbeddingStore</span><span class="p">)</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">EmbeddingStore</span><span class="o">.</span><span class="n">custom_id</span><span class="o">.</span><span class="n">in_</span><span class="p">(</span><span class="n">ids</span><span class="p">)</span>
+                <span class="p">)</span>
+                <span class="n">session</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">stmt</span><span class="p">)</span>
+            <span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span></div>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_initialize_from_embeddings</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">texts</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">embeddings</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]],</span>
+        <span class="n">embedding</span><span class="p">:</span> <span class="n">Embeddings</span><span class="p">,</span>
+        <span class="n">metadatas</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">ids</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">collection_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_LANGCHAIN_DEFAULT_COLLECTION_NAME</span><span class="p">,</span>
+        <span class="n">distance_strategy</span><span class="p">:</span> <span class="n">DistanceStrategy</span> <span class="o">=</span> <span class="n">DEFAULT_DISTANCE_STRATEGY</span><span class="p">,</span>
+        <span class="n">pre_delete_collection</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Lantern</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Order of elements for lists `ids`, `embeddings`, `texts`, `metadatas`</span>
+<span class="sd">        should match, so each row will be associated with correct values.</span>
+
+<span class="sd">        Postgres connection string is required</span>
+<span class="sd">        &quot;Either pass it as `connection_string` parameter</span>
+<span class="sd">        or set the LANTERN_CONNECTION_STRING environment variable.</span>
+
+<span class="sd">        - `texts` texts to insert into collection.</span>
+<span class="sd">        - `embeddings` an Embeddings to insert into collection</span>
+<span class="sd">        - `embedding` is :class:`Embeddings` that will be used for</span>
+<span class="sd">                embedding the text sent. If none is sent, then the</span>
+<span class="sd">                multilingual Tensorflow Universal Sentence Encoder will be used.</span>
+<span class="sd">        - `metadatas` row metadata to insert into collection.</span>
+<span class="sd">        - `ids` row ids to insert into collection.</span>
+<span class="sd">        - `collection_name` is the name of the collection to use. (default: langchain)</span>
+<span class="sd">            - NOTE: This is the name of the table in which embedding data will be stored</span>
+<span class="sd">                The table will be created when initializing the store (if not exists)</span>
+<span class="sd">                So, make sure the user has the right permissions to create tables.</span>
+<span class="sd">        - `distance_strategy` is the distance strategy to use. (default: EUCLIDEAN)</span>
+<span class="sd">            - `EUCLIDEAN` is the euclidean distance.</span>
+<span class="sd">            - `COSINE` is the cosine distance.</span>
+<span class="sd">            - `HAMMING` is the hamming distance.</span>
+<span class="sd">        - `pre_delete_collection` if True, will delete the collection if it exists.</span>
+<span class="sd">            (default: False)</span>
+<span class="sd">            - Useful for testing.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">ids</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ids</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid1</span><span class="p">())</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">texts</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">metadatas</span><span class="p">:</span>
+            <span class="n">metadatas</span> <span class="o">=</span> <span class="p">[{}</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">texts</span><span class="p">]</span>
+
+        <span class="n">connection_string</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__get_connection_string</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="n">store</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="n">connection_string</span><span class="o">=</span><span class="n">connection_string</span><span class="p">,</span>
+            <span class="n">collection_name</span><span class="o">=</span><span class="n">collection_name</span><span class="p">,</span>
+            <span class="n">embedding_function</span><span class="o">=</span><span class="n">embedding</span><span class="p">,</span>
+            <span class="n">pre_delete_collection</span><span class="o">=</span><span class="n">pre_delete_collection</span><span class="p">,</span>
+            <span class="n">distance_strategy</span><span class="o">=</span><span class="n">distance_strategy</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">store</span><span class="o">.</span><span class="n">add_embeddings</span><span class="p">(</span>
+            <span class="n">texts</span><span class="o">=</span><span class="n">texts</span><span class="p">,</span> <span class="n">embeddings</span><span class="o">=</span><span class="n">embeddings</span><span class="p">,</span> <span class="n">metadatas</span><span class="o">=</span><span class="n">metadatas</span><span class="p">,</span> <span class="n">ids</span><span class="o">=</span><span class="n">ids</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span>
+
+        <span class="n">store</span><span class="o">.</span><span class="n">create_hnsw_index</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">store</span>
+
+<div class="viewcode-block" id="Lantern.add_embeddings"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.lantern.Lantern.html#langchain_community.vectorstores.lantern.Lantern.add_embeddings">[docs]</a>    <span class="k">def</span> <span class="nf">add_embeddings</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">texts</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">embeddings</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]],</span>
+        <span class="n">metadatas</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">],</span>
+        <span class="n">ids</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">Session</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_conn</span><span class="p">)</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">text</span><span class="p">,</span> <span class="n">metadata</span><span class="p">,</span> <span class="n">embedding</span><span class="p">,</span> <span class="nb">id</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">texts</span><span class="p">,</span> <span class="n">metadatas</span><span class="p">,</span> <span class="n">embeddings</span><span class="p">,</span> <span class="n">ids</span><span class="p">):</span>
+                <span class="n">embedding_store</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">EmbeddingStore</span><span class="p">(</span>
+                    <span class="n">embedding</span><span class="o">=</span><span class="n">embedding</span><span class="p">,</span>
+                    <span class="n">document</span><span class="o">=</span><span class="n">text</span><span class="p">,</span>
+                    <span class="n">cmetadata</span><span class="o">=</span><span class="n">metadata</span><span class="p">,</span>
+                    <span class="n">custom_id</span><span class="o">=</span><span class="nb">id</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">embedding_store</span><span class="p">)</span>
+            <span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Lantern.add_texts"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.lantern.Lantern.html#langchain_community.vectorstores.lantern.Lantern.add_texts">[docs]</a>    <span class="k">def</span> <span class="nf">add_texts</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">texts</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">metadatas</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">ids</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="n">ids</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ids</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">())</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">texts</span><span class="p">]</span>
+
+        <span class="n">embeddings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">embedding_function</span><span class="o">.</span><span class="n">embed_documents</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">texts</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">metadatas</span><span class="p">:</span>
+            <span class="n">metadatas</span> <span class="o">=</span> <span class="p">[{}</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">texts</span><span class="p">]</span>
+
+        <span class="k">with</span> <span class="n">Session</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_conn</span><span class="p">)</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">text</span><span class="p">,</span> <span class="n">metadata</span><span class="p">,</span> <span class="n">embedding</span><span class="p">,</span> <span class="nb">id</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">texts</span><span class="p">,</span> <span class="n">metadatas</span><span class="p">,</span> <span class="n">embeddings</span><span class="p">,</span> <span class="n">ids</span><span class="p">):</span>
+                <span class="n">embedding_store</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">EmbeddingStore</span><span class="p">(</span>
+                    <span class="n">embedding</span><span class="o">=</span><span class="n">embedding</span><span class="p">,</span>
+                    <span class="n">document</span><span class="o">=</span><span class="n">text</span><span class="p">,</span>
+                    <span class="n">cmetadata</span><span class="o">=</span><span class="n">metadata</span><span class="p">,</span>
+                    <span class="n">custom_id</span><span class="o">=</span><span class="nb">id</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">embedding_store</span><span class="p">)</span>
+            <span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">ids</span></div>
+
+    <span class="k">def</span> <span class="nf">_results_to_docs_and_scores</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">results</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Document</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return docs and scores from results.&quot;&quot;&quot;</span>
+        <span class="n">docs</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">(</span>
+                <span class="n">Document</span><span class="p">(</span>
+                    <span class="n">page_content</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">EmbeddingStore</span><span class="o">.</span><span class="n">document</span><span class="p">,</span>
+                    <span class="n">metadata</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">EmbeddingStore</span><span class="o">.</span><span class="n">cmetadata</span><span class="p">,</span>
+                <span class="p">),</span>
+                <span class="n">result</span><span class="o">.</span><span class="n">distance</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">embedding_function</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">results</span>
+        <span class="p">]</span>
+        <span class="k">return</span> <span class="n">docs</span>
+
+<div class="viewcode-block" id="Lantern.similarity_search"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.lantern.Lantern.html#langchain_community.vectorstores.lantern.Lantern.similarity_search">[docs]</a>    <span class="k">def</span> <span class="nf">similarity_search</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+        <span class="nb">filter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">]:</span>
+        <span class="n">embedding</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">embedding_function</span><span class="o">.</span><span class="n">embed_query</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="n">query</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">similarity_search_by_vector</span><span class="p">(</span>
+            <span class="n">embedding</span><span class="o">=</span><span class="n">embedding</span><span class="p">,</span>
+            <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span>
+            <span class="nb">filter</span><span class="o">=</span><span class="nb">filter</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Lantern.similarity_search_with_score"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.lantern.Lantern.html#langchain_community.vectorstores.lantern.Lantern.similarity_search_with_score">[docs]</a>    <span class="k">def</span> <span class="nf">similarity_search_with_score</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+        <span class="nb">filter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Document</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]:</span>
+        <span class="n">embedding</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">embedding_function</span><span class="o">.</span><span class="n">embed_query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+        <span class="n">docs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">similarity_search_with_score_by_vector</span><span class="p">(</span>
+            <span class="n">embedding</span><span class="o">=</span><span class="n">embedding</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="nb">filter</span><span class="o">=</span><span class="nb">filter</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">docs</span></div>
+
+<div class="viewcode-block" id="Lantern.similarity_search_with_score_by_vector"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.lantern.Lantern.html#langchain_community.vectorstores.lantern.Lantern.similarity_search_with_score_by_vector">[docs]</a>    <span class="k">def</span> <span class="nf">similarity_search_with_score_by_vector</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">embedding</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+        <span class="n">k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+        <span class="nb">filter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Document</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]:</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__query_collection</span><span class="p">(</span><span class="n">embedding</span><span class="o">=</span><span class="n">embedding</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="nb">filter</span><span class="o">=</span><span class="nb">filter</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_results_to_docs_and_scores</span><span class="p">(</span><span class="n">results</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">__query_collection</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">embedding</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+        <span class="n">k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+        <span class="nb">filter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">]:</span>
+        <span class="k">with</span> <span class="n">Session</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_conn</span><span class="p">)</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
+            <span class="n">set_enable_seqscan_stmt</span> <span class="o">=</span> <span class="n">sqlalchemy</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="s2">&quot;SET enable_seqscan = off&quot;</span><span class="p">)</span>
+            <span class="n">set_init_k</span> <span class="o">=</span> <span class="n">sqlalchemy</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="s2">&quot;SET hnsw.init_k = :k&quot;</span><span class="p">)</span>
+            <span class="n">session</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">set_enable_seqscan_stmt</span><span class="p">)</span>
+            <span class="n">session</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">set_init_k</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;k&quot;</span><span class="p">:</span> <span class="n">k</span><span class="p">})</span>
+
+            <span class="n">filter_by</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="nb">filter</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">filter_clauses</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">filter</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="n">IN</span> <span class="o">=</span> <span class="s2">&quot;in&quot;</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="n">IN</span> <span class="ow">in</span> <span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="o">.</span><span class="n">lower</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+                        <span class="n">value_case_insensitive</span> <span class="o">=</span> <span class="p">{</span>
+                            <span class="n">k</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">value</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+                        <span class="p">}</span>
+                        <span class="n">filter_by_metadata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">EmbeddingStore</span><span class="o">.</span><span class="n">cmetadata</span><span class="p">[</span>
+                            <span class="n">key</span>
+                        <span class="p">]</span><span class="o">.</span><span class="n">astext</span><span class="o">.</span><span class="n">in_</span><span class="p">(</span><span class="n">value_case_insensitive</span><span class="p">[</span><span class="n">IN</span><span class="p">])</span>
+                        <span class="n">filter_clauses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">filter_by_metadata</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">filter_by_metadata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">EmbeddingStore</span><span class="o">.</span><span class="n">cmetadata</span><span class="p">[</span>
+                            <span class="n">key</span>
+                        <span class="p">]</span><span class="o">.</span><span class="n">astext</span> <span class="o">==</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                        <span class="n">filter_clauses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">filter_by_metadata</span><span class="p">)</span>
+
+                <span class="n">filter_by</span> <span class="o">=</span> <span class="n">sqlalchemy</span><span class="o">.</span><span class="n">and_</span><span class="p">(</span><span class="o">*</span><span class="n">filter_clauses</span><span class="p">)</span>
+
+            <span class="n">embedding</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_typed_arg_for_distance</span><span class="p">(</span><span class="n">embedding</span><span class="p">)</span>
+            <span class="n">query</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">EmbeddingStore</span><span class="p">,</span>
+                <span class="nb">getattr</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance_function</span><span class="p">)(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">EmbeddingStore</span><span class="o">.</span><span class="n">embedding</span><span class="p">,</span> <span class="n">embedding</span>
+                <span class="p">)</span><span class="o">.</span><span class="n">label</span><span class="p">(</span><span class="s2">&quot;distance&quot;</span><span class="p">),</span>
+            <span class="p">)</span>  <span class="c1"># Specify the columns you need here, e.g., EmbeddingStore.embedding</span>
+
+            <span class="k">if</span> <span class="n">filter_by</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">query</span> <span class="o">=</span> <span class="n">query</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">filter_by</span><span class="p">)</span>
+
+            <span class="n">results</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">QueryResult</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">query</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">EmbeddingStore</span><span class="o">.</span><span class="n">embedding</span><span class="o">.</span><span class="n">op</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_operator</span><span class="p">())(</span><span class="n">embedding</span><span class="p">)</span>
+                <span class="p">)</span>  <span class="c1"># Using PostgreSQL specific operator with the correct column name</span>
+                <span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">all</span><span class="p">()</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">results</span>
+
+<div class="viewcode-block" id="Lantern.similarity_search_by_vector"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.lantern.Lantern.html#langchain_community.vectorstores.lantern.Lantern.similarity_search_by_vector">[docs]</a>    <span class="k">def</span> <span class="nf">similarity_search_by_vector</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">embedding</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+        <span class="n">k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+        <span class="nb">filter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">]:</span>
+        <span class="n">docs_and_scores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">similarity_search_with_score_by_vector</span><span class="p">(</span>
+            <span class="n">embedding</span><span class="o">=</span><span class="n">embedding</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="nb">filter</span><span class="o">=</span><span class="nb">filter</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">_results_to_docs</span><span class="p">(</span><span class="n">docs_and_scores</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Lantern.from_texts"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.lantern.Lantern.html#langchain_community.vectorstores.lantern.Lantern.from_texts">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_texts</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">Lantern</span><span class="p">],</span>
+        <span class="n">texts</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">embedding</span><span class="p">:</span> <span class="n">Embeddings</span><span class="p">,</span>
+        <span class="n">metadatas</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">collection_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_LANGCHAIN_DEFAULT_COLLECTION_NAME</span><span class="p">,</span>
+        <span class="n">distance_strategy</span><span class="p">:</span> <span class="n">DistanceStrategy</span> <span class="o">=</span> <span class="n">DEFAULT_DISTANCE_STRATEGY</span><span class="p">,</span>
+        <span class="n">ids</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">pre_delete_collection</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Lantern</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize Lantern vectorstore from list of texts.</span>
+<span class="sd">        The embeddings will be generated using `embedding` class provided.</span>
+
+<span class="sd">        Order of elements for lists `ids`, `texts`, `metadatas` should match,</span>
+<span class="sd">        so each row will be associated with correct values.</span>
+
+<span class="sd">        Postgres connection string is required</span>
+<span class="sd">        &quot;Either pass it as `connection_string` parameter</span>
+<span class="sd">        or set the LANTERN_CONNECTION_STRING environment variable.</span>
+
+<span class="sd">        - `connection_string` is fully populated connection string for postgres database</span>
+<span class="sd">        - `texts` texts to insert into collection.</span>
+<span class="sd">        - `embedding` is :class:`Embeddings` that will be used for</span>
+<span class="sd">                embedding the text sent. If none is sent, then the</span>
+<span class="sd">                multilingual Tensorflow Universal Sentence Encoder will be used.</span>
+<span class="sd">        - `metadatas` row metadata to insert into collection.</span>
+<span class="sd">        - `collection_name` is the name of the collection to use. (default: langchain)</span>
+<span class="sd">            - NOTE: This is the name of the table in which embedding data will be stored</span>
+<span class="sd">                The table will be created when initializing the store (if not exists)</span>
+<span class="sd">                So, make sure the user has the right permissions to create tables.</span>
+<span class="sd">        - `distance_strategy` is the distance strategy to use. (default: EUCLIDEAN)</span>
+<span class="sd">            - `EUCLIDEAN` is the euclidean distance.</span>
+<span class="sd">            - `COSINE` is the cosine distance.</span>
+<span class="sd">            - `HAMMING` is the hamming distance.</span>
+<span class="sd">        - `ids` row ids to insert into collection.</span>
+<span class="sd">        - `pre_delete_collection` if True, will delete the collection if it exists.</span>
+<span class="sd">            (default: False)</span>
+<span class="sd">            - Useful for testing.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">embeddings</span> <span class="o">=</span> <span class="n">embedding</span><span class="o">.</span><span class="n">embed_documents</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">texts</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_initialize_from_embeddings</span><span class="p">(</span>
+            <span class="n">texts</span><span class="p">,</span>
+            <span class="n">embeddings</span><span class="p">,</span>
+            <span class="n">embedding</span><span class="p">,</span>
+            <span class="n">metadatas</span><span class="o">=</span><span class="n">metadatas</span><span class="p">,</span>
+            <span class="n">ids</span><span class="o">=</span><span class="n">ids</span><span class="p">,</span>
+            <span class="n">collection_name</span><span class="o">=</span><span class="n">collection_name</span><span class="p">,</span>
+            <span class="n">pre_delete_collection</span><span class="o">=</span><span class="n">pre_delete_collection</span><span class="p">,</span>
+            <span class="n">distance_strategy</span><span class="o">=</span><span class="n">distance_strategy</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Lantern.from_embeddings"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.lantern.Lantern.html#langchain_community.vectorstores.lantern.Lantern.from_embeddings">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_embeddings</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">text_embeddings</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]],</span>
+        <span class="n">embedding</span><span class="p">:</span> <span class="n">Embeddings</span><span class="p">,</span>
+        <span class="n">metadatas</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">collection_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_LANGCHAIN_DEFAULT_COLLECTION_NAME</span><span class="p">,</span>
+        <span class="n">ids</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">pre_delete_collection</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">distance_strategy</span><span class="p">:</span> <span class="n">DistanceStrategy</span> <span class="o">=</span> <span class="n">DEFAULT_DISTANCE_STRATEGY</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Lantern</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct Lantern wrapper from raw documents and pre-</span>
+<span class="sd">        generated embeddings.</span>
+
+<span class="sd">        Postgres connection string is required</span>
+<span class="sd">        &quot;Either pass it as `connection_string` parameter</span>
+<span class="sd">        or set the LANTERN_CONNECTION_STRING environment variable.</span>
+
+<span class="sd">        Order of elements for lists `ids`, `text_embeddings`, `metadatas` should match,</span>
+<span class="sd">        so each row will be associated with correct values.</span>
+
+<span class="sd">        - `connection_string` is fully populated connection string for postgres database</span>
+<span class="sd">        - `text_embeddings` is array with tuples (text, embedding)</span>
+<span class="sd">                to insert into collection.</span>
+<span class="sd">        - `embedding` is :class:`Embeddings` that will be used for</span>
+<span class="sd">                embedding the text sent. If none is sent, then the</span>
+<span class="sd">                multilingual Tensorflow Universal Sentence Encoder will be used.</span>
+<span class="sd">        - `metadatas` row metadata to insert into collection.</span>
+<span class="sd">        - `collection_name` is the name of the collection to use. (default: langchain)</span>
+<span class="sd">            - NOTE: This is the name of the table in which embedding data will be stored</span>
+<span class="sd">                The table will be created when initializing the store (if not exists)</span>
+<span class="sd">                So, make sure the user has the right permissions to create tables.</span>
+<span class="sd">        - `ids` row ids to insert into collection.</span>
+<span class="sd">        - `pre_delete_collection` if True, will delete the collection if it exists.</span>
+<span class="sd">            (default: False)</span>
+<span class="sd">            - Useful for testing.</span>
+<span class="sd">        - `distance_strategy` is the distance strategy to use. (default: EUCLIDEAN)</span>
+<span class="sd">            - `EUCLIDEAN` is the euclidean distance.</span>
+<span class="sd">            - `COSINE` is the cosine distance.</span>
+<span class="sd">            - `HAMMING` is the hamming distance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">texts</span> <span class="o">=</span> <span class="p">[</span><span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">text_embeddings</span><span class="p">]</span>
+        <span class="n">embeddings</span> <span class="o">=</span> <span class="p">[</span><span class="n">t</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">text_embeddings</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_initialize_from_embeddings</span><span class="p">(</span>
+            <span class="n">texts</span><span class="p">,</span>
+            <span class="n">embeddings</span><span class="p">,</span>
+            <span class="n">embedding</span><span class="p">,</span>
+            <span class="n">metadatas</span><span class="o">=</span><span class="n">metadatas</span><span class="p">,</span>
+            <span class="n">ids</span><span class="o">=</span><span class="n">ids</span><span class="p">,</span>
+            <span class="n">collection_name</span><span class="o">=</span><span class="n">collection_name</span><span class="p">,</span>
+            <span class="n">pre_delete_collection</span><span class="o">=</span><span class="n">pre_delete_collection</span><span class="p">,</span>
+            <span class="n">distance_strategy</span><span class="o">=</span><span class="n">distance_strategy</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Lantern.from_existing_index"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.lantern.Lantern.html#langchain_community.vectorstores.lantern.Lantern.from_existing_index">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_existing_index</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">Lantern</span><span class="p">],</span>
+        <span class="n">embedding</span><span class="p">:</span> <span class="n">Embeddings</span><span class="p">,</span>
+        <span class="n">collection_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_LANGCHAIN_DEFAULT_COLLECTION_NAME</span><span class="p">,</span>
+        <span class="n">pre_delete_collection</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">distance_strategy</span><span class="p">:</span> <span class="n">DistanceStrategy</span> <span class="o">=</span> <span class="n">DEFAULT_DISTANCE_STRATEGY</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Lantern</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get instance of an existing Lantern store.This method will</span>
+<span class="sd">        return the instance of the store without inserting any new</span>
+<span class="sd">        embeddings</span>
+
+<span class="sd">        Postgres connection string is required</span>
+<span class="sd">        &quot;Either pass it as `connection_string` parameter</span>
+<span class="sd">        or set the LANTERN_CONNECTION_STRING environment variable.</span>
+
+<span class="sd">        - `connection_string` is a postgres connection string.</span>
+<span class="sd">        - `embedding` is :class:`Embeddings` that will be used for</span>
+<span class="sd">                embedding the text sent. If none is sent, then the</span>
+<span class="sd">                multilingual Tensorflow Universal Sentence Encoder will be used.</span>
+<span class="sd">        - `collection_name` is the name of the collection to use. (default: langchain)</span>
+<span class="sd">            - NOTE: This is the name of the table in which embedding data will be stored</span>
+<span class="sd">                The table will be created when initializing the store (if not exists)</span>
+<span class="sd">                So, make sure the user has the right permissions to create tables.</span>
+<span class="sd">        - `ids` row ids to insert into collection.</span>
+<span class="sd">        - `pre_delete_collection` if True, will delete the collection if it exists.</span>
+<span class="sd">            (default: False)</span>
+<span class="sd">            - Useful for testing.</span>
+<span class="sd">        - `distance_strategy` is the distance strategy to use. (default: EUCLIDEAN)</span>
+<span class="sd">            - `EUCLIDEAN` is the euclidean distance.</span>
+<span class="sd">            - `COSINE` is the cosine distance.</span>
+<span class="sd">            - `HAMMING` is the hamming distance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">connection_string</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__get_connection_string</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="n">store</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="n">connection_string</span><span class="o">=</span><span class="n">connection_string</span><span class="p">,</span>
+            <span class="n">collection_name</span><span class="o">=</span><span class="n">collection_name</span><span class="p">,</span>
+            <span class="n">embedding_function</span><span class="o">=</span><span class="n">embedding</span><span class="p">,</span>
+            <span class="n">pre_delete_collection</span><span class="o">=</span><span class="n">pre_delete_collection</span><span class="p">,</span>
+            <span class="n">distance_strategy</span><span class="o">=</span><span class="n">distance_strategy</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">store</span></div>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">__get_connection_string</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">connection_string</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">get_from_dict_or_env</span><span class="p">(</span>
+            <span class="n">data</span><span class="o">=</span><span class="n">kwargs</span><span class="p">,</span>
+            <span class="n">key</span><span class="o">=</span><span class="s2">&quot;connection_string&quot;</span><span class="p">,</span>
+            <span class="n">env_key</span><span class="o">=</span><span class="s2">&quot;LANTERN_CONNECTION_STRING&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">connection_string</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Postgres connection string is required&quot;</span>
+                <span class="s2">&quot;Either pass it as `connection_string` parameter&quot;</span>
+                <span class="s2">&quot;or set the LANTERN_CONNECTION_STRING variable.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">connection_string</span>
+
+<div class="viewcode-block" id="Lantern.from_documents"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.lantern.Lantern.html#langchain_community.vectorstores.lantern.Lantern.from_documents">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_documents</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">Lantern</span><span class="p">],</span>
+        <span class="n">documents</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">],</span>
+        <span class="n">embedding</span><span class="p">:</span> <span class="n">Embeddings</span><span class="p">,</span>
+        <span class="n">collection_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_LANGCHAIN_DEFAULT_COLLECTION_NAME</span><span class="p">,</span>
+        <span class="n">distance_strategy</span><span class="p">:</span> <span class="n">DistanceStrategy</span> <span class="o">=</span> <span class="n">DEFAULT_DISTANCE_STRATEGY</span><span class="p">,</span>
+        <span class="n">ids</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">pre_delete_collection</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Lantern</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize a vector store with a set of documents.</span>
+
+<span class="sd">        Postgres connection string is required</span>
+<span class="sd">        &quot;Either pass it as `connection_string` parameter</span>
+<span class="sd">        or set the LANTERN_CONNECTION_STRING environment variable.</span>
+
+<span class="sd">        - `connection_string` is a postgres connection string.</span>
+<span class="sd">        - `documents` is list of :class:`Document` to initialize the vector store with</span>
+<span class="sd">        - `embedding` is :class:`Embeddings` that will be used for</span>
+<span class="sd">                embedding the text sent. If none is sent, then the</span>
+<span class="sd">                multilingual Tensorflow Universal Sentence Encoder will be used.</span>
+<span class="sd">        - `collection_name` is the name of the collection to use. (default: langchain)</span>
+<span class="sd">            - NOTE: This is the name of the table in which embedding data will be stored</span>
+<span class="sd">                The table will be created when initializing the store (if not exists)</span>
+<span class="sd">                So, make sure the user has the right permissions to create tables.</span>
+<span class="sd">        - `distance_strategy` is the distance strategy to use. (default: EUCLIDEAN)</span>
+<span class="sd">            - `EUCLIDEAN` is the euclidean distance.</span>
+<span class="sd">            - `COSINE` is the cosine distance.</span>
+<span class="sd">            - `HAMMING` is the hamming distance.</span>
+<span class="sd">        - `ids` row ids to insert into collection.</span>
+<span class="sd">        - `pre_delete_collection` if True, will delete the collection if it exists.</span>
+<span class="sd">            (default: False)</span>
+<span class="sd">            - Useful for testing.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">texts</span> <span class="o">=</span> <span class="p">[</span><span class="n">d</span><span class="o">.</span><span class="n">page_content</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">documents</span><span class="p">]</span>
+        <span class="n">metadatas</span> <span class="o">=</span> <span class="p">[</span><span class="n">d</span><span class="o">.</span><span class="n">metadata</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">documents</span><span class="p">]</span>
+        <span class="n">connection_string</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__get_connection_string</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;connection_string&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">connection_string</span>
+
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">from_texts</span><span class="p">(</span>
+            <span class="n">texts</span><span class="o">=</span><span class="n">texts</span><span class="p">,</span>
+            <span class="n">pre_delete_collection</span><span class="o">=</span><span class="n">pre_delete_collection</span><span class="p">,</span>
+            <span class="n">embedding</span><span class="o">=</span><span class="n">embedding</span><span class="p">,</span>
+            <span class="n">metadatas</span><span class="o">=</span><span class="n">metadatas</span><span class="p">,</span>
+            <span class="n">ids</span><span class="o">=</span><span class="n">ids</span><span class="p">,</span>
+            <span class="n">collection_name</span><span class="o">=</span><span class="n">collection_name</span><span class="p">,</span>
+            <span class="n">distance_strategy</span><span class="o">=</span><span class="n">distance_strategy</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Lantern.max_marginal_relevance_search_with_score_by_vector"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.lantern.Lantern.html#langchain_community.vectorstores.lantern.Lantern.max_marginal_relevance_search_with_score_by_vector">[docs]</a>    <span class="k">def</span> <span class="nf">max_marginal_relevance_search_with_score_by_vector</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">embedding</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+        <span class="n">k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+        <span class="n">fetch_k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span>
+        <span class="n">lambda_mult</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
+        <span class="nb">filter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Document</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return docs selected using the maximal marginal relevance with score</span>
+<span class="sd">            to embedding vector.</span>
+
+<span class="sd">        Maximal marginal relevance optimizes for similarity to query AND diversity</span>
+<span class="sd">            among selected documents.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            embedding: Embedding to look up documents similar to.</span>
+<span class="sd">            k (int): Number of Documents to return. Defaults to 4.</span>
+<span class="sd">            fetch_k (int): Number of Documents to fetch to pass to MMR algorithm.</span>
+<span class="sd">                Defaults to 20.</span>
+<span class="sd">            lambda_mult (float): Number between 0 and 1 that determines the degree</span>
+<span class="sd">                of diversity among the results with 0 corresponding</span>
+<span class="sd">                to maximum diversity and 1 to minimum diversity.</span>
+<span class="sd">                Defaults to 0.5.</span>
+<span class="sd">            filter (Optional[Dict[str, str]]): Filter by metadata. Defaults to None.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List[Tuple[Document, float]]: List of Documents selected by maximal marginal</span>
+<span class="sd">                relevance to the query and score for each.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__query_collection</span><span class="p">(</span><span class="n">embedding</span><span class="o">=</span><span class="n">embedding</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">fetch_k</span><span class="p">,</span> <span class="nb">filter</span><span class="o">=</span><span class="nb">filter</span><span class="p">)</span>
+        <span class="n">embedding_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">result</span><span class="o">.</span><span class="n">EmbeddingStore</span><span class="o">.</span><span class="n">embedding</span> <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">results</span><span class="p">]</span>
+
+        <span class="n">mmr_selected</span> <span class="o">=</span> <span class="n">maximal_marginal_relevance</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">embedding</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+            <span class="n">embedding_list</span><span class="p">,</span>
+            <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span>
+            <span class="n">lambda_mult</span><span class="o">=</span><span class="n">lambda_mult</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">candidates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_results_to_docs_and_scores</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">[</span><span class="n">r</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">r</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">candidates</span><span class="p">)</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">mmr_selected</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="Lantern.max_marginal_relevance_search"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.lantern.Lantern.html#langchain_community.vectorstores.lantern.Lantern.max_marginal_relevance_search">[docs]</a>    <span class="k">def</span> <span class="nf">max_marginal_relevance_search</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+        <span class="n">fetch_k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span>
+        <span class="n">lambda_mult</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
+        <span class="nb">filter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return docs selected using the maximal marginal relevance.</span>
+
+<span class="sd">        Maximal marginal relevance optimizes for similarity to query AND diversity</span>
+<span class="sd">            among selected documents.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            query (str): Text to look up documents similar to.</span>
+<span class="sd">            k (int): Number of Documents to return. Defaults to 4.</span>
+<span class="sd">            fetch_k (int): Number of Documents to fetch to pass to MMR algorithm.</span>
+<span class="sd">                Defaults to 20.</span>
+<span class="sd">            lambda_mult (float): Number between 0 and 1 that determines the degree</span>
+<span class="sd">                of diversity among the results with 0 corresponding</span>
+<span class="sd">                to maximum diversity and 1 to minimum diversity.</span>
+<span class="sd">                Defaults to 0.5.</span>
+<span class="sd">            filter (Optional[Dict[str, str]]): Filter by metadata. Defaults to None.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List[Document]: List of Documents selected by maximal marginal relevance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">embedding</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">embedding_function</span><span class="o">.</span><span class="n">embed_query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_marginal_relevance_search_by_vector</span><span class="p">(</span>
+            <span class="n">embedding</span><span class="p">,</span>
+            <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span>
+            <span class="n">fetch_k</span><span class="o">=</span><span class="n">fetch_k</span><span class="p">,</span>
+            <span class="n">lambda_mult</span><span class="o">=</span><span class="n">lambda_mult</span><span class="p">,</span>
+            <span class="nb">filter</span><span class="o">=</span><span class="nb">filter</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Lantern.max_marginal_relevance_search_with_score"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.lantern.Lantern.html#langchain_community.vectorstores.lantern.Lantern.max_marginal_relevance_search_with_score">[docs]</a>    <span class="k">def</span> <span class="nf">max_marginal_relevance_search_with_score</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+        <span class="n">fetch_k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span>
+        <span class="n">lambda_mult</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
+        <span class="nb">filter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Document</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return docs selected using the maximal marginal relevance with score.</span>
+
+<span class="sd">        Maximal marginal relevance optimizes for similarity to query AND diversity</span>
+<span class="sd">            among selected documents.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            query (str): Text to look up documents similar to.</span>
+<span class="sd">            k (int): Number of Documents to return. Defaults to 4.</span>
+<span class="sd">            fetch_k (int): Number of Documents to fetch to pass to MMR algorithm.</span>
+<span class="sd">                Defaults to 20.</span>
+<span class="sd">            lambda_mult (float): Number between 0 and 1 that determines the degree</span>
+<span class="sd">                of diversity among the results with 0 corresponding</span>
+<span class="sd">                to maximum diversity and 1 to minimum diversity.</span>
+<span class="sd">                Defaults to 0.5.</span>
+<span class="sd">            filter (Optional[Dict[str, str]]): Filter by metadata. Defaults to None.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List[Tuple[Document, float]]: List of Documents selected by maximal marginal</span>
+<span class="sd">                relevance to the query and score for each.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">embedding</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">embedding_function</span><span class="o">.</span><span class="n">embed_query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+        <span class="n">docs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_marginal_relevance_search_with_score_by_vector</span><span class="p">(</span>
+            <span class="n">embedding</span><span class="o">=</span><span class="n">embedding</span><span class="p">,</span>
+            <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span>
+            <span class="n">fetch_k</span><span class="o">=</span><span class="n">fetch_k</span><span class="p">,</span>
+            <span class="n">lambda_mult</span><span class="o">=</span><span class="n">lambda_mult</span><span class="p">,</span>
+            <span class="nb">filter</span><span class="o">=</span><span class="nb">filter</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">docs</span></div>
+
+<div class="viewcode-block" id="Lantern.max_marginal_relevance_search_by_vector"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.lantern.Lantern.html#langchain_community.vectorstores.lantern.Lantern.max_marginal_relevance_search_by_vector">[docs]</a>    <span class="k">def</span> <span class="nf">max_marginal_relevance_search_by_vector</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">embedding</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+        <span class="n">k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+        <span class="n">fetch_k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span>
+        <span class="n">lambda_mult</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
+        <span class="nb">filter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return docs selected using the maximal marginal relevance</span>
+<span class="sd">            to embedding vector.</span>
+
+<span class="sd">        Maximal marginal relevance optimizes for similarity to query AND diversity</span>
+<span class="sd">            among selected documents.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            embedding (str): Text to look up documents similar to.</span>
+<span class="sd">            k (int): Number of Documents to return. Defaults to 4.</span>
+<span class="sd">            fetch_k (int): Number of Documents to fetch to pass to MMR algorithm.</span>
+<span class="sd">                Defaults to 20.</span>
+<span class="sd">            lambda_mult (float): Number between 0 and 1 that determines the degree</span>
+<span class="sd">                of diversity among the results with 0 corresponding</span>
+<span class="sd">                to maximum diversity and 1 to minimum diversity.</span>
+<span class="sd">                Defaults to 0.5.</span>
+<span class="sd">            filter (Optional[Dict[str, str]]): Filter by metadata. Defaults to None.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List[Document]: List of Documents selected by maximal marginal relevance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">docs_and_scores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_marginal_relevance_search_with_score_by_vector</span><span class="p">(</span>
+            <span class="n">embedding</span><span class="p">,</span>
+            <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span>
+            <span class="n">fetch_k</span><span class="o">=</span><span class="n">fetch_k</span><span class="p">,</span>
+            <span class="n">lambda_mult</span><span class="o">=</span><span class="n">lambda_mult</span><span class="p">,</span>
+            <span class="nb">filter</span><span class="o">=</span><span class="nb">filter</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">_results_to_docs</span><span class="p">(</span><span class="n">docs_and_scores</span><span class="p">)</span></div></div>
+</pre></div>
+
+      </div>
+    <div class="container">
+      <footer class="sk-content-footer">
+            &copy; 2023, LangChain, Inc..
+          Last updated on Mar 15, 2024.
+      </footer>
+    </div>
+  </div>
+</div>
+<script src="../../../_static/js/vendor/bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    /* Add a [>>>] button on the top-right corner of code samples to hide
+     * the >>> and ... prompts and the output and thus make the code
+     * copyable. */
+    var div = $('.highlight-python .highlight,' +
+                '.highlight-python3 .highlight,' +
+                '.highlight-pycon .highlight,' +
+		'.highlight-default .highlight')
+    var pre = div.find('pre');
+
+    // get the styles from the current theme
+    pre.parent().parent().css('position', 'relative');
+    var hide_text = 'Hide prompts and outputs';
+    var show_text = 'Show prompts and outputs';
+
+    // create and add the button to all the code blocks that contain >>>
+    div.each(function(index) {
+        var jthis = $(this);
+        if (jthis.find('.gp').length > 0) {
+            var button = $('<span class="copybutton">&gt;&gt;&gt;</span>');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+            jthis.prepend(button);
+        }
+        // tracebacks (.gt) contain bare text elements that need to be
+        // wrapped in a span to work with .nextUntil() (see later)
+        jthis.find('pre:has(.gt)').contents().filter(function() {
+            return ((this.nodeType == 3) && (this.data.trim().length > 0));
+        }).wrap('<span>');
+    });
+
+    // define the behavior of the button when it's clicked
+    $('.copybutton').click(function(e){
+        e.preventDefault();
+        var button = $(this);
+        if (button.data('hidden') === 'false') {
+            // hide the code output
+            button.parent().find('.go, .gp, .gt').hide();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'hidden');
+            button.css('text-decoration', 'line-through');
+            button.attr('title', show_text);
+            button.data('hidden', 'true');
+        } else {
+            // show the code output
+            button.parent().find('.go, .gp, .gt').show();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'visible');
+            button.css('text-decoration', 'none');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+        }
+    });
+
+	/*** Add permalink buttons next to glossary terms ***/
+	$('dl.glossary > dt[id]').append(function() {
+		return ('<a class="headerlink" href="#' +
+			    this.getAttribute('id') +
+			    '" title="Permalink to this term">¶</a>');
+	});
+});
+
+</script>
+    
+</body>
+</html>

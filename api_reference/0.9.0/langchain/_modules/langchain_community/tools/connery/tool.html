@@ -1,0 +1,342 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>langchain_community.tools.connery.tool &mdash; 🦜🔗 LangChain 0.1.12</title>
+  
+  <link rel="canonical" href="https://api.python.langchain.com/en/latest/_modules/langchain_community/tools/connery/tool.html" />
+
+  
+
+  <link rel="stylesheet" href="../../../../_static/css/vendor/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/autodoc_pydantic.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/sphinx-dropdown.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/panels-bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/css/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+<script id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+<script src="../../../../_static/jquery.js"></script> 
+</head>
+<body>
+
+
+<nav id="navbar" class="sk-docs-navbar navbar navbar-expand-md navbar-light bg-light py-0">
+  <div class="container-fluid sk-docs-container px-0">
+    <button
+      id="sk-navbar-toggler"
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="sk-navbar-collapse collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../../langchain_api_reference.html">LangChain</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../../core_api_reference.html">Core</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../../community_api_reference.html">Community</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../../experimental_api_reference.html">Experimental</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../../text_splitters_api_reference.html">Text splitters</a>
+        </li>
+        <li class="nav-item dropdown nav-more-item-dropdown">
+          <a class="sk-nav-link nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Partner libs</a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+          </div>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" target="_blank" rel="noopener noreferrer" href="https://python.langchain.com/">Docs</a>
+        </li>
+      </ul>
+      <div id="searchbox" role="search">
+          <div class="searchformwrapper">
+          <form class="search" action="../../../../search.html" method="get">
+            <input class="sk-search-text-input" type="text" name="q" aria-labelledby="searchlabel" />
+            <input class="sk-search-text-btn" type="submit" value="Go" />
+          </form>
+          </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="d-flex" id="sk-doc-wrapper">
+    <input type="checkbox" name="sk-toggle-checkbox" id="sk-toggle-checkbox">
+    <label id="sk-sidemenu-toggle" class="sk-btn-toggle-toc btn sk-btn-primary" for="sk-toggle-checkbox">Toggle Menu</label>
+    <div id="sk-sidebar-wrapper" class="border-right">
+      <div class="sk-sidebar-toc-wrapper">
+        <div class="btn-group w-100 mb-2" role="group" aria-label="rellinks">
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Prev</a><a href="../../../index.html" role="button" class="btn sk-btn-rellink py-1" sk-rellink-tooltip="Module code">Up</a>
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Next</a>
+        </div>
+            <div class="sk-sidebar-toc">
+              
+            </div>
+      </div>
+    </div>
+    <div id="sk-page-content-wrapper">
+      <div class="sk-page-content container-fluid body px-md-3" role="main">
+        
+  <h1>Source code for langchain_community.tools.connery.tool</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">asyncio</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Type</span>
+
+<span class="kn">from</span> <span class="nn">langchain_core.callbacks.manager</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AsyncCallbackManagerForToolRun</span><span class="p">,</span>
+    <span class="n">CallbackManagerForToolRun</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">langchain_core.pydantic_v1</span> <span class="kn">import</span> <span class="n">BaseModel</span><span class="p">,</span> <span class="n">Field</span><span class="p">,</span> <span class="n">create_model</span><span class="p">,</span> <span class="n">root_validator</span>
+<span class="kn">from</span> <span class="nn">langchain_core.tools</span> <span class="kn">import</span> <span class="n">BaseTool</span>
+
+<span class="kn">from</span> <span class="nn">langchain_community.tools.connery.models</span> <span class="kn">import</span> <span class="n">Action</span><span class="p">,</span> <span class="n">Parameter</span>
+
+
+<div class="viewcode-block" id="ConneryAction"><a class="viewcode-back" href="../../../../tools/langchain_community.tools.connery.tool.ConneryAction.html#langchain_community.tools.connery.tool.ConneryAction">[docs]</a><span class="k">class</span> <span class="nc">ConneryAction</span><span class="p">(</span><span class="n">BaseTool</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A LangChain Tool wrapping a Connery Action.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">description</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">args_schema</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">]</span>
+
+    <span class="n">action</span><span class="p">:</span> <span class="n">Action</span>
+    <span class="n">connery_service</span><span class="p">:</span> <span class="n">Any</span>
+
+    <span class="k">def</span> <span class="nf">_run</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">run_manager</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">CallbackManagerForToolRun</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Runs the Connery Action with the provided input.</span>
+<span class="sd">        Parameters:</span>
+<span class="sd">            kwargs (Dict[str, str]): The input dictionary expected by the action.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Dict[str, str]: The output of the action.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">connery_service</span><span class="o">.</span><span class="n">run_action</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">action</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_arun</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">run_manager</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AsyncCallbackManagerForToolRun</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Runs the Connery Action asynchronously with the provided input.</span>
+<span class="sd">        Parameters:</span>
+<span class="sd">            kwargs (Dict[str, str]): The input dictionary expected by the action.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Dict[str, str]: The output of the action.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">func</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_run</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">get_event_loop</span><span class="p">()</span><span class="o">.</span><span class="n">run_in_executor</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">func</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ConneryAction.get_schema_json"><a class="viewcode-back" href="../../../../tools/langchain_community.tools.connery.tool.ConneryAction.html#langchain_community.tools.connery.tool.ConneryAction.get_schema_json">[docs]</a>    <span class="k">def</span> <span class="nf">get_schema_json</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the JSON representation of the Connery Action Tool schema.</span>
+<span class="sd">        This is useful for debugging.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            str: The JSON representation of the Connery Action Tool schema.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">args_schema</span><span class="o">.</span><span class="n">schema_json</span><span class="p">(</span><span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span></div>
+
+    <span class="nd">@root_validator</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">validate_attributes</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Validate the attributes of the ConneryAction class.</span>
+<span class="sd">        Parameters:</span>
+<span class="sd">            values (dict): The arguments to validate.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: The validated arguments.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Import ConneryService here and check if it is an instance</span>
+        <span class="c1"># of ConneryService to avoid circular imports</span>
+        <span class="kn">from</span> <span class="nn">.service</span> <span class="kn">import</span> <span class="n">ConneryService</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">values</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;connery_service&quot;</span><span class="p">),</span> <span class="n">ConneryService</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;The attribute &#39;connery_service&#39; must be an instance of ConneryService.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">values</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The attribute &#39;name&#39; must be set.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">values</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;description&quot;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The attribute &#39;description&#39; must be set.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">values</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;args_schema&quot;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The attribute &#39;args_schema&#39; must be set.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">values</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;action&quot;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The attribute &#39;action&#39; must be set.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">values</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;connery_service&quot;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The attribute &#39;connery_service&#39; must be set.&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">values</span>
+
+<div class="viewcode-block" id="ConneryAction.create_instance"><a class="viewcode-back" href="../../../../tools/langchain_community.tools.connery.tool.ConneryAction.html#langchain_community.tools.connery.tool.ConneryAction.create_instance">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">create_instance</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">Action</span><span class="p">,</span> <span class="n">connery_service</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ConneryAction&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Creates a Connery Action Tool from a Connery Action.</span>
+<span class="sd">        Parameters:</span>
+<span class="sd">            action (Action): The Connery Action to wrap in a Connery Action Tool.</span>
+<span class="sd">            connery_service (ConneryService): The Connery Service</span>
+<span class="sd">            to run the Connery Action. We use Any here to avoid circular imports.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            ConneryAction: The Connery Action Tool.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Import ConneryService here and check if it is an instance</span>
+        <span class="c1"># of ConneryService to avoid circular imports</span>
+        <span class="kn">from</span> <span class="nn">.service</span> <span class="kn">import</span> <span class="n">ConneryService</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">connery_service</span><span class="p">,</span> <span class="n">ConneryService</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;The connery_service must be an instance of ConneryService.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="n">input_schema</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_create_input_schema</span><span class="p">(</span><span class="n">action</span><span class="o">.</span><span class="n">inputParameters</span><span class="p">)</span>
+        <span class="n">description</span> <span class="o">=</span> <span class="n">action</span><span class="o">.</span><span class="n">title</span> <span class="o">+</span> <span class="p">(</span>
+            <span class="s2">&quot;: &quot;</span> <span class="o">+</span> <span class="n">action</span><span class="o">.</span><span class="n">description</span> <span class="k">if</span> <span class="n">action</span><span class="o">.</span><span class="n">description</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+        <span class="p">)</span>
+
+        <span class="n">instance</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">action</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="n">description</span><span class="p">,</span>
+            <span class="n">args_schema</span><span class="o">=</span><span class="n">input_schema</span><span class="p">,</span>
+            <span class="n">action</span><span class="o">=</span><span class="n">action</span><span class="p">,</span>
+            <span class="n">connery_service</span><span class="o">=</span><span class="n">connery_service</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">instance</span></div>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_create_input_schema</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">inputParameters</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Parameter</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Type</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Creates an input schema for a Connery Action Tool</span>
+<span class="sd">        based on the input parameters of the Connery Action.</span>
+<span class="sd">        Parameters:</span>
+<span class="sd">            inputParameters: List of input parameters of the Connery Action.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Type[BaseModel]: The input schema for the Connery Action Tool.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">dynamic_input_fields</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">inputParameters</span><span class="p">:</span>
+            <span class="n">default</span> <span class="o">=</span> <span class="o">...</span> <span class="k">if</span> <span class="n">param</span><span class="o">.</span><span class="n">validation</span> <span class="ow">and</span> <span class="n">param</span><span class="o">.</span><span class="n">validation</span><span class="o">.</span><span class="n">required</span> <span class="k">else</span> <span class="kc">None</span>
+            <span class="n">title</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">title</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">title</span> <span class="o">+</span> <span class="p">(</span>
+                <span class="s2">&quot;: &quot;</span> <span class="o">+</span> <span class="n">param</span><span class="o">.</span><span class="n">description</span> <span class="k">if</span> <span class="n">param</span><span class="o">.</span><span class="n">description</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+            <span class="p">)</span>
+            <span class="nb">type</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">type</span>
+
+            <span class="n">dynamic_input_fields</span><span class="p">[</span><span class="n">param</span><span class="o">.</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="nb">str</span><span class="p">,</span>
+                <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="n">description</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">type</span><span class="p">),</span>
+            <span class="p">)</span>
+
+        <span class="n">InputModel</span> <span class="o">=</span> <span class="n">create_model</span><span class="p">(</span><span class="s2">&quot;InputSchema&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">dynamic_input_fields</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">InputModel</span></div>
+</pre></div>
+
+      </div>
+    <div class="container">
+      <footer class="sk-content-footer">
+            &copy; 2023, LangChain, Inc..
+          Last updated on Mar 15, 2024.
+      </footer>
+    </div>
+  </div>
+</div>
+<script src="../../../../_static/js/vendor/bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    /* Add a [>>>] button on the top-right corner of code samples to hide
+     * the >>> and ... prompts and the output and thus make the code
+     * copyable. */
+    var div = $('.highlight-python .highlight,' +
+                '.highlight-python3 .highlight,' +
+                '.highlight-pycon .highlight,' +
+		'.highlight-default .highlight')
+    var pre = div.find('pre');
+
+    // get the styles from the current theme
+    pre.parent().parent().css('position', 'relative');
+    var hide_text = 'Hide prompts and outputs';
+    var show_text = 'Show prompts and outputs';
+
+    // create and add the button to all the code blocks that contain >>>
+    div.each(function(index) {
+        var jthis = $(this);
+        if (jthis.find('.gp').length > 0) {
+            var button = $('<span class="copybutton">&gt;&gt;&gt;</span>');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+            jthis.prepend(button);
+        }
+        // tracebacks (.gt) contain bare text elements that need to be
+        // wrapped in a span to work with .nextUntil() (see later)
+        jthis.find('pre:has(.gt)').contents().filter(function() {
+            return ((this.nodeType == 3) && (this.data.trim().length > 0));
+        }).wrap('<span>');
+    });
+
+    // define the behavior of the button when it's clicked
+    $('.copybutton').click(function(e){
+        e.preventDefault();
+        var button = $(this);
+        if (button.data('hidden') === 'false') {
+            // hide the code output
+            button.parent().find('.go, .gp, .gt').hide();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'hidden');
+            button.css('text-decoration', 'line-through');
+            button.attr('title', show_text);
+            button.data('hidden', 'true');
+        } else {
+            // show the code output
+            button.parent().find('.go, .gp, .gt').show();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'visible');
+            button.css('text-decoration', 'none');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+        }
+    });
+
+	/*** Add permalink buttons next to glossary terms ***/
+	$('dl.glossary > dt[id]').append(function() {
+		return ('<a class="headerlink" href="#' +
+			    this.getAttribute('id') +
+			    '" title="Permalink to this term">¶</a>');
+	});
+});
+
+</script>
+    
+</body>
+</html>

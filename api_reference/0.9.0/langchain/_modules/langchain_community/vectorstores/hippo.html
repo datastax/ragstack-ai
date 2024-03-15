@@ -1,0 +1,856 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>langchain_community.vectorstores.hippo &mdash; 🦜🔗 LangChain 0.1.12</title>
+  
+  <link rel="canonical" href="https://api.python.langchain.com/en/latest/_modules/langchain_community/vectorstores/hippo.html" />
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/vendor/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/autodoc_pydantic.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/sphinx-dropdown.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/panels-bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+<script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+<script src="../../../_static/jquery.js"></script> 
+</head>
+<body>
+
+
+<nav id="navbar" class="sk-docs-navbar navbar navbar-expand-md navbar-light bg-light py-0">
+  <div class="container-fluid sk-docs-container px-0">
+    <button
+      id="sk-navbar-toggler"
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="sk-navbar-collapse collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../langchain_api_reference.html">LangChain</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../core_api_reference.html">Core</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../community_api_reference.html">Community</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../experimental_api_reference.html">Experimental</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../text_splitters_api_reference.html">Text splitters</a>
+        </li>
+        <li class="nav-item dropdown nav-more-item-dropdown">
+          <a class="sk-nav-link nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Partner libs</a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+          </div>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" target="_blank" rel="noopener noreferrer" href="https://python.langchain.com/">Docs</a>
+        </li>
+      </ul>
+      <div id="searchbox" role="search">
+          <div class="searchformwrapper">
+          <form class="search" action="../../../search.html" method="get">
+            <input class="sk-search-text-input" type="text" name="q" aria-labelledby="searchlabel" />
+            <input class="sk-search-text-btn" type="submit" value="Go" />
+          </form>
+          </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="d-flex" id="sk-doc-wrapper">
+    <input type="checkbox" name="sk-toggle-checkbox" id="sk-toggle-checkbox">
+    <label id="sk-sidemenu-toggle" class="sk-btn-toggle-toc btn sk-btn-primary" for="sk-toggle-checkbox">Toggle Menu</label>
+    <div id="sk-sidebar-wrapper" class="border-right">
+      <div class="sk-sidebar-toc-wrapper">
+        <div class="btn-group w-100 mb-2" role="group" aria-label="rellinks">
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Prev</a><a href="../../index.html" role="button" class="btn sk-btn-rellink py-1" sk-rellink-tooltip="Module code">Up</a>
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Next</a>
+        </div>
+            <div class="sk-sidebar-toc">
+              
+            </div>
+      </div>
+    </div>
+    <div id="sk-page-content-wrapper">
+      <div class="sk-page-content container-fluid body px-md-3" role="main">
+        
+  <h1>Source code for langchain_community.vectorstores.hippo</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span>
+
+<span class="kn">from</span> <span class="nn">langchain_core.documents</span> <span class="kn">import</span> <span class="n">Document</span>
+<span class="kn">from</span> <span class="nn">langchain_core.embeddings</span> <span class="kn">import</span> <span class="n">Embeddings</span>
+<span class="kn">from</span> <span class="nn">langchain_core.vectorstores</span> <span class="kn">import</span> <span class="n">VectorStore</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">transwarp_hippo_api.hippo_client</span> <span class="kn">import</span> <span class="n">HippoClient</span>
+
+<span class="c1"># Default connection</span>
+<span class="n">DEFAULT_HIPPO_CONNECTION</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;host&quot;</span><span class="p">:</span> <span class="s2">&quot;localhost&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;port&quot;</span><span class="p">:</span> <span class="s2">&quot;7788&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;username&quot;</span><span class="p">:</span> <span class="s2">&quot;admin&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;password&quot;</span><span class="p">:</span> <span class="s2">&quot;admin&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Hippo"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.hippo.Hippo.html#langchain_community.vectorstores.hippo.Hippo">[docs]</a><span class="k">class</span> <span class="nc">Hippo</span><span class="p">(</span><span class="n">VectorStore</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;`Hippo` vector store.</span>
+
+<span class="sd">    You need to install `hippo-api` and run Hippo.</span>
+
+<span class="sd">    Please visit our official website for how to run a Hippo instance:</span>
+<span class="sd">    https://www.transwarp.cn/starwarp</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        embedding_function (Embeddings): Function used to embed the text.</span>
+<span class="sd">        table_name (str): Which Hippo table to use. Defaults to</span>
+<span class="sd">            &quot;test&quot;.</span>
+<span class="sd">        database_name (str): Which Hippo database to use. Defaults to</span>
+<span class="sd">            &quot;default&quot;.</span>
+<span class="sd">        number_of_shards (int): The number of shards for the Hippo table.Defaults to</span>
+<span class="sd">            1.</span>
+<span class="sd">        number_of_replicas (int): The number of replicas for the Hippo table.Defaults to</span>
+<span class="sd">            1.</span>
+<span class="sd">        connection_args (Optional[dict[str, any]]): The connection args used for</span>
+<span class="sd">            this class comes in the form of a dict.</span>
+<span class="sd">        index_params (Optional[dict]): Which index params to use. Defaults to</span>
+<span class="sd">            IVF_FLAT.</span>
+<span class="sd">        drop_old (Optional[bool]): Whether to drop the current collection. Defaults</span>
+<span class="sd">            to False.</span>
+<span class="sd">        primary_field (str): Name of the primary key field. Defaults to &quot;pk&quot;.</span>
+<span class="sd">        text_field (str): Name of the text field. Defaults to &quot;text&quot;.</span>
+<span class="sd">        vector_field (str): Name of the vector field. Defaults to &quot;vector&quot;.</span>
+
+<span class="sd">    The connection args used for this class comes in the form of a dict,</span>
+<span class="sd">    here are a few of the options:</span>
+<span class="sd">        host (str): The host of Hippo instance. Default at &quot;localhost&quot;.</span>
+<span class="sd">        port (str/int): The port of Hippo instance. Default at 7788.</span>
+<span class="sd">        user (str): Use which user to connect to Hippo instance. If user and</span>
+<span class="sd">            password are provided, we will add related header in every RPC call.</span>
+<span class="sd">        password (str): Required when user is provided. The password</span>
+<span class="sd">            corresponding to the user.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">        from langchain_community.vectorstores import Hippo</span>
+<span class="sd">        from langchain_community.embeddings import OpenAIEmbeddings</span>
+
+<span class="sd">        embedding = OpenAIEmbeddings()</span>
+<span class="sd">        # Connect to a hippo instance on localhost</span>
+<span class="sd">        vector_store = Hippo.from_documents(</span>
+<span class="sd">            docs,</span>
+<span class="sd">            embedding=embeddings,</span>
+<span class="sd">            table_name=&quot;langchain_test&quot;,</span>
+<span class="sd">            connection_args=HIPPO_CONNECTION</span>
+<span class="sd">        )</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: If the hippo-api python package is not installed.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Hippo.__init__"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.hippo.Hippo.html#langchain_community.vectorstores.hippo.Hippo.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">embedding_function</span><span class="p">:</span> <span class="n">Embeddings</span><span class="p">,</span>
+        <span class="n">table_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;test&quot;</span><span class="p">,</span>
+        <span class="n">database_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;default&quot;</span><span class="p">,</span>
+        <span class="n">number_of_shards</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">number_of_replicas</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">connection_args</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">index_params</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">drop_old</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">number_of_shards</span> <span class="o">=</span> <span class="n">number_of_shards</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">number_of_replicas</span> <span class="o">=</span> <span class="n">number_of_replicas</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">embedding_func</span> <span class="o">=</span> <span class="n">embedding_function</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">table_name</span> <span class="o">=</span> <span class="n">table_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">database_name</span> <span class="o">=</span> <span class="n">database_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">index_params</span> <span class="o">=</span> <span class="n">index_params</span>
+
+        <span class="c1"># In order for a collection to be compatible,</span>
+        <span class="c1"># &#39;pk&#39; should be an auto-increment primary key and string</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_primary_field</span> <span class="o">=</span> <span class="s2">&quot;pk&quot;</span>
+        <span class="c1"># In order for compatibility, the text field will need to be called &quot;text&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_text_field</span> <span class="o">=</span> <span class="s2">&quot;text&quot;</span>
+        <span class="c1"># In order for compatibility, the vector field needs to be called &quot;vector&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_vector_field</span> <span class="o">=</span> <span class="s2">&quot;vector&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1"># Create the connection to the server</span>
+        <span class="k">if</span> <span class="n">connection_args</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">connection_args</span> <span class="o">=</span> <span class="n">DEFAULT_HIPPO_CONNECTION</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_connection_alias</span><span class="p">(</span><span class="n">connection_args</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">col</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># If the collection exists, delete it</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">hc</span><span class="o">.</span><span class="n">check_table_exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">table_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">database_name</span><span class="p">)</span>
+                <span class="ow">and</span> <span class="n">drop_old</span>
+            <span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">hc</span><span class="o">.</span><span class="n">delete_table</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">table_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">database_name</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;An error occurred while deleting the table &quot;</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">table_name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+            <span class="k">raise</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hc</span><span class="o">.</span><span class="n">check_table_exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">table_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">database_name</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">col</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hc</span><span class="o">.</span><span class="n">get_table</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">table_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">database_name</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;An error occurred while getting the table &quot;</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">table_name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+            <span class="k">raise</span>
+
+        <span class="c1"># Initialize the vector database</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_get_env</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">_create_connection_alias</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">connection_args</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">HippoClient</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create the connection to the Hippo server.&quot;&quot;&quot;</span>
+        <span class="c1"># Grab the connection arguments that are used for checking existing connection</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">transwarp_hippo_api.hippo_client</span> <span class="kn">import</span> <span class="n">HippoClient</span>
+        <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+                <span class="s2">&quot;Unable to import transwarp_hipp_api, please install with &quot;</span>
+                <span class="s2">&quot;`pip install hippo-api`.&quot;</span>
+            <span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>
+
+        <span class="n">host</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">connection_args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;host&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">port</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">connection_args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;port&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">username</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">connection_args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;username&quot;</span><span class="p">,</span> <span class="s2">&quot;shiva&quot;</span><span class="p">)</span>
+        <span class="n">password</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">connection_args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;password&quot;</span><span class="p">,</span> <span class="s2">&quot;shiva&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Order of use is host/port, uri, address</span>
+        <span class="k">if</span> <span class="n">host</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">port</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;,&quot;</span> <span class="ow">in</span> <span class="n">host</span><span class="p">:</span>
+                <span class="n">hosts</span> <span class="o">=</span> <span class="n">host</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+                <span class="n">given_address</span> <span class="o">=</span> <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">h</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">port</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">hosts</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">given_address</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">host</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">port</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Missing standard address type for reuse attempt&quot;</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;create HippoClient[</span><span class="si">{</span><span class="n">given_address</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">HippoClient</span><span class="p">([</span><span class="n">given_address</span><span class="p">],</span> <span class="n">username</span><span class="o">=</span><span class="n">username</span><span class="p">,</span> <span class="n">pwd</span><span class="o">=</span><span class="n">password</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Failed to create new connection&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">e</span>
+
+    <span class="k">def</span> <span class="nf">_get_env</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">embeddings</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">metadatas</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;init ...&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">embeddings</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;create collection&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_create_collection</span><span class="p">(</span><span class="n">embeddings</span><span class="p">,</span> <span class="n">metadatas</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_extract_fields</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_create_index</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_create_collection</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">embeddings</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">metadatas</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">transwarp_hippo_api.hippo_client</span> <span class="kn">import</span> <span class="n">HippoField</span>
+        <span class="kn">from</span> <span class="nn">transwarp_hippo_api.hippo_type</span> <span class="kn">import</span> <span class="n">HippoType</span>
+
+        <span class="c1"># Determine embedding dim</span>
+        <span class="n">dim</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">embeddings</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[_create_collection] dim: </span><span class="si">{</span><span class="n">dim</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># Create the primary key field</span>
+        <span class="n">fields</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">HippoField</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_primary_field</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="n">HippoType</span><span class="o">.</span><span class="n">STRING</span><span class="p">))</span>
+
+        <span class="c1"># Create the text field</span>
+
+        <span class="n">fields</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">HippoField</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_text_field</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">HippoType</span><span class="o">.</span><span class="n">STRING</span><span class="p">))</span>
+
+        <span class="c1"># Create the vector field, supports binary or float vectors</span>
+        <span class="c1"># to The binary vector type is to be developed.</span>
+        <span class="n">fields</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="n">HippoField</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_vector_field</span><span class="p">,</span>
+                <span class="kc">False</span><span class="p">,</span>
+                <span class="n">HippoType</span><span class="o">.</span><span class="n">FLOAT_VECTOR</span><span class="p">,</span>
+                <span class="n">type_params</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;dimension&quot;</span><span class="p">:</span> <span class="n">dim</span><span class="p">},</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="c1"># to In Hippo,there is no method similar to the infer_type_data</span>
+        <span class="c1"># types, so currently all non-vector data is converted to string type.</span>
+
+        <span class="k">if</span> <span class="n">metadatas</span><span class="p">:</span>
+            <span class="c1">#     # Create FieldSchema for each entry in metadata.</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">metadatas</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="c1">#         # Infer the corresponding datatype of the metadata</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                    <span class="n">value_dim</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                    <span class="n">fields</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                        <span class="n">HippoField</span><span class="p">(</span>
+                            <span class="n">key</span><span class="p">,</span>
+                            <span class="kc">False</span><span class="p">,</span>
+                            <span class="n">HippoType</span><span class="o">.</span><span class="n">FLOAT_VECTOR</span><span class="p">,</span>
+                            <span class="n">type_params</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;dimension&quot;</span><span class="p">:</span> <span class="n">value_dim</span><span class="p">},</span>
+                        <span class="p">)</span>
+                    <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">fields</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">HippoField</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">HippoType</span><span class="o">.</span><span class="n">STRING</span><span class="p">))</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[_create_collection] fields: </span><span class="si">{</span><span class="n">fields</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Create the collection</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hc</span><span class="o">.</span><span class="n">create_table</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">table_name</span><span class="p">,</span>
+            <span class="n">auto_id</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">fields</span><span class="o">=</span><span class="n">fields</span><span class="p">,</span>
+            <span class="n">database_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">database_name</span><span class="p">,</span>
+            <span class="n">number_of_shards</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">number_of_shards</span><span class="p">,</span>
+            <span class="n">number_of_replicas</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">number_of_replicas</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">col</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hc</span><span class="o">.</span><span class="n">get_table</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">table_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">database_name</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;[_create_collection] : &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;create table </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">table_name</span><span class="si">}</span><span class="s2"> in </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">database_name</span><span class="si">}</span><span class="s2"> successfully&quot;</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_extract_fields</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Grab the existing fields from the Collection&quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">transwarp_hippo_api.hippo_client</span> <span class="kn">import</span> <span class="n">HippoTable</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">col</span><span class="p">,</span> <span class="n">HippoTable</span><span class="p">):</span>
+            <span class="n">schema</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">col</span><span class="o">.</span><span class="n">schema</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[_extract_fields] schema:</span><span class="si">{</span><span class="n">schema</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">schema</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;04 [_extract_fields] fields:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># TO CAN: Translated into English, your statement would be: &quot;Currently,</span>
+    <span class="c1"># only the field named &#39;vector&#39; (the automatically created vector field)</span>
+    <span class="c1"># is checked for indexing. Indexes need to be created manually for other</span>
+    <span class="c1"># vector type columns.</span>
+    <span class="k">def</span> <span class="nf">_get_index</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the vector index information if it exists&quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">transwarp_hippo_api.hippo_client</span> <span class="kn">import</span> <span class="n">HippoTable</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">col</span><span class="p">,</span> <span class="n">HippoTable</span><span class="p">):</span>
+            <span class="n">table_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hc</span><span class="o">.</span><span class="n">get_table_info</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">table_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">database_name</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">table_name</span><span class="p">,</span> <span class="p">{})</span>
+            <span class="n">embedding_indexes</span> <span class="o">=</span> <span class="n">table_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;embedding_indexes&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">embedding_indexes</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">None</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">hc</span><span class="o">.</span><span class="n">get_table_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">table_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">database_name</span><span class="p">)[</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">table_name</span>
+                <span class="p">][</span><span class="s2">&quot;embedding_indexes&quot;</span><span class="p">]:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[_get_index] embedding_indexes </span><span class="si">{</span><span class="n">embedding_indexes</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">x</span><span class="p">[</span><span class="s2">&quot;column&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vector_field</span><span class="p">:</span>
+                        <span class="k">return</span> <span class="n">x</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="c1"># TO Indexes can only be created for the self._vector_field field.</span>
+    <span class="k">def</span> <span class="nf">_create_index</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a index on the collection&quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">transwarp_hippo_api.hippo_client</span> <span class="kn">import</span> <span class="n">HippoTable</span>
+        <span class="kn">from</span> <span class="nn">transwarp_hippo_api.hippo_type</span> <span class="kn">import</span> <span class="n">IndexType</span><span class="p">,</span> <span class="n">MetricType</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">col</span><span class="p">,</span> <span class="n">HippoTable</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_index</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_index</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">index_params</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">index_params</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s2">&quot;index_name&quot;</span><span class="p">:</span> <span class="s2">&quot;langchain_auto_create&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;metric_type&quot;</span><span class="p">:</span> <span class="n">MetricType</span><span class="o">.</span><span class="n">L2</span><span class="p">,</span>
+                        <span class="s2">&quot;index_type&quot;</span><span class="p">:</span> <span class="n">IndexType</span><span class="o">.</span><span class="n">IVF_FLAT</span><span class="p">,</span>
+                        <span class="s2">&quot;nlist&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+                    <span class="p">}</span>
+
+                    <span class="bp">self</span><span class="o">.</span><span class="n">col</span><span class="o">.</span><span class="n">create_index</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_vector_field</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">index_params</span><span class="p">[</span><span class="s2">&quot;index_name&quot;</span><span class="p">],</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">index_params</span><span class="p">[</span><span class="s2">&quot;index_type&quot;</span><span class="p">],</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">index_params</span><span class="p">[</span><span class="s2">&quot;metric_type&quot;</span><span class="p">],</span>
+                        <span class="n">nlist</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">index_params</span><span class="p">[</span><span class="s2">&quot;nlist&quot;</span><span class="p">],</span>
+                    <span class="p">)</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">col</span><span class="o">.</span><span class="n">activate_index</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">index_params</span><span class="p">[</span><span class="s2">&quot;index_name&quot;</span><span class="p">])</span>
+                    <span class="p">)</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;create index successfully&quot;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">index_dict</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s2">&quot;IVF_FLAT&quot;</span><span class="p">:</span> <span class="n">IndexType</span><span class="o">.</span><span class="n">IVF_FLAT</span><span class="p">,</span>
+                        <span class="s2">&quot;FLAT&quot;</span><span class="p">:</span> <span class="n">IndexType</span><span class="o">.</span><span class="n">FLAT</span><span class="p">,</span>
+                        <span class="s2">&quot;IVF_SQ&quot;</span><span class="p">:</span> <span class="n">IndexType</span><span class="o">.</span><span class="n">IVF_SQ</span><span class="p">,</span>
+                        <span class="s2">&quot;IVF_PQ&quot;</span><span class="p">:</span> <span class="n">IndexType</span><span class="o">.</span><span class="n">IVF_PQ</span><span class="p">,</span>
+                        <span class="s2">&quot;HNSW&quot;</span><span class="p">:</span> <span class="n">IndexType</span><span class="o">.</span><span class="n">HNSW</span><span class="p">,</span>
+                    <span class="p">}</span>
+
+                    <span class="n">metric_dict</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s2">&quot;ip&quot;</span><span class="p">:</span> <span class="n">MetricType</span><span class="o">.</span><span class="n">IP</span><span class="p">,</span>
+                        <span class="s2">&quot;IP&quot;</span><span class="p">:</span> <span class="n">MetricType</span><span class="o">.</span><span class="n">IP</span><span class="p">,</span>
+                        <span class="s2">&quot;l2&quot;</span><span class="p">:</span> <span class="n">MetricType</span><span class="o">.</span><span class="n">L2</span><span class="p">,</span>
+                        <span class="s2">&quot;L2&quot;</span><span class="p">:</span> <span class="n">MetricType</span><span class="o">.</span><span class="n">L2</span><span class="p">,</span>
+                    <span class="p">}</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">index_params</span><span class="p">[</span><span class="s2">&quot;metric_type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">metric_dict</span><span class="p">[</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">index_params</span><span class="p">[</span><span class="s2">&quot;metric_type&quot;</span><span class="p">]</span>
+                    <span class="p">]</span>
+
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">index_params</span><span class="p">[</span><span class="s2">&quot;index_type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;FLAT&quot;</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">index_params</span><span class="p">[</span><span class="s2">&quot;index_type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">index_dict</span><span class="p">[</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">index_params</span><span class="p">[</span><span class="s2">&quot;index_type&quot;</span><span class="p">]</span>
+                        <span class="p">]</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">col</span><span class="o">.</span><span class="n">create_index</span><span class="p">(</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_vector_field</span><span class="p">,</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">index_params</span><span class="p">[</span><span class="s2">&quot;index_name&quot;</span><span class="p">],</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">index_params</span><span class="p">[</span><span class="s2">&quot;index_type&quot;</span><span class="p">],</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">index_params</span><span class="p">[</span><span class="s2">&quot;metric_type&quot;</span><span class="p">],</span>
+                        <span class="p">)</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">col</span><span class="o">.</span><span class="n">activate_index</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">index_params</span><span class="p">[</span><span class="s2">&quot;index_name&quot;</span><span class="p">])</span>
+                        <span class="p">)</span>
+                    <span class="k">elif</span> <span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">index_params</span><span class="p">[</span><span class="s2">&quot;index_type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;IVF_FLAT&quot;</span>
+                        <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">index_params</span><span class="p">[</span><span class="s2">&quot;index_type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;IVF_SQ&quot;</span>
+                    <span class="p">):</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">index_params</span><span class="p">[</span><span class="s2">&quot;index_type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">index_dict</span><span class="p">[</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">index_params</span><span class="p">[</span><span class="s2">&quot;index_type&quot;</span><span class="p">]</span>
+                        <span class="p">]</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">col</span><span class="o">.</span><span class="n">create_index</span><span class="p">(</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_vector_field</span><span class="p">,</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">index_params</span><span class="p">[</span><span class="s2">&quot;index_name&quot;</span><span class="p">],</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">index_params</span><span class="p">[</span><span class="s2">&quot;index_type&quot;</span><span class="p">],</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">index_params</span><span class="p">[</span><span class="s2">&quot;metric_type&quot;</span><span class="p">],</span>
+                            <span class="n">nlist</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">index_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;nlist&quot;</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span>
+                            <span class="n">nprobe</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">index_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;nprobe&quot;</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span>
+                        <span class="p">)</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">col</span><span class="o">.</span><span class="n">activate_index</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">index_params</span><span class="p">[</span><span class="s2">&quot;index_name&quot;</span><span class="p">])</span>
+                        <span class="p">)</span>
+                    <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">index_params</span><span class="p">[</span><span class="s2">&quot;index_type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;IVF_PQ&quot;</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">index_params</span><span class="p">[</span><span class="s2">&quot;index_type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">index_dict</span><span class="p">[</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">index_params</span><span class="p">[</span><span class="s2">&quot;index_type&quot;</span><span class="p">]</span>
+                        <span class="p">]</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">col</span><span class="o">.</span><span class="n">create_index</span><span class="p">(</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_vector_field</span><span class="p">,</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">index_params</span><span class="p">[</span><span class="s2">&quot;index_name&quot;</span><span class="p">],</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">index_params</span><span class="p">[</span><span class="s2">&quot;index_type&quot;</span><span class="p">],</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">index_params</span><span class="p">[</span><span class="s2">&quot;metric_type&quot;</span><span class="p">],</span>
+                            <span class="n">nlist</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">index_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;nlist&quot;</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span>
+                            <span class="n">nprobe</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">index_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;nprobe&quot;</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span>
+                            <span class="n">nbits</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">index_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;nbits&quot;</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span>
+                            <span class="n">m</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">index_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;m&quot;</span><span class="p">),</span>
+                        <span class="p">)</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">col</span><span class="o">.</span><span class="n">activate_index</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">index_params</span><span class="p">[</span><span class="s2">&quot;index_name&quot;</span><span class="p">])</span>
+                        <span class="p">)</span>
+                    <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">index_params</span><span class="p">[</span><span class="s2">&quot;index_type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;HNSW&quot;</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">index_params</span><span class="p">[</span><span class="s2">&quot;index_type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">index_dict</span><span class="p">[</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">index_params</span><span class="p">[</span><span class="s2">&quot;index_type&quot;</span><span class="p">]</span>
+                        <span class="p">]</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">col</span><span class="o">.</span><span class="n">create_index</span><span class="p">(</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_vector_field</span><span class="p">,</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">index_params</span><span class="p">[</span><span class="s2">&quot;index_name&quot;</span><span class="p">],</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">index_params</span><span class="p">[</span><span class="s2">&quot;index_type&quot;</span><span class="p">],</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">index_params</span><span class="p">[</span><span class="s2">&quot;metric_type&quot;</span><span class="p">],</span>
+                            <span class="n">M</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">index_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;M&quot;</span><span class="p">),</span>
+                            <span class="n">ef_construction</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">index_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ef_construction&quot;</span><span class="p">),</span>
+                            <span class="n">ef_search</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">index_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ef_search&quot;</span><span class="p">),</span>
+                        <span class="p">)</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">col</span><span class="o">.</span><span class="n">activate_index</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">index_params</span><span class="p">[</span><span class="s2">&quot;index_name&quot;</span><span class="p">])</span>
+                        <span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                            <span class="s2">&quot;Index name does not match, &quot;</span>
+                            <span class="s2">&quot;please enter the correct index name. &quot;</span>
+                            <span class="s2">&quot;(FLAT, IVF_FLAT, IVF_PQ,IVF_SQ, HNSW)&quot;</span>
+                        <span class="p">)</span>
+
+<div class="viewcode-block" id="Hippo.add_texts"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.hippo.Hippo.html#langchain_community.vectorstores.hippo.Hippo.add_texts">[docs]</a>    <span class="k">def</span> <span class="nf">add_texts</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">texts</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">metadatas</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">timeout</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add text to the collection.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            texts: An iterable that contains the text to be added.</span>
+<span class="sd">            metadatas: An optional list of dictionaries,</span>
+<span class="sd">            each dictionary contains the metadata associated with a text.</span>
+<span class="sd">            timeout: Optional timeout, in seconds.</span>
+<span class="sd">            batch_size: The number of texts inserted in each batch, defaults to 1000.</span>
+<span class="sd">            **kwargs: Other optional parameters.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A list of strings, containing the unique identifiers of the inserted texts.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            If the collection has not yet been created,</span>
+<span class="sd">            this method will create a new collection.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">transwarp_hippo_api.hippo_client</span> <span class="kn">import</span> <span class="n">HippoTable</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">texts</span> <span class="ow">or</span> <span class="nb">all</span><span class="p">(</span><span class="n">t</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">texts</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Nothing to insert, skipping.&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">[]</span>
+        <span class="n">texts</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">texts</span><span class="p">)</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[add_texts] texts: </span><span class="si">{</span><span class="n">texts</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">embeddings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">embedding_func</span><span class="o">.</span><span class="n">embed_documents</span><span class="p">(</span><span class="n">texts</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">NotImplementedError</span><span class="p">:</span>
+            <span class="n">embeddings</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">embedding_func</span><span class="o">.</span><span class="n">embed_query</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">texts</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">embeddings</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Nothing to insert, skipping.&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">[]</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[add_texts] len_embeddings:</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">embeddings</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># 如果还没有创建collection则创建collection</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">col</span><span class="p">,</span> <span class="n">HippoTable</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_get_env</span><span class="p">(</span><span class="n">embeddings</span><span class="p">,</span> <span class="n">metadatas</span><span class="p">)</span>
+
+        <span class="c1"># Dict to hold all insert columns</span>
+        <span class="n">insert_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_text_field</span><span class="p">:</span> <span class="n">texts</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_vector_field</span><span class="p">:</span> <span class="n">embeddings</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[add_texts] metadatas:</span><span class="si">{</span><span class="n">metadatas</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[add_texts] fields:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">metadatas</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">metadatas</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span>
+                        <span class="n">insert_dict</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="p">[])</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">insert_dict</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_text_field</span><span class="p">])</span>
+
+        <span class="c1"># Total insert count</span>
+        <span class="n">vectors</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="n">insert_dict</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_vector_field</span><span class="p">]</span>
+        <span class="n">total_count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">vectors</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s2">&quot;pk&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s2">&quot;pk&quot;</span><span class="p">)</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[add_texts] total_count:</span><span class="si">{</span><span class="n">total_count</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">total_count</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">):</span>
+            <span class="c1"># Grab end index</span>
+            <span class="n">end</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">total_count</span><span class="p">)</span>
+            <span class="c1"># Convert dict to list of lists batch for insertion</span>
+            <span class="n">insert_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">insert_dict</span><span class="p">[</span><span class="n">x</span><span class="p">][</span><span class="n">i</span><span class="p">:</span><span class="n">end</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">]</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">col</span><span class="o">.</span><span class="n">insert_rows</span><span class="p">(</span><span class="n">insert_list</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;05 [add_texts] insert </span><span class="si">{</span><span class="n">res</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+                    <span class="s2">&quot;Failed to insert batch starting at entity: </span><span class="si">%s</span><span class="s2">/</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">total_count</span>
+                <span class="p">)</span>
+                <span class="k">raise</span> <span class="n">e</span>
+        <span class="k">return</span> <span class="p">[</span><span class="s2">&quot;&quot;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="Hippo.similarity_search"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.hippo.Hippo.html#langchain_community.vectorstores.hippo.Hippo.similarity_search">[docs]</a>    <span class="k">def</span> <span class="nf">similarity_search</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+        <span class="n">param</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">expr</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">timeout</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Perform a similarity search on the query string.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            query (str): The text to search for.</span>
+<span class="sd">            k (int, optional): The number of results to return. Default is 4.</span>
+<span class="sd">            param (dict, optional): Specifies the search parameters for the index.</span>
+<span class="sd">            Defaults to None.</span>
+<span class="sd">            expr (str, optional): Filtering expression. Defaults to None.</span>
+<span class="sd">            timeout (int, optional): Time to wait before a timeout error.</span>
+<span class="sd">            Defaults to None.</span>
+<span class="sd">            kwargs: Keyword arguments for Collection.search().</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List[Document]: The document results of the search.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">col</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;No existing collection to search.&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">[]</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">similarity_search_with_score</span><span class="p">(</span>
+            <span class="n">query</span><span class="o">=</span><span class="n">query</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="n">param</span><span class="o">=</span><span class="n">param</span><span class="p">,</span> <span class="n">expr</span><span class="o">=</span><span class="n">expr</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">doc</span> <span class="k">for</span> <span class="n">doc</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">res</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="Hippo.similarity_search_with_score"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.hippo.Hippo.html#langchain_community.vectorstores.hippo.Hippo.similarity_search_with_score">[docs]</a>    <span class="k">def</span> <span class="nf">similarity_search_with_score</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+        <span class="n">param</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">expr</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">timeout</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Document</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Performs a search on the query string and returns results with scores.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            query (str): The text being searched.</span>
+<span class="sd">            k (int, optional): The number of results to return.</span>
+<span class="sd">            Default is 4.</span>
+<span class="sd">            param (dict): Specifies the search parameters for the index.</span>
+<span class="sd">            Default is None.</span>
+<span class="sd">            expr (str, optional): Filtering expression. Default is None.</span>
+<span class="sd">            timeout (int, optional): The waiting time before a timeout error.</span>
+<span class="sd">            Default is None.</span>
+<span class="sd">            kwargs: Keyword arguments for Collection.search().</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List[float], List[Tuple[Document, any, any]]:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">col</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;No existing collection to search.&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">[]</span>
+
+        <span class="c1"># Embed the query text.</span>
+        <span class="n">embedding</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">embedding_func</span><span class="o">.</span><span class="n">embed_query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+
+        <span class="n">ret</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">similarity_search_with_score_by_vector</span><span class="p">(</span>
+            <span class="n">embedding</span><span class="o">=</span><span class="n">embedding</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="n">param</span><span class="o">=</span><span class="n">param</span><span class="p">,</span> <span class="n">expr</span><span class="o">=</span><span class="n">expr</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">ret</span></div>
+
+<div class="viewcode-block" id="Hippo.similarity_search_with_score_by_vector"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.hippo.Hippo.html#langchain_community.vectorstores.hippo.Hippo.similarity_search_with_score_by_vector">[docs]</a>    <span class="k">def</span> <span class="nf">similarity_search_with_score_by_vector</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">embedding</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+        <span class="n">k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+        <span class="n">param</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">expr</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">timeout</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Document</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Performs a search on the query string and returns results with scores.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            embedding (List[float]): The embedding vector being searched.</span>
+<span class="sd">            k (int, optional): The number of results to return.</span>
+<span class="sd">            Default is 4.</span>
+<span class="sd">            param (dict): Specifies the search parameters for the index.</span>
+<span class="sd">            Default is None.</span>
+<span class="sd">            expr (str, optional): Filtering expression. Default is None.</span>
+<span class="sd">            timeout (int, optional): The waiting time before a timeout error.</span>
+<span class="sd">            Default is None.</span>
+<span class="sd">            kwargs: Keyword arguments for Collection.search().</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List[Tuple[Document, float]]: Resulting documents and scores.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">col</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;No existing collection to search.&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">[]</span>
+
+        <span class="c1"># if param is None:</span>
+        <span class="c1">#     param = self.search_params</span>
+
+        <span class="c1"># Determine result metadata fields.</span>
+        <span class="n">output_fields</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[:]</span>
+        <span class="n">output_fields</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_vector_field</span><span class="p">)</span>
+
+        <span class="c1"># Perform the search.</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;search_field:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_vector_field</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;vectors:</span><span class="si">{</span><span class="p">[</span><span class="n">embedding</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;output_fields:</span><span class="si">{</span><span class="n">output_fields</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;topk:</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;dsl:</span><span class="si">{</span><span class="n">expr</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">col</span><span class="o">.</span><span class="n">query</span><span class="p">(</span>
+            <span class="n">search_field</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_vector_field</span><span class="p">,</span>
+            <span class="n">vectors</span><span class="o">=</span><span class="p">[</span><span class="n">embedding</span><span class="p">],</span>
+            <span class="n">output_fields</span><span class="o">=</span><span class="n">output_fields</span><span class="p">,</span>
+            <span class="n">topk</span><span class="o">=</span><span class="n">k</span><span class="p">,</span>
+            <span class="n">dsl</span><span class="o">=</span><span class="n">expr</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="c1"># Organize results.</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[similarity_search_with_score_by_vector] res:</span><span class="si">{</span><span class="n">res</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">score_col</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_text_field</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">cores&quot;</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">items</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="n">res</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">field</span><span class="p">]</span> <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">output_fields</span><span class="p">]):</span>
+            <span class="n">meta</span> <span class="o">=</span> <span class="p">{</span><span class="n">field</span><span class="p">:</span> <span class="n">value</span> <span class="k">for</span> <span class="n">field</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">output_fields</span><span class="p">,</span> <span class="n">items</span><span class="p">)}</span>
+            <span class="n">doc</span> <span class="o">=</span> <span class="n">Document</span><span class="p">(</span><span class="n">page_content</span><span class="o">=</span><span class="n">meta</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_text_field</span><span class="p">),</span> <span class="n">metadata</span><span class="o">=</span><span class="n">meta</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;[similarity_search_with_score_by_vector] &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;res[0][score_col]:</span><span class="si">{</span><span class="n">res</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">score_col</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+            <span class="n">score</span> <span class="o">=</span> <span class="n">res</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">score_col</span><span class="p">][</span><span class="n">count</span><span class="p">]</span>
+            <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">ret</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">doc</span><span class="p">,</span> <span class="n">score</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">ret</span></div>
+
+<div class="viewcode-block" id="Hippo.from_texts"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.hippo.Hippo.html#langchain_community.vectorstores.hippo.Hippo.from_texts">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_texts</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">texts</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">embedding</span><span class="p">:</span> <span class="n">Embeddings</span><span class="p">,</span>
+        <span class="n">metadatas</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">table_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;test&quot;</span><span class="p">,</span>
+        <span class="n">database_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;default&quot;</span><span class="p">,</span>
+        <span class="n">connection_args</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">DEFAULT_HIPPO_CONNECTION</span><span class="p">,</span>
+        <span class="n">index_params</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">search_params</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">drop_old</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Hippo&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Creates an instance of the VST class from the given texts.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            texts (List[str]): List of texts to be added.</span>
+<span class="sd">            embedding (Embeddings): Embedding model for the texts.</span>
+<span class="sd">            metadatas (List[dict], optional):</span>
+<span class="sd">            List of metadata dictionaries for each text.Defaults to None.</span>
+<span class="sd">            table_name (str): Name of the table. Defaults to &quot;test&quot;.</span>
+<span class="sd">            database_name (str): Name of the database. Defaults to &quot;default&quot;.</span>
+<span class="sd">            connection_args (dict[str, Any]): Connection parameters.</span>
+<span class="sd">            Defaults to DEFAULT_HIPPO_CONNECTION.</span>
+<span class="sd">            index_params (dict): Indexing parameters. Defaults to None.</span>
+<span class="sd">            search_params (dict): Search parameters. Defaults to an empty dictionary.</span>
+<span class="sd">            drop_old (bool): Whether to drop the old collection. Defaults to False.</span>
+<span class="sd">            kwargs: Other arguments.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Hippo: An instance of the VST class.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">search_params</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">search_params</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;00 [from_texts] init the class of Hippo&quot;</span><span class="p">)</span>
+        <span class="n">vector_db</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="n">embedding_function</span><span class="o">=</span><span class="n">embedding</span><span class="p">,</span>
+            <span class="n">table_name</span><span class="o">=</span><span class="n">table_name</span><span class="p">,</span>
+            <span class="n">database_name</span><span class="o">=</span><span class="n">database_name</span><span class="p">,</span>
+            <span class="n">connection_args</span><span class="o">=</span><span class="n">connection_args</span><span class="p">,</span>
+            <span class="n">index_params</span><span class="o">=</span><span class="n">index_params</span><span class="p">,</span>
+            <span class="n">drop_old</span><span class="o">=</span><span class="n">drop_old</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[from_texts] texts:</span><span class="si">{</span><span class="n">texts</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[from_texts] metadatas:</span><span class="si">{</span><span class="n">metadatas</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">vector_db</span><span class="o">.</span><span class="n">add_texts</span><span class="p">(</span><span class="n">texts</span><span class="o">=</span><span class="n">texts</span><span class="p">,</span> <span class="n">metadatas</span><span class="o">=</span><span class="n">metadatas</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">vector_db</span></div></div>
+</pre></div>
+
+      </div>
+    <div class="container">
+      <footer class="sk-content-footer">
+            &copy; 2023, LangChain, Inc..
+          Last updated on Mar 15, 2024.
+      </footer>
+    </div>
+  </div>
+</div>
+<script src="../../../_static/js/vendor/bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    /* Add a [>>>] button on the top-right corner of code samples to hide
+     * the >>> and ... prompts and the output and thus make the code
+     * copyable. */
+    var div = $('.highlight-python .highlight,' +
+                '.highlight-python3 .highlight,' +
+                '.highlight-pycon .highlight,' +
+		'.highlight-default .highlight')
+    var pre = div.find('pre');
+
+    // get the styles from the current theme
+    pre.parent().parent().css('position', 'relative');
+    var hide_text = 'Hide prompts and outputs';
+    var show_text = 'Show prompts and outputs';
+
+    // create and add the button to all the code blocks that contain >>>
+    div.each(function(index) {
+        var jthis = $(this);
+        if (jthis.find('.gp').length > 0) {
+            var button = $('<span class="copybutton">&gt;&gt;&gt;</span>');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+            jthis.prepend(button);
+        }
+        // tracebacks (.gt) contain bare text elements that need to be
+        // wrapped in a span to work with .nextUntil() (see later)
+        jthis.find('pre:has(.gt)').contents().filter(function() {
+            return ((this.nodeType == 3) && (this.data.trim().length > 0));
+        }).wrap('<span>');
+    });
+
+    // define the behavior of the button when it's clicked
+    $('.copybutton').click(function(e){
+        e.preventDefault();
+        var button = $(this);
+        if (button.data('hidden') === 'false') {
+            // hide the code output
+            button.parent().find('.go, .gp, .gt').hide();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'hidden');
+            button.css('text-decoration', 'line-through');
+            button.attr('title', show_text);
+            button.data('hidden', 'true');
+        } else {
+            // show the code output
+            button.parent().find('.go, .gp, .gt').show();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'visible');
+            button.css('text-decoration', 'none');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+        }
+    });
+
+	/*** Add permalink buttons next to glossary terms ***/
+	$('dl.glossary > dt[id]').append(function() {
+		return ('<a class="headerlink" href="#' +
+			    this.getAttribute('id') +
+			    '" title="Permalink to this term">¶</a>');
+	});
+});
+
+</script>
+    
+</body>
+</html>

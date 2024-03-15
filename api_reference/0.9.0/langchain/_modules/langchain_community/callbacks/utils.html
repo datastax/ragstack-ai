@@ -1,0 +1,437 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>langchain_community.callbacks.utils &mdash; 🦜🔗 LangChain 0.1.12</title>
+  
+  <link rel="canonical" href="https://api.python.langchain.com/en/latest/_modules/langchain_community/callbacks/utils.html" />
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/vendor/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/autodoc_pydantic.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/sphinx-dropdown.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/panels-bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+<script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+<script src="../../../_static/jquery.js"></script> 
+</head>
+<body>
+
+
+<nav id="navbar" class="sk-docs-navbar navbar navbar-expand-md navbar-light bg-light py-0">
+  <div class="container-fluid sk-docs-container px-0">
+    <button
+      id="sk-navbar-toggler"
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="sk-navbar-collapse collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../langchain_api_reference.html">LangChain</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../core_api_reference.html">Core</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../community_api_reference.html">Community</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../experimental_api_reference.html">Experimental</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../text_splitters_api_reference.html">Text splitters</a>
+        </li>
+        <li class="nav-item dropdown nav-more-item-dropdown">
+          <a class="sk-nav-link nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Partner libs</a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+          </div>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" target="_blank" rel="noopener noreferrer" href="https://python.langchain.com/">Docs</a>
+        </li>
+      </ul>
+      <div id="searchbox" role="search">
+          <div class="searchformwrapper">
+          <form class="search" action="../../../search.html" method="get">
+            <input class="sk-search-text-input" type="text" name="q" aria-labelledby="searchlabel" />
+            <input class="sk-search-text-btn" type="submit" value="Go" />
+          </form>
+          </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="d-flex" id="sk-doc-wrapper">
+    <input type="checkbox" name="sk-toggle-checkbox" id="sk-toggle-checkbox">
+    <label id="sk-sidemenu-toggle" class="sk-btn-toggle-toc btn sk-btn-primary" for="sk-toggle-checkbox">Toggle Menu</label>
+    <div id="sk-sidebar-wrapper" class="border-right">
+      <div class="sk-sidebar-toc-wrapper">
+        <div class="btn-group w-100 mb-2" role="group" aria-label="rellinks">
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Prev</a><a href="../../index.html" role="button" class="btn sk-btn-rellink py-1" sk-rellink-tooltip="Module code">Up</a>
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Next</a>
+        </div>
+            <div class="sk-sidebar-toc">
+              
+            </div>
+      </div>
+    </div>
+    <div id="sk-page-content-wrapper">
+      <div class="sk-page-content container-fluid body px-md-3" role="main">
+        
+  <h1>Source code for langchain_community.callbacks.utils</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">hashlib</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+
+
+<div class="viewcode-block" id="import_spacy"><a class="viewcode-back" href="../../../callbacks/langchain_community.callbacks.utils.import_spacy.html#langchain_community.callbacks.clearml_callback.import_spacy">[docs]</a><span class="k">def</span> <span class="nf">import_spacy</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Import the spacy python package and raise an error if it is not installed.&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">import</span> <span class="nn">spacy</span>
+    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+            <span class="s2">&quot;This callback manager requires the `spacy` python &quot;</span>
+            <span class="s2">&quot;package installed. Please install it with `pip install spacy`&quot;</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">spacy</span></div>
+
+
+<div class="viewcode-block" id="import_pandas"><a class="viewcode-back" href="../../../callbacks/langchain_community.callbacks.utils.import_pandas.html#langchain_community.callbacks.clearml_callback.import_pandas">[docs]</a><span class="k">def</span> <span class="nf">import_pandas</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Import the pandas python package and raise an error if it is not installed.&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">import</span> <span class="nn">pandas</span>
+    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+            <span class="s2">&quot;This callback manager requires the `pandas` python &quot;</span>
+            <span class="s2">&quot;package installed. Please install it with `pip install pandas`&quot;</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">pandas</span></div>
+
+
+<div class="viewcode-block" id="import_textstat"><a class="viewcode-back" href="../../../callbacks/langchain_community.callbacks.utils.import_textstat.html#langchain_community.callbacks.clearml_callback.import_textstat">[docs]</a><span class="k">def</span> <span class="nf">import_textstat</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Import the textstat python package and raise an error if it is not installed.&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">import</span> <span class="nn">textstat</span>
+    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+            <span class="s2">&quot;This callback manager requires the `textstat` python &quot;</span>
+            <span class="s2">&quot;package installed. Please install it with `pip install textstat`&quot;</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">textstat</span></div>
+
+
+<span class="k">def</span> <span class="nf">_flatten_dict</span><span class="p">(</span>
+    <span class="n">nested_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">parent_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">sep</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;_&quot;</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generator that yields flattened items from a nested dictionary for a flat dict.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">        nested_dict (dict): The nested dictionary to flatten.</span>
+<span class="sd">        parent_key (str): The prefix to prepend to the keys of the flattened dict.</span>
+<span class="sd">        sep (str): The separator to use between the parent key and the key of the</span>
+<span class="sd">            flattened dictionary.</span>
+
+<span class="sd">    Yields:</span>
+<span class="sd">        (str, any): A key-value pair from the flattened dictionary.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">nested_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">new_key</span> <span class="o">=</span> <span class="n">parent_key</span> <span class="o">+</span> <span class="n">sep</span> <span class="o">+</span> <span class="n">key</span> <span class="k">if</span> <span class="n">parent_key</span> <span class="k">else</span> <span class="n">key</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">yield from</span> <span class="n">_flatten_dict</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">new_key</span><span class="p">,</span> <span class="n">sep</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">new_key</span><span class="p">,</span> <span class="n">value</span>
+
+
+<div class="viewcode-block" id="flatten_dict"><a class="viewcode-back" href="../../../callbacks/langchain_community.callbacks.utils.flatten_dict.html#langchain_community.callbacks.clearml_callback.flatten_dict">[docs]</a><span class="k">def</span> <span class="nf">flatten_dict</span><span class="p">(</span>
+    <span class="n">nested_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">parent_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">sep</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;_&quot;</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Flattens a nested dictionary into a flat dictionary.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">        nested_dict (dict): The nested dictionary to flatten.</span>
+<span class="sd">        parent_key (str): The prefix to prepend to the keys of the flattened dict.</span>
+<span class="sd">        sep (str): The separator to use between the parent key and the key of the</span>
+<span class="sd">            flattened dictionary.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        (dict): A flat dictionary.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">flat_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">_flatten_dict</span><span class="p">(</span><span class="n">nested_dict</span><span class="p">,</span> <span class="n">parent_key</span><span class="p">,</span> <span class="n">sep</span><span class="p">)}</span>
+    <span class="k">return</span> <span class="n">flat_dict</span></div>
+
+
+<div class="viewcode-block" id="hash_string"><a class="viewcode-back" href="../../../callbacks/langchain_community.callbacks.utils.hash_string.html#langchain_community.callbacks.clearml_callback.hash_string">[docs]</a><span class="k">def</span> <span class="nf">hash_string</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Hash a string using sha1.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">        s (str): The string to hash.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        (str): The hashed string.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">sha1</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="load_json"><a class="viewcode-back" href="../../../callbacks/langchain_community.callbacks.utils.load_json.html#langchain_community.callbacks.clearml_callback.load_json">[docs]</a><span class="k">def</span> <span class="nf">load_json</span><span class="p">(</span><span class="n">json_path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Load json file to a string.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">        json_path (str): The path to the json file.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        (str): The string representation of the json file.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">json_path</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">data</span></div>
+
+
+<div class="viewcode-block" id="BaseMetadataCallbackHandler"><a class="viewcode-back" href="../../../callbacks/langchain_community.callbacks.utils.BaseMetadataCallbackHandler.html#langchain_community.callbacks.clearml_callback.BaseMetadataCallbackHandler">[docs]</a><span class="k">class</span> <span class="nc">BaseMetadataCallbackHandler</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;This class handles the metadata and associated function states for callbacks.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        step (int): The current step.</span>
+<span class="sd">        starts (int): The number of times the start method has been called.</span>
+<span class="sd">        ends (int): The number of times the end method has been called.</span>
+<span class="sd">        errors (int): The number of times the error method has been called.</span>
+<span class="sd">        text_ctr (int): The number of times the text method has been called.</span>
+<span class="sd">        ignore_llm_ (bool): Whether to ignore llm callbacks.</span>
+<span class="sd">        ignore_chain_ (bool): Whether to ignore chain callbacks.</span>
+<span class="sd">        ignore_agent_ (bool): Whether to ignore agent callbacks.</span>
+<span class="sd">        ignore_retriever_ (bool): Whether to ignore retriever callbacks.</span>
+<span class="sd">        always_verbose_ (bool): Whether to always be verbose.</span>
+<span class="sd">        chain_starts (int): The number of times the chain start method has been called.</span>
+<span class="sd">        chain_ends (int): The number of times the chain end method has been called.</span>
+<span class="sd">        llm_starts (int): The number of times the llm start method has been called.</span>
+<span class="sd">        llm_ends (int): The number of times the llm end method has been called.</span>
+<span class="sd">        llm_streams (int): The number of times the text method has been called.</span>
+<span class="sd">        tool_starts (int): The number of times the tool start method has been called.</span>
+<span class="sd">        tool_ends (int): The number of times the tool end method has been called.</span>
+<span class="sd">        agent_ends (int): The number of times the agent end method has been called.</span>
+<span class="sd">        on_llm_start_records (list): A list of records of the on_llm_start method.</span>
+<span class="sd">        on_llm_token_records (list): A list of records of the on_llm_token method.</span>
+<span class="sd">        on_llm_end_records (list): A list of records of the on_llm_end method.</span>
+<span class="sd">        on_chain_start_records (list): A list of records of the on_chain_start method.</span>
+<span class="sd">        on_chain_end_records (list): A list of records of the on_chain_end method.</span>
+<span class="sd">        on_tool_start_records (list): A list of records of the on_tool_start method.</span>
+<span class="sd">        on_tool_end_records (list): A list of records of the on_tool_end method.</span>
+<span class="sd">        on_agent_finish_records (list): A list of records of the on_agent_end method.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="BaseMetadataCallbackHandler.__init__"><a class="viewcode-back" href="../../../callbacks/langchain_community.callbacks.utils.BaseMetadataCallbackHandler.html#langchain_community.callbacks.clearml_callback.BaseMetadataCallbackHandler.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">step</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">starts</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ends</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">errors</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">text_ctr</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">ignore_llm_</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ignore_chain_</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ignore_agent_</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ignore_retriever_</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">always_verbose_</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">chain_starts</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">chain_ends</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">llm_starts</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">llm_ends</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">llm_streams</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">tool_starts</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tool_ends</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">agent_ends</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">on_llm_start_records</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">on_llm_token_records</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">on_llm_end_records</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">on_chain_start_records</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">on_chain_end_records</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">on_tool_start_records</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">on_tool_end_records</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">on_text_records</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">on_agent_finish_records</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">on_agent_action_records</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[]</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">always_verbose</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Whether to call verbose callbacks even if verbose is False.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">always_verbose_</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">ignore_llm</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Whether to ignore LLM callbacks.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ignore_llm_</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">ignore_chain</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Whether to ignore chain callbacks.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ignore_chain_</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">ignore_agent</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Whether to ignore agent callbacks.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ignore_agent_</span>
+
+<div class="viewcode-block" id="BaseMetadataCallbackHandler.get_custom_callback_meta"><a class="viewcode-back" href="../../../callbacks/langchain_community.callbacks.utils.BaseMetadataCallbackHandler.html#langchain_community.callbacks.clearml_callback.BaseMetadataCallbackHandler.get_custom_callback_meta">[docs]</a>    <span class="k">def</span> <span class="nf">get_custom_callback_meta</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;step&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">step</span><span class="p">,</span>
+            <span class="s2">&quot;starts&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">starts</span><span class="p">,</span>
+            <span class="s2">&quot;ends&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">ends</span><span class="p">,</span>
+            <span class="s2">&quot;errors&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">errors</span><span class="p">,</span>
+            <span class="s2">&quot;text_ctr&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">text_ctr</span><span class="p">,</span>
+            <span class="s2">&quot;chain_starts&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">chain_starts</span><span class="p">,</span>
+            <span class="s2">&quot;chain_ends&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">chain_ends</span><span class="p">,</span>
+            <span class="s2">&quot;llm_starts&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">llm_starts</span><span class="p">,</span>
+            <span class="s2">&quot;llm_ends&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">llm_ends</span><span class="p">,</span>
+            <span class="s2">&quot;llm_streams&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">llm_streams</span><span class="p">,</span>
+            <span class="s2">&quot;tool_starts&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">tool_starts</span><span class="p">,</span>
+            <span class="s2">&quot;tool_ends&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">tool_ends</span><span class="p">,</span>
+            <span class="s2">&quot;agent_ends&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">agent_ends</span><span class="p">,</span>
+        <span class="p">}</span></div>
+
+<div class="viewcode-block" id="BaseMetadataCallbackHandler.reset_callback_meta"><a class="viewcode-back" href="../../../callbacks/langchain_community.callbacks.utils.BaseMetadataCallbackHandler.html#langchain_community.callbacks.clearml_callback.BaseMetadataCallbackHandler.reset_callback_meta">[docs]</a>    <span class="k">def</span> <span class="nf">reset_callback_meta</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reset the callback metadata.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">step</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">starts</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ends</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">errors</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">text_ctr</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">ignore_llm_</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ignore_chain_</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ignore_agent_</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">always_verbose_</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">chain_starts</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">chain_ends</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">llm_starts</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">llm_ends</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">llm_streams</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">tool_starts</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tool_ends</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">agent_ends</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">on_llm_start_records</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">on_llm_token_records</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">on_llm_end_records</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">on_chain_start_records</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">on_chain_end_records</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">on_tool_start_records</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">on_tool_end_records</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">on_text_records</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">on_agent_finish_records</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">on_agent_action_records</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">return</span> <span class="kc">None</span></div></div>
+</pre></div>
+
+      </div>
+    <div class="container">
+      <footer class="sk-content-footer">
+            &copy; 2023, LangChain, Inc..
+          Last updated on Mar 15, 2024.
+      </footer>
+    </div>
+  </div>
+</div>
+<script src="../../../_static/js/vendor/bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    /* Add a [>>>] button on the top-right corner of code samples to hide
+     * the >>> and ... prompts and the output and thus make the code
+     * copyable. */
+    var div = $('.highlight-python .highlight,' +
+                '.highlight-python3 .highlight,' +
+                '.highlight-pycon .highlight,' +
+		'.highlight-default .highlight')
+    var pre = div.find('pre');
+
+    // get the styles from the current theme
+    pre.parent().parent().css('position', 'relative');
+    var hide_text = 'Hide prompts and outputs';
+    var show_text = 'Show prompts and outputs';
+
+    // create and add the button to all the code blocks that contain >>>
+    div.each(function(index) {
+        var jthis = $(this);
+        if (jthis.find('.gp').length > 0) {
+            var button = $('<span class="copybutton">&gt;&gt;&gt;</span>');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+            jthis.prepend(button);
+        }
+        // tracebacks (.gt) contain bare text elements that need to be
+        // wrapped in a span to work with .nextUntil() (see later)
+        jthis.find('pre:has(.gt)').contents().filter(function() {
+            return ((this.nodeType == 3) && (this.data.trim().length > 0));
+        }).wrap('<span>');
+    });
+
+    // define the behavior of the button when it's clicked
+    $('.copybutton').click(function(e){
+        e.preventDefault();
+        var button = $(this);
+        if (button.data('hidden') === 'false') {
+            // hide the code output
+            button.parent().find('.go, .gp, .gt').hide();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'hidden');
+            button.css('text-decoration', 'line-through');
+            button.attr('title', show_text);
+            button.data('hidden', 'true');
+        } else {
+            // show the code output
+            button.parent().find('.go, .gp, .gt').show();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'visible');
+            button.css('text-decoration', 'none');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+        }
+    });
+
+	/*** Add permalink buttons next to glossary terms ***/
+	$('dl.glossary > dt[id]').append(function() {
+		return ('<a class="headerlink" href="#' +
+			    this.getAttribute('id') +
+			    '" title="Permalink to this term">¶</a>');
+	});
+});
+
+</script>
+    
+</body>
+</html>

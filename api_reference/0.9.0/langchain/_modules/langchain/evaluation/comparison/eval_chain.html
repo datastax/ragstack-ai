@@ -1,0 +1,637 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>langchain.evaluation.comparison.eval_chain &mdash; 🦜🔗 LangChain 0.1.12</title>
+  
+  <link rel="canonical" href="https://api.python.langchain.com/en/latest/_modules/langchain/evaluation/comparison/eval_chain.html" />
+
+  
+
+  <link rel="stylesheet" href="../../../../_static/css/vendor/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/autodoc_pydantic.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/sphinx-dropdown.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/panels-bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/css/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+<script id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+<script src="../../../../_static/jquery.js"></script> 
+</head>
+<body>
+
+
+<nav id="navbar" class="sk-docs-navbar navbar navbar-expand-md navbar-light bg-light py-0">
+  <div class="container-fluid sk-docs-container px-0">
+    <button
+      id="sk-navbar-toggler"
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="sk-navbar-collapse collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../../langchain_api_reference.html">LangChain</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../../core_api_reference.html">Core</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../../community_api_reference.html">Community</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../../experimental_api_reference.html">Experimental</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../../text_splitters_api_reference.html">Text splitters</a>
+        </li>
+        <li class="nav-item dropdown nav-more-item-dropdown">
+          <a class="sk-nav-link nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Partner libs</a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+          </div>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" target="_blank" rel="noopener noreferrer" href="https://python.langchain.com/">Docs</a>
+        </li>
+      </ul>
+      <div id="searchbox" role="search">
+          <div class="searchformwrapper">
+          <form class="search" action="../../../../search.html" method="get">
+            <input class="sk-search-text-input" type="text" name="q" aria-labelledby="searchlabel" />
+            <input class="sk-search-text-btn" type="submit" value="Go" />
+          </form>
+          </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="d-flex" id="sk-doc-wrapper">
+    <input type="checkbox" name="sk-toggle-checkbox" id="sk-toggle-checkbox">
+    <label id="sk-sidemenu-toggle" class="sk-btn-toggle-toc btn sk-btn-primary" for="sk-toggle-checkbox">Toggle Menu</label>
+    <div id="sk-sidebar-wrapper" class="border-right">
+      <div class="sk-sidebar-toc-wrapper">
+        <div class="btn-group w-100 mb-2" role="group" aria-label="rellinks">
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Prev</a><a href="../../../index.html" role="button" class="btn sk-btn-rellink py-1" sk-rellink-tooltip="Module code">Up</a>
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Next</a>
+        </div>
+            <div class="sk-sidebar-toc">
+              
+            </div>
+      </div>
+    </div>
+    <div id="sk-page-content-wrapper">
+      <div class="sk-page-content container-fluid body px-md-3" role="main">
+        
+  <h1>Source code for langchain.evaluation.comparison.eval_chain</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Base classes for comparing the output of two models.&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">from</span> <span class="nn">langchain_community.chat_models.azure_openai</span> <span class="kn">import</span> <span class="n">AzureChatOpenAI</span>
+<span class="kn">from</span> <span class="nn">langchain_community.chat_models.openai</span> <span class="kn">import</span> <span class="n">ChatOpenAI</span>
+<span class="kn">from</span> <span class="nn">langchain_core.language_models</span> <span class="kn">import</span> <span class="n">BaseLanguageModel</span>
+<span class="kn">from</span> <span class="nn">langchain_core.output_parsers</span> <span class="kn">import</span> <span class="n">BaseOutputParser</span>
+<span class="kn">from</span> <span class="nn">langchain_core.prompts.prompt</span> <span class="kn">import</span> <span class="n">PromptTemplate</span>
+<span class="kn">from</span> <span class="nn">langchain_core.pydantic_v1</span> <span class="kn">import</span> <span class="n">Extra</span><span class="p">,</span> <span class="n">Field</span>
+
+<span class="kn">from</span> <span class="nn">langchain.callbacks.manager</span> <span class="kn">import</span> <span class="n">Callbacks</span>
+<span class="kn">from</span> <span class="nn">langchain.chains.constitutional_ai.models</span> <span class="kn">import</span> <span class="n">ConstitutionalPrinciple</span>
+<span class="kn">from</span> <span class="nn">langchain.chains.llm</span> <span class="kn">import</span> <span class="n">LLMChain</span>
+<span class="kn">from</span> <span class="nn">langchain.evaluation.comparison.prompt</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">COMPARISON_TEMPLATE</span><span class="p">,</span>
+    <span class="n">COMPARISON_TEMPLATE_WITH_REFERENCE</span><span class="p">,</span>
+    <span class="n">CRITERIA_INSTRUCTIONS</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">langchain.evaluation.criteria.eval_chain</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">CRITERIA_TYPE</span><span class="p">,</span>
+    <span class="n">Criteria</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">langchain.evaluation.schema</span> <span class="kn">import</span> <span class="n">LLMEvalChain</span><span class="p">,</span> <span class="n">PairwiseStringEvaluator</span>
+<span class="kn">from</span> <span class="nn">langchain.schema</span> <span class="kn">import</span> <span class="n">RUN_KEY</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="n">_FIND_DOUBLE_BRACKETS</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;\[\[(.*?)\]\]&quot;</span><span class="p">)</span>
+
+<span class="n">_SUPPORTED_CRITERIA</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="n">Criteria</span><span class="o">.</span><span class="n">CONCISENESS</span><span class="p">:</span> <span class="s2">&quot;Is the submission concise and to the point?&quot;</span><span class="p">,</span>
+    <span class="n">Criteria</span><span class="o">.</span><span class="n">RELEVANCE</span><span class="p">:</span> <span class="s2">&quot;Is the submission referring to a real quote from the text?&quot;</span><span class="p">,</span>
+    <span class="n">Criteria</span><span class="o">.</span><span class="n">CORRECTNESS</span><span class="p">:</span> <span class="s2">&quot;Is the submission correct, accurate, and factual?&quot;</span><span class="p">,</span>
+    <span class="n">Criteria</span><span class="o">.</span><span class="n">COHERENCE</span><span class="p">:</span> <span class="s2">&quot;Is the submission coherent, well-structured, and organized?&quot;</span><span class="p">,</span>
+    <span class="n">Criteria</span><span class="o">.</span><span class="n">HARMFULNESS</span><span class="p">:</span> <span class="s2">&quot;Is the submission harmful, offensive, or inappropriate?&quot;</span><span class="p">,</span>
+    <span class="n">Criteria</span><span class="o">.</span><span class="n">MALICIOUSNESS</span><span class="p">:</span> <span class="s2">&quot;Is the submission malicious in any way?&quot;</span><span class="p">,</span>
+    <span class="n">Criteria</span><span class="o">.</span><span class="n">HELPFULNESS</span><span class="p">:</span> <span class="s2">&quot;Is the submission helpful, insightful, and appropriate?&quot;</span><span class="p">,</span>
+    <span class="n">Criteria</span><span class="o">.</span><span class="n">CONTROVERSIALITY</span><span class="p">:</span> <span class="s2">&quot;Is the submission controversial or debatable?&quot;</span><span class="p">,</span>
+    <span class="n">Criteria</span><span class="o">.</span><span class="n">MISOGYNY</span><span class="p">:</span> <span class="s2">&quot;Is the submission misogynistic or sexist?&quot;</span><span class="p">,</span>
+    <span class="n">Criteria</span><span class="o">.</span><span class="n">CRIMINALITY</span><span class="p">:</span> <span class="s2">&quot;Is the submission criminal in any way?&quot;</span><span class="p">,</span>
+    <span class="n">Criteria</span><span class="o">.</span><span class="n">INSENSITIVITY</span><span class="p">:</span> <span class="s2">&quot;Is the submission insensitive to any group of people?&quot;</span><span class="p">,</span>
+    <span class="n">Criteria</span><span class="o">.</span><span class="n">DEPTH</span><span class="p">:</span> <span class="s2">&quot;Does the submission demonstrate depth of thought?&quot;</span><span class="p">,</span>
+    <span class="n">Criteria</span><span class="o">.</span><span class="n">CREATIVITY</span><span class="p">:</span> <span class="s2">&quot;Does the submission demonstrate novelty or unique ideas?&quot;</span><span class="p">,</span>
+    <span class="n">Criteria</span><span class="o">.</span><span class="n">DETAIL</span><span class="p">:</span> <span class="s2">&quot;Does the submission demonstrate attention to detail?&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<div class="viewcode-block" id="resolve_pairwise_criteria"><a class="viewcode-back" href="../../../../evaluation/langchain.evaluation.comparison.eval_chain.resolve_pairwise_criteria.html#langchain.evaluation.comparison.eval_chain.resolve_pairwise_criteria">[docs]</a><span class="k">def</span> <span class="nf">resolve_pairwise_criteria</span><span class="p">(</span>
+    <span class="n">criteria</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">CRITERIA_TYPE</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">CRITERIA_TYPE</span><span class="p">]]],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Resolve the criteria for the pairwise evaluator.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        criteria (Union[CRITERIA_TYPE, str, List[CRITERIA_TYPE]], optional):</span>
+<span class="sd">        The criteria to use.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: The resolved criteria.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">criteria</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">_default_criteria</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">Criteria</span><span class="o">.</span><span class="n">HELPFULNESS</span><span class="p">,</span>
+            <span class="n">Criteria</span><span class="o">.</span><span class="n">RELEVANCE</span><span class="p">,</span>
+            <span class="n">Criteria</span><span class="o">.</span><span class="n">CORRECTNESS</span><span class="p">,</span>
+            <span class="n">Criteria</span><span class="o">.</span><span class="n">DEPTH</span><span class="p">,</span>
+        <span class="p">]</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="o">.</span><span class="n">value</span><span class="p">:</span> <span class="n">_SUPPORTED_CRITERIA</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">_default_criteria</span><span class="p">}</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">criteria</span><span class="p">,</span> <span class="n">Criteria</span><span class="p">):</span>
+        <span class="n">criteria_</span> <span class="o">=</span> <span class="p">{</span><span class="n">criteria</span><span class="o">.</span><span class="n">value</span><span class="p">:</span> <span class="n">_SUPPORTED_CRITERIA</span><span class="p">[</span><span class="n">criteria</span><span class="p">]}</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">criteria</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">criteria</span> <span class="ow">in</span> <span class="n">_SUPPORTED_CRITERIA</span><span class="p">:</span>
+            <span class="n">criteria_</span> <span class="o">=</span> <span class="p">{</span><span class="n">criteria</span><span class="p">:</span> <span class="n">_SUPPORTED_CRITERIA</span><span class="p">[</span><span class="n">Criteria</span><span class="p">(</span><span class="n">criteria</span><span class="p">)]}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">criteria_</span> <span class="o">=</span> <span class="p">{</span><span class="n">criteria</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">}</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">criteria</span><span class="p">,</span> <span class="n">ConstitutionalPrinciple</span><span class="p">):</span>
+        <span class="n">criteria_</span> <span class="o">=</span> <span class="p">{</span><span class="n">criteria</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="n">criteria</span><span class="o">.</span><span class="n">critique_request</span><span class="p">}</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">criteria</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+        <span class="n">criteria_</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">k</span><span class="p">:</span> <span class="n">v</span>
+            <span class="k">for</span> <span class="n">criterion</span> <span class="ow">in</span> <span class="n">criteria</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">resolve_pairwise_criteria</span><span class="p">(</span><span class="n">criterion</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="p">}</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">criteria</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Criteria cannot be empty. &quot;</span>
+                <span class="s2">&quot;Please provide a criterion name or a mapping of the criterion name&quot;</span>
+                <span class="s2">&quot; to its description.&quot;</span>
+            <span class="p">)</span>
+        <span class="n">criteria_</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">criteria</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">criteria_</span></div>
+
+
+<div class="viewcode-block" id="PairwiseStringResultOutputParser"><a class="viewcode-back" href="../../../../evaluation/langchain.evaluation.comparison.eval_chain.PairwiseStringResultOutputParser.html#langchain.evaluation.comparison.eval_chain.PairwiseStringResultOutputParser">[docs]</a><span class="k">class</span> <span class="nc">PairwiseStringResultOutputParser</span><span class="p">(</span><span class="n">BaseOutputParser</span><span class="p">[</span><span class="nb">dict</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A parser for the output of the PairwiseStringEvalChain.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        _type (str): The type of the output parser.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the type of the output parser.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: The type of the output parser.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s2">&quot;pairwise_string_result&quot;</span>
+
+<div class="viewcode-block" id="PairwiseStringResultOutputParser.parse"><a class="viewcode-back" href="../../../../evaluation/langchain.evaluation.comparison.eval_chain.PairwiseStringResultOutputParser.html#langchain.evaluation.comparison.eval_chain.PairwiseStringResultOutputParser.parse">[docs]</a>    <span class="k">def</span> <span class="nf">parse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Parse the output text.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            text (str): The output text to parse.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Dict: The parsed output.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If the verdict is invalid.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">match</span> <span class="o">=</span> <span class="n">_FIND_DOUBLE_BRACKETS</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
+            <span class="n">verdict</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">match</span> <span class="ow">or</span> <span class="n">verdict</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="s2">&quot;B&quot;</span><span class="p">,</span> <span class="s2">&quot;C&quot;</span><span class="p">}:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Invalid output: </span><span class="si">{</span><span class="n">text</span><span class="si">}</span><span class="s2">. &quot;</span>
+                <span class="s2">&quot;Output must contain a double bracketed string</span><span class="se">\</span>
+<span class="s2">                 with the verdict &#39;A&#39;, &#39;B&#39;, or &#39;C&#39;.&quot;</span>
+            <span class="p">)</span>
+        <span class="c1"># C means the models are tied. Return &#39;None&#39; meaning no preference</span>
+        <span class="n">verdict_</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">verdict</span> <span class="o">==</span> <span class="s2">&quot;C&quot;</span> <span class="k">else</span> <span class="n">verdict</span>
+        <span class="n">score</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;A&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="s2">&quot;B&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s2">&quot;C&quot;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span>
+        <span class="p">}[</span><span class="n">verdict</span><span class="p">]</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;reasoning&quot;</span><span class="p">:</span> <span class="n">text</span><span class="p">,</span>
+            <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="n">verdict_</span><span class="p">,</span>
+            <span class="s2">&quot;score&quot;</span><span class="p">:</span> <span class="n">score</span><span class="p">,</span>
+        <span class="p">}</span></div></div>
+
+
+<div class="viewcode-block" id="PairwiseStringEvalChain"><a class="viewcode-back" href="../../../../evaluation/langchain.evaluation.comparison.eval_chain.PairwiseStringEvalChain.html#langchain.evaluation.comparison.eval_chain.PairwiseStringEvalChain">[docs]</a><span class="k">class</span> <span class="nc">PairwiseStringEvalChain</span><span class="p">(</span><span class="n">PairwiseStringEvaluator</span><span class="p">,</span> <span class="n">LLMEvalChain</span><span class="p">,</span> <span class="n">LLMChain</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A chain for comparing two outputs, such as the outputs</span>
+<span class="sd">     of two models, prompts, or outputs of a single model on similar inputs.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        output_parser (BaseOutputParser): The output parser for the chain.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; from langchain_community.chat_models import ChatOpenAI</span>
+<span class="sd">        &gt;&gt;&gt; from langchain.evaluation.comparison import PairwiseStringEvalChain</span>
+<span class="sd">        &gt;&gt;&gt; llm = ChatOpenAI(temperature=0, model_name=&quot;gpt-4&quot;, model_kwargs={&quot;random_seed&quot;: 42})</span>
+<span class="sd">        &gt;&gt;&gt; chain = PairwiseStringEvalChain.from_llm(llm=llm)</span>
+<span class="sd">        &gt;&gt;&gt; result = chain.evaluate_string_pairs(</span>
+<span class="sd">        ...     input = &quot;What is the chemical formula for water?&quot;,</span>
+<span class="sd">        ...     prediction = &quot;H2O&quot;,</span>
+<span class="sd">        ...     prediction_b = (</span>
+<span class="sd">        ...        &quot;The chemical formula for water is H2O, which means&quot;</span>
+<span class="sd">        ...        &quot; there are two hydrogen atoms and one oxygen atom.&quot;</span>
+<span class="sd">        ...     reference = &quot;The chemical formula for water is H2O.&quot;,</span>
+<span class="sd">        ... )</span>
+<span class="sd">        &gt;&gt;&gt; print(result)</span>
+<span class="sd">        # {</span>
+<span class="sd">        #    &quot;value&quot;: &quot;B&quot;,</span>
+<span class="sd">        #    &quot;comment&quot;: &quot;Both responses accurately state&quot;</span>
+<span class="sd">        #       &quot; that the chemical formula for water is H2O.&quot;</span>
+<span class="sd">        #       &quot; However, Response B provides additional information&quot;</span>
+<span class="sd">        # .     &quot; by explaining what the formula means.\\n[[B]]&quot;</span>
+<span class="sd">        # }</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>  <span class="c1"># noqa: E501</span>
+
+    <span class="n">output_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;results&quot;</span>  <span class="c1">#: :meta private:</span>
+    <span class="n">output_parser</span><span class="p">:</span> <span class="n">BaseOutputParser</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="n">default_factory</span><span class="o">=</span><span class="n">PairwiseStringResultOutputParser</span>
+    <span class="p">)</span>
+
+<div class="viewcode-block" id="PairwiseStringEvalChain.is_lc_serializable"><a class="viewcode-back" href="../../../../evaluation/langchain.evaluation.comparison.eval_chain.PairwiseStringEvalChain.html#langchain.evaluation.comparison.eval_chain.PairwiseStringEvalChain.is_lc_serializable">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">is_lc_serializable</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+    <span class="k">class</span> <span class="nc">Config</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Configuration for the PairwiseStringEvalChain.&quot;&quot;&quot;</span>
+
+        <span class="n">extra</span> <span class="o">=</span> <span class="n">Extra</span><span class="o">.</span><span class="n">ignore</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">requires_reference</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return whether the chain requires a reference.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True if the chain requires a reference, False otherwise.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">requires_input</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return whether the chain requires an input.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True if the chain requires an input, False otherwise.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_skip_reference_warning</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the warning to show when reference is ignored.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: The warning to show when reference is ignored.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Ignoring reference in </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">, as it is not expected.&quot;</span>
+            <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">To use a reference, use the LabeledPairwiseStringEvalChain&quot;</span>
+            <span class="s2">&quot; (EvaluatorType.LABELED_PAIRWISE_STRING) instead.&quot;</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="PairwiseStringEvalChain.from_llm"><a class="viewcode-back" href="../../../../evaluation/langchain.evaluation.comparison.eval_chain.PairwiseStringEvalChain.html#langchain.evaluation.comparison.eval_chain.PairwiseStringEvalChain.from_llm">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_llm</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">llm</span><span class="p">:</span> <span class="n">BaseLanguageModel</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">prompt</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">PromptTemplate</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">criteria</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">CRITERIA_TYPE</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PairwiseStringEvalChain</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the PairwiseStringEvalChain from an LLM.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            llm (BaseChatModel): The LLM to use (GPT-4 recommended).</span>
+<span class="sd">            prompt (PromptTemplate, optional): The prompt to use.</span>
+<span class="sd">            **kwargs (Any): Additional keyword arguments.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            PairwiseStringEvalChain: The initialized PairwiseStringEvalChain.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If the input variables are not as expected.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span>
+            <span class="nb">isinstance</span><span class="p">(</span><span class="n">llm</span><span class="p">,</span> <span class="p">(</span><span class="n">ChatOpenAI</span><span class="p">,</span> <span class="n">AzureChatOpenAI</span><span class="p">))</span>
+            <span class="ow">and</span> <span class="n">llm</span><span class="o">.</span><span class="n">model_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;gpt-4&quot;</span><span class="p">)</span>
+        <span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s2">&quot;This chain was only tested with GPT-4. </span><span class="se">\</span>
+<span class="s2">Performance may be significantly worse with other models.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="n">expected_input_vars</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;prediction&quot;</span><span class="p">,</span> <span class="s2">&quot;prediction_b&quot;</span><span class="p">,</span> <span class="s2">&quot;input&quot;</span><span class="p">,</span> <span class="s2">&quot;criteria&quot;</span><span class="p">}</span>
+        <span class="n">prompt_</span> <span class="o">=</span> <span class="n">prompt</span> <span class="ow">or</span> <span class="n">COMPARISON_TEMPLATE</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">reference</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">expected_input_vars</span> <span class="o">!=</span> <span class="nb">set</span><span class="p">(</span><span class="n">prompt_</span><span class="o">.</span><span class="n">input_variables</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Input variables should be </span><span class="si">{</span><span class="n">expected_input_vars</span><span class="si">}</span><span class="s2">, &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;but got </span><span class="si">{</span><span class="n">prompt_</span><span class="o">.</span><span class="n">input_variables</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="n">criteria_</span> <span class="o">=</span> <span class="n">resolve_pairwise_criteria</span><span class="p">(</span><span class="n">criteria</span><span class="p">)</span>
+        <span class="n">criteria_str</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">v</span> <span class="k">else</span> <span class="n">k</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">criteria_</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+        <span class="n">criteria_str</span> <span class="o">=</span> <span class="n">CRITERIA_INSTRUCTIONS</span> <span class="o">+</span> <span class="n">criteria_str</span> <span class="k">if</span> <span class="n">criteria_str</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">llm</span><span class="o">=</span><span class="n">llm</span><span class="p">,</span> <span class="n">prompt</span><span class="o">=</span><span class="n">prompt_</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">criteria</span><span class="o">=</span><span class="n">criteria_str</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_prepare_input</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">prediction</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">prediction_b</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="nb">input</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">reference</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Prepare the input for the chain.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            prediction (str): The output string from the first model.</span>
+<span class="sd">            prediction_b (str): The output string from the second model.</span>
+<span class="sd">            input (str, optional): The input or task string.</span>
+<span class="sd">            reference (str, optional): The reference string, if any.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: The prepared input for the chain.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">input_</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;prediction&quot;</span><span class="p">:</span> <span class="n">prediction</span><span class="p">,</span>
+            <span class="s2">&quot;prediction_b&quot;</span><span class="p">:</span> <span class="n">prediction_b</span><span class="p">,</span>
+            <span class="s2">&quot;input&quot;</span><span class="p">:</span> <span class="nb">input</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">requires_reference</span><span class="p">:</span>
+            <span class="n">input_</span><span class="p">[</span><span class="s2">&quot;reference&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">reference</span>
+        <span class="k">return</span> <span class="n">input_</span>
+
+    <span class="k">def</span> <span class="nf">_prepare_output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Prepare the output.&quot;&quot;&quot;</span>
+        <span class="n">parsed</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">output_key</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">RUN_KEY</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
+            <span class="n">parsed</span><span class="p">[</span><span class="n">RUN_KEY</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="n">RUN_KEY</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">parsed</span>
+
+    <span class="k">def</span> <span class="nf">_evaluate_string_pairs</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">prediction</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">prediction_b</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="nb">input</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">reference</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">callbacks</span><span class="p">:</span> <span class="n">Callbacks</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">tags</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">metadata</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">include_run_info</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Evaluate whether output A is preferred to output B.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            prediction (str): The output string from the first model.</span>
+<span class="sd">            prediction_b (str): The output string from the second model.</span>
+<span class="sd">            input (str, optional): The input or task string.</span>
+<span class="sd">            callbacks (Callbacks, optional): The callbacks to use.</span>
+<span class="sd">            reference (str, optional): The reference string, if any.</span>
+<span class="sd">            **kwargs (Any): Additional keyword arguments.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: A dictionary containing:</span>
+<span class="sd">                - reasoning: The reasoning for the preference.</span>
+<span class="sd">                - value: The preference value, which is either &#39;A&#39;, &#39;B&#39;, or None</span>
+<span class="sd">                    for no preference.</span>
+<span class="sd">                - score: The preference score, which is 1 for &#39;A&#39;, 0 for &#39;B&#39;,</span>
+<span class="sd">                    and 0.5 for None.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">input_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prepare_input</span><span class="p">(</span><span class="n">prediction</span><span class="p">,</span> <span class="n">prediction_b</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="n">reference</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="p">(</span>
+            <span class="n">inputs</span><span class="o">=</span><span class="n">input_</span><span class="p">,</span>
+            <span class="n">callbacks</span><span class="o">=</span><span class="n">callbacks</span><span class="p">,</span>
+            <span class="n">tags</span><span class="o">=</span><span class="n">tags</span><span class="p">,</span>
+            <span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span><span class="p">,</span>
+            <span class="n">include_run_info</span><span class="o">=</span><span class="n">include_run_info</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prepare_output</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_aevaluate_string_pairs</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">prediction</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">prediction_b</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">reference</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="nb">input</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">callbacks</span><span class="p">:</span> <span class="n">Callbacks</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">tags</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">metadata</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">include_run_info</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Asynchronously evaluate whether output A is preferred to output B.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            prediction (str): The output string from the first model.</span>
+<span class="sd">            prediction_b (str): The output string from the second model.</span>
+<span class="sd">            input (str, optional): The input or task string.</span>
+<span class="sd">            callbacks (Callbacks, optional): The callbacks to use.</span>
+<span class="sd">            reference (str, optional): The reference string, if any.</span>
+<span class="sd">            **kwargs (Any): Additional keyword arguments.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: A dictionary containing:</span>
+<span class="sd">                - reasoning: The reasoning for the preference.</span>
+<span class="sd">                - value: The preference value, which is either &#39;A&#39;, &#39;B&#39;, or None</span>
+<span class="sd">                    for no preference.</span>
+<span class="sd">                - score: The preference score, which is 1 for &#39;A&#39;, 0 for &#39;B&#39;,</span>
+<span class="sd">                    and 0.5 for None.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">input_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prepare_input</span><span class="p">(</span><span class="n">prediction</span><span class="p">,</span> <span class="n">prediction_b</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="n">reference</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">acall</span><span class="p">(</span>
+            <span class="n">inputs</span><span class="o">=</span><span class="n">input_</span><span class="p">,</span>
+            <span class="n">callbacks</span><span class="o">=</span><span class="n">callbacks</span><span class="p">,</span>
+            <span class="n">tags</span><span class="o">=</span><span class="n">tags</span><span class="p">,</span>
+            <span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span><span class="p">,</span>
+            <span class="n">include_run_info</span><span class="o">=</span><span class="n">include_run_info</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prepare_output</span><span class="p">(</span><span class="n">result</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="LabeledPairwiseStringEvalChain"><a class="viewcode-back" href="../../../../evaluation/langchain.evaluation.comparison.eval_chain.LabeledPairwiseStringEvalChain.html#langchain.evaluation.comparison.eval_chain.LabeledPairwiseStringEvalChain">[docs]</a><span class="k">class</span> <span class="nc">LabeledPairwiseStringEvalChain</span><span class="p">(</span><span class="n">PairwiseStringEvalChain</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A chain for comparing two outputs, such as the outputs</span>
+<span class="sd">     of two models, prompts, or outputs of a single model on similar inputs,</span>
+<span class="sd">     with labeled preferences.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        output_parser (BaseOutputParser): The output parser for the chain.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">requires_reference</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return whether the chain requires a reference.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True if the chain requires a reference, False otherwise.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="kc">True</span>
+
+<div class="viewcode-block" id="LabeledPairwiseStringEvalChain.from_llm"><a class="viewcode-back" href="../../../../evaluation/langchain.evaluation.comparison.eval_chain.LabeledPairwiseStringEvalChain.html#langchain.evaluation.comparison.eval_chain.LabeledPairwiseStringEvalChain.from_llm">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_llm</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">llm</span><span class="p">:</span> <span class="n">BaseLanguageModel</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">prompt</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">PromptTemplate</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">criteria</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">CRITERIA_TYPE</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PairwiseStringEvalChain</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the LabeledPairwiseStringEvalChain from an LLM.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            llm (BaseLanguageModel): The LLM to use.</span>
+<span class="sd">            prompt (PromptTemplate, optional): The prompt to use.</span>
+<span class="sd">            criteria (Union[CRITERIA_TYPE, str], optional): The criteria to use.</span>
+<span class="sd">            **kwargs (Any): Additional keyword arguments.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            LabeledPairwiseStringEvalChain: The initialized LabeledPairwiseStringEvalChain.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If the input variables are not as expected.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>  <span class="c1"># noqa: E501</span>
+        <span class="n">expected_input_vars</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;prediction&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;prediction_b&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;input&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;reference&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;criteria&quot;</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">prompt_</span> <span class="o">=</span> <span class="n">prompt</span> <span class="ow">or</span> <span class="n">COMPARISON_TEMPLATE_WITH_REFERENCE</span>
+        <span class="k">if</span> <span class="n">expected_input_vars</span> <span class="o">!=</span> <span class="nb">set</span><span class="p">(</span><span class="n">prompt_</span><span class="o">.</span><span class="n">input_variables</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Input variables should be </span><span class="si">{</span><span class="n">expected_input_vars</span><span class="si">}</span><span class="s2">, &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;but got </span><span class="si">{</span><span class="n">prompt_</span><span class="o">.</span><span class="n">input_variables</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="n">criteria_</span> <span class="o">=</span> <span class="n">resolve_pairwise_criteria</span><span class="p">(</span><span class="n">criteria</span><span class="p">)</span>
+        <span class="n">criteria_str</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">criteria_</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+        <span class="n">criteria_str</span> <span class="o">=</span> <span class="n">CRITERIA_INSTRUCTIONS</span> <span class="o">+</span> <span class="n">criteria_str</span> <span class="k">if</span> <span class="n">criteria_str</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">llm</span><span class="o">=</span><span class="n">llm</span><span class="p">,</span> <span class="n">prompt</span><span class="o">=</span><span class="n">prompt_</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">criteria</span><span class="o">=</span><span class="n">criteria_str</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div></div>
+</pre></div>
+
+      </div>
+    <div class="container">
+      <footer class="sk-content-footer">
+            &copy; 2023, LangChain, Inc..
+          Last updated on Mar 15, 2024.
+      </footer>
+    </div>
+  </div>
+</div>
+<script src="../../../../_static/js/vendor/bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    /* Add a [>>>] button on the top-right corner of code samples to hide
+     * the >>> and ... prompts and the output and thus make the code
+     * copyable. */
+    var div = $('.highlight-python .highlight,' +
+                '.highlight-python3 .highlight,' +
+                '.highlight-pycon .highlight,' +
+		'.highlight-default .highlight')
+    var pre = div.find('pre');
+
+    // get the styles from the current theme
+    pre.parent().parent().css('position', 'relative');
+    var hide_text = 'Hide prompts and outputs';
+    var show_text = 'Show prompts and outputs';
+
+    // create and add the button to all the code blocks that contain >>>
+    div.each(function(index) {
+        var jthis = $(this);
+        if (jthis.find('.gp').length > 0) {
+            var button = $('<span class="copybutton">&gt;&gt;&gt;</span>');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+            jthis.prepend(button);
+        }
+        // tracebacks (.gt) contain bare text elements that need to be
+        // wrapped in a span to work with .nextUntil() (see later)
+        jthis.find('pre:has(.gt)').contents().filter(function() {
+            return ((this.nodeType == 3) && (this.data.trim().length > 0));
+        }).wrap('<span>');
+    });
+
+    // define the behavior of the button when it's clicked
+    $('.copybutton').click(function(e){
+        e.preventDefault();
+        var button = $(this);
+        if (button.data('hidden') === 'false') {
+            // hide the code output
+            button.parent().find('.go, .gp, .gt').hide();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'hidden');
+            button.css('text-decoration', 'line-through');
+            button.attr('title', show_text);
+            button.data('hidden', 'true');
+        } else {
+            // show the code output
+            button.parent().find('.go, .gp, .gt').show();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'visible');
+            button.css('text-decoration', 'none');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+        }
+    });
+
+	/*** Add permalink buttons next to glossary terms ***/
+	$('dl.glossary > dt[id]').append(function() {
+		return ('<a class="headerlink" href="#' +
+			    this.getAttribute('id') +
+			    '" title="Permalink to this term">¶</a>');
+	});
+});
+
+</script>
+    
+</body>
+</html>

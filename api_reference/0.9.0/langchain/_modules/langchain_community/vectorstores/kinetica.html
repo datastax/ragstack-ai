@@ -1,0 +1,1098 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>langchain_community.vectorstores.kinetica &mdash; 🦜🔗 LangChain 0.1.12</title>
+  
+  <link rel="canonical" href="https://api.python.langchain.com/en/latest/_modules/langchain_community/vectorstores/kinetica.html" />
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/vendor/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/autodoc_pydantic.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/sphinx-dropdown.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/panels-bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+<script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+<script src="../../../_static/jquery.js"></script> 
+</head>
+<body>
+
+
+<nav id="navbar" class="sk-docs-navbar navbar navbar-expand-md navbar-light bg-light py-0">
+  <div class="container-fluid sk-docs-container px-0">
+    <button
+      id="sk-navbar-toggler"
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="sk-navbar-collapse collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../langchain_api_reference.html">LangChain</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../core_api_reference.html">Core</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../community_api_reference.html">Community</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../experimental_api_reference.html">Experimental</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../text_splitters_api_reference.html">Text splitters</a>
+        </li>
+        <li class="nav-item dropdown nav-more-item-dropdown">
+          <a class="sk-nav-link nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Partner libs</a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+          </div>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" target="_blank" rel="noopener noreferrer" href="https://python.langchain.com/">Docs</a>
+        </li>
+      </ul>
+      <div id="searchbox" role="search">
+          <div class="searchformwrapper">
+          <form class="search" action="../../../search.html" method="get">
+            <input class="sk-search-text-input" type="text" name="q" aria-labelledby="searchlabel" />
+            <input class="sk-search-text-btn" type="submit" value="Go" />
+          </form>
+          </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="d-flex" id="sk-doc-wrapper">
+    <input type="checkbox" name="sk-toggle-checkbox" id="sk-toggle-checkbox">
+    <label id="sk-sidemenu-toggle" class="sk-btn-toggle-toc btn sk-btn-primary" for="sk-toggle-checkbox">Toggle Menu</label>
+    <div id="sk-sidebar-wrapper" class="border-right">
+      <div class="sk-sidebar-toc-wrapper">
+        <div class="btn-group w-100 mb-2" role="group" aria-label="rellinks">
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Prev</a><a href="../../index.html" role="button" class="btn sk-btn-rellink py-1" sk-rellink-tooltip="Module code">Up</a>
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Next</a>
+        </div>
+            <div class="sk-sidebar-toc">
+              
+            </div>
+      </div>
+    </div>
+    <div id="sk-page-content-wrapper">
+      <div class="sk-page-content container-fluid body px-md-3" role="main">
+        
+  <h1>Source code for langchain_community.vectorstores.kinetica</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span> <span class="nn">asyncio</span>
+<span class="kn">import</span> <span class="nn">enum</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">struct</span>
+<span class="kn">import</span> <span class="nn">uuid</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
+<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Type</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">langchain_core.documents</span> <span class="kn">import</span> <span class="n">Document</span>
+<span class="kn">from</span> <span class="nn">langchain_core.embeddings</span> <span class="kn">import</span> <span class="n">Embeddings</span>
+<span class="kn">from</span> <span class="nn">langchain_core.pydantic_v1</span> <span class="kn">import</span> <span class="n">BaseSettings</span>
+<span class="kn">from</span> <span class="nn">langchain_core.vectorstores</span> <span class="kn">import</span> <span class="n">VectorStore</span>
+
+<span class="kn">from</span> <span class="nn">langchain_community.vectorstores.utils</span> <span class="kn">import</span> <span class="n">maximal_marginal_relevance</span>
+
+
+<div class="viewcode-block" id="DistanceStrategy"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.kinetica.DistanceStrategy.html#langchain_community.vectorstores.kinetica.DistanceStrategy">[docs]</a><span class="k">class</span> <span class="nc">DistanceStrategy</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">enum</span><span class="o">.</span><span class="n">Enum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Enumerator of the Distance strategies.&quot;&quot;&quot;</span>
+
+    <span class="n">EUCLIDEAN</span> <span class="o">=</span> <span class="s2">&quot;l2&quot;</span>
+    <span class="n">COSINE</span> <span class="o">=</span> <span class="s2">&quot;cosine&quot;</span>
+    <span class="n">MAX_INNER_PRODUCT</span> <span class="o">=</span> <span class="s2">&quot;inner&quot;</span></div>
+
+
+<span class="k">def</span> <span class="nf">_results_to_docs</span><span class="p">(</span><span class="n">docs_and_scores</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return docs from docs and scores.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">doc</span> <span class="k">for</span> <span class="n">doc</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">docs_and_scores</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="Dimension"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.kinetica.Dimension.html#langchain_community.vectorstores.kinetica.Dimension">[docs]</a><span class="k">class</span> <span class="nc">Dimension</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Some default dimensions for known embeddings.&quot;&quot;&quot;</span>
+
+    <span class="n">OPENAI</span> <span class="o">=</span> <span class="mi">1536</span></div>
+
+
+<span class="n">DEFAULT_DISTANCE_STRATEGY</span> <span class="o">=</span> <span class="n">DistanceStrategy</span><span class="o">.</span><span class="n">EUCLIDEAN</span>
+
+<span class="n">_LANGCHAIN_DEFAULT_SCHEMA_NAME</span> <span class="o">=</span> <span class="s2">&quot;langchain&quot;</span>  <span class="c1">## Default Kinetica schema name</span>
+<span class="n">_LANGCHAIN_DEFAULT_COLLECTION_NAME</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="s2">&quot;langchain_kinetica_embeddings&quot;</span>  <span class="c1">## Default Kinetica table name</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="KineticaSettings"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.kinetica.KineticaSettings.html#langchain_community.vectorstores.kinetica.KineticaSettings">[docs]</a><span class="k">class</span> <span class="nc">KineticaSettings</span><span class="p">(</span><span class="n">BaseSettings</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;`Kinetica` client configuration.</span>
+
+<span class="sd">    Attribute:</span>
+<span class="sd">        host (str) : An URL to connect to MyScale backend.</span>
+<span class="sd">                             Defaults to &#39;localhost&#39;.</span>
+<span class="sd">        port (int) : URL port to connect with HTTP. Defaults to 8443.</span>
+<span class="sd">        username (str) : Username to login. Defaults to None.</span>
+<span class="sd">        password (str) : Password to login. Defaults to None.</span>
+<span class="sd">        database (str) : Database name to find the table. Defaults to &#39;default&#39;.</span>
+<span class="sd">        table (str) : Table name to operate on.</span>
+<span class="sd">                      Defaults to &#39;vector_table&#39;.</span>
+<span class="sd">        metric (str) : Metric to compute distance,</span>
+<span class="sd">                       supported are (&#39;angular&#39;, &#39;euclidean&#39;, &#39;manhattan&#39;, &#39;hamming&#39;,</span>
+<span class="sd">                       &#39;dot&#39;). Defaults to &#39;angular&#39;.</span>
+<span class="sd">                       https://github.com/spotify/annoy/blob/main/src/annoymodule.cc#L149-L169</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">host</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;http://127.0.0.1&quot;</span>
+    <span class="n">port</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">9191</span>
+
+    <span class="n">username</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">password</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="n">database</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_LANGCHAIN_DEFAULT_SCHEMA_NAME</span>
+    <span class="n">table</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_LANGCHAIN_DEFAULT_COLLECTION_NAME</span>
+    <span class="n">metric</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">DEFAULT_DISTANCE_STRATEGY</span><span class="o">.</span><span class="n">value</span>
+
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">)</span>
+
+    <span class="k">class</span> <span class="nc">Config</span><span class="p">:</span>
+        <span class="n">env_file</span> <span class="o">=</span> <span class="s2">&quot;.env&quot;</span>
+        <span class="n">env_prefix</span> <span class="o">=</span> <span class="s2">&quot;kinetica_&quot;</span>
+        <span class="n">env_file_encoding</span> <span class="o">=</span> <span class="s2">&quot;utf-8&quot;</span></div>
+
+
+<div class="viewcode-block" id="Kinetica"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.kinetica.Kinetica.html#langchain_community.vectorstores.kinetica.Kinetica">[docs]</a><span class="k">class</span> <span class="nc">Kinetica</span><span class="p">(</span><span class="n">VectorStore</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;`Kinetica` vector store.</span>
+
+<span class="sd">    To use, you should have the ``gpudb`` python package installed.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        kinetica_settings: Kinetica connection settings class.</span>
+<span class="sd">        embedding_function: Any embedding function implementing</span>
+<span class="sd">            `langchain.embeddings.base.Embeddings` interface.</span>
+<span class="sd">        collection_name: The name of the collection to use. (default: langchain)</span>
+<span class="sd">            NOTE: This is not the name of the table, but the name of the collection.</span>
+<span class="sd">            The tables will be created when initializing the store (if not exists)</span>
+<span class="sd">            So, make sure the user has the right permissions to create tables.</span>
+<span class="sd">        distance_strategy: The distance strategy to use. (default: COSINE)</span>
+<span class="sd">        pre_delete_collection: If True, will delete the collection if it exists.</span>
+<span class="sd">            (default: False). Useful for testing.</span>
+<span class="sd">        engine_args: SQLAlchemy&#39;s create engine arguments.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            from langchain_community.vectorstores import Kinetica, KineticaSettings</span>
+<span class="sd">            from langchain_community.embeddings.openai import OpenAIEmbeddings</span>
+
+<span class="sd">            kinetica_settings = KineticaSettings(</span>
+<span class="sd">                host=&quot;http://127.0.0.1&quot;, username=&quot;&quot;, password=&quot;&quot;</span>
+<span class="sd">                )</span>
+<span class="sd">            COLLECTION_NAME = &quot;kinetica_store&quot;</span>
+<span class="sd">            embeddings = OpenAIEmbeddings()</span>
+<span class="sd">            vectorstore = Kinetica.from_documents(</span>
+<span class="sd">                documents=docs,</span>
+<span class="sd">                embedding=embeddings,</span>
+<span class="sd">                collection_name=COLLECTION_NAME,</span>
+<span class="sd">                config=kinetica_settings,</span>
+<span class="sd">            )</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Kinetica.__init__"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.kinetica.Kinetica.html#langchain_community.vectorstores.kinetica.Kinetica.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">config</span><span class="p">:</span> <span class="n">KineticaSettings</span><span class="p">,</span>
+        <span class="n">embedding_function</span><span class="p">:</span> <span class="n">Embeddings</span><span class="p">,</span>
+        <span class="n">collection_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_LANGCHAIN_DEFAULT_COLLECTION_NAME</span><span class="p">,</span>
+        <span class="n">schema_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_LANGCHAIN_DEFAULT_SCHEMA_NAME</span><span class="p">,</span>
+        <span class="n">distance_strategy</span><span class="p">:</span> <span class="n">DistanceStrategy</span> <span class="o">=</span> <span class="n">DEFAULT_DISTANCE_STRATEGY</span><span class="p">,</span>
+        <span class="n">pre_delete_collection</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">logger</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">logging</span><span class="o">.</span><span class="n">Logger</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">relevance_score_fn</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">float</span><span class="p">],</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Constructor for the Kinetica class</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            config (KineticaSettings): a `KineticaSettings` instance</span>
+<span class="sd">            embedding_function (Embeddings): embedding function to use</span>
+<span class="sd">            collection_name (str, optional): the Kinetica table name.</span>
+<span class="sd">                            Defaults to _LANGCHAIN_DEFAULT_COLLECTION_NAME.</span>
+<span class="sd">            schema_name (str, optional): the Kinetica table name.</span>
+<span class="sd">                            Defaults to _LANGCHAIN_DEFAULT_SCHEMA_NAME.</span>
+<span class="sd">            distance_strategy (DistanceStrategy, optional): _description_.</span>
+<span class="sd">                            Defaults to DEFAULT_DISTANCE_STRATEGY.</span>
+<span class="sd">            pre_delete_collection (bool, optional): _description_. Defaults to False.</span>
+<span class="sd">            logger (Optional[logging.Logger], optional): _description_.</span>
+<span class="sd">                            Defaults to None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_config</span> <span class="o">=</span> <span class="n">config</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">embedding_function</span> <span class="o">=</span> <span class="n">embedding_function</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">collection_name</span> <span class="o">=</span> <span class="n">collection_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">schema_name</span> <span class="o">=</span> <span class="n">schema_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_distance_strategy</span> <span class="o">=</span> <span class="n">distance_strategy</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pre_delete_collection</span> <span class="o">=</span> <span class="n">pre_delete_collection</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logger</span> <span class="ow">or</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">override_relevance_score_fn</span> <span class="o">=</span> <span class="n">relevance_score_fn</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_db</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_db</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dimensions</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize the store.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">gpudb</span> <span class="kn">import</span> <span class="n">GPUdbTable</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+                <span class="s2">&quot;Could not import Kinetica python API. &quot;</span>
+                <span class="s2">&quot;Please install it with `pip install gpudb==7.2.0.1`.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">dimensions</span> <span class="o">=</span> <span class="n">dimensions</span>
+        <span class="n">dimension_field</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;vector(</span><span class="si">{</span><span class="n">dimensions</span><span class="si">}</span><span class="s2">)&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pre_delete_collection</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">delete_schema</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">table_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">collection_name</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">schema_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">schema_name</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">table_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">schema_name</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">collection_name</span><span class="si">}</span><span class="s2">&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">table_schema</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">[</span><span class="s2">&quot;text&quot;</span><span class="p">,</span> <span class="s2">&quot;string&quot;</span><span class="p">],</span>
+            <span class="p">[</span><span class="s2">&quot;embedding&quot;</span><span class="p">,</span> <span class="s2">&quot;bytes&quot;</span><span class="p">,</span> <span class="n">dimension_field</span><span class="p">],</span>
+            <span class="p">[</span><span class="s2">&quot;metadata&quot;</span><span class="p">,</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;json&quot;</span><span class="p">],</span>
+            <span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;uuid&quot;</span><span class="p">],</span>
+        <span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">create_schema</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">EmbeddingStore</span><span class="p">:</span> <span class="n">GPUdbTable</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_tables_if_not_exists</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">__get_db</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">KineticaSettings</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">gpudb</span> <span class="kn">import</span> <span class="n">GPUdb</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+                <span class="s2">&quot;Could not import Kinetica python API. &quot;</span>
+                <span class="s2">&quot;Please install it with `pip install gpudb==7.2.0.1`.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="n">options</span> <span class="o">=</span> <span class="n">GPUdb</span><span class="o">.</span><span class="n">Options</span><span class="p">()</span>
+        <span class="n">options</span><span class="o">.</span><span class="n">username</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">username</span>
+        <span class="n">options</span><span class="o">.</span><span class="n">password</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">password</span>
+        <span class="n">options</span><span class="o">.</span><span class="n">skip_ssl_cert_verification</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="n">GPUdb</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">host</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">embeddings</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Embeddings</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">embedding_function</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">__from</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">config</span><span class="p">:</span> <span class="n">KineticaSettings</span><span class="p">,</span>
+        <span class="n">texts</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">embeddings</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]],</span>
+        <span class="n">embedding</span><span class="p">:</span> <span class="n">Embeddings</span><span class="p">,</span>
+        <span class="n">dimensions</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">metadatas</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">ids</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">collection_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_LANGCHAIN_DEFAULT_COLLECTION_NAME</span><span class="p">,</span>
+        <span class="n">distance_strategy</span><span class="p">:</span> <span class="n">DistanceStrategy</span> <span class="o">=</span> <span class="n">DEFAULT_DISTANCE_STRATEGY</span><span class="p">,</span>
+        <span class="n">pre_delete_collection</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">logger</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">logging</span><span class="o">.</span><span class="n">Logger</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Kinetica</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Class method to assist in constructing the `Kinetica` store instance</span>
+<span class="sd">            using different combinations of parameters</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            config (KineticaSettings): a `KineticaSettings` instance</span>
+<span class="sd">            texts (List[str]): The list of texts to generate embeddings for and store</span>
+<span class="sd">            embeddings (List[List[float]]): List of embeddings</span>
+<span class="sd">            embedding (Embeddings): the Embedding function</span>
+<span class="sd">            dimensions (int): The number of dimensions the embeddings have</span>
+<span class="sd">            metadatas (Optional[List[dict]], optional): List of JSON data associated</span>
+<span class="sd">                        with each text. Defaults to None.</span>
+<span class="sd">            ids (Optional[List[str]], optional): List of unique IDs (UUID by default)</span>
+<span class="sd">                        associated with each text. Defaults to None.</span>
+<span class="sd">            collection_name (str, optional): Kinetica schema name.</span>
+<span class="sd">                        Defaults to _LANGCHAIN_DEFAULT_COLLECTION_NAME.</span>
+<span class="sd">            distance_strategy (DistanceStrategy, optional): Not used for now.</span>
+<span class="sd">                        Defaults to DEFAULT_DISTANCE_STRATEGY.</span>
+<span class="sd">            pre_delete_collection (bool, optional): Whether to delete the Kinetica</span>
+<span class="sd">                        schema or not. Defaults to False.</span>
+<span class="sd">            logger (Optional[logging.Logger], optional): Logger to use for logging at</span>
+<span class="sd">                        different levels. Defaults to None.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Kinetica: An instance of Kinetica class</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">ids</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ids</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid1</span><span class="p">())</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">texts</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">metadatas</span><span class="p">:</span>
+            <span class="n">metadatas</span> <span class="o">=</span> <span class="p">[{}</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">texts</span><span class="p">]</span>
+
+        <span class="n">store</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">,</span>
+            <span class="n">collection_name</span><span class="o">=</span><span class="n">collection_name</span><span class="p">,</span>
+            <span class="n">embedding_function</span><span class="o">=</span><span class="n">embedding</span><span class="p">,</span>
+            <span class="c1"># dimensions=dimensions,</span>
+            <span class="n">distance_strategy</span><span class="o">=</span><span class="n">distance_strategy</span><span class="p">,</span>
+            <span class="n">pre_delete_collection</span><span class="o">=</span><span class="n">pre_delete_collection</span><span class="p">,</span>
+            <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">store</span><span class="o">.</span><span class="n">__post_init__</span><span class="p">(</span><span class="n">dimensions</span><span class="p">)</span>
+
+        <span class="n">store</span><span class="o">.</span><span class="n">add_embeddings</span><span class="p">(</span>
+            <span class="n">texts</span><span class="o">=</span><span class="n">texts</span><span class="p">,</span> <span class="n">embeddings</span><span class="o">=</span><span class="n">embeddings</span><span class="p">,</span> <span class="n">metadatas</span><span class="o">=</span><span class="n">metadatas</span><span class="p">,</span> <span class="n">ids</span><span class="o">=</span><span class="n">ids</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">store</span>
+
+<div class="viewcode-block" id="Kinetica.create_tables_if_not_exists"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.kinetica.Kinetica.html#langchain_community.vectorstores.kinetica.Kinetica.create_tables_if_not_exists">[docs]</a>    <span class="k">def</span> <span class="nf">create_tables_if_not_exists</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create the table to store the texts and embeddings&quot;&quot;&quot;</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">gpudb</span> <span class="kn">import</span> <span class="n">GPUdbTable</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+                <span class="s2">&quot;Could not import Kinetica python API. &quot;</span>
+                <span class="s2">&quot;Please install it with `pip install gpudb==7.2.0.1`.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">GPUdbTable</span><span class="p">(</span>
+            <span class="n">_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">table_schema</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">table_name</span><span class="p">,</span>
+            <span class="n">db</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="p">,</span>
+            <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;is_replicated&quot;</span><span class="p">:</span> <span class="s2">&quot;true&quot;</span><span class="p">},</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Kinetica.drop_tables"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.kinetica.Kinetica.html#langchain_community.vectorstores.kinetica.Kinetica.drop_tables">[docs]</a>    <span class="k">def</span> <span class="nf">drop_tables</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Delete the table&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">clear_table</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">table_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;no_error_if_not_exists&quot;</span><span class="p">:</span> <span class="s2">&quot;true&quot;</span><span class="p">}</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Kinetica.create_schema"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.kinetica.Kinetica.html#langchain_community.vectorstores.kinetica.Kinetica.create_schema">[docs]</a>    <span class="k">def</span> <span class="nf">create_schema</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a new Kinetica schema&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">create_schema</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">schema_name</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Kinetica.delete_schema"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.kinetica.Kinetica.html#langchain_community.vectorstores.kinetica.Kinetica.delete_schema">[docs]</a>    <span class="k">def</span> <span class="nf">delete_schema</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Delete a Kinetica schema with cascade set to `true`</span>
+<span class="sd">        This method will delete a schema with all tables in it.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Trying to delete collection&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">drop_schema</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">schema_name</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;no_error_if_not_exists&quot;</span><span class="p">:</span> <span class="s2">&quot;true&quot;</span><span class="p">,</span> <span class="s2">&quot;cascade&quot;</span><span class="p">:</span> <span class="s2">&quot;true&quot;</span><span class="p">}</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Kinetica.add_embeddings"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.kinetica.Kinetica.html#langchain_community.vectorstores.kinetica.Kinetica.add_embeddings">[docs]</a>    <span class="k">def</span> <span class="nf">add_embeddings</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">texts</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">embeddings</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]],</span>
+        <span class="n">metadatas</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">ids</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add embeddings to the vectorstore.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            texts: Iterable of strings to add to the vectorstore.</span>
+<span class="sd">            embeddings: List of list of embedding vectors.</span>
+<span class="sd">            metadatas: List of metadatas associated with the texts.</span>
+<span class="sd">            ids: List of ids for the text embedding pairs</span>
+<span class="sd">            kwargs: vectorstore specific parameters</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">ids</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ids</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid1</span><span class="p">())</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">texts</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">metadatas</span><span class="p">:</span>
+            <span class="n">metadatas</span> <span class="o">=</span> <span class="p">[{}</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">texts</span><span class="p">]</span>
+
+        <span class="n">records</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">text</span><span class="p">,</span> <span class="n">embedding</span><span class="p">,</span> <span class="n">metadata</span><span class="p">,</span> <span class="nb">id</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">texts</span><span class="p">,</span> <span class="n">embeddings</span><span class="p">,</span> <span class="n">metadatas</span><span class="p">,</span> <span class="n">ids</span><span class="p">):</span>
+            <span class="n">buf</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">f&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">dimensions</span><span class="p">,</span> <span class="o">*</span><span class="n">embedding</span><span class="p">)</span>
+            <span class="n">records</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">text</span><span class="p">,</span> <span class="n">buf</span><span class="p">,</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">metadata</span><span class="p">),</span> <span class="nb">id</span><span class="p">])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">EmbeddingStore</span><span class="o">.</span><span class="n">insert_records</span><span class="p">(</span><span class="n">records</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">ids</span></div>
+
+<div class="viewcode-block" id="Kinetica.add_texts"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.kinetica.Kinetica.html#langchain_community.vectorstores.kinetica.Kinetica.add_texts">[docs]</a>    <span class="k">def</span> <span class="nf">add_texts</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">texts</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">metadatas</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">ids</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run more texts through the embeddings and add to the vectorstore.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            texts: Iterable of strings to add to the vectorstore.</span>
+<span class="sd">            metadatas: Optional list of metadatas (JSON data) associated with the texts.</span>
+<span class="sd">            ids: List of IDs (UUID) for the texts supplied; will be generated if None</span>
+<span class="sd">            kwargs: vectorstore specific parameters</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List of ids from adding the texts into the vectorstore.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">embeddings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">embedding_function</span><span class="o">.</span><span class="n">embed_documents</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">texts</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dimensions</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">embeddings</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;EmbeddingStore&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dimensions</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_embeddings</span><span class="p">(</span>
+            <span class="n">texts</span><span class="o">=</span><span class="n">texts</span><span class="p">,</span> <span class="n">embeddings</span><span class="o">=</span><span class="n">embeddings</span><span class="p">,</span> <span class="n">metadatas</span><span class="o">=</span><span class="n">metadatas</span><span class="p">,</span> <span class="n">ids</span><span class="o">=</span><span class="n">ids</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Kinetica.similarity_search"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.kinetica.Kinetica.html#langchain_community.vectorstores.kinetica.Kinetica.similarity_search">[docs]</a>    <span class="k">def</span> <span class="nf">similarity_search</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+        <span class="nb">filter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run similarity search with Kinetica with distance.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            query (str): Query text to search for.</span>
+<span class="sd">            k (int): Number of results to return. Defaults to 4.</span>
+<span class="sd">            filter (Optional[Dict[str, str]]): Filter by metadata. Defaults to None.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List of Documents most similar to the query.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">embedding</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">embedding_function</span><span class="o">.</span><span class="n">embed_query</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="n">query</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">similarity_search_by_vector</span><span class="p">(</span>
+            <span class="n">embedding</span><span class="o">=</span><span class="n">embedding</span><span class="p">,</span>
+            <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span>
+            <span class="nb">filter</span><span class="o">=</span><span class="nb">filter</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Kinetica.similarity_search_with_score"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.kinetica.Kinetica.html#langchain_community.vectorstores.kinetica.Kinetica.similarity_search_with_score">[docs]</a>    <span class="k">def</span> <span class="nf">similarity_search_with_score</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+        <span class="nb">filter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Document</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return docs most similar to query.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            query: Text to look up documents similar to.</span>
+<span class="sd">            k: Number of Documents to return. Defaults to 4.</span>
+<span class="sd">            filter (Optional[Dict[str, str]]): Filter by metadata. Defaults to None.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List of Documents most similar to the query and score for each</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">embedding</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">embedding_function</span><span class="o">.</span><span class="n">embed_query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+        <span class="n">docs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">similarity_search_with_score_by_vector</span><span class="p">(</span>
+            <span class="n">embedding</span><span class="o">=</span><span class="n">embedding</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="nb">filter</span><span class="o">=</span><span class="nb">filter</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">docs</span></div>
+
+<div class="viewcode-block" id="Kinetica.similarity_search_with_score_by_vector"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.kinetica.Kinetica.html#langchain_community.vectorstores.kinetica.Kinetica.similarity_search_with_score_by_vector">[docs]</a>    <span class="k">def</span> <span class="nf">similarity_search_with_score_by_vector</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">embedding</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+        <span class="n">k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+        <span class="nb">filter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Document</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]:</span>
+        <span class="n">resp</span><span class="p">:</span> <span class="n">Dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__query_collection</span><span class="p">(</span><span class="n">embedding</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="nb">filter</span><span class="p">)</span>
+
+        <span class="n">records</span><span class="p">:</span> <span class="n">OrderedDict</span> <span class="o">=</span> <span class="n">resp</span><span class="p">[</span><span class="s2">&quot;records&quot;</span><span class="p">]</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="nb">list</span><span class="p">(</span><span class="n">records</span><span class="o">.</span><span class="n">values</span><span class="p">())))</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_results_to_docs_and_scores</span><span class="p">(</span><span class="n">results</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Kinetica.similarity_search_by_vector"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.kinetica.Kinetica.html#langchain_community.vectorstores.kinetica.Kinetica.similarity_search_by_vector">[docs]</a>    <span class="k">def</span> <span class="nf">similarity_search_by_vector</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">embedding</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+        <span class="n">k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+        <span class="nb">filter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return docs most similar to embedding vector.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            embedding: Embedding to look up documents similar to.</span>
+<span class="sd">            k: Number of Documents to return. Defaults to 4.</span>
+<span class="sd">            filter (Optional[Dict[str, str]]): Filter by metadata. Defaults to None.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List of Documents most similar to the query vector.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">docs_and_scores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">similarity_search_with_score_by_vector</span><span class="p">(</span>
+            <span class="n">embedding</span><span class="o">=</span><span class="n">embedding</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="nb">filter</span><span class="o">=</span><span class="nb">filter</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">doc</span> <span class="k">for</span> <span class="n">doc</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">docs_and_scores</span><span class="p">]</span></div>
+
+    <span class="k">def</span> <span class="nf">_results_to_docs_and_scores</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">results</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Document</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return docs and scores from results.&quot;&quot;&quot;</span>
+        <span class="n">docs</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">(</span>
+                <span class="n">Document</span><span class="p">(</span>
+                    <span class="n">page_content</span><span class="o">=</span><span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                    <span class="n">metadata</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+                <span class="p">),</span>
+                <span class="n">result</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">embedding_function</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">results</span>
+        <span class="p">]</span>
+        <span class="k">return</span> <span class="n">docs</span>
+
+    <span class="k">def</span> <span class="nf">_select_relevance_score_fn</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">float</span><span class="p">],</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The &#39;correct&#39; relevance function</span>
+<span class="sd">        may differ depending on a few things, including:</span>
+<span class="sd">        - the distance / similarity metric used by the VectorStore</span>
+<span class="sd">        - the scale of your embeddings (OpenAI&#39;s are unit normed. Many others are not!)</span>
+<span class="sd">        - embedding dimensionality</span>
+<span class="sd">        - etc.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">override_relevance_score_fn</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">override_relevance_score_fn</span>
+
+        <span class="c1"># Default strategy is to rely on distance strategy provided</span>
+        <span class="c1"># in vectorstore constructor</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_distance_strategy</span> <span class="o">==</span> <span class="n">DistanceStrategy</span><span class="o">.</span><span class="n">COSINE</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cosine_relevance_score_fn</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_distance_strategy</span> <span class="o">==</span> <span class="n">DistanceStrategy</span><span class="o">.</span><span class="n">EUCLIDEAN</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_euclidean_relevance_score_fn</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_distance_strategy</span> <span class="o">==</span> <span class="n">DistanceStrategy</span><span class="o">.</span><span class="n">MAX_INNER_PRODUCT</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_inner_product_relevance_score_fn</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;No supported normalization function&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot; for distance_strategy of </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_distance_strategy</span><span class="si">}</span><span class="s2">.&quot;</span>
+                <span class="s2">&quot;Consider providing relevance_score_fn to Kinetica constructor.&quot;</span>
+            <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">distance_strategy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_distance_strategy</span> <span class="o">==</span> <span class="n">DistanceStrategy</span><span class="o">.</span><span class="n">EUCLIDEAN</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;l2_distance&quot;</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_distance_strategy</span> <span class="o">==</span> <span class="n">DistanceStrategy</span><span class="o">.</span><span class="n">COSINE</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;cosine_distance&quot;</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_distance_strategy</span> <span class="o">==</span> <span class="n">DistanceStrategy</span><span class="o">.</span><span class="n">MAX_INNER_PRODUCT</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;dot_product&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Got unexpected value for distance: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_distance_strategy</span><span class="si">}</span><span class="s2">. &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Should be one of </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">ds</span><span class="o">.</span><span class="n">value</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">ds</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">DistanceStrategy</span><span class="p">])</span><span class="si">}</span><span class="s2">.&quot;</span>
+            <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__query_collection</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">embedding</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+        <span class="n">k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+        <span class="nb">filter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Query the collection.&quot;&quot;&quot;</span>
+        <span class="c1"># if filter is not None:</span>
+        <span class="c1">#     filter_clauses = []</span>
+        <span class="c1">#     for key, value in filter.items():</span>
+        <span class="c1">#         IN = &quot;in&quot;</span>
+        <span class="c1">#         if isinstance(value, dict) and IN in map(str.lower, value):</span>
+        <span class="c1">#             value_case_insensitive = {</span>
+        <span class="c1">#                 k.lower(): v for k, v in value.items()</span>
+        <span class="c1">#             }</span>
+        <span class="c1">#             filter_by_metadata = self.EmbeddingStore.cmetadata[</span>
+        <span class="c1">#                 key</span>
+        <span class="c1">#             ].astext.in_(value_case_insensitive[IN])</span>
+        <span class="c1">#             filter_clauses.append(filter_by_metadata)</span>
+        <span class="c1">#         else:</span>
+        <span class="c1">#             filter_by_metadata = self.EmbeddingStore.cmetadata[</span>
+        <span class="c1">#                 key</span>
+        <span class="c1">#             ].astext == str(value)</span>
+        <span class="c1">#             filter_clauses.append(filter_by_metadata)</span>
+
+        <span class="n">json_filter</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="nb">filter</span><span class="p">)</span> <span class="k">if</span> <span class="nb">filter</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="n">where_clause</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot; where &#39;</span><span class="si">{</span><span class="n">json_filter</span><span class="si">}</span><span class="s2">&#39; = JSON(metadata) &quot;</span>
+            <span class="k">if</span> <span class="n">json_filter</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+        <span class="p">)</span>
+
+        <span class="n">embedding_str</span> <span class="o">=</span> <span class="s2">&quot;[&quot;</span> <span class="o">+</span> <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">embedding</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;]&quot;</span>
+
+        <span class="n">dist_strategy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance_strategy</span>
+
+        <span class="n">query_string</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">                SELECT text, metadata, </span><span class="si">{</span><span class="n">dist_strategy</span><span class="si">}</span><span class="s2">(embedding, &#39;</span><span class="si">{</span><span class="n">embedding_str</span><span class="si">}</span><span class="s2">&#39;) </span>
+<span class="s2">                as distance, embedding</span>
+<span class="s2">                FROM </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">table_name</span><span class="si">}</span>
+<span class="s2">                </span><span class="si">{</span><span class="n">where_clause</span><span class="si">}</span>
+<span class="s2">                ORDER BY distance asc NULLS LAST</span>
+<span class="s2">                LIMIT </span><span class="si">{</span><span class="n">k</span><span class="si">}</span>
+<span class="s2">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">query_string</span><span class="p">)</span>
+        <span class="n">resp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">execute_sql_and_decode</span><span class="p">(</span><span class="n">query_string</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">resp</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">resp</span>
+
+<div class="viewcode-block" id="Kinetica.max_marginal_relevance_search_with_score_by_vector"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.kinetica.Kinetica.html#langchain_community.vectorstores.kinetica.Kinetica.max_marginal_relevance_search_with_score_by_vector">[docs]</a>    <span class="k">def</span> <span class="nf">max_marginal_relevance_search_with_score_by_vector</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">embedding</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+        <span class="n">k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+        <span class="n">fetch_k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span>
+        <span class="n">lambda_mult</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
+        <span class="nb">filter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Document</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return docs selected using the maximal marginal relevance with score</span>
+<span class="sd">            to embedding vector.</span>
+
+<span class="sd">        Maximal marginal relevance optimizes for similarity to query AND diversity</span>
+<span class="sd">            among selected documents.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            embedding: Embedding to look up documents similar to.</span>
+<span class="sd">            k (int): Number of Documents to return. Defaults to 4.</span>
+<span class="sd">            fetch_k (int): Number of Documents to fetch to pass to MMR algorithm.</span>
+<span class="sd">                Defaults to 20.</span>
+<span class="sd">            lambda_mult (float): Number between 0 and 1 that determines the degree</span>
+<span class="sd">                of diversity among the results with 0 corresponding</span>
+<span class="sd">                to maximum diversity and 1 to minimum diversity.</span>
+<span class="sd">                Defaults to 0.5.</span>
+<span class="sd">            filter (Optional[Dict[str, str]]): Filter by metadata. Defaults to None.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List[Tuple[Document, float]]: List of Documents selected by maximal marginal</span>
+<span class="sd">                relevance to the query and score for each.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">resp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__query_collection</span><span class="p">(</span><span class="n">embedding</span><span class="o">=</span><span class="n">embedding</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">fetch_k</span><span class="p">,</span> <span class="nb">filter</span><span class="o">=</span><span class="nb">filter</span><span class="p">)</span>
+        <span class="n">records</span><span class="p">:</span> <span class="n">OrderedDict</span> <span class="o">=</span> <span class="n">resp</span><span class="p">[</span><span class="s2">&quot;records&quot;</span><span class="p">]</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="nb">list</span><span class="p">(</span><span class="n">records</span><span class="o">.</span><span class="n">values</span><span class="p">())))</span>
+
+        <span class="n">embedding_list</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">f&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">dimensions</span><span class="p">,</span> <span class="n">embedding</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">embedding</span> <span class="ow">in</span> <span class="n">records</span><span class="p">[</span><span class="s2">&quot;embedding&quot;</span><span class="p">]</span>
+        <span class="p">]</span>
+
+        <span class="n">mmr_selected</span> <span class="o">=</span> <span class="n">maximal_marginal_relevance</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">embedding</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+            <span class="n">embedding_list</span><span class="p">,</span>
+            <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span>
+            <span class="n">lambda_mult</span><span class="o">=</span><span class="n">lambda_mult</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">candidates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_results_to_docs_and_scores</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">[</span><span class="n">r</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">r</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">candidates</span><span class="p">)</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">mmr_selected</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="Kinetica.max_marginal_relevance_search"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.kinetica.Kinetica.html#langchain_community.vectorstores.kinetica.Kinetica.max_marginal_relevance_search">[docs]</a>    <span class="k">def</span> <span class="nf">max_marginal_relevance_search</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+        <span class="n">fetch_k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span>
+        <span class="n">lambda_mult</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
+        <span class="nb">filter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return docs selected using the maximal marginal relevance.</span>
+
+<span class="sd">        Maximal marginal relevance optimizes for similarity to query AND diversity</span>
+<span class="sd">            among selected documents.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            query (str): Text to look up documents similar to.</span>
+<span class="sd">            k (int): Number of Documents to return. Defaults to 4.</span>
+<span class="sd">            fetch_k (int): Number of Documents to fetch to pass to MMR algorithm.</span>
+<span class="sd">                Defaults to 20.</span>
+<span class="sd">            lambda_mult (float): Number between 0 and 1 that determines the degree</span>
+<span class="sd">                of diversity among the results with 0 corresponding</span>
+<span class="sd">                to maximum diversity and 1 to minimum diversity.</span>
+<span class="sd">                Defaults to 0.5.</span>
+<span class="sd">            filter (Optional[Dict[str, str]]): Filter by metadata. Defaults to None.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List[Document]: List of Documents selected by maximal marginal relevance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">embedding</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">embedding_function</span><span class="o">.</span><span class="n">embed_query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_marginal_relevance_search_by_vector</span><span class="p">(</span>
+            <span class="n">embedding</span><span class="p">,</span>
+            <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span>
+            <span class="n">fetch_k</span><span class="o">=</span><span class="n">fetch_k</span><span class="p">,</span>
+            <span class="n">lambda_mult</span><span class="o">=</span><span class="n">lambda_mult</span><span class="p">,</span>
+            <span class="nb">filter</span><span class="o">=</span><span class="nb">filter</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Kinetica.max_marginal_relevance_search_with_score"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.kinetica.Kinetica.html#langchain_community.vectorstores.kinetica.Kinetica.max_marginal_relevance_search_with_score">[docs]</a>    <span class="k">def</span> <span class="nf">max_marginal_relevance_search_with_score</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+        <span class="n">fetch_k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span>
+        <span class="n">lambda_mult</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
+        <span class="nb">filter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Document</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return docs selected using the maximal marginal relevance with score.</span>
+
+<span class="sd">        Maximal marginal relevance optimizes for similarity to query AND diversity</span>
+<span class="sd">            among selected documents.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            query (str): Text to look up documents similar to.</span>
+<span class="sd">            k (int): Number of Documents to return. Defaults to 4.</span>
+<span class="sd">            fetch_k (int): Number of Documents to fetch to pass to MMR algorithm.</span>
+<span class="sd">                Defaults to 20.</span>
+<span class="sd">            lambda_mult (float): Number between 0 and 1 that determines the degree</span>
+<span class="sd">                of diversity among the results with 0 corresponding</span>
+<span class="sd">                to maximum diversity and 1 to minimum diversity.</span>
+<span class="sd">                Defaults to 0.5.</span>
+<span class="sd">            filter (Optional[Dict[str, str]]): Filter by metadata. Defaults to None.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List[Tuple[Document, float]]: List of Documents selected by maximal marginal</span>
+<span class="sd">                relevance to the query and score for each.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">embedding</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">embedding_function</span><span class="o">.</span><span class="n">embed_query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+        <span class="n">docs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_marginal_relevance_search_with_score_by_vector</span><span class="p">(</span>
+            <span class="n">embedding</span><span class="o">=</span><span class="n">embedding</span><span class="p">,</span>
+            <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span>
+            <span class="n">fetch_k</span><span class="o">=</span><span class="n">fetch_k</span><span class="p">,</span>
+            <span class="n">lambda_mult</span><span class="o">=</span><span class="n">lambda_mult</span><span class="p">,</span>
+            <span class="nb">filter</span><span class="o">=</span><span class="nb">filter</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">docs</span></div>
+
+<div class="viewcode-block" id="Kinetica.max_marginal_relevance_search_by_vector"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.kinetica.Kinetica.html#langchain_community.vectorstores.kinetica.Kinetica.max_marginal_relevance_search_by_vector">[docs]</a>    <span class="k">def</span> <span class="nf">max_marginal_relevance_search_by_vector</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">embedding</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+        <span class="n">k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+        <span class="n">fetch_k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span>
+        <span class="n">lambda_mult</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
+        <span class="nb">filter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return docs selected using the maximal marginal relevance</span>
+<span class="sd">            to embedding vector.</span>
+
+<span class="sd">        Maximal marginal relevance optimizes for similarity to query AND diversity</span>
+<span class="sd">            among selected documents.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            embedding (str): Text to look up documents similar to.</span>
+<span class="sd">            k (int): Number of Documents to return. Defaults to 4.</span>
+<span class="sd">            fetch_k (int): Number of Documents to fetch to pass to MMR algorithm.</span>
+<span class="sd">                Defaults to 20.</span>
+<span class="sd">            lambda_mult (float): Number between 0 and 1 that determines the degree</span>
+<span class="sd">                of diversity among the results with 0 corresponding</span>
+<span class="sd">                to maximum diversity and 1 to minimum diversity.</span>
+<span class="sd">                Defaults to 0.5.</span>
+<span class="sd">            filter (Optional[Dict[str, str]]): Filter by metadata. Defaults to None.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List[Document]: List of Documents selected by maximal marginal relevance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">docs_and_scores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_marginal_relevance_search_with_score_by_vector</span><span class="p">(</span>
+            <span class="n">embedding</span><span class="p">,</span>
+            <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span>
+            <span class="n">fetch_k</span><span class="o">=</span><span class="n">fetch_k</span><span class="p">,</span>
+            <span class="n">lambda_mult</span><span class="o">=</span><span class="n">lambda_mult</span><span class="p">,</span>
+            <span class="nb">filter</span><span class="o">=</span><span class="nb">filter</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">_results_to_docs</span><span class="p">(</span><span class="n">docs_and_scores</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Kinetica.amax_marginal_relevance_search_by_vector"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.kinetica.Kinetica.html#langchain_community.vectorstores.kinetica.Kinetica.amax_marginal_relevance_search_by_vector">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">amax_marginal_relevance_search_by_vector</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">embedding</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+        <span class="n">k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+        <span class="n">fetch_k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span>
+        <span class="n">lambda_mult</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
+        <span class="nb">filter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return docs selected using the maximal marginal relevance.&quot;&quot;&quot;</span>
+
+        <span class="c1"># This is a temporary workaround to make the similarity search</span>
+        <span class="c1"># asynchronous. The proper solution is to make the similarity search</span>
+        <span class="c1"># asynchronous in the vector store implementations.</span>
+        <span class="n">func</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">max_marginal_relevance_search_by_vector</span><span class="p">,</span>
+            <span class="n">embedding</span><span class="p">,</span>
+            <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span>
+            <span class="n">fetch_k</span><span class="o">=</span><span class="n">fetch_k</span><span class="p">,</span>
+            <span class="n">lambda_mult</span><span class="o">=</span><span class="n">lambda_mult</span><span class="p">,</span>
+            <span class="nb">filter</span><span class="o">=</span><span class="nb">filter</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">get_event_loop</span><span class="p">()</span><span class="o">.</span><span class="n">run_in_executor</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">func</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Kinetica.from_texts"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.kinetica.Kinetica.html#langchain_community.vectorstores.kinetica.Kinetica.from_texts">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_texts</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">Kinetica</span><span class="p">],</span>
+        <span class="n">texts</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">embedding</span><span class="p">:</span> <span class="n">Embeddings</span><span class="p">,</span>
+        <span class="n">metadatas</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">config</span><span class="p">:</span> <span class="n">KineticaSettings</span> <span class="o">=</span> <span class="n">KineticaSettings</span><span class="p">(),</span>
+        <span class="n">collection_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_LANGCHAIN_DEFAULT_COLLECTION_NAME</span><span class="p">,</span>
+        <span class="n">distance_strategy</span><span class="p">:</span> <span class="n">DistanceStrategy</span> <span class="o">=</span> <span class="n">DEFAULT_DISTANCE_STRATEGY</span><span class="p">,</span>
+        <span class="n">ids</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">pre_delete_collection</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Kinetica</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Adds the texts passed in to the vector store and returns it</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            cls (Type[Kinetica]): Kinetica class</span>
+<span class="sd">            texts (List[str]): A list of texts for which the embeddings are generated</span>
+<span class="sd">            embedding (Embeddings): List of embeddings</span>
+<span class="sd">            metadatas (Optional[List[dict]], optional): List of dicts, JSON</span>
+<span class="sd">                        describing the texts/documents. Defaults to None.</span>
+<span class="sd">            config (KineticaSettings): a `KineticaSettings` instance</span>
+<span class="sd">            collection_name (str, optional): Kinetica schema name.</span>
+<span class="sd">                        Defaults to _LANGCHAIN_DEFAULT_COLLECTION_NAME.</span>
+<span class="sd">            distance_strategy (DistanceStrategy, optional): Distance strategy</span>
+<span class="sd">                        e.g., l2, cosine etc.. Defaults to DEFAULT_DISTANCE_STRATEGY.</span>
+<span class="sd">            ids (Optional[List[str]], optional): A list of UUIDs for each</span>
+<span class="sd">                        text/document. Defaults to None.</span>
+<span class="sd">            pre_delete_collection (bool, optional): Indicates whether the Kinetica</span>
+<span class="sd">                        schema is to be deleted or not. Defaults to False.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Kinetica: a `Kinetica` instance</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">texts</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;texts is empty&quot;</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">first_embedding</span> <span class="o">=</span> <span class="n">embedding</span><span class="o">.</span><span class="n">embed_documents</span><span class="p">(</span><span class="n">texts</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">except</span> <span class="ne">NotImplementedError</span><span class="p">:</span>
+            <span class="n">first_embedding</span> <span class="o">=</span> <span class="p">[</span><span class="n">embedding</span><span class="o">.</span><span class="n">embed_query</span><span class="p">(</span><span class="n">texts</span><span class="p">[</span><span class="mi">0</span><span class="p">])]</span>
+
+        <span class="n">dimensions</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">first_embedding</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">embeddings</span> <span class="o">=</span> <span class="n">embedding</span><span class="o">.</span><span class="n">embed_documents</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">texts</span><span class="p">))</span>
+
+        <span class="n">kinetica_store</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__from</span><span class="p">(</span>
+            <span class="n">texts</span><span class="o">=</span><span class="n">texts</span><span class="p">,</span>
+            <span class="n">embeddings</span><span class="o">=</span><span class="n">embeddings</span><span class="p">,</span>
+            <span class="n">embedding</span><span class="o">=</span><span class="n">embedding</span><span class="p">,</span>
+            <span class="n">dimensions</span><span class="o">=</span><span class="n">dimensions</span><span class="p">,</span>
+            <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">,</span>
+            <span class="n">metadatas</span><span class="o">=</span><span class="n">metadatas</span><span class="p">,</span>
+            <span class="n">ids</span><span class="o">=</span><span class="n">ids</span><span class="p">,</span>
+            <span class="n">collection_name</span><span class="o">=</span><span class="n">collection_name</span><span class="p">,</span>
+            <span class="n">distance_strategy</span><span class="o">=</span><span class="n">distance_strategy</span><span class="p">,</span>
+            <span class="n">pre_delete_collection</span><span class="o">=</span><span class="n">pre_delete_collection</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">kinetica_store</span></div>
+
+<div class="viewcode-block" id="Kinetica.from_embeddings"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.kinetica.Kinetica.html#langchain_community.vectorstores.kinetica.Kinetica.from_embeddings">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_embeddings</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">Kinetica</span><span class="p">],</span>
+        <span class="n">text_embeddings</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]],</span>
+        <span class="n">embedding</span><span class="p">:</span> <span class="n">Embeddings</span><span class="p">,</span>
+        <span class="n">metadatas</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">config</span><span class="p">:</span> <span class="n">KineticaSettings</span> <span class="o">=</span> <span class="n">KineticaSettings</span><span class="p">(),</span>
+        <span class="n">dimensions</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Dimension</span><span class="o">.</span><span class="n">OPENAI</span><span class="p">,</span>
+        <span class="n">collection_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_LANGCHAIN_DEFAULT_COLLECTION_NAME</span><span class="p">,</span>
+        <span class="n">distance_strategy</span><span class="p">:</span> <span class="n">DistanceStrategy</span> <span class="o">=</span> <span class="n">DEFAULT_DISTANCE_STRATEGY</span><span class="p">,</span>
+        <span class="n">ids</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">pre_delete_collection</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Kinetica</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Adds the embeddings passed in to the vector store and returns it</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            cls (Type[Kinetica]): Kinetica class</span>
+<span class="sd">            text_embeddings (List[Tuple[str, List[float]]]): A list of texts</span>
+<span class="sd">                            and the embeddings</span>
+<span class="sd">            embedding (Embeddings): List of embeddings</span>
+<span class="sd">            metadatas (Optional[List[dict]], optional): List of dicts, JSON describing</span>
+<span class="sd">                        the texts/documents. Defaults to None.</span>
+<span class="sd">            config (KineticaSettings): a `KineticaSettings` instance</span>
+<span class="sd">            dimensions (int, optional): Dimension for the vector data, if not passed a</span>
+<span class="sd">                        default will be used. Defaults to Dimension.OPENAI.</span>
+<span class="sd">            collection_name (str, optional): Kinetica schema name.</span>
+<span class="sd">                        Defaults to _LANGCHAIN_DEFAULT_COLLECTION_NAME.</span>
+<span class="sd">            distance_strategy (DistanceStrategy, optional): Distance strategy</span>
+<span class="sd">                        e.g., l2, cosine etc.. Defaults to DEFAULT_DISTANCE_STRATEGY.</span>
+<span class="sd">            ids (Optional[List[str]], optional): A list of UUIDs for each text/document.</span>
+<span class="sd">                        Defaults to None.</span>
+<span class="sd">            pre_delete_collection (bool, optional): Indicates whether the</span>
+<span class="sd">                        Kinetica schema is to be deleted or not. Defaults to False.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Kinetica: a `Kinetica` instance</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">texts</span> <span class="o">=</span> <span class="p">[</span><span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">text_embeddings</span><span class="p">]</span>
+        <span class="n">embeddings</span> <span class="o">=</span> <span class="p">[</span><span class="n">t</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">text_embeddings</span><span class="p">]</span>
+        <span class="n">dimensions</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">embeddings</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__from</span><span class="p">(</span>
+            <span class="n">texts</span><span class="o">=</span><span class="n">texts</span><span class="p">,</span>
+            <span class="n">embeddings</span><span class="o">=</span><span class="n">embeddings</span><span class="p">,</span>
+            <span class="n">embedding</span><span class="o">=</span><span class="n">embedding</span><span class="p">,</span>
+            <span class="n">dimensions</span><span class="o">=</span><span class="n">dimensions</span><span class="p">,</span>
+            <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">,</span>
+            <span class="n">metadatas</span><span class="o">=</span><span class="n">metadatas</span><span class="p">,</span>
+            <span class="n">ids</span><span class="o">=</span><span class="n">ids</span><span class="p">,</span>
+            <span class="n">collection_name</span><span class="o">=</span><span class="n">collection_name</span><span class="p">,</span>
+            <span class="n">distance_strategy</span><span class="o">=</span><span class="n">distance_strategy</span><span class="p">,</span>
+            <span class="n">pre_delete_collection</span><span class="o">=</span><span class="n">pre_delete_collection</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Kinetica.from_documents"><a class="viewcode-back" href="../../../vectorstores/langchain_community.vectorstores.kinetica.Kinetica.html#langchain_community.vectorstores.kinetica.Kinetica.from_documents">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_documents</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">Kinetica</span><span class="p">],</span>
+        <span class="n">documents</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">],</span>
+        <span class="n">embedding</span><span class="p">:</span> <span class="n">Embeddings</span><span class="p">,</span>
+        <span class="n">config</span><span class="p">:</span> <span class="n">KineticaSettings</span> <span class="o">=</span> <span class="n">KineticaSettings</span><span class="p">(),</span>
+        <span class="n">metadatas</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">collection_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_LANGCHAIN_DEFAULT_COLLECTION_NAME</span><span class="p">,</span>
+        <span class="n">distance_strategy</span><span class="p">:</span> <span class="n">DistanceStrategy</span> <span class="o">=</span> <span class="n">DEFAULT_DISTANCE_STRATEGY</span><span class="p">,</span>
+        <span class="n">ids</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">pre_delete_collection</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Kinetica</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Adds the list of `Document` passed in to the vector store and returns it</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            cls (Type[Kinetica]): Kinetica class</span>
+<span class="sd">            texts (List[str]): A list of texts for which the embeddings are generated</span>
+<span class="sd">            embedding (Embeddings): List of embeddings</span>
+<span class="sd">            config (KineticaSettings): a `KineticaSettings` instance</span>
+<span class="sd">            metadatas (Optional[List[dict]], optional): List of dicts, JSON describing</span>
+<span class="sd">                        the texts/documents. Defaults to None.</span>
+<span class="sd">            collection_name (str, optional): Kinetica schema name.</span>
+<span class="sd">                        Defaults to _LANGCHAIN_DEFAULT_COLLECTION_NAME.</span>
+<span class="sd">            distance_strategy (DistanceStrategy, optional): Distance strategy</span>
+<span class="sd">                        e.g., l2, cosine etc.. Defaults to DEFAULT_DISTANCE_STRATEGY.</span>
+<span class="sd">            ids (Optional[List[str]], optional): A list of UUIDs for each text/document.</span>
+<span class="sd">                        Defaults to None.</span>
+<span class="sd">            pre_delete_collection (bool, optional): Indicates whether the Kinetica</span>
+<span class="sd">                        schema is to be deleted or not. Defaults to False.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Kinetica: a `Kinetica` instance</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">texts</span> <span class="o">=</span> <span class="p">[</span><span class="n">d</span><span class="o">.</span><span class="n">page_content</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">documents</span><span class="p">]</span>
+        <span class="n">metadatas</span> <span class="o">=</span> <span class="p">[</span><span class="n">d</span><span class="o">.</span><span class="n">metadata</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">documents</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">from_texts</span><span class="p">(</span>
+            <span class="n">texts</span><span class="o">=</span><span class="n">texts</span><span class="p">,</span>
+            <span class="n">embedding</span><span class="o">=</span><span class="n">embedding</span><span class="p">,</span>
+            <span class="n">metadatas</span><span class="o">=</span><span class="n">metadatas</span><span class="p">,</span>
+            <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">,</span>
+            <span class="n">collection_name</span><span class="o">=</span><span class="n">collection_name</span><span class="p">,</span>
+            <span class="n">distance_strategy</span><span class="o">=</span><span class="n">distance_strategy</span><span class="p">,</span>
+            <span class="n">ids</span><span class="o">=</span><span class="n">ids</span><span class="p">,</span>
+            <span class="n">pre_delete_collection</span><span class="o">=</span><span class="n">pre_delete_collection</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span></div></div>
+</pre></div>
+
+      </div>
+    <div class="container">
+      <footer class="sk-content-footer">
+            &copy; 2023, LangChain, Inc..
+          Last updated on Mar 15, 2024.
+      </footer>
+    </div>
+  </div>
+</div>
+<script src="../../../_static/js/vendor/bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    /* Add a [>>>] button on the top-right corner of code samples to hide
+     * the >>> and ... prompts and the output and thus make the code
+     * copyable. */
+    var div = $('.highlight-python .highlight,' +
+                '.highlight-python3 .highlight,' +
+                '.highlight-pycon .highlight,' +
+		'.highlight-default .highlight')
+    var pre = div.find('pre');
+
+    // get the styles from the current theme
+    pre.parent().parent().css('position', 'relative');
+    var hide_text = 'Hide prompts and outputs';
+    var show_text = 'Show prompts and outputs';
+
+    // create and add the button to all the code blocks that contain >>>
+    div.each(function(index) {
+        var jthis = $(this);
+        if (jthis.find('.gp').length > 0) {
+            var button = $('<span class="copybutton">&gt;&gt;&gt;</span>');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+            jthis.prepend(button);
+        }
+        // tracebacks (.gt) contain bare text elements that need to be
+        // wrapped in a span to work with .nextUntil() (see later)
+        jthis.find('pre:has(.gt)').contents().filter(function() {
+            return ((this.nodeType == 3) && (this.data.trim().length > 0));
+        }).wrap('<span>');
+    });
+
+    // define the behavior of the button when it's clicked
+    $('.copybutton').click(function(e){
+        e.preventDefault();
+        var button = $(this);
+        if (button.data('hidden') === 'false') {
+            // hide the code output
+            button.parent().find('.go, .gp, .gt').hide();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'hidden');
+            button.css('text-decoration', 'line-through');
+            button.attr('title', show_text);
+            button.data('hidden', 'true');
+        } else {
+            // show the code output
+            button.parent().find('.go, .gp, .gt').show();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'visible');
+            button.css('text-decoration', 'none');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+        }
+    });
+
+	/*** Add permalink buttons next to glossary terms ***/
+	$('dl.glossary > dt[id]').append(function() {
+		return ('<a class="headerlink" href="#' +
+			    this.getAttribute('id') +
+			    '" title="Permalink to this term">¶</a>');
+	});
+});
+
+</script>
+    
+</body>
+</html>

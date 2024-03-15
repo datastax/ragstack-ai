@@ -1,0 +1,852 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>langchain_community.utilities.nvidia_riva &mdash; 🦜🔗 LangChain 0.1.12</title>
+  
+  <link rel="canonical" href="https://api.python.langchain.com/en/latest/_modules/langchain_community/utilities/nvidia_riva.html" />
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/vendor/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/autodoc_pydantic.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/sphinx-dropdown.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/panels-bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+<script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+<script src="../../../_static/jquery.js"></script> 
+</head>
+<body>
+
+
+<nav id="navbar" class="sk-docs-navbar navbar navbar-expand-md navbar-light bg-light py-0">
+  <div class="container-fluid sk-docs-container px-0">
+    <button
+      id="sk-navbar-toggler"
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="sk-navbar-collapse collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../langchain_api_reference.html">LangChain</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../core_api_reference.html">Core</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../community_api_reference.html">Community</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../experimental_api_reference.html">Experimental</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../text_splitters_api_reference.html">Text splitters</a>
+        </li>
+        <li class="nav-item dropdown nav-more-item-dropdown">
+          <a class="sk-nav-link nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Partner libs</a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+          </div>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" target="_blank" rel="noopener noreferrer" href="https://python.langchain.com/">Docs</a>
+        </li>
+      </ul>
+      <div id="searchbox" role="search">
+          <div class="searchformwrapper">
+          <form class="search" action="../../../search.html" method="get">
+            <input class="sk-search-text-input" type="text" name="q" aria-labelledby="searchlabel" />
+            <input class="sk-search-text-btn" type="submit" value="Go" />
+          </form>
+          </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="d-flex" id="sk-doc-wrapper">
+    <input type="checkbox" name="sk-toggle-checkbox" id="sk-toggle-checkbox">
+    <label id="sk-sidemenu-toggle" class="sk-btn-toggle-toc btn sk-btn-primary" for="sk-toggle-checkbox">Toggle Menu</label>
+    <div id="sk-sidebar-wrapper" class="border-right">
+      <div class="sk-sidebar-toc-wrapper">
+        <div class="btn-group w-100 mb-2" role="group" aria-label="rellinks">
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Prev</a><a href="../../index.html" role="button" class="btn sk-btn-rellink py-1" sk-rellink-tooltip="Module code">Up</a>
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Next</a>
+        </div>
+            <div class="sk-sidebar-toc">
+              
+            </div>
+      </div>
+    </div>
+    <div id="sk-page-content-wrapper">
+      <div class="sk-page-content container-fluid body px-md-3" role="main">
+        
+  <h1>Source code for langchain_community.utilities.nvidia_riva</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;A common module for NVIDIA Riva Runnables.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">asyncio</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">pathlib</span>
+<span class="kn">import</span> <span class="nn">queue</span>
+<span class="kn">import</span> <span class="nn">tempfile</span>
+<span class="kn">import</span> <span class="nn">threading</span>
+<span class="kn">import</span> <span class="nn">wave</span>
+<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">TYPE_CHECKING</span><span class="p">,</span>
+    <span class="n">Any</span><span class="p">,</span>
+    <span class="n">AsyncGenerator</span><span class="p">,</span>
+    <span class="n">AsyncIterator</span><span class="p">,</span>
+    <span class="n">Dict</span><span class="p">,</span>
+    <span class="n">Generator</span><span class="p">,</span>
+    <span class="n">Iterator</span><span class="p">,</span>
+    <span class="n">List</span><span class="p">,</span>
+    <span class="n">Optional</span><span class="p">,</span>
+    <span class="n">Tuple</span><span class="p">,</span>
+    <span class="n">Union</span><span class="p">,</span>
+    <span class="n">cast</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">langchain_core.messages</span> <span class="kn">import</span> <span class="n">AnyMessage</span><span class="p">,</span> <span class="n">BaseMessage</span>
+<span class="kn">from</span> <span class="nn">langchain_core.prompt_values</span> <span class="kn">import</span> <span class="n">PromptValue</span>
+<span class="kn">from</span> <span class="nn">langchain_core.pydantic_v1</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AnyHttpUrl</span><span class="p">,</span>
+    <span class="n">BaseModel</span><span class="p">,</span>
+    <span class="n">Field</span><span class="p">,</span>
+    <span class="n">parse_obj_as</span><span class="p">,</span>
+    <span class="n">root_validator</span><span class="p">,</span>
+    <span class="n">validator</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">langchain_core.runnables</span> <span class="kn">import</span> <span class="n">RunnableConfig</span><span class="p">,</span> <span class="n">RunnableSerializable</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">riva.client</span>
+    <span class="kn">import</span> <span class="nn">riva.client.proto.riva_asr_pb2</span> <span class="k">as</span> <span class="nn">rasr</span>
+
+<span class="n">_LOGGER</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+<span class="n">_QUEUE_GET_TIMEOUT</span> <span class="o">=</span> <span class="mf">0.5</span>
+<span class="n">_MAX_TEXT_LENGTH</span> <span class="o">=</span> <span class="mi">400</span>
+<span class="n">_SENTENCE_TERMINATORS</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="s2">&quot;!&quot;</span><span class="p">,</span> <span class="s2">&quot;?&quot;</span><span class="p">,</span> <span class="s2">&quot;¡&quot;</span><span class="p">,</span> <span class="s2">&quot;¿&quot;</span><span class="p">)</span>
+
+
+<span class="c1"># COMMON utilities used by all Riva Runnables</span>
+<span class="k">def</span> <span class="nf">_import_riva_client</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="s2">&quot;riva.client&quot;</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Import the riva client and raise an error on failure.&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># pylint: disable-next=import-outside-toplevel # this client library is optional</span>
+        <span class="kn">import</span> <span class="nn">riva.client</span>
+    <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+            <span class="s2">&quot;Could not import the NVIDIA Riva client library. &quot;</span>
+            <span class="s2">&quot;Please install it with `pip install nvidia-riva-client`.&quot;</span>
+        <span class="p">)</span> <span class="kn">from</span> <span class="nn">err</span>
+    <span class="k">return</span> <span class="n">riva</span><span class="o">.</span><span class="n">client</span>
+
+
+<div class="viewcode-block" id="SentinelT"><a class="viewcode-back" href="../../../utilities/langchain_community.utilities.nvidia_riva.SentinelT.html#langchain_community.utilities.nvidia_riva.SentinelT">[docs]</a><span class="k">class</span> <span class="nc">SentinelT</span><span class="p">:</span>  <span class="c1"># pylint: disable=too-few-public-methods</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;An empty Sentinel type.&quot;&quot;&quot;</span></div>
+
+
+<span class="n">HANGUP</span> <span class="o">=</span> <span class="n">SentinelT</span><span class="p">()</span>
+<span class="n">_TRANSFORM_END</span> <span class="o">=</span> <span class="n">SentinelT</span><span class="p">()</span>
+
+
+<div class="viewcode-block" id="RivaAudioEncoding"><a class="viewcode-back" href="../../../utilities/langchain_community.utilities.nvidia_riva.RivaAudioEncoding.html#langchain_community.utilities.nvidia_riva.RivaAudioEncoding">[docs]</a><span class="k">class</span> <span class="nc">RivaAudioEncoding</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;An enum of the possible choices for Riva audio encoding.</span>
+
+<span class="sd">    The list of types exposed by the Riva GRPC Protobuf files can be found</span>
+<span class="sd">    with the following commands:</span>
+<span class="sd">    ```python</span>
+<span class="sd">    import riva.client</span>
+<span class="sd">    print(riva.client.AudioEncoding.keys())  # noqa: T201</span>
+<span class="sd">    ```</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">ALAW</span> <span class="o">=</span> <span class="s2">&quot;ALAW&quot;</span>
+    <span class="n">ENCODING_UNSPECIFIED</span> <span class="o">=</span> <span class="s2">&quot;ENCODING_UNSPECIFIED&quot;</span>
+    <span class="n">FLAC</span> <span class="o">=</span> <span class="s2">&quot;FLAC&quot;</span>
+    <span class="n">LINEAR_PCM</span> <span class="o">=</span> <span class="s2">&quot;LINEAR_PCM&quot;</span>
+    <span class="n">MULAW</span> <span class="o">=</span> <span class="s2">&quot;MULAW&quot;</span>
+    <span class="n">OGGOPUS</span> <span class="o">=</span> <span class="s2">&quot;OGGOPUS&quot;</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_wave_format_code</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">format_code</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;RivaAudioEncoding&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the audio encoding specified by the format code in the wave file.</span>
+
+<span class="sd">        ref: https://mmsp.ece.mcgill.ca/Documents/AudioFormats/WAVE/WAVE.html</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span><span class="mi">1</span><span class="p">:</span> <span class="bp">cls</span><span class="o">.</span><span class="n">LINEAR_PCM</span><span class="p">,</span> <span class="mi">6</span><span class="p">:</span> <span class="bp">cls</span><span class="o">.</span><span class="n">ALAW</span><span class="p">,</span> <span class="mi">7</span><span class="p">:</span> <span class="bp">cls</span><span class="o">.</span><span class="n">MULAW</span><span class="p">}[</span><span class="n">format_code</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+                <span class="s2">&quot;The following wave file format code is &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;not supported by Riva: </span><span class="si">{</span><span class="n">format_code</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span> <span class="kn">from</span> <span class="nn">err</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">riva_pb2</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;riva.client.AudioEncoding&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the Riva API object for the encoding.&quot;&quot;&quot;</span>
+        <span class="n">riva_client</span> <span class="o">=</span> <span class="n">_import_riva_client</span><span class="p">()</span>
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">riva_client</span><span class="o">.</span><span class="n">AudioEncoding</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="RivaAuthMixin"><a class="viewcode-back" href="../../../utilities/langchain_community.utilities.nvidia_riva.RivaAuthMixin.html#langchain_community.utilities.nvidia_riva.RivaAuthMixin">[docs]</a><span class="k">class</span> <span class="nc">RivaAuthMixin</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Configuration for the authentication to a Riva service connection.&quot;&quot;&quot;</span>
+
+    <span class="n">url</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">AnyHttpUrl</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="n">AnyHttpUrl</span><span class="p">(</span><span class="s2">&quot;http://localhost:50051&quot;</span><span class="p">,</span> <span class="n">scheme</span><span class="o">=</span><span class="s2">&quot;http&quot;</span><span class="p">),</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;The full URL where the Riva service can be found.&quot;</span><span class="p">,</span>
+        <span class="n">examples</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;http://localhost:50051&quot;</span><span class="p">,</span> <span class="s2">&quot;https://user@pass:riva.example.com&quot;</span><span class="p">],</span>
+    <span class="p">)</span>
+    <span class="n">ssl_cert</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="kc">None</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;A full path to the file where Riva&#39;s public ssl key can be read.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">auth</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;riva.client.Auth&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a riva client auth object.&quot;&quot;&quot;</span>
+        <span class="n">riva_client</span> <span class="o">=</span> <span class="n">_import_riva_client</span><span class="p">()</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">AnyHttpUrl</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
+        <span class="n">use_ssl</span> <span class="o">=</span> <span class="n">url</span><span class="o">.</span><span class="n">scheme</span> <span class="o">==</span> <span class="s2">&quot;https&quot;</span>  <span class="c1"># pylint: disable=no-member # false positive</span>
+        <span class="n">url_no_scheme</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">riva_client</span><span class="o">.</span><span class="n">Auth</span><span class="p">(</span>
+            <span class="n">ssl_cert</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ssl_cert</span><span class="p">,</span> <span class="n">use_ssl</span><span class="o">=</span><span class="n">use_ssl</span><span class="p">,</span> <span class="n">uri</span><span class="o">=</span><span class="n">url_no_scheme</span>
+        <span class="p">)</span>
+
+    <span class="nd">@validator</span><span class="p">(</span><span class="s2">&quot;url&quot;</span><span class="p">,</span> <span class="n">pre</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">allow_reuse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_validate_url</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AnyHttpUrl</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Do some initial conversations for the URL before checking.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">cast</span><span class="p">(</span><span class="n">AnyHttpUrl</span><span class="p">,</span> <span class="n">parse_obj_as</span><span class="p">(</span><span class="n">AnyHttpUrl</span><span class="p">,</span> <span class="n">val</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">cast</span><span class="p">(</span><span class="n">AnyHttpUrl</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="RivaCommonConfigMixin"><a class="viewcode-back" href="../../../utilities/langchain_community.utilities.nvidia_riva.RivaCommonConfigMixin.html#langchain_community.utilities.nvidia_riva.RivaCommonConfigMixin">[docs]</a><span class="k">class</span> <span class="nc">RivaCommonConfigMixin</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A collection of common Riva settings.&quot;&quot;&quot;</span>
+
+    <span class="n">encoding</span><span class="p">:</span> <span class="n">RivaAudioEncoding</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="n">default</span><span class="o">=</span><span class="n">RivaAudioEncoding</span><span class="o">.</span><span class="n">LINEAR_PCM</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;The encoding on the audio stream.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">sample_rate_hertz</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="n">default</span><span class="o">=</span><span class="mi">8000</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;The sample rate frequency of audio stream.&quot;</span>
+    <span class="p">)</span>
+    <span class="n">language_code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="n">default</span><span class="o">=</span><span class="s2">&quot;en-US&quot;</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;The [BCP-47 language code]&quot;</span>
+            <span class="s2">&quot;(https://www.rfc-editor.org/rfc/bcp/bcp47.txt) for &quot;</span>
+            <span class="s2">&quot;the target language.&quot;</span>
+        <span class="p">),</span>
+    <span class="p">)</span></div>
+
+
+<span class="k">class</span> <span class="nc">_Event</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A combined event that is threadsafe and async safe.&quot;&quot;&quot;</span>
+
+    <span class="n">_event</span><span class="p">:</span> <span class="n">threading</span><span class="o">.</span><span class="n">Event</span>
+    <span class="n">_aevent</span><span class="p">:</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Event</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the event.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_event</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Event</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_aevent</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Event</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the event.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_event</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_aevent</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the event.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_event</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_aevent</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">is_set</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Indicate if the event is set.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_event</span><span class="o">.</span><span class="n">is_set</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">wait</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Wait for the event to be set.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_event</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">async_wait</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Async wait for the event to be set.&quot;&quot;&quot;</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_aevent</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+
+
+<span class="k">def</span> <span class="nf">_mk_wave_file</span><span class="p">(</span>
+    <span class="n">output_directory</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">sample_rate</span><span class="p">:</span> <span class="nb">float</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">Optional</span><span class="p">[</span><span class="n">wave</span><span class="o">.</span><span class="n">Wave_write</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a new wave file and return the wave write object and filename.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">output_directory</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">(</span>
+            <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;bx&quot;</span><span class="p">,</span> <span class="n">suffix</span><span class="o">=</span><span class="s2">&quot;.wav&quot;</span><span class="p">,</span> <span class="n">delete</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="nb">dir</span><span class="o">=</span><span class="n">output_directory</span>
+        <span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">wav_file_name</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span>
+        <span class="n">wav_file</span> <span class="o">=</span> <span class="n">wave</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">wav_file_name</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span>
+        <span class="n">wav_file</span><span class="o">.</span><span class="n">setnchannels</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">wav_file</span><span class="o">.</span><span class="n">setsampwidth</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">wav_file</span><span class="o">.</span><span class="n">setframerate</span><span class="p">(</span><span class="n">sample_rate</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">wav_file_name</span><span class="p">,</span> <span class="n">wav_file</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_coerce_string</span><span class="p">(</span><span class="n">val</span><span class="p">:</span> <span class="s2">&quot;TTSInputType&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Attempt to coerce the input value to a string.</span>
+
+<span class="sd">    This is particularly useful for converting LangChain message to strings.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">PromptValue</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">val</span><span class="o">.</span><span class="n">to_string</span><span class="p">()</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">BaseMessage</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">val</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_process_chunks</span><span class="p">(</span><span class="n">inputs</span><span class="p">:</span> <span class="n">Iterator</span><span class="p">[</span><span class="s2">&quot;TTSInputType&quot;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Filter the input chunks are return strings ready for TTS.&quot;&quot;&quot;</span>
+    <span class="n">buffer</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">inputs</span><span class="p">:</span>
+        <span class="n">chunk</span> <span class="o">=</span> <span class="n">_coerce_string</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
+
+        <span class="c1"># return the buffer if an end of sentence character is detected</span>
+        <span class="k">for</span> <span class="n">terminator</span> <span class="ow">in</span> <span class="n">_SENTENCE_TERMINATORS</span><span class="p">:</span>
+            <span class="k">while</span> <span class="n">terminator</span> <span class="ow">in</span> <span class="n">chunk</span><span class="p">:</span>
+                <span class="n">last_sentence</span><span class="p">,</span> <span class="n">chunk</span> <span class="o">=</span> <span class="n">chunk</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">terminator</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="k">yield</span> <span class="n">buffer</span> <span class="o">+</span> <span class="n">last_sentence</span> <span class="o">+</span> <span class="n">terminator</span>
+                <span class="n">buffer</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+        <span class="n">buffer</span> <span class="o">+=</span> <span class="n">chunk</span>
+
+        <span class="c1"># return the buffer if is too long</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">buffer</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">_MAX_TEXT_LENGTH</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">buffer</span><span class="p">),</span> <span class="n">_MAX_TEXT_LENGTH</span><span class="p">):</span>
+                <span class="k">yield</span> <span class="n">buffer</span><span class="p">[</span><span class="n">idx</span> <span class="p">:</span> <span class="n">idx</span> <span class="o">+</span> <span class="mi">5</span><span class="p">]</span>
+            <span class="n">buffer</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+    <span class="c1"># return remaining buffer</span>
+    <span class="k">if</span> <span class="n">buffer</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="n">buffer</span>
+
+
+<span class="c1"># Riva AudioStream Type</span>
+<span class="n">StreamInputType</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="nb">bytes</span><span class="p">,</span> <span class="n">SentinelT</span><span class="p">]</span>
+<span class="n">StreamOutputType</span> <span class="o">=</span> <span class="nb">str</span>
+
+
+<div class="viewcode-block" id="AudioStream"><a class="viewcode-back" href="../../../utilities/langchain_community.utilities.nvidia_riva.AudioStream.html#langchain_community.utilities.nvidia_riva.AudioStream">[docs]</a><span class="k">class</span> <span class="nc">AudioStream</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A message containing streaming audio.&quot;&quot;&quot;</span>
+
+    <span class="n">_put_lock</span><span class="p">:</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span>
+    <span class="n">_queue</span><span class="p">:</span> <span class="n">queue</span><span class="o">.</span><span class="n">Queue</span>
+    <span class="n">output</span><span class="p">:</span> <span class="n">queue</span><span class="o">.</span><span class="n">Queue</span>
+    <span class="n">hangup</span><span class="p">:</span> <span class="n">_Event</span>
+    <span class="n">user_talking</span><span class="p">:</span> <span class="n">_Event</span>
+    <span class="n">user_quiet</span><span class="p">:</span> <span class="n">_Event</span>
+    <span class="n">_worker</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">]</span>
+
+<div class="viewcode-block" id="AudioStream.__init__"><a class="viewcode-back" href="../../../utilities/langchain_community.utilities.nvidia_riva.AudioStream.html#langchain_community.utilities.nvidia_riva.AudioStream.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">maxsize</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the queue.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_put_lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span> <span class="o">=</span> <span class="n">queue</span><span class="o">.</span><span class="n">Queue</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="n">maxsize</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output</span> <span class="o">=</span> <span class="n">queue</span><span class="o">.</span><span class="n">Queue</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hangup</span> <span class="o">=</span> <span class="n">_Event</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">user_quiet</span> <span class="o">=</span> <span class="n">_Event</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">user_talking</span> <span class="o">=</span> <span class="n">_Event</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_worker</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="nb">bytes</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return an error.&quot;&quot;&quot;</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="c1"># get next item</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">next_val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">_QUEUE_GET_TIMEOUT</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">queue</span><span class="o">.</span><span class="n">Empty</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+            <span class="c1"># hangup when requested</span>
+            <span class="k">if</span> <span class="n">next_val</span> <span class="o">==</span> <span class="n">HANGUP</span><span class="p">:</span>
+                <span class="k">break</span>
+
+            <span class="c1"># yield next item</span>
+            <span class="k">yield</span> <span class="n">next_val</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span><span class="o">.</span><span class="n">task_done</span><span class="p">()</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="fm">__aiter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">StreamInputType</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Iterate through all items in the queue until HANGUP.&quot;&quot;&quot;</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="c1"># get next item</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">next_val</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">get_event_loop</span><span class="p">()</span><span class="o">.</span><span class="n">run_in_executor</span><span class="p">(</span>
+                    <span class="kc">None</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span><span class="o">.</span><span class="n">get</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="n">_QUEUE_GET_TIMEOUT</span>
+                <span class="p">)</span>
+            <span class="k">except</span> <span class="n">queue</span><span class="o">.</span><span class="n">Empty</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+            <span class="c1"># hangup when requested</span>
+            <span class="k">if</span> <span class="n">next_val</span> <span class="o">==</span> <span class="n">HANGUP</span><span class="p">:</span>
+                <span class="k">break</span>
+
+            <span class="c1"># yield next item</span>
+            <span class="k">yield</span> <span class="n">next_val</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span><span class="o">.</span><span class="n">task_done</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">hungup</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Indicate if the audio stream has hungup.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">hangup</span><span class="o">.</span><span class="n">is_set</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">empty</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Indicate in the input stream buffer is empty.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span><span class="o">.</span><span class="n">empty</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">complete</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Indicate if the audio stream has hungup and been processed.&quot;&quot;&quot;</span>
+        <span class="n">input_done</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hungup</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">empty</span>
+        <span class="n">output_done</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_worker</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_worker</span><span class="o">.</span><span class="n">is_alive</span><span class="p">()</span>
+            <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">empty</span><span class="p">()</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">input_done</span> <span class="ow">and</span> <span class="n">output_done</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">running</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Indicate if the ASR stream is running.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_worker</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_worker</span><span class="o">.</span><span class="n">is_alive</span><span class="p">()</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+<div class="viewcode-block" id="AudioStream.put"><a class="viewcode-back" href="../../../utilities/langchain_community.utilities.nvidia_riva.AudioStream.html#langchain_community.utilities.nvidia_riva.AudioStream.put">[docs]</a>    <span class="k">def</span> <span class="nf">put</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">StreamInputType</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Put a new item into the queue.&quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_put_lock</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hungup</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                    <span class="s2">&quot;The audio stream has already been hungup. Cannot put more data.&quot;</span>
+                <span class="p">)</span>
+            <span class="k">if</span> <span class="n">item</span> <span class="ow">is</span> <span class="n">HANGUP</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">hangup</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AudioStream.aput"><a class="viewcode-back" href="../../../utilities/langchain_community.utilities.nvidia_riva.AudioStream.html#langchain_community.utilities.nvidia_riva.AudioStream.aput">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">aput</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">StreamInputType</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Async put a new item into the queue.&quot;&quot;&quot;</span>
+        <span class="n">loop</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">get_event_loop</span><span class="p">()</span>
+        <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">wait_for</span><span class="p">(</span><span class="n">loop</span><span class="o">.</span><span class="n">run_in_executor</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">put</span><span class="p">,</span> <span class="n">item</span><span class="p">),</span> <span class="n">timeout</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AudioStream.close"><a class="viewcode-back" href="../../../utilities/langchain_community.utilities.nvidia_riva.AudioStream.html#langchain_community.utilities.nvidia_riva.AudioStream.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Send the hangup signal.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">HANGUP</span><span class="p">,</span> <span class="n">timeout</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AudioStream.aclose"><a class="viewcode-back" href="../../../utilities/langchain_community.utilities.nvidia_riva.AudioStream.html#langchain_community.utilities.nvidia_riva.AudioStream.aclose">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">aclose</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Async send the hangup signal.&quot;&quot;&quot;</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">aput</span><span class="p">(</span><span class="n">HANGUP</span><span class="p">,</span> <span class="n">timeout</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AudioStream.register"><a class="viewcode-back" href="../../../utilities/langchain_community.utilities.nvidia_riva.AudioStream.html#langchain_community.utilities.nvidia_riva.AudioStream.register">[docs]</a>    <span class="k">def</span> <span class="nf">register</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">responses</span><span class="p">:</span> <span class="n">Iterator</span><span class="p">[</span><span class="s2">&quot;rasr.StreamingRecognizeResponse&quot;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Drain the responses from the provided iterator and put them into a queue.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">running</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;An ASR instance has already been registered.&quot;</span><span class="p">)</span>
+
+        <span class="n">has_started</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Barrier</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">worker</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Consume the ASR Generator.&quot;&quot;&quot;</span>
+            <span class="n">has_started</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">response</span> <span class="ow">in</span> <span class="n">responses</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">response</span><span class="o">.</span><span class="n">results</span><span class="p">:</span>
+                    <span class="k">continue</span>
+
+                <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">results</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">result</span><span class="o">.</span><span class="n">alternatives</span><span class="p">:</span>
+                        <span class="k">continue</span>
+
+                    <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">is_final</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">user_talking</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">user_quiet</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>
+                        <span class="n">transcript</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">alternatives</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">transcript</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">transcript</span><span class="p">)</span>
+
+                    <span class="k">elif</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_talking</span><span class="o">.</span><span class="n">is_set</span><span class="p">():</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">user_talking</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">user_quiet</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_worker</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">worker</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_worker</span><span class="o">.</span><span class="n">daemon</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_worker</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+        <span class="n">has_started</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span></div></div>
+
+
+<span class="c1"># RivaASR Runnable</span>
+<span class="n">ASRInputType</span> <span class="o">=</span> <span class="n">AudioStream</span>
+<span class="n">ASROutputType</span> <span class="o">=</span> <span class="nb">str</span>
+
+
+<div class="viewcode-block" id="RivaASR"><a class="viewcode-back" href="../../../utilities/langchain_community.utilities.nvidia_riva.RivaASR.html#langchain_community.utilities.nvidia_riva.RivaASR">[docs]</a><span class="k">class</span> <span class="nc">RivaASR</span><span class="p">(</span>
+    <span class="n">RivaAuthMixin</span><span class="p">,</span>
+    <span class="n">RivaCommonConfigMixin</span><span class="p">,</span>
+    <span class="n">RunnableSerializable</span><span class="p">[</span><span class="n">ASRInputType</span><span class="p">,</span> <span class="n">ASROutputType</span><span class="p">],</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A runnable that performs Automatic Speech Recognition (ASR) using NVIDIA Riva.&quot;&quot;&quot;</span>
+
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;nvidia_riva_asr&quot;</span>
+    <span class="n">description</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;A Runnable for converting audio bytes to a string.&quot;</span>
+        <span class="s2">&quot;This is useful for feeding an audio stream into a chain and&quot;</span>
+        <span class="s2">&quot;preprocessing that audio to create an LLM prompt.&quot;</span>
+    <span class="p">)</span>
+
+    <span class="c1"># riva options</span>
+    <span class="n">audio_channel_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="mi">1</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;The number of audio channels in the input audio stream.&quot;</span>
+    <span class="p">)</span>
+    <span class="n">profanity_filter</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="kc">True</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;Controls whether or not Riva should attempt to filter &quot;</span>
+            <span class="s2">&quot;profanity out of the transcribed text.&quot;</span>
+        <span class="p">),</span>
+    <span class="p">)</span>
+    <span class="n">enable_automatic_punctuation</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="kc">True</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;Controls whether Riva should attempt to correct &quot;</span>
+            <span class="s2">&quot;senetence puncuation in the transcribed text.&quot;</span>
+        <span class="p">),</span>
+    <span class="p">)</span>
+
+    <span class="nd">@root_validator</span><span class="p">(</span><span class="n">pre</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_validate_environment</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Validate the Python environment and input arguments.&quot;&quot;&quot;</span>
+        <span class="n">_</span> <span class="o">=</span> <span class="n">_import_riva_client</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">values</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;riva.client.StreamingRecognitionConfig&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create and return the riva config object.&quot;&quot;&quot;</span>
+        <span class="n">riva_client</span> <span class="o">=</span> <span class="n">_import_riva_client</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">riva_client</span><span class="o">.</span><span class="n">StreamingRecognitionConfig</span><span class="p">(</span>
+            <span class="n">interim_results</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">config</span><span class="o">=</span><span class="n">riva_client</span><span class="o">.</span><span class="n">RecognitionConfig</span><span class="p">(</span>
+                <span class="n">encoding</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">encoding</span><span class="p">,</span>
+                <span class="n">sample_rate_hertz</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_rate_hertz</span><span class="p">,</span>
+                <span class="n">audio_channel_count</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">audio_channel_count</span><span class="p">,</span>
+                <span class="n">max_alternatives</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">profanity_filter</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">profanity_filter</span><span class="p">,</span>
+                <span class="n">enable_automatic_punctuation</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">enable_automatic_punctuation</span><span class="p">,</span>
+                <span class="n">language_code</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">language_code</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_service</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;riva.client.ASRService&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Connect to the riva service and return the a client object.&quot;&quot;&quot;</span>
+        <span class="n">riva_client</span> <span class="o">=</span> <span class="n">_import_riva_client</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">riva_client</span><span class="o">.</span><span class="n">ASRService</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">auth</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Error raised while connecting to the Riva ASR server.&quot;</span>
+            <span class="p">)</span> <span class="kn">from</span> <span class="nn">err</span>
+
+<div class="viewcode-block" id="RivaASR.invoke"><a class="viewcode-back" href="../../../utilities/langchain_community.utilities.nvidia_riva.RivaASR.html#langchain_community.utilities.nvidia_riva.RivaASR.invoke">[docs]</a>    <span class="k">def</span> <span class="nf">invoke</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="nb">input</span><span class="p">:</span> <span class="n">ASRInputType</span><span class="p">,</span>
+        <span class="n">_</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">RunnableConfig</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ASROutputType</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Transcribe the audio bytes into a string with Riva.&quot;&quot;&quot;</span>
+        <span class="c1"># create an output text generator with Riva</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">input</span><span class="o">.</span><span class="n">running</span><span class="p">:</span>
+            <span class="n">service</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_service</span><span class="p">()</span>
+            <span class="n">responses</span> <span class="o">=</span> <span class="n">service</span><span class="o">.</span><span class="n">streaming_response_generator</span><span class="p">(</span>
+                <span class="n">audio_chunks</span><span class="o">=</span><span class="nb">input</span><span class="p">,</span>
+                <span class="n">streaming_config</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="nb">input</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">responses</span><span class="p">)</span>
+
+        <span class="c1"># return the first valid result</span>
+        <span class="n">full_response</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">while</span> <span class="ow">not</span> <span class="nb">input</span><span class="o">.</span><span class="n">complete</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">input</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">not_empty</span><span class="p">:</span>
+                <span class="n">ready</span> <span class="o">=</span> <span class="nb">input</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">not_empty</span><span class="o">.</span><span class="n">wait</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">ready</span><span class="p">:</span>
+                <span class="k">while</span> <span class="ow">not</span> <span class="nb">input</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">empty</span><span class="p">():</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">full_response</span> <span class="o">+=</span> <span class="p">[</span><span class="nb">input</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">get_nowait</span><span class="p">()]</span>
+                    <span class="k">except</span> <span class="n">queue</span><span class="o">.</span><span class="n">Empty</span><span class="p">:</span>
+                        <span class="k">continue</span>
+                    <span class="nb">input</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">task_done</span><span class="p">()</span>
+                <span class="n">_LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Riva ASR returning: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">repr</span><span class="p">(</span><span class="n">full_response</span><span class="p">))</span>
+                <span class="k">return</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">full_response</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="s2">&quot;&quot;</span></div></div>
+
+
+<span class="c1"># RivaTTS Runnable</span>
+<span class="c1"># pylint: disable-next=invalid-name</span>
+<span class="n">TTSInputType</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">AnyMessage</span><span class="p">,</span> <span class="n">PromptValue</span><span class="p">]</span>
+<span class="n">TTSOutputType</span> <span class="o">=</span> <span class="nb">bytes</span>
+
+
+<div class="viewcode-block" id="RivaTTS"><a class="viewcode-back" href="../../../utilities/langchain_community.utilities.nvidia_riva.RivaTTS.html#langchain_community.utilities.nvidia_riva.RivaTTS">[docs]</a><span class="k">class</span> <span class="nc">RivaTTS</span><span class="p">(</span>
+    <span class="n">RivaAuthMixin</span><span class="p">,</span>
+    <span class="n">RivaCommonConfigMixin</span><span class="p">,</span>
+    <span class="n">RunnableSerializable</span><span class="p">[</span><span class="n">TTSInputType</span><span class="p">,</span> <span class="n">TTSOutputType</span><span class="p">],</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A runnable that performs Text-to-Speech (TTS) with NVIDIA Riva.&quot;&quot;&quot;</span>
+
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;nvidia_riva_tts&quot;</span>
+    <span class="n">description</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;A tool for converting text to speech.&quot;</span>
+        <span class="s2">&quot;This is useful for converting LLM output into audio bytes.&quot;</span>
+    <span class="p">)</span>
+
+    <span class="c1"># riva options</span>
+    <span class="n">voice_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="s2">&quot;English-US.Female-1&quot;</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;The voice model in Riva to use for speech. &quot;</span>
+            <span class="s2">&quot;Pre-trained models are documented in &quot;</span>
+            <span class="s2">&quot;[the Riva documentation]&quot;</span>
+            <span class="s2">&quot;(https://docs.nvidia.com/deeplearning/riva/user-guide/docs/tts/tts-overview.html).&quot;</span>
+        <span class="p">),</span>
+    <span class="p">)</span>
+    <span class="n">output_directory</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="kc">None</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;The directory where all audio files should be saved. &quot;</span>
+            <span class="s2">&quot;A null value indicates that wave files should not be saved. &quot;</span>
+            <span class="s2">&quot;This is useful for debugging purposes.&quot;</span>
+        <span class="p">),</span>
+    <span class="p">)</span>
+
+    <span class="nd">@root_validator</span><span class="p">(</span><span class="n">pre</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_validate_environment</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Validate the Python environment and input arguments.&quot;&quot;&quot;</span>
+        <span class="n">_</span> <span class="o">=</span> <span class="n">_import_riva_client</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">values</span>
+
+    <span class="nd">@validator</span><span class="p">(</span><span class="s2">&quot;output_directory&quot;</span><span class="p">)</span>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_output_directory_validator</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">v</span><span class="p">:</span>
+            <span class="n">dirpath</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+            <span class="n">dirpath</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">dirpath</span><span class="o">.</span><span class="n">absolute</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">v</span>
+
+    <span class="k">def</span> <span class="nf">_get_service</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;riva.client.SpeechSynthesisService&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Connect to the riva service and return the a client object.&quot;&quot;&quot;</span>
+        <span class="n">riva_client</span> <span class="o">=</span> <span class="n">_import_riva_client</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">riva_client</span><span class="o">.</span><span class="n">SpeechSynthesisService</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">auth</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Error raised while connecting to the Riva TTS server.&quot;</span>
+            <span class="p">)</span> <span class="kn">from</span> <span class="nn">err</span>
+
+<div class="viewcode-block" id="RivaTTS.invoke"><a class="viewcode-back" href="../../../utilities/langchain_community.utilities.nvidia_riva.RivaTTS.html#langchain_community.utilities.nvidia_riva.RivaTTS.invoke">[docs]</a>    <span class="k">def</span> <span class="nf">invoke</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">:</span> <span class="n">TTSInputType</span><span class="p">,</span> <span class="n">_</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">RunnableConfig</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TTSOutputType</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Perform TTS by taking a string and outputting the entire audio file.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="sa">b</span><span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="nb">iter</span><span class="p">([</span><span class="nb">input</span><span class="p">])))</span></div>
+
+<div class="viewcode-block" id="RivaTTS.transform"><a class="viewcode-back" href="../../../utilities/langchain_community.utilities.nvidia_riva.RivaTTS.html#langchain_community.utilities.nvidia_riva.RivaTTS.transform">[docs]</a>    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="nb">input</span><span class="p">:</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">TTSInputType</span><span class="p">],</span>
+        <span class="n">config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">RunnableConfig</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">TTSOutputType</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Perform TTS by taking a stream of characters and streaming output bytes.&quot;&quot;&quot;</span>
+        <span class="n">service</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_service</span><span class="p">()</span>
+
+        <span class="c1"># create an output wave file</span>
+        <span class="n">wav_file_name</span><span class="p">,</span> <span class="n">wav_file</span> <span class="o">=</span> <span class="n">_mk_wave_file</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">output_directory</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample_rate_hertz</span>
+        <span class="p">)</span>
+
+        <span class="c1"># split the input text and perform tts</span>
+        <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">_process_chunks</span><span class="p">(</span><span class="nb">input</span><span class="p">):</span>
+            <span class="n">_LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Riva TTS chunk: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">chunk</span><span class="p">)</span>
+
+            <span class="c1"># start riva tts streaming</span>
+            <span class="n">responses</span> <span class="o">=</span> <span class="n">service</span><span class="o">.</span><span class="n">synthesize_online</span><span class="p">(</span>
+                <span class="n">text</span><span class="o">=</span><span class="n">chunk</span><span class="p">,</span>
+                <span class="n">voice_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">voice_name</span><span class="p">,</span>
+                <span class="n">language_code</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">language_code</span><span class="p">,</span>
+                <span class="n">encoding</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">encoding</span><span class="o">.</span><span class="n">riva_pb2</span><span class="p">,</span>
+                <span class="n">sample_rate_hz</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_rate_hertz</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="c1"># stream audio bytes out</span>
+            <span class="k">for</span> <span class="n">resp</span> <span class="ow">in</span> <span class="n">responses</span><span class="p">:</span>
+                <span class="n">audio</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="nb">bytes</span><span class="p">,</span> <span class="n">resp</span><span class="o">.</span><span class="n">audio</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">wav_file</span><span class="p">:</span>
+                    <span class="n">wav_file</span><span class="o">.</span><span class="n">writeframesraw</span><span class="p">(</span><span class="n">audio</span><span class="p">)</span>
+                <span class="k">yield</span> <span class="n">audio</span>
+
+        <span class="c1"># close the wave file when we are done</span>
+        <span class="k">if</span> <span class="n">wav_file</span><span class="p">:</span>
+            <span class="n">wav_file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="n">_LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Riva TTS wrote file: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">wav_file_name</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="RivaTTS.atransform"><a class="viewcode-back" href="../../../utilities/langchain_community.utilities.nvidia_riva.RivaTTS.html#langchain_community.utilities.nvidia_riva.RivaTTS.atransform">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">atransform</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="nb">input</span><span class="p">:</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">TTSInputType</span><span class="p">],</span>
+        <span class="n">config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">RunnableConfig</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="n">TTSOutputType</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Intercept async transforms and route them to the synchronous transform.&quot;&quot;&quot;</span>
+        <span class="n">loop</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">get_running_loop</span><span class="p">()</span>
+        <span class="n">input_queue</span><span class="p">:</span> <span class="n">queue</span><span class="o">.</span><span class="n">Queue</span> <span class="o">=</span> <span class="n">queue</span><span class="o">.</span><span class="n">Queue</span><span class="p">()</span>
+        <span class="n">out_queue</span><span class="p">:</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Queue</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Queue</span><span class="p">()</span>
+
+        <span class="k">async</span> <span class="k">def</span> <span class="nf">_producer</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Produce input into the input queue.&quot;&quot;&quot;</span>
+            <span class="k">async</span> <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="nb">input</span><span class="p">:</span>
+                <span class="n">input_queue</span><span class="o">.</span><span class="n">put_nowait</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+            <span class="n">input_queue</span><span class="o">.</span><span class="n">put_nowait</span><span class="p">(</span><span class="n">_TRANSFORM_END</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">_input_iterator</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">TTSInputType</span><span class="p">]:</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Iterate over the input_queue.&quot;&quot;&quot;</span>
+            <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">val</span> <span class="o">=</span> <span class="n">input_queue</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+                <span class="k">except</span> <span class="n">queue</span><span class="o">.</span><span class="n">Empty</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="k">if</span> <span class="n">val</span> <span class="o">==</span> <span class="n">_TRANSFORM_END</span><span class="p">:</span>
+                    <span class="k">break</span>
+                <span class="k">yield</span> <span class="n">val</span>
+
+        <span class="k">def</span> <span class="nf">_consumer</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Consume the input with transform.&quot;&quot;&quot;</span>
+            <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">_input_iterator</span><span class="p">()):</span>
+                <span class="n">out_queue</span><span class="o">.</span><span class="n">put_nowait</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+            <span class="n">out_queue</span><span class="o">.</span><span class="n">put_nowait</span><span class="p">(</span><span class="n">_TRANSFORM_END</span><span class="p">)</span>
+
+        <span class="k">async</span> <span class="k">def</span> <span class="nf">_consumer_coro</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Coroutine that wraps the consumer.&quot;&quot;&quot;</span>
+            <span class="k">await</span> <span class="n">loop</span><span class="o">.</span><span class="n">run_in_executor</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">_consumer</span><span class="p">)</span>
+
+        <span class="n">producer</span> <span class="o">=</span> <span class="n">loop</span><span class="o">.</span><span class="n">create_task</span><span class="p">(</span><span class="n">_producer</span><span class="p">())</span>
+        <span class="n">consumer</span> <span class="o">=</span> <span class="n">loop</span><span class="o">.</span><span class="n">create_task</span><span class="p">(</span><span class="n">_consumer_coro</span><span class="p">())</span>
+
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">val</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">wait_for</span><span class="p">(</span><span class="n">out_queue</span><span class="o">.</span><span class="n">get</span><span class="p">(),</span> <span class="mf">0.5</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">TimeoutError</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">out_queue</span><span class="o">.</span><span class="n">task_done</span><span class="p">()</span>
+
+            <span class="k">if</span> <span class="n">val</span> <span class="ow">is</span> <span class="n">_TRANSFORM_END</span><span class="p">:</span>
+                <span class="k">break</span>
+            <span class="k">yield</span> <span class="n">val</span>
+
+        <span class="k">await</span> <span class="n">producer</span>
+        <span class="k">await</span> <span class="n">consumer</span></div></div>
+
+
+<span class="c1"># Backwards compatibility:</span>
+<span class="n">NVIDIARivaASR</span> <span class="o">=</span> <span class="n">RivaASR</span>
+<span class="n">NVIDIARivaTTS</span> <span class="o">=</span> <span class="n">RivaTTS</span>
+<span class="n">NVIDIARivaStream</span> <span class="o">=</span> <span class="n">AudioStream</span>
+</pre></div>
+
+      </div>
+    <div class="container">
+      <footer class="sk-content-footer">
+            &copy; 2023, LangChain, Inc..
+          Last updated on Mar 15, 2024.
+      </footer>
+    </div>
+  </div>
+</div>
+<script src="../../../_static/js/vendor/bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    /* Add a [>>>] button on the top-right corner of code samples to hide
+     * the >>> and ... prompts and the output and thus make the code
+     * copyable. */
+    var div = $('.highlight-python .highlight,' +
+                '.highlight-python3 .highlight,' +
+                '.highlight-pycon .highlight,' +
+		'.highlight-default .highlight')
+    var pre = div.find('pre');
+
+    // get the styles from the current theme
+    pre.parent().parent().css('position', 'relative');
+    var hide_text = 'Hide prompts and outputs';
+    var show_text = 'Show prompts and outputs';
+
+    // create and add the button to all the code blocks that contain >>>
+    div.each(function(index) {
+        var jthis = $(this);
+        if (jthis.find('.gp').length > 0) {
+            var button = $('<span class="copybutton">&gt;&gt;&gt;</span>');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+            jthis.prepend(button);
+        }
+        // tracebacks (.gt) contain bare text elements that need to be
+        // wrapped in a span to work with .nextUntil() (see later)
+        jthis.find('pre:has(.gt)').contents().filter(function() {
+            return ((this.nodeType == 3) && (this.data.trim().length > 0));
+        }).wrap('<span>');
+    });
+
+    // define the behavior of the button when it's clicked
+    $('.copybutton').click(function(e){
+        e.preventDefault();
+        var button = $(this);
+        if (button.data('hidden') === 'false') {
+            // hide the code output
+            button.parent().find('.go, .gp, .gt').hide();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'hidden');
+            button.css('text-decoration', 'line-through');
+            button.attr('title', show_text);
+            button.data('hidden', 'true');
+        } else {
+            // show the code output
+            button.parent().find('.go, .gp, .gt').show();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'visible');
+            button.css('text-decoration', 'none');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+        }
+    });
+
+	/*** Add permalink buttons next to glossary terms ***/
+	$('dl.glossary > dt[id]').append(function() {
+		return ('<a class="headerlink" href="#' +
+			    this.getAttribute('id') +
+			    '" title="Permalink to this term">¶</a>');
+	});
+});
+
+</script>
+    
+</body>
+</html>

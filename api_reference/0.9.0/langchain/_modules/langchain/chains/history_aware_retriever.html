@@ -1,0 +1,246 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>langchain.chains.history_aware_retriever &mdash; 🦜🔗 LangChain 0.1.12</title>
+  
+  <link rel="canonical" href="https://api.python.langchain.com/en/latest/_modules/langchain/chains/history_aware_retriever.html" />
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/vendor/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/autodoc_pydantic.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/sphinx-dropdown.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/panels-bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+<script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+<script src="../../../_static/jquery.js"></script> 
+</head>
+<body>
+
+
+<nav id="navbar" class="sk-docs-navbar navbar navbar-expand-md navbar-light bg-light py-0">
+  <div class="container-fluid sk-docs-container px-0">
+    <button
+      id="sk-navbar-toggler"
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="sk-navbar-collapse collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../langchain_api_reference.html">LangChain</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../core_api_reference.html">Core</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../community_api_reference.html">Community</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../experimental_api_reference.html">Experimental</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../text_splitters_api_reference.html">Text splitters</a>
+        </li>
+        <li class="nav-item dropdown nav-more-item-dropdown">
+          <a class="sk-nav-link nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Partner libs</a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+          </div>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" target="_blank" rel="noopener noreferrer" href="https://python.langchain.com/">Docs</a>
+        </li>
+      </ul>
+      <div id="searchbox" role="search">
+          <div class="searchformwrapper">
+          <form class="search" action="../../../search.html" method="get">
+            <input class="sk-search-text-input" type="text" name="q" aria-labelledby="searchlabel" />
+            <input class="sk-search-text-btn" type="submit" value="Go" />
+          </form>
+          </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="d-flex" id="sk-doc-wrapper">
+    <input type="checkbox" name="sk-toggle-checkbox" id="sk-toggle-checkbox">
+    <label id="sk-sidemenu-toggle" class="sk-btn-toggle-toc btn sk-btn-primary" for="sk-toggle-checkbox">Toggle Menu</label>
+    <div id="sk-sidebar-wrapper" class="border-right">
+      <div class="sk-sidebar-toc-wrapper">
+        <div class="btn-group w-100 mb-2" role="group" aria-label="rellinks">
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Prev</a><a href="../../index.html" role="button" class="btn sk-btn-rellink py-1" sk-rellink-tooltip="Module code">Up</a>
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Next</a>
+        </div>
+            <div class="sk-sidebar-toc">
+              
+            </div>
+      </div>
+    </div>
+    <div id="sk-page-content-wrapper">
+      <div class="sk-page-content container-fluid body px-md-3" role="main">
+        
+  <h1>Source code for langchain.chains.history_aware_retriever</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">from</span> <span class="nn">langchain_core.language_models</span> <span class="kn">import</span> <span class="n">LanguageModelLike</span>
+<span class="kn">from</span> <span class="nn">langchain_core.output_parsers</span> <span class="kn">import</span> <span class="n">StrOutputParser</span>
+<span class="kn">from</span> <span class="nn">langchain_core.prompts</span> <span class="kn">import</span> <span class="n">BasePromptTemplate</span>
+<span class="kn">from</span> <span class="nn">langchain_core.retrievers</span> <span class="kn">import</span> <span class="n">RetrieverLike</span><span class="p">,</span> <span class="n">RetrieverOutputLike</span>
+<span class="kn">from</span> <span class="nn">langchain_core.runnables</span> <span class="kn">import</span> <span class="n">RunnableBranch</span>
+
+
+<div class="viewcode-block" id="create_history_aware_retriever"><a class="viewcode-back" href="../../../chains/langchain.chains.history_aware_retriever.create_history_aware_retriever.html#langchain.chains.history_aware_retriever.create_history_aware_retriever">[docs]</a><span class="k">def</span> <span class="nf">create_history_aware_retriever</span><span class="p">(</span>
+    <span class="n">llm</span><span class="p">:</span> <span class="n">LanguageModelLike</span><span class="p">,</span>
+    <span class="n">retriever</span><span class="p">:</span> <span class="n">RetrieverLike</span><span class="p">,</span>
+    <span class="n">prompt</span><span class="p">:</span> <span class="n">BasePromptTemplate</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RetrieverOutputLike</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a chain that takes conversation history and returns documents.</span>
+
+<span class="sd">    If there is no `chat_history`, then the `input` is just passed directly to the</span>
+<span class="sd">    retriever. If there is `chat_history`, then the prompt and LLM will be used</span>
+<span class="sd">    to generate a search query. That search query is then passed to the retriever.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        llm: Language model to use for generating a search term given chat history</span>
+<span class="sd">        retriever: RetrieverLike object that takes a string as input and outputs</span>
+<span class="sd">            a list of Documents.</span>
+<span class="sd">        prompt: The prompt used to generate the search query for the retriever.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        An LCEL Runnable. The runnable input must take in `input`, and if there</span>
+<span class="sd">        is chat history should take it in the form of `chat_history`.</span>
+<span class="sd">        The Runnable output is a list of Documents</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            # pip install -U langchain langchain-community</span>
+
+<span class="sd">            from langchain_community.chat_models import ChatOpenAI</span>
+<span class="sd">            from langchain.chains import create_history_aware_retriever</span>
+<span class="sd">            from langchain import hub</span>
+
+<span class="sd">            rephrase_prompt = hub.pull(&quot;langchain-ai/chat-langchain-rephrase&quot;)</span>
+<span class="sd">            llm = ChatOpenAI()</span>
+<span class="sd">            retriever = ...</span>
+<span class="sd">            chat_retriever_chain = create_history_aware_retriever(</span>
+<span class="sd">                llm, retriever, rephrase_prompt</span>
+<span class="sd">            )</span>
+
+<span class="sd">            chain.invoke({&quot;input&quot;: &quot;...&quot;, &quot;chat_history&quot;: })</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="s2">&quot;input&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">prompt</span><span class="o">.</span><span class="n">input_variables</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;Expected `input` to be a prompt variable, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;but got </span><span class="si">{</span><span class="n">prompt</span><span class="o">.</span><span class="n">input_variables</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+
+    <span class="n">retrieve_documents</span><span class="p">:</span> <span class="n">RetrieverOutputLike</span> <span class="o">=</span> <span class="n">RunnableBranch</span><span class="p">(</span>
+        <span class="p">(</span>
+            <span class="c1"># Both empty string and empty list evaluate to False</span>
+            <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="ow">not</span> <span class="n">x</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;chat_history&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">),</span>
+            <span class="c1"># If no chat history, then we just pass input to retriever</span>
+            <span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s2">&quot;input&quot;</span><span class="p">])</span> <span class="o">|</span> <span class="n">retriever</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="c1"># If chat history, then we pass inputs to LLM chain, then to retriever</span>
+        <span class="n">prompt</span> <span class="o">|</span> <span class="n">llm</span> <span class="o">|</span> <span class="n">StrOutputParser</span><span class="p">()</span> <span class="o">|</span> <span class="n">retriever</span><span class="p">,</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">with_config</span><span class="p">(</span><span class="n">run_name</span><span class="o">=</span><span class="s2">&quot;chat_retriever_chain&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">retrieve_documents</span></div>
+</pre></div>
+
+      </div>
+    <div class="container">
+      <footer class="sk-content-footer">
+            &copy; 2023, LangChain, Inc..
+          Last updated on Mar 15, 2024.
+      </footer>
+    </div>
+  </div>
+</div>
+<script src="../../../_static/js/vendor/bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    /* Add a [>>>] button on the top-right corner of code samples to hide
+     * the >>> and ... prompts and the output and thus make the code
+     * copyable. */
+    var div = $('.highlight-python .highlight,' +
+                '.highlight-python3 .highlight,' +
+                '.highlight-pycon .highlight,' +
+		'.highlight-default .highlight')
+    var pre = div.find('pre');
+
+    // get the styles from the current theme
+    pre.parent().parent().css('position', 'relative');
+    var hide_text = 'Hide prompts and outputs';
+    var show_text = 'Show prompts and outputs';
+
+    // create and add the button to all the code blocks that contain >>>
+    div.each(function(index) {
+        var jthis = $(this);
+        if (jthis.find('.gp').length > 0) {
+            var button = $('<span class="copybutton">&gt;&gt;&gt;</span>');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+            jthis.prepend(button);
+        }
+        // tracebacks (.gt) contain bare text elements that need to be
+        // wrapped in a span to work with .nextUntil() (see later)
+        jthis.find('pre:has(.gt)').contents().filter(function() {
+            return ((this.nodeType == 3) && (this.data.trim().length > 0));
+        }).wrap('<span>');
+    });
+
+    // define the behavior of the button when it's clicked
+    $('.copybutton').click(function(e){
+        e.preventDefault();
+        var button = $(this);
+        if (button.data('hidden') === 'false') {
+            // hide the code output
+            button.parent().find('.go, .gp, .gt').hide();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'hidden');
+            button.css('text-decoration', 'line-through');
+            button.attr('title', show_text);
+            button.data('hidden', 'true');
+        } else {
+            // show the code output
+            button.parent().find('.go, .gp, .gt').show();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'visible');
+            button.css('text-decoration', 'none');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+        }
+    });
+
+	/*** Add permalink buttons next to glossary terms ***/
+	$('dl.glossary > dt[id]').append(function() {
+		return ('<a class="headerlink" href="#' +
+			    this.getAttribute('id') +
+			    '" title="Permalink to this term">¶</a>');
+	});
+});
+
+</script>
+    
+</body>
+</html>

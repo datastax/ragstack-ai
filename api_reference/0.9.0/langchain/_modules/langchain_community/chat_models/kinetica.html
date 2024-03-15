@@ -1,0 +1,780 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>langchain_community.chat_models.kinetica &mdash; 🦜🔗 LangChain 0.1.12</title>
+  
+  <link rel="canonical" href="https://api.python.langchain.com/en/latest/_modules/langchain_community/chat_models/kinetica.html" />
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/vendor/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/autodoc_pydantic.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/sphinx-dropdown.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/panels-bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+<script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+<script src="../../../_static/jquery.js"></script> 
+</head>
+<body>
+
+
+<nav id="navbar" class="sk-docs-navbar navbar navbar-expand-md navbar-light bg-light py-0">
+  <div class="container-fluid sk-docs-container px-0">
+    <button
+      id="sk-navbar-toggler"
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="sk-navbar-collapse collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../langchain_api_reference.html">LangChain</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../core_api_reference.html">Core</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../community_api_reference.html">Community</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../experimental_api_reference.html">Experimental</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../text_splitters_api_reference.html">Text splitters</a>
+        </li>
+        <li class="nav-item dropdown nav-more-item-dropdown">
+          <a class="sk-nav-link nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Partner libs</a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+          </div>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" target="_blank" rel="noopener noreferrer" href="https://python.langchain.com/">Docs</a>
+        </li>
+      </ul>
+      <div id="searchbox" role="search">
+          <div class="searchformwrapper">
+          <form class="search" action="../../../search.html" method="get">
+            <input class="sk-search-text-input" type="text" name="q" aria-labelledby="searchlabel" />
+            <input class="sk-search-text-btn" type="submit" value="Go" />
+          </form>
+          </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="d-flex" id="sk-doc-wrapper">
+    <input type="checkbox" name="sk-toggle-checkbox" id="sk-toggle-checkbox">
+    <label id="sk-sidemenu-toggle" class="sk-btn-toggle-toc btn sk-btn-primary" for="sk-toggle-checkbox">Toggle Menu</label>
+    <div id="sk-sidebar-wrapper" class="border-right">
+      <div class="sk-sidebar-toc-wrapper">
+        <div class="btn-group w-100 mb-2" role="group" aria-label="rellinks">
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Prev</a><a href="../../index.html" role="button" class="btn sk-btn-rellink py-1" sk-rellink-tooltip="Module code">Up</a>
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Next</a>
+        </div>
+            <div class="sk-sidebar-toc">
+              
+            </div>
+      </div>
+    </div>
+    <div id="sk-page-content-wrapper">
+      <div class="sk-page-content container-fluid body px-md-3" role="main">
+        
+  <h1>Source code for langchain_community.chat_models.kinetica</h1><div class="highlight"><pre>
+<span></span><span class="c1">##</span>
+<span class="c1"># Copyright (c) 2024, Chad Juliano, Kinetica DB Inc.</span>
+<span class="c1">##</span>
+<span class="sd">&quot;&quot;&quot;Kinetica SQL generation LLM API.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">importlib.metadata</span> <span class="kn">import</span> <span class="n">version</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">cast</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">gpudb</span>
+
+<span class="kn">from</span> <span class="nn">langchain_core.callbacks</span> <span class="kn">import</span> <span class="n">CallbackManagerForLLMRun</span>
+<span class="kn">from</span> <span class="nn">langchain_core.language_models.chat_models</span> <span class="kn">import</span> <span class="n">BaseChatModel</span>
+<span class="kn">from</span> <span class="nn">langchain_core.messages</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AIMessage</span><span class="p">,</span>
+    <span class="n">BaseMessage</span><span class="p">,</span>
+    <span class="n">HumanMessage</span><span class="p">,</span>
+    <span class="n">SystemMessage</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">langchain_core.output_parsers.transform</span> <span class="kn">import</span> <span class="n">BaseOutputParser</span>
+<span class="kn">from</span> <span class="nn">langchain_core.outputs</span> <span class="kn">import</span> <span class="n">ChatGeneration</span><span class="p">,</span> <span class="n">ChatResult</span><span class="p">,</span> <span class="n">Generation</span>
+<span class="kn">from</span> <span class="nn">langchain_core.pydantic_v1</span> <span class="kn">import</span> <span class="n">BaseModel</span><span class="p">,</span> <span class="n">Field</span><span class="p">,</span> <span class="n">root_validator</span>
+
+<span class="n">LOG</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="c1"># Kinetica pydantic API datatypes</span>
+
+
+<span class="k">class</span> <span class="nc">_KdtSuggestContext</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;pydantic API request type&quot;&quot;&quot;</span>
+
+    <span class="n">table</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Name of table&quot;</span><span class="p">)</span>
+    <span class="n">description</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Table description&quot;</span><span class="p">)</span>
+    <span class="n">columns</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Table columns list&quot;</span><span class="p">)</span>
+    <span class="n">rules</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Rules that apply to the table.&quot;</span>
+    <span class="p">)</span>
+    <span class="n">samples</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Samples that apply to the entire context.&quot;</span>
+    <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">to_system_str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;CREATE TABLE </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="si">}</span><span class="s2"> AS&quot;</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;(&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">columns</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;columns list can&#39;t be null.&quot;</span><span class="p">)</span>
+
+        <span class="n">columns</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="n">column</span> <span class="o">=</span> <span class="n">column</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;&quot;&#39;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="n">columns</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   </span><span class="si">{</span><span class="n">column</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;,</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">columns</span><span class="p">))</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;);&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">description</span><span class="p">:</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;COMMENT ON TABLE </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="si">}</span><span class="s2"> IS &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">description</span><span class="si">}</span><span class="s2">&#39;;&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rules</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rules</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;-- When querying table </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="si">}</span><span class="s2"> the following rules apply:&quot;</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="n">rule</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rules</span><span class="p">:</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;-- * </span><span class="si">{</span><span class="n">rule</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span>
+
+
+<span class="k">class</span> <span class="nc">_KdtSuggestPayload</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;pydantic API request type&quot;&quot;&quot;</span>
+
+    <span class="n">question</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">context</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">_KdtSuggestContext</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">get_system_str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">table_context</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">table_context</span><span class="o">.</span><span class="n">table</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">context_str</span> <span class="o">=</span> <span class="n">table_context</span><span class="o">.</span><span class="n">to_system_str</span><span class="p">()</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">context_str</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">get_messages</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">]:</span>
+        <span class="n">messages</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">context</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">context</span><span class="o">.</span><span class="n">samples</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">for</span> <span class="n">question</span><span class="p">,</span> <span class="n">answer</span> <span class="ow">in</span> <span class="n">context</span><span class="o">.</span><span class="n">samples</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="c1"># unescape double quotes</span>
+                <span class="n">answer</span> <span class="o">=</span> <span class="n">answer</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&#39;&#39;&quot;</span><span class="p">,</span> <span class="s2">&quot;&#39;&quot;</span><span class="p">)</span>
+
+                <span class="n">messages</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">role</span><span class="o">=</span><span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="n">content</span><span class="o">=</span><span class="n">question</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
+                <span class="n">messages</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">role</span><span class="o">=</span><span class="s2">&quot;assistant&quot;</span><span class="p">,</span> <span class="n">content</span><span class="o">=</span><span class="n">answer</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">messages</span>
+
+    <span class="k">def</span> <span class="nf">to_completion</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+        <span class="n">messages</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">messages</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">role</span><span class="o">=</span><span class="s2">&quot;system&quot;</span><span class="p">,</span> <span class="n">content</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">get_system_str</span><span class="p">()))</span>
+        <span class="n">messages</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_messages</span><span class="p">())</span>
+        <span class="n">messages</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">role</span><span class="o">=</span><span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="n">content</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">question</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">messages</span><span class="o">=</span><span class="n">messages</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">response</span>
+
+
+<span class="k">class</span> <span class="nc">_KdtoSuggestRequest</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;pydantic API request type&quot;&quot;&quot;</span>
+
+    <span class="n">payload</span><span class="p">:</span> <span class="n">_KdtSuggestPayload</span>
+
+
+<span class="k">class</span> <span class="nc">_KdtMessage</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;pydantic API response type&quot;&quot;&quot;</span>
+
+    <span class="n">role</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;One of [user|assistant|system]&quot;</span><span class="p">)</span>
+    <span class="n">content</span><span class="p">:</span> <span class="nb">str</span>
+
+
+<span class="k">class</span> <span class="nc">_KdtChoice</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;pydantic API response type&quot;&quot;&quot;</span>
+
+    <span class="n">index</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">message</span><span class="p">:</span> <span class="n">_KdtMessage</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;The generated SQL&quot;</span><span class="p">)</span>
+    <span class="n">finish_reason</span><span class="p">:</span> <span class="nb">str</span>
+
+
+<span class="k">class</span> <span class="nc">_KdtUsage</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;pydantic API response type&quot;&quot;&quot;</span>
+
+    <span class="n">prompt_tokens</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">completion_tokens</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">total_tokens</span><span class="p">:</span> <span class="nb">int</span>
+
+
+<span class="k">class</span> <span class="nc">_KdtSqlResponse</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;pydantic API response type&quot;&quot;&quot;</span>
+
+    <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="nb">object</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">created</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">model</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">choices</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">_KdtChoice</span><span class="p">]</span>
+    <span class="n">usage</span><span class="p">:</span> <span class="n">_KdtUsage</span>
+    <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;The input question&quot;</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">_KdtCompletionResponse</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;pydantic API response type&quot;&quot;&quot;</span>
+
+    <span class="n">status</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">data</span><span class="p">:</span> <span class="n">_KdtSqlResponse</span>
+
+
+<span class="k">class</span> <span class="nc">_KineticaLlmFileContextParser</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parser for Kinetica LLM context datafiles.&quot;&quot;&quot;</span>
+
+    <span class="c1"># parse line into a dict containing role and content</span>
+    <span class="n">PARSER</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^&lt;\|(?P&lt;role&gt;\w+)\|&gt;\W*(?P&lt;content&gt;.*)$&quot;</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">DOTALL</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_removesuffix</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">suffix</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">suffix</span> <span class="ow">and</span> <span class="n">text</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">suffix</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">text</span><span class="p">[:</span> <span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="n">suffix</span><span class="p">)]</span>
+        <span class="k">return</span> <span class="n">text</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">parse_dialogue_file</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">input_file</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">PathLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">input_file</span><span class="p">)</span>
+        <span class="c1"># schema = path.name.removesuffix(&quot;.txt&quot;) python 3.9</span>
+        <span class="n">schema</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_removesuffix</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s2">&quot;.txt&quot;</span><span class="p">)</span>
+
+        <span class="n">lines</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">input_file</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">parse_dialogue</span><span class="p">(</span><span class="n">lines</span><span class="p">,</span> <span class="n">schema</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">parse_dialogue</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">schema</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+        <span class="n">messages</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">system</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="n">lines</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;&lt;|end|&gt;&quot;</span><span class="p">)</span>
+        <span class="n">user_message</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">lines</span><span class="p">):</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">line</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+            <span class="n">match</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">PARSER</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">match</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Could not find starting token in: </span><span class="si">{</span><span class="n">line</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="n">groupdict</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">groupdict</span><span class="p">()</span>
+            <span class="n">role</span> <span class="o">=</span> <span class="n">groupdict</span><span class="p">[</span><span class="s2">&quot;role&quot;</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="n">role</span> <span class="o">==</span> <span class="s2">&quot;system&quot;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">system</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Only one system token allowed in: </span><span class="si">{</span><span class="n">line</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">system</span> <span class="o">=</span> <span class="n">groupdict</span><span class="p">[</span><span class="s2">&quot;content&quot;</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="n">role</span> <span class="o">==</span> <span class="s2">&quot;user&quot;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">user_message</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;Found user token without assistant token: </span><span class="si">{</span><span class="n">line</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="p">)</span>
+                <span class="n">user_message</span> <span class="o">=</span> <span class="n">groupdict</span>
+            <span class="k">elif</span> <span class="n">role</span> <span class="o">==</span> <span class="s2">&quot;assistant&quot;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">user_message</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found assistant token without user token: </span><span class="si">{</span><span class="n">line</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">messages</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">user_message</span><span class="p">)</span>
+                <span class="n">messages</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">groupdict</span><span class="p">)</span>
+                <span class="n">user_message</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown token: </span><span class="si">{</span><span class="n">role</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;schema&quot;</span><span class="p">:</span> <span class="n">schema</span><span class="p">,</span> <span class="s2">&quot;system&quot;</span><span class="p">:</span> <span class="n">system</span><span class="p">,</span> <span class="s2">&quot;messages&quot;</span><span class="p">:</span> <span class="n">messages</span><span class="p">}</span>
+
+
+<div class="viewcode-block" id="KineticaUtil"><a class="viewcode-back" href="../../../chat_models/langchain_community.chat_models.kinetica.KineticaUtil.html#langchain_community.chat_models.kinetica.KineticaUtil">[docs]</a><span class="k">class</span> <span class="nc">KineticaUtil</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Kinetica utility functions.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="KineticaUtil.create_kdbc"><a class="viewcode-back" href="../../../chat_models/langchain_community.chat_models.kinetica.KineticaUtil.html#langchain_community.chat_models.kinetica.KineticaUtil.create_kdbc">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">create_kdbc</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">url</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">user</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">passwd</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;gpudb.GPUdb&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a connectica connection object and verify connectivity.</span>
+
+<span class="sd">        If None is passed for one or more of the parameters then an attempt will be made</span>
+<span class="sd">        to retrieve the value from the related environment variable.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            url: The Kinetica URL or ``KINETICA_URL`` if None.</span>
+<span class="sd">            user: The Kinetica user or ``KINETICA_USER`` if None.</span>
+<span class="sd">            passwd: The Kinetica password or ``KINETICA_PASSWD`` if None.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The Kinetica connection object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">import</span> <span class="nn">gpudb</span>
+        <span class="k">except</span> <span class="ne">ModuleNotFoundError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+                <span class="s2">&quot;Could not import Kinetica python package. &quot;</span>
+                <span class="s2">&quot;Please install it with `pip install gpudb`.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="n">url</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_get_env</span><span class="p">(</span><span class="s2">&quot;KINETICA_URL&quot;</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span>
+        <span class="n">user</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_get_env</span><span class="p">(</span><span class="s2">&quot;KINETICA_USER&quot;</span><span class="p">,</span> <span class="n">user</span><span class="p">)</span>
+        <span class="n">passwd</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_get_env</span><span class="p">(</span><span class="s2">&quot;KINETICA_PASSWD&quot;</span><span class="p">,</span> <span class="n">passwd</span><span class="p">)</span>
+
+        <span class="n">options</span> <span class="o">=</span> <span class="n">gpudb</span><span class="o">.</span><span class="n">GPUdb</span><span class="o">.</span><span class="n">Options</span><span class="p">()</span>
+        <span class="n">options</span><span class="o">.</span><span class="n">username</span> <span class="o">=</span> <span class="n">user</span>
+        <span class="n">options</span><span class="o">.</span><span class="n">password</span> <span class="o">=</span> <span class="n">passwd</span>
+        <span class="n">options</span><span class="o">.</span><span class="n">skip_ssl_cert_verification</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">options</span><span class="o">.</span><span class="n">disable_failover</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">options</span><span class="o">.</span><span class="n">logging_level</span> <span class="o">=</span> <span class="s2">&quot;INFO&quot;</span>
+        <span class="n">kdbc</span> <span class="o">=</span> <span class="n">gpudb</span><span class="o">.</span><span class="n">GPUdb</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="n">url</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">)</span>
+
+        <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="s2">&quot;Connected to Kinetica: </span><span class="si">{}</span><span class="s2">. (api=</span><span class="si">{}</span><span class="s2">, server=</span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">kdbc</span><span class="o">.</span><span class="n">get_url</span><span class="p">(),</span> <span class="n">version</span><span class="p">(</span><span class="s2">&quot;gpudb&quot;</span><span class="p">),</span> <span class="n">kdbc</span><span class="o">.</span><span class="n">server_version</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">kdbc</span></div>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_get_env</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get an environment variable or use a default.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">default</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">default</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">result</span>
+
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Parameter was not passed and not found in the environment: </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ChatKinetica"><a class="viewcode-back" href="../../../chat_models/langchain_community.chat_models.kinetica.ChatKinetica.html#langchain_community.chat_models.kinetica.ChatKinetica">[docs]</a><span class="k">class</span> <span class="nc">ChatKinetica</span><span class="p">(</span><span class="n">BaseChatModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Kinetica LLM Chat Model API.</span>
+
+<span class="sd">    Prerequisites for using this API:</span>
+
+<span class="sd">    * The ``gpudb`` and ``typeguard`` packages installed.</span>
+<span class="sd">    * A Kinetica DB instance.</span>
+<span class="sd">    * Kinetica host specified in ``KINETICA_URL``</span>
+<span class="sd">    * Kinetica login specified ``KINETICA_USER``, and ``KINETICA_PASSWD``.</span>
+<span class="sd">    * An LLM context that specifies the tables and samples to use for inferencing.</span>
+
+<span class="sd">    This API is intended to interact with the Kinetica SqlAssist LLM that supports</span>
+<span class="sd">    generation of SQL from natural language.</span>
+
+<span class="sd">    In the Kinetica LLM workflow you create an LLM context in the database that provides</span>
+<span class="sd">    information needed for infefencing that includes tables, annotations, rules, and</span>
+<span class="sd">    samples. Invoking ``load_messages_from_context()`` will retrieve the contxt</span>
+<span class="sd">    information from the database so that it can be used to create a chat prompt.</span>
+
+<span class="sd">    The chat prompt consists of a ``SystemMessage`` and pairs of</span>
+<span class="sd">    ``HumanMessage``/``AIMessage`` that contain the samples which are question/SQL</span>
+<span class="sd">    pairs. You can append pairs samples to this list but it is not intended to</span>
+<span class="sd">    facilitate a typical natural language conversation.</span>
+
+<span class="sd">    When you create a chain from the chat prompt and execute it, the Kinetica LLM will</span>
+<span class="sd">    generate SQL from the input. Optionally you can use ``KineticaSqlOutputParser`` to</span>
+<span class="sd">    execute the SQL and return the result as a dataframe.</span>
+
+<span class="sd">    The following example creates an LLM using the environment variables for the</span>
+<span class="sd">    Kinetica connection. This will fail if the API is unable to connect to the database.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            from langchain_community.chat_models.kinetica import KineticaChatLLM</span>
+<span class="sd">            kinetica_llm = KineticaChatLLM()</span>
+
+<span class="sd">    If you prefer to pass connection information directly then you can create a</span>
+<span class="sd">    connection using ``KineticaUtil.create_kdbc()``.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            from langchain_community.chat_models.kinetica import (</span>
+<span class="sd">                KineticaChatLLM, KineticaUtil)</span>
+<span class="sd">            kdbc = KineticaUtil._create_kdbc(url=url, user=user, passwd=passwd)</span>
+<span class="sd">            kinetica_llm = KineticaChatLLM(kdbc=kdbc)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">kdbc</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">exclude</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Kinetica DB connection. &quot;&quot;&quot;</span>
+
+    <span class="nd">@root_validator</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">validate_environment</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Pydantic object validator.&quot;&quot;&quot;</span>
+
+        <span class="n">kdbc</span> <span class="o">=</span> <span class="n">values</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;kdbc&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">kdbc</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">kdbc</span> <span class="o">=</span> <span class="n">KineticaUtil</span><span class="o">.</span><span class="n">create_kdbc</span><span class="p">()</span>
+            <span class="n">values</span><span class="p">[</span><span class="s2">&quot;kdbc&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kdbc</span>
+        <span class="k">return</span> <span class="n">values</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_llm_type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;kinetica-sqlassist&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_identifying_params</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span>
+            <span class="n">kinetica_version</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kdbc</span><span class="o">.</span><span class="n">server_version</span><span class="p">),</span> <span class="n">api_version</span><span class="o">=</span><span class="n">version</span><span class="p">(</span><span class="s2">&quot;gpudb&quot;</span><span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_generate</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">messages</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">BaseMessage</span><span class="p">],</span>
+        <span class="n">stop</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">run_manager</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">CallbackManagerForLLMRun</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ChatResult</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">stop</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;stop kwargs are not permitted.&quot;</span><span class="p">)</span>
+
+        <span class="n">dict_messages</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_convert_message_to_dict</span><span class="p">(</span><span class="n">m</span><span class="p">)</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">messages</span><span class="p">]</span>
+        <span class="n">sql_response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_submit_completion</span><span class="p">(</span><span class="n">dict_messages</span><span class="p">)</span>
+
+        <span class="n">response_message</span> <span class="o">=</span> <span class="n">sql_response</span><span class="o">.</span><span class="n">choices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">message</span>
+        <span class="c1"># generated_dict = response_message.model_dump() # pydantic v2</span>
+        <span class="n">generated_dict</span> <span class="o">=</span> <span class="n">response_message</span><span class="o">.</span><span class="n">dict</span><span class="p">()</span>
+
+        <span class="n">generated_message</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convert_message_from_dict</span><span class="p">(</span><span class="n">generated_dict</span><span class="p">)</span>
+
+        <span class="n">llm_output</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+            <span class="n">input_tokens</span><span class="o">=</span><span class="n">sql_response</span><span class="o">.</span><span class="n">usage</span><span class="o">.</span><span class="n">prompt_tokens</span><span class="p">,</span>
+            <span class="n">output_tokens</span><span class="o">=</span><span class="n">sql_response</span><span class="o">.</span><span class="n">usage</span><span class="o">.</span><span class="n">completion_tokens</span><span class="p">,</span>
+            <span class="n">model_name</span><span class="o">=</span><span class="n">sql_response</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">ChatResult</span><span class="p">(</span>
+            <span class="n">generations</span><span class="o">=</span><span class="p">[</span><span class="n">ChatGeneration</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="n">generated_message</span><span class="p">)],</span>
+            <span class="n">llm_output</span><span class="o">=</span><span class="n">llm_output</span><span class="p">,</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="ChatKinetica.load_messages_from_context"><a class="viewcode-back" href="../../../chat_models/langchain_community.chat_models.kinetica.ChatKinetica.html#langchain_community.chat_models.kinetica.ChatKinetica.load_messages_from_context">[docs]</a>    <span class="k">def</span> <span class="nf">load_messages_from_context</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load a lanchain prompt from a Kinetica context.</span>
+
+<span class="sd">        A Kinetica Context is an object created with the Kinetica Workbench UI or with</span>
+<span class="sd">        SQL syntax. This function will convert the data in the context to a list of</span>
+<span class="sd">        messages that can be used as a prompt. The messages will contain a</span>
+<span class="sd">        ``SystemMessage`` followed by pairs of ``HumanMessage``/``AIMessage`` that</span>
+<span class="sd">        contain the samples.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            context_name: The name of an LLM context in the database.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A list of messages containing the information from the context.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># query kinetica for the prompt</span>
+        <span class="n">sql</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;GENERATE PROMPT WITH OPTIONS (CONTEXT_NAMES = &#39;</span><span class="si">{</span><span class="n">context_name</span><span class="si">}</span><span class="s2">&#39;)&quot;</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_execute_sql</span><span class="p">(</span><span class="n">sql</span><span class="p">)</span>
+        <span class="n">prompt</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;Prompt&quot;</span><span class="p">]</span>
+        <span class="n">prompt_json</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">prompt</span><span class="p">)</span>
+
+        <span class="c1"># convert the prompt to messages</span>
+        <span class="c1"># request = SuggestRequest.model_validate(prompt_json) # pydantic v2</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="n">_KdtoSuggestRequest</span><span class="o">.</span><span class="n">parse_obj</span><span class="p">(</span><span class="n">prompt_json</span><span class="p">)</span>
+        <span class="n">payload</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">payload</span>
+
+        <span class="n">dict_messages</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">dict_messages</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">role</span><span class="o">=</span><span class="s2">&quot;system&quot;</span><span class="p">,</span> <span class="n">content</span><span class="o">=</span><span class="n">payload</span><span class="o">.</span><span class="n">get_system_str</span><span class="p">()))</span>
+        <span class="n">dict_messages</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">payload</span><span class="o">.</span><span class="n">get_messages</span><span class="p">())</span>
+        <span class="n">messages</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_convert_message_from_dict</span><span class="p">(</span><span class="n">m</span><span class="p">)</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">dict_messages</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">messages</span></div>
+
+    <span class="k">def</span> <span class="nf">_submit_completion</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">messages</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">_KdtSqlResponse</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Submit a /chat/completions request to Kinetica.&quot;&quot;&quot;</span>
+
+        <span class="n">request</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">messages</span><span class="o">=</span><span class="n">messages</span><span class="p">)</span>
+        <span class="n">request_json</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+        <span class="n">response_raw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kdbc</span><span class="o">.</span><span class="n">_GPUdb__submit_request_json</span><span class="p">(</span>
+            <span class="s2">&quot;/chat/completions&quot;</span><span class="p">,</span> <span class="n">request_json</span>
+        <span class="p">)</span>
+        <span class="n">response_json</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">response_raw</span><span class="p">)</span>
+
+        <span class="n">status</span> <span class="o">=</span> <span class="n">response_json</span><span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">status</span> <span class="o">!=</span> <span class="s2">&quot;OK&quot;</span><span class="p">:</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="n">response_json</span><span class="p">[</span><span class="s2">&quot;message&quot;</span><span class="p">]</span>
+            <span class="n">match_resp</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;response:({.*})&quot;</span><span class="p">)</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">match_resp</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">response</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+                <span class="n">response_json</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+                <span class="n">message</span> <span class="o">=</span> <span class="n">response_json</span><span class="p">[</span><span class="s2">&quot;message&quot;</span><span class="p">]</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="n">response_json</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">]</span>
+        <span class="c1"># response = CompletionResponse.model_validate(data) # pydantic v2</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">_KdtCompletionResponse</span><span class="o">.</span><span class="n">parse_obj</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status</span> <span class="o">!=</span> <span class="s2">&quot;OK&quot;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;SQL Generation failed&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span>
+
+    <span class="k">def</span> <span class="nf">_execute_sql</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sql</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Execute an SQL query and return the result.&quot;&quot;&quot;</span>
+
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kdbc</span><span class="o">.</span><span class="n">execute_sql_and_decode</span><span class="p">(</span>
+            <span class="n">sql</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">get_column_major</span><span class="o">=</span><span class="kc">False</span>
+        <span class="p">)</span>
+
+        <span class="n">status_info</span> <span class="o">=</span> <span class="n">response</span><span class="p">[</span><span class="s2">&quot;status_info&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">status_info</span><span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;OK&quot;</span><span class="p">:</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="n">status_info</span><span class="p">[</span><span class="s2">&quot;message&quot;</span><span class="p">]</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+
+        <span class="n">records</span> <span class="o">=</span> <span class="n">response</span><span class="p">[</span><span class="s2">&quot;records&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">records</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No records returned.&quot;</span><span class="p">)</span>
+
+        <span class="n">record</span> <span class="o">=</span> <span class="n">records</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">response_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">col</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">record</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">response_dict</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+        <span class="k">return</span> <span class="n">response_dict</span>
+
+<div class="viewcode-block" id="ChatKinetica.load_messages_from_datafile"><a class="viewcode-back" href="../../../chat_models/langchain_community.chat_models.kinetica.ChatKinetica.html#langchain_community.chat_models.kinetica.ChatKinetica.load_messages_from_datafile">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">load_messages_from_datafile</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">sa_datafile</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">BaseMessage</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load a lanchain prompt from a Kinetica context datafile.&quot;&quot;&quot;</span>
+        <span class="n">datafile_dict</span> <span class="o">=</span> <span class="n">_KineticaLlmFileContextParser</span><span class="o">.</span><span class="n">parse_dialogue_file</span><span class="p">(</span><span class="n">sa_datafile</span><span class="p">)</span>
+        <span class="n">messages</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_convert_dict_to_messages</span><span class="p">(</span><span class="n">datafile_dict</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">messages</span></div>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_convert_message_to_dict</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">BaseMessage</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert a single message to a BaseMessage.&quot;&quot;&quot;</span>
+
+        <span class="n">content</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">message</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">HumanMessage</span><span class="p">):</span>
+            <span class="n">role</span> <span class="o">=</span> <span class="s2">&quot;user&quot;</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">AIMessage</span><span class="p">):</span>
+            <span class="n">role</span> <span class="o">=</span> <span class="s2">&quot;assistant&quot;</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">SystemMessage</span><span class="p">):</span>
+            <span class="n">role</span> <span class="o">=</span> <span class="s2">&quot;system&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Got unsupported message type: </span><span class="si">{</span><span class="n">message</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">result_message</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">role</span><span class="o">=</span><span class="n">role</span><span class="p">,</span> <span class="n">content</span><span class="o">=</span><span class="n">content</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">result_message</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_convert_message_from_dict</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BaseMessage</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert a single message from a BaseMessage.&quot;&quot;&quot;</span>
+
+        <span class="n">role</span> <span class="o">=</span> <span class="n">message</span><span class="p">[</span><span class="s2">&quot;role&quot;</span><span class="p">]</span>
+        <span class="n">content</span> <span class="o">=</span> <span class="n">message</span><span class="p">[</span><span class="s2">&quot;content&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">role</span> <span class="o">==</span> <span class="s2">&quot;user&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">HumanMessage</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="n">content</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">role</span> <span class="o">==</span> <span class="s2">&quot;assistant&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">AIMessage</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="n">content</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">role</span> <span class="o">==</span> <span class="s2">&quot;system&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">SystemMessage</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="n">content</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Got unsupported role: </span><span class="si">{</span><span class="n">role</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_convert_dict_to_messages</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">sa_data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">BaseMessage</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert a dict to a list of BaseMessages.&quot;&quot;&quot;</span>
+
+        <span class="n">schema</span> <span class="o">=</span> <span class="n">sa_data</span><span class="p">[</span><span class="s2">&quot;schema&quot;</span><span class="p">]</span>
+        <span class="n">system</span> <span class="o">=</span> <span class="n">sa_data</span><span class="p">[</span><span class="s2">&quot;system&quot;</span><span class="p">]</span>
+        <span class="n">messages</span> <span class="o">=</span> <span class="n">sa_data</span><span class="p">[</span><span class="s2">&quot;messages&quot;</span><span class="p">]</span>
+        <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Importing prompt for schema: </span><span class="si">{</span><span class="n">schema</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">result_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">BaseMessage</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">result_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">SystemMessage</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="n">system</span><span class="p">))</span>
+        <span class="n">result_list</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="bp">cls</span><span class="o">.</span><span class="n">_convert_message_from_dict</span><span class="p">(</span><span class="n">m</span><span class="p">)</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">messages</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">result_list</span></div>
+
+
+<div class="viewcode-block" id="KineticaSqlResponse"><a class="viewcode-back" href="../../../chat_models/langchain_community.chat_models.kinetica.KineticaSqlResponse.html#langchain_community.chat_models.kinetica.KineticaSqlResponse">[docs]</a><span class="k">class</span> <span class="nc">KineticaSqlResponse</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Response containing SQL and the fetched data.</span>
+
+<span class="sd">    This object is returned by a chain with ``KineticaSqlOutputParser`` and it contains</span>
+<span class="sd">    the generated SQL and related Pandas Dataframe fetched from the database.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">sql</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The generated SQL.&quot;&quot;&quot;</span>
+
+    <span class="c1"># dataframe: &quot;pd.DataFrame&quot; = Field(default=None)</span>
+    <span class="n">dataframe</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The Pandas dataframe containing the fetched data.&quot;&quot;&quot;</span>
+
+    <span class="k">class</span> <span class="nc">Config</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Configuration for this pydantic object.&quot;&quot;&quot;</span>
+
+        <span class="n">arbitrary_types_allowed</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+
+<div class="viewcode-block" id="KineticaSqlOutputParser"><a class="viewcode-back" href="../../../chat_models/langchain_community.chat_models.kinetica.KineticaSqlOutputParser.html#langchain_community.chat_models.kinetica.KineticaSqlOutputParser">[docs]</a><span class="k">class</span> <span class="nc">KineticaSqlOutputParser</span><span class="p">(</span><span class="n">BaseOutputParser</span><span class="p">[</span><span class="n">KineticaSqlResponse</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Fetch and return data from the Kinetica LLM.</span>
+
+<span class="sd">    This object is used as the last element of a chain to execute generated SQL and it</span>
+<span class="sd">    will output a ``KineticaSqlResponse`` containing the SQL and a pandas dataframe with</span>
+<span class="sd">    the fetched data.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            from langchain_community.chat_models.kinetica import (</span>
+<span class="sd">                KineticaChatLLM, KineticaSqlOutputParser)</span>
+<span class="sd">            kinetica_llm = KineticaChatLLM()</span>
+
+<span class="sd">            # create chain</span>
+<span class="sd">            ctx_messages = kinetica_llm.load_messages_from_context(self.context_name)</span>
+<span class="sd">            ctx_messages.append((&quot;human&quot;, &quot;{input}&quot;))</span>
+<span class="sd">            prompt_template = ChatPromptTemplate.from_messages(ctx_messages)</span>
+<span class="sd">            chain = (</span>
+<span class="sd">                prompt_template</span>
+<span class="sd">                | kinetica_llm</span>
+<span class="sd">                | KineticaSqlOutputParser(kdbc=kinetica_llm.kdbc)</span>
+<span class="sd">            )</span>
+<span class="sd">            sql_response: KineticaSqlResponse = chain.invoke(</span>
+<span class="sd">                {&quot;input&quot;: &quot;What are the female users ordered by username?&quot;}</span>
+<span class="sd">            )</span>
+
+<span class="sd">            assert isinstance(sql_response, KineticaSqlResponse)</span>
+<span class="sd">            LOG.info(f&quot;SQL Response: {sql_response.sql}&quot;)</span>
+<span class="sd">            assert isinstance(sql_response.dataframe, pd.DataFrame)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">kdbc</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">exclude</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Kinetica DB connection. &quot;&quot;&quot;</span>
+
+    <span class="k">class</span> <span class="nc">Config</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Configuration for this pydantic object.&quot;&quot;&quot;</span>
+
+        <span class="n">arbitrary_types_allowed</span> <span class="o">=</span> <span class="kc">True</span>
+
+<div class="viewcode-block" id="KineticaSqlOutputParser.parse"><a class="viewcode-back" href="../../../chat_models/langchain_community.chat_models.kinetica.KineticaSqlOutputParser.html#langchain_community.chat_models.kinetica.KineticaSqlOutputParser.parse">[docs]</a>    <span class="k">def</span> <span class="nf">parse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">KineticaSqlResponse</span><span class="p">:</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kdbc</span><span class="o">.</span><span class="n">to_df</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">KineticaSqlResponse</span><span class="p">(</span><span class="n">sql</span><span class="o">=</span><span class="n">text</span><span class="p">,</span> <span class="n">dataframe</span><span class="o">=</span><span class="n">df</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="KineticaSqlOutputParser.parse_result"><a class="viewcode-back" href="../../../chat_models/langchain_community.chat_models.kinetica.KineticaSqlOutputParser.html#langchain_community.chat_models.kinetica.KineticaSqlOutputParser.parse_result">[docs]</a>    <span class="k">def</span> <span class="nf">parse_result</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Generation</span><span class="p">],</span> <span class="o">*</span><span class="p">,</span> <span class="n">partial</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">KineticaSqlResponse</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">text</span><span class="p">)</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;kinetica_sql_output_parser&quot;</span></div>
+</pre></div>
+
+      </div>
+    <div class="container">
+      <footer class="sk-content-footer">
+            &copy; 2023, LangChain, Inc..
+          Last updated on Mar 15, 2024.
+      </footer>
+    </div>
+  </div>
+</div>
+<script src="../../../_static/js/vendor/bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    /* Add a [>>>] button on the top-right corner of code samples to hide
+     * the >>> and ... prompts and the output and thus make the code
+     * copyable. */
+    var div = $('.highlight-python .highlight,' +
+                '.highlight-python3 .highlight,' +
+                '.highlight-pycon .highlight,' +
+		'.highlight-default .highlight')
+    var pre = div.find('pre');
+
+    // get the styles from the current theme
+    pre.parent().parent().css('position', 'relative');
+    var hide_text = 'Hide prompts and outputs';
+    var show_text = 'Show prompts and outputs';
+
+    // create and add the button to all the code blocks that contain >>>
+    div.each(function(index) {
+        var jthis = $(this);
+        if (jthis.find('.gp').length > 0) {
+            var button = $('<span class="copybutton">&gt;&gt;&gt;</span>');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+            jthis.prepend(button);
+        }
+        // tracebacks (.gt) contain bare text elements that need to be
+        // wrapped in a span to work with .nextUntil() (see later)
+        jthis.find('pre:has(.gt)').contents().filter(function() {
+            return ((this.nodeType == 3) && (this.data.trim().length > 0));
+        }).wrap('<span>');
+    });
+
+    // define the behavior of the button when it's clicked
+    $('.copybutton').click(function(e){
+        e.preventDefault();
+        var button = $(this);
+        if (button.data('hidden') === 'false') {
+            // hide the code output
+            button.parent().find('.go, .gp, .gt').hide();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'hidden');
+            button.css('text-decoration', 'line-through');
+            button.attr('title', show_text);
+            button.data('hidden', 'true');
+        } else {
+            // show the code output
+            button.parent().find('.go, .gp, .gt').show();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'visible');
+            button.css('text-decoration', 'none');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+        }
+    });
+
+	/*** Add permalink buttons next to glossary terms ***/
+	$('dl.glossary > dt[id]').append(function() {
+		return ('<a class="headerlink" href="#' +
+			    this.getAttribute('id') +
+			    '" title="Permalink to this term">¶</a>');
+	});
+});
+
+</script>
+    
+</body>
+</html>

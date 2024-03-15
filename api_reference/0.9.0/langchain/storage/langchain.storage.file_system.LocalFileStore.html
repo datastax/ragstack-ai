@@ -1,0 +1,424 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>langchain.storage.file_system.LocalFileStore &mdash; 🦜🔗 LangChain 0.1.12</title>
+  
+  <link rel="canonical" href="https://api.python.langchain.com/en/latest/storage/langchain.storage.file_system.LocalFileStore.html" />
+
+  
+
+  <link rel="stylesheet" href="../_static/css/vendor/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/autodoc_pydantic.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/sphinx-dropdown.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/panels-bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+<script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+<script src="../_static/jquery.js"></script> 
+</head>
+<body>
+
+
+<nav id="navbar" class="sk-docs-navbar navbar navbar-expand-md navbar-light bg-light py-0">
+  <div class="container-fluid sk-docs-container px-0">
+    <button
+      id="sk-navbar-toggler"
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="sk-navbar-collapse collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../langchain_api_reference.html">LangChain</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../core_api_reference.html">Core</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../community_api_reference.html">Community</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../experimental_api_reference.html">Experimental</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../text_splitters_api_reference.html">Text splitters</a>
+        </li>
+        <li class="nav-item dropdown nav-more-item-dropdown">
+          <a class="sk-nav-link nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Partner libs</a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+          </div>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" target="_blank" rel="noopener noreferrer" href="https://python.langchain.com/">Docs</a>
+        </li>
+      </ul>
+      <div id="searchbox" role="search">
+          <div class="searchformwrapper">
+          <form class="search" action="../search.html" method="get">
+            <input class="sk-search-text-input" type="text" name="q" aria-labelledby="searchlabel" />
+            <input class="sk-search-text-btn" type="submit" value="Go" />
+          </form>
+          </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="d-flex" id="sk-doc-wrapper">
+    <input type="checkbox" name="sk-toggle-checkbox" id="sk-toggle-checkbox">
+    <label id="sk-sidemenu-toggle" class="sk-btn-toggle-toc btn sk-btn-primary" for="sk-toggle-checkbox">Toggle Menu</label>
+    <div id="sk-sidebar-wrapper" class="border-right">
+      <div class="sk-sidebar-toc-wrapper">
+        <div class="btn-group w-100 mb-2" role="group" aria-label="rellinks">
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Prev</a>
+            <a href="#" role="button" class="btn sk-btn-rellink disabled py-1">Up</a>
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Next</a>
+        </div>
+            <div class="sk-sidebar-toc">
+              <ul>
+<li><a class="reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">langchain.storage.file_system</span></code>.LocalFileStore</a><ul>
+<li><a class="reference internal" href="#langchain.storage.file_system.LocalFileStore"><code class="docutils literal notranslate"><span class="pre">LocalFileStore</span></code></a><ul>
+<li><a class="reference internal" href="#langchain.storage.file_system.LocalFileStore.__init__"><code class="docutils literal notranslate"><span class="pre">LocalFileStore.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.storage.file_system.LocalFileStore.amdelete"><code class="docutils literal notranslate"><span class="pre">LocalFileStore.amdelete()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.storage.file_system.LocalFileStore.amget"><code class="docutils literal notranslate"><span class="pre">LocalFileStore.amget()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.storage.file_system.LocalFileStore.amset"><code class="docutils literal notranslate"><span class="pre">LocalFileStore.amset()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.storage.file_system.LocalFileStore.ayield_keys"><code class="docutils literal notranslate"><span class="pre">LocalFileStore.ayield_keys()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.storage.file_system.LocalFileStore.mdelete"><code class="docutils literal notranslate"><span class="pre">LocalFileStore.mdelete()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.storage.file_system.LocalFileStore.mget"><code class="docutils literal notranslate"><span class="pre">LocalFileStore.mget()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.storage.file_system.LocalFileStore.mset"><code class="docutils literal notranslate"><span class="pre">LocalFileStore.mset()</span></code></a></li>
+<li><a class="reference internal" href="#langchain.storage.file_system.LocalFileStore.yield_keys"><code class="docutils literal notranslate"><span class="pre">LocalFileStore.yield_keys()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            </div>
+      </div>
+    </div>
+    <div id="sk-page-content-wrapper">
+      <div class="sk-page-content container-fluid body px-md-3" role="main">
+        
+  <section id="langchain-storage-file-system-localfilestore">
+<h1><code class="xref py py-mod docutils literal notranslate"><span class="pre">langchain.storage.file_system</span></code>.LocalFileStore<a class="headerlink" href="#langchain-storage-file-system-localfilestore" title="Permalink to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="langchain.storage.file_system.LocalFileStore">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">langchain.storage.file_system.</span></span><span class="sig-name descname"><span class="pre">LocalFileStore</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">root_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Path</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/langchain/storage/file_system.html#LocalFileStore"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain.storage.file_system.LocalFileStore" title="Permalink to this definition">¶</a></dt>
+<dd><p>BaseStore interface that works on the local file system.</p>
+<p class="rubric">Examples</p>
+<p>Create a LocalFileStore instance and perform operations on it:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">langchain.storage</span> <span class="kn">import</span> <span class="n">LocalFileStore</span>
+
+<span class="c1"># Instantiate the LocalFileStore with the root path</span>
+<span class="n">file_store</span> <span class="o">=</span> <span class="n">LocalFileStore</span><span class="p">(</span><span class="s2">&quot;/path/to/root&quot;</span><span class="p">)</span>
+
+<span class="c1"># Set values for keys</span>
+<span class="n">file_store</span><span class="o">.</span><span class="n">mset</span><span class="p">([(</span><span class="s2">&quot;key1&quot;</span><span class="p">,</span> <span class="sa">b</span><span class="s2">&quot;value1&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;key2&quot;</span><span class="p">,</span> <span class="sa">b</span><span class="s2">&quot;value2&quot;</span><span class="p">)])</span>
+
+<span class="c1"># Get values for keys</span>
+<span class="n">values</span> <span class="o">=</span> <span class="n">file_store</span><span class="o">.</span><span class="n">mget</span><span class="p">([</span><span class="s2">&quot;key1&quot;</span><span class="p">,</span> <span class="s2">&quot;key2&quot;</span><span class="p">])</span>  <span class="c1"># Returns [b&quot;value1&quot;, b&quot;value2&quot;]</span>
+
+<span class="c1"># Delete keys</span>
+<span class="n">file_store</span><span class="o">.</span><span class="n">mdelete</span><span class="p">([</span><span class="s2">&quot;key1&quot;</span><span class="p">])</span>
+
+<span class="c1"># Iterate over keys</span>
+<span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">file_store</span><span class="o">.</span><span class="n">yield_keys</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>  <span class="c1"># noqa: T201</span>
+</pre></div>
+</div>
+<p>Implement the BaseStore interface for the local file system.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>root_path</strong> (<em>Union</em><em>[</em><em>str</em><em>, </em><em>Path</em><em>]</em>) – The root path of the file store. All keys are
+interpreted as paths relative to this root.</p>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#langchain.storage.file_system.LocalFileStore.__init__" title="langchain.storage.file_system.LocalFileStore.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(root_path)</p></td>
+<td><p>Implement the BaseStore interface for the local file system.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#langchain.storage.file_system.LocalFileStore.amdelete" title="langchain.storage.file_system.LocalFileStore.amdelete"><code class="xref py py-obj docutils literal notranslate"><span class="pre">amdelete</span></code></a>(keys)</p></td>
+<td><p>Delete the given keys and their associated values.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#langchain.storage.file_system.LocalFileStore.amget" title="langchain.storage.file_system.LocalFileStore.amget"><code class="xref py py-obj docutils literal notranslate"><span class="pre">amget</span></code></a>(keys)</p></td>
+<td><p>Get the values associated with the given keys.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#langchain.storage.file_system.LocalFileStore.amset" title="langchain.storage.file_system.LocalFileStore.amset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">amset</span></code></a>(key_value_pairs)</p></td>
+<td><p>Set the values for the given keys.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#langchain.storage.file_system.LocalFileStore.ayield_keys" title="langchain.storage.file_system.LocalFileStore.ayield_keys"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ayield_keys</span></code></a>(*[, prefix])</p></td>
+<td><p>Get an iterator over keys that match the given prefix.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#langchain.storage.file_system.LocalFileStore.mdelete" title="langchain.storage.file_system.LocalFileStore.mdelete"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mdelete</span></code></a>(keys)</p></td>
+<td><p>Delete the given keys and their associated values.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#langchain.storage.file_system.LocalFileStore.mget" title="langchain.storage.file_system.LocalFileStore.mget"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mget</span></code></a>(keys)</p></td>
+<td><p>Get the values associated with the given keys.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#langchain.storage.file_system.LocalFileStore.mset" title="langchain.storage.file_system.LocalFileStore.mset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mset</span></code></a>(key_value_pairs)</p></td>
+<td><p>Set the values for the given keys.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#langchain.storage.file_system.LocalFileStore.yield_keys" title="langchain.storage.file_system.LocalFileStore.yield_keys"><code class="xref py py-obj docutils literal notranslate"><span class="pre">yield_keys</span></code></a>([prefix])</p></td>
+<td><p>Get an iterator over keys that match the given prefix.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.storage.file_system.LocalFileStore.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">root_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Path</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/langchain/storage/file_system.html#LocalFileStore.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain.storage.file_system.LocalFileStore.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implement the BaseStore interface for the local file system.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>root_path</strong> (<em>Union</em><em>[</em><em>str</em><em>, </em><em>Path</em><em>]</em>) – The root path of the file store. All keys are
+interpreted as paths relative to this root.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.storage.file_system.LocalFileStore.amdelete">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">amdelete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">keys</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">K</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#langchain.storage.file_system.LocalFileStore.amdelete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete the given keys and their associated values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>keys</strong> (<em>Sequence</em><em>[</em><em>K</em><em>]</em>) – A sequence of keys to delete.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.storage.file_system.LocalFileStore.amget">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">amget</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">keys</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">K</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">V</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#langchain.storage.file_system.LocalFileStore.amget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the values associated with the given keys.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>keys</strong> (<em>Sequence</em><em>[</em><em>K</em><em>]</em>) – A sequence of keys.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A sequence of optional values associated with the keys.
+If a key is not found, the corresponding value will be None.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><em>List</em>[<em>Optional</em>[<em>V</em>]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.storage.file_system.LocalFileStore.amset">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">amset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key_value_pairs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">K</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">V</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#langchain.storage.file_system.LocalFileStore.amset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the values for the given keys.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>key_value_pairs</strong> (<em>Sequence</em><em>[</em><em>Tuple</em><em>[</em><em>K</em><em>, </em><em>V</em><em>]</em><em>]</em>) – A sequence of key-value pairs.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.storage.file_system.LocalFileStore.ayield_keys">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ayield_keys</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">AsyncIterator</span><span class="p"><span class="pre">[</span></span><span class="pre">K</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">AsyncIterator</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#langchain.storage.file_system.LocalFileStore.ayield_keys" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get an iterator over keys that match the given prefix.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>prefix</strong> (<em>str</em>) – The prefix to match.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>An iterator over keys that match the given prefix.</p>
+<p>This method is allowed to return an iterator over either K or str
+depending on what makes more sense for the given store.</p>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Iterator[K | str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.storage.file_system.LocalFileStore.mdelete">
+<span class="sig-name descname"><span class="pre">mdelete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">keys</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/langchain/storage/file_system.html#LocalFileStore.mdelete"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain.storage.file_system.LocalFileStore.mdelete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete the given keys and their associated values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>keys</strong> (<em>Sequence</em><em>[</em><em>str</em><em>]</em>) – A sequence of keys to delete.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.storage.file_system.LocalFileStore.mget">
+<span class="sig-name descname"><span class="pre">mget</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">keys</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bytes</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/langchain/storage/file_system.html#LocalFileStore.mget"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain.storage.file_system.LocalFileStore.mget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the values associated with the given keys.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>keys</strong> (<em>Sequence</em><em>[</em><em>str</em><em>]</em>) – A sequence of keys.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A sequence of optional values associated with the keys.
+If a key is not found, the corresponding value will be None.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><em>List</em>[<em>Optional</em>[bytes]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.storage.file_system.LocalFileStore.mset">
+<span class="sig-name descname"><span class="pre">mset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key_value_pairs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bytes</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/langchain/storage/file_system.html#LocalFileStore.mset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain.storage.file_system.LocalFileStore.mset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the values for the given keys.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>key_value_pairs</strong> (<em>Sequence</em><em>[</em><em>Tuple</em><em>[</em><em>str</em><em>, </em><em>bytes</em><em>]</em><em>]</em>) – A sequence of key-value pairs.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="langchain.storage.file_system.LocalFileStore.yield_keys">
+<span class="sig-name descname"><span class="pre">yield_keys</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/langchain/storage/file_system.html#LocalFileStore.yield_keys"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#langchain.storage.file_system.LocalFileStore.yield_keys" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get an iterator over keys that match the given prefix.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>prefix</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The prefix to match.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>An iterator over keys that match the given prefix.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Iterator[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<h1>Examples using LocalFileStore<a class="headerlink" href="#langchain-storage-file-system-localfilestore" title="Permalink to this heading">¶</a></h1>
+<ul class="simple">
+<li><p><a class="reference external" href="https://python.langchain.com/docs/modules/data_connection/text_embedding/caching_embeddings">Caching</a></p></li>
+</ul>
+</section>
+
+
+      </div>
+    <div class="container">
+      <footer class="sk-content-footer">
+            &copy; 2023, LangChain, Inc..
+          Last updated on Mar 15, 2024.
+      </footer>
+    </div>
+  </div>
+</div>
+<script src="../_static/js/vendor/bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    /* Add a [>>>] button on the top-right corner of code samples to hide
+     * the >>> and ... prompts and the output and thus make the code
+     * copyable. */
+    var div = $('.highlight-python .highlight,' +
+                '.highlight-python3 .highlight,' +
+                '.highlight-pycon .highlight,' +
+		'.highlight-default .highlight')
+    var pre = div.find('pre');
+
+    // get the styles from the current theme
+    pre.parent().parent().css('position', 'relative');
+    var hide_text = 'Hide prompts and outputs';
+    var show_text = 'Show prompts and outputs';
+
+    // create and add the button to all the code blocks that contain >>>
+    div.each(function(index) {
+        var jthis = $(this);
+        if (jthis.find('.gp').length > 0) {
+            var button = $('<span class="copybutton">&gt;&gt;&gt;</span>');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+            jthis.prepend(button);
+        }
+        // tracebacks (.gt) contain bare text elements that need to be
+        // wrapped in a span to work with .nextUntil() (see later)
+        jthis.find('pre:has(.gt)').contents().filter(function() {
+            return ((this.nodeType == 3) && (this.data.trim().length > 0));
+        }).wrap('<span>');
+    });
+
+    // define the behavior of the button when it's clicked
+    $('.copybutton').click(function(e){
+        e.preventDefault();
+        var button = $(this);
+        if (button.data('hidden') === 'false') {
+            // hide the code output
+            button.parent().find('.go, .gp, .gt').hide();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'hidden');
+            button.css('text-decoration', 'line-through');
+            button.attr('title', show_text);
+            button.data('hidden', 'true');
+        } else {
+            // show the code output
+            button.parent().find('.go, .gp, .gt').show();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'visible');
+            button.css('text-decoration', 'none');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+        }
+    });
+
+	/*** Add permalink buttons next to glossary terms ***/
+	$('dl.glossary > dt[id]').append(function() {
+		return ('<a class="headerlink" href="#' +
+			    this.getAttribute('id') +
+			    '" title="Permalink to this term">¶</a>');
+	});
+});
+
+</script>
+    
+</body>
+</html>
