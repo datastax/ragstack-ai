@@ -136,11 +136,12 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
         self.checkpoint.query_tokenizer.query_maxlen = max(
             query_maxlen, self.colbert_config.query_maxlen
         )
-        Q = self.checkpoint.queryFromText(
+        # query is Q in the ColBERT documentation
+        query_tensor = self.checkpoint.queryFromText(
             queries, bsize=bsize, to_cpu=True, full_length_search=full_length_search
         )
 
-        return Q
+        return query_tensor
 
     def encode_query(
         self,
