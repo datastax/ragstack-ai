@@ -7,29 +7,25 @@ from cassandra.concurrent import execute_concurrent_with_args
 from .token_embedding import PassageEmbeddings
 
 
-def required_cred(cred: str):
-    if cred is None or cred == "":
-        raise ValueError("Please provide credentials")
-
-
 class AstraDB:
     def __init__(
         self,
-        secure_connect_bundle: str = "",
+        secure_connect_bundle: str = None,
         astra_token: str = None,
         keyspace: str = "colbert128",
         verbose: bool = False,
         timeout: int = 60,
         **kwargs,
     ):
-        required_cred(secure_connect_bundle)
-        required_cred(astra_token)
 
         # self.cluster = Cluster(**kwargs)
-        self.cluster = Cluster(
-            cloud={"secure_connect_bundle": secure_connect_bundle},
-            auth_provider=PlainTextAuthProvider("token", astra_token),
-        )
+        if secure_connect_bundle is None or astra_token is None:
+            self.cluster = Cluster(**kwargs)
+        else:
+            self.cluster = Cluster(
+                cloud={"secure_connect_bundle": secure_connect_bundle},
+                auth_provider=PlainTextAuthProvider("token", astra_token),
+            )
         self.keyspace = keyspace
         self.session = self.cluster.connect()
         self.session.default_timeout = timeout

@@ -61,14 +61,6 @@ def test_embedding_astra_retriever():
 
     print(f"passage embeddings size {len(passageEmbeddings)}")
 
-    for pEmbd in passageEmbeddings:
-
-        print(f"passage embedding title {pEmbd.title()} size {len(pEmbd.get_all_token_embeddings())}")
-        print(f"passagen embedding id {pEmbd.id()}")
-        for tokenEmbd in pEmbd.get_all_token_embeddings():
-            print(f"    token embedding id {tokenEmbd.id} parent {tokenEmbd.parent_id} size {len(tokenEmbd.get_embeddings())}")
-
-
     # Fetch the Base64 encoded string from the environment variable
     encoded_zip = os.getenv('COLBERT_ASTRA_SCB')
 
