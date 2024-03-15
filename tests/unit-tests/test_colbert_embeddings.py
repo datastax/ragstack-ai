@@ -1,6 +1,6 @@
 # test_embeddings.py
 
-from ragstack.colbert.astra_colbert_embedding import ColbertTokenEmbeddings
+from ragstack.colbert.colbert_embedding import ColbertTokenEmbeddings
 from ragstack.colbert.constant import DEFAULT_COLBERT_MODEL, DEFAULT_COLBERT_DIM
 import torch
 

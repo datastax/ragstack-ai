@@ -1,4 +1,4 @@
-from .astra_colbert_embedding import ColbertTokenEmbeddings
+from .colbert_embedding import ColbertTokenEmbeddings
 
 from .cassandra_db import AstraDB
 import logging
