@@ -1,4 +1,4 @@
-FROM python:3.11.8-slim-bookworm
+FROM python:3.11.8-slim-bullseye
 
 ARG RAGSTACK_AI_VERSION
 
