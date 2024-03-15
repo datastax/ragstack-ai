@@ -1,0 +1,351 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>langchain_community.chat_message_histories.cosmos_db &mdash; 🦜🔗 LangChain 0.1.12</title>
+  
+  <link rel="canonical" href="https://api.python.langchain.com/en/latest/_modules/langchain_community/chat_message_histories/cosmos_db.html" />
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/vendor/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/autodoc_pydantic.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/sphinx-dropdown.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/panels-bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+<script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+<script src="../../../_static/jquery.js"></script> 
+</head>
+<body>
+
+
+<nav id="navbar" class="sk-docs-navbar navbar navbar-expand-md navbar-light bg-light py-0">
+  <div class="container-fluid sk-docs-container px-0">
+    <button
+      id="sk-navbar-toggler"
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="sk-navbar-collapse collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../langchain_api_reference.html">LangChain</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../core_api_reference.html">Core</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../community_api_reference.html">Community</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../experimental_api_reference.html">Experimental</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../text_splitters_api_reference.html">Text splitters</a>
+        </li>
+        <li class="nav-item dropdown nav-more-item-dropdown">
+          <a class="sk-nav-link nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Partner libs</a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+          </div>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" target="_blank" rel="noopener noreferrer" href="https://python.langchain.com/">Docs</a>
+        </li>
+      </ul>
+      <div id="searchbox" role="search">
+          <div class="searchformwrapper">
+          <form class="search" action="../../../search.html" method="get">
+            <input class="sk-search-text-input" type="text" name="q" aria-labelledby="searchlabel" />
+            <input class="sk-search-text-btn" type="submit" value="Go" />
+          </form>
+          </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="d-flex" id="sk-doc-wrapper">
+    <input type="checkbox" name="sk-toggle-checkbox" id="sk-toggle-checkbox">
+    <label id="sk-sidemenu-toggle" class="sk-btn-toggle-toc btn sk-btn-primary" for="sk-toggle-checkbox">Toggle Menu</label>
+    <div id="sk-sidebar-wrapper" class="border-right">
+      <div class="sk-sidebar-toc-wrapper">
+        <div class="btn-group w-100 mb-2" role="group" aria-label="rellinks">
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Prev</a><a href="../../index.html" role="button" class="btn sk-btn-rellink py-1" sk-rellink-tooltip="Module code">Up</a>
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Next</a>
+        </div>
+            <div class="sk-sidebar-toc">
+              
+            </div>
+      </div>
+    </div>
+    <div id="sk-page-content-wrapper">
+      <div class="sk-page-content container-fluid body px-md-3" role="main">
+        
+  <h1>Source code for langchain_community.chat_message_histories.cosmos_db</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Azure CosmosDB Memory History.&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">types</span> <span class="kn">import</span> <span class="n">TracebackType</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Type</span>
+
+<span class="kn">from</span> <span class="nn">langchain_core.chat_history</span> <span class="kn">import</span> <span class="n">BaseChatMessageHistory</span>
+<span class="kn">from</span> <span class="nn">langchain_core.messages</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">BaseMessage</span><span class="p">,</span>
+    <span class="n">messages_from_dict</span><span class="p">,</span>
+    <span class="n">messages_to_dict</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">azure.cosmos</span> <span class="kn">import</span> <span class="n">ContainerProxy</span>
+
+
+<div class="viewcode-block" id="CosmosDBChatMessageHistory"><a class="viewcode-back" href="../../../chat_message_histories/langchain_community.chat_message_histories.cosmos_db.CosmosDBChatMessageHistory.html#langchain_community.chat_message_histories.cosmos_db.CosmosDBChatMessageHistory">[docs]</a><span class="k">class</span> <span class="nc">CosmosDBChatMessageHistory</span><span class="p">(</span><span class="n">BaseChatMessageHistory</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Chat message history backed by Azure CosmosDB.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="CosmosDBChatMessageHistory.__init__"><a class="viewcode-back" href="../../../chat_message_histories/langchain_community.chat_message_histories.cosmos_db.CosmosDBChatMessageHistory.html#langchain_community.chat_message_histories.cosmos_db.CosmosDBChatMessageHistory.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">cosmos_endpoint</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">cosmos_database</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">cosmos_container</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">session_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">user_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">credential</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">connection_string</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">ttl</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">cosmos_client_kwargs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initializes a new instance of the CosmosDBChatMessageHistory class.</span>
+
+<span class="sd">        Make sure to call prepare_cosmos or use the context manager to make</span>
+<span class="sd">        sure your database is ready.</span>
+
+<span class="sd">        Either a credential or a connection string must be provided.</span>
+
+<span class="sd">        :param cosmos_endpoint: The connection endpoint for the Azure Cosmos DB account.</span>
+<span class="sd">        :param cosmos_database: The name of the database to use.</span>
+<span class="sd">        :param cosmos_container: The name of the container to use.</span>
+<span class="sd">        :param session_id: The session ID to use, can be overwritten while loading.</span>
+<span class="sd">        :param user_id: The user ID to use, can be overwritten while loading.</span>
+<span class="sd">        :param credential: The credential to use to authenticate to Azure Cosmos DB.</span>
+<span class="sd">        :param connection_string: The connection string to use to authenticate.</span>
+<span class="sd">        :param ttl: The time to live (in seconds) to use for documents in the container.</span>
+<span class="sd">        :param cosmos_client_kwargs: Additional kwargs to pass to the CosmosClient.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cosmos_endpoint</span> <span class="o">=</span> <span class="n">cosmos_endpoint</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cosmos_database</span> <span class="o">=</span> <span class="n">cosmos_database</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cosmos_container</span> <span class="o">=</span> <span class="n">cosmos_container</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">credential</span> <span class="o">=</span> <span class="n">credential</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conn_string</span> <span class="o">=</span> <span class="n">connection_string</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">session_id</span> <span class="o">=</span> <span class="n">session_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">user_id</span> <span class="o">=</span> <span class="n">user_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ttl</span> <span class="o">=</span> <span class="n">ttl</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">messages</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">BaseMessage</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">azure.cosmos</span> <span class="kn">import</span> <span class="p">(</span>  <span class="c1"># pylint: disable=import-outside-toplevel # noqa: E501</span>
+                <span class="n">CosmosClient</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+                <span class="s2">&quot;You must install the azure-cosmos package to use the CosmosDBChatMessageHistory.&quot;</span>  <span class="c1"># noqa: E501</span>
+                <span class="s2">&quot;Please install it with `pip install azure-cosmos`.&quot;</span>
+            <span class="p">)</span> <span class="kn">from</span> <span class="nn">exc</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">credential</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_client</span> <span class="o">=</span> <span class="n">CosmosClient</span><span class="p">(</span>
+                <span class="n">url</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cosmos_endpoint</span><span class="p">,</span>
+                <span class="n">credential</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">credential</span><span class="p">,</span>
+                <span class="o">**</span><span class="n">cosmos_client_kwargs</span> <span class="ow">or</span> <span class="p">{},</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">conn_string</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_client</span> <span class="o">=</span> <span class="n">CosmosClient</span><span class="o">.</span><span class="n">from_connection_string</span><span class="p">(</span>
+                <span class="n">conn_str</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">conn_string</span><span class="p">,</span>
+                <span class="o">**</span><span class="n">cosmos_client_kwargs</span> <span class="ow">or</span> <span class="p">{},</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Either a connection string or a credential must be set.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_container</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ContainerProxy</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="CosmosDBChatMessageHistory.prepare_cosmos"><a class="viewcode-back" href="../../../chat_message_histories/langchain_community.chat_message_histories.cosmos_db.CosmosDBChatMessageHistory.html#langchain_community.chat_message_histories.cosmos_db.CosmosDBChatMessageHistory.prepare_cosmos">[docs]</a>    <span class="k">def</span> <span class="nf">prepare_cosmos</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Prepare the CosmosDB client.</span>
+
+<span class="sd">        Use this function or the context manager to make sure your database is ready.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">azure.cosmos</span> <span class="kn">import</span> <span class="p">(</span>  <span class="c1"># pylint: disable=import-outside-toplevel # noqa: E501</span>
+                <span class="n">PartitionKey</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+                <span class="s2">&quot;You must install the azure-cosmos package to use the CosmosDBChatMessageHistory.&quot;</span>  <span class="c1"># noqa: E501</span>
+                <span class="s2">&quot;Please install it with `pip install azure-cosmos`.&quot;</span>
+            <span class="p">)</span> <span class="kn">from</span> <span class="nn">exc</span>
+        <span class="n">database</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">create_database_if_not_exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cosmos_database</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_container</span> <span class="o">=</span> <span class="n">database</span><span class="o">.</span><span class="n">create_container_if_not_exists</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cosmos_container</span><span class="p">,</span>
+            <span class="n">partition_key</span><span class="o">=</span><span class="n">PartitionKey</span><span class="p">(</span><span class="s2">&quot;/user_id&quot;</span><span class="p">),</span>
+            <span class="n">default_ttl</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ttl</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">load_messages</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;CosmosDBChatMessageHistory&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Context manager entry point.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="fm">__enter__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prepare_cosmos</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="fm">__exit__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">exc_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Type</span><span class="p">[</span><span class="ne">BaseException</span><span class="p">]],</span>
+        <span class="n">exc_val</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="ne">BaseException</span><span class="p">],</span>
+        <span class="n">traceback</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TracebackType</span><span class="p">],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Context manager exit&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">upsert_messages</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="fm">__exit__</span><span class="p">(</span><span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_val</span><span class="p">,</span> <span class="n">traceback</span><span class="p">)</span>
+
+<div class="viewcode-block" id="CosmosDBChatMessageHistory.load_messages"><a class="viewcode-back" href="../../../chat_message_histories/langchain_community.chat_message_histories.cosmos_db.CosmosDBChatMessageHistory.html#langchain_community.chat_message_histories.cosmos_db.CosmosDBChatMessageHistory.load_messages">[docs]</a>    <span class="k">def</span> <span class="nf">load_messages</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Retrieve the messages from Cosmos&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_container</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Container not initialized&quot;</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">azure.cosmos.exceptions</span> <span class="kn">import</span> <span class="p">(</span>  <span class="c1"># pylint: disable=import-outside-toplevel # noqa: E501</span>
+                <span class="n">CosmosHttpResponseError</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+                <span class="s2">&quot;You must install the azure-cosmos package to use the CosmosDBChatMessageHistory.&quot;</span>  <span class="c1"># noqa: E501</span>
+                <span class="s2">&quot;Please install it with `pip install azure-cosmos`.&quot;</span>
+            <span class="p">)</span> <span class="kn">from</span> <span class="nn">exc</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">item</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_container</span><span class="o">.</span><span class="n">read_item</span><span class="p">(</span>
+                <span class="n">item</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">,</span> <span class="n">partition_key</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">user_id</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="n">CosmosHttpResponseError</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;no session found&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="s2">&quot;messages&quot;</span> <span class="ow">in</span> <span class="n">item</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="s2">&quot;messages&quot;</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">messages</span> <span class="o">=</span> <span class="n">messages_from_dict</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="s2">&quot;messages&quot;</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="CosmosDBChatMessageHistory.add_message"><a class="viewcode-back" href="../../../chat_message_histories/langchain_community.chat_message_histories.cosmos_db.CosmosDBChatMessageHistory.html#langchain_community.chat_message_histories.cosmos_db.CosmosDBChatMessageHistory.add_message">[docs]</a>    <span class="k">def</span> <span class="nf">add_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">BaseMessage</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a self-created message to the store&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">messages</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">upsert_messages</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="CosmosDBChatMessageHistory.upsert_messages"><a class="viewcode-back" href="../../../chat_message_histories/langchain_community.chat_message_histories.cosmos_db.CosmosDBChatMessageHistory.html#langchain_community.chat_message_histories.cosmos_db.CosmosDBChatMessageHistory.upsert_messages">[docs]</a>    <span class="k">def</span> <span class="nf">upsert_messages</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Update the cosmosdb item.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_container</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Container not initialized&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_container</span><span class="o">.</span><span class="n">upsert_item</span><span class="p">(</span>
+            <span class="n">body</span><span class="o">=</span><span class="p">{</span>
+                <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">,</span>
+                <span class="s2">&quot;user_id&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_id</span><span class="p">,</span>
+                <span class="s2">&quot;messages&quot;</span><span class="p">:</span> <span class="n">messages_to_dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">messages</span><span class="p">),</span>
+            <span class="p">}</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="CosmosDBChatMessageHistory.clear"><a class="viewcode-back" href="../../../chat_message_histories/langchain_community.chat_message_histories.cosmos_db.CosmosDBChatMessageHistory.html#langchain_community.chat_message_histories.cosmos_db.CosmosDBChatMessageHistory.clear">[docs]</a>    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Clear session memory from this memory and cosmos.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">messages</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_container</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_container</span><span class="o">.</span><span class="n">delete_item</span><span class="p">(</span>
+                <span class="n">item</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">,</span> <span class="n">partition_key</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">user_id</span>
+            <span class="p">)</span></div></div>
+</pre></div>
+
+      </div>
+    <div class="container">
+      <footer class="sk-content-footer">
+            &copy; 2023, LangChain, Inc..
+          Last updated on Mar 15, 2024.
+      </footer>
+    </div>
+  </div>
+</div>
+<script src="../../../_static/js/vendor/bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    /* Add a [>>>] button on the top-right corner of code samples to hide
+     * the >>> and ... prompts and the output and thus make the code
+     * copyable. */
+    var div = $('.highlight-python .highlight,' +
+                '.highlight-python3 .highlight,' +
+                '.highlight-pycon .highlight,' +
+		'.highlight-default .highlight')
+    var pre = div.find('pre');
+
+    // get the styles from the current theme
+    pre.parent().parent().css('position', 'relative');
+    var hide_text = 'Hide prompts and outputs';
+    var show_text = 'Show prompts and outputs';
+
+    // create and add the button to all the code blocks that contain >>>
+    div.each(function(index) {
+        var jthis = $(this);
+        if (jthis.find('.gp').length > 0) {
+            var button = $('<span class="copybutton">&gt;&gt;&gt;</span>');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+            jthis.prepend(button);
+        }
+        // tracebacks (.gt) contain bare text elements that need to be
+        // wrapped in a span to work with .nextUntil() (see later)
+        jthis.find('pre:has(.gt)').contents().filter(function() {
+            return ((this.nodeType == 3) && (this.data.trim().length > 0));
+        }).wrap('<span>');
+    });
+
+    // define the behavior of the button when it's clicked
+    $('.copybutton').click(function(e){
+        e.preventDefault();
+        var button = $(this);
+        if (button.data('hidden') === 'false') {
+            // hide the code output
+            button.parent().find('.go, .gp, .gt').hide();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'hidden');
+            button.css('text-decoration', 'line-through');
+            button.attr('title', show_text);
+            button.data('hidden', 'true');
+        } else {
+            // show the code output
+            button.parent().find('.go, .gp, .gt').show();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'visible');
+            button.css('text-decoration', 'none');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+        }
+    });
+
+	/*** Add permalink buttons next to glossary terms ***/
+	$('dl.glossary > dt[id]').append(function() {
+		return ('<a class="headerlink" href="#' +
+			    this.getAttribute('id') +
+			    '" title="Permalink to this term">¶</a>');
+	});
+});
+
+</script>
+    
+</body>
+</html>

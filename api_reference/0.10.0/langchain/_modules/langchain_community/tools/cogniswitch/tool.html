@@ -1,0 +1,578 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>langchain_community.tools.cogniswitch.tool &mdash; 🦜🔗 LangChain 0.1.12</title>
+  
+  <link rel="canonical" href="https://api.python.langchain.com/en/latest/_modules/langchain_community/tools/cogniswitch/tool.html" />
+
+  
+
+  <link rel="stylesheet" href="../../../../_static/css/vendor/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/autodoc_pydantic.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/sphinx-dropdown.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/panels-bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/css/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+<script id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+<script src="../../../../_static/jquery.js"></script> 
+</head>
+<body>
+
+
+<nav id="navbar" class="sk-docs-navbar navbar navbar-expand-md navbar-light bg-light py-0">
+  <div class="container-fluid sk-docs-container px-0">
+    <button
+      id="sk-navbar-toggler"
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="sk-navbar-collapse collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../../langchain_api_reference.html">LangChain</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../../core_api_reference.html">Core</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../../community_api_reference.html">Community</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../../experimental_api_reference.html">Experimental</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../../text_splitters_api_reference.html">Text splitters</a>
+        </li>
+        <li class="nav-item dropdown nav-more-item-dropdown">
+          <a class="sk-nav-link nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Partner libs</a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+          </div>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" target="_blank" rel="noopener noreferrer" href="https://python.langchain.com/">Docs</a>
+        </li>
+      </ul>
+      <div id="searchbox" role="search">
+          <div class="searchformwrapper">
+          <form class="search" action="../../../../search.html" method="get">
+            <input class="sk-search-text-input" type="text" name="q" aria-labelledby="searchlabel" />
+            <input class="sk-search-text-btn" type="submit" value="Go" />
+          </form>
+          </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="d-flex" id="sk-doc-wrapper">
+    <input type="checkbox" name="sk-toggle-checkbox" id="sk-toggle-checkbox">
+    <label id="sk-sidemenu-toggle" class="sk-btn-toggle-toc btn sk-btn-primary" for="sk-toggle-checkbox">Toggle Menu</label>
+    <div id="sk-sidebar-wrapper" class="border-right">
+      <div class="sk-sidebar-toc-wrapper">
+        <div class="btn-group w-100 mb-2" role="group" aria-label="rellinks">
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Prev</a><a href="../../../index.html" role="button" class="btn sk-btn-rellink py-1" sk-rellink-tooltip="Module code">Up</a>
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Next</a>
+        </div>
+            <div class="sk-sidebar-toc">
+              
+            </div>
+      </div>
+    </div>
+    <div id="sk-page-content-wrapper">
+      <div class="sk-page-content container-fluid body px-md-3" role="main">
+        
+  <h1>Source code for langchain_community.tools.cogniswitch.tool</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">from</span> <span class="nn">langchain_core.callbacks</span> <span class="kn">import</span> <span class="n">CallbackManagerForToolRun</span>
+<span class="kn">from</span> <span class="nn">langchain_core.tools</span> <span class="kn">import</span> <span class="n">BaseTool</span>
+
+
+<div class="viewcode-block" id="CogniswitchKnowledgeRequest"><a class="viewcode-back" href="../../../../tools/langchain_community.tools.cogniswitch.tool.CogniswitchKnowledgeRequest.html#langchain_community.tools.cogniswitch.tool.CogniswitchKnowledgeRequest">[docs]</a><span class="k">class</span> <span class="nc">CogniswitchKnowledgeRequest</span><span class="p">(</span><span class="n">BaseTool</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A tool for interacting with the Cogniswitch service to answer questions.</span>
+<span class="sd">    name: str = &quot;cogniswitch_knowledge_request&quot;</span>
+<span class="sd">    description: str = (</span>
+<span class="sd">        &quot;A wrapper around cogniswitch service to answer the question</span>
+<span class="sd">        from the knowledge base.&quot;</span>
+<span class="sd">        &quot;Input should be a search query.&quot;</span>
+<span class="sd">    )</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;cogniswitch_knowledge_request&quot;</span>
+    <span class="n">description</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;A wrapper around cogniswitch service to </span>
+<span class="s2">    answer the question from the knowledge base.&quot;&quot;&quot;</span>
+    <span class="n">cs_token</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">OAI_token</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">apiKey</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">api_url</span> <span class="o">=</span> <span class="s2">&quot;https://api.cogniswitch.ai:8243/cs-api/0.0.1/cs/knowledgeRequest&quot;</span>
+
+    <span class="k">def</span> <span class="nf">_run</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">run_manager</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">CallbackManagerForToolRun</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Use the tool to answer a query.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            query (str): Natural language query,</span>
+<span class="sd">              that you would like to ask to your knowledge graph.</span>
+<span class="sd">            run_manager (Optional[CallbackManagerForChainRun]):</span>
+<span class="sd">            Manager for chain run callbacks.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Dict[str, Any]: Output dictionary containing</span>
+<span class="sd">            the &#39;response&#39; from the service.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">answer_cs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cs_token</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OAI_token</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">apiKey</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">response</span>
+
+<div class="viewcode-block" id="CogniswitchKnowledgeRequest.answer_cs"><a class="viewcode-back" href="../../../../tools/langchain_community.tools.cogniswitch.tool.CogniswitchKnowledgeRequest.html#langchain_community.tools.cogniswitch.tool.CogniswitchKnowledgeRequest.answer_cs">[docs]</a>    <span class="k">def</span> <span class="nf">answer_cs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cs_token</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">OAI_token</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">apiKey</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Send a query to the Cogniswitch service and retrieve the response.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            cs_token (str): Cogniswitch token.</span>
+<span class="sd">            OAI_token (str): OpenAI token.</span>
+<span class="sd">            apiKey (str): OAuth token.</span>
+<span class="sd">            query (str): Query to be answered.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Response JSON from the Cogniswitch service.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">cs_token</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Missing cs_token&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">OAI_token</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Missing OpenAI token&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">apiKey</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Missing cogniswitch OAuth token&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">query</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Missing input query&quot;</span><span class="p">)</span>
+
+        <span class="n">headers</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;apiKey&quot;</span><span class="p">:</span> <span class="n">apiKey</span><span class="p">,</span>
+            <span class="s2">&quot;platformToken&quot;</span><span class="p">:</span> <span class="n">cs_token</span><span class="p">,</span>
+            <span class="s2">&quot;openAIToken&quot;</span><span class="p">:</span> <span class="n">OAI_token</span><span class="p">,</span>
+        <span class="p">}</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="n">query</span><span class="p">}</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">api_url</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">,</span> <span class="n">verify</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span></div></div>
+
+
+<div class="viewcode-block" id="CogniswitchKnowledgeStatus"><a class="viewcode-back" href="../../../../tools/langchain_community.tools.cogniswitch.tool.CogniswitchKnowledgeStatus.html#langchain_community.tools.cogniswitch.tool.CogniswitchKnowledgeStatus">[docs]</a><span class="k">class</span> <span class="nc">CogniswitchKnowledgeStatus</span><span class="p">(</span><span class="n">BaseTool</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A cogniswitch tool for interacting with the Cogniswitch services to know the</span>
+<span class="sd">     status of the document or url uploaded.</span>
+<span class="sd">    name: str = &quot;cogniswitch_knowledge_status&quot;</span>
+<span class="sd">    description: str = (</span>
+<span class="sd">        &quot;A wrapper around cogniswitch services to know the status of</span>
+<span class="sd">         the document uploaded from a url or a file. &quot;</span>
+<span class="sd">        &quot;Input should be a file name or the url link&quot;</span>
+<span class="sd">    )</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;cogniswitch_knowledge_status&quot;</span>
+    <span class="n">description</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;A wrapper around cogniswitch services to know </span>
+<span class="s2">    the status of the document uploaded from a url or a file.&quot;&quot;&quot;</span>
+    <span class="n">cs_token</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">OAI_token</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">apiKey</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">knowledge_status_url</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;https://api.cogniswitch.ai:8243/cs-api/0.0.1/cs/knowledgeSource/status&quot;</span>
+    <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_run</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">document_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">run_manager</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">CallbackManagerForToolRun</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Use the tool to know the status of the document uploaded.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            document_name (str): name of the document or</span>
+<span class="sd">            the url uploaded</span>
+<span class="sd">            run_manager (Optional[CallbackManagerForChainRun]):</span>
+<span class="sd">            Manager for chain run callbacks.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Dict[str, Any]: Output dictionary containing</span>
+<span class="sd">            the &#39;response&#39; from the service.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">knowledge_status</span><span class="p">(</span><span class="n">document_name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">response</span>
+
+<div class="viewcode-block" id="CogniswitchKnowledgeStatus.knowledge_status"><a class="viewcode-back" href="../../../../tools/langchain_community.tools.cogniswitch.tool.CogniswitchKnowledgeStatus.html#langchain_community.tools.cogniswitch.tool.CogniswitchKnowledgeStatus.knowledge_status">[docs]</a>    <span class="k">def</span> <span class="nf">knowledge_status</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">document_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Use this function to know the status of the document or the URL uploaded</span>
+<span class="sd">        Args:</span>
+<span class="sd">            document_name (str): The document name or the url that is uploaded.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Response JSON from the Cogniswitch service.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;docName&quot;</span><span class="p">:</span> <span class="n">document_name</span><span class="p">,</span> <span class="s2">&quot;platformToken&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">cs_token</span><span class="p">}</span>
+        <span class="n">headers</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;apiKey&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">apiKey</span><span class="p">,</span>
+            <span class="s2">&quot;openAIToken&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">OAI_token</span><span class="p">,</span>
+            <span class="s2">&quot;platformToken&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">cs_token</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">knowledge_status_url</span><span class="p">,</span>
+            <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">,</span>
+            <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">,</span>
+            <span class="n">verify</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
+            <span class="n">source_info</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+            <span class="n">source_data</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">source_info</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">status</span> <span class="o">=</span> <span class="n">source_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;status&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">status</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">source_data</span><span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;SUCCESS&quot;</span>
+            <span class="k">elif</span> <span class="n">status</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">source_data</span><span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;PROCESSING&quot;</span>
+            <span class="k">elif</span> <span class="n">status</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="n">source_data</span><span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;UPLOADED&quot;</span>
+            <span class="k">elif</span> <span class="n">status</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+                <span class="n">source_data</span><span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;FAILURE&quot;</span>
+            <span class="k">elif</span> <span class="n">status</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+                <span class="n">source_data</span><span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;UPLOAD_FAILURE&quot;</span>
+            <span class="k">elif</span> <span class="n">status</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>
+                <span class="n">source_data</span><span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;REJECTED&quot;</span>
+
+            <span class="k">if</span> <span class="s2">&quot;filePath&quot;</span> <span class="ow">in</span> <span class="n">source_data</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">source_data</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;filePath&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s2">&quot;savedFileName&quot;</span> <span class="ow">in</span> <span class="n">source_data</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">source_data</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;savedFileName&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s2">&quot;integrationConfigId&quot;</span> <span class="ow">in</span> <span class="n">source_data</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">source_data</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;integrationConfigId&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s2">&quot;metaData&quot;</span> <span class="ow">in</span> <span class="n">source_data</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">source_data</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;metaData&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s2">&quot;docEntryId&quot;</span> <span class="ow">in</span> <span class="n">source_data</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">source_data</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;docEntryId&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">source_data</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># error_message = response.json()[&quot;message&quot;]</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span>
+            <span class="p">}</span></div></div>
+
+
+<div class="viewcode-block" id="CogniswitchKnowledgeSourceFile"><a class="viewcode-back" href="../../../../tools/langchain_community.tools.cogniswitch.tool.CogniswitchKnowledgeSourceFile.html#langchain_community.tools.cogniswitch.tool.CogniswitchKnowledgeSourceFile">[docs]</a><span class="k">class</span> <span class="nc">CogniswitchKnowledgeSourceFile</span><span class="p">(</span><span class="n">BaseTool</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A cogniswitch tool for interacting with the Cogniswitch services to store data.</span>
+<span class="sd">    name: str = &quot;cogniswitch_knowledge_source_file&quot;</span>
+<span class="sd">    description: str = (</span>
+<span class="sd">        &quot;This calls the CogniSwitch services to analyze &amp; store data from a file.</span>
+<span class="sd">        If the input looks like a file path, assign that string value to file key.</span>
+<span class="sd">        Assign document name &amp; description only if provided in input.&quot;</span>
+<span class="sd">    )</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;cogniswitch_knowledge_source_file&quot;</span>
+    <span class="n">description</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">        This calls the CogniSwitch services to analyze &amp; store data from a file. </span>
+<span class="s2">        If the input looks like a file path, assign that string value to file key. </span>
+<span class="s2">        Assign document name &amp; description only if provided in input.</span>
+<span class="s2">        &quot;&quot;&quot;</span>
+    <span class="n">cs_token</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">OAI_token</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">apiKey</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">knowledgesource_file</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;https://api.cogniswitch.ai:8243/cs-api/0.0.1/cs/knowledgeSource/file&quot;</span>
+    <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_run</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">file</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">document_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">document_description</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">run_manager</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">CallbackManagerForToolRun</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Execute the tool to store the data given from a file.</span>
+<span class="sd">        This calls the CogniSwitch services to analyze &amp; store data from a file.</span>
+<span class="sd">        If the input looks like a file path, assign that string value to file key.</span>
+<span class="sd">        Assign document name &amp; description only if provided in input.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            file Optional[str]: The file path of your knowledge</span>
+<span class="sd">            document_name Optional[str]: Name of your knowledge document</span>
+<span class="sd">            document_description Optional[str]: Description of your knowledge document</span>
+<span class="sd">            run_manager (Optional[CallbackManagerForChainRun]):</span>
+<span class="sd">            Manager for chain run callbacks.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Dict[str, Any]: Output dictionary containing</span>
+<span class="sd">            the &#39;response&#39; from the service.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">file</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;No input provided&quot;</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">store_data</span><span class="p">(</span>
+                <span class="n">file</span><span class="o">=</span><span class="n">file</span><span class="p">,</span>
+                <span class="n">document_name</span><span class="o">=</span><span class="n">document_name</span><span class="p">,</span>
+                <span class="n">document_description</span><span class="o">=</span><span class="n">document_description</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="n">response</span>
+
+<div class="viewcode-block" id="CogniswitchKnowledgeSourceFile.store_data"><a class="viewcode-back" href="../../../../tools/langchain_community.tools.cogniswitch.tool.CogniswitchKnowledgeSourceFile.html#langchain_community.tools.cogniswitch.tool.CogniswitchKnowledgeSourceFile.store_data">[docs]</a>    <span class="k">def</span> <span class="nf">store_data</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">file</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">document_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">document_description</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Store data using the Cogniswitch service.</span>
+<span class="sd">        This calls the CogniSwitch services to analyze &amp; store data from a file.</span>
+<span class="sd">        If the input looks like a file path, assign that string value to file key.</span>
+<span class="sd">        Assign document name &amp; description only if provided in input.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            file (Optional[str]): file path of your file.</span>
+<span class="sd">            the current files supported by the files are</span>
+<span class="sd">            .txt, .pdf, .docx, .doc, .html</span>
+<span class="sd">            document_name (Optional[str]): Name of the document you are uploading.</span>
+<span class="sd">            document_description (Optional[str]): Description of the document.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Response JSON from the Cogniswitch service.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">headers</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;apiKey&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">apiKey</span><span class="p">,</span>
+            <span class="s2">&quot;openAIToken&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">OAI_token</span><span class="p">,</span>
+            <span class="s2">&quot;platformToken&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">cs_token</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">document_name</span><span class="p">:</span>
+            <span class="n">document_name</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">document_description</span><span class="p">:</span>
+            <span class="n">document_description</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">files</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;file&quot;</span><span class="p">:</span> <span class="nb">open</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)}</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;documentName&quot;</span><span class="p">:</span> <span class="n">document_name</span><span class="p">,</span>
+            <span class="s2">&quot;documentDescription&quot;</span><span class="p">:</span> <span class="n">document_description</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">knowledgesource_file</span><span class="p">,</span>
+            <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">,</span>
+            <span class="n">verify</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span>
+            <span class="n">files</span><span class="o">=</span><span class="n">files</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;Bad Request&quot;</span><span class="p">}</span></div></div>
+
+
+<div class="viewcode-block" id="CogniswitchKnowledgeSourceURL"><a class="viewcode-back" href="../../../../tools/langchain_community.tools.cogniswitch.tool.CogniswitchKnowledgeSourceURL.html#langchain_community.tools.cogniswitch.tool.CogniswitchKnowledgeSourceURL">[docs]</a><span class="k">class</span> <span class="nc">CogniswitchKnowledgeSourceURL</span><span class="p">(</span><span class="n">BaseTool</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A cogniswitch tool for interacting with the Cogniswitch services to store data.</span>
+<span class="sd">    name: str = &quot;cogniswitch_knowledge_source_url&quot;</span>
+<span class="sd">    description: str = (</span>
+<span class="sd">        &quot;This calls the CogniSwitch services to analyze &amp; store data from a url.</span>
+<span class="sd">        the URL is provided in input, assign that value to the url key.</span>
+<span class="sd">        Assign document name &amp; description only if provided in input&quot;</span>
+<span class="sd">    )</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;cogniswitch_knowledge_source_url&quot;</span>
+    <span class="n">description</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    This calls the CogniSwitch services to analyze &amp; store data from a url. </span>
+<span class="s2">        the URL is provided in input, assign that value to the url key. </span>
+<span class="s2">        Assign document name &amp; description only if provided in input&quot;&quot;&quot;</span>
+    <span class="n">cs_token</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">OAI_token</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">apiKey</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">knowledgesource_url</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;https://api.cogniswitch.ai:8243/cs-api/0.0.1/cs/knowledgeSource/url&quot;</span>
+    <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_run</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">url</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">document_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">document_description</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">run_manager</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">CallbackManagerForToolRun</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Execute the tool to store the data given from a url.</span>
+<span class="sd">        This calls the CogniSwitch services to analyze &amp; store data from a url.</span>
+<span class="sd">        the URL is provided in input, assign that value to the url key.</span>
+<span class="sd">        Assign document name &amp; description only if provided in input.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            url Optional[str]: The website/url link of your knowledge</span>
+<span class="sd">            document_name Optional[str]: Name of your knowledge document</span>
+<span class="sd">            document_description Optional[str]: Description of your knowledge document</span>
+<span class="sd">            run_manager (Optional[CallbackManagerForChainRun]):</span>
+<span class="sd">            Manager for chain run callbacks.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Dict[str, Any]: Output dictionary containing</span>
+<span class="sd">            the &#39;response&#39; from the service.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">url</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;No input provided&quot;</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">store_data</span><span class="p">(</span>
+            <span class="n">url</span><span class="o">=</span><span class="n">url</span><span class="p">,</span>
+            <span class="n">document_name</span><span class="o">=</span><span class="n">document_name</span><span class="p">,</span>
+            <span class="n">document_description</span><span class="o">=</span><span class="n">document_description</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">response</span>
+
+<div class="viewcode-block" id="CogniswitchKnowledgeSourceURL.store_data"><a class="viewcode-back" href="../../../../tools/langchain_community.tools.cogniswitch.tool.CogniswitchKnowledgeSourceURL.html#langchain_community.tools.cogniswitch.tool.CogniswitchKnowledgeSourceURL.store_data">[docs]</a>    <span class="k">def</span> <span class="nf">store_data</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">url</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">document_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">document_description</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Store data using the Cogniswitch service.</span>
+<span class="sd">        This calls the CogniSwitch services to analyze &amp; store data from a url.</span>
+<span class="sd">        the URL is provided in input, assign that value to the url key.</span>
+<span class="sd">        Assign document name &amp; description only if provided in input.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            url (Optional[str]): URL link.</span>
+<span class="sd">            document_name (Optional[str]): Name of the document you are uploading.</span>
+<span class="sd">            document_description (Optional[str]): Description of the document.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Response JSON from the Cogniswitch service.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">headers</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;apiKey&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">apiKey</span><span class="p">,</span>
+            <span class="s2">&quot;openAIToken&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">OAI_token</span><span class="p">,</span>
+            <span class="s2">&quot;platformToken&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">cs_token</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">document_name</span><span class="p">:</span>
+            <span class="n">document_name</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">document_description</span><span class="p">:</span>
+            <span class="n">document_description</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">url</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;No input provided&quot;</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="n">url</span><span class="p">}</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">knowledgesource_url</span><span class="p">,</span>
+                <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">,</span>
+                <span class="n">verify</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;Bad Request&quot;</span><span class="p">}</span></div></div>
+</pre></div>
+
+      </div>
+    <div class="container">
+      <footer class="sk-content-footer">
+            &copy; 2023, LangChain, Inc..
+          Last updated on Mar 15, 2024.
+      </footer>
+    </div>
+  </div>
+</div>
+<script src="../../../../_static/js/vendor/bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    /* Add a [>>>] button on the top-right corner of code samples to hide
+     * the >>> and ... prompts and the output and thus make the code
+     * copyable. */
+    var div = $('.highlight-python .highlight,' +
+                '.highlight-python3 .highlight,' +
+                '.highlight-pycon .highlight,' +
+		'.highlight-default .highlight')
+    var pre = div.find('pre');
+
+    // get the styles from the current theme
+    pre.parent().parent().css('position', 'relative');
+    var hide_text = 'Hide prompts and outputs';
+    var show_text = 'Show prompts and outputs';
+
+    // create and add the button to all the code blocks that contain >>>
+    div.each(function(index) {
+        var jthis = $(this);
+        if (jthis.find('.gp').length > 0) {
+            var button = $('<span class="copybutton">&gt;&gt;&gt;</span>');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+            jthis.prepend(button);
+        }
+        // tracebacks (.gt) contain bare text elements that need to be
+        // wrapped in a span to work with .nextUntil() (see later)
+        jthis.find('pre:has(.gt)').contents().filter(function() {
+            return ((this.nodeType == 3) && (this.data.trim().length > 0));
+        }).wrap('<span>');
+    });
+
+    // define the behavior of the button when it's clicked
+    $('.copybutton').click(function(e){
+        e.preventDefault();
+        var button = $(this);
+        if (button.data('hidden') === 'false') {
+            // hide the code output
+            button.parent().find('.go, .gp, .gt').hide();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'hidden');
+            button.css('text-decoration', 'line-through');
+            button.attr('title', show_text);
+            button.data('hidden', 'true');
+        } else {
+            // show the code output
+            button.parent().find('.go, .gp, .gt').show();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'visible');
+            button.css('text-decoration', 'none');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+        }
+    });
+
+	/*** Add permalink buttons next to glossary terms ***/
+	$('dl.glossary > dt[id]').append(function() {
+		return ('<a class="headerlink" href="#' +
+			    this.getAttribute('id') +
+			    '" title="Permalink to this term">¶</a>');
+	});
+});
+
+</script>
+    
+</body>
+</html>

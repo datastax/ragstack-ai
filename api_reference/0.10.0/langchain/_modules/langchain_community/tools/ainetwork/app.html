@@ -1,0 +1,281 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>langchain_community.tools.ainetwork.app &mdash; 🦜🔗 LangChain 0.1.12</title>
+  
+  <link rel="canonical" href="https://api.python.langchain.com/en/latest/_modules/langchain_community/tools/ainetwork/app.html" />
+
+  
+
+  <link rel="stylesheet" href="../../../../_static/css/vendor/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/autodoc_pydantic.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/sphinx-dropdown.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/panels-bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/css/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+<script id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+<script src="../../../../_static/jquery.js"></script> 
+</head>
+<body>
+
+
+<nav id="navbar" class="sk-docs-navbar navbar navbar-expand-md navbar-light bg-light py-0">
+  <div class="container-fluid sk-docs-container px-0">
+    <button
+      id="sk-navbar-toggler"
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="sk-navbar-collapse collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../../langchain_api_reference.html">LangChain</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../../core_api_reference.html">Core</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../../community_api_reference.html">Community</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../../experimental_api_reference.html">Experimental</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../../text_splitters_api_reference.html">Text splitters</a>
+        </li>
+        <li class="nav-item dropdown nav-more-item-dropdown">
+          <a class="sk-nav-link nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Partner libs</a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+          </div>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" target="_blank" rel="noopener noreferrer" href="https://python.langchain.com/">Docs</a>
+        </li>
+      </ul>
+      <div id="searchbox" role="search">
+          <div class="searchformwrapper">
+          <form class="search" action="../../../../search.html" method="get">
+            <input class="sk-search-text-input" type="text" name="q" aria-labelledby="searchlabel" />
+            <input class="sk-search-text-btn" type="submit" value="Go" />
+          </form>
+          </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="d-flex" id="sk-doc-wrapper">
+    <input type="checkbox" name="sk-toggle-checkbox" id="sk-toggle-checkbox">
+    <label id="sk-sidemenu-toggle" class="sk-btn-toggle-toc btn sk-btn-primary" for="sk-toggle-checkbox">Toggle Menu</label>
+    <div id="sk-sidebar-wrapper" class="border-right">
+      <div class="sk-sidebar-toc-wrapper">
+        <div class="btn-group w-100 mb-2" role="group" aria-label="rellinks">
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Prev</a><a href="../../../index.html" role="button" class="btn sk-btn-rellink py-1" sk-rellink-tooltip="Module code">Up</a>
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Next</a>
+        </div>
+            <div class="sk-sidebar-toc">
+              
+            </div>
+      </div>
+    </div>
+    <div id="sk-page-content-wrapper">
+      <div class="sk-page-content container-fluid body px-md-3" role="main">
+        
+  <h1>Source code for langchain_community.tools.ainetwork.app</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">builtins</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">from</span> <span class="nn">langchain_core.callbacks</span> <span class="kn">import</span> <span class="n">AsyncCallbackManagerForToolRun</span>
+<span class="kn">from</span> <span class="nn">langchain_core.pydantic_v1</span> <span class="kn">import</span> <span class="n">BaseModel</span><span class="p">,</span> <span class="n">Field</span>
+
+<span class="kn">from</span> <span class="nn">langchain_community.tools.ainetwork.base</span> <span class="kn">import</span> <span class="n">AINBaseTool</span>
+
+
+<div class="viewcode-block" id="AppOperationType"><a class="viewcode-back" href="../../../../tools/langchain_community.tools.ainetwork.app.AppOperationType.html#langchain_community.tools.ainetwork.app.AppOperationType">[docs]</a><span class="k">class</span> <span class="nc">AppOperationType</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Type of app operation as enumerator.&quot;&quot;&quot;</span>
+
+    <span class="n">SET_ADMIN</span> <span class="o">=</span> <span class="s2">&quot;SET_ADMIN&quot;</span>
+    <span class="n">GET_CONFIG</span> <span class="o">=</span> <span class="s2">&quot;GET_CONFIG&quot;</span></div>
+
+
+<div class="viewcode-block" id="AppSchema"><a class="viewcode-back" href="../../../../tools/langchain_community.tools.ainetwork.app.AppSchema.html#langchain_community.tools.ainetwork.app.AppSchema">[docs]</a><span class="k">class</span> <span class="nc">AppSchema</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Schema for app operations.&quot;&quot;&quot;</span>
+
+    <span class="nb">type</span><span class="p">:</span> <span class="n">AppOperationType</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+    <span class="n">appName</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Name of the application on the blockchain&quot;</span><span class="p">)</span>
+    <span class="n">address</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="kc">None</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;A single address or a list of addresses. Default: current session&#39;s &quot;</span>
+            <span class="s2">&quot;address&quot;</span>
+        <span class="p">),</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AINAppOps"><a class="viewcode-back" href="../../../../tools/langchain_community.tools.ainetwork.app.AINAppOps.html#langchain_community.tools.ainetwork.app.AINAppOps">[docs]</a><span class="k">class</span> <span class="nc">AINAppOps</span><span class="p">(</span><span class="n">AINBaseTool</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Tool for app operations.&quot;&quot;&quot;</span>
+
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;AINappOps&quot;</span>
+    <span class="n">description</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">Create an app in the AINetwork Blockchain database by creating the /apps/&lt;appName&gt; path.</span>
+<span class="s2">An address set as `admin` can grant `owner` rights to other addresses (refer to `AINownerOps` for more details).</span>
+<span class="s2">Also, `admin` is initialized to have all `owner` permissions and `rule` allowed for that path.</span>
+
+<span class="s2">## appName Rule</span>
+<span class="s2">- [a-z_0-9]+</span>
+
+<span class="s2">## address Rules</span>
+<span class="s2">- 0x[0-9a-fA-F]</span><span class="si">{40}</span>
+<span class="s2">- Defaults to the current session&#39;s address</span>
+<span class="s2">- Multiple addresses can be specified if needed</span>
+
+<span class="s2">## SET_ADMIN Example 1</span>
+<span class="s2">- type: SET_ADMIN</span>
+<span class="s2">- appName: ain_project</span>
+
+<span class="s2">### Result:</span>
+<span class="s2">1. Path /apps/ain_project created.</span>
+<span class="s2">2. Current session&#39;s address registered as admin.</span>
+
+<span class="s2">## SET_ADMIN Example 2</span>
+<span class="s2">- type: SET_ADMIN</span>
+<span class="s2">- appName: test_project</span>
+<span class="s2">- address: [&lt;address1&gt;, &lt;address2&gt;]</span>
+
+<span class="s2">### Result:</span>
+<span class="s2">1. Path /apps/test_project created.</span>
+<span class="s2">2. &lt;address1&gt; and &lt;address2&gt; registered as admin.</span>
+
+<span class="s2">&quot;&quot;&quot;</span>  <span class="c1"># noqa: E501</span>
+    <span class="n">args_schema</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">]</span> <span class="o">=</span> <span class="n">AppSchema</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_arun</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="nb">type</span><span class="p">:</span> <span class="n">AppOperationType</span><span class="p">,</span>
+        <span class="n">appName</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">address</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">run_manager</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AsyncCallbackManagerForToolRun</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">ain.types</span> <span class="kn">import</span> <span class="n">ValueOnlyTransactionInput</span>
+        <span class="kn">from</span> <span class="nn">ain.utils</span> <span class="kn">import</span> <span class="n">getTimestamp</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">type</span> <span class="ow">is</span> <span class="n">AppOperationType</span><span class="o">.</span><span class="n">SET_ADMIN</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">address</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">address</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">wallet</span><span class="o">.</span><span class="n">defaultAccount</span><span class="o">.</span><span class="n">address</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">address</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                    <span class="n">address</span> <span class="o">=</span> <span class="p">[</span><span class="n">address</span><span class="p">]</span>
+
+                <span class="n">res</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">ref</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;/manage_app/</span><span class="si">{</span><span class="n">appName</span><span class="si">}</span><span class="s2">/create/</span><span class="si">{</span><span class="n">getTimestamp</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span>
+                    <span class="n">transactionInput</span><span class="o">=</span><span class="n">ValueOnlyTransactionInput</span><span class="p">(</span>
+                        <span class="n">value</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;admin&quot;</span><span class="p">:</span> <span class="p">{</span><span class="n">address</span><span class="p">:</span> <span class="kc">True</span> <span class="k">for</span> <span class="n">address</span> <span class="ow">in</span> <span class="n">address</span><span class="p">}}</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">type</span> <span class="ow">is</span> <span class="n">AppOperationType</span><span class="o">.</span><span class="n">GET_CONFIG</span><span class="p">:</span>
+                <span class="n">res</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">ref</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;/manage_app/</span><span class="si">{</span><span class="n">appName</span><span class="si">}</span><span class="s2">/config&quot;</span>
+                <span class="p">)</span><span class="o">.</span><span class="n">getValue</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported &#39;type&#39;: </span><span class="si">{</span><span class="nb">type</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="n">ensure_ascii</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">builtins</span><span class="o">.</span><span class="n">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span></div>
+</pre></div>
+
+      </div>
+    <div class="container">
+      <footer class="sk-content-footer">
+            &copy; 2023, LangChain, Inc..
+          Last updated on Mar 15, 2024.
+      </footer>
+    </div>
+  </div>
+</div>
+<script src="../../../../_static/js/vendor/bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    /* Add a [>>>] button on the top-right corner of code samples to hide
+     * the >>> and ... prompts and the output and thus make the code
+     * copyable. */
+    var div = $('.highlight-python .highlight,' +
+                '.highlight-python3 .highlight,' +
+                '.highlight-pycon .highlight,' +
+		'.highlight-default .highlight')
+    var pre = div.find('pre');
+
+    // get the styles from the current theme
+    pre.parent().parent().css('position', 'relative');
+    var hide_text = 'Hide prompts and outputs';
+    var show_text = 'Show prompts and outputs';
+
+    // create and add the button to all the code blocks that contain >>>
+    div.each(function(index) {
+        var jthis = $(this);
+        if (jthis.find('.gp').length > 0) {
+            var button = $('<span class="copybutton">&gt;&gt;&gt;</span>');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+            jthis.prepend(button);
+        }
+        // tracebacks (.gt) contain bare text elements that need to be
+        // wrapped in a span to work with .nextUntil() (see later)
+        jthis.find('pre:has(.gt)').contents().filter(function() {
+            return ((this.nodeType == 3) && (this.data.trim().length > 0));
+        }).wrap('<span>');
+    });
+
+    // define the behavior of the button when it's clicked
+    $('.copybutton').click(function(e){
+        e.preventDefault();
+        var button = $(this);
+        if (button.data('hidden') === 'false') {
+            // hide the code output
+            button.parent().find('.go, .gp, .gt').hide();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'hidden');
+            button.css('text-decoration', 'line-through');
+            button.attr('title', show_text);
+            button.data('hidden', 'true');
+        } else {
+            // show the code output
+            button.parent().find('.go, .gp, .gt').show();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'visible');
+            button.css('text-decoration', 'none');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+        }
+    });
+
+	/*** Add permalink buttons next to glossary terms ***/
+	$('dl.glossary > dt[id]').append(function() {
+		return ('<a class="headerlink" href="#' +
+			    this.getAttribute('id') +
+			    '" title="Permalink to this term">¶</a>');
+	});
+});
+
+</script>
+    
+</body>
+</html>

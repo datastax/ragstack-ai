@@ -1,0 +1,396 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>langchain_community.chat_models.friendli &mdash; 🦜🔗 LangChain 0.1.12</title>
+  
+  <link rel="canonical" href="https://api.python.langchain.com/en/latest/_modules/langchain_community/chat_models/friendli.html" />
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/vendor/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/autodoc_pydantic.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/sphinx-dropdown.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/panels-bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+<script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+<script src="../../../_static/jquery.js"></script> 
+</head>
+<body>
+
+
+<nav id="navbar" class="sk-docs-navbar navbar navbar-expand-md navbar-light bg-light py-0">
+  <div class="container-fluid sk-docs-container px-0">
+    <button
+      id="sk-navbar-toggler"
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="sk-navbar-collapse collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../langchain_api_reference.html">LangChain</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../core_api_reference.html">Core</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../community_api_reference.html">Community</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../experimental_api_reference.html">Experimental</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../text_splitters_api_reference.html">Text splitters</a>
+        </li>
+        <li class="nav-item dropdown nav-more-item-dropdown">
+          <a class="sk-nav-link nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Partner libs</a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+          </div>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" target="_blank" rel="noopener noreferrer" href="https://python.langchain.com/">Docs</a>
+        </li>
+      </ul>
+      <div id="searchbox" role="search">
+          <div class="searchformwrapper">
+          <form class="search" action="../../../search.html" method="get">
+            <input class="sk-search-text-input" type="text" name="q" aria-labelledby="searchlabel" />
+            <input class="sk-search-text-btn" type="submit" value="Go" />
+          </form>
+          </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="d-flex" id="sk-doc-wrapper">
+    <input type="checkbox" name="sk-toggle-checkbox" id="sk-toggle-checkbox">
+    <label id="sk-sidemenu-toggle" class="sk-btn-toggle-toc btn sk-btn-primary" for="sk-toggle-checkbox">Toggle Menu</label>
+    <div id="sk-sidebar-wrapper" class="border-right">
+      <div class="sk-sidebar-toc-wrapper">
+        <div class="btn-group w-100 mb-2" role="group" aria-label="rellinks">
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Prev</a><a href="../../index.html" role="button" class="btn sk-btn-rellink py-1" sk-rellink-tooltip="Module code">Up</a>
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Next</a>
+        </div>
+            <div class="sk-sidebar-toc">
+              
+            </div>
+      </div>
+    </div>
+    <div id="sk-page-content-wrapper">
+      <div class="sk-page-content container-fluid body px-md-3" role="main">
+        
+  <h1>Source code for langchain_community.chat_models.friendli</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">AsyncIterator</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="kn">from</span> <span class="nn">langchain_core.callbacks</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AsyncCallbackManagerForLLMRun</span><span class="p">,</span>
+    <span class="n">CallbackManagerForLLMRun</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">langchain_core.language_models.chat_models</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">BaseChatModel</span><span class="p">,</span>
+    <span class="n">agenerate_from_stream</span><span class="p">,</span>
+    <span class="n">generate_from_stream</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">langchain_core.messages</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AIMessage</span><span class="p">,</span>
+    <span class="n">AIMessageChunk</span><span class="p">,</span>
+    <span class="n">BaseMessage</span><span class="p">,</span>
+    <span class="n">ChatMessage</span><span class="p">,</span>
+    <span class="n">HumanMessage</span><span class="p">,</span>
+    <span class="n">SystemMessage</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">langchain_core.outputs</span> <span class="kn">import</span> <span class="n">ChatGeneration</span><span class="p">,</span> <span class="n">ChatGenerationChunk</span><span class="p">,</span> <span class="n">ChatResult</span>
+
+<span class="kn">from</span> <span class="nn">langchain_community.llms.friendli</span> <span class="kn">import</span> <span class="n">BaseFriendli</span>
+
+
+<div class="viewcode-block" id="get_role"><a class="viewcode-back" href="../../../chat_models/langchain_community.chat_models.friendli.get_role.html#langchain_community.chat_models.friendli.get_role">[docs]</a><span class="k">def</span> <span class="nf">get_role</span><span class="p">(</span><span class="n">message</span><span class="p">:</span> <span class="n">BaseMessage</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get role of the message.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        message (BaseMessage): The message object.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: Raised when the message is of an unknown type.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: The role of the message.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">ChatMessage</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">HumanMessage</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;user&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">AIMessage</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;assistant&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">SystemMessage</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;system&quot;</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Got unknown type </span><span class="si">{</span><span class="n">message</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_chat_request"><a class="viewcode-back" href="../../../chat_models/langchain_community.chat_models.friendli.get_chat_request.html#langchain_community.chat_models.friendli.get_chat_request">[docs]</a><span class="k">def</span> <span class="nf">get_chat_request</span><span class="p">(</span><span class="n">messages</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">BaseMessage</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get a request of the Friendli chat API.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        messages (List[BaseMessage]): Messages comprising the conversation so far.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Dict[str, Any]: The request for the Friendli chat API.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">&quot;messages&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span><span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="n">get_role</span><span class="p">(</span><span class="n">message</span><span class="p">),</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">message</span><span class="o">.</span><span class="n">content</span><span class="p">}</span>
+            <span class="k">for</span> <span class="n">message</span> <span class="ow">in</span> <span class="n">messages</span>
+        <span class="p">]</span>
+    <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="ChatFriendli"><a class="viewcode-back" href="../../../chat_models/langchain_community.chat_models.friendli.ChatFriendli.html#langchain_community.chat_models.friendli.ChatFriendli">[docs]</a><span class="k">class</span> <span class="nc">ChatFriendli</span><span class="p">(</span><span class="n">BaseChatModel</span><span class="p">,</span> <span class="n">BaseFriendli</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Friendli LLM for chat.</span>
+
+<span class="sd">    ``friendli-client`` package should be installed with `pip install friendli-client`.</span>
+<span class="sd">    You must set ``FRIENDLI_TOKEN`` environment variable or provide the value of your</span>
+<span class="sd">    personal access token for the ``friendli_token`` argument.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            from langchain_community.chat_models import FriendliChat</span>
+
+<span class="sd">            chat = Friendli(</span>
+<span class="sd">                model=&quot;llama-2-13b-chat&quot;, friendli_token=&quot;YOUR FRIENDLI TOKEN&quot;</span>
+<span class="sd">            )</span>
+<span class="sd">            chat.invoke(&quot;What is generative AI?&quot;)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">model</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;llama-2-13b-chat&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">lc_secrets</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;friendli_token&quot;</span><span class="p">:</span> <span class="s2">&quot;FRIENDLI_TOKEN&quot;</span><span class="p">}</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_default_params</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the default parameters for calling Friendli completions API.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;frequency_penalty&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">frequency_penalty</span><span class="p">,</span>
+            <span class="s2">&quot;presence_penalty&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">presence_penalty</span><span class="p">,</span>
+            <span class="s2">&quot;max_tokens&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_tokens</span><span class="p">,</span>
+            <span class="s2">&quot;stop&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">,</span>
+            <span class="s2">&quot;temperature&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">temperature</span><span class="p">,</span>
+            <span class="s2">&quot;top_p&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">top_p</span><span class="p">,</span>
+        <span class="p">}</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_identifying_params</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the identifying parameters.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_default_params</span><span class="p">}</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_llm_type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;friendli-chat&quot;</span>
+
+    <span class="k">def</span> <span class="nf">_get_invocation_params</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">stop</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the parameters used to invoke the model.&quot;&quot;&quot;</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_default_params</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">stop</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;`stop` found in both the input and default params.&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">params</span><span class="p">[</span><span class="s2">&quot;stop&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">params</span><span class="p">[</span><span class="s2">&quot;stop&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">stop</span>
+        <span class="k">return</span> <span class="p">{</span><span class="o">**</span><span class="n">params</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">_stream</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">messages</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">BaseMessage</span><span class="p">],</span>
+        <span class="n">stop</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">run_manager</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">CallbackManagerForLLMRun</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">ChatGenerationChunk</span><span class="p">]:</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_invocation_params</span><span class="p">(</span><span class="n">stop</span><span class="o">=</span><span class="n">stop</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">stream</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">chat</span><span class="o">.</span><span class="n">completions</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+            <span class="o">**</span><span class="n">get_chat_request</span><span class="p">(</span><span class="n">messages</span><span class="p">),</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">stream</span><span class="p">:</span>
+            <span class="n">delta</span> <span class="o">=</span> <span class="n">chunk</span><span class="o">.</span><span class="n">choices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">delta</span><span class="o">.</span><span class="n">content</span>
+            <span class="k">if</span> <span class="n">delta</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">ChatGenerationChunk</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="n">AIMessageChunk</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="n">delta</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">run_manager</span><span class="p">:</span>
+                    <span class="n">run_manager</span><span class="o">.</span><span class="n">on_llm_new_token</span><span class="p">(</span><span class="n">delta</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_astream</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">messages</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">BaseMessage</span><span class="p">],</span>
+        <span class="n">stop</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">run_manager</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AsyncCallbackManagerForLLMRun</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">ChatGenerationChunk</span><span class="p">]:</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_invocation_params</span><span class="p">(</span><span class="n">stop</span><span class="o">=</span><span class="n">stop</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">stream</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">async_client</span><span class="o">.</span><span class="n">chat</span><span class="o">.</span><span class="n">completions</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+            <span class="o">**</span><span class="n">get_chat_request</span><span class="p">(</span><span class="n">messages</span><span class="p">),</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span>
+        <span class="p">)</span>
+        <span class="k">async</span> <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">stream</span><span class="p">:</span>
+            <span class="n">delta</span> <span class="o">=</span> <span class="n">chunk</span><span class="o">.</span><span class="n">choices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">delta</span><span class="o">.</span><span class="n">content</span>
+            <span class="k">if</span> <span class="n">delta</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">ChatGenerationChunk</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="n">AIMessageChunk</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="n">delta</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">run_manager</span><span class="p">:</span>
+                    <span class="k">await</span> <span class="n">run_manager</span><span class="o">.</span><span class="n">on_llm_new_token</span><span class="p">(</span><span class="n">delta</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_generate</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">messages</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">BaseMessage</span><span class="p">],</span>
+        <span class="n">stop</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">run_manager</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">CallbackManagerForLLMRun</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ChatResult</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">streaming</span><span class="p">:</span>
+            <span class="n">stream_iter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stream</span><span class="p">(</span>
+                <span class="n">messages</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="n">stop</span><span class="p">,</span> <span class="n">run_manager</span><span class="o">=</span><span class="n">run_manager</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="n">generate_from_stream</span><span class="p">(</span><span class="n">stream_iter</span><span class="p">)</span>
+
+        <span class="n">params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_invocation_params</span><span class="p">(</span><span class="n">stop</span><span class="o">=</span><span class="n">stop</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">chat</span><span class="o">.</span><span class="n">completions</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+            <span class="n">messages</span><span class="o">=</span><span class="p">[</span>
+                <span class="p">{</span>
+                    <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="n">get_role</span><span class="p">(</span><span class="n">message</span><span class="p">),</span>
+                    <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">message</span><span class="o">.</span><span class="n">content</span><span class="p">,</span>
+                <span class="p">}</span>
+                <span class="k">for</span> <span class="n">message</span> <span class="ow">in</span> <span class="n">messages</span>
+            <span class="p">],</span>
+            <span class="n">stream</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">params</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">message</span> <span class="o">=</span> <span class="n">AIMessage</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="n">response</span><span class="o">.</span><span class="n">choices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ChatResult</span><span class="p">(</span><span class="n">generations</span><span class="o">=</span><span class="p">[</span><span class="n">ChatGeneration</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="n">message</span><span class="p">)])</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_agenerate</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">messages</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">BaseMessage</span><span class="p">],</span>
+        <span class="n">stop</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">run_manager</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AsyncCallbackManagerForLLMRun</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ChatResult</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">streaming</span><span class="p">:</span>
+            <span class="n">stream_iter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_astream</span><span class="p">(</span>
+                <span class="n">messages</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="n">stop</span><span class="p">,</span> <span class="n">run_manager</span><span class="o">=</span><span class="n">run_manager</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="k">await</span> <span class="n">agenerate_from_stream</span><span class="p">(</span><span class="n">stream_iter</span><span class="p">)</span>
+
+        <span class="n">params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_invocation_params</span><span class="p">(</span><span class="n">stop</span><span class="o">=</span><span class="n">stop</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">async_client</span><span class="o">.</span><span class="n">chat</span><span class="o">.</span><span class="n">completions</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+            <span class="n">messages</span><span class="o">=</span><span class="p">[</span>
+                <span class="p">{</span>
+                    <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="n">get_role</span><span class="p">(</span><span class="n">message</span><span class="p">),</span>
+                    <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">message</span><span class="o">.</span><span class="n">content</span><span class="p">,</span>
+                <span class="p">}</span>
+                <span class="k">for</span> <span class="n">message</span> <span class="ow">in</span> <span class="n">messages</span>
+            <span class="p">],</span>
+            <span class="n">stream</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">params</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">message</span> <span class="o">=</span> <span class="n">AIMessage</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="n">response</span><span class="o">.</span><span class="n">choices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ChatResult</span><span class="p">(</span><span class="n">generations</span><span class="o">=</span><span class="p">[</span><span class="n">ChatGeneration</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="n">message</span><span class="p">)])</span></div>
+</pre></div>
+
+      </div>
+    <div class="container">
+      <footer class="sk-content-footer">
+            &copy; 2023, LangChain, Inc..
+          Last updated on Mar 15, 2024.
+      </footer>
+    </div>
+  </div>
+</div>
+<script src="../../../_static/js/vendor/bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    /* Add a [>>>] button on the top-right corner of code samples to hide
+     * the >>> and ... prompts and the output and thus make the code
+     * copyable. */
+    var div = $('.highlight-python .highlight,' +
+                '.highlight-python3 .highlight,' +
+                '.highlight-pycon .highlight,' +
+		'.highlight-default .highlight')
+    var pre = div.find('pre');
+
+    // get the styles from the current theme
+    pre.parent().parent().css('position', 'relative');
+    var hide_text = 'Hide prompts and outputs';
+    var show_text = 'Show prompts and outputs';
+
+    // create and add the button to all the code blocks that contain >>>
+    div.each(function(index) {
+        var jthis = $(this);
+        if (jthis.find('.gp').length > 0) {
+            var button = $('<span class="copybutton">&gt;&gt;&gt;</span>');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+            jthis.prepend(button);
+        }
+        // tracebacks (.gt) contain bare text elements that need to be
+        // wrapped in a span to work with .nextUntil() (see later)
+        jthis.find('pre:has(.gt)').contents().filter(function() {
+            return ((this.nodeType == 3) && (this.data.trim().length > 0));
+        }).wrap('<span>');
+    });
+
+    // define the behavior of the button when it's clicked
+    $('.copybutton').click(function(e){
+        e.preventDefault();
+        var button = $(this);
+        if (button.data('hidden') === 'false') {
+            // hide the code output
+            button.parent().find('.go, .gp, .gt').hide();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'hidden');
+            button.css('text-decoration', 'line-through');
+            button.attr('title', show_text);
+            button.data('hidden', 'true');
+        } else {
+            // show the code output
+            button.parent().find('.go, .gp, .gt').show();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'visible');
+            button.css('text-decoration', 'none');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+        }
+    });
+
+	/*** Add permalink buttons next to glossary terms ***/
+	$('dl.glossary > dt[id]').append(function() {
+		return ('<a class="headerlink" href="#' +
+			    this.getAttribute('id') +
+			    '" title="Permalink to this term">¶</a>');
+	});
+});
+
+</script>
+    
+</body>
+</html>

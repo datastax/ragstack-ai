@@ -1,0 +1,702 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>langchain_core.runnables.utils &mdash; 🦜🔗 LangChain 0.1.12</title>
+  
+  <link rel="canonical" href="https://api.python.langchain.com/en/latest/_modules/langchain_core/runnables/utils.html" />
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/vendor/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/autodoc_pydantic.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/sphinx-dropdown.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/panels-bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+<script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+<script src="../../../_static/jquery.js"></script> 
+</head>
+<body>
+
+
+<nav id="navbar" class="sk-docs-navbar navbar navbar-expand-md navbar-light bg-light py-0">
+  <div class="container-fluid sk-docs-container px-0">
+    <button
+      id="sk-navbar-toggler"
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="sk-navbar-collapse collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../langchain_api_reference.html">LangChain</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../core_api_reference.html">Core</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../community_api_reference.html">Community</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../experimental_api_reference.html">Experimental</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../text_splitters_api_reference.html">Text splitters</a>
+        </li>
+        <li class="nav-item dropdown nav-more-item-dropdown">
+          <a class="sk-nav-link nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Partner libs</a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+          </div>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" target="_blank" rel="noopener noreferrer" href="https://python.langchain.com/">Docs</a>
+        </li>
+      </ul>
+      <div id="searchbox" role="search">
+          <div class="searchformwrapper">
+          <form class="search" action="../../../search.html" method="get">
+            <input class="sk-search-text-input" type="text" name="q" aria-labelledby="searchlabel" />
+            <input class="sk-search-text-btn" type="submit" value="Go" />
+          </form>
+          </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="d-flex" id="sk-doc-wrapper">
+    <input type="checkbox" name="sk-toggle-checkbox" id="sk-toggle-checkbox">
+    <label id="sk-sidemenu-toggle" class="sk-btn-toggle-toc btn sk-btn-primary" for="sk-toggle-checkbox">Toggle Menu</label>
+    <div id="sk-sidebar-wrapper" class="border-right">
+      <div class="sk-sidebar-toc-wrapper">
+        <div class="btn-group w-100 mb-2" role="group" aria-label="rellinks">
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Prev</a><a href="../../index.html" role="button" class="btn sk-btn-rellink py-1" sk-rellink-tooltip="Module code">Up</a>
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Next</a>
+        </div>
+            <div class="sk-sidebar-toc">
+              
+            </div>
+      </div>
+    </div>
+    <div id="sk-page-content-wrapper">
+      <div class="sk-page-content container-fluid body px-md-3" role="main">
+        
+  <h1>Source code for langchain_core.runnables.utils</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Utility code for runnables.&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span> <span class="nn">ast</span>
+<span class="kn">import</span> <span class="nn">asyncio</span>
+<span class="kn">import</span> <span class="nn">inspect</span>
+<span class="kn">import</span> <span class="nn">textwrap</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">lru_cache</span>
+<span class="kn">from</span> <span class="nn">inspect</span> <span class="kn">import</span> <span class="n">signature</span>
+<span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">groupby</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Any</span><span class="p">,</span>
+    <span class="n">AsyncIterable</span><span class="p">,</span>
+    <span class="n">Callable</span><span class="p">,</span>
+    <span class="n">Coroutine</span><span class="p">,</span>
+    <span class="n">Dict</span><span class="p">,</span>
+    <span class="n">Iterable</span><span class="p">,</span>
+    <span class="n">List</span><span class="p">,</span>
+    <span class="n">Mapping</span><span class="p">,</span>
+    <span class="n">NamedTuple</span><span class="p">,</span>
+    <span class="n">Optional</span><span class="p">,</span>
+    <span class="n">Protocol</span><span class="p">,</span>
+    <span class="n">Sequence</span><span class="p">,</span>
+    <span class="n">Set</span><span class="p">,</span>
+    <span class="n">Type</span><span class="p">,</span>
+    <span class="n">TypeVar</span><span class="p">,</span>
+    <span class="n">Union</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">langchain_core.pydantic_v1</span> <span class="kn">import</span> <span class="n">BaseConfig</span><span class="p">,</span> <span class="n">BaseModel</span>
+<span class="kn">from</span> <span class="nn">langchain_core.pydantic_v1</span> <span class="kn">import</span> <span class="n">create_model</span> <span class="k">as</span> <span class="n">_create_model_base</span>
+<span class="kn">from</span> <span class="nn">langchain_core.runnables.schema</span> <span class="kn">import</span> <span class="n">StreamEvent</span>
+
+<span class="n">Input</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;Input&quot;</span><span class="p">,</span> <span class="n">contravariant</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="c1"># Output type should implement __concat__, as eg str, list, dict do</span>
+<span class="n">Output</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;Output&quot;</span><span class="p">,</span> <span class="n">covariant</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="gated_coro"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.utils.gated_coro.html#langchain_core.runnables.utils.gated_coro">[docs]</a><span class="k">async</span> <span class="k">def</span> <span class="nf">gated_coro</span><span class="p">(</span><span class="n">semaphore</span><span class="p">:</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Semaphore</span><span class="p">,</span> <span class="n">coro</span><span class="p">:</span> <span class="n">Coroutine</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run a coroutine with a semaphore.</span>
+<span class="sd">    Args:</span>
+<span class="sd">        semaphore: The semaphore to use.</span>
+<span class="sd">        coro: The coroutine to run.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The result of the coroutine.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">async</span> <span class="k">with</span> <span class="n">semaphore</span><span class="p">:</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="n">coro</span></div>
+
+
+<div class="viewcode-block" id="gather_with_concurrency"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.utils.gather_with_concurrency.html#langchain_core.runnables.utils.gather_with_concurrency">[docs]</a><span class="k">async</span> <span class="k">def</span> <span class="nf">gather_with_concurrency</span><span class="p">(</span><span class="n">n</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span> <span class="o">*</span><span class="n">coros</span><span class="p">:</span> <span class="n">Coroutine</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Gather coroutines with a limit on the number of concurrent coroutines.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        n: The number of coroutines to run concurrently.</span>
+<span class="sd">        coros: The coroutines to run.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The results of the coroutines.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="n">coros</span><span class="p">)</span>
+
+    <span class="n">semaphore</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Semaphore</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="n">gated_coro</span><span class="p">(</span><span class="n">semaphore</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">coros</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="accepts_run_manager"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.utils.accepts_run_manager.html#langchain_core.runnables.utils.accepts_run_manager">[docs]</a><span class="k">def</span> <span class="nf">accepts_run_manager</span><span class="p">(</span><span class="nb">callable</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check if a callable accepts a run_manager argument.&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">signature</span><span class="p">(</span><span class="nb">callable</span><span class="p">)</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;run_manager&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="accepts_config"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.utils.accepts_config.html#langchain_core.runnables.utils.accepts_config">[docs]</a><span class="k">def</span> <span class="nf">accepts_config</span><span class="p">(</span><span class="nb">callable</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check if a callable accepts a config argument.&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">signature</span><span class="p">(</span><span class="nb">callable</span><span class="p">)</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;config&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="accepts_context"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.utils.accepts_context.html#langchain_core.runnables.utils.accepts_context">[docs]</a><span class="k">def</span> <span class="nf">accepts_context</span><span class="p">(</span><span class="nb">callable</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check if a callable accepts a context argument.&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">signature</span><span class="p">(</span><span class="nb">callable</span><span class="p">)</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;context&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="IsLocalDict"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.utils.IsLocalDict.html#langchain_core.runnables.utils.IsLocalDict">[docs]</a><span class="k">class</span> <span class="nc">IsLocalDict</span><span class="p">(</span><span class="n">ast</span><span class="o">.</span><span class="n">NodeVisitor</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check if a name is a local dict.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="IsLocalDict.__init__"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.utils.IsLocalDict.html#langchain_core.runnables.utils.IsLocalDict.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">keys</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">keys</span> <span class="o">=</span> <span class="n">keys</span></div>
+
+<div class="viewcode-block" id="IsLocalDict.visit_Subscript"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.utils.IsLocalDict.html#langchain_core.runnables.utils.IsLocalDict.visit_Subscript">[docs]</a>    <span class="k">def</span> <span class="nf">visit_Subscript</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">ast</span><span class="o">.</span><span class="n">Subscript</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">ctx</span><span class="p">,</span> <span class="n">ast</span><span class="o">.</span><span class="n">Load</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">ast</span><span class="o">.</span><span class="n">Name</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="n">node</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+            <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">slice</span><span class="p">,</span> <span class="n">ast</span><span class="o">.</span><span class="n">Constant</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">slice</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+        <span class="p">):</span>
+            <span class="c1"># we&#39;ve found a subscript access on the name we&#39;re looking for</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">keys</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">slice</span><span class="o">.</span><span class="n">value</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="IsLocalDict.visit_Call"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.utils.IsLocalDict.html#langchain_core.runnables.utils.IsLocalDict.visit_Call">[docs]</a>    <span class="k">def</span> <span class="nf">visit_Call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">ast</span><span class="o">.</span><span class="n">Call</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">func</span><span class="p">,</span> <span class="n">ast</span><span class="o">.</span><span class="n">Attribute</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">func</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">ast</span><span class="o">.</span><span class="n">Name</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="n">node</span><span class="o">.</span><span class="n">func</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+            <span class="ow">and</span> <span class="n">node</span><span class="o">.</span><span class="n">func</span><span class="o">.</span><span class="n">attr</span> <span class="o">==</span> <span class="s2">&quot;get&quot;</span>
+            <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">args</span><span class="p">)</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">ast</span><span class="o">.</span><span class="n">Constant</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+        <span class="p">):</span>
+            <span class="c1"># we&#39;ve found a .get() call on the name we&#39;re looking for</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">keys</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="IsFunctionArgDict"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.utils.IsFunctionArgDict.html#langchain_core.runnables.utils.IsFunctionArgDict">[docs]</a><span class="k">class</span> <span class="nc">IsFunctionArgDict</span><span class="p">(</span><span class="n">ast</span><span class="o">.</span><span class="n">NodeVisitor</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check if the first argument of a function is a dict.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="IsFunctionArgDict.__init__"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.utils.IsFunctionArgDict.html#langchain_core.runnables.utils.IsFunctionArgDict.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">keys</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="IsFunctionArgDict.visit_Lambda"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.utils.IsFunctionArgDict.html#langchain_core.runnables.utils.IsFunctionArgDict.visit_Lambda">[docs]</a>    <span class="k">def</span> <span class="nf">visit_Lambda</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">ast</span><span class="o">.</span><span class="n">Lambda</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">node</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">args</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="n">input_arg_name</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">arg</span>
+        <span class="n">IsLocalDict</span><span class="p">(</span><span class="n">input_arg_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">keys</span><span class="p">)</span><span class="o">.</span><span class="n">visit</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">body</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="IsFunctionArgDict.visit_FunctionDef"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.utils.IsFunctionArgDict.html#langchain_core.runnables.utils.IsFunctionArgDict.visit_FunctionDef">[docs]</a>    <span class="k">def</span> <span class="nf">visit_FunctionDef</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">ast</span><span class="o">.</span><span class="n">FunctionDef</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">node</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">args</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="n">input_arg_name</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">arg</span>
+        <span class="n">IsLocalDict</span><span class="p">(</span><span class="n">input_arg_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">keys</span><span class="p">)</span><span class="o">.</span><span class="n">visit</span><span class="p">(</span><span class="n">node</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="IsFunctionArgDict.visit_AsyncFunctionDef"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.utils.IsFunctionArgDict.html#langchain_core.runnables.utils.IsFunctionArgDict.visit_AsyncFunctionDef">[docs]</a>    <span class="k">def</span> <span class="nf">visit_AsyncFunctionDef</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">ast</span><span class="o">.</span><span class="n">AsyncFunctionDef</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">node</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">args</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="n">input_arg_name</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">arg</span>
+        <span class="n">IsLocalDict</span><span class="p">(</span><span class="n">input_arg_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">keys</span><span class="p">)</span><span class="o">.</span><span class="n">visit</span><span class="p">(</span><span class="n">node</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="NonLocals"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.utils.NonLocals.html#langchain_core.runnables.utils.NonLocals">[docs]</a><span class="k">class</span> <span class="nc">NonLocals</span><span class="p">(</span><span class="n">ast</span><span class="o">.</span><span class="n">NodeVisitor</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get nonlocal variables accessed.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="NonLocals.__init__"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.utils.NonLocals.html#langchain_core.runnables.utils.NonLocals.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loads</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stores</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="NonLocals.visit_Name"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.utils.NonLocals.html#langchain_core.runnables.utils.NonLocals.visit_Name">[docs]</a>    <span class="k">def</span> <span class="nf">visit_Name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">ast</span><span class="o">.</span><span class="n">Name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">ctx</span><span class="p">,</span> <span class="n">ast</span><span class="o">.</span><span class="n">Load</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">loads</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">ctx</span><span class="p">,</span> <span class="n">ast</span><span class="o">.</span><span class="n">Store</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stores</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="NonLocals.visit_Attribute"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.utils.NonLocals.html#langchain_core.runnables.utils.NonLocals.visit_Attribute">[docs]</a>    <span class="k">def</span> <span class="nf">visit_Attribute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">ast</span><span class="o">.</span><span class="n">Attribute</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">ctx</span><span class="p">,</span> <span class="n">ast</span><span class="o">.</span><span class="n">Load</span><span class="p">):</span>
+            <span class="n">parent</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">value</span>
+            <span class="n">attr_expr</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">attr</span>
+            <span class="k">while</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="n">ast</span><span class="o">.</span><span class="n">Attribute</span><span class="p">):</span>
+                <span class="n">attr_expr</span> <span class="o">=</span> <span class="n">parent</span><span class="o">.</span><span class="n">attr</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span> <span class="o">+</span> <span class="n">attr_expr</span>
+                <span class="n">parent</span> <span class="o">=</span> <span class="n">parent</span><span class="o">.</span><span class="n">value</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="n">ast</span><span class="o">.</span><span class="n">Name</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">loads</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">parent</span><span class="o">.</span><span class="n">id</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span> <span class="o">+</span> <span class="n">attr_expr</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">loads</span><span class="o">.</span><span class="n">discard</span><span class="p">(</span><span class="n">parent</span><span class="o">.</span><span class="n">id</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="FunctionNonLocals"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.utils.FunctionNonLocals.html#langchain_core.runnables.utils.FunctionNonLocals">[docs]</a><span class="k">class</span> <span class="nc">FunctionNonLocals</span><span class="p">(</span><span class="n">ast</span><span class="o">.</span><span class="n">NodeVisitor</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the nonlocal variables accessed of a function.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="FunctionNonLocals.__init__"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.utils.FunctionNonLocals.html#langchain_core.runnables.utils.FunctionNonLocals.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nonlocals</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="FunctionNonLocals.visit_FunctionDef"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.utils.FunctionNonLocals.html#langchain_core.runnables.utils.FunctionNonLocals.visit_FunctionDef">[docs]</a>    <span class="k">def</span> <span class="nf">visit_FunctionDef</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">ast</span><span class="o">.</span><span class="n">FunctionDef</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+        <span class="n">visitor</span> <span class="o">=</span> <span class="n">NonLocals</span><span class="p">()</span>
+        <span class="n">visitor</span><span class="o">.</span><span class="n">visit</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nonlocals</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">visitor</span><span class="o">.</span><span class="n">loads</span> <span class="o">-</span> <span class="n">visitor</span><span class="o">.</span><span class="n">stores</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FunctionNonLocals.visit_AsyncFunctionDef"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.utils.FunctionNonLocals.html#langchain_core.runnables.utils.FunctionNonLocals.visit_AsyncFunctionDef">[docs]</a>    <span class="k">def</span> <span class="nf">visit_AsyncFunctionDef</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">ast</span><span class="o">.</span><span class="n">AsyncFunctionDef</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+        <span class="n">visitor</span> <span class="o">=</span> <span class="n">NonLocals</span><span class="p">()</span>
+        <span class="n">visitor</span><span class="o">.</span><span class="n">visit</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nonlocals</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">visitor</span><span class="o">.</span><span class="n">loads</span> <span class="o">-</span> <span class="n">visitor</span><span class="o">.</span><span class="n">stores</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FunctionNonLocals.visit_Lambda"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.utils.FunctionNonLocals.html#langchain_core.runnables.utils.FunctionNonLocals.visit_Lambda">[docs]</a>    <span class="k">def</span> <span class="nf">visit_Lambda</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">ast</span><span class="o">.</span><span class="n">Lambda</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+        <span class="n">visitor</span> <span class="o">=</span> <span class="n">NonLocals</span><span class="p">()</span>
+        <span class="n">visitor</span><span class="o">.</span><span class="n">visit</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nonlocals</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">visitor</span><span class="o">.</span><span class="n">loads</span> <span class="o">-</span> <span class="n">visitor</span><span class="o">.</span><span class="n">stores</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="GetLambdaSource"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.utils.GetLambdaSource.html#langchain_core.runnables.utils.GetLambdaSource">[docs]</a><span class="k">class</span> <span class="nc">GetLambdaSource</span><span class="p">(</span><span class="n">ast</span><span class="o">.</span><span class="n">NodeVisitor</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the source code of a lambda function.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="GetLambdaSource.__init__"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.utils.GetLambdaSource.html#langchain_core.runnables.utils.GetLambdaSource.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the visitor.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">=</span> <span class="mi">0</span></div>
+
+<div class="viewcode-block" id="GetLambdaSource.visit_Lambda"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.utils.GetLambdaSource.html#langchain_core.runnables.utils.GetLambdaSource.visit_Lambda">[docs]</a>    <span class="k">def</span> <span class="nf">visit_Lambda</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">ast</span><span class="o">.</span><span class="n">Lambda</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Visit a lambda function.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">ast</span><span class="p">,</span> <span class="s2">&quot;unparse&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">source</span> <span class="o">=</span> <span class="n">ast</span><span class="o">.</span><span class="n">unparse</span><span class="p">(</span><span class="n">node</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="get_function_first_arg_dict_keys"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.utils.get_function_first_arg_dict_keys.html#langchain_core.runnables.utils.get_function_first_arg_dict_keys">[docs]</a><span class="k">def</span> <span class="nf">get_function_first_arg_dict_keys</span><span class="p">(</span><span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the keys of the first argument of a function if it is a dict.&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">code</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getsource</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+        <span class="n">tree</span> <span class="o">=</span> <span class="n">ast</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">textwrap</span><span class="o">.</span><span class="n">dedent</span><span class="p">(</span><span class="n">code</span><span class="p">))</span>
+        <span class="n">visitor</span> <span class="o">=</span> <span class="n">IsFunctionArgDict</span><span class="p">()</span>
+        <span class="n">visitor</span><span class="o">.</span><span class="n">visit</span><span class="p">(</span><span class="n">tree</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">visitor</span><span class="o">.</span><span class="n">keys</span><span class="p">)</span> <span class="k">if</span> <span class="n">visitor</span><span class="o">.</span><span class="n">keys</span> <span class="k">else</span> <span class="kc">None</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">SyntaxError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">,</span> <span class="ne">OSError</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="get_lambda_source"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.utils.get_lambda_source.html#langchain_core.runnables.utils.get_lambda_source">[docs]</a><span class="k">def</span> <span class="nf">get_lambda_source</span><span class="p">(</span><span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the source code of a lambda function.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        func: a callable that can be a lambda function</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: the source code of the lambda function</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">func</span><span class="o">.</span><span class="vm">__name__</span> <span class="k">if</span> <span class="n">func</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">!=</span> <span class="s2">&quot;&lt;lambda&gt;&quot;</span> <span class="k">else</span> <span class="kc">None</span>
+    <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">code</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getsource</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+        <span class="n">tree</span> <span class="o">=</span> <span class="n">ast</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">textwrap</span><span class="o">.</span><span class="n">dedent</span><span class="p">(</span><span class="n">code</span><span class="p">))</span>
+        <span class="n">visitor</span> <span class="o">=</span> <span class="n">GetLambdaSource</span><span class="p">()</span>
+        <span class="n">visitor</span><span class="o">.</span><span class="n">visit</span><span class="p">(</span><span class="n">tree</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">visitor</span><span class="o">.</span><span class="n">source</span> <span class="k">if</span> <span class="n">visitor</span><span class="o">.</span><span class="n">count</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">name</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">SyntaxError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">,</span> <span class="ne">OSError</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">name</span></div>
+
+
+<div class="viewcode-block" id="get_function_nonlocals"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.utils.get_function_nonlocals.html#langchain_core.runnables.utils.get_function_nonlocals">[docs]</a><span class="k">def</span> <span class="nf">get_function_nonlocals</span><span class="p">(</span><span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the nonlocal variables accessed by a function.&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">code</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getsource</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+        <span class="n">tree</span> <span class="o">=</span> <span class="n">ast</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">textwrap</span><span class="o">.</span><span class="n">dedent</span><span class="p">(</span><span class="n">code</span><span class="p">))</span>
+        <span class="n">visitor</span> <span class="o">=</span> <span class="n">FunctionNonLocals</span><span class="p">()</span>
+        <span class="n">visitor</span><span class="o">.</span><span class="n">visit</span><span class="p">(</span><span class="n">tree</span><span class="p">)</span>
+        <span class="n">values</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getclosurevars</span><span class="p">(</span><span class="n">func</span><span class="p">)</span><span class="o">.</span><span class="n">nonlocals</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">visitor</span><span class="o">.</span><span class="n">nonlocals</span><span class="p">:</span>
+                <span class="n">values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">kk</span> <span class="ow">in</span> <span class="n">visitor</span><span class="o">.</span><span class="n">nonlocals</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s2">&quot;.&quot;</span> <span class="ow">in</span> <span class="n">kk</span> <span class="ow">and</span> <span class="n">kk</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">k</span><span class="p">):</span>
+                    <span class="n">vv</span> <span class="o">=</span> <span class="n">v</span>
+                    <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">kk</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">:]:</span>
+                        <span class="k">if</span> <span class="n">vv</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                            <span class="k">break</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">vv</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">vv</span><span class="p">,</span> <span class="n">part</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vv</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">values</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">SyntaxError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">,</span> <span class="ne">OSError</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[]</span></div>
+
+
+<div class="viewcode-block" id="indent_lines_after_first"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.utils.indent_lines_after_first.html#langchain_core.runnables.utils.indent_lines_after_first">[docs]</a><span class="k">def</span> <span class="nf">indent_lines_after_first</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Indent all lines of text after the first line.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        text:  The text to indent</span>
+<span class="sd">        prefix: Used to determine the number of spaces to indent</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: The indented text</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">n_spaces</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span>
+    <span class="n">spaces</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span> <span class="o">*</span> <span class="n">n_spaces</span>
+    <span class="n">lines</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span>
+    <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">lines</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">+</span> <span class="p">[</span><span class="n">spaces</span> <span class="o">+</span> <span class="n">line</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">[</span><span class="mi">1</span><span class="p">:]])</span></div>
+
+
+<div class="viewcode-block" id="AddableDict"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.utils.AddableDict.html#langchain_core.runnables.utils.AddableDict">[docs]</a><span class="k">class</span> <span class="nc">AddableDict</span><span class="p">(</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Dictionary that can be added to another dictionary.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__add__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">AddableDict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AddableDict</span><span class="p">:</span>
+        <span class="n">chunk</span> <span class="o">=</span> <span class="n">AddableDict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">other</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">chunk</span> <span class="ow">or</span> <span class="n">chunk</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">chunk</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">other</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="n">other</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">added</span> <span class="o">=</span> <span class="n">chunk</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">+</span> <span class="n">other</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+                <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+                    <span class="n">added</span> <span class="o">=</span> <span class="n">other</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+                <span class="n">chunk</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">added</span>
+        <span class="k">return</span> <span class="n">chunk</span>
+
+    <span class="k">def</span> <span class="fm">__radd__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">AddableDict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AddableDict</span><span class="p">:</span>
+        <span class="n">chunk</span> <span class="o">=</span> <span class="n">AddableDict</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">chunk</span> <span class="ow">or</span> <span class="n">chunk</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">chunk</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">added</span> <span class="o">=</span> <span class="n">chunk</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+                <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+                    <span class="n">added</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+                <span class="n">chunk</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">added</span>
+        <span class="k">return</span> <span class="n">chunk</span></div>
+
+
+<span class="n">_T_co</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;_T_co&quot;</span><span class="p">,</span> <span class="n">covariant</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">_T_contra</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;_T_contra&quot;</span><span class="p">,</span> <span class="n">contravariant</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="SupportsAdd"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.utils.SupportsAdd.html#langchain_core.runnables.utils.SupportsAdd">[docs]</a><span class="k">class</span> <span class="nc">SupportsAdd</span><span class="p">(</span><span class="n">Protocol</span><span class="p">[</span><span class="n">_T_contra</span><span class="p">,</span> <span class="n">_T_co</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Protocol for objects that support addition.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__add__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">__x</span><span class="p">:</span> <span class="n">_T_contra</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_T_co</span><span class="p">:</span>
+        <span class="o">...</span></div>
+
+
+<span class="n">Addable</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;Addable&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">SupportsAdd</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span>
+
+
+<div class="viewcode-block" id="add"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.utils.add.html#langchain_core.runnables.utils.add">[docs]</a><span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="n">addables</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Addable</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Addable</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Add a sequence of addable objects together.&quot;&quot;&quot;</span>
+    <span class="n">final</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">addables</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">final</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">final</span> <span class="o">=</span> <span class="n">chunk</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">final</span> <span class="o">=</span> <span class="n">final</span> <span class="o">+</span> <span class="n">chunk</span>
+    <span class="k">return</span> <span class="n">final</span></div>
+
+
+<div class="viewcode-block" id="aadd"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.utils.aadd.html#langchain_core.runnables.utils.aadd">[docs]</a><span class="k">async</span> <span class="k">def</span> <span class="nf">aadd</span><span class="p">(</span><span class="n">addables</span><span class="p">:</span> <span class="n">AsyncIterable</span><span class="p">[</span><span class="n">Addable</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Addable</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Asynchronously add a sequence of addable objects together.&quot;&quot;&quot;</span>
+    <span class="n">final</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">async</span> <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">addables</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">final</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">final</span> <span class="o">=</span> <span class="n">chunk</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">final</span> <span class="o">=</span> <span class="n">final</span> <span class="o">+</span> <span class="n">chunk</span>
+    <span class="k">return</span> <span class="n">final</span></div>
+
+
+<div class="viewcode-block" id="ConfigurableField"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.utils.ConfigurableField.html#langchain_core.runnables.utils.ConfigurableField">[docs]</a><span class="k">class</span> <span class="nc">ConfigurableField</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Field that can be configured by the user.&quot;&quot;&quot;</span>
+
+    <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span>
+
+    <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">description</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">annotation</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">is_shared</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">annotation</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="ConfigurableFieldSingleOption"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.utils.ConfigurableFieldSingleOption.html#langchain_core.runnables.utils.ConfigurableFieldSingleOption">[docs]</a><span class="k">class</span> <span class="nc">ConfigurableFieldSingleOption</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Field that can be configured by the user with a default value.&quot;&quot;&quot;</span>
+
+    <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">options</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
+    <span class="n">default</span><span class="p">:</span> <span class="nb">str</span>
+
+    <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">description</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">is_shared</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">default</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="ConfigurableFieldMultiOption"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.utils.ConfigurableFieldMultiOption.html#langchain_core.runnables.utils.ConfigurableFieldMultiOption">[docs]</a><span class="k">class</span> <span class="nc">ConfigurableFieldMultiOption</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Field that can be configured by the user with multiple default values.&quot;&quot;&quot;</span>
+
+    <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">options</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
+    <span class="n">default</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+
+    <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">description</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">is_shared</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">default</span><span class="p">)))</span></div>
+
+
+<span class="n">AnyConfigurableField</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span>
+    <span class="n">ConfigurableField</span><span class="p">,</span> <span class="n">ConfigurableFieldSingleOption</span><span class="p">,</span> <span class="n">ConfigurableFieldMultiOption</span>
+<span class="p">]</span>
+
+
+<div class="viewcode-block" id="ConfigurableFieldSpec"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.utils.ConfigurableFieldSpec.html#langchain_core.runnables.utils.ConfigurableFieldSpec">[docs]</a><span class="k">class</span> <span class="nc">ConfigurableFieldSpec</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Field that can be configured by the user. It is a specification of a field.&quot;&quot;&quot;</span>
+
+    <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">annotation</span><span class="p">:</span> <span class="n">Any</span>
+
+    <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">description</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">default</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">is_shared</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">dependencies</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="get_unique_config_specs"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.utils.get_unique_config_specs.html#langchain_core.runnables.utils.get_unique_config_specs">[docs]</a><span class="k">def</span> <span class="nf">get_unique_config_specs</span><span class="p">(</span>
+    <span class="n">specs</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">ConfigurableFieldSpec</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">ConfigurableFieldSpec</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the unique config specs from a sequence of config specs.&quot;&quot;&quot;</span>
+    <span class="n">grouped</span> <span class="o">=</span> <span class="n">groupby</span><span class="p">(</span>
+        <span class="nb">sorted</span><span class="p">(</span><span class="n">specs</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">s</span><span class="p">:</span> <span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="o">*</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">dependencies</span> <span class="ow">or</span> <span class="p">[]))),</span> <span class="k">lambda</span> <span class="n">s</span><span class="p">:</span> <span class="n">s</span><span class="o">.</span><span class="n">id</span>
+    <span class="p">)</span>
+    <span class="n">unique</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">ConfigurableFieldSpec</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="nb">id</span><span class="p">,</span> <span class="n">dupes</span> <span class="ow">in</span> <span class="n">grouped</span><span class="p">:</span>
+        <span class="n">first</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">dupes</span><span class="p">)</span>
+        <span class="n">others</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">dupes</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">others</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">unique</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">first</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">all</span><span class="p">(</span><span class="n">o</span> <span class="o">==</span> <span class="n">first</span> <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">others</span><span class="p">):</span>
+            <span class="n">unique</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">first</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;RunnableSequence contains conflicting config specs&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;for </span><span class="si">{</span><span class="nb">id</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="p">[</span><span class="n">first</span><span class="p">]</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">others</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+    <span class="k">return</span> <span class="n">unique</span></div>
+
+
+<span class="k">class</span> <span class="nc">_RootEventFilter</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">include_names</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">include_types</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">include_tags</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">exclude_names</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">exclude_types</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">exclude_tags</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Utility to filter the root event in the astream_events implementation.</span>
+
+<span class="sd">        This is simply binding the arguments to the namespace to make save on</span>
+<span class="sd">        a bit of typing in the astream_events implementation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">include_names</span> <span class="o">=</span> <span class="n">include_names</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">include_types</span> <span class="o">=</span> <span class="n">include_types</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">include_tags</span> <span class="o">=</span> <span class="n">include_tags</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exclude_names</span> <span class="o">=</span> <span class="n">exclude_names</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exclude_types</span> <span class="o">=</span> <span class="n">exclude_types</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exclude_tags</span> <span class="o">=</span> <span class="n">exclude_tags</span>
+
+    <span class="k">def</span> <span class="nf">include_event</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="n">StreamEvent</span><span class="p">,</span> <span class="n">root_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Determine whether to include an event.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">include_names</span> <span class="ow">is</span> <span class="kc">None</span>
+            <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">include_types</span> <span class="ow">is</span> <span class="kc">None</span>
+            <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">include_tags</span> <span class="ow">is</span> <span class="kc">None</span>
+        <span class="p">):</span>
+            <span class="n">include</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">include</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="n">event_tags</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;tags&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">[]</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">include_names</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">include</span> <span class="o">=</span> <span class="n">include</span> <span class="ow">or</span> <span class="n">event</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">include_names</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">include_types</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">include</span> <span class="o">=</span> <span class="n">include</span> <span class="ow">or</span> <span class="n">root_type</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">include_types</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">include_tags</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">include</span> <span class="o">=</span> <span class="n">include</span> <span class="ow">or</span> <span class="nb">any</span><span class="p">(</span><span class="n">tag</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">include_tags</span> <span class="k">for</span> <span class="n">tag</span> <span class="ow">in</span> <span class="n">event_tags</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exclude_names</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">include</span> <span class="o">=</span> <span class="n">include</span> <span class="ow">and</span> <span class="n">event</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">exclude_names</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exclude_types</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">include</span> <span class="o">=</span> <span class="n">include</span> <span class="ow">and</span> <span class="n">root_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">exclude_types</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exclude_tags</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">include</span> <span class="o">=</span> <span class="n">include</span> <span class="ow">and</span> <span class="nb">all</span><span class="p">(</span>
+                <span class="n">tag</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">exclude_tags</span> <span class="k">for</span> <span class="n">tag</span> <span class="ow">in</span> <span class="n">event_tags</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">include</span>
+
+
+<span class="k">class</span> <span class="nc">_SchemaConfig</span><span class="p">(</span><span class="n">BaseConfig</span><span class="p">):</span>
+    <span class="n">arbitrary_types_allowed</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">frozen</span> <span class="o">=</span> <span class="kc">True</span>
+
+
+<div class="viewcode-block" id="create_model"><a class="viewcode-back" href="../../../runnables/langchain_core.runnables.utils.create_model.html#langchain_core.runnables.utils.create_model">[docs]</a><span class="k">def</span> <span class="nf">create_model</span><span class="p">(</span>
+    <span class="n">__model_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">field_definitions</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Type</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">]:</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_create_model_cached</span><span class="p">(</span><span class="n">__model_name</span><span class="p">,</span> <span class="o">**</span><span class="n">field_definitions</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+        <span class="c1"># something in field definitions is not hashable</span>
+        <span class="k">return</span> <span class="n">_create_model_base</span><span class="p">(</span>
+            <span class="n">__model_name</span><span class="p">,</span> <span class="n">__config__</span><span class="o">=</span><span class="n">_SchemaConfig</span><span class="p">,</span> <span class="o">**</span><span class="n">field_definitions</span>
+        <span class="p">)</span></div>
+
+
+<span class="nd">@lru_cache</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="mi">256</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">_create_model_cached</span><span class="p">(</span>
+    <span class="n">__model_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">field_definitions</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Type</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">]:</span>
+    <span class="k">return</span> <span class="n">_create_model_base</span><span class="p">(</span>
+        <span class="n">__model_name</span><span class="p">,</span> <span class="n">__config__</span><span class="o">=</span><span class="n">_SchemaConfig</span><span class="p">,</span> <span class="o">**</span><span class="n">field_definitions</span>
+    <span class="p">)</span>
+</pre></div>
+
+      </div>
+    <div class="container">
+      <footer class="sk-content-footer">
+            &copy; 2023, LangChain, Inc..
+          Last updated on Mar 15, 2024.
+      </footer>
+    </div>
+  </div>
+</div>
+<script src="../../../_static/js/vendor/bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    /* Add a [>>>] button on the top-right corner of code samples to hide
+     * the >>> and ... prompts and the output and thus make the code
+     * copyable. */
+    var div = $('.highlight-python .highlight,' +
+                '.highlight-python3 .highlight,' +
+                '.highlight-pycon .highlight,' +
+		'.highlight-default .highlight')
+    var pre = div.find('pre');
+
+    // get the styles from the current theme
+    pre.parent().parent().css('position', 'relative');
+    var hide_text = 'Hide prompts and outputs';
+    var show_text = 'Show prompts and outputs';
+
+    // create and add the button to all the code blocks that contain >>>
+    div.each(function(index) {
+        var jthis = $(this);
+        if (jthis.find('.gp').length > 0) {
+            var button = $('<span class="copybutton">&gt;&gt;&gt;</span>');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+            jthis.prepend(button);
+        }
+        // tracebacks (.gt) contain bare text elements that need to be
+        // wrapped in a span to work with .nextUntil() (see later)
+        jthis.find('pre:has(.gt)').contents().filter(function() {
+            return ((this.nodeType == 3) && (this.data.trim().length > 0));
+        }).wrap('<span>');
+    });
+
+    // define the behavior of the button when it's clicked
+    $('.copybutton').click(function(e){
+        e.preventDefault();
+        var button = $(this);
+        if (button.data('hidden') === 'false') {
+            // hide the code output
+            button.parent().find('.go, .gp, .gt').hide();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'hidden');
+            button.css('text-decoration', 'line-through');
+            button.attr('title', show_text);
+            button.data('hidden', 'true');
+        } else {
+            // show the code output
+            button.parent().find('.go, .gp, .gt').show();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'visible');
+            button.css('text-decoration', 'none');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+        }
+    });
+
+	/*** Add permalink buttons next to glossary terms ***/
+	$('dl.glossary > dt[id]').append(function() {
+		return ('<a class="headerlink" href="#' +
+			    this.getAttribute('id') +
+			    '" title="Permalink to this term">¶</a>');
+	});
+});
+
+</script>
+    
+</body>
+</html>

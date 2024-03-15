@@ -1,0 +1,360 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>langchain_community.utilities.wikidata &mdash; 🦜🔗 LangChain 0.1.12</title>
+  
+  <link rel="canonical" href="https://api.python.langchain.com/en/latest/_modules/langchain_community/utilities/wikidata.html" />
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/vendor/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/autodoc_pydantic.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/sphinx-dropdown.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/panels-bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+<script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+<script src="../../../_static/jquery.js"></script> 
+</head>
+<body>
+
+
+<nav id="navbar" class="sk-docs-navbar navbar navbar-expand-md navbar-light bg-light py-0">
+  <div class="container-fluid sk-docs-container px-0">
+    <button
+      id="sk-navbar-toggler"
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="sk-navbar-collapse collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../langchain_api_reference.html">LangChain</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../core_api_reference.html">Core</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../community_api_reference.html">Community</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../experimental_api_reference.html">Experimental</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../text_splitters_api_reference.html">Text splitters</a>
+        </li>
+        <li class="nav-item dropdown nav-more-item-dropdown">
+          <a class="sk-nav-link nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Partner libs</a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+          </div>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" target="_blank" rel="noopener noreferrer" href="https://python.langchain.com/">Docs</a>
+        </li>
+      </ul>
+      <div id="searchbox" role="search">
+          <div class="searchformwrapper">
+          <form class="search" action="../../../search.html" method="get">
+            <input class="sk-search-text-input" type="text" name="q" aria-labelledby="searchlabel" />
+            <input class="sk-search-text-btn" type="submit" value="Go" />
+          </form>
+          </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="d-flex" id="sk-doc-wrapper">
+    <input type="checkbox" name="sk-toggle-checkbox" id="sk-toggle-checkbox">
+    <label id="sk-sidemenu-toggle" class="sk-btn-toggle-toc btn sk-btn-primary" for="sk-toggle-checkbox">Toggle Menu</label>
+    <div id="sk-sidebar-wrapper" class="border-right">
+      <div class="sk-sidebar-toc-wrapper">
+        <div class="btn-group w-100 mb-2" role="group" aria-label="rellinks">
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Prev</a><a href="../../index.html" role="button" class="btn sk-btn-rellink py-1" sk-rellink-tooltip="Module code">Up</a>
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Next</a>
+        </div>
+            <div class="sk-sidebar-toc">
+              
+            </div>
+      </div>
+    </div>
+    <div id="sk-page-content-wrapper">
+      <div class="sk-page-content container-fluid body px-md-3" role="main">
+        
+  <h1>Source code for langchain_community.utilities.wikidata</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Util that calls Wikidata.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="kn">from</span> <span class="nn">langchain_core.documents</span> <span class="kn">import</span> <span class="n">Document</span>
+<span class="kn">from</span> <span class="nn">langchain_core.pydantic_v1</span> <span class="kn">import</span> <span class="n">BaseModel</span><span class="p">,</span> <span class="n">root_validator</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="n">WIKIDATA_MAX_QUERY_LENGTH</span> <span class="o">=</span> <span class="mi">300</span>
+<span class="c1"># Common properties you probably want to see filtered from https://www.wikidata.org/wiki/Wikidata:Database_reports/List_of_properties/all</span>
+<span class="n">DEFAULT_PROPERTIES</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;P31&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;P279&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;P27&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;P361&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;P527&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;P495&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;P17&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;P585&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;P131&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;P106&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;P21&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;P569&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;P570&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;P577&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;P50&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;P571&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;P641&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;P625&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;P19&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;P69&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;P108&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;P136&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;P39&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;P161&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;P20&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;P101&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;P179&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;P175&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;P7937&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;P57&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;P607&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;P509&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;P800&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;P449&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;P580&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;P582&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;P276&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;P69&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;P112&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;P740&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;P159&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;P452&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;P102&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;P1142&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;P1387&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;P1576&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;P140&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;P178&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;P287&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;P25&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;P22&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;P40&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;P185&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;P802&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;P1416&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+<span class="n">DEFAULT_LANG_CODE</span> <span class="o">=</span> <span class="s2">&quot;en&quot;</span>
+<span class="n">WIKIDATA_USER_AGENT</span> <span class="o">=</span> <span class="s2">&quot;langchain-wikidata&quot;</span>
+<span class="n">WIKIDATA_API_URL</span> <span class="o">=</span> <span class="s2">&quot;https://www.wikidata.org/w/api.php&quot;</span>
+<span class="n">WIKIDATA_REST_API_URL</span> <span class="o">=</span> <span class="s2">&quot;https://www.wikidata.org/w/rest.php/wikibase/v0/&quot;</span>
+
+
+<div class="viewcode-block" id="WikidataAPIWrapper"><a class="viewcode-back" href="../../../utilities/langchain_community.utilities.wikidata.WikidataAPIWrapper.html#langchain_community.utilities.wikidata.WikidataAPIWrapper">[docs]</a><span class="k">class</span> <span class="nc">WikidataAPIWrapper</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Wrapper around the Wikidata API.</span>
+
+<span class="sd">    To use, you should have the ``wikibase-rest-api-client`` and</span>
+<span class="sd">    ``mediawikiapi `` python packages installed.</span>
+<span class="sd">    This wrapper will use the Wikibase APIs to conduct searches and</span>
+<span class="sd">    fetch item content. By default, it will return the item content</span>
+<span class="sd">    of the top-k results.</span>
+<span class="sd">    It limits the Document content by doc_content_chars_max.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">wikidata_mw</span><span class="p">:</span> <span class="n">Any</span>  <span class="c1">#: :meta private:</span>
+    <span class="n">wikidata_rest</span><span class="p">:</span> <span class="n">Any</span>  <span class="c1"># : :meta private:</span>
+    <span class="n">top_k_results</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">load_all_available_meta</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">doc_content_chars_max</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4000</span>
+    <span class="n">wikidata_props</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">DEFAULT_PROPERTIES</span>
+    <span class="n">lang</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">DEFAULT_LANG_CODE</span>
+
+    <span class="nd">@root_validator</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">validate_environment</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Validate that the python package exists in environment.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">mediawikiapi</span> <span class="kn">import</span> <span class="n">MediaWikiAPI</span>
+            <span class="kn">from</span> <span class="nn">mediawikiapi.config</span> <span class="kn">import</span> <span class="n">Config</span>
+
+            <span class="n">values</span><span class="p">[</span><span class="s2">&quot;wikidata_mw&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">MediaWikiAPI</span><span class="p">(</span>
+                <span class="n">Config</span><span class="p">(</span><span class="n">user_agent</span><span class="o">=</span><span class="n">WIKIDATA_USER_AGENT</span><span class="p">,</span> <span class="n">mediawiki_url</span><span class="o">=</span><span class="n">WIKIDATA_API_URL</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+                <span class="s2">&quot;Could not import mediawikiapi python package. &quot;</span>
+                <span class="s2">&quot;Please install it with `pip install mediawikiapi`.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">wikibase_rest_api_client</span> <span class="kn">import</span> <span class="n">Client</span>
+
+            <span class="n">client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span>
+                <span class="n">timeout</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span>
+                <span class="n">base_url</span><span class="o">=</span><span class="n">WIKIDATA_REST_API_URL</span><span class="p">,</span>
+                <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;User-Agent&quot;</span><span class="p">:</span> <span class="n">WIKIDATA_USER_AGENT</span><span class="p">},</span>
+                <span class="n">follow_redirects</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">values</span><span class="p">[</span><span class="s2">&quot;wikidata_rest&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">client</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+                <span class="s2">&quot;Could not import wikibase_rest_api_client python package. &quot;</span>
+                <span class="s2">&quot;Please install it with `pip install wikibase-rest-api-client`.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">values</span>
+
+    <span class="k">def</span> <span class="nf">_item_to_document</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">qid</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Document</span><span class="p">]:</span>
+        <span class="kn">from</span> <span class="nn">wikibase_rest_api_client.utilities.fluent</span> <span class="kn">import</span> <span class="n">FluentWikibaseClient</span>
+
+        <span class="n">fluent_client</span><span class="p">:</span> <span class="n">FluentWikibaseClient</span> <span class="o">=</span> <span class="n">FluentWikibaseClient</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">wikidata_rest</span><span class="p">,</span> <span class="n">supported_props</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">wikidata_props</span><span class="p">,</span> <span class="n">lang</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lang</span>
+        <span class="p">)</span>
+        <span class="n">resp</span> <span class="o">=</span> <span class="n">fluent_client</span><span class="o">.</span><span class="n">get_item</span><span class="p">(</span><span class="n">qid</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">resp</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Could not find item </span><span class="si">{</span><span class="n">qid</span><span class="si">}</span><span class="s2"> in Wikidata&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">doc_lines</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">resp</span><span class="o">.</span><span class="n">label</span><span class="p">:</span>
+            <span class="n">doc_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Label: </span><span class="si">{</span><span class="n">resp</span><span class="o">.</span><span class="n">label</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">resp</span><span class="o">.</span><span class="n">description</span><span class="p">:</span>
+            <span class="n">doc_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Description: </span><span class="si">{</span><span class="n">resp</span><span class="o">.</span><span class="n">description</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">resp</span><span class="o">.</span><span class="n">aliases</span><span class="p">:</span>
+            <span class="n">doc_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Aliases: </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">aliases</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">prop</span><span class="p">,</span> <span class="n">values</span> <span class="ow">in</span> <span class="n">resp</span><span class="o">.</span><span class="n">statements</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">values</span><span class="p">:</span>
+                <span class="n">doc_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">prop</span><span class="o">.</span><span class="n">label</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">values</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">Document</span><span class="p">(</span>
+            <span class="n">page_content</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">doc_lines</span><span class="p">))[:</span> <span class="bp">self</span><span class="o">.</span><span class="n">doc_content_chars_max</span><span class="p">],</span>
+            <span class="n">meta</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="n">qid</span><span class="p">,</span> <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;https://www.wikidata.org/wiki/</span><span class="si">{</span><span class="n">qid</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">},</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="WikidataAPIWrapper.load"><a class="viewcode-back" href="../../../utilities/langchain_community.utilities.wikidata.WikidataAPIWrapper.html#langchain_community.utilities.wikidata.WikidataAPIWrapper.load">[docs]</a>    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Run Wikidata search and get the item documents plus the meta information.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">clipped_query</span> <span class="o">=</span> <span class="n">query</span><span class="p">[:</span><span class="n">WIKIDATA_MAX_QUERY_LENGTH</span><span class="p">]</span>
+        <span class="n">items</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wikidata_mw</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">clipped_query</span><span class="p">,</span> <span class="n">results</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">top_k_results</span><span class="p">)</span>
+        <span class="n">docs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span><span class="p">[:</span> <span class="bp">self</span><span class="o">.</span><span class="n">top_k_results</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">doc</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_item_to_document</span><span class="p">(</span><span class="n">item</span><span class="p">):</span>
+                <span class="n">docs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">doc</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">docs</span></div>
+
+<div class="viewcode-block" id="WikidataAPIWrapper.run"><a class="viewcode-back" href="../../../utilities/langchain_community.utilities.wikidata.WikidataAPIWrapper.html#langchain_community.utilities.wikidata.WikidataAPIWrapper.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run Wikidata search and get item summaries.&quot;&quot;&quot;</span>
+
+        <span class="n">clipped_query</span> <span class="o">=</span> <span class="n">query</span><span class="p">[:</span><span class="n">WIKIDATA_MAX_QUERY_LENGTH</span><span class="p">]</span>
+        <span class="n">items</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wikidata_mw</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">clipped_query</span><span class="p">,</span> <span class="n">results</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">top_k_results</span><span class="p">)</span>
+
+        <span class="n">docs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span><span class="p">[:</span> <span class="bp">self</span><span class="o">.</span><span class="n">top_k_results</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">doc</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_item_to_document</span><span class="p">(</span><span class="n">item</span><span class="p">):</span>
+                <span class="n">docs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Result </span><span class="si">{</span><span class="n">item</span><span class="si">}</span><span class="s2">:</span><span class="se">\n</span><span class="si">{</span><span class="n">doc</span><span class="o">.</span><span class="n">page_content</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">docs</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;No good Wikidata Search Result was found&quot;</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">docs</span><span class="p">)[:</span> <span class="bp">self</span><span class="o">.</span><span class="n">doc_content_chars_max</span><span class="p">]</span></div></div>
+</pre></div>
+
+      </div>
+    <div class="container">
+      <footer class="sk-content-footer">
+            &copy; 2023, LangChain, Inc..
+          Last updated on Mar 15, 2024.
+      </footer>
+    </div>
+  </div>
+</div>
+<script src="../../../_static/js/vendor/bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    /* Add a [>>>] button on the top-right corner of code samples to hide
+     * the >>> and ... prompts and the output and thus make the code
+     * copyable. */
+    var div = $('.highlight-python .highlight,' +
+                '.highlight-python3 .highlight,' +
+                '.highlight-pycon .highlight,' +
+		'.highlight-default .highlight')
+    var pre = div.find('pre');
+
+    // get the styles from the current theme
+    pre.parent().parent().css('position', 'relative');
+    var hide_text = 'Hide prompts and outputs';
+    var show_text = 'Show prompts and outputs';
+
+    // create and add the button to all the code blocks that contain >>>
+    div.each(function(index) {
+        var jthis = $(this);
+        if (jthis.find('.gp').length > 0) {
+            var button = $('<span class="copybutton">&gt;&gt;&gt;</span>');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+            jthis.prepend(button);
+        }
+        // tracebacks (.gt) contain bare text elements that need to be
+        // wrapped in a span to work with .nextUntil() (see later)
+        jthis.find('pre:has(.gt)').contents().filter(function() {
+            return ((this.nodeType == 3) && (this.data.trim().length > 0));
+        }).wrap('<span>');
+    });
+
+    // define the behavior of the button when it's clicked
+    $('.copybutton').click(function(e){
+        e.preventDefault();
+        var button = $(this);
+        if (button.data('hidden') === 'false') {
+            // hide the code output
+            button.parent().find('.go, .gp, .gt').hide();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'hidden');
+            button.css('text-decoration', 'line-through');
+            button.attr('title', show_text);
+            button.data('hidden', 'true');
+        } else {
+            // show the code output
+            button.parent().find('.go, .gp, .gt').show();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'visible');
+            button.css('text-decoration', 'none');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+        }
+    });
+
+	/*** Add permalink buttons next to glossary terms ***/
+	$('dl.glossary > dt[id]').append(function() {
+		return ('<a class="headerlink" href="#' +
+			    this.getAttribute('id') +
+			    '" title="Permalink to this term">¶</a>');
+	});
+});
+
+</script>
+    
+</body>
+</html>

@@ -1,0 +1,770 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>langchain_community.document_loaders.parsers.pdf &mdash; 🦜🔗 LangChain 0.1.12</title>
+  
+  <link rel="canonical" href="https://api.python.langchain.com/en/latest/_modules/langchain_community/document_loaders/parsers/pdf.html" />
+
+  
+
+  <link rel="stylesheet" href="../../../../_static/css/vendor/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/autodoc_pydantic.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/sphinx-dropdown.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/panels-bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/css/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+<script id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+<script src="../../../../_static/jquery.js"></script> 
+</head>
+<body>
+
+
+<nav id="navbar" class="sk-docs-navbar navbar navbar-expand-md navbar-light bg-light py-0">
+  <div class="container-fluid sk-docs-container px-0">
+    <button
+      id="sk-navbar-toggler"
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="sk-navbar-collapse collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../../langchain_api_reference.html">LangChain</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../../core_api_reference.html">Core</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../../community_api_reference.html">Community</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../../experimental_api_reference.html">Experimental</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../../text_splitters_api_reference.html">Text splitters</a>
+        </li>
+        <li class="nav-item dropdown nav-more-item-dropdown">
+          <a class="sk-nav-link nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Partner libs</a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+          </div>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" target="_blank" rel="noopener noreferrer" href="https://python.langchain.com/">Docs</a>
+        </li>
+      </ul>
+      <div id="searchbox" role="search">
+          <div class="searchformwrapper">
+          <form class="search" action="../../../../search.html" method="get">
+            <input class="sk-search-text-input" type="text" name="q" aria-labelledby="searchlabel" />
+            <input class="sk-search-text-btn" type="submit" value="Go" />
+          </form>
+          </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="d-flex" id="sk-doc-wrapper">
+    <input type="checkbox" name="sk-toggle-checkbox" id="sk-toggle-checkbox">
+    <label id="sk-sidemenu-toggle" class="sk-btn-toggle-toc btn sk-btn-primary" for="sk-toggle-checkbox">Toggle Menu</label>
+    <div id="sk-sidebar-wrapper" class="border-right">
+      <div class="sk-sidebar-toc-wrapper">
+        <div class="btn-group w-100 mb-2" role="group" aria-label="rellinks">
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Prev</a><a href="../../../index.html" role="button" class="btn sk-btn-rellink py-1" sk-rellink-tooltip="Module code">Up</a>
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Next</a>
+        </div>
+            <div class="sk-sidebar-toc">
+              
+            </div>
+      </div>
+    </div>
+    <div id="sk-page-content-wrapper">
+      <div class="sk-page-content container-fluid body px-md-3" role="main">
+        
+  <h1>Source code for langchain_community.document_loaders.parsers.pdf</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Module contains common parsers for PDFs.&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">TYPE_CHECKING</span><span class="p">,</span>
+    <span class="n">Any</span><span class="p">,</span>
+    <span class="n">Iterable</span><span class="p">,</span>
+    <span class="n">Iterator</span><span class="p">,</span>
+    <span class="n">Mapping</span><span class="p">,</span>
+    <span class="n">Optional</span><span class="p">,</span>
+    <span class="n">Sequence</span><span class="p">,</span>
+    <span class="n">Union</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">urllib.parse</span> <span class="kn">import</span> <span class="n">urlparse</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">langchain_core.documents</span> <span class="kn">import</span> <span class="n">Document</span>
+
+<span class="kn">from</span> <span class="nn">langchain_community.document_loaders.base</span> <span class="kn">import</span> <span class="n">BaseBlobParser</span>
+<span class="kn">from</span> <span class="nn">langchain_community.document_loaders.blob_loaders</span> <span class="kn">import</span> <span class="n">Blob</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">fitz.fitz</span>
+    <span class="kn">import</span> <span class="nn">pdfminer.layout</span>
+    <span class="kn">import</span> <span class="nn">pdfplumber.page</span>
+    <span class="kn">import</span> <span class="nn">pypdf._page</span>
+    <span class="kn">import</span> <span class="nn">pypdfium2._helpers.page</span>
+    <span class="kn">from</span> <span class="nn">textractor.data.text_linearization_config</span> <span class="kn">import</span> <span class="n">TextLinearizationConfig</span>
+
+
+<span class="n">_PDF_FILTER_WITH_LOSS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;DCTDecode&quot;</span><span class="p">,</span> <span class="s2">&quot;DCT&quot;</span><span class="p">,</span> <span class="s2">&quot;JPXDecode&quot;</span><span class="p">]</span>
+<span class="n">_PDF_FILTER_WITHOUT_LOSS</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;LZWDecode&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;LZW&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;FlateDecode&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Fl&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ASCII85Decode&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;A85&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ASCIIHexDecode&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AHx&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;RunLengthDecode&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;RL&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CCITTFaxDecode&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CCF&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;JBIG2Decode&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+
+
+<div class="viewcode-block" id="extract_from_images_with_rapidocr"><a class="viewcode-back" href="../../../../document_loaders/langchain_community.document_loaders.parsers.pdf.extract_from_images_with_rapidocr.html#langchain_community.document_loaders.parsers.pdf.extract_from_images_with_rapidocr">[docs]</a><span class="k">def</span> <span class="nf">extract_from_images_with_rapidocr</span><span class="p">(</span>
+    <span class="n">images</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="nb">bytes</span><span class="p">]],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Extract text from images with RapidOCR.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        images: Images to extract text from.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Text extracted from images.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ImportError: If `rapidocr-onnxruntime` package is not installed.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">rapidocr_onnxruntime</span> <span class="kn">import</span> <span class="n">RapidOCR</span>
+    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+            <span class="s2">&quot;`rapidocr-onnxruntime` package not found, please install it with &quot;</span>
+            <span class="s2">&quot;`pip install rapidocr-onnxruntime`&quot;</span>
+        <span class="p">)</span>
+    <span class="n">ocr</span> <span class="o">=</span> <span class="n">RapidOCR</span><span class="p">()</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">img</span> <span class="ow">in</span> <span class="n">images</span><span class="p">:</span>
+        <span class="n">result</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">ocr</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">result</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="p">[</span><span class="n">text</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">text</span> <span class="ow">in</span> <span class="n">result</span><span class="p">]</span>
+            <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">text</span></div>
+
+
+<div class="viewcode-block" id="PyPDFParser"><a class="viewcode-back" href="../../../../document_loaders/langchain_community.document_loaders.parsers.pdf.PyPDFParser.html#langchain_community.document_loaders.parsers.pdf.PyPDFParser">[docs]</a><span class="k">class</span> <span class="nc">PyPDFParser</span><span class="p">(</span><span class="n">BaseBlobParser</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Load `PDF` using `pypdf`&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PyPDFParser.__init__"><a class="viewcode-back" href="../../../../document_loaders/langchain_community.document_loaders.parsers.pdf.PyPDFParser.html#langchain_community.document_loaders.parsers.pdf.PyPDFParser.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">password</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">extract_images</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">password</span> <span class="o">=</span> <span class="n">password</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">extract_images</span> <span class="o">=</span> <span class="n">extract_images</span></div>
+
+<div class="viewcode-block" id="PyPDFParser.lazy_parse"><a class="viewcode-back" href="../../../../document_loaders/langchain_community.document_loaders.parsers.pdf.PyPDFParser.html#langchain_community.document_loaders.parsers.pdf.PyPDFParser.lazy_parse">[docs]</a>    <span class="k">def</span> <span class="nf">lazy_parse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">blob</span><span class="p">:</span> <span class="n">Blob</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">Document</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Lazily parse the blob.&quot;&quot;&quot;</span>
+        <span class="kn">import</span> <span class="nn">pypdf</span>
+
+        <span class="k">with</span> <span class="n">blob</span><span class="o">.</span><span class="n">as_bytes_io</span><span class="p">()</span> <span class="k">as</span> <span class="n">pdf_file_obj</span><span class="p">:</span>
+            <span class="n">pdf_reader</span> <span class="o">=</span> <span class="n">pypdf</span><span class="o">.</span><span class="n">PdfReader</span><span class="p">(</span><span class="n">pdf_file_obj</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">password</span><span class="p">)</span>
+            <span class="k">yield from</span> <span class="p">[</span>
+                <span class="n">Document</span><span class="p">(</span>
+                    <span class="n">page_content</span><span class="o">=</span><span class="n">page</span><span class="o">.</span><span class="n">extract_text</span><span class="p">()</span>
+                    <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extract_images_from_page</span><span class="p">(</span><span class="n">page</span><span class="p">),</span>
+                    <span class="n">metadata</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="n">blob</span><span class="o">.</span><span class="n">source</span><span class="p">,</span> <span class="s2">&quot;page&quot;</span><span class="p">:</span> <span class="n">page_number</span><span class="p">},</span>
+                <span class="p">)</span>
+                <span class="k">for</span> <span class="n">page_number</span><span class="p">,</span> <span class="n">page</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">pdf_reader</span><span class="o">.</span><span class="n">pages</span><span class="p">)</span>
+            <span class="p">]</span></div>
+
+    <span class="k">def</span> <span class="nf">_extract_images_from_page</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">page</span><span class="p">:</span> <span class="n">pypdf</span><span class="o">.</span><span class="n">_page</span><span class="o">.</span><span class="n">PageObject</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Extract images from page and get the text with RapidOCR.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">extract_images</span> <span class="ow">or</span> <span class="s2">&quot;/XObject&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">page</span><span class="p">[</span><span class="s2">&quot;/Resources&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">return</span> <span class="s2">&quot;&quot;</span>
+
+        <span class="n">xObject</span> <span class="o">=</span> <span class="n">page</span><span class="p">[</span><span class="s2">&quot;/Resources&quot;</span><span class="p">][</span><span class="s2">&quot;/XObject&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get_object</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
+        <span class="n">images</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">xObject</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">xObject</span><span class="p">[</span><span class="n">obj</span><span class="p">][</span><span class="s2">&quot;/Subtype&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;/Image&quot;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">xObject</span><span class="p">[</span><span class="n">obj</span><span class="p">][</span><span class="s2">&quot;/Filter&quot;</span><span class="p">][</span><span class="mi">1</span><span class="p">:]</span> <span class="ow">in</span> <span class="n">_PDF_FILTER_WITHOUT_LOSS</span><span class="p">:</span>
+                    <span class="n">height</span><span class="p">,</span> <span class="n">width</span> <span class="o">=</span> <span class="n">xObject</span><span class="p">[</span><span class="n">obj</span><span class="p">][</span><span class="s2">&quot;/Height&quot;</span><span class="p">],</span> <span class="n">xObject</span><span class="p">[</span><span class="n">obj</span><span class="p">][</span><span class="s2">&quot;/Width&quot;</span><span class="p">]</span>
+
+                    <span class="n">images</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                        <span class="n">np</span><span class="o">.</span><span class="n">frombuffer</span><span class="p">(</span><span class="n">xObject</span><span class="p">[</span><span class="n">obj</span><span class="p">]</span><span class="o">.</span><span class="n">get_data</span><span class="p">(),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+                            <span class="n">height</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span>
+                        <span class="p">)</span>
+                    <span class="p">)</span>
+                <span class="k">elif</span> <span class="n">xObject</span><span class="p">[</span><span class="n">obj</span><span class="p">][</span><span class="s2">&quot;/Filter&quot;</span><span class="p">][</span><span class="mi">1</span><span class="p">:]</span> <span class="ow">in</span> <span class="n">_PDF_FILTER_WITH_LOSS</span><span class="p">:</span>
+                    <span class="n">images</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">xObject</span><span class="p">[</span><span class="n">obj</span><span class="p">]</span><span class="o">.</span><span class="n">get_data</span><span class="p">())</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Unknown PDF Filter!&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">extract_from_images_with_rapidocr</span><span class="p">(</span><span class="n">images</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="PDFMinerParser"><a class="viewcode-back" href="../../../../document_loaders/langchain_community.document_loaders.parsers.pdf.PDFMinerParser.html#langchain_community.document_loaders.parsers.pdf.PDFMinerParser">[docs]</a><span class="k">class</span> <span class="nc">PDFMinerParser</span><span class="p">(</span><span class="n">BaseBlobParser</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse `PDF` using `PDFMiner`.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PDFMinerParser.__init__"><a class="viewcode-back" href="../../../../document_loaders/langchain_community.document_loaders.parsers.pdf.PDFMinerParser.html#langchain_community.document_loaders.parsers.pdf.PDFMinerParser.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">extract_images</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">concatenate_pages</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize a parser based on PDFMiner.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            extract_images: Whether to extract images from PDF.</span>
+<span class="sd">            concatenate_pages: If True, concatenate all PDF pages into one a single</span>
+<span class="sd">                               document. Otherwise, return one document per page.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">extract_images</span> <span class="o">=</span> <span class="n">extract_images</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">concatenate_pages</span> <span class="o">=</span> <span class="n">concatenate_pages</span></div>
+
+<div class="viewcode-block" id="PDFMinerParser.lazy_parse"><a class="viewcode-back" href="../../../../document_loaders/langchain_community.document_loaders.parsers.pdf.PDFMinerParser.html#langchain_community.document_loaders.parsers.pdf.PDFMinerParser.lazy_parse">[docs]</a>    <span class="k">def</span> <span class="nf">lazy_parse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">blob</span><span class="p">:</span> <span class="n">Blob</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">Document</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Lazily parse the blob.&quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">extract_images</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">pdfminer.high_level</span> <span class="kn">import</span> <span class="n">extract_text</span>
+
+            <span class="k">with</span> <span class="n">blob</span><span class="o">.</span><span class="n">as_bytes_io</span><span class="p">()</span> <span class="k">as</span> <span class="n">pdf_file_obj</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">concatenate_pages</span><span class="p">:</span>
+                    <span class="n">text</span> <span class="o">=</span> <span class="n">extract_text</span><span class="p">(</span><span class="n">pdf_file_obj</span><span class="p">)</span>
+                    <span class="n">metadata</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="n">blob</span><span class="o">.</span><span class="n">source</span><span class="p">}</span>
+                    <span class="k">yield</span> <span class="n">Document</span><span class="p">(</span><span class="n">page_content</span><span class="o">=</span><span class="n">text</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="kn">from</span> <span class="nn">pdfminer.pdfpage</span> <span class="kn">import</span> <span class="n">PDFPage</span>
+
+                    <span class="n">pages</span> <span class="o">=</span> <span class="n">PDFPage</span><span class="o">.</span><span class="n">get_pages</span><span class="p">(</span><span class="n">pdf_file_obj</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">pages</span><span class="p">):</span>
+                        <span class="n">text</span> <span class="o">=</span> <span class="n">extract_text</span><span class="p">(</span><span class="n">pdf_file_obj</span><span class="p">,</span> <span class="n">page_numbers</span><span class="o">=</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                        <span class="n">metadata</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="n">blob</span><span class="o">.</span><span class="n">source</span><span class="p">,</span> <span class="s2">&quot;page&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)}</span>
+                        <span class="k">yield</span> <span class="n">Document</span><span class="p">(</span><span class="n">page_content</span><span class="o">=</span><span class="n">text</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="kn">import</span> <span class="nn">io</span>
+
+            <span class="kn">from</span> <span class="nn">pdfminer.converter</span> <span class="kn">import</span> <span class="n">PDFPageAggregator</span><span class="p">,</span> <span class="n">TextConverter</span>
+            <span class="kn">from</span> <span class="nn">pdfminer.layout</span> <span class="kn">import</span> <span class="n">LAParams</span>
+            <span class="kn">from</span> <span class="nn">pdfminer.pdfinterp</span> <span class="kn">import</span> <span class="n">PDFPageInterpreter</span><span class="p">,</span> <span class="n">PDFResourceManager</span>
+            <span class="kn">from</span> <span class="nn">pdfminer.pdfpage</span> <span class="kn">import</span> <span class="n">PDFPage</span>
+
+            <span class="n">text_io</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">()</span>
+            <span class="k">with</span> <span class="n">blob</span><span class="o">.</span><span class="n">as_bytes_io</span><span class="p">()</span> <span class="k">as</span> <span class="n">pdf_file_obj</span><span class="p">:</span>
+                <span class="n">pages</span> <span class="o">=</span> <span class="n">PDFPage</span><span class="o">.</span><span class="n">get_pages</span><span class="p">(</span><span class="n">pdf_file_obj</span><span class="p">)</span>
+                <span class="n">rsrcmgr</span> <span class="o">=</span> <span class="n">PDFResourceManager</span><span class="p">()</span>
+                <span class="n">device_for_text</span> <span class="o">=</span> <span class="n">TextConverter</span><span class="p">(</span><span class="n">rsrcmgr</span><span class="p">,</span> <span class="n">text_io</span><span class="p">,</span> <span class="n">laparams</span><span class="o">=</span><span class="n">LAParams</span><span class="p">())</span>
+                <span class="n">device_for_image</span> <span class="o">=</span> <span class="n">PDFPageAggregator</span><span class="p">(</span><span class="n">rsrcmgr</span><span class="p">,</span> <span class="n">laparams</span><span class="o">=</span><span class="n">LAParams</span><span class="p">())</span>
+                <span class="n">interpreter_for_text</span> <span class="o">=</span> <span class="n">PDFPageInterpreter</span><span class="p">(</span><span class="n">rsrcmgr</span><span class="p">,</span> <span class="n">device_for_text</span><span class="p">)</span>
+                <span class="n">interpreter_for_image</span> <span class="o">=</span> <span class="n">PDFPageInterpreter</span><span class="p">(</span><span class="n">rsrcmgr</span><span class="p">,</span> <span class="n">device_for_image</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">page</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">pages</span><span class="p">):</span>
+                    <span class="n">interpreter_for_text</span><span class="o">.</span><span class="n">process_page</span><span class="p">(</span><span class="n">page</span><span class="p">)</span>
+                    <span class="n">interpreter_for_image</span><span class="o">.</span><span class="n">process_page</span><span class="p">(</span><span class="n">page</span><span class="p">)</span>
+                    <span class="n">content</span> <span class="o">=</span> <span class="n">text_io</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extract_images_from_page</span><span class="p">(</span>
+                        <span class="n">device_for_image</span><span class="o">.</span><span class="n">get_result</span><span class="p">()</span>
+                    <span class="p">)</span>
+                    <span class="n">text_io</span><span class="o">.</span><span class="n">truncate</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                    <span class="n">text_io</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                    <span class="n">metadata</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="n">blob</span><span class="o">.</span><span class="n">source</span><span class="p">,</span> <span class="s2">&quot;page&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)}</span>
+                    <span class="k">yield</span> <span class="n">Document</span><span class="p">(</span><span class="n">page_content</span><span class="o">=</span><span class="n">content</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_extract_images_from_page</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">page</span><span class="p">:</span> <span class="n">pdfminer</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">LTPage</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Extract images from page and get the text with RapidOCR.&quot;&quot;&quot;</span>
+        <span class="kn">import</span> <span class="nn">pdfminer</span>
+
+        <span class="k">def</span> <span class="nf">get_image</span><span class="p">(</span><span class="n">layout_object</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">layout_object</span><span class="p">,</span> <span class="n">pdfminer</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">LTImage</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">layout_object</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">layout_object</span><span class="p">,</span> <span class="n">pdfminer</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">LTContainer</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">layout_object</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">get_image</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">images</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">img</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">map</span><span class="p">(</span><span class="n">get_image</span><span class="p">,</span> <span class="n">page</span><span class="p">))):</span>
+            <span class="k">if</span> <span class="n">img</span><span class="o">.</span><span class="n">stream</span><span class="p">[</span><span class="s2">&quot;Filter&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="n">_PDF_FILTER_WITHOUT_LOSS</span><span class="p">:</span>
+                <span class="n">images</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">frombuffer</span><span class="p">(</span><span class="n">img</span><span class="o">.</span><span class="n">stream</span><span class="o">.</span><span class="n">get_data</span><span class="p">(),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+                        <span class="n">img</span><span class="o">.</span><span class="n">stream</span><span class="p">[</span><span class="s2">&quot;Height&quot;</span><span class="p">],</span> <span class="n">img</span><span class="o">.</span><span class="n">stream</span><span class="p">[</span><span class="s2">&quot;Width&quot;</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+            <span class="k">elif</span> <span class="n">img</span><span class="o">.</span><span class="n">stream</span><span class="p">[</span><span class="s2">&quot;Filter&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="n">_PDF_FILTER_WITH_LOSS</span><span class="p">:</span>
+                <span class="n">images</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">img</span><span class="o">.</span><span class="n">stream</span><span class="o">.</span><span class="n">get_data</span><span class="p">())</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Unknown PDF Filter!&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">extract_from_images_with_rapidocr</span><span class="p">(</span><span class="n">images</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="PyMuPDFParser"><a class="viewcode-back" href="../../../../document_loaders/langchain_community.document_loaders.parsers.pdf.PyMuPDFParser.html#langchain_community.document_loaders.parsers.pdf.PyMuPDFParser">[docs]</a><span class="k">class</span> <span class="nc">PyMuPDFParser</span><span class="p">(</span><span class="n">BaseBlobParser</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse `PDF` using `PyMuPDF`.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PyMuPDFParser.__init__"><a class="viewcode-back" href="../../../../document_loaders/langchain_community.document_loaders.parsers.pdf.PyMuPDFParser.html#langchain_community.document_loaders.parsers.pdf.PyMuPDFParser.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">text_kwargs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">extract_images</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the parser.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            text_kwargs: Keyword arguments to pass to ``fitz.Page.get_text()``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">text_kwargs</span> <span class="o">=</span> <span class="n">text_kwargs</span> <span class="ow">or</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">extract_images</span> <span class="o">=</span> <span class="n">extract_images</span></div>
+
+<div class="viewcode-block" id="PyMuPDFParser.lazy_parse"><a class="viewcode-back" href="../../../../document_loaders/langchain_community.document_loaders.parsers.pdf.PyMuPDFParser.html#langchain_community.document_loaders.parsers.pdf.PyMuPDFParser.lazy_parse">[docs]</a>    <span class="k">def</span> <span class="nf">lazy_parse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">blob</span><span class="p">:</span> <span class="n">Blob</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">Document</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Lazily parse the blob.&quot;&quot;&quot;</span>
+        <span class="kn">import</span> <span class="nn">fitz</span>
+
+        <span class="k">with</span> <span class="n">blob</span><span class="o">.</span><span class="n">as_bytes_io</span><span class="p">()</span> <span class="k">as</span> <span class="n">file_path</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">blob</span><span class="o">.</span><span class="n">data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">doc</span> <span class="o">=</span> <span class="n">fitz</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">doc</span> <span class="o">=</span> <span class="n">fitz</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">stream</span><span class="o">=</span><span class="n">file_path</span><span class="p">,</span> <span class="n">filetype</span><span class="o">=</span><span class="s2">&quot;pdf&quot;</span><span class="p">)</span>
+
+            <span class="k">yield from</span> <span class="p">[</span>
+                <span class="n">Document</span><span class="p">(</span>
+                    <span class="n">page_content</span><span class="o">=</span><span class="n">page</span><span class="o">.</span><span class="n">get_text</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">text_kwargs</span><span class="p">)</span>
+                    <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extract_images_from_page</span><span class="p">(</span><span class="n">doc</span><span class="p">,</span> <span class="n">page</span><span class="p">),</span>
+                    <span class="n">metadata</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
+                        <span class="p">{</span>
+                            <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="n">blob</span><span class="o">.</span><span class="n">source</span><span class="p">,</span>
+                            <span class="s2">&quot;file_path&quot;</span><span class="p">:</span> <span class="n">blob</span><span class="o">.</span><span class="n">source</span><span class="p">,</span>
+                            <span class="s2">&quot;page&quot;</span><span class="p">:</span> <span class="n">page</span><span class="o">.</span><span class="n">number</span><span class="p">,</span>
+                            <span class="s2">&quot;total_pages&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">doc</span><span class="p">),</span>
+                        <span class="p">},</span>
+                        <span class="o">**</span><span class="p">{</span>
+                            <span class="n">k</span><span class="p">:</span> <span class="n">doc</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+                            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">doc</span><span class="o">.</span><span class="n">metadata</span>
+                            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="ow">in</span> <span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span>
+                        <span class="p">},</span>
+                    <span class="p">),</span>
+                <span class="p">)</span>
+                <span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="n">doc</span>
+            <span class="p">]</span></div>
+
+    <span class="k">def</span> <span class="nf">_extract_images_from_page</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">doc</span><span class="p">:</span> <span class="n">fitz</span><span class="o">.</span><span class="n">fitz</span><span class="o">.</span><span class="n">Document</span><span class="p">,</span> <span class="n">page</span><span class="p">:</span> <span class="n">fitz</span><span class="o">.</span><span class="n">fitz</span><span class="o">.</span><span class="n">Page</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Extract images from page and get the text with RapidOCR.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">extract_images</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;&quot;</span>
+        <span class="kn">import</span> <span class="nn">fitz</span>
+
+        <span class="n">img_list</span> <span class="o">=</span> <span class="n">page</span><span class="o">.</span><span class="n">get_images</span><span class="p">()</span>
+        <span class="n">imgs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">img</span> <span class="ow">in</span> <span class="n">img_list</span><span class="p">:</span>
+            <span class="n">xref</span> <span class="o">=</span> <span class="n">img</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">pix</span> <span class="o">=</span> <span class="n">fitz</span><span class="o">.</span><span class="n">Pixmap</span><span class="p">(</span><span class="n">doc</span><span class="p">,</span> <span class="n">xref</span><span class="p">)</span>
+            <span class="n">imgs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">frombuffer</span><span class="p">(</span><span class="n">pix</span><span class="o">.</span><span class="n">samples</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+                    <span class="n">pix</span><span class="o">.</span><span class="n">height</span><span class="p">,</span> <span class="n">pix</span><span class="o">.</span><span class="n">width</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">extract_from_images_with_rapidocr</span><span class="p">(</span><span class="n">imgs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="PyPDFium2Parser"><a class="viewcode-back" href="../../../../document_loaders/langchain_community.document_loaders.parsers.pdf.PyPDFium2Parser.html#langchain_community.document_loaders.parsers.pdf.PyPDFium2Parser">[docs]</a><span class="k">class</span> <span class="nc">PyPDFium2Parser</span><span class="p">(</span><span class="n">BaseBlobParser</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse `PDF` with `PyPDFium2`.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PyPDFium2Parser.__init__"><a class="viewcode-back" href="../../../../document_loaders/langchain_community.document_loaders.parsers.pdf.PyPDFium2Parser.html#langchain_community.document_loaders.parsers.pdf.PyPDFium2Parser.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">extract_images</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the parser.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">import</span> <span class="nn">pypdfium2</span>  <span class="c1"># noqa:F401</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+                <span class="s2">&quot;pypdfium2 package not found, please install it with&quot;</span>
+                <span class="s2">&quot; `pip install pypdfium2`&quot;</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">extract_images</span> <span class="o">=</span> <span class="n">extract_images</span></div>
+
+<div class="viewcode-block" id="PyPDFium2Parser.lazy_parse"><a class="viewcode-back" href="../../../../document_loaders/langchain_community.document_loaders.parsers.pdf.PyPDFium2Parser.html#langchain_community.document_loaders.parsers.pdf.PyPDFium2Parser.lazy_parse">[docs]</a>    <span class="k">def</span> <span class="nf">lazy_parse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">blob</span><span class="p">:</span> <span class="n">Blob</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">Document</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Lazily parse the blob.&quot;&quot;&quot;</span>
+        <span class="kn">import</span> <span class="nn">pypdfium2</span>
+
+        <span class="c1"># pypdfium2 is really finicky with respect to closing things,</span>
+        <span class="c1"># if done incorrectly creates seg faults.</span>
+        <span class="k">with</span> <span class="n">blob</span><span class="o">.</span><span class="n">as_bytes_io</span><span class="p">()</span> <span class="k">as</span> <span class="n">file_path</span><span class="p">:</span>
+            <span class="n">pdf_reader</span> <span class="o">=</span> <span class="n">pypdfium2</span><span class="o">.</span><span class="n">PdfDocument</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">autoclose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">page_number</span><span class="p">,</span> <span class="n">page</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">pdf_reader</span><span class="p">):</span>
+                    <span class="n">text_page</span> <span class="o">=</span> <span class="n">page</span><span class="o">.</span><span class="n">get_textpage</span><span class="p">()</span>
+                    <span class="n">content</span> <span class="o">=</span> <span class="n">text_page</span><span class="o">.</span><span class="n">get_text_range</span><span class="p">()</span>
+                    <span class="n">text_page</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                    <span class="n">content</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extract_images_from_page</span><span class="p">(</span><span class="n">page</span><span class="p">)</span>
+                    <span class="n">page</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                    <span class="n">metadata</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="n">blob</span><span class="o">.</span><span class="n">source</span><span class="p">,</span> <span class="s2">&quot;page&quot;</span><span class="p">:</span> <span class="n">page_number</span><span class="p">}</span>
+                    <span class="k">yield</span> <span class="n">Document</span><span class="p">(</span><span class="n">page_content</span><span class="o">=</span><span class="n">content</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span><span class="p">)</span>
+            <span class="k">finally</span><span class="p">:</span>
+                <span class="n">pdf_reader</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">_extract_images_from_page</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">page</span><span class="p">:</span> <span class="n">pypdfium2</span><span class="o">.</span><span class="n">_helpers</span><span class="o">.</span><span class="n">page</span><span class="o">.</span><span class="n">PdfPage</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Extract images from page and get the text with RapidOCR.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">extract_images</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;&quot;</span>
+
+        <span class="kn">import</span> <span class="nn">pypdfium2.raw</span> <span class="k">as</span> <span class="nn">pdfium_c</span>
+
+        <span class="n">images</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">page</span><span class="o">.</span><span class="n">get_objects</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="p">(</span><span class="n">pdfium_c</span><span class="o">.</span><span class="n">FPDF_PAGEOBJ_IMAGE</span><span class="p">,)))</span>
+
+        <span class="n">images</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">get_bitmap</span><span class="p">()</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(),</span> <span class="n">images</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">extract_from_images_with_rapidocr</span><span class="p">(</span><span class="n">images</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="PDFPlumberParser"><a class="viewcode-back" href="../../../../document_loaders/langchain_community.document_loaders.parsers.pdf.PDFPlumberParser.html#langchain_community.document_loaders.parsers.pdf.PDFPlumberParser">[docs]</a><span class="k">class</span> <span class="nc">PDFPlumberParser</span><span class="p">(</span><span class="n">BaseBlobParser</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse `PDF` with `PDFPlumber`.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PDFPlumberParser.__init__"><a class="viewcode-back" href="../../../../document_loaders/langchain_community.document_loaders.parsers.pdf.PDFPlumberParser.html#langchain_community.document_loaders.parsers.pdf.PDFPlumberParser.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">text_kwargs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">dedupe</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">extract_images</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the parser.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            text_kwargs: Keyword arguments to pass to ``pdfplumber.Page.extract_text()``</span>
+<span class="sd">            dedupe: Avoiding the error of duplicate characters if `dedupe=True`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">text_kwargs</span> <span class="o">=</span> <span class="n">text_kwargs</span> <span class="ow">or</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dedupe</span> <span class="o">=</span> <span class="n">dedupe</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">extract_images</span> <span class="o">=</span> <span class="n">extract_images</span></div>
+
+<div class="viewcode-block" id="PDFPlumberParser.lazy_parse"><a class="viewcode-back" href="../../../../document_loaders/langchain_community.document_loaders.parsers.pdf.PDFPlumberParser.html#langchain_community.document_loaders.parsers.pdf.PDFPlumberParser.lazy_parse">[docs]</a>    <span class="k">def</span> <span class="nf">lazy_parse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">blob</span><span class="p">:</span> <span class="n">Blob</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">Document</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Lazily parse the blob.&quot;&quot;&quot;</span>
+        <span class="kn">import</span> <span class="nn">pdfplumber</span>
+
+        <span class="k">with</span> <span class="n">blob</span><span class="o">.</span><span class="n">as_bytes_io</span><span class="p">()</span> <span class="k">as</span> <span class="n">file_path</span><span class="p">:</span>
+            <span class="n">doc</span> <span class="o">=</span> <span class="n">pdfplumber</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>  <span class="c1"># open document</span>
+
+            <span class="k">yield from</span> <span class="p">[</span>
+                <span class="n">Document</span><span class="p">(</span>
+                    <span class="n">page_content</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_process_page_content</span><span class="p">(</span><span class="n">page</span><span class="p">)</span>
+                    <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+                    <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extract_images_from_page</span><span class="p">(</span><span class="n">page</span><span class="p">),</span>
+                    <span class="n">metadata</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
+                        <span class="p">{</span>
+                            <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="n">blob</span><span class="o">.</span><span class="n">source</span><span class="p">,</span>
+                            <span class="s2">&quot;file_path&quot;</span><span class="p">:</span> <span class="n">blob</span><span class="o">.</span><span class="n">source</span><span class="p">,</span>
+                            <span class="s2">&quot;page&quot;</span><span class="p">:</span> <span class="n">page</span><span class="o">.</span><span class="n">page_number</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span>
+                            <span class="s2">&quot;total_pages&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">pages</span><span class="p">),</span>
+                        <span class="p">},</span>
+                        <span class="o">**</span><span class="p">{</span>
+                            <span class="n">k</span><span class="p">:</span> <span class="n">doc</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+                            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">doc</span><span class="o">.</span><span class="n">metadata</span>
+                            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="ow">in</span> <span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span>
+                        <span class="p">},</span>
+                    <span class="p">),</span>
+                <span class="p">)</span>
+                <span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="n">doc</span><span class="o">.</span><span class="n">pages</span>
+            <span class="p">]</span></div>
+
+    <span class="k">def</span> <span class="nf">_process_page_content</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">page</span><span class="p">:</span> <span class="n">pdfplumber</span><span class="o">.</span><span class="n">page</span><span class="o">.</span><span class="n">Page</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Process the page content based on dedupe.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dedupe</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">page</span><span class="o">.</span><span class="n">dedupe_chars</span><span class="p">()</span><span class="o">.</span><span class="n">extract_text</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">text_kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">page</span><span class="o">.</span><span class="n">extract_text</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">text_kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_extract_images_from_page</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">page</span><span class="p">:</span> <span class="n">pdfplumber</span><span class="o">.</span><span class="n">page</span><span class="o">.</span><span class="n">Page</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Extract images from page and get the text with RapidOCR.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">extract_images</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;&quot;</span>
+
+        <span class="n">images</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">img</span> <span class="ow">in</span> <span class="n">page</span><span class="o">.</span><span class="n">images</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">img</span><span class="p">[</span><span class="s2">&quot;stream&quot;</span><span class="p">][</span><span class="s2">&quot;Filter&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="n">_PDF_FILTER_WITHOUT_LOSS</span><span class="p">:</span>
+                <span class="n">images</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">frombuffer</span><span class="p">(</span><span class="n">img</span><span class="p">[</span><span class="s2">&quot;stream&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get_data</span><span class="p">(),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+                        <span class="n">img</span><span class="p">[</span><span class="s2">&quot;stream&quot;</span><span class="p">][</span><span class="s2">&quot;Height&quot;</span><span class="p">],</span> <span class="n">img</span><span class="p">[</span><span class="s2">&quot;stream&quot;</span><span class="p">][</span><span class="s2">&quot;Width&quot;</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+            <span class="k">elif</span> <span class="n">img</span><span class="p">[</span><span class="s2">&quot;stream&quot;</span><span class="p">][</span><span class="s2">&quot;Filter&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="n">_PDF_FILTER_WITH_LOSS</span><span class="p">:</span>
+                <span class="n">images</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">img</span><span class="p">[</span><span class="s2">&quot;stream&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get_data</span><span class="p">())</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Unknown PDF Filter!&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">extract_from_images_with_rapidocr</span><span class="p">(</span><span class="n">images</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AmazonTextractPDFParser"><a class="viewcode-back" href="../../../../document_loaders/langchain_community.document_loaders.parsers.pdf.AmazonTextractPDFParser.html#langchain_community.document_loaders.parsers.pdf.AmazonTextractPDFParser">[docs]</a><span class="k">class</span> <span class="nc">AmazonTextractPDFParser</span><span class="p">(</span><span class="n">BaseBlobParser</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Send `PDF` files to `Amazon Textract` and parse them.</span>
+
+<span class="sd">    For parsing multi-page PDFs, they have to reside on S3.</span>
+
+<span class="sd">    The AmazonTextractPDFLoader calls the</span>
+<span class="sd">    [Amazon Textract Service](https://aws.amazon.com/textract/)</span>
+<span class="sd">    to convert PDFs into a Document structure.</span>
+<span class="sd">    Single and multi-page documents are supported with up to 3000 pages</span>
+<span class="sd">    and 512 MB of size.</span>
+
+<span class="sd">    For the call to be successful an AWS account is required,</span>
+<span class="sd">    similar to the</span>
+<span class="sd">    [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html)</span>
+<span class="sd">    requirements.</span>
+
+<span class="sd">    Besides the AWS configuration, it is very similar to the other PDF</span>
+<span class="sd">    loaders, while also supporting JPEG, PNG and TIFF and non-native</span>
+<span class="sd">    PDF formats.</span>
+
+<span class="sd">    ```python</span>
+<span class="sd">    from langchain_community.document_loaders import AmazonTextractPDFLoader</span>
+<span class="sd">    loader=AmazonTextractPDFLoader(&quot;example_data/alejandro_rosalez_sample-small.jpeg&quot;)</span>
+<span class="sd">    documents = loader.load()</span>
+<span class="sd">    ```</span>
+
+<span class="sd">    One feature is the linearization of the output.</span>
+<span class="sd">    When using the features LAYOUT, FORMS or TABLES together with Textract</span>
+
+<span class="sd">    ```python</span>
+<span class="sd">    from langchain_community.document_loaders import AmazonTextractPDFLoader</span>
+<span class="sd">    # you can mix and match each of the features</span>
+<span class="sd">    loader=AmazonTextractPDFLoader(</span>
+<span class="sd">        &quot;example_data/alejandro_rosalez_sample-small.jpeg&quot;,</span>
+<span class="sd">        textract_features=[&quot;TABLES&quot;, &quot;LAYOUT&quot;])</span>
+<span class="sd">    documents = loader.load()</span>
+<span class="sd">    ```</span>
+
+<span class="sd">    it will generate output that formats the text in reading order and</span>
+<span class="sd">    try to output the information in a tabular structure or</span>
+<span class="sd">    output the key/value pairs with a colon (key: value).</span>
+<span class="sd">    This helps most LLMs to achieve better accuracy when</span>
+<span class="sd">    processing these texts.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="AmazonTextractPDFParser.__init__"><a class="viewcode-back" href="../../../../document_loaders/langchain_community.document_loaders.parsers.pdf.AmazonTextractPDFParser.html#langchain_community.document_loaders.parsers.pdf.AmazonTextractPDFParser.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">textract_features</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">client</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">linearization_config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;TextLinearizationConfig&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes the parser.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            textract_features: Features to be used for extraction, each feature</span>
+<span class="sd">                               should be passed as an int that conforms to the enum</span>
+<span class="sd">                               `Textract_Features`, see `amazon-textract-caller` pkg</span>
+<span class="sd">            client: boto3 textract client</span>
+<span class="sd">            linearization_config: Config to be used for linearization of the output</span>
+<span class="sd">                                  should be an instance of TextLinearizationConfig from</span>
+<span class="sd">                                  the `textractor` pkg</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">import</span> <span class="nn">textractcaller</span> <span class="k">as</span> <span class="nn">tc</span>
+            <span class="kn">import</span> <span class="nn">textractor.entities.document</span> <span class="k">as</span> <span class="nn">textractor</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">tc</span> <span class="o">=</span> <span class="n">tc</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">textractor</span> <span class="o">=</span> <span class="n">textractor</span>
+
+            <span class="k">if</span> <span class="n">textract_features</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">textract_features</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="n">tc</span><span class="o">.</span><span class="n">Textract_Features</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">textract_features</span>
+                <span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">textract_features</span> <span class="o">=</span> <span class="p">[]</span>
+
+            <span class="k">if</span> <span class="n">linearization_config</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">linearization_config</span> <span class="o">=</span> <span class="n">linearization_config</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">linearization_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">textractor</span><span class="o">.</span><span class="n">TextLinearizationConfig</span><span class="p">(</span>
+                    <span class="n">hide_figure_layout</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                    <span class="n">title_prefix</span><span class="o">=</span><span class="s2">&quot;# &quot;</span><span class="p">,</span>
+                    <span class="n">section_header_prefix</span><span class="o">=</span><span class="s2">&quot;## &quot;</span><span class="p">,</span>
+                    <span class="n">list_element_prefix</span><span class="o">=</span><span class="s2">&quot;*&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+                <span class="s2">&quot;Could not import amazon-textract-caller or &quot;</span>
+                <span class="s2">&quot;amazon-textract-textractor python package. Please install it &quot;</span>
+                <span class="s2">&quot;with `pip install amazon-textract-caller` &amp; &quot;</span>
+                <span class="s2">&quot;`pip install amazon-textract-textractor`.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">client</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="kn">import</span> <span class="nn">boto3</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">boto3_textract_client</span> <span class="o">=</span> <span class="n">boto3</span><span class="o">.</span><span class="n">client</span><span class="p">(</span><span class="s2">&quot;textract&quot;</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+                    <span class="s2">&quot;Could not import boto3 python package. &quot;</span>
+                    <span class="s2">&quot;Please install it with `pip install boto3`.&quot;</span>
+                <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">boto3_textract_client</span> <span class="o">=</span> <span class="n">client</span></div>
+
+<div class="viewcode-block" id="AmazonTextractPDFParser.lazy_parse"><a class="viewcode-back" href="../../../../document_loaders/langchain_community.document_loaders.parsers.pdf.AmazonTextractPDFParser.html#langchain_community.document_loaders.parsers.pdf.AmazonTextractPDFParser.lazy_parse">[docs]</a>    <span class="k">def</span> <span class="nf">lazy_parse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">blob</span><span class="p">:</span> <span class="n">Blob</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">Document</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Iterates over the Blob pages and returns an Iterator with a Document</span>
+<span class="sd">        for each page, like the other parsers If multi-page document, blob.path</span>
+<span class="sd">        has to be set to the S3 URI and for single page docs</span>
+<span class="sd">        the blob.data is taken</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">url_parse_result</span> <span class="o">=</span> <span class="n">urlparse</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">blob</span><span class="o">.</span><span class="n">path</span><span class="p">))</span> <span class="k">if</span> <span class="n">blob</span><span class="o">.</span><span class="n">path</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="c1"># Either call with S3 path (multi-page) or with bytes (single-page)</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="n">url_parse_result</span>
+            <span class="ow">and</span> <span class="n">url_parse_result</span><span class="o">.</span><span class="n">scheme</span> <span class="o">==</span> <span class="s2">&quot;s3&quot;</span>
+            <span class="ow">and</span> <span class="n">url_parse_result</span><span class="o">.</span><span class="n">netloc</span>
+        <span class="p">):</span>
+            <span class="n">textract_response_json</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tc</span><span class="o">.</span><span class="n">call_textract</span><span class="p">(</span>
+                <span class="n">input_document</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">blob</span><span class="o">.</span><span class="n">path</span><span class="p">),</span>
+                <span class="n">features</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">textract_features</span><span class="p">,</span>
+                <span class="n">boto3_textract_client</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">boto3_textract_client</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">textract_response_json</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tc</span><span class="o">.</span><span class="n">call_textract</span><span class="p">(</span>
+                <span class="n">input_document</span><span class="o">=</span><span class="n">blob</span><span class="o">.</span><span class="n">as_bytes</span><span class="p">(),</span>
+                <span class="n">features</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">textract_features</span><span class="p">,</span>
+                <span class="n">call_mode</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tc</span><span class="o">.</span><span class="n">Textract_Call_Mode</span><span class="o">.</span><span class="n">FORCE_SYNC</span><span class="p">,</span>
+                <span class="n">boto3_textract_client</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">boto3_textract_client</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="n">document</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">textractor</span><span class="o">.</span><span class="n">Document</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">textract_response_json</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">page</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">document</span><span class="o">.</span><span class="n">pages</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="n">Document</span><span class="p">(</span>
+                <span class="n">page_content</span><span class="o">=</span><span class="n">page</span><span class="o">.</span><span class="n">get_text</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">linearization_config</span><span class="p">),</span>
+                <span class="n">metadata</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="n">blob</span><span class="o">.</span><span class="n">source</span><span class="p">,</span> <span class="s2">&quot;page&quot;</span><span class="p">:</span> <span class="n">idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">},</span>
+            <span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="DocumentIntelligenceParser"><a class="viewcode-back" href="../../../../document_loaders/langchain_community.document_loaders.parsers.pdf.DocumentIntelligenceParser.html#langchain_community.document_loaders.parsers.pdf.DocumentIntelligenceParser">[docs]</a><span class="k">class</span> <span class="nc">DocumentIntelligenceParser</span><span class="p">(</span><span class="n">BaseBlobParser</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Loads a PDF with Azure Document Intelligence</span>
+<span class="sd">    (formerly Form Recognizer) and chunks at character level.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="DocumentIntelligenceParser.__init__"><a class="viewcode-back" href="../../../../document_loaders/langchain_community.document_loaders.parsers.pdf.DocumentIntelligenceParser.html#langchain_community.document_loaders.parsers.pdf.DocumentIntelligenceParser.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="s2">&quot;langchain_community.document_loaders.parsers.pdf.DocumentIntelligenceParser&quot;</span>
+            <span class="s2">&quot;and langchain_community.document_loaders.pdf.DocumentIntelligenceLoader&quot;</span>
+            <span class="s2">&quot; are deprecated. Please upgrade to &quot;</span>
+            <span class="s2">&quot;langchain_community.document_loaders.DocumentIntelligenceLoader &quot;</span>
+            <span class="s2">&quot;for any file parsing purpose using Azure Document Intelligence &quot;</span>
+            <span class="s2">&quot;service.&quot;</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span> <span class="o">=</span> <span class="n">client</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span></div>
+
+    <span class="k">def</span> <span class="nf">_generate_docs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">blob</span><span class="p">:</span> <span class="n">Blob</span><span class="p">,</span> <span class="n">result</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">Document</span><span class="p">]:</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">pages</span><span class="p">:</span>
+            <span class="n">content</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">line</span><span class="o">.</span><span class="n">content</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">p</span><span class="o">.</span><span class="n">lines</span><span class="p">])</span>
+
+            <span class="n">d</span> <span class="o">=</span> <span class="n">Document</span><span class="p">(</span>
+                <span class="n">page_content</span><span class="o">=</span><span class="n">content</span><span class="p">,</span>
+                <span class="n">metadata</span><span class="o">=</span><span class="p">{</span>
+                    <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="n">blob</span><span class="o">.</span><span class="n">source</span><span class="p">,</span>
+                    <span class="s2">&quot;page&quot;</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">page_number</span><span class="p">,</span>
+                <span class="p">},</span>
+            <span class="p">)</span>
+            <span class="k">yield</span> <span class="n">d</span>
+
+<div class="viewcode-block" id="DocumentIntelligenceParser.lazy_parse"><a class="viewcode-back" href="../../../../document_loaders/langchain_community.document_loaders.parsers.pdf.DocumentIntelligenceParser.html#langchain_community.document_loaders.parsers.pdf.DocumentIntelligenceParser.lazy_parse">[docs]</a>    <span class="k">def</span> <span class="nf">lazy_parse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">blob</span><span class="p">:</span> <span class="n">Blob</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">Document</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Lazily parse the blob.&quot;&quot;&quot;</span>
+
+        <span class="k">with</span> <span class="n">blob</span><span class="o">.</span><span class="n">as_bytes_io</span><span class="p">()</span> <span class="k">as</span> <span class="n">file_obj</span><span class="p">:</span>
+            <span class="n">poller</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">begin_analyze_document</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">file_obj</span><span class="p">)</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">poller</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
+
+            <span class="n">docs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_docs</span><span class="p">(</span><span class="n">blob</span><span class="p">,</span> <span class="n">result</span><span class="p">)</span>
+
+            <span class="k">yield from</span> <span class="n">docs</span></div></div>
+</pre></div>
+
+      </div>
+    <div class="container">
+      <footer class="sk-content-footer">
+            &copy; 2023, LangChain, Inc..
+          Last updated on Mar 15, 2024.
+      </footer>
+    </div>
+  </div>
+</div>
+<script src="../../../../_static/js/vendor/bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    /* Add a [>>>] button on the top-right corner of code samples to hide
+     * the >>> and ... prompts and the output and thus make the code
+     * copyable. */
+    var div = $('.highlight-python .highlight,' +
+                '.highlight-python3 .highlight,' +
+                '.highlight-pycon .highlight,' +
+		'.highlight-default .highlight')
+    var pre = div.find('pre');
+
+    // get the styles from the current theme
+    pre.parent().parent().css('position', 'relative');
+    var hide_text = 'Hide prompts and outputs';
+    var show_text = 'Show prompts and outputs';
+
+    // create and add the button to all the code blocks that contain >>>
+    div.each(function(index) {
+        var jthis = $(this);
+        if (jthis.find('.gp').length > 0) {
+            var button = $('<span class="copybutton">&gt;&gt;&gt;</span>');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+            jthis.prepend(button);
+        }
+        // tracebacks (.gt) contain bare text elements that need to be
+        // wrapped in a span to work with .nextUntil() (see later)
+        jthis.find('pre:has(.gt)').contents().filter(function() {
+            return ((this.nodeType == 3) && (this.data.trim().length > 0));
+        }).wrap('<span>');
+    });
+
+    // define the behavior of the button when it's clicked
+    $('.copybutton').click(function(e){
+        e.preventDefault();
+        var button = $(this);
+        if (button.data('hidden') === 'false') {
+            // hide the code output
+            button.parent().find('.go, .gp, .gt').hide();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'hidden');
+            button.css('text-decoration', 'line-through');
+            button.attr('title', show_text);
+            button.data('hidden', 'true');
+        } else {
+            // show the code output
+            button.parent().find('.go, .gp, .gt').show();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'visible');
+            button.css('text-decoration', 'none');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+        }
+    });
+
+	/*** Add permalink buttons next to glossary terms ***/
+	$('dl.glossary > dt[id]').append(function() {
+		return ('<a class="headerlink" href="#' +
+			    this.getAttribute('id') +
+			    '" title="Permalink to this term">¶</a>');
+	});
+});
+
+</script>
+    
+</body>
+</html>

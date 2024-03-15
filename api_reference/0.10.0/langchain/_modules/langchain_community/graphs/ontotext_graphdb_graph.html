@@ -1,0 +1,389 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>langchain_community.graphs.ontotext_graphdb_graph &mdash; 🦜🔗 LangChain 0.1.12</title>
+  
+  <link rel="canonical" href="https://api.python.langchain.com/en/latest/_modules/langchain_community/graphs/ontotext_graphdb_graph.html" />
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/vendor/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/autodoc_pydantic.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/sphinx-dropdown.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/panels-bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+<script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+<script src="../../../_static/jquery.js"></script> 
+</head>
+<body>
+
+
+<nav id="navbar" class="sk-docs-navbar navbar navbar-expand-md navbar-light bg-light py-0">
+  <div class="container-fluid sk-docs-container px-0">
+    <button
+      id="sk-navbar-toggler"
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="sk-navbar-collapse collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../langchain_api_reference.html">LangChain</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../core_api_reference.html">Core</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../community_api_reference.html">Community</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../experimental_api_reference.html">Experimental</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../text_splitters_api_reference.html">Text splitters</a>
+        </li>
+        <li class="nav-item dropdown nav-more-item-dropdown">
+          <a class="sk-nav-link nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Partner libs</a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+          </div>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" target="_blank" rel="noopener noreferrer" href="https://python.langchain.com/">Docs</a>
+        </li>
+      </ul>
+      <div id="searchbox" role="search">
+          <div class="searchformwrapper">
+          <form class="search" action="../../../search.html" method="get">
+            <input class="sk-search-text-input" type="text" name="q" aria-labelledby="searchlabel" />
+            <input class="sk-search-text-btn" type="submit" value="Go" />
+          </form>
+          </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="d-flex" id="sk-doc-wrapper">
+    <input type="checkbox" name="sk-toggle-checkbox" id="sk-toggle-checkbox">
+    <label id="sk-sidemenu-toggle" class="sk-btn-toggle-toc btn sk-btn-primary" for="sk-toggle-checkbox">Toggle Menu</label>
+    <div id="sk-sidebar-wrapper" class="border-right">
+      <div class="sk-sidebar-toc-wrapper">
+        <div class="btn-group w-100 mb-2" role="group" aria-label="rellinks">
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Prev</a><a href="../../index.html" role="button" class="btn sk-btn-rellink py-1" sk-rellink-tooltip="Module code">Up</a>
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Next</a>
+        </div>
+            <div class="sk-sidebar-toc">
+              
+            </div>
+      </div>
+    </div>
+    <div id="sk-page-content-wrapper">
+      <div class="sk-page-content container-fluid body px-md-3" role="main">
+        
+  <h1>Source code for langchain_community.graphs.ontotext_graphdb_graph</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">TYPE_CHECKING</span><span class="p">,</span>
+    <span class="n">List</span><span class="p">,</span>
+    <span class="n">Optional</span><span class="p">,</span>
+    <span class="n">Union</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">rdflib</span>
+
+
+<div class="viewcode-block" id="OntotextGraphDBGraph"><a class="viewcode-back" href="../../../graphs/langchain_community.graphs.ontotext_graphdb_graph.OntotextGraphDBGraph.html#langchain_community.graphs.ontotext_graphdb_graph.OntotextGraphDBGraph">[docs]</a><span class="k">class</span> <span class="nc">OntotextGraphDBGraph</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Ontotext GraphDB https://graphdb.ontotext.com/ wrapper for graph operations.</span>
+
+<span class="sd">    *Security note*: Make sure that the database connection uses credentials</span>
+<span class="sd">        that are narrowly-scoped to only include necessary permissions.</span>
+<span class="sd">        Failure to do so may result in data corruption or loss, since the calling</span>
+<span class="sd">        code may attempt commands that would result in deletion, mutation</span>
+<span class="sd">        of data if appropriately prompted or reading sensitive data if such</span>
+<span class="sd">        data is present in the database.</span>
+<span class="sd">        The best way to guard against such negative outcomes is to (as appropriate)</span>
+<span class="sd">        limit the permissions granted to the credentials used with this tool.</span>
+
+<span class="sd">        See https://python.langchain.com/docs/security for more information.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="OntotextGraphDBGraph.__init__"><a class="viewcode-back" href="../../../graphs/langchain_community.graphs.ontotext_graphdb_graph.OntotextGraphDBGraph.html#langchain_community.graphs.ontotext_graphdb_graph.OntotextGraphDBGraph.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">query_endpoint</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">query_ontology</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">local_file</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">local_file_format</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set up the GraphDB wrapper</span>
+
+<span class="sd">        :param query_endpoint: SPARQL endpoint for queries, read access</span>
+
+<span class="sd">        If GraphDB is secured,</span>
+<span class="sd">        set the environment variables &#39;GRAPHDB_USERNAME&#39; and &#39;GRAPHDB_PASSWORD&#39;.</span>
+
+<span class="sd">        :param query_ontology: a `CONSTRUCT` query that is executed</span>
+<span class="sd">        on the SPARQL endpoint and returns the KG schema statements</span>
+<span class="sd">        Example:</span>
+<span class="sd">        &#39;CONSTRUCT {?s ?p ?o} FROM &lt;https://example.com/ontology/&gt; WHERE {?s ?p ?o}&#39;</span>
+<span class="sd">        Currently, DESCRIBE queries like</span>
+<span class="sd">        &#39;PREFIX onto: &lt;https://example.com/ontology/&gt;</span>
+<span class="sd">        PREFIX rdfs: &lt;http://www.w3.org/2000/01/rdf-schema#&gt;</span>
+<span class="sd">        DESCRIBE ?term WHERE {</span>
+<span class="sd">            ?term rdfs:isDefinedBy onto:</span>
+<span class="sd">        }&#39;</span>
+<span class="sd">        are not supported, because DESCRIBE returns</span>
+<span class="sd">        the Symmetric Concise Bounded Description (SCBD),</span>
+<span class="sd">        i.e. also the incoming class links.</span>
+<span class="sd">        In case of large graphs with a million of instances, this is not efficient.</span>
+<span class="sd">        Check https://github.com/eclipse-rdf4j/rdf4j/issues/4857</span>
+
+<span class="sd">        :param local_file: a local RDF ontology file.</span>
+<span class="sd">        Supported RDF formats:</span>
+<span class="sd">        Turtle, RDF/XML, JSON-LD, N-Triples, Notation-3, Trig, Trix, N-Quads.</span>
+<span class="sd">        If the rdf format can&#39;t be determined from the file extension,</span>
+<span class="sd">        pass explicitly the rdf format in `local_file_format` param.</span>
+
+<span class="sd">        :param local_file_format: Used if the rdf format can&#39;t be determined</span>
+<span class="sd">        from the local file extension.</span>
+<span class="sd">        One of &quot;json-ld&quot;, &quot;xml&quot;, &quot;n3&quot;, &quot;turtle&quot;, &quot;nt&quot;, &quot;trig&quot;, &quot;nquads&quot;, &quot;trix&quot;</span>
+
+<span class="sd">        Either `query_ontology` or `local_file` should be passed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">query_ontology</span> <span class="ow">and</span> <span class="n">local_file</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Both file and query provided. Only one is allowed.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">query_ontology</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">local_file</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Neither file nor query provided. One is required.&quot;</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">import</span> <span class="nn">rdflib</span>
+            <span class="kn">from</span> <span class="nn">rdflib.plugins.stores</span> <span class="kn">import</span> <span class="n">sparqlstore</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Could not import rdflib python package. &quot;</span>
+                <span class="s2">&quot;Please install it with `pip install rdflib`.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="n">auth</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_auth</span><span class="p">()</span>
+        <span class="n">store</span> <span class="o">=</span> <span class="n">sparqlstore</span><span class="o">.</span><span class="n">SPARQLStore</span><span class="p">(</span><span class="n">auth</span><span class="o">=</span><span class="n">auth</span><span class="p">)</span>
+        <span class="n">store</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">query_endpoint</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">graph</span> <span class="o">=</span> <span class="n">rdflib</span><span class="o">.</span><span class="n">Graph</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">identifier</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">bind_namespaces</span><span class="o">=</span><span class="s2">&quot;none&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_connectivity</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">local_file</span><span class="p">:</span>
+            <span class="n">ontology_schema_graph</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_ontology_schema_from_file</span><span class="p">(</span>
+                <span class="n">local_file</span><span class="p">,</span>
+                <span class="n">local_file_format</span><span class="p">,</span>  <span class="c1"># type: ignore[arg-type]</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_validate_user_query</span><span class="p">(</span><span class="n">query_ontology</span><span class="p">)</span>  <span class="c1"># type: ignore[arg-type]</span>
+            <span class="n">ontology_schema_graph</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_ontology_schema_with_query</span><span class="p">(</span>
+                <span class="n">query_ontology</span>  <span class="c1"># type: ignore[arg-type]</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">schema</span> <span class="o">=</span> <span class="n">ontology_schema_graph</span><span class="o">.</span><span class="n">serialize</span><span class="p">(</span><span class="nb">format</span><span class="o">=</span><span class="s2">&quot;turtle&quot;</span><span class="p">)</span></div>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_get_auth</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">tuple</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the basic authentication configuration</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">username</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;GRAPHDB_USERNAME&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">password</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;GRAPHDB_PASSWORD&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">username</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">password</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;Environment variable &#39;GRAPHDB_USERNAME&#39; is set, &quot;</span>
+                    <span class="s2">&quot;but &#39;GRAPHDB_PASSWORD&#39; is not set.&quot;</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">username</span><span class="p">,</span> <span class="n">password</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">_check_connectivity</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Executes a simple `ASK` query to check connectivity</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;ASK { ?s ?p ?o }&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Could not query the provided endpoint. &quot;</span>
+                <span class="s2">&quot;Please, check, if the value of the provided &quot;</span>
+                <span class="s2">&quot;query_endpoint points to the right repository. &quot;</span>
+                <span class="s2">&quot;If GraphDB is secured, please, &quot;</span>
+                <span class="s2">&quot;make sure that the environment variables &quot;</span>
+                <span class="s2">&quot;&#39;GRAPHDB_USERNAME&#39; and &#39;GRAPHDB_PASSWORD&#39; are set.&quot;</span>
+            <span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_load_ontology_schema_from_file</span><span class="p">(</span><span class="n">local_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">local_file_format</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>  <span class="c1"># type: ignore[no-untyped-def, assignment]</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parse the ontology schema statements from the provided file</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">import</span> <span class="nn">rdflib</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">local_file</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;File </span><span class="si">{</span><span class="n">local_file</span><span class="si">}</span><span class="s2"> does not exist.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">access</span><span class="p">(</span><span class="n">local_file</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">R_OK</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">PermissionError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Read permission for </span><span class="si">{</span><span class="n">local_file</span><span class="si">}</span><span class="s2"> is restricted&quot;</span><span class="p">)</span>
+        <span class="n">graph</span> <span class="o">=</span> <span class="n">rdflib</span><span class="o">.</span><span class="n">ConjunctiveGraph</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">graph</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">local_file</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="n">local_file_format</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid file format for </span><span class="si">{</span><span class="n">local_file</span><span class="si">}</span><span class="s2"> : &quot;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">graph</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_validate_user_query</span><span class="p">(</span><span class="n">query_ontology</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Validate the query is a valid SPARQL CONSTRUCT query</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">pyparsing</span> <span class="kn">import</span> <span class="n">ParseException</span>
+        <span class="kn">from</span> <span class="nn">rdflib.plugins.sparql</span> <span class="kn">import</span> <span class="n">prepareQuery</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">query_ontology</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Ontology query must be provided as string.&quot;</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">parsed_query</span> <span class="o">=</span> <span class="n">prepareQuery</span><span class="p">(</span><span class="n">query_ontology</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">ParseException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Ontology query is not a valid SPARQL query.&quot;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">parsed_query</span><span class="o">.</span><span class="n">algebra</span><span class="o">.</span><span class="n">name</span> <span class="o">!=</span> <span class="s2">&quot;ConstructQuery&quot;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Invalid query type. Only CONSTRUCT queries are supported.&quot;</span>
+            <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_load_ontology_schema_with_query</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>  <span class="c1"># type: ignore[no-untyped-def]</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Execute the query for collecting the ontology schema statements</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">rdflib.exceptions</span> <span class="kn">import</span> <span class="n">ParserError</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">ParserError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Generated SPARQL statement is invalid</span><span class="se">\n</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">results</span><span class="o">.</span><span class="n">graph</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">get_schema</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the schema of the graph database in turtle format</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">schema</span>
+
+<div class="viewcode-block" id="OntotextGraphDBGraph.query"><a class="viewcode-back" href="../../../graphs/langchain_community.graphs.ontotext_graphdb_graph.OntotextGraphDBGraph.html#langchain_community.graphs.ontotext_graphdb_graph.OntotextGraphDBGraph.query">[docs]</a>    <span class="k">def</span> <span class="nf">query</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">rdflib</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">ResultRow</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Query the graph.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">rdflib.query</span> <span class="kn">import</span> <span class="n">ResultRow</span>
+
+        <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">r</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">res</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">ResultRow</span><span class="p">)]</span></div></div>
+</pre></div>
+
+      </div>
+    <div class="container">
+      <footer class="sk-content-footer">
+            &copy; 2023, LangChain, Inc..
+          Last updated on Mar 15, 2024.
+      </footer>
+    </div>
+  </div>
+</div>
+<script src="../../../_static/js/vendor/bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    /* Add a [>>>] button on the top-right corner of code samples to hide
+     * the >>> and ... prompts and the output and thus make the code
+     * copyable. */
+    var div = $('.highlight-python .highlight,' +
+                '.highlight-python3 .highlight,' +
+                '.highlight-pycon .highlight,' +
+		'.highlight-default .highlight')
+    var pre = div.find('pre');
+
+    // get the styles from the current theme
+    pre.parent().parent().css('position', 'relative');
+    var hide_text = 'Hide prompts and outputs';
+    var show_text = 'Show prompts and outputs';
+
+    // create and add the button to all the code blocks that contain >>>
+    div.each(function(index) {
+        var jthis = $(this);
+        if (jthis.find('.gp').length > 0) {
+            var button = $('<span class="copybutton">&gt;&gt;&gt;</span>');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+            jthis.prepend(button);
+        }
+        // tracebacks (.gt) contain bare text elements that need to be
+        // wrapped in a span to work with .nextUntil() (see later)
+        jthis.find('pre:has(.gt)').contents().filter(function() {
+            return ((this.nodeType == 3) && (this.data.trim().length > 0));
+        }).wrap('<span>');
+    });
+
+    // define the behavior of the button when it's clicked
+    $('.copybutton').click(function(e){
+        e.preventDefault();
+        var button = $(this);
+        if (button.data('hidden') === 'false') {
+            // hide the code output
+            button.parent().find('.go, .gp, .gt').hide();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'hidden');
+            button.css('text-decoration', 'line-through');
+            button.attr('title', show_text);
+            button.data('hidden', 'true');
+        } else {
+            // show the code output
+            button.parent().find('.go, .gp, .gt').show();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'visible');
+            button.css('text-decoration', 'none');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+        }
+    });
+
+	/*** Add permalink buttons next to glossary terms ***/
+	$('dl.glossary > dt[id]').append(function() {
+		return ('<a class="headerlink" href="#' +
+			    this.getAttribute('id') +
+			    '" title="Permalink to this term">¶</a>');
+	});
+});
+
+</script>
+    
+</body>
+</html>

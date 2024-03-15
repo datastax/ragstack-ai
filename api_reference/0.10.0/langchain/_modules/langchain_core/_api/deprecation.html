@@ -1,0 +1,575 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>langchain_core._api.deprecation &mdash; 🦜🔗 LangChain 0.1.12</title>
+  
+  <link rel="canonical" href="https://api.python.langchain.com/en/latest/_modules/langchain_core/_api/deprecation.html" />
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/vendor/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/autodoc_pydantic.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/sphinx-dropdown.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/panels-bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+<script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+<script src="../../../_static/jquery.js"></script> 
+</head>
+<body>
+
+
+<nav id="navbar" class="sk-docs-navbar navbar navbar-expand-md navbar-light bg-light py-0">
+  <div class="container-fluid sk-docs-container px-0">
+    <button
+      id="sk-navbar-toggler"
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="sk-navbar-collapse collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../langchain_api_reference.html">LangChain</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../core_api_reference.html">Core</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../community_api_reference.html">Community</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../experimental_api_reference.html">Experimental</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../text_splitters_api_reference.html">Text splitters</a>
+        </li>
+        <li class="nav-item dropdown nav-more-item-dropdown">
+          <a class="sk-nav-link nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Partner libs</a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+          </div>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" target="_blank" rel="noopener noreferrer" href="https://python.langchain.com/">Docs</a>
+        </li>
+      </ul>
+      <div id="searchbox" role="search">
+          <div class="searchformwrapper">
+          <form class="search" action="../../../search.html" method="get">
+            <input class="sk-search-text-input" type="text" name="q" aria-labelledby="searchlabel" />
+            <input class="sk-search-text-btn" type="submit" value="Go" />
+          </form>
+          </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="d-flex" id="sk-doc-wrapper">
+    <input type="checkbox" name="sk-toggle-checkbox" id="sk-toggle-checkbox">
+    <label id="sk-sidemenu-toggle" class="sk-btn-toggle-toc btn sk-btn-primary" for="sk-toggle-checkbox">Toggle Menu</label>
+    <div id="sk-sidebar-wrapper" class="border-right">
+      <div class="sk-sidebar-toc-wrapper">
+        <div class="btn-group w-100 mb-2" role="group" aria-label="rellinks">
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Prev</a><a href="../../index.html" role="button" class="btn sk-btn-rellink py-1" sk-rellink-tooltip="Module code">Up</a>
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Next</a>
+        </div>
+            <div class="sk-sidebar-toc">
+              
+            </div>
+      </div>
+    </div>
+    <div id="sk-page-content-wrapper">
+      <div class="sk-page-content container-fluid body px-md-3" role="main">
+        
+  <h1>Source code for langchain_core._api.deprecation</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Helper functions for deprecating parts of the LangChain API.</span>
+
+<span class="sd">This module was adapted from matplotlibs _api/deprecation.py module:</span>
+
+<span class="sd">https://github.com/matplotlib/matplotlib/blob/main/lib/matplotlib/_api/deprecation.py</span>
+
+<span class="sd">.. warning::</span>
+
+<span class="sd">    This module is for internal use only.  Do not use it in your own code.</span>
+<span class="sd">    We may change the API at any time with no warning.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">contextlib</span>
+<span class="kn">import</span> <span class="nn">functools</span>
+<span class="kn">import</span> <span class="nn">inspect</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Generator</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">TypeVar</span>
+
+<span class="kn">from</span> <span class="nn">langchain_core._api.internal</span> <span class="kn">import</span> <span class="n">is_caller_internal</span>
+
+
+<span class="k">class</span> <span class="nc">LangChainDeprecationWarning</span><span class="p">(</span><span class="ne">DeprecationWarning</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A class for issuing deprecation warnings for LangChain users.&quot;&quot;&quot;</span>
+
+
+<span class="k">class</span> <span class="nc">LangChainPendingDeprecationWarning</span><span class="p">(</span><span class="ne">PendingDeprecationWarning</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A class for issuing deprecation warnings for LangChain users.&quot;&quot;&quot;</span>
+
+
+<span class="c1"># PUBLIC API</span>
+
+
+<span class="n">T</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;T&quot;</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">Callable</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">deprecated</span><span class="p">(</span>
+    <span class="n">since</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">message</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="n">alternative</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="n">alternative_import</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="n">pending</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">obj_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="n">addendum</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="n">removal</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">T</span><span class="p">],</span> <span class="n">T</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Decorator to mark a function, a class, or a property as deprecated.</span>
+
+<span class="sd">    When deprecating a classmethod, a staticmethod, or a property, the</span>
+<span class="sd">    ``@deprecated`` decorator should go *under* ``@classmethod`` and</span>
+<span class="sd">    ``@staticmethod`` (i.e., `deprecated` should directly decorate the</span>
+<span class="sd">    underlying callable), but *over* ``@property``.</span>
+
+<span class="sd">    When deprecating a class ``C`` intended to be used as a base class in a</span>
+<span class="sd">    multiple inheritance hierarchy, ``C`` *must* define an ``__init__`` method</span>
+<span class="sd">    (if ``C`` instead inherited its ``__init__`` from its own base class, then</span>
+<span class="sd">    ``@deprecated`` would mess up ``__init__`` inheritance when installing its</span>
+<span class="sd">    own (deprecation-emitting) ``C.__init__``).</span>
+
+<span class="sd">    Parameters are the same as for `warn_deprecated`, except that *obj_type*</span>
+<span class="sd">    defaults to &#39;class&#39; if decorating a class, &#39;attribute&#39; if decorating a</span>
+<span class="sd">    property, and &#39;function&#39; otherwise.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        since : str</span>
+<span class="sd">            The release at which this API became deprecated.</span>
+<span class="sd">        message : str, optional</span>
+<span class="sd">            Override the default deprecation message. The %(since)s,</span>
+<span class="sd">            %(name)s, %(alternative)s, %(obj_type)s, %(addendum)s,</span>
+<span class="sd">            and %(removal)s format specifiers will be replaced by the</span>
+<span class="sd">            values of the respective arguments passed to this function.</span>
+<span class="sd">        name : str, optional</span>
+<span class="sd">            The name of the deprecated object.</span>
+<span class="sd">        alternative : str, optional</span>
+<span class="sd">            An alternative API that the user may use in place of the</span>
+<span class="sd">            deprecated API. The deprecation warning will tell the user</span>
+<span class="sd">            about this alternative if provided.</span>
+<span class="sd">        pending : bool, optional</span>
+<span class="sd">            If True, uses a PendingDeprecationWarning instead of a</span>
+<span class="sd">            DeprecationWarning. Cannot be used together with removal.</span>
+<span class="sd">        obj_type : str, optional</span>
+<span class="sd">            The object type being deprecated.</span>
+<span class="sd">        addendum : str, optional</span>
+<span class="sd">            Additional text appended directly to the final message.</span>
+<span class="sd">        removal : str, optional</span>
+<span class="sd">            The expected removal version. With the default (an empty</span>
+<span class="sd">            string), a removal version is automatically computed from</span>
+<span class="sd">            since. Set to other Falsy values to not schedule a removal</span>
+<span class="sd">            date. Cannot be used together with pending.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            @deprecated(&#39;1.4.0&#39;)</span>
+<span class="sd">            def the_function_to_deprecate():</span>
+<span class="sd">                pass</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">deprecate</span><span class="p">(</span>
+        <span class="n">obj</span><span class="p">:</span> <span class="n">T</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">_obj_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">obj_type</span><span class="p">,</span>
+        <span class="n">_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">name</span><span class="p">,</span>
+        <span class="n">_message</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">message</span><span class="p">,</span>
+        <span class="n">_alternative</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">alternative</span><span class="p">,</span>
+        <span class="n">_alternative_import</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">alternative_import</span><span class="p">,</span>
+        <span class="n">_pending</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">pending</span><span class="p">,</span>
+        <span class="n">_addendum</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">addendum</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Implementation of the decorator returned by `deprecated`.&quot;&quot;&quot;</span>
+
+        <span class="k">def</span> <span class="nf">emit_warning</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Emit the warning.&quot;&quot;&quot;</span>
+            <span class="n">warn_deprecated</span><span class="p">(</span>
+                <span class="n">since</span><span class="p">,</span>
+                <span class="n">message</span><span class="o">=</span><span class="n">_message</span><span class="p">,</span>
+                <span class="n">name</span><span class="o">=</span><span class="n">_name</span><span class="p">,</span>
+                <span class="n">alternative</span><span class="o">=</span><span class="n">_alternative</span><span class="p">,</span>
+                <span class="n">alternative_import</span><span class="o">=</span><span class="n">_alternative_import</span><span class="p">,</span>
+                <span class="n">pending</span><span class="o">=</span><span class="n">_pending</span><span class="p">,</span>
+                <span class="n">obj_type</span><span class="o">=</span><span class="n">_obj_type</span><span class="p">,</span>
+                <span class="n">addendum</span><span class="o">=</span><span class="n">_addendum</span><span class="p">,</span>
+                <span class="n">removal</span><span class="o">=</span><span class="n">removal</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="n">warned</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="k">def</span> <span class="nf">warning_emitting_wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Wrapper for the original wrapped callable that emits a warning.</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                *args: The positional arguments to the function.</span>
+<span class="sd">                **kwargs: The keyword arguments to the function.</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                The return value of the function being wrapped.</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="k">nonlocal</span> <span class="n">warned</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">warned</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">is_caller_internal</span><span class="p">():</span>
+                <span class="n">warned</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="n">emit_warning</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">wrapped</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="k">async</span> <span class="k">def</span> <span class="nf">awarning_emitting_wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Same as warning_emitting_wrapper, but for async functions.&quot;&quot;&quot;</span>
+
+            <span class="k">nonlocal</span> <span class="n">warned</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">warned</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">is_caller_internal</span><span class="p">():</span>
+                <span class="n">warned</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="n">emit_warning</span><span class="p">()</span>
+            <span class="k">return</span> <span class="k">await</span> <span class="n">wrapped</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">type</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">_obj_type</span><span class="p">:</span>
+                <span class="n">_obj_type</span> <span class="o">=</span> <span class="s2">&quot;class&quot;</span>
+            <span class="n">wrapped</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="fm">__init__</span>  <span class="c1"># type: ignore</span>
+            <span class="n">_name</span> <span class="o">=</span> <span class="n">_name</span> <span class="ow">or</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">obj</span><span class="o">.</span><span class="vm">__module__</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">obj</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">obj</span><span class="o">.</span><span class="vm">__module__</span> <span class="k">else</span> <span class="n">obj</span><span class="o">.</span><span class="vm">__name__</span>
+            <span class="p">)</span>
+            <span class="n">old_doc</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="vm">__doc__</span>
+
+            <span class="k">def</span> <span class="nf">finalize</span><span class="p">(</span><span class="n">_</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">new_doc</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
+<span class="w">                </span><span class="sd">&quot;&quot;&quot;Finalize the deprecation of a class.&quot;&quot;&quot;</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">obj</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="n">new_doc</span>
+                <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>  <span class="c1"># Can&#39;t set on some extension objects.</span>
+                    <span class="k">pass</span>
+
+                <span class="k">def</span> <span class="nf">warn_if_direct_instance</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
+                <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">                    </span><span class="sd">&quot;&quot;&quot;Warn that the class is in beta.&quot;&quot;&quot;</span>
+                    <span class="k">nonlocal</span> <span class="n">warned</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">warned</span> <span class="ow">and</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="ow">is</span> <span class="n">obj</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">is_caller_internal</span><span class="p">():</span>
+                        <span class="n">warned</span> <span class="o">=</span> <span class="kc">True</span>
+                        <span class="n">emit_warning</span><span class="p">()</span>
+                    <span class="k">return</span> <span class="n">wrapped</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+                <span class="n">obj</span><span class="o">.</span><span class="fm">__init__</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">wraps</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="fm">__init__</span><span class="p">)(</span>  <span class="c1"># type: ignore[misc]</span>
+                    <span class="n">warn_if_direct_instance</span>
+                <span class="p">)</span>
+                <span class="k">return</span> <span class="n">obj</span>
+
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">property</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">_obj_type</span><span class="p">:</span>
+                <span class="n">_obj_type</span> <span class="o">=</span> <span class="s2">&quot;attribute&quot;</span>
+            <span class="n">wrapped</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">_name</span> <span class="o">=</span> <span class="n">_name</span> <span class="ow">or</span> <span class="n">obj</span><span class="o">.</span><span class="n">fget</span><span class="o">.</span><span class="vm">__name__</span>
+            <span class="n">old_doc</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="vm">__doc__</span>
+
+            <span class="k">class</span> <span class="nc">_deprecated_property</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">obj</span><span class="p">)):</span>  <span class="c1"># type: ignore</span>
+<span class="w">                </span><span class="sd">&quot;&quot;&quot;A deprecated property.&quot;&quot;&quot;</span>
+
+                <span class="k">def</span> <span class="fm">__get__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance</span><span class="p">,</span> <span class="n">owner</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>  <span class="c1"># type: ignore</span>
+                    <span class="k">if</span> <span class="n">instance</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">owner</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">emit_warning</span><span class="p">()</span>
+                    <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__get__</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="n">owner</span><span class="p">)</span>
+
+                <span class="k">def</span> <span class="fm">__set__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>  <span class="c1"># type: ignore</span>
+                    <span class="k">if</span> <span class="n">instance</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">emit_warning</span><span class="p">()</span>
+                    <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__set__</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+                <span class="k">def</span> <span class="fm">__delete__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance</span><span class="p">):</span>  <span class="c1"># type: ignore</span>
+                    <span class="k">if</span> <span class="n">instance</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">emit_warning</span><span class="p">()</span>
+                    <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__delete__</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span>
+
+                <span class="k">def</span> <span class="nf">__set_name__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">owner</span><span class="p">,</span> <span class="n">set_name</span><span class="p">):</span>  <span class="c1"># type: ignore</span>
+                    <span class="k">nonlocal</span> <span class="n">_name</span>
+                    <span class="k">if</span> <span class="n">_name</span> <span class="o">==</span> <span class="s2">&quot;&lt;lambda&gt;&quot;</span><span class="p">:</span>
+                        <span class="n">_name</span> <span class="o">=</span> <span class="n">set_name</span>
+
+            <span class="k">def</span> <span class="nf">finalize</span><span class="p">(</span><span class="n">_</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">new_doc</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
+<span class="w">                </span><span class="sd">&quot;&quot;&quot;Finalize the property.&quot;&quot;&quot;</span>
+                <span class="k">return</span> <span class="n">_deprecated_property</span><span class="p">(</span>
+                    <span class="n">fget</span><span class="o">=</span><span class="n">obj</span><span class="o">.</span><span class="n">fget</span><span class="p">,</span> <span class="n">fset</span><span class="o">=</span><span class="n">obj</span><span class="o">.</span><span class="n">fset</span><span class="p">,</span> <span class="n">fdel</span><span class="o">=</span><span class="n">obj</span><span class="o">.</span><span class="n">fdel</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="n">new_doc</span>
+                <span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">_obj_type</span><span class="p">:</span>
+                <span class="n">_obj_type</span> <span class="o">=</span> <span class="s2">&quot;function&quot;</span>
+            <span class="n">wrapped</span> <span class="o">=</span> <span class="n">obj</span>
+            <span class="n">_name</span> <span class="o">=</span> <span class="n">_name</span> <span class="ow">or</span> <span class="n">obj</span><span class="o">.</span><span class="vm">__name__</span>  <span class="c1"># type: ignore</span>
+            <span class="n">old_doc</span> <span class="o">=</span> <span class="n">wrapped</span><span class="o">.</span><span class="vm">__doc__</span>
+
+            <span class="k">def</span> <span class="nf">finalize</span><span class="p">(</span>  <span class="c1"># type: ignore</span>
+                <span class="n">wrapper</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">new_doc</span><span class="p">:</span> <span class="nb">str</span>
+            <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
+<span class="w">                </span><span class="sd">&quot;&quot;&quot;Wrap the wrapped function using the wrapper and update the docstring.</span>
+
+<span class="sd">                Args:</span>
+<span class="sd">                    wrapper: The wrapper function.</span>
+<span class="sd">                    new_doc: The new docstring.</span>
+
+<span class="sd">                Returns:</span>
+<span class="sd">                    The wrapped function.</span>
+<span class="sd">                &quot;&quot;&quot;</span>
+                <span class="n">wrapper</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">wraps</span><span class="p">(</span><span class="n">wrapped</span><span class="p">)(</span><span class="n">wrapper</span><span class="p">)</span>
+                <span class="n">wrapper</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="n">new_doc</span>
+                <span class="k">return</span> <span class="n">wrapper</span>
+
+        <span class="n">old_doc</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">cleandoc</span><span class="p">(</span><span class="n">old_doc</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># old_doc can be None</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">old_doc</span><span class="p">:</span>
+            <span class="n">old_doc</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+        <span class="c1"># Modify the docstring to include a deprecation notice.</span>
+        <span class="n">notes_header</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Notes</span><span class="se">\n</span><span class="s2">-----&quot;</span>
+        <span class="n">components</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">message</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">&quot;Use </span><span class="si">{</span><span class="n">alternative</span><span class="si">}</span><span class="s2"> instead.&quot;</span> <span class="k">if</span> <span class="n">alternative</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="n">addendum</span><span class="p">,</span>
+        <span class="p">]</span>
+        <span class="n">details</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">component</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">component</span> <span class="ow">in</span> <span class="n">components</span> <span class="k">if</span> <span class="n">component</span><span class="p">])</span>
+        <span class="n">package</span> <span class="o">=</span> <span class="n">_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">,</span> <span class="s2">&quot;-&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="s2">&quot;.&quot;</span> <span class="ow">in</span> <span class="n">_name</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="n">since_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">package</span><span class="si">}</span><span class="s2">==</span><span class="si">{</span><span class="n">since</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">package</span> <span class="k">else</span> <span class="n">since</span>
+        <span class="n">new_doc</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;[*Deprecated*] </span><span class="si">{</span><span class="n">old_doc</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">notes_header</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">notes_header</span><span class="w"> </span><span class="ow">not</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">old_doc</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;.. deprecated:: </span><span class="si">{</span><span class="n">since_str</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;   </span><span class="si">{</span><span class="n">details</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">inspect</span><span class="o">.</span><span class="n">iscoroutinefunction</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">finalize</span><span class="p">(</span><span class="n">awarning_emitting_wrapper</span><span class="p">,</span> <span class="n">new_doc</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">finalize</span><span class="p">(</span><span class="n">warning_emitting_wrapper</span><span class="p">,</span> <span class="n">new_doc</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">deprecate</span>
+
+
+<span class="nd">@contextlib</span><span class="o">.</span><span class="n">contextmanager</span>
+<span class="k">def</span> <span class="nf">suppress_langchain_deprecation_warning</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Context manager to suppress LangChainDeprecationWarning.&quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="n">LangChainDeprecationWarning</span><span class="p">)</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="n">LangChainPendingDeprecationWarning</span><span class="p">)</span>
+        <span class="k">yield</span>
+
+
+<span class="k">def</span> <span class="nf">warn_deprecated</span><span class="p">(</span>
+    <span class="n">since</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">message</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="n">alternative</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="n">alternative_import</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="n">pending</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">obj_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="n">addendum</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="n">removal</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Display a standardized deprecation.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        since : str</span>
+<span class="sd">            The release at which this API became deprecated.</span>
+<span class="sd">        message : str, optional</span>
+<span class="sd">            Override the default deprecation message. The %(since)s,</span>
+<span class="sd">            %(name)s, %(alternative)s, %(obj_type)s, %(addendum)s,</span>
+<span class="sd">            and %(removal)s format specifiers will be replaced by the</span>
+<span class="sd">            values of the respective arguments passed to this function.</span>
+<span class="sd">        name : str, optional</span>
+<span class="sd">            The name of the deprecated object.</span>
+<span class="sd">        alternative : str, optional</span>
+<span class="sd">            An alternative API that the user may use in place of the</span>
+<span class="sd">            deprecated API. The deprecation warning will tell the user</span>
+<span class="sd">            about this alternative if provided.</span>
+<span class="sd">        pending : bool, optional</span>
+<span class="sd">            If True, uses a PendingDeprecationWarning instead of a</span>
+<span class="sd">            DeprecationWarning. Cannot be used together with removal.</span>
+<span class="sd">        obj_type : str, optional</span>
+<span class="sd">            The object type being deprecated.</span>
+<span class="sd">        addendum : str, optional</span>
+<span class="sd">            Additional text appended directly to the final message.</span>
+<span class="sd">        removal : str, optional</span>
+<span class="sd">            The expected removal version. With the default (an empty</span>
+<span class="sd">            string), a removal version is automatically computed from</span>
+<span class="sd">            since. Set to other Falsy values to not schedule a removal</span>
+<span class="sd">            date. Cannot be used together with pending.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">pending</span> <span class="ow">and</span> <span class="n">removal</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;A pending deprecation cannot have a scheduled removal&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">alternative</span> <span class="ow">and</span> <span class="n">alternative_import</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Cannot specify both alternative and alternative_import&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">alternative_import</span> <span class="ow">and</span> <span class="s2">&quot;.&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">alternative_import</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;alternative_import must be a fully qualified module path&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">pending</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">removal</span><span class="p">:</span>
+            <span class="n">removal</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;in </span><span class="si">{</span><span class="n">removal</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">removal</span> <span class="k">else</span> <span class="s2">&quot;within ?? minor releases&quot;</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Need to determine which default deprecation schedule to use. &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">removal</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">removal</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;in </span><span class="si">{</span><span class="n">removal</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">message</span><span class="p">:</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">package</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">,</span> <span class="s2">&quot;-&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="s2">&quot;.&quot;</span> <span class="ow">in</span> <span class="n">name</span> <span class="k">else</span> <span class="s2">&quot;LangChain&quot;</span>
+
+        <span class="k">if</span> <span class="n">obj_type</span><span class="p">:</span>
+            <span class="n">message</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;The </span><span class="si">{</span><span class="n">obj_type</span><span class="si">}</span><span class="s2"> `</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">`&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">message</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;`</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">`&quot;</span>
+
+        <span class="k">if</span> <span class="n">pending</span><span class="p">:</span>
+            <span class="n">message</span> <span class="o">+=</span> <span class="s2">&quot; will be deprecated in a future version&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">message</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot; was deprecated in </span><span class="si">{</span><span class="n">package</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">since</span><span class="si">}</span><span class="s2">&quot;</span>
+
+            <span class="k">if</span> <span class="n">removal</span><span class="p">:</span>
+                <span class="n">message</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot; and will be removed </span><span class="si">{</span><span class="n">removal</span><span class="si">}</span><span class="s2">&quot;</span>
+
+        <span class="k">if</span> <span class="n">alternative_import</span><span class="p">:</span>
+            <span class="n">alt_package</span> <span class="o">=</span> <span class="n">alternative_import</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">,</span> <span class="s2">&quot;-&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">alt_package</span> <span class="o">==</span> <span class="n">package</span><span class="p">:</span>
+                <span class="n">message</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;. Use </span><span class="si">{</span><span class="n">alternative_import</span><span class="si">}</span><span class="s2"> instead.&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">alt_module</span><span class="p">,</span> <span class="n">alt_name</span> <span class="o">=</span> <span class="n">alternative_import</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="n">message</span> <span class="o">+=</span> <span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;. An updated version of the </span><span class="si">{</span><span class="n">obj_type</span><span class="si">}</span><span class="s2"> exists in the &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">alt_package</span><span class="si">}</span><span class="s2"> package and should be used instead. To use it run &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;`pip install -U </span><span class="si">{</span><span class="n">alt_package</span><span class="si">}</span><span class="s2">` and import as &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;`from </span><span class="si">{</span><span class="n">alt_module</span><span class="si">}</span><span class="s2"> import </span><span class="si">{</span><span class="n">alt_name</span><span class="si">}</span><span class="s2">`.&quot;</span>
+                <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">alternative</span><span class="p">:</span>
+            <span class="n">message</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;. Use </span><span class="si">{</span><span class="n">alternative</span><span class="si">}</span><span class="s2"> instead.&quot;</span>
+
+        <span class="k">if</span> <span class="n">addendum</span><span class="p">:</span>
+            <span class="n">message</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">addendum</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="n">warning_cls</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">LangChainPendingDeprecationWarning</span> <span class="k">if</span> <span class="n">pending</span> <span class="k">else</span> <span class="n">LangChainDeprecationWarning</span>
+    <span class="p">)</span>
+    <span class="n">warning</span> <span class="o">=</span> <span class="n">warning_cls</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">warning</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="n">LangChainDeprecationWarning</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">surface_langchain_deprecation_warnings</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Unmute LangChain deprecation warnings.&quot;&quot;&quot;</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span>
+        <span class="s2">&quot;default&quot;</span><span class="p">,</span>
+        <span class="n">category</span><span class="o">=</span><span class="n">LangChainPendingDeprecationWarning</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span>
+        <span class="s2">&quot;default&quot;</span><span class="p">,</span>
+        <span class="n">category</span><span class="o">=</span><span class="n">LangChainDeprecationWarning</span><span class="p">,</span>
+    <span class="p">)</span>
+</pre></div>
+
+      </div>
+    <div class="container">
+      <footer class="sk-content-footer">
+            &copy; 2023, LangChain, Inc..
+          Last updated on Mar 15, 2024.
+      </footer>
+    </div>
+  </div>
+</div>
+<script src="../../../_static/js/vendor/bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    /* Add a [>>>] button on the top-right corner of code samples to hide
+     * the >>> and ... prompts and the output and thus make the code
+     * copyable. */
+    var div = $('.highlight-python .highlight,' +
+                '.highlight-python3 .highlight,' +
+                '.highlight-pycon .highlight,' +
+		'.highlight-default .highlight')
+    var pre = div.find('pre');
+
+    // get the styles from the current theme
+    pre.parent().parent().css('position', 'relative');
+    var hide_text = 'Hide prompts and outputs';
+    var show_text = 'Show prompts and outputs';
+
+    // create and add the button to all the code blocks that contain >>>
+    div.each(function(index) {
+        var jthis = $(this);
+        if (jthis.find('.gp').length > 0) {
+            var button = $('<span class="copybutton">&gt;&gt;&gt;</span>');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+            jthis.prepend(button);
+        }
+        // tracebacks (.gt) contain bare text elements that need to be
+        // wrapped in a span to work with .nextUntil() (see later)
+        jthis.find('pre:has(.gt)').contents().filter(function() {
+            return ((this.nodeType == 3) && (this.data.trim().length > 0));
+        }).wrap('<span>');
+    });
+
+    // define the behavior of the button when it's clicked
+    $('.copybutton').click(function(e){
+        e.preventDefault();
+        var button = $(this);
+        if (button.data('hidden') === 'false') {
+            // hide the code output
+            button.parent().find('.go, .gp, .gt').hide();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'hidden');
+            button.css('text-decoration', 'line-through');
+            button.attr('title', show_text);
+            button.data('hidden', 'true');
+        } else {
+            // show the code output
+            button.parent().find('.go, .gp, .gt').show();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'visible');
+            button.css('text-decoration', 'none');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+        }
+    });
+
+	/*** Add permalink buttons next to glossary terms ***/
+	$('dl.glossary > dt[id]').append(function() {
+		return ('<a class="headerlink" href="#' +
+			    this.getAttribute('id') +
+			    '" title="Permalink to this term">¶</a>');
+	});
+});
+
+</script>
+    
+</body>
+</html>

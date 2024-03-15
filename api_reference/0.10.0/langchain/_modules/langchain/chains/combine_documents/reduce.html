@@ -1,0 +1,530 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>langchain.chains.combine_documents.reduce &mdash; 🦜🔗 LangChain 0.1.12</title>
+  
+  <link rel="canonical" href="https://api.python.langchain.com/en/latest/_modules/langchain/chains/combine_documents/reduce.html" />
+
+  
+
+  <link rel="stylesheet" href="../../../../_static/css/vendor/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/autodoc_pydantic.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/sphinx-dropdown.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/panels-bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/css/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+<script id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+<script src="../../../../_static/jquery.js"></script> 
+</head>
+<body>
+
+
+<nav id="navbar" class="sk-docs-navbar navbar navbar-expand-md navbar-light bg-light py-0">
+  <div class="container-fluid sk-docs-container px-0">
+    <button
+      id="sk-navbar-toggler"
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="sk-navbar-collapse collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../../langchain_api_reference.html">LangChain</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../../core_api_reference.html">Core</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../../community_api_reference.html">Community</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../../experimental_api_reference.html">Experimental</a>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" href="../../../../text_splitters_api_reference.html">Text splitters</a>
+        </li>
+        <li class="nav-item dropdown nav-more-item-dropdown">
+          <a class="sk-nav-link nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Partner libs</a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+          </div>
+        </li>
+        <li class="nav-item">
+          <a class="sk-nav-link nav-link" target="_blank" rel="noopener noreferrer" href="https://python.langchain.com/">Docs</a>
+        </li>
+      </ul>
+      <div id="searchbox" role="search">
+          <div class="searchformwrapper">
+          <form class="search" action="../../../../search.html" method="get">
+            <input class="sk-search-text-input" type="text" name="q" aria-labelledby="searchlabel" />
+            <input class="sk-search-text-btn" type="submit" value="Go" />
+          </form>
+          </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="d-flex" id="sk-doc-wrapper">
+    <input type="checkbox" name="sk-toggle-checkbox" id="sk-toggle-checkbox">
+    <label id="sk-sidemenu-toggle" class="sk-btn-toggle-toc btn sk-btn-primary" for="sk-toggle-checkbox">Toggle Menu</label>
+    <div id="sk-sidebar-wrapper" class="border-right">
+      <div class="sk-sidebar-toc-wrapper">
+        <div class="btn-group w-100 mb-2" role="group" aria-label="rellinks">
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Prev</a><a href="../../../index.html" role="button" class="btn sk-btn-rellink py-1" sk-rellink-tooltip="Module code">Up</a>
+            <a href="#" role="button" class="btn sk-btn-rellink py-1 disabled"">Next</a>
+        </div>
+            <div class="sk-sidebar-toc">
+              
+            </div>
+      </div>
+    </div>
+    <div id="sk-page-content-wrapper">
+      <div class="sk-page-content container-fluid body px-md-3" role="main">
+        
+  <h1>Source code for langchain.chains.combine_documents.reduce</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Combine many documents together by recursively reducing them.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Protocol</span><span class="p">,</span> <span class="n">Tuple</span>
+
+<span class="kn">from</span> <span class="nn">langchain_core.callbacks</span> <span class="kn">import</span> <span class="n">Callbacks</span>
+<span class="kn">from</span> <span class="nn">langchain_core.documents</span> <span class="kn">import</span> <span class="n">Document</span>
+<span class="kn">from</span> <span class="nn">langchain_core.pydantic_v1</span> <span class="kn">import</span> <span class="n">Extra</span>
+
+<span class="kn">from</span> <span class="nn">langchain.chains.combine_documents.base</span> <span class="kn">import</span> <span class="n">BaseCombineDocumentsChain</span>
+
+
+<div class="viewcode-block" id="CombineDocsProtocol"><a class="viewcode-back" href="../../../../chains/langchain.chains.combine_documents.reduce.CombineDocsProtocol.html#langchain.chains.combine_documents.reduce.CombineDocsProtocol">[docs]</a><span class="k">class</span> <span class="nc">CombineDocsProtocol</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Interface for the combine_docs method.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">docs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Interface for the combine_docs method.&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="AsyncCombineDocsProtocol"><a class="viewcode-back" href="../../../../chains/langchain.chains.combine_documents.reduce.AsyncCombineDocsProtocol.html#langchain.chains.combine_documents.reduce.AsyncCombineDocsProtocol">[docs]</a><span class="k">class</span> <span class="nc">AsyncCombineDocsProtocol</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Interface for the combine_docs method.&quot;&quot;&quot;</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">docs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Async interface for the combine_docs method.&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="split_list_of_docs"><a class="viewcode-back" href="../../../../chains/langchain.chains.combine_documents.reduce.split_list_of_docs.html#langchain.chains.combine_documents.reduce.split_list_of_docs">[docs]</a><span class="k">def</span> <span class="nf">split_list_of_docs</span><span class="p">(</span>
+    <span class="n">docs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">],</span> <span class="n">length_func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">token_max</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Split Documents into subsets that each meet a cumulative length constraint.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        docs: The full list of Documents.</span>
+<span class="sd">        length_func: Function for computing the cumulative length of a set of Documents.</span>
+<span class="sd">        token_max: The maximum cumulative length of any subset of Documents.</span>
+<span class="sd">        **kwargs: Arbitrary additional keyword params to pass to each call of the</span>
+<span class="sd">            length_func.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A List[List[Document]].</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">new_result_doc_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">_sub_result_docs</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="n">docs</span><span class="p">:</span>
+        <span class="n">_sub_result_docs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">doc</span><span class="p">)</span>
+        <span class="n">_num_tokens</span> <span class="o">=</span> <span class="n">length_func</span><span class="p">(</span><span class="n">_sub_result_docs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">_num_tokens</span> <span class="o">&gt;</span> <span class="n">token_max</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">_sub_result_docs</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;A single document was longer than the context length,&quot;</span>
+                    <span class="s2">&quot; we cannot handle this.&quot;</span>
+                <span class="p">)</span>
+            <span class="n">new_result_doc_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_sub_result_docs</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">_sub_result_docs</span> <span class="o">=</span> <span class="n">_sub_result_docs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">:]</span>
+    <span class="n">new_result_doc_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_sub_result_docs</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">new_result_doc_list</span></div>
+
+
+<div class="viewcode-block" id="collapse_docs"><a class="viewcode-back" href="../../../../chains/langchain.chains.combine_documents.reduce.collapse_docs.html#langchain.chains.combine_documents.reduce.collapse_docs">[docs]</a><span class="k">def</span> <span class="nf">collapse_docs</span><span class="p">(</span>
+    <span class="n">docs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">],</span>
+    <span class="n">combine_document_func</span><span class="p">:</span> <span class="n">CombineDocsProtocol</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Document</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Execute a collapse function on a set of documents and merge their metadatas.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        docs: A list of Documents to combine.</span>
+<span class="sd">        combine_document_func: A function that takes in a list of Documents and</span>
+<span class="sd">            optionally addition keyword parameters and combines them into a single</span>
+<span class="sd">            string.</span>
+<span class="sd">        **kwargs: Arbitrary additional keyword params to pass to the</span>
+<span class="sd">            combine_document_func.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A single Document with the output of combine_document_func for the page content</span>
+<span class="sd">            and the combined metadata&#39;s of all the input documents. All metadata values</span>
+<span class="sd">            are strings, and where there are overlapping keys across documents the</span>
+<span class="sd">            values are joined by &quot;, &quot;.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">combine_document_func</span><span class="p">(</span><span class="n">docs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">combined_metadata</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">docs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+    <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="n">docs</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">doc</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">combined_metadata</span><span class="p">:</span>
+                <span class="n">combined_metadata</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;, </span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">combined_metadata</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">Document</span><span class="p">(</span><span class="n">page_content</span><span class="o">=</span><span class="n">result</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="n">combined_metadata</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="acollapse_docs"><a class="viewcode-back" href="../../../../chains/langchain.chains.combine_documents.reduce.acollapse_docs.html#langchain.chains.combine_documents.reduce.acollapse_docs">[docs]</a><span class="k">async</span> <span class="k">def</span> <span class="nf">acollapse_docs</span><span class="p">(</span>
+    <span class="n">docs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">],</span>
+    <span class="n">combine_document_func</span><span class="p">:</span> <span class="n">AsyncCombineDocsProtocol</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Document</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Execute a collapse function on a set of documents and merge their metadatas.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        docs: A list of Documents to combine.</span>
+<span class="sd">        combine_document_func: A function that takes in a list of Documents and</span>
+<span class="sd">            optionally addition keyword parameters and combines them into a single</span>
+<span class="sd">            string.</span>
+<span class="sd">        **kwargs: Arbitrary additional keyword params to pass to the</span>
+<span class="sd">            combine_document_func.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A single Document with the output of combine_document_func for the page content</span>
+<span class="sd">            and the combined metadata&#39;s of all the input documents. All metadata values</span>
+<span class="sd">            are strings, and where there are overlapping keys across documents the</span>
+<span class="sd">            values are joined by &quot;, &quot;.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">combine_document_func</span><span class="p">(</span><span class="n">docs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">combined_metadata</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">docs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+    <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="n">docs</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">doc</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">combined_metadata</span><span class="p">:</span>
+                <span class="n">combined_metadata</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;, </span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">combined_metadata</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">Document</span><span class="p">(</span><span class="n">page_content</span><span class="o">=</span><span class="n">result</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="n">combined_metadata</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ReduceDocumentsChain"><a class="viewcode-back" href="../../../../chains/langchain.chains.combine_documents.reduce.ReduceDocumentsChain.html#langchain.chains.combine_documents.reduce.ReduceDocumentsChain">[docs]</a><span class="k">class</span> <span class="nc">ReduceDocumentsChain</span><span class="p">(</span><span class="n">BaseCombineDocumentsChain</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Combine documents by recursively reducing them.</span>
+
+<span class="sd">    This involves</span>
+
+<span class="sd">    - combine_documents_chain</span>
+
+<span class="sd">    - collapse_documents_chain</span>
+
+<span class="sd">    `combine_documents_chain` is ALWAYS provided. This is final chain that is called.</span>
+<span class="sd">    We pass all previous results to this chain, and the output of this chain is</span>
+<span class="sd">    returned as a final result.</span>
+
+<span class="sd">    `collapse_documents_chain` is used if the documents passed in are too many to all</span>
+<span class="sd">    be passed to `combine_documents_chain` in one go. In this case,</span>
+<span class="sd">    `collapse_documents_chain` is called recursively on as big of groups of documents</span>
+<span class="sd">    as are allowed.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            from langchain.chains import (</span>
+<span class="sd">                StuffDocumentsChain, LLMChain, ReduceDocumentsChain</span>
+<span class="sd">            )</span>
+<span class="sd">            from langchain_core.prompts import PromptTemplate</span>
+<span class="sd">            from langchain_community.llms import OpenAI</span>
+
+<span class="sd">            # This controls how each document will be formatted. Specifically,</span>
+<span class="sd">            # it will be passed to `format_document` - see that function for more</span>
+<span class="sd">            # details.</span>
+<span class="sd">            document_prompt = PromptTemplate(</span>
+<span class="sd">                input_variables=[&quot;page_content&quot;],</span>
+<span class="sd">                 template=&quot;{page_content}&quot;</span>
+<span class="sd">            )</span>
+<span class="sd">            document_variable_name = &quot;context&quot;</span>
+<span class="sd">            llm = OpenAI()</span>
+<span class="sd">            # The prompt here should take as an input variable the</span>
+<span class="sd">            # `document_variable_name`</span>
+<span class="sd">            prompt = PromptTemplate.from_template(</span>
+<span class="sd">                &quot;Summarize this content: {context}&quot;</span>
+<span class="sd">            )</span>
+<span class="sd">            llm_chain = LLMChain(llm=llm, prompt=prompt)</span>
+<span class="sd">            combine_documents_chain = StuffDocumentsChain(</span>
+<span class="sd">                llm_chain=llm_chain,</span>
+<span class="sd">                document_prompt=document_prompt,</span>
+<span class="sd">                document_variable_name=document_variable_name</span>
+<span class="sd">            )</span>
+<span class="sd">            chain = ReduceDocumentsChain(</span>
+<span class="sd">                combine_documents_chain=combine_documents_chain,</span>
+<span class="sd">            )</span>
+<span class="sd">            # If we wanted to, we could also pass in collapse_documents_chain</span>
+<span class="sd">            # which is specifically aimed at collapsing documents BEFORE</span>
+<span class="sd">            # the final call.</span>
+<span class="sd">            prompt = PromptTemplate.from_template(</span>
+<span class="sd">                &quot;Collapse this content: {context}&quot;</span>
+<span class="sd">            )</span>
+<span class="sd">            llm_chain = LLMChain(llm=llm, prompt=prompt)</span>
+<span class="sd">            collapse_documents_chain = StuffDocumentsChain(</span>
+<span class="sd">                llm_chain=llm_chain,</span>
+<span class="sd">                document_prompt=document_prompt,</span>
+<span class="sd">                document_variable_name=document_variable_name</span>
+<span class="sd">            )</span>
+<span class="sd">            chain = ReduceDocumentsChain(</span>
+<span class="sd">                combine_documents_chain=combine_documents_chain,</span>
+<span class="sd">                collapse_documents_chain=collapse_documents_chain,</span>
+<span class="sd">            )</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">combine_documents_chain</span><span class="p">:</span> <span class="n">BaseCombineDocumentsChain</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Final chain to call to combine documents.</span>
+<span class="sd">    This is typically a StuffDocumentsChain.&quot;&quot;&quot;</span>
+    <span class="n">collapse_documents_chain</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">BaseCombineDocumentsChain</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Chain to use to collapse documents if needed until they can all fit.</span>
+<span class="sd">    If None, will use the combine_documents_chain.</span>
+<span class="sd">    This is typically a StuffDocumentsChain.&quot;&quot;&quot;</span>
+    <span class="n">token_max</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3000</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The maximum number of tokens to group documents into. For example, if</span>
+<span class="sd">    set to 3000 then documents will be grouped into chunks of no greater than</span>
+<span class="sd">    3000 tokens before trying to combine them into a smaller chunk.&quot;&quot;&quot;</span>
+    <span class="n">collapse_max_retries</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The maximum number of retries to collapse documents to fit token_max.</span>
+<span class="sd">    If None, it will keep trying to collapse documents to fit token_max.</span>
+<span class="sd">    Otherwise, after it reaches the max number, it will throw an error&quot;&quot;&quot;</span>
+
+    <span class="k">class</span> <span class="nc">Config</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Configuration for this pydantic object.&quot;&quot;&quot;</span>
+
+        <span class="n">extra</span> <span class="o">=</span> <span class="n">Extra</span><span class="o">.</span><span class="n">forbid</span>
+        <span class="n">arbitrary_types_allowed</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_collapse_chain</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BaseCombineDocumentsChain</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">collapse_documents_chain</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">collapse_documents_chain</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">combine_documents_chain</span>
+
+<div class="viewcode-block" id="ReduceDocumentsChain.combine_docs"><a class="viewcode-back" href="../../../../chains/langchain.chains.combine_documents.reduce.ReduceDocumentsChain.html#langchain.chains.combine_documents.reduce.ReduceDocumentsChain.combine_docs">[docs]</a>    <span class="k">def</span> <span class="nf">combine_docs</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">docs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">],</span>
+        <span class="n">token_max</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">callbacks</span><span class="p">:</span> <span class="n">Callbacks</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Combine multiple documents recursively.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            docs: List of documents to combine, assumed that each one is less than</span>
+<span class="sd">                `token_max`.</span>
+<span class="sd">            token_max: Recursively creates groups of documents less than this number</span>
+<span class="sd">                of tokens.</span>
+<span class="sd">            callbacks: Callbacks to be passed through</span>
+<span class="sd">            **kwargs: additional parameters to be passed to LLM calls (like other</span>
+<span class="sd">                input variables besides the documents)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The first element returned is the single string output. The second</span>
+<span class="sd">            element returned is a dictionary of other keys to return.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">result_docs</span><span class="p">,</span> <span class="n">extra_return_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_collapse</span><span class="p">(</span>
+            <span class="n">docs</span><span class="p">,</span> <span class="n">token_max</span><span class="o">=</span><span class="n">token_max</span><span class="p">,</span> <span class="n">callbacks</span><span class="o">=</span><span class="n">callbacks</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">combine_documents_chain</span><span class="o">.</span><span class="n">combine_docs</span><span class="p">(</span>
+            <span class="n">docs</span><span class="o">=</span><span class="n">result_docs</span><span class="p">,</span> <span class="n">callbacks</span><span class="o">=</span><span class="n">callbacks</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="ReduceDocumentsChain.acombine_docs"><a class="viewcode-back" href="../../../../chains/langchain.chains.combine_documents.reduce.ReduceDocumentsChain.html#langchain.chains.combine_documents.reduce.ReduceDocumentsChain.acombine_docs">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">acombine_docs</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">docs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">],</span>
+        <span class="n">token_max</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">callbacks</span><span class="p">:</span> <span class="n">Callbacks</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Async combine multiple documents recursively.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            docs: List of documents to combine, assumed that each one is less than</span>
+<span class="sd">                `token_max`.</span>
+<span class="sd">            token_max: Recursively creates groups of documents less than this number</span>
+<span class="sd">                of tokens.</span>
+<span class="sd">            callbacks: Callbacks to be passed through</span>
+<span class="sd">            **kwargs: additional parameters to be passed to LLM calls (like other</span>
+<span class="sd">                input variables besides the documents)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The first element returned is the single string output. The second</span>
+<span class="sd">            element returned is a dictionary of other keys to return.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">result_docs</span><span class="p">,</span> <span class="n">extra_return_dict</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_acollapse</span><span class="p">(</span>
+            <span class="n">docs</span><span class="p">,</span> <span class="n">token_max</span><span class="o">=</span><span class="n">token_max</span><span class="p">,</span> <span class="n">callbacks</span><span class="o">=</span><span class="n">callbacks</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">combine_documents_chain</span><span class="o">.</span><span class="n">acombine_docs</span><span class="p">(</span>
+            <span class="n">docs</span><span class="o">=</span><span class="n">result_docs</span><span class="p">,</span> <span class="n">callbacks</span><span class="o">=</span><span class="n">callbacks</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_collapse</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">docs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">],</span>
+        <span class="n">token_max</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">callbacks</span><span class="p">:</span> <span class="n">Callbacks</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">],</span> <span class="nb">dict</span><span class="p">]:</span>
+        <span class="n">result_docs</span> <span class="o">=</span> <span class="n">docs</span>
+        <span class="n">length_func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">combine_documents_chain</span><span class="o">.</span><span class="n">prompt_length</span>
+        <span class="n">num_tokens</span> <span class="o">=</span> <span class="n">length_func</span><span class="p">(</span><span class="n">result_docs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">_collapse_docs_func</span><span class="p">(</span><span class="n">docs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_collapse_chain</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+                <span class="n">input_documents</span><span class="o">=</span><span class="n">docs</span><span class="p">,</span> <span class="n">callbacks</span><span class="o">=</span><span class="n">callbacks</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+            <span class="p">)</span>
+
+        <span class="n">_token_max</span> <span class="o">=</span> <span class="n">token_max</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">token_max</span>
+        <span class="n">retries</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">while</span> <span class="n">num_tokens</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">num_tokens</span> <span class="o">&gt;</span> <span class="n">_token_max</span><span class="p">:</span>
+            <span class="n">new_result_doc_list</span> <span class="o">=</span> <span class="n">split_list_of_docs</span><span class="p">(</span>
+                <span class="n">result_docs</span><span class="p">,</span> <span class="n">length_func</span><span class="p">,</span> <span class="n">_token_max</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+            <span class="p">)</span>
+            <span class="n">result_docs</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">docs</span> <span class="ow">in</span> <span class="n">new_result_doc_list</span><span class="p">:</span>
+                <span class="n">new_doc</span> <span class="o">=</span> <span class="n">collapse_docs</span><span class="p">(</span><span class="n">docs</span><span class="p">,</span> <span class="n">_collapse_docs_func</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+                <span class="n">result_docs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_doc</span><span class="p">)</span>
+            <span class="n">num_tokens</span> <span class="o">=</span> <span class="n">length_func</span><span class="p">(</span><span class="n">result_docs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="n">retries</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">collapse_max_retries</span> <span class="ow">and</span> <span class="n">retries</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">collapse_max_retries</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Exceed </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">collapse_max_retries</span><span class="si">}</span><span class="s2"> tries to </span><span class="se">\</span>
+<span class="s2">                        collapse document to </span><span class="si">{</span><span class="n">_token_max</span><span class="si">}</span><span class="s2"> tokens.&quot;</span>
+                <span class="p">)</span>
+        <span class="k">return</span> <span class="n">result_docs</span><span class="p">,</span> <span class="p">{}</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_acollapse</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">docs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">],</span>
+        <span class="n">token_max</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">callbacks</span><span class="p">:</span> <span class="n">Callbacks</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">],</span> <span class="nb">dict</span><span class="p">]:</span>
+        <span class="n">result_docs</span> <span class="o">=</span> <span class="n">docs</span>
+        <span class="n">length_func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">combine_documents_chain</span><span class="o">.</span><span class="n">prompt_length</span>
+        <span class="n">num_tokens</span> <span class="o">=</span> <span class="n">length_func</span><span class="p">(</span><span class="n">result_docs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="k">async</span> <span class="k">def</span> <span class="nf">_collapse_docs_func</span><span class="p">(</span><span class="n">docs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+            <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_collapse_chain</span><span class="o">.</span><span class="n">arun</span><span class="p">(</span>
+                <span class="n">input_documents</span><span class="o">=</span><span class="n">docs</span><span class="p">,</span> <span class="n">callbacks</span><span class="o">=</span><span class="n">callbacks</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+            <span class="p">)</span>
+
+        <span class="n">_token_max</span> <span class="o">=</span> <span class="n">token_max</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">token_max</span>
+        <span class="n">retries</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">while</span> <span class="n">num_tokens</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">num_tokens</span> <span class="o">&gt;</span> <span class="n">_token_max</span><span class="p">:</span>
+            <span class="n">new_result_doc_list</span> <span class="o">=</span> <span class="n">split_list_of_docs</span><span class="p">(</span>
+                <span class="n">result_docs</span><span class="p">,</span> <span class="n">length_func</span><span class="p">,</span> <span class="n">_token_max</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+            <span class="p">)</span>
+            <span class="n">result_docs</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">docs</span> <span class="ow">in</span> <span class="n">new_result_doc_list</span><span class="p">:</span>
+                <span class="n">new_doc</span> <span class="o">=</span> <span class="k">await</span> <span class="n">acollapse_docs</span><span class="p">(</span><span class="n">docs</span><span class="p">,</span> <span class="n">_collapse_docs_func</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+                <span class="n">result_docs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_doc</span><span class="p">)</span>
+            <span class="n">num_tokens</span> <span class="o">=</span> <span class="n">length_func</span><span class="p">(</span><span class="n">result_docs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="n">retries</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">collapse_max_retries</span> <span class="ow">and</span> <span class="n">retries</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">collapse_max_retries</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Exceed </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">collapse_max_retries</span><span class="si">}</span><span class="s2"> tries to </span><span class="se">\</span>
+<span class="s2">                        collapse document to </span><span class="si">{</span><span class="n">_token_max</span><span class="si">}</span><span class="s2"> tokens.&quot;</span>
+                <span class="p">)</span>
+        <span class="k">return</span> <span class="n">result_docs</span><span class="p">,</span> <span class="p">{}</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_chain_type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;reduce_documents_chain&quot;</span></div>
+</pre></div>
+
+      </div>
+    <div class="container">
+      <footer class="sk-content-footer">
+            &copy; 2023, LangChain, Inc..
+          Last updated on Mar 15, 2024.
+      </footer>
+    </div>
+  </div>
+</div>
+<script src="../../../../_static/js/vendor/bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    /* Add a [>>>] button on the top-right corner of code samples to hide
+     * the >>> and ... prompts and the output and thus make the code
+     * copyable. */
+    var div = $('.highlight-python .highlight,' +
+                '.highlight-python3 .highlight,' +
+                '.highlight-pycon .highlight,' +
+		'.highlight-default .highlight')
+    var pre = div.find('pre');
+
+    // get the styles from the current theme
+    pre.parent().parent().css('position', 'relative');
+    var hide_text = 'Hide prompts and outputs';
+    var show_text = 'Show prompts and outputs';
+
+    // create and add the button to all the code blocks that contain >>>
+    div.each(function(index) {
+        var jthis = $(this);
+        if (jthis.find('.gp').length > 0) {
+            var button = $('<span class="copybutton">&gt;&gt;&gt;</span>');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+            jthis.prepend(button);
+        }
+        // tracebacks (.gt) contain bare text elements that need to be
+        // wrapped in a span to work with .nextUntil() (see later)
+        jthis.find('pre:has(.gt)').contents().filter(function() {
+            return ((this.nodeType == 3) && (this.data.trim().length > 0));
+        }).wrap('<span>');
+    });
+
+    // define the behavior of the button when it's clicked
+    $('.copybutton').click(function(e){
+        e.preventDefault();
+        var button = $(this);
+        if (button.data('hidden') === 'false') {
+            // hide the code output
+            button.parent().find('.go, .gp, .gt').hide();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'hidden');
+            button.css('text-decoration', 'line-through');
+            button.attr('title', show_text);
+            button.data('hidden', 'true');
+        } else {
+            // show the code output
+            button.parent().find('.go, .gp, .gt').show();
+            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'visible');
+            button.css('text-decoration', 'none');
+            button.attr('title', hide_text);
+            button.data('hidden', 'false');
+        }
+    });
+
+	/*** Add permalink buttons next to glossary terms ***/
+	$('dl.glossary > dt[id]').append(function() {
+		return ('<a class="headerlink" href="#' +
+			    this.getAttribute('id') +
+			    '" title="Permalink to this term">¶</a>');
+	});
+});
+
+</script>
+    
+</body>
+</html>
