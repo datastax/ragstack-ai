@@ -72,7 +72,6 @@ def max_similarity_torch(query_vector, embedding_list, is_cuda: bool = False):
 class ColbertAstraRetriever:
     astra: AstraDB
     colbertEmbeddings: ColbertTokenEmbeddings
-    verbose: bool
     is_cuda: bool = False
 
     class Config:
@@ -82,13 +81,11 @@ class ColbertAstraRetriever:
         self,
         astraDB: AstraDB,
         colbertEmbeddings: ColbertTokenEmbeddings,
-        verbose: bool = False,
         **kwargs,
     ):
         # initialize pydantic base model
         self.astra = astraDB
         self.colbertEmbeddings = colbertEmbeddings
-        self.verbose = verbose
         self.is_cuda = torch.cuda.is_available()
 
     def retrieve(self, query: str, k: int = 10, query_maxlen: int = 64, **kwargs):
@@ -102,8 +99,7 @@ class ColbertAstraRetriever:
 
         # the min of query_maxlen is 32
         top_k = max(math.floor(len(query_encodings) / 2), 16)
-        if self.verbose:
-            logging.info(f"query length {len(query)} embeddings top_k: {top_k}")
+        logging.debug(f"query length {len(query)} embeddings top_k: {top_k}")
 
         # find the most relevant documents
         docparts = set()

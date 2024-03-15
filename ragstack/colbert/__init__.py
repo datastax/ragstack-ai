@@ -15,5 +15,3 @@ __all__ = (
     DEFAULT_COLBERT_MODEL,
     DEFAULT_COLBERT_DIM,
 )
-
-__version__ = "0.0.1"
