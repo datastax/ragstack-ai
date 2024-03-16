@@ -3,6 +3,7 @@ from cassandra.cluster import Cluster
 from cassandra.auth import PlainTextAuthProvider
 from cassandra import InvalidRequest
 from cassandra.concurrent import execute_concurrent_with_args
+import logging
 
 from .token_embedding import PassageEmbeddings
 
@@ -13,12 +14,10 @@ class AstraDB:
         secure_connect_bundle: str = None,
         astra_token: str = None,
         keyspace: str = "colbert128",
-        verbose: bool = False,
         timeout: int = 60,
         **kwargs,
     ):
 
-        # self.cluster = Cluster(**kwargs)
         if secure_connect_bundle is None or astra_token is None:
             self.cluster = Cluster(**kwargs)
         else:
@@ -29,15 +28,21 @@ class AstraDB:
         self.keyspace = keyspace
         self.session = self.cluster.connect()
         self.session.default_timeout = timeout
-        self.verbose = verbose
 
-        print(f"set up keyspace {keyspace}, tables and indexes...")
+        logging.info(f"set up keyspace {keyspace}, tables and indexes...")
 
         if keyspace not in self.cluster.metadata.keyspaces.keys():
-            raise ValueError(
-                f"Keyspace '{keyspace}' does not exist. please create it first."
-            )
-
+            # On Astra, the keyspace has to be created manually from the UI
+            # make sure the role with the permission to create keyspace on Astra
+            create_keyspace_query = f"""
+                CREATE KEYSPACE IF NOT EXISTS {self.keyspace}
+                WITH replication = {{
+                'class': 'SimpleStrategy',
+                'replication_factor': '1'
+                }};
+                """
+            self.session.execute(create_keyspace_query)
+            logging.info(f"keyspace '{keyspace}' created")
         self.create_tables()
 
         # prepare statements
@@ -76,7 +81,7 @@ class AstraDB:
         """
         self.query_part_by_pk_stmt = self.session.prepare(query_part_by_pk)
 
-        print("statements are prepared")
+        logging.info("statements are prepared")
 
     def create_tables(self):
         self.session.execute(
@@ -84,7 +89,7 @@ class AstraDB:
             use {self.keyspace};
         """
         )
-        print(f"Using keyspace {self.keyspace}")
+        logging.info(f"Using keyspace {self.keyspace}")
 
         self.session.execute(
             """
@@ -96,7 +101,7 @@ class AstraDB:
             );
         """
         )
-        print("Created chunks table")
+        logging.info("Created chunks table")
 
         self.session.execute(
             """
@@ -109,7 +114,7 @@ class AstraDB:
             );
         """
         )
-        print("Created colbert_embeddings table")
+        logging.info("Created colbert_embeddings table")
 
         self.create_index(
             """
@@ -117,14 +122,14 @@ class AstraDB:
   WITH OPTIONS = { 'similarity_function': 'DOT_PRODUCT' };
         """
         )
-        print("Created index on colbert_embeddings table")
+        logging.info("Created index on colbert_embeddings table")
 
     def create_index(self, command: str):
         try:
             self.session.execute(command)
         except InvalidRequest as e:
             if "already exists" in str(e):
-                print("Index already exists and continue...")
+                logging.info("Index already exists and continue...")
             else:
                 raise e
         # throw other exceptions
@@ -146,12 +151,11 @@ class AstraDB:
                 except Exception as e:
                     # no need to throw error if the title does not exist
                     # let the error propagate
-                    print(f"delete title {p.title()} error {e}")
+                    logging.info(f"delete title {p.title()} error {e}")
         # insert chunks
         p_parameters = [(p.title(), p.part(), p.get_text()) for p in embeddings]
         execute_concurrent_with_args(self.session, self.insert_chunk_stmt, p_parameters)
-        if self.verbose:
-            print(f"inserting chunks {p_parameters}")
+        logging.debug(f"inserting chunks {p_parameters}")
 
         # insert colbert embeddings
         for passageEmbd in embeddings:

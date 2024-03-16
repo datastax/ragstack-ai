@@ -137,12 +137,19 @@ class ColbertAstraRetriever:
             )
         # load the source chunk for the top k documents
         docs_by_score = sorted(scores, key=scores.get, reverse=True)[:k]
+
+        # query the doc body
+        doc_futures = {}
+        for title, part in docs_by_score:
+            future = self.astra.session.execute_async(
+                self.astra.query_part_by_pk_stmt, [title, part]
+            )
+            doc_futures[(title, part)] = future
+
         answers = []
         rank = 1
         for title, part in docs_by_score:
-            rs = self.astra.session.execute(
-                self.astra.query_part_by_pk_stmt, [title, part]
-            )
+            rs = doc_futures[(title, part)].result()
             score = scores[(title, part)]
             answers.append(
                 {
