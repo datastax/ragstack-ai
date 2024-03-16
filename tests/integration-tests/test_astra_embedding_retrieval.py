@@ -13,13 +13,33 @@ from ragstack.colbert.colbert_embedding import ColbertTokenEmbeddings
 from ragstack.colbert.astra_retriever import ColbertAstraRetriever
 from ragstack.colbert.cassandra_db import AstraDB
 from cassandra_container import CassandraContainer
-import os
+from cassandra.auth import PlainTextAuthProvider
+from cassandra.cluster import Cluster
 import base64
+
+def get_scb() -> str:
+     # Fetch the Base64 encoded string from the environment variable
+    encoded_zip = os.getenv('COLBERT_ASTRA_SCB')
+
+    # Decode the Base64 string back to binary data
+    decoded_zip = base64.b64decode(encoded_zip)
+
+    # Specify the output path for the rebuilt ZIP file
+    output_zip_path = '/tmp/secure-connect-mingv1.zip'
+
+    # Write the binary data to a new file
+    with open(output_zip_path, 'wb') as zip_file:
+        zip_file.write(decoded_zip)
+
+    return output_zip_path
+
 
 def test_embedding_astra_retriever():
 
     docker_container = CassandraContainer()
     docker_container.start()
+
+    logging.info("Cassandra container started")
    
     # Initial narrative about marine animals to then break down into chunks as specified by the user
     narrative = """
@@ -74,26 +94,15 @@ def test_embedding_astra_retriever():
 
     logging.info(f"passage embeddings size {len(passageEmbeddings)}")
 
-    # Fetch the Base64 encoded string from the environment variable
-    encoded_zip = os.getenv('COLBERT_ASTRA_SCB')
-
-    # Decode the Base64 string back to binary data
-    decoded_zip = base64.b64decode(encoded_zip)
-
-    # Specify the output path for the rebuilt ZIP file
-    output_zip_path = '/tmp/secure-connect-mingv1.zip'
-
-    # Write the binary data to a new file
-    with open(output_zip_path, 'wb') as zip_file:
-        zip_file.write(decoded_zip)
-
-
     # astra db
     astra = AstraDB(
-        secure_connect_bundle=output_zip_path,
-        astra_token=os.getenv("COLBERT_ASTRA_TOKEN"),
-        keyspace="colberttest",
-        verbose=True,
+        # secure_connect_bundle=get_scb(),
+        # astra_token=os.getenv("COLBERT_ASTRA_TOKEN"),
+        keyspace = "colberttest",
+        cluster = Cluster(
+            [("127.0.0.1", docker_container.get_mapped_port())],
+            auth_provider=PlainTextAuthProvider("cassandra", "cassandra"),
+        )
     )
 
     astra.ping()
