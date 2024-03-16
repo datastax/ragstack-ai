@@ -1,12 +1,18 @@
 # test 
 # debug print syspath
 import sys
-print(sys.path)
+import os
+import logging
+logging.basicConfig(level=logging.DEBUG)
+
+current_dir = os.getcwd()
+sys.path.append(current_dir)
+logging.info(f"sys path {sys.path}")
 
 from ragstack.colbert.colbert_embedding import ColbertTokenEmbeddings
 from ragstack.colbert.astra_retriever import ColbertAstraRetriever
 from ragstack.colbert.cassandra_db import AstraDB
-from .cassandra_container import CassandraContainer
+from cassandra_container import CassandraContainer
 import os
 import base64
 
@@ -53,7 +59,7 @@ def test_embedding_astra_retriever():
 
     # Output the first few chunks to ensure they meet the specifications
     for i, chunk in enumerate(chunks[:3]):  # Displaying the first 3 chunks for brevity
-        print(f"Chunk {i+1}:\n{chunk}\n{'-'*50}\n")
+        logging.info(f"Chunk {i+1}:\n{chunk}\n{'-'*50}\n")
 
     title = "Marine Animals habitat"
 
@@ -66,7 +72,7 @@ def test_embedding_astra_retriever():
 
     passageEmbeddings = colbert.embed_documents(texts=chunks, title=title)
 
-    print(f"passage embeddings size {len(passageEmbeddings)}")
+    logging.info(f"passage embeddings size {len(passageEmbeddings)}")
 
     # Fetch the Base64 encoded string from the environment variable
     encoded_zip = os.getenv('COLBERT_ASTRA_SCB')
@@ -92,7 +98,7 @@ def test_embedding_astra_retriever():
 
     astra.ping()
 
-    print("astra db is connected")
+    logging.info("astra db is connected")
 
     # astra insert colbert embeddings
     astra.insert_colbert_embeddings_chunks(
@@ -102,7 +108,7 @@ def test_embedding_astra_retriever():
     retriever = ColbertAstraRetriever(astraDB=astra, colbertEmbeddings=colbert, verbose=True)
     answers = retriever.retrieve("what kind fish lives shallow coral reefs", k=5)
     for a in answers:
-        print(f"answer rank {a['rank']} score {a['score']}, answer is {a['body']}\n")
+        logging.info(f"answer rank {a['rank']} score {a['score']}, answer is {a['body']}\n")
     assert len(answers) == 5
 
     astra.close()
