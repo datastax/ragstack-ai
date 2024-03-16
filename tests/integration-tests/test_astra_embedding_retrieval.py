@@ -2,10 +2,14 @@
 from ragstack.colbert.colbert_embedding import ColbertTokenEmbeddings
 from ragstack.colbert.astra_retriever import ColbertAstraRetriever
 from ragstack.colbert.cassandra_db import AstraDB
+from .cassandra_container import CassandraContainer
 import os
 import base64
 
 def test_embedding_astra_retriever():
+
+    docker_container = CassandraContainer()
+    docker_container.start()
    
     # Initial narrative about marine animals to then break down into chunks as specified by the user
     narrative = """
@@ -48,9 +52,8 @@ def test_embedding_astra_retriever():
         print(f"Chunk {i+1}:\n{chunk}\n{'-'*50}\n")
 
     title = "Marine Animals habitat"
+
     # colbert stuff starts
-
-
     colbert = ColbertTokenEmbeddings(
         doc_maxlen=220,
         nbits=1,
