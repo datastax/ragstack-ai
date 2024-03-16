@@ -2,10 +2,10 @@ from uuid import uuid4
 
 import langchain_core.documents
 import pytest
+from langchain_openai import OpenAIEmbeddings, ChatOpenAI
+
 from e2e_tests.conftest import get_required_env, is_astra
 from langchain.chains import ConversationalRetrievalChain
-from langchain.chat_models import ChatOpenAI
-from langchain.embeddings import OpenAIEmbeddings
 from langchain_astradb import AstraDBVectorStore as LangChainAstraDBVectorStore
 
 try:

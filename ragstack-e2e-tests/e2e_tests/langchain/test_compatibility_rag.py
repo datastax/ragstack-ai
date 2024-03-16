@@ -3,6 +3,19 @@ from typing import List
 
 import pytest
 from langchain import callbacks
+from langchain_community.chat_models import BedrockChat
+from langchain_community.embeddings import (
+    BedrockEmbeddings,
+    HuggingFaceInferenceAPIEmbeddings,
+)
+from langchain_community.llms.huggingface_hub import HuggingFaceHub
+from langchain_google_vertexai import ChatVertexAI, VertexAIEmbeddings
+from langchain_openai import (
+    OpenAIEmbeddings,
+    ChatOpenAI,
+    AzureChatOpenAI,
+    AzureOpenAIEmbeddings,
+)
 
 from e2e_tests.conftest import (
     set_current_test_info,
@@ -17,15 +30,6 @@ from e2e_tests.langchain.trulens import run_trulens_evaluation
 from e2e_tests.test_utils import get_local_resource_path
 from e2e_tests.langchain.nemo_guardrails import run_nemo_guardrails
 
-from langchain.chat_models import ChatOpenAI, AzureChatOpenAI, ChatVertexAI, BedrockChat
-from langchain.embeddings import (
-    OpenAIEmbeddings,
-    VertexAIEmbeddings,
-    BedrockEmbeddings,
-    HuggingFaceInferenceAPIEmbeddings,
-)
-from langchain.embeddings.azure_openai import AzureOpenAIEmbeddings
-from langchain.llms.huggingface_hub import HuggingFaceHub
 from langchain_core.embeddings import Embeddings
 from langchain_core.messages import HumanMessage
 from langchain_core.prompts import ChatPromptTemplate
@@ -111,7 +115,6 @@ def azure_openai_gpt35turbo_llm():
             azure_deployment=get_required_env("AZURE_OPEN_AI_CHAT_MODEL_DEPLOYMENT"),
             azure_endpoint=get_required_env("AZURE_OPENAI_ENDPOINT"),
             openai_api_key=get_required_env("AZURE_OPENAI_API_KEY"),
-            openai_api_type="azure",
             openai_api_version="2023-07-01-preview",
         ),
         "nemo_config": None,
@@ -129,7 +132,6 @@ def azure_openai_ada002_embedding():
         deployment=model_and_deployment,
         openai_api_key=get_required_env("AZURE_OPENAI_API_KEY"),
         azure_endpoint=get_required_env("AZURE_OPENAI_ENDPOINT"),
-        openai_api_type="azure",
         openai_api_version="2023-05-15",
         chunk_size=1,
     )
