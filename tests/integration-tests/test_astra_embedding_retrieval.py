@@ -1,4 +1,8 @@
 # test 
+# debug print syspath
+import sys
+print(sys.path)
+
 from ragstack.colbert.colbert_embedding import ColbertTokenEmbeddings
 from ragstack.colbert.astra_retriever import ColbertAstraRetriever
 from ragstack.colbert.cassandra_db import AstraDB
