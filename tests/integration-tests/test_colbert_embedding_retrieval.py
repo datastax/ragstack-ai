@@ -34,7 +34,7 @@ def get_scb() -> str:
     return output_zip_path
 
 
-def test_embedding_astra_retriever():
+def test_embedding_cassandra_retriever():
 
     docker_container = CassandraContainer()
     docker_container.start()

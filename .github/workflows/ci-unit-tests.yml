@@ -1,11 +1,11 @@
-name: CI - RAGStack unit and integration tests
+name: CI - RAGStack tests
 on:
   pull_request:
     branches:
       - main
 
 concurrency:
-  group: ragstack-unit-tests-${{ github.workflow }}-${{ github.ref }}
+  group: ragstack-tests-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -31,7 +31,7 @@ jobs:
           cd docker/examples/local-llm
           sudo docker build -t local-llm .
 
-  unit-tests:
+  tests:
     name: Unit and Integration Tests
     runs-on: ubuntu-latest
     steps:
