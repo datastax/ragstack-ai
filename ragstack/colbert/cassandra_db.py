@@ -55,8 +55,8 @@ class AstraDB:
         # prepare statements
 
         insert_chunk_cql = f"""
-        INSERT INTO {keyspace}.chunks (title, part, body)
-        VALUES (?, ?, ?)
+        INSERT INTO {keyspace}.colbert_embeddings (title, part, body, embedding_id)
+        VALUES (?, ?, ?, -1)
         """
         self.insert_chunk_stmt = self.session.prepare(insert_chunk_cql)
 
@@ -77,14 +77,14 @@ class AstraDB:
         query_colbert_parts_cql = f"""
         SELECT title, part, bert_embedding
         FROM {keyspace}.colbert_embeddings
-        WHERE title = ? AND part = ?
+        WHERE title = ? AND part = ? AND embedding_id != -1
         """
         self.query_colbert_parts_stmt = self.session.prepare(query_colbert_parts_cql)
 
         query_part_by_pk = f"""
         SELECT body
-        FROM {keyspace}.chunks
-        WHERE title = ? AND part = ?
+        FROM {keyspace}.colbert_embeddings
+        WHERE title = ? AND part = ? AND embedding_id = -1
         """
         self.query_part_by_pk_stmt = self.session.prepare(query_part_by_pk)
 
@@ -100,25 +100,14 @@ class AstraDB:
 
         self.session.execute(
             """
-            CREATE TABLE IF NOT EXISTS chunks(
-                title text,
-                part int,
-                body text,
-                PRIMARY KEY (title, part)
-            );
-        """
-        )
-        logging.info("Created chunks table")
-
-        self.session.execute(
-            """
             CREATE TABLE IF NOT EXISTS colbert_embeddings (
                 title text,
                 part int,
                 embedding_id int,
+                body text,
                 bert_embedding vector<float, 128>,
                 PRIMARY KEY (title, part, embedding_id)
-            );
+            ) WITH COMMENT = 'Colbert embeddings embedding_id=-1 contains the body chunk';
         """
         )
         logging.info("Created colbert_embeddings table")
@@ -177,9 +166,6 @@ class AstraDB:
 
     def delete_title(self, title: str):
         # Assuming `title` is a variable holding the title you want to delete
-        query = "DELETE FROM {}.chunks WHERE title = %s".format(self.keyspace)
-        self.session.execute(query, (title,))
-
         query = "DELETE FROM {}.colbert_embeddings WHERE title = %s".format(
             self.keyspace
         )
