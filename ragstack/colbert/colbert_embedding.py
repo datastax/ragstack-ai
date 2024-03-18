@@ -5,11 +5,28 @@ import torch  # it should part of colbert dependencies
 from torch import Tensor
 import uuid
 from .token_embedding import TokenEmbeddings, PerTokenEmbeddings, PassageEmbeddings
+from .constant import MAX_MODEL_TOKENS
 
 
 from colbert.infra import Run, RunConfig, ColBERTConfig
 from colbert.indexing.collection_encoder import CollectionEncoder
 from colbert.modeling.checkpoint import Checkpoint
+from colbert.modeling.tokenization import QueryTokenizer
+
+def calculate_query_maxlen(
+        tokens: List[List[str]], min_num: int, max_num: int
+    ) -> int:
+    max_token_length = max(len(inner_list) for inner_list in tokens)
+    if max_token_length < min_num:
+        return min_num
+
+    if max_token_length > max_num:
+        return max_num
+
+    power = min_num
+    while power < max_token_length:
+        power = power * 2
+    return power
 
 
 class ColbertTokenEmbeddings(TokenEmbeddings):
@@ -31,6 +48,7 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
     colbert_config: ColBERTConfig
     checkpoint: Checkpoint
     encoder: CollectionEncoder
+    query_tokenizer: QueryTokenizer
 
     # these are default values aligned with the colbert library
     __doc_maxlen: int = (220,)
@@ -102,6 +120,7 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
         self.encoder = CollectionEncoder(
             config=self.colbert_config, checkpoint=self.checkpoint
         )
+        self.query_tokenizer = QueryTokenizer(self.colbert_config)
         self.__cuda = torch.cuda.is_available()
         if self.__cuda:
             self.checkpoint = self.checkpoint.cuda()
@@ -129,13 +148,23 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
         query: Union[str, List[str]],
         full_length_search: bool = False,
         query_maxlen: int = 32,
+        enable_dynamic_query_maxlen: bool = True,
     ):
         queries = query if isinstance(query, list) else [query]
         bsize = 128 if len(queries) > 128 else None
 
-        self.checkpoint.query_tokenizer.query_maxlen = max(
-            query_maxlen, self.colbert_config.query_maxlen
-        )
+        tokens = self.query_tokenizer.tokenize(queries)
+        logging.info(f"query token size {len(tokens)}, tokens {tokens}")
+        fixed_length = query_maxlen
+        if enable_dynamic_query_maxlen:
+            fixed_length = calculate_query_maxlen(
+                tokens,
+                max(query_maxlen, self.colbert_config.query_maxlen),
+                MAX_MODEL_TOKENS)
+        logging.info(f"query token size {fixed_length}")
+
+        self.checkpoint.query_tokenizer.query_maxlen = fixed_length
+
         # query is Q in the ColBERT documentation
         query_tensor = self.checkpoint.queryFromText(
             queries, bsize=bsize, to_cpu=True, full_length_search=full_length_search
