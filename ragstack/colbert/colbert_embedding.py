@@ -147,21 +147,23 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
         self,
         query: Union[str, List[str]],
         full_length_search: bool = False,
-        query_maxlen: int = 32,
-        enable_dynamic_query_maxlen: bool = True,
+        # query_maxlen is really a fixed length for query token embeddings
+        # the length does not grow or shrink despite the number of tokens in the query
+        # we continue to use the same term to align with ColBERT documentation/library
+        query_maxlen: int = -1,
     ):
         queries = query if isinstance(query, list) else [query]
         bsize = 128 if len(queries) > 128 else None
 
         tokens = self.query_tokenizer.tokenize(queries)
-        logging.info(f"query token size {len(tokens)}, tokens {tokens}")
-        fixed_length = query_maxlen
-        if enable_dynamic_query_maxlen:
+        fixed_length = max(query_maxlen, self.colbert_config.query_maxlen)
+        if query_maxlen < 0:
             fixed_length = calculate_query_maxlen(
                 tokens,
                 max(query_maxlen, self.colbert_config.query_maxlen),
                 MAX_MODEL_TOKENS)
-        logging.info(f"query token size {fixed_length}")
+        # we only send one query at a time therefore tokens[0]
+        logging.info(f"{len(tokens[0])} tokens in first query with query_maxlen {fixed_length}")
 
         self.checkpoint.query_tokenizer.query_maxlen = fixed_length
 
