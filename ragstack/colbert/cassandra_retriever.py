@@ -1,6 +1,6 @@
 from .colbert_embedding import ColbertTokenEmbeddings
 
-from .cassandra_db import AstraDB
+from .cassandra_db import CassandraDB
 import logging
 from torch import tensor
 import torch
@@ -69,8 +69,8 @@ def max_similarity_torch(query_vector, embedding_list, is_cuda: bool = False):
     return max_sim
 
 
-class ColbertAstraRetriever:
-    astra: AstraDB
+class ColbertCassandraRetriever:
+    db: CassandraDB
     colbertEmbeddings: ColbertTokenEmbeddings
     is_cuda: bool = False
 
@@ -79,12 +79,12 @@ class ColbertAstraRetriever:
 
     def __init__(
         self,
-        astraDB: AstraDB,
+        db: CassandraDB,
         colbertEmbeddings: ColbertTokenEmbeddings,
         **kwargs,
     ):
         # initialize pydantic base model
-        self.astra = astraDB
+        self.db = db
         self.colbertEmbeddings = colbertEmbeddings
         self.is_cuda = torch.cuda.is_available()
 
@@ -106,8 +106,8 @@ class ColbertAstraRetriever:
         doc_futures = []
         for qv in query_encodings:
             # per token based retrieval
-            doc_future = self.astra.session.execute_async(
-                self.astra.query_colbert_ann_stmt, [list(qv), top_k]
+            doc_future = self.db.session.execute_async(
+                self.db.query_colbert_ann_stmt, [list(qv), top_k]
             )
             doc_futures.append(doc_future)
 
@@ -119,8 +119,8 @@ class ColbertAstraRetriever:
         scores = {}
         futures = []
         for title, part in docparts:
-            future = self.astra.session.execute_async(
-                self.astra.query_colbert_parts_stmt, [title, part]
+            future = self.db.session.execute_async(
+                self.db.query_colbert_parts_stmt, [title, part]
             )
             futures.append((future, title, part))
 
@@ -141,8 +141,8 @@ class ColbertAstraRetriever:
         # query the doc body
         doc_futures = {}
         for title, part in docs_by_score:
-            future = self.astra.session.execute_async(
-                self.astra.query_part_by_pk_stmt, [title, part]
+            future = self.db.session.execute_async(
+                self.db.query_part_by_pk_stmt, [title, part]
             )
             doc_futures[(title, part)] = future
 

@@ -13,7 +13,7 @@ def required_cred(cred: str):
         raise ValueError("Please provide credentials")
 
 
-class AstraDB:
+class CassandraDB:
     def __init__(
         self,
         secure_connect_bundle: str = None,

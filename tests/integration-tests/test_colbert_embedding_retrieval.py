@@ -10,8 +10,8 @@ sys.path.append(current_dir)
 logging.info(f"sys path {sys.path}")
 
 from ragstack.colbert.colbert_embedding import ColbertTokenEmbeddings
-from ragstack.colbert.astra_retriever import ColbertAstraRetriever
-from ragstack.colbert.cassandra_db import AstraDB
+from ragstack.colbert.cassandra_retriever import ColbertCassandraRetriever
+from ragstack.colbert.cassandra_db import CassandraDB
 from cassandra_container import CassandraContainer
 from cassandra.auth import PlainTextAuthProvider
 from cassandra.cluster import Cluster
@@ -94,8 +94,8 @@ def test_embedding_cassandra_retriever():
 
     logging.info(f"passage embeddings size {len(passageEmbeddings)}")
 
-    # astra db
-    astra = AstraDB(
+    # db
+    db = CassandraDB(
         # secure_connect_bundle=get_scb(),
         # astra_token=os.getenv("COLBERT_ASTRA_TOKEN"),
         keyspace = "colberttest",
@@ -105,22 +105,22 @@ def test_embedding_cassandra_retriever():
         )
     )
 
-    astra.ping()
+    db.ping()
 
     logging.info("astra db is connected")
 
     # astra insert colbert embeddings
-    astra.insert_colbert_embeddings_chunks(
+    db.insert_colbert_embeddings_chunks(
         embeddings=passageEmbeddings, delete_existed_passage=True)
 
 
-    retriever = ColbertAstraRetriever(astraDB=astra, colbertEmbeddings=colbert, verbose=True)
+    retriever = ColbertCassandraRetriever(db=db, colbertEmbeddings=colbert)
     answers = retriever.retrieve("what kind fish lives shallow coral reefs", k=5)
     for a in answers:
         logging.info(f"answer rank {a['rank']} score {a['score']}, answer is {a['body']}\n")
     assert len(answers) == 5
 
-    astra.close()
+    db.close()
 
 
 
