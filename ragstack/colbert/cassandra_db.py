@@ -2,6 +2,7 @@ from typing import List
 from cassandra.cluster import Cluster
 from cassandra import InvalidRequest
 from cassandra.concurrent import execute_concurrent_with_args
+import cassio
 import logging
 
 from .token_embedding import PassageEmbeddings
@@ -30,6 +31,10 @@ class CassandraDB(ColBERTVectorStore):
         self.session.default_timeout = timeout
 
         logging.info(f"set up keyspace {keyspace}, tables and indexes...")
+        #
+        # TODO: add astra support
+        cassio.init(session=self.session)
+        self.session = cassio.config.resolve_session()
 
         if keyspace not in self.cluster.metadata.keyspaces.keys():
             # On Astra, the keyspace has to be created manually from the UI
