@@ -1,24 +1,71 @@
 = Split Documents
 
-For the best price and performance ratio, we recommend the use of LangChain's https://datastax.github.io/ragstack-ai/api_reference/0.6.0/langchain/langchain_api_reference.html#module-langchain.text_splitter[TokenTextSplitter].
+As a starting point on generic text, we recommend the use of LangChain's https://datastax.github.io/ragstack-ai/api_reference/0.8.0/langchain/text_splitter/langchain.text_splitter.RecursiveCharacterTextSplitter.html[RecursiveCharacterTextSplitter].
 
-Splitting documents into smaller segments called chunks is an essential step when embedding your data into a vector store. RAG pipelines will retrieve relevant chunks to serve as context for the LLM to pull from when generating responses, which makes it important that the retrieved chunks provide the right amount of contextual information to answer the question, and no more than that.
+Splitting documents into smaller segments called chunks is an essential step when embedding your data into a vector store. RAG pipelines retrieve relevant chunks to serve as context for the LLM to pull from when generating responses, which makes it important that the retrieved chunks provide the right amount of contextual information to answer the question, and no more than that.
 
-The difficulty here is in selecting a chunk size. Smaller chunk sizes may result in lower retrieval and generation cost by providing fewer tokens to the context window, but the embedding may miss out on broader contextual information. Larger chunk sizes include that contextual information but may produce diluted responses due to unnecessary information being included in the context.
+The `RecursiveCharacterTextSplitter` tries to split on a list of characters, in order, until the chunks are small enough. The default list is `["\n\n", "\n", " ", ""]`. This has the effect of trying to keep all paragraphs (and then sentences, and then words) together as long as possible, as those would generically seem to be the strongest semantically related pieces of text.
+
+The LangChain TextSplitters have several parameters that can be tuned:
+
+* `chunk_size`: Determining the best chunk size for your setup can be difficult. Smaller chunk sizes may result in lower retrieval and generation cost by providing fewer tokens to the context window, but the embedding may miss out on broader contextual information. Larger chunk sizes include that contextual information but may produce diluted responses due to unnecessary information being included in the context.
+* `chunk_overlap`: Chunk overlap is used to specify the number of overlapping tokens between consecutive chunks. This is useful when splitting text to maintain context continuity between chunks. By including some overlapping tokens, you can ensure that a small portion of context is shared between adjacent chunks, which can help with preserving the meaning and coherence when processing the text with language models.
 
 [NOTE]
 ====
-Need a large text file to experiment with?
-Download Edgar Allan Poe's "The Cask of Amontillado" from our repository.
+The `chunk_size` represents the total size of the chunk. (The total size is not `chunk_size` + `chunk_overlap`.)
+
+For example, if `chunk_size` is 1000 and `chunk_overlap` is 100, then the first 100 tokens will be copied from the end of the previous chunk, and the next 900 tokens will be new.
+====
+
+We recommend starting with a `chunk_size` of 1024 tokens and a `chunk_overlap` of 128. Chunk sizes over 1500 tokens may not work with Astra DB at this time.
+
+Additionally you should make sure to use a length function that splits on tokens and not individual characters. The token splitter should match the embedding model you are using. LangChain includes shortcuts for OpenAI and HuggingFace embedding models:
+
+* OpenAI:
++
+[source,python]
+----
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+
+splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
+    model_name="text-embedding-ada-002",
+    chunk_size = 1024,
+    chunk_overlap = 128,
+)
+----
+
+* HuggingFace:
++
+[source,python]
+----
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from transformers import BertTokenizer
+
+tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+splitter = RecursiveCharacterTextSplitter.from_huggingface_tokenizer(
+    tokenizer=tokenizer,
+    chunk_size = 1024,
+    chunk_overlap = 128,
+)
+----
+
+== Split Documents with RecursiveCharacterTextSplitter
+
+.In this example we will split Edgar Allan Poe's "The Cask of Amontillado" using the `RecursiveCharacterTextSplitter`.
+* We assume that the text will be embedded using OpenAI's `text-embedding-ada-002` model.
+* For illustrative purposes, the `chunk_size` and `chunk_overlap` are set to smaller values than recommended.
+
+//
+
+. Download a copy of the text from our repository.
++
 [source,bash]
 ----
 curl https://raw.githubusercontent.com/CassioML/cassio-website/main/docs/frameworks/langchain/texts/amontillado.txt --output amontillado.txt
 ----
-====
 
-== Split text files with TokenTextSplitter
-
-. Split a large text file into smaller chunks with TokenTextSplitter.
+. Use the `RecursiveCharacterTextSplitter` to split the text into smaller chunks. Output the count of chunks and the contents of the first two chunks. Observe the chunk overlap.
 +
 [tabs]
 ======
@@ -26,61 +73,47 @@ Python::
 +
 [source,python]
 ----
-from langchain.text_splitter import TokenTextSplitter
-
-with open("./amontillado.txt") as textfile:
-    amontillado = textfile.read()
-
-text_splitter = TokenTextSplitter(chunk_size=10, chunk_overlap=0)
-
-texts = text_splitter.split_text(amontillado)
-
-print(texts[0])
-----
-
-Result::
-+
-[source,console]
-----
-The thousand injuries of Fortunato I had borne
-----
-======
-+
-. This prints the first chunk (`chunk_size=10`) of the text.
-
-=== Split and append metadata to chunks
-
-Appending metadata to each chunk is not necessary, but can provide additional information for the vector store to retrieve more relevant results.
-Add the following code to the example above to append metadata to each chunk.
-[tabs]
-======
-Python::
-+
-[source,python]
-----
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document
 
-docs = []
-for i, chunk in enumerate(text_splitter.split_text(amontillado)):
-  metadata = {
-      "source": "amontillado.txt",
-      "chunk_index": i,
-  }
-  docs.append(Document(page_content=chunk, metadata=metadata))
+with open("amontillado.txt") as textfile:
+    amontillado = textfile.read()
 
-total_docs = len(docs)
-print(f"Total number of documents: {total_docs}")
-print(docs[0])
+doc = Document(page_content=amontillado)
+
+splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
+    model_name="text-embedding-ada-002",
+    chunk_size = 100,
+    chunk_overlap = 20,
+)
+
+chunks = splitter.split_documents([doc])
+
+print(f"Chunk count: {len(chunks)}\n")
+print(f"Chunk 1 contents:\n\n{chunks[0].page_content}\n")
+print(f"Chunk 2 contents:\n\n{chunks[1].page_content}\n")
 ----
 
 Result::
 +
 [source,console]
 ----
-The thousand injuries of Fortunato I had borne
-Total number of documents: 371
-page_content='The thousand injuries of Fortunato I had borne' metadata={'source': <_io.TextIOWrapper name='./amontillado.txt' mode='r' encoding='UTF-8'>, 'chunk_index': 0}
+Chunk count: 48
+
+Chunk 1 contents:
+
+The thousand injuries of Fortunato I had borne as I best could, but
+when he ventured upon insult, I vowed revenge.  You, who so well know
+the nature of my soul, will not suppose, however, that I gave utterance
+to a threat.  _At length_ I would be avenged; this was a point definitely
+settled--but the very definitiveness with which it was resolved,
+
+Chunk 2 contents:
+
+settled--but the very definitiveness with which it was resolved,
+precluded the idea of risk.  I must not only punish, but punish with
+impunity.  A wrong is unredressed when retribution overtakes its
+redresser.  It is equally unredressed when the avenger fails to make
+himself felt as such to him who has done the wrong.
 ----
 ======
-
-`page_content` now includes metadata that the LLM can use to reason and produce more relevant results.
