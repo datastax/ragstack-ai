@@ -1,11 +1,11 @@
-name: CI - Unit tests
+name: CI - RAGStack tests
 on:
   pull_request:
     branches:
       - main
 
 concurrency:
-  group: ragstack-unit-tests-${{ github.workflow }}-${{ github.ref }}
+  group: ragstack-tests-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -31,8 +31,8 @@ jobs:
           cd docker/examples/local-llm
           sudo docker build -t local-llm .
 
-  unit-tests:
-    name: Unit Tests
+  tests:
+    name: Unit and Integration Tests
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
@@ -43,9 +43,12 @@ jobs:
 
       - name: "Build"
         run: |
-          poetry install --no-root
+          poetry install --no-root -E colbert
           poetry build
 
-      - name: Run ragstack-ai unit tests
+      - name: Run ragstack-ai unit and integration tests
+        env:
+          COLBERT_ASTRA_TOKEN: ${{ secrets.COLBERT_ASTRA_TOKEN }}
+          COLBERT_ASTRA_SCB: ${{ secrets.COLBERT_ASTRA_SCB }}
         run: |
           tox
