@@ -94,23 +94,23 @@ def test_embedding_cassandra_retriever():
 
     logging.info(f"passage embeddings size {len(passageEmbeddings)}")
 
-    # db
-    db = CassandraDB(
-        # secure_connect_bundle=get_scb(),
-        # astra_token=os.getenv("COLBERT_ASTRA_TOKEN"),
-        keyspace = "colberttest",
-        cluster = Cluster(
+    cluster = Cluster(
             [("127.0.0.1", docker_container.get_mapped_port())],
             auth_provider=PlainTextAuthProvider("cassandra", "cassandra"),
         )
+
+    # db
+    db = CassandraDB(
+        keyspace = "colberttest",
+        cluster = cluster,
     )
 
-    db.ping()
+    db.health_check()
 
     logging.info("astra db is connected")
 
-    # astra insert colbert embeddings
-    db.insert_colbert_embeddings_chunks(
+    # insert colbert embeddings to db
+    db.put_document(
         embeddings=passageEmbeddings, delete_existed_passage=True)
 
 

@@ -1,11 +1,11 @@
 from typing import List
 from cassandra.cluster import Cluster
-from cassandra.auth import PlainTextAuthProvider
 from cassandra import InvalidRequest
 from cassandra.concurrent import execute_concurrent_with_args
 import logging
 
 from .token_embedding import PassageEmbeddings
+from .vector_store import ColBERTVectorStore
 
 
 def required_cred(cred: str):
@@ -13,25 +13,18 @@ def required_cred(cred: str):
         raise ValueError("Please provide credentials")
 
 
-class CassandraDB:
+class CassandraDB(ColBERTVectorStore):
     def __init__(
         self,
-        secure_connect_bundle: str = None,
-        astra_token: str = None,
         keyspace: str = "colbert128",
         cluster: Cluster = None,
         timeout: int = 60,
         **kwargs,
     ):
         if cluster is None:
-            required_cred(secure_connect_bundle)
-            required_cred(astra_token)
-            self.cluster = Cluster(
-                cloud={"secure_connect_bundle": secure_connect_bundle},
-                auth_provider=PlainTextAuthProvider("token", astra_token),
-            )
-        else:
-            self.cluster = cluster
+            raise ValueError("Please provide a cluster")
+
+        self.cluster = cluster
         self.keyspace = keyspace
         self.session = self.cluster.connect()
         self.session.default_timeout = timeout
@@ -131,11 +124,11 @@ class CassandraDB:
         # throw other exceptions
 
     # ensure db connection is alive
-    def ping(self):
+    def health_check(self):
         self.session.execute("select release_version from system.local").one()
 
-    def insert_chunk(self, title: str, part: int, body: str):
-        self.session.execute(self.insert_chunk_stmt, (title, part, body))
+    def create_store(self):
+        return self.create_tables()
 
     def insert_colbert_embeddings_chunks(
         self, embeddings: List[PassageEmbeddings], delete_existed_passage: bool = False
@@ -143,7 +136,7 @@ class CassandraDB:
         if delete_existed_passage:
             for p in embeddings:
                 try:
-                    self.delete_title(p.title())
+                    self.delete_documents(p.title())
                 except Exception as e:
                     # no need to throw error if the title does not exist
                     # let the error propagate
@@ -164,7 +157,12 @@ class CassandraDB:
                 self.session, self.insert_colbert_stmt, parameters
             )
 
-    def delete_title(self, title: str):
+    def put_document(
+        self, embeddings: List[PassageEmbeddings], delete_existed_passage: bool = False
+    ) -> None:
+        return self.insert_colbert_embeddings_chunks(embeddings, delete_existed_passage) 
+
+    def delete_documents(self, title: str):
         # Assuming `title` is a variable holding the title you want to delete
         query = "DELETE FROM {}.colbert_embeddings WHERE title = %s".format(
             self.keyspace
