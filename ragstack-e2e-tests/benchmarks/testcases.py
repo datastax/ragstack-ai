@@ -102,7 +102,7 @@ def embeddings_batch100_chunk512(embeddings_fn):
 
 def openai_ada002(batch_size):
     return OpenAIEmbeddings(
-        chunk_size=batch_size, api_key=os.environ.get("OPEN_AI_KEY")
+        chunk_size=batch_size, api_key=os.environ.get("OPENAI_API_KEY")
     )
 
 

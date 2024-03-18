@@ -31,7 +31,7 @@ from e2e_tests.test_utils.tracing import record_langsmith_sharelink
 
 
 BASIC_QA_PROMPT = """
-Answer the question based only on the supplied context. If you don't know the answer, say you don't know the answer.
+Answer the question based only on the supplied context. If you don't know the answer, say the following: "I don't know the answer".
 Context: {context}
 Question: {question}
 Your answer:
