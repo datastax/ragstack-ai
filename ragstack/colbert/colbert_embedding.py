@@ -165,12 +165,13 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
 
         self.checkpoint.query_tokenizer.query_maxlen = fixed_length
 
-        # query is Q in the ColBERT documentation
-        query_tensor = self.checkpoint.queryFromText(
+        # All query embeddings in the ColBERT documentation
+        # this name, EQ or Q, maps the exact name in most colBERT papers
+        Q = self.checkpoint.queryFromText(
             queries, bsize=bsize, to_cpu=True, full_length_search=full_length_search
         )
 
-        return query_tensor
+        return Q
 
     def encode_query(
         self,
