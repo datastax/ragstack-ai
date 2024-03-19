@@ -76,6 +76,8 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
         kmeans_niters: int = 4,
         nranks: int = -1,
         query_maxlen: int = 32,
+        verbose: int = 3,  # 3 is the default on ColBERT checkpoint
+        **kwargs
     ):
         self.__cuda = torch.cuda.is_available()
         total_visible_gpus = 0
@@ -112,7 +114,7 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
         self.__nranks = nranks
         logging.info("creating checkpoint")
         self.checkpoint = Checkpoint(
-            self.colbert_config.checkpoint, colbert_config=self.colbert_config
+            self.colbert_config.checkpoint, colbert_config=self.colbert_config, verbose=verbose
         )
         self.encoder = CollectionEncoder(
             config=self.colbert_config, checkpoint=self.checkpoint
