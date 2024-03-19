@@ -46,9 +46,10 @@ jobs:
           poetry install --no-root -E colbert
           poetry build
 
-      - name: Run ragstack-ai unit and integration tests
-        env:
-          COLBERT_ASTRA_TOKEN: ${{ secrets.COLBERT_ASTRA_TOKEN }}
-          COLBERT_ASTRA_SCB: ${{ secrets.COLBERT_ASTRA_SCB }}
+      - name: "Lint"
         run: |
-          tox
+          tox -e lint
+
+      - name: Run ragstack-ai unit and integration tests
+        run: |
+          tox -e tests

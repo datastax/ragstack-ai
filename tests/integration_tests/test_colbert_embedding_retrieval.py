@@ -1,47 +1,32 @@
-# test 
-# debug print syspath
-import sys
 import os
 import logging
-logging.basicConfig(level=logging.DEBUG)
-
-current_dir = os.getcwd()
-sys.path.append(current_dir)
-logging.info(f"sys path {sys.path}")
-
-from ragstack.colbert.colbert_embedding import ColbertTokenEmbeddings
-from ragstack.colbert.cassandra_retriever import ColbertCassandraRetriever
-from ragstack.colbert.cassandra_db import CassandraDB
-from cassandra_container import CassandraContainer
+import pytest
+from ragstack.colbert import ColbertTokenEmbeddings
+from ragstack.colbert import ColbertCassandraRetriever
+from ragstack.colbert import CassandraColBERTVectorStore
+from tests.integration_tests.cassandra_container import CassandraContainer
 from cassandra.auth import PlainTextAuthProvider
 from cassandra.cluster import Cluster
-import base64
-
-def get_scb() -> str:
-     # Fetch the Base64 encoded string from the environment variable
-    encoded_zip = os.getenv('COLBERT_ASTRA_SCB')
-
-    # Decode the Base64 string back to binary data
-    decoded_zip = base64.b64decode(encoded_zip)
-
-    # Specify the output path for the rebuilt ZIP file
-    output_zip_path = '/tmp/secure-connect-mingv1.zip'
-
-    # Write the binary data to a new file
-    with open(output_zip_path, 'wb') as zip_file:
-        zip_file.write(decoded_zip)
-
-    return output_zip_path
+import cassio
 
 
-def test_embedding_cassandra_retriever():
-
-    docker_container = CassandraContainer()
-    docker_container.start()
-
+@pytest.fixture
+def cassandra_port():
+    start_container = os.environ.get("CASSANDRA_START_CONTAINER", "true")
+    port = 9042
+    docker_container = None
+    if start_container == "true":
+        docker_container = CassandraContainer()
+        logging.info("Starting Cassandra container")
+        docker_container.start()
+        port = docker_container.get_mapped_port()
     logging.info("Cassandra container started")
-   
-    # Initial narrative about marine animals to then break down into chunks as specified by the user
+    yield port
+    if docker_container:
+        docker_container.stop()
+
+
+def test_embedding_cassandra_retriever(cassandra_port):
     narrative = """
     Marine animals inhabit some of the most diverse environments on our planet. From the shallow coral reefs teeming with colorful fish to the dark depths of the ocean where mysterious creatures lurk, the marine world is full of wonder and mystery.
 
@@ -79,7 +64,7 @@ def test_embedding_cassandra_retriever():
 
     # Output the first few chunks to ensure they meet the specifications
     for i, chunk in enumerate(chunks[:3]):  # Displaying the first 3 chunks for brevity
-        logging.info(f"Chunk {i+1}:\n{chunk}\n{'-'*50}\n")
+        logging.info(f"Chunk {i + 1}:\n{chunk}\n{'-' * 50}\n")
 
     title = "Marine Animals habitat"
 
@@ -90,37 +75,34 @@ def test_embedding_cassandra_retriever():
         kmeans_niters=4,
     )
 
-    passageEmbeddings = colbert.embed_documents(texts=chunks, title=title)
+    passage_embeddings = colbert.embed_documents(texts=chunks, title=title)
 
-    logging.info(f"passage embeddings size {len(passageEmbeddings)}")
+    logging.info(f"passage embeddings size {len(passage_embeddings)}")
 
     cluster = Cluster(
-            [("127.0.0.1", docker_container.get_mapped_port())],
-            auth_provider=PlainTextAuthProvider("cassandra", "cassandra"),
-        )
-
-    # db
-    db = CassandraDB(
-        keyspace = "colberttest",
-        cluster = cluster,
+        [("127.0.0.1", cassandra_port)],
+        auth_provider=PlainTextAuthProvider("cassandra", "cassandra"),
     )
 
-    db.health_check()
+    cassandra_session = cluster.connect()
+    keyspace = "colbert128"
+    cassandra_session.execute(f"DROP KEYSPACE IF EXISTS {keyspace}")
+    cassandra_session.execute(
+        f"CREATE KEYSPACE IF NOT EXISTS {keyspace} WITH replication = {{'class': 'SimpleStrategy', 'replication_factor': '1'}}"
+    )
+    cassio.init(session=cassandra_session)
 
-    logging.info("astra db is connected")
+    store = CassandraColBERTVectorStore(
+        keyspace=keyspace,
+        table_name="colbert_embeddings",
+        session=cassandra_session,
+    )
+    store.put_document(embeddings=passage_embeddings, delete_existed_passage=True)
 
-    # insert colbert embeddings to db
-    db.put_document(
-        embeddings=passageEmbeddings, delete_existed_passage=True)
-
-
-    retriever = ColbertCassandraRetriever(db=db, colbertEmbeddings=colbert)
-    answers = retriever.retrieve("what kind fish lives shallow coral reefs", k=5)
-    for a in answers:
-        logging.info(f"answer rank {a['rank']} score {a['score']}, answer is {a['body']}\n")
-    assert len(answers) == 5
-
-    db.close()
-
-
-
+    retriever = ColbertCassandraRetriever(
+        vector_store=store, colbert_embeddings=colbert
+    )
+    docs = retriever.retrieve("what kind fish lives shallow coral reefs", k=5)
+    for doc in docs:
+        logging.info(f"got {doc}")
+    assert len(docs) == 5

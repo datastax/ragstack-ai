@@ -31,13 +31,22 @@ torch = { version = "2.2.1", optional = true }
 [tool.poetry.extras]
 langchain-google = ["langchain-google-genai", "langchain-google-vertexai"]
 langchain-nvidia = ["langchain-nvidia-ai-endpoints"]
-colbert = ["colbert-ai", "pyarrow", "torch", "cassio"]
+colbert = ["colbert-ai", "pyarrow", "torch"]
 
 [tool.poetry.group.test.dependencies]
 pytest = "*"
+black = "*"
+ruff = "*"
 nbmake = "*"
 testcontainers = "^3.7.1"
 tox = "^4"
+
+[tool.pytest.ini_options]
+log_cli = true
+log_cli_level = "INFO"
+log_cli_format = "%(asctime)s [%(levelname)8s] %(message)s (%(filename)s:%(lineno)s)"
+log_cli_date_format = "%Y-%m-%d %H:%M:%S"
+
 
 [build-system]
 requires = ["poetry-core"]

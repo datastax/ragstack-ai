@@ -1,21 +1,19 @@
-from typing import Any, List, Union
+from typing import List, Union
 import logging
 import itertools
-import torch  # it should part of colbert dependencies
+import torch
 from torch import Tensor
 import uuid
 from .token_embedding import TokenEmbeddings, PerTokenEmbeddings, PassageEmbeddings
 from .constant import MAX_MODEL_TOKENS
-
 
 from colbert.infra import Run, RunConfig, ColBERTConfig
 from colbert.indexing.collection_encoder import CollectionEncoder
 from colbert.modeling.checkpoint import Checkpoint
 from colbert.modeling.tokenization import QueryTokenizer
 
-def calculate_query_maxlen(
-        tokens: List[List[str]], min_num: int, max_num: int
-    ) -> int:
+
+def calculate_query_maxlen(tokens: List[List[str]], min_num: int, max_num: int) -> int:
     max_token_length = max(len(inner_list) for inner_list in tokens)
     if max_token_length < min_num:
         return min_num
@@ -78,7 +76,6 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
         kmeans_niters: int = 4,
         nranks: int = -1,
         query_maxlen: int = 32,
-        **data: Any,
     ):
         self.__cuda = torch.cuda.is_available()
         total_visible_gpus = 0
@@ -136,9 +133,9 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
     # this is query embedding without padding
     # it does not reload checkpoint which means faster embedding
     def embed_query(self, text: str) -> Tensor:
-        passageEmbeddings = self.embed_documents(texts=[text], title="no-op")[0]
+        passage_embeddings = self.embed_documents(texts=[text], title="no-op")[0]
         embeddings = []
-        for token in passageEmbeddings.get_all_token_embeddings():
+        for token in passage_embeddings.get_all_token_embeddings():
             embeddings.append(token.get_embeddings())
 
         return torch.tensor(embeddings)
@@ -161,19 +158,21 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
             fixed_length = calculate_query_maxlen(
                 tokens,
                 max(query_maxlen, self.colbert_config.query_maxlen),
-                MAX_MODEL_TOKENS)
+                MAX_MODEL_TOKENS,
+            )
         # we only send one query at a time therefore tokens[0]
-        logging.info(f"{len(tokens[0])} tokens in first query with query_maxlen {fixed_length}")
+        logging.info(
+            f"{len(tokens[0])} tokens in first query with query_maxlen {fixed_length}"
+        )
 
         self.checkpoint.query_tokenizer.query_maxlen = fixed_length
 
         # All query embeddings in the ColBERT documentation
         # this name, EQ or Q, maps the exact name in most colBERT papers
-        Q = self.checkpoint.queryFromText(
+        queriesQ = self.checkpoint.queryFromText(
             queries, bsize=bsize, to_cpu=True, full_length_search=full_length_search
         )
-
-        return Q
+        return queriesQ
 
     def encode_query(
         self,
@@ -181,13 +180,15 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
         full_length_search: bool = False,
         query_maxlen: int = 32,
     ):
-        Q = self.encode_queries(query, full_length_search, query_maxlen=query_maxlen)
-        return Q[0]
+        queries = self.encode_queries(
+            query, full_length_search, query_maxlen=query_maxlen
+        )
+        return queries[0]
 
     def encode(self, texts: List[str], title: str = "") -> List[PassageEmbeddings]:
         embeddings, count = self.encoder.encode_passages(texts)
 
-        collectionEmbds = []
+        collection_embds = []
         # split up embeddings by counts, a list of the number of tokens in each passage
         start_indices = [0] + list(itertools.accumulate(count[:-1]))
         embeddings_by_part = [
@@ -195,16 +196,16 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
             for start, count in zip(start_indices, count)
         ]
         for part, embedding in enumerate(embeddings_by_part):
-            collectionEmbd = PassageEmbeddings(text=texts[part], title=title, part=part)
-            pid = collectionEmbd.id()
+            passage_embeddings = PassageEmbeddings(
+                text=texts[part], title=title, part=part
+            )
+            pid = passage_embeddings.id()
             for __part_i, perTokenEmbedding in enumerate(embedding):
-                perToken = PerTokenEmbeddings(
+                per_token = PerTokenEmbeddings(
                     parent_id=pid, id=__part_i, title=title, part=part
                 )
-                perToken.add_embeddings(perTokenEmbedding.tolist())
-                # logging.info(f"    token embedding part {part} id {__part_i} parent id {pid}")
-                collectionEmbd.add_token_embeddings(perToken)
-            collectionEmbds.append(collectionEmbd)
-            # logging.info(f"embedding part {part} collection id {pid}, collection size {len(collectionEmbd.get_all_token_embeddings())}")
+                per_token.add_embeddings(perTokenEmbedding.tolist())
+                passage_embeddings.add_token_embeddings(per_token)
+            collection_embds.append(passage_embeddings)
 
-        return collectionEmbds
+        return collection_embds
