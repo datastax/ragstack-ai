@@ -12,13 +12,11 @@ class PerTokenEmbeddings:
 
     def __init__(
         self,
-        id: int,
-        part: int,
-        parent_id: uuid.UUID = None,
-        title: str = "",
+        id: int,  # id is the embedding id
+        part: int,  # part is the part id of the passage
+        title: str = "",  # title is the title of the passage
     ):
         self.id = id
-        self.parent_id = parent_id
         self.__embeddings = []
         self.title = title
         self.part = part
@@ -29,11 +27,11 @@ class PerTokenEmbeddings:
     def get_embeddings(self) -> List[float]:
         return self.__embeddings
 
-    def id(self):
+    def id(self) -> id:
         return self.id
 
-    def parent_id(self):
-        return self.parent_id
+    def title(self):
+        return self.title
 
     def part(self):
         return self.part
@@ -43,26 +41,32 @@ class PassageEmbeddings:
     __token_embeddings: List[PerTokenEmbeddings]
     __text: str
     __title: str
-    __id: uuid.UUID
+    __id: str
+    __model: str
+    __dim: int
 
     def __init__(
         self,
         text: str,
-        title: str = "",
-        part: int = 0,
-        id: uuid.UUID = None,
+        title: str = "",  # keep this as backward compatibility, use id instead
+        part: int = -1,
+        id: str = "",
         model: str = DEFAULT_COLBERT_MODEL,
         dim: int = DEFAULT_COLBERT_DIM,
     ):
         self.__text = text
         self.__token_embeddings = []
-        if id is None:
-            self.__id = uuid.uuid4()
-        else:
-            self.__id = id
+        if title == "" and id == "":
+           self.__title = str(uuid.uuid4())
+           self.__id = self.__title
+        elif id != "":
+           self.__title = id
+           self.__id = id
+        elif title != "":
+            self.__id = title
+            self.__title = title
         self.__model = model
         self.__dim = dim
-        self.__title = title
         self.__part = part
 
     def model(self):
@@ -88,12 +92,6 @@ class PassageEmbeddings:
 
     def add_token_embeddings(self, token_embeddings: PerTokenEmbeddings):
         self.__token_embeddings.append(token_embeddings)
-
-    def get_token_embeddings(self, token_id: int) -> PerTokenEmbeddings:
-        for token in self.__token_embeddings:
-            if token.token_id == token_id:
-                return token
-        return None
 
     def get_all_token_embeddings(self) -> List[PerTokenEmbeddings]:
         return self.__token_embeddings

@@ -195,16 +195,13 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
             for start, count in zip(start_indices, count)
         ]
         for part, embedding in enumerate(embeddings_by_part):
-            collectionEmbd = PassageEmbeddings(text=texts[part], title=title, part=part)
-            pid = collectionEmbd.id()
+            collectionEmbd = PassageEmbeddings(text=texts[part], id=title, part=part)
             for __part_i, perTokenEmbedding in enumerate(embedding):
                 perToken = PerTokenEmbeddings(
-                    parent_id=pid, id=__part_i, title=title, part=part
+                    id=__part_i, title=title, part=part
                 )
                 perToken.add_embeddings(perTokenEmbedding.tolist())
-                # logging.info(f"    token embedding part {part} id {__part_i} parent id {pid}")
                 collectionEmbd.add_token_embeddings(perToken)
             collectionEmbds.append(collectionEmbd)
-            # logging.info(f"embedding part {part} collection id {pid}, collection size {len(collectionEmbd.get_all_token_embeddings())}")
 
         return collectionEmbds
