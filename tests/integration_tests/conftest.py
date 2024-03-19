@@ -47,6 +47,7 @@ class LocalCassandraTestStore(TestStore):
 class AstraDBTestStore(TestStore):
     token: str
     database_id: str
+    env: str
 
     def __init__(self):
         super().__init__()
@@ -54,11 +55,16 @@ class AstraDBTestStore(TestStore):
             raise ValueError(
                 "ASTRA_DB_ID and ASTRA_DB_TOKEN environment variables must be set"
             )
+        self.token = os.getenv("ASTRA_DB_TOKEN")
+        self.database_id = os.getenv("ASTRA_DB_ID")
+        self.env = os.getenv("ASTRA_DB_ENV", "prod").lower()
 
     def create_cassandra_session(self) -> Session:
-        id = os.getenv("ASTRA_DB_ID")
-        token = os.getenv("ASTRA_DB_TOKEN")
-        cassio.init(token=token, database_id=id, keyspace=KEYSPACE)
+        if self.env == "prod":
+            cassio.init(token=self.token, database_id=self.database_id, keyspace=KEYSPACE)
+        else:
+            bundle_url_template = "https://api.dev.cloud.datastax.com/v2/databases/{database_id}/secureBundleURL"
+            cassio.init(token=self.token, database_id=self.database_id, keyspace=KEYSPACE, bundle_url_template=bundle_url_template)
         session = cassio.config.resolve_session()
         session.execute(f"DROP KEYSPACE IF EXISTS {KEYSPACE}")
         session.execute(
