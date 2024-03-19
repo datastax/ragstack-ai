@@ -1,4 +1,4 @@
-from .colbert_embedding import ColbertTokenEmbeddings
+from .colbert_embedding import ColbertTokenEmbeddings, calculate_query_maxlen
 from .cassandra_db import CassandraDB
 from .cassandra_retriever import ColbertCassandraRetriever, max_similarity_torch
 from .token_embedding import PerTokenEmbeddings, PassageEmbeddings, TokenEmbeddings
