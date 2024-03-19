@@ -8,6 +8,19 @@ from ..vector_store import ColBERTVectorStoreRetriever
 
 
 class ColBERTVectorStoreLangChainRetriever(BaseRetriever):
+    """Chain for langchain retrieve using ColBERT vector store.
+
+    Example:
+        .. code-block:: python
+
+        from langchain.chains import RetrievalQA
+        from langchain_openai import AzureChatOpenAI
+
+        llm = AzureChatOpenAI()
+        retriever = ColBERTVectorStoreLangChainRetriever(colbertCassandraRetriever, k=2)
+        qa = RetrievalQA.from_chain_type(llm=llm, chain_type="stuff", retriever=retriever)
+        qa.run("what happened on June 4th?")
+    """
     retriever: ColBERTVectorStoreRetriever = Field(default=None)
     kwargs: dict = {}
     k: int = 10
