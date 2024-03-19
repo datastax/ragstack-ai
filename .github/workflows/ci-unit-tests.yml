@@ -50,6 +50,38 @@ jobs:
         run: |
           tox -e lint
 
-      - name: Run ragstack-ai unit and integration tests
+      - name: "Unit tests"
         run: |
-          tox -e tests
+          tox -e unit-tests
+          
+      - name: Compute db name
+        id: db-name
+        run: |
+          echo "db-name=${{ github.run_id}}-$(echo $(for((i=1;i<=8;i++))
+          do printf '%s' "${RANDOM:0:1}"; done) | tr '[0-9]' '[a-z]')" >> $GITHUB_OUTPUT
+
+      - name: Setup AstraDB
+        uses: ./.github/actions/setup-astra-db
+        id: astra-db
+        timeout-minutes: 10
+        with:
+          astra-token: ${{ secrets.E2E_TESTS_ASTRA_DEV_DB_TOKEN }}
+          db-name: ${{ steps.db-name.outputs.db-name }}
+          env: "DEV"
+          region: "us-west-2"
+          cloud: "aws"
+
+      - name: "Integration tests"
+        with:
+           ASTRA_DB_TOKEN: "${{ secrets.E2E_TESTS_ASTRA_DEV_DB_TOKEN }}"
+           ASTRA_DB_ID: "${{ steps.astra-db.outputs.db_id }}"
+        run: |
+          tox -e integration-tests
+
+      - name: Cleanup AstraDB
+        uses: ./.github/actions/cleanup-astra-db
+        if: ${{ always() }}
+        with:
+          astra-token: ${{ secrets[inputs.astradb-token-secret-name] }}
+          db-name: ${{ steps.db-name.outputs.db-name }}
+          env: ${{ inputs.astradb-env }}

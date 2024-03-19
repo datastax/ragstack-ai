@@ -1,32 +1,30 @@
-import os
 import logging
+
 import pytest
 from ragstack.colbert import ColbertTokenEmbeddings
 from ragstack.colbert import ColbertCassandraRetriever
 from ragstack.colbert import CassandraColBERTVectorStore
-from tests.integration_tests.cassandra_container import CassandraContainer
-from cassandra.auth import PlainTextAuthProvider
-from cassandra.cluster import Cluster
-import cassio
+
+from tests.integration_tests.conftest import (
+    get_local_cassandra_test_store,
+    get_astradb_test_store,
+    KEYSPACE,
+)
 
 
 @pytest.fixture
-def cassandra_port():
-    start_container = os.environ.get("CASSANDRA_START_CONTAINER", "true")
-    port = 9042
-    docker_container = None
-    if start_container == "true":
-        docker_container = CassandraContainer()
-        logging.info("Starting Cassandra container")
-        docker_container.start()
-        port = docker_container.get_mapped_port()
-    logging.info("Cassandra container started")
-    yield port
-    if docker_container:
-        docker_container.stop()
+def cassandra():
+    return get_local_cassandra_test_store()
 
 
-def test_embedding_cassandra_retriever(cassandra_port):
+@pytest.fixture
+def astra_db():
+    return get_astradb_test_store()
+
+
+@pytest.mark.parametrize("vector_store", ["cassandra", "astra_db"])
+def test_embedding_cassandra_retriever(request, vector_store: str):
+    vector_store = request.getfixturevalue(vector_store)
     narrative = """
     Marine animals inhabit some of the most diverse environments on our planet. From the shallow coral reefs teeming with colorful fish to the dark depths of the ocean where mysterious creatures lurk, the marine world is full of wonder and mystery.
 
@@ -79,23 +77,10 @@ def test_embedding_cassandra_retriever(cassandra_port):
 
     logging.info(f"passage embeddings size {len(passage_embeddings)}")
 
-    cluster = Cluster(
-        [("127.0.0.1", cassandra_port)],
-        auth_provider=PlainTextAuthProvider("cassandra", "cassandra"),
-    )
-
-    cassandra_session = cluster.connect()
-    keyspace = "colbert128"
-    cassandra_session.execute(f"DROP KEYSPACE IF EXISTS {keyspace}")
-    cassandra_session.execute(
-        f"CREATE KEYSPACE IF NOT EXISTS {keyspace} WITH replication = {{'class': 'SimpleStrategy', 'replication_factor': '1'}}"
-    )
-    cassio.init(session=cassandra_session)
-
     store = CassandraColBERTVectorStore(
-        keyspace=keyspace,
+        keyspace=KEYSPACE,
         table_name="colbert_embeddings",
-        session=cassandra_session,
+        session=vector_store.create_cassandra_session(),
     )
     store.put_document(embeddings=passage_embeddings, delete_existed_passage=True)
 
