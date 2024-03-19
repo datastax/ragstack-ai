@@ -2,7 +2,7 @@
 
 export TMPDIR=/var/tmp
 sudo yum update -y
-sudo yum install python311 python3-devel gcc postgresql-devel git docker -y
+sudo yum install python311 python3-devel gcc gcc-c++ postgresql-devel git docker -y
 sudo service docker start
 sudo systemctl enable docker
 sudo usermod -a -G docker ec2-user
@@ -14,5 +14,4 @@ pip3 install python-dotenv pypdf pdfminer.six trulens_eval psycopg2 psutil \
     plotly nbformat sentence-transformers llama-parse langchain-astradb \
     llama-index-embeddings-azure-openai llama-index-llms-azure-openai \
     llama-index-vector-stores-astra llama-index-core \
-    git+https://github.com/zzzming/colbert2#subdirectory=webserver \
     arize-phoenix-evals matplotlib pycm scikit-learn tiktoken nest_asyncio
