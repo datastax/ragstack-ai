@@ -41,14 +41,13 @@ jobs:
       - name: "Setup: Python 3.11"
         uses: ./.github/actions/setup-python
 
-      - name: "Build"
-        run: |
-          poetry install --no-root -E colbert
-          poetry build
-
       - name: "Lint"
         run: |
           tox -e lint
+
+      - name: "Build"
+        run: |
+          tox -e build
 
       - name: "Unit tests"
         run: |
