@@ -14,6 +14,7 @@ def test_import():
 
 def test_meta():
     from importlib import metadata
+
     meta = metadata.metadata("ragstack-ai")
     assert meta["version"]
     assert meta["license"] == "BUSL-1.1"

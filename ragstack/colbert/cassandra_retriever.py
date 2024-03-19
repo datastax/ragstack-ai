@@ -1,10 +1,14 @@
+from typing import List
+
 from .colbert_embedding import ColbertTokenEmbeddings
 
-from .cassandra_db import CassandraDB
+from .cassandra_store import CassandraColBERTVectorStore
 import logging
 from torch import tensor
 import torch
 import math
+
+from .vector_store import ColBERTVectorStoreRetriever, Document
 
 # max similarity between a query vector and a list of embeddings
 # The function returns the highest similarity score (i.e., the maximum dot product value)
@@ -69,9 +73,9 @@ def max_similarity_torch(query_vector, embedding_list, is_cuda: bool = False):
     return max_sim
 
 
-class ColbertCassandraRetriever:
-    db: CassandraDB
-    colbertEmbeddings: ColbertTokenEmbeddings
+class ColbertCassandraRetriever(ColBERTVectorStoreRetriever):
+    vector_store: CassandraColBERTVectorStore
+    colbert_embeddings: ColbertTokenEmbeddings
     is_cuda: bool = False
 
     class Config:
@@ -79,21 +83,24 @@ class ColbertCassandraRetriever:
 
     def __init__(
         self,
-        db: CassandraDB,
-        colbertEmbeddings: ColbertTokenEmbeddings,
-        **kwargs,
+        vector_store: CassandraColBERTVectorStore,
+        colbert_embeddings: ColbertTokenEmbeddings,
     ):
-        # initialize pydantic base model
-        self.db = db
-        self.colbertEmbeddings = colbertEmbeddings
+        self.vector_store = vector_store
+        self.colbert_embeddings = colbert_embeddings
         self.is_cuda = torch.cuda.is_available()
 
-    def retrieve(self, query: str, k: int = 10, query_maxlen: int = 64, **kwargs):
+    def close(self):
+        pass
+
+    def retrieve(
+        self, query: str, k: int = 10, query_maxlen: int = 64, **kwargs
+    ) -> List[Document]:
         #
-        # if the query has fewer than a predefined number of of tokens Nq,
-        # colbertEmbeddings will pad it with BERT special [mast] token up to length Nq.
+        # if the query has fewer than a predefined number of tokens Nq,
+        # colbert_embeddings will pad it with BERT special [mast] token up to length Nq.
         #
-        query_encodings = self.colbertEmbeddings.encode_query(
+        query_encodings = self.colbert_embeddings.encode_query(
             query, query_maxlen=query_maxlen
         )
 
@@ -106,8 +113,8 @@ class ColbertCassandraRetriever:
         doc_futures = []
         for qv in query_encodings:
             # per token based retrieval
-            doc_future = self.db.session.execute_async(
-                self.db.query_colbert_ann_stmt, [list(qv), top_k]
+            doc_future = self.vector_store.session.execute_async(
+                self.vector_store.query_colbert_ann_stmt, [list(qv), top_k]
             )
             doc_futures.append(doc_future)
 
@@ -119,8 +126,8 @@ class ColbertCassandraRetriever:
         scores = {}
         futures = []
         for title, part in docparts:
-            future = self.db.session.execute_async(
-                self.db.query_colbert_parts_stmt, [title, part]
+            future = self.vector_store.session.execute_async(
+                self.vector_store.query_colbert_parts_stmt, [title, part]
             )
             futures.append((future, title, part))
 
@@ -141,23 +148,18 @@ class ColbertCassandraRetriever:
         # query the doc body
         doc_futures = {}
         for title, part in docs_by_score:
-            future = self.db.session.execute_async(
-                self.db.query_part_by_pk_stmt, [title, part]
+            future = self.vector_store.session.execute_async(
+                self.vector_store.query_part_by_pk_stmt, [title, part]
             )
             doc_futures[(title, part)] = future
 
-        answers = []
+        answers: List[Document] = []
         rank = 1
         for title, part in docs_by_score:
             rs = doc_futures[(title, part)].result()
             score = scores[(title, part)]
             answers.append(
-                {
-                    "title": title,
-                    "score": score.item(),
-                    "rank": rank,
-                    "body": rs.one().body,
-                }
+                Document(title=title, score=score.item(), rank=rank, body=rs.one().body)
             )
             rank = rank + 1
         # clean up on tensor memory on GPU
