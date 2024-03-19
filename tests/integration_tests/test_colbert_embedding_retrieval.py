@@ -4,6 +4,7 @@ import pytest
 from ragstack.colbert import ColbertTokenEmbeddings
 from ragstack.colbert import ColbertCassandraRetriever
 from ragstack.colbert import CassandraColBERTVectorStore
+from ragstack.colbert.langchain import ColBERTVectorStoreLangChainRetriever
 
 from tests.integration_tests.conftest import (
     get_local_cassandra_test_store,
@@ -91,3 +92,7 @@ def test_embedding_cassandra_retriever(request, vector_store: str):
     for doc in docs:
         logging.info(f"got {doc}")
     assert len(docs) == 5
+
+    lc_retriever = ColBERTVectorStoreLangChainRetriever(retriever, k=2)
+    docs = lc_retriever.get_relevant_documents("what kind fish lives shallow coral reefs atlantic, india ocean, red sea, gulf of mexico, pacific, and arctic ocean")
+    assert len(docs) == 2
