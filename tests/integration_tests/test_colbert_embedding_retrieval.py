@@ -4,7 +4,7 @@ import pytest
 from ragstack.colbert import ColbertTokenEmbeddings
 from ragstack.colbert import ColbertCassandraRetriever
 from ragstack.colbert import CassandraColBERTVectorStore
-from cassandra_container import CassandraContainer
+from tests.integration_tests.cassandra_container import CassandraContainer
 from cassandra.auth import PlainTextAuthProvider
 from cassandra.cluster import Cluster
 import cassio
