@@ -31,8 +31,8 @@ jobs:
           cd docker/examples/local-llm
           sudo docker build -t local-llm .
 
-  tests:
-    name: Unit and Integration Tests
+  unit-tests:
+    name: Unit Tests
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
@@ -41,18 +41,26 @@ jobs:
       - name: "Setup: Python 3.11"
         uses: ./.github/actions/setup-python
 
+      - name: Run lint
+        uses: ./.github/actions/lint
+
       - name: "Build"
         run: |
-          poetry install --no-root -E colbert
-          poetry build
-
-      - name: "Lint"
-        run: |
-          tox -e lint
+          tox -e build
 
       - name: "Unit tests"
         run: |
           tox -e unit-tests
+
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: "Setup: Python 3.11"
+        uses: ./.github/actions/setup-python
 
       - name: Compute db name
         id: db-name
@@ -72,11 +80,13 @@ jobs:
           cloud: "aws"
 
       - name: "Integration tests"
-        with:
+        timeout-minutes: 10
+        env:
           ASTRA_DB_TOKEN: "${{ secrets.E2E_TESTS_ASTRA_DEV_DB_TOKEN }}"
           ASTRA_DB_ID: "${{ steps.astra-db.outputs.db_id }}"
           ASTRA_DB_ENV: "DEV"
         run: |
+          rm -rf .tox
           tox -e integration-tests
 
       - name: Cleanup AstraDB

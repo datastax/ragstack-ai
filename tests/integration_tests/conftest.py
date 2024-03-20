@@ -8,7 +8,7 @@ from cassandra.cluster import Cluster, PlainTextAuthProvider, Session
 
 from tests.integration_tests.cassandra_container import CassandraContainer
 
-KEYSPACE = "colbert"
+KEYSPACE = "default_keyspace"
 
 
 class TestStore(ABC):
@@ -61,15 +61,25 @@ class AstraDBTestStore(TestStore):
 
     def create_cassandra_session(self) -> Session:
         if self.env == "prod":
-            cassio.init(token=self.token, database_id=self.database_id, keyspace=KEYSPACE)
+            cassio.init(
+                token=self.token, database_id=self.database_id, keyspace=KEYSPACE
+            )
         else:
             bundle_url_template = "https://api.dev.cloud.datastax.com/v2/databases/{database_id}/secureBundleURL"
-            cassio.init(token=self.token, database_id=self.database_id, keyspace=KEYSPACE, bundle_url_template=bundle_url_template)
+            cassio.init(
+                token=self.token,
+                database_id=self.database_id,
+                keyspace=KEYSPACE,
+                bundle_url_template=bundle_url_template,
+            )
         session = cassio.config.resolve_session()
-        session.execute(f"DROP KEYSPACE IF EXISTS {KEYSPACE}")
-        session.execute(
-            f"CREATE KEYSPACE IF NOT EXISTS {KEYSPACE} WITH replication = {{'class': 'SimpleStrategy', 'replication_factor': '1'}}"
-        )
+        tables = session.execute(
+            f"select table_name FROM system_schema.tables where keyspace_name ='{KEYSPACE}'"
+        ).all()
+        logging.info(f"dropping {len(tables)} tables in keyspace {KEYSPACE}")
+        for table in tables:
+            session.execute(f"DROP TABLE IF EXISTS {KEYSPACE}.{table.table_name}")
+            logging.info(f"dropped table {table.table_name}")
         return session
 
 
