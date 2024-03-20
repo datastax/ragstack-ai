@@ -246,7 +246,7 @@ def nvidia_aifoundation_mixtral8x7b_llm():
     "embedding,llm",
     [
         ("openai_ada002_embedding", "openai_gpt35turbo_llm"),
-        # ("openai_3small_embedding", "openai_gpt4_llm"),
+        ("openai_3small_embedding", "openai_gpt4_llm"),
         # ("openai_3large_embedding", "openai_gpt4_llm_streaming"),
         ("azure_openai_ada002_embedding", "azure_openai_gpt35turbo_llm"),
         ("vertex_gecko_embedding", "vertex_bison_llm"),
