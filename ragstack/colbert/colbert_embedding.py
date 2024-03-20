@@ -6,6 +6,7 @@ from torch import Tensor
 import uuid
 from .token_embedding import TokenEmbeddings, PerTokenEmbeddings, PassageEmbeddings
 from .constant import MAX_MODEL_TOKENS
+from .distributed import Distributed
 
 from colbert.infra import Run, RunConfig, ColBERTConfig
 from colbert.indexing.collection_encoder import CollectionEncoder
@@ -95,6 +96,10 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
         else:
             if nranks < 1:
                 nranks = 1
+        self._nranks = nranks
+        logging.warn(f"distribution initialization must complete on {nranks} gpus")
+        Distributed(self._nranks)
+        logging.info("distribution initialization completed")
 
         with Run().context(RunConfig(nranks=nranks)):
             if self.__cuda:
