@@ -41,9 +41,8 @@ jobs:
       - name: "Setup: Python 3.11"
         uses: ./.github/actions/setup-python
 
-      - name: "Lint"
-        run: |
-          tox -e lint
+      - name: Run lint
+        uses: ./.github/actions/lint
 
       - name: "Build"
         run: |
@@ -71,6 +70,7 @@ jobs:
           cloud: "aws"
 
       - name: "Integration tests"
+        timeout-minutes: 10
         env:
           ASTRA_DB_TOKEN: "${{ secrets.E2E_TESTS_ASTRA_DEV_DB_TOKEN }}"
           ASTRA_DB_ID: "${{ steps.astra-db.outputs.db_id }}"
