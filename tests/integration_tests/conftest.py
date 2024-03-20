@@ -73,10 +73,13 @@ class AstraDBTestStore(TestStore):
                 bundle_url_template=bundle_url_template,
             )
         session = cassio.config.resolve_session()
-        session.execute(f"DROP KEYSPACE IF EXISTS {KEYSPACE}")
-        session.execute(
-            f"CREATE KEYSPACE IF NOT EXISTS {KEYSPACE} WITH replication = {{'class': 'SimpleStrategy', 'replication_factor': '1'}}"
-        )
+        tables = session.execute(
+            f"select table_name FROM system_schema.tables where keyspace_name ='{KEYSPACE}'"
+        ).all()
+        logging.info(f"dropping {len(tables)} tables in keyspace {KEYSPACE}")
+        for table in tables:
+            session.execute(f"DROP TABLE IF EXISTS {KEYSPACE}.{table.table_name}")
+            logging.info(f"dropped table {table.table_name}")
         return session
 
 
