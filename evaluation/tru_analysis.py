@@ -184,5 +184,4 @@ def output_plots_by_dataset(parquet_file_name):
             orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1))
         fig.update_layout(yaxis_title="metric", xaxis_title="score")
 
-        write_image(fig, f"./charts/{dataset}.png")
-
+        write_image(fig, f"./analysis/{dataset}.png")
