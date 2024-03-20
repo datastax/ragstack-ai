@@ -6,7 +6,7 @@ from torch import Tensor
 import uuid
 from .token_embedding import TokenEmbeddings, PerTokenEmbeddings, PassageEmbeddings
 from .constant import MAX_MODEL_TOKENS
-from .distributed import Distributed
+from .distributed import Distributed, reconcile_nranks
 
 from colbert.infra import Run, RunConfig, ColBERTConfig
 from colbert.indexing.collection_encoder import CollectionEncoder
@@ -78,28 +78,19 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
         nranks: int = -1,
         query_maxlen: int = 32,
         verbose: int = 3,  # 3 is the default on ColBERT checkpoint
+        distributed_communication: bool = False,
         **kwargs
     ):
         self.__cuda = torch.cuda.is_available()
-        total_visible_gpus = 0
+        self._nranks = reconcile_nranks(nranks)
+        total_visible_gpus = torch.cuda.device_count()
         if self.__cuda:
             self.__cuda_device_count = torch.cuda.device_count()
-            self.__cuda_device_name = torch.cuda.get_device_name()
-            logging.info(f"nrank {nranks}")
-            if nranks < 1:
-                nranks = self.__cuda_device_count
-            if nranks > 1:
-                total_visible_gpus = self.__cuda_device_count
-            logging.info(
-                f"run on {self.__cuda_device_count} gpus and visible {total_visible_gpus} gpus embeddings on {nranks} gpus"
-            )
-        else:
-            if nranks < 1:
-                nranks = 1
-        self._nranks = nranks
-        logging.warn(f"distribution initialization must complete on {nranks} gpus")
-        Distributed(self._nranks)
-        logging.info("distribution initialization completed")
+        logging.info(f"run nranks {self._nranks}")
+        if distributed_communication:
+            logging.warn(f"distribution initialization must complete on {nranks} gpus")
+            Distributed(self._nranks)
+            logging.info("distribution initialization completed")
 
         with Run().context(RunConfig(nranks=nranks)):
             if self.__cuda:

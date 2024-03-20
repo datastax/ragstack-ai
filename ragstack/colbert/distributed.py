@@ -7,7 +7,26 @@ import torch.distributed as dist
 """
 Initialize the torch distributed environment.
 Distributed only sets up once
+
+This is not required for the first iteration of the project,
+because we don't need multiple CUDA devices to communicate with each other.
 """
+
+def reconcile_nranks(nranks: int) -> int:
+    __cuda = torch.cuda.is_available()
+    if __cuda:
+        __cuda_device_count = torch.cuda.device_count()
+        if nranks < 1:
+            return __cuda_device_count
+        else:
+            return min(nranks, __cuda_device_count)
+    else:
+        if nranks < 1:
+            return 1
+        else:
+            # currently let user set nranks on CPU
+            return nranks
+
 
 def find_free_port():
     """ https://stackoverflow.com/questions/1365265/on-localhost-how-do-i-pick-a-free-port-number """
@@ -50,13 +69,15 @@ class Distributed:
         return cls._instance
 
     def __init__(self, nranks: int):
-        if not self._is_initialized:
+        if self._is_initialized == False:
             self._setup(nranks)
             self._is_initialized = True
 
     def _setup(self, nranks: int):
         master_addr = "127.0.0.1"
         master_port = find_free_port()
+        if nranks < 1:
+            nranks = torch.cuda.device_count()
         world_size = min(torch.cuda.device_count(), nranks)
         logging.info(f"setting up resource group {world_size=}")
         self._world_size = world_size
