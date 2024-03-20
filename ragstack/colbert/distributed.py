@@ -42,6 +42,7 @@ def setup_process(
 class Distributed:
     _instance = None  # Keep instance reference
     _is_initialized = False
+    _world_size = 0
     
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
@@ -58,6 +59,11 @@ class Distributed:
         master_port = find_free_port()
         world_size = min(torch.cuda.device_count(), nranks)
         logging.info(f"setting up resource group {world_size=}")
+        self._world_size = world_size
         mp.spawn(setup_process, args=(master_addr,master_port,world_size,), nprocs=world_size)
+        logging.info(f"resource group setup completed {self._world_size}")
+
+    def world_size(self):
+        return self._world_size
 
 
