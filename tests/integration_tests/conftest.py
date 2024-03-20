@@ -8,7 +8,7 @@ from cassandra.cluster import Cluster, PlainTextAuthProvider, Session
 
 from tests.integration_tests.cassandra_container import CassandraContainer
 
-KEYSPACE = "colbert"
+KEYSPACE = "default_keyspace"
 
 
 class TestStore(ABC):
