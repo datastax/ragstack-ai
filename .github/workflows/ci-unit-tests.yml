@@ -31,8 +31,8 @@ jobs:
           cd docker/examples/local-llm
           sudo docker build -t local-llm .
 
-  tests:
-    name: Unit and Integration Tests
+  unit-tests:
+    name: Unit Tests
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
@@ -51,6 +51,16 @@ jobs:
       - name: "Unit tests"
         run: |
           tox -e unit-tests
+
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: "Setup: Python 3.11"
+        uses: ./.github/actions/setup-python
 
       - name: Compute db name
         id: db-name
