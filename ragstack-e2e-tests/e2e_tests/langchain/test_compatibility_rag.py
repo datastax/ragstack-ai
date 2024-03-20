@@ -27,7 +27,10 @@ from e2e_tests.langchain.rag_application import (
     run_conversational_rag,
 )
 from e2e_tests.langchain.trulens import run_trulens_evaluation
-from e2e_tests.test_utils import get_local_resource_path, skip_test_due_to_implementation_not_supported
+from e2e_tests.test_utils import (
+    get_local_resource_path,
+    skip_test_due_to_implementation_not_supported,
+)
 from e2e_tests.langchain.nemo_guardrails import run_nemo_guardrails
 
 from langchain_core.embeddings import Embeddings
