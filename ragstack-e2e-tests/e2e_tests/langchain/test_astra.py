@@ -45,10 +45,19 @@ def test_ingest_errors(vectorstore: AstraDBVectorStore):
             pytest.fail(
                 f"Should have thrown ValueError with Zero vectors cannot be indexed or queried with cosine similarity but it was {e}"
             )
+    very_long_text = "RAGStack is a framework to run LangChain in production. " * 10_000
+    # body is not indexed by default, but metadata is
+    vectorstore.add_texts([very_long_text])
 
-    very_long_text = "RAGStack is a framework to run LangChain in production. " * 1000
+    vectorstore.add_documents([Document(page_content=very_long_text, metadata={})])
     try:
-        vectorstore.add_texts([very_long_text])
+        vectorstore.add_documents(
+            [
+                Document(
+                    page_content="some short text", metadata={"text": very_long_text}
+                )
+            ]
+        )
         pytest.fail("Should have thrown ValueError")
     except ValueError as e:
         print("Error:", e)
