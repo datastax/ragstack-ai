@@ -51,7 +51,13 @@ def test_ingest_errors(vectorstore: AstraDBVectorStore):
 
     vectorstore.add_documents([Document(page_content=very_long_text, metadata={})])
     try:
-        vectorstore.add_documents([Document(page_content="some short text", metadata={"text": very_long_text})])
+        vectorstore.add_documents(
+            [
+                Document(
+                    page_content="some short text", metadata={"text": very_long_text}
+                )
+            ]
+        )
         pytest.fail("Should have thrown ValueError")
     except ValueError as e:
         print("Error:", e)
