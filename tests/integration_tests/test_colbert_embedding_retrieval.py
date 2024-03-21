@@ -65,7 +65,7 @@ def test_embedding_cassandra_retriever(request, vector_store: str):
     for i, chunk in enumerate(chunks[:3]):  # Displaying the first 3 chunks for brevity
         logging.info(f"Chunk {i + 1}:\n{chunk}\n{'-' * 50}\n")
 
-    title = "Marine Animals habitat"
+    id = "Marine Animals habitat"
 
     # colbert stuff starts
     colbert = ColbertTokenEmbeddings(
@@ -74,7 +74,7 @@ def test_embedding_cassandra_retriever(request, vector_store: str):
         kmeans_niters=4,
     )
 
-    passage_embeddings = colbert.embed_documents(texts=chunks, title=title)
+    passage_embeddings = colbert.embed_documents(texts=chunks, id=id)
 
     logging.info(f"passage embeddings size {len(passage_embeddings)}")
 

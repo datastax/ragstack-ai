@@ -22,21 +22,21 @@ class CassandraColBERTVectorStore(ColBERTVectorStore):
         # prepare statements
         self.insert_chunk_stmt = self.session.prepare(
             f"""
-        INSERT INTO {self.full_table_name} (title, part, body, embedding_id)
+        INSERT INTO {self.full_table_name} (id, part, body, embedding_id)
         VALUES (?, ?, ?, -1)
         """
         )
 
         self.insert_colbert_stmt = self.session.prepare(
             f"""
-        INSERT INTO {self.full_table_name} (title, part, embedding_id, bert_embedding)
+        INSERT INTO {self.full_table_name} (id, part, embedding_id, bert_embedding)
         VALUES (?, ?, ?, ?)
         """
         )
 
         self.query_colbert_ann_stmt = self.session.prepare(
             f"""
-        SELECT title, part
+        SELECT id, part
         FROM {self.full_table_name}
         ORDER BY bert_embedding ANN OF ?
         LIMIT ?
@@ -45,9 +45,9 @@ class CassandraColBERTVectorStore(ColBERTVectorStore):
 
         self.query_colbert_parts_stmt = self.session.prepare(
             f"""
-        SELECT title, part, bert_embedding
+        SELECT id, part, bert_embedding
         FROM {self.full_table_name}
-        WHERE title = ? AND part = ? AND embedding_id != -1
+        WHERE id = ? AND part = ? AND embedding_id != -1
         """
         )
 
@@ -55,13 +55,13 @@ class CassandraColBERTVectorStore(ColBERTVectorStore):
             f"""
         SELECT body
         FROM {self.full_table_name}
-        WHERE title = ? AND part = ? AND embedding_id = -1
+        WHERE id = ? AND part = ? AND embedding_id = -1
         """
         )
 
-        self.delete_part_by_title_stmt = self.session.prepare(
+        self.delete_part_by_id_stmt = self.session.prepare(
             f"""
-            DELETE FROM {self.full_table_name} WHERE title = ?
+            DELETE FROM {self.full_table_name} WHERE id = ?
         """
         )
 
@@ -69,12 +69,12 @@ class CassandraColBERTVectorStore(ColBERTVectorStore):
         self.session.execute(
             f"""
             CREATE TABLE IF NOT EXISTS {self.full_table_name} (
-                title text,
+                id text,
                 part int,
                 embedding_id int,
                 body text,
                 bert_embedding vector<float, 128>,
-                PRIMARY KEY (title, part, embedding_id)
+                PRIMARY KEY (id, part, embedding_id)
             ) WITH COMMENT = 'Colbert embeddings embedding_id=-1 contains the body chunk';
         """
         )
@@ -92,15 +92,15 @@ class CassandraColBERTVectorStore(ColBERTVectorStore):
         self, embeddings: List[PassageEmbeddings], delete_existed_passage: bool = False
     ) -> None:
         if delete_existed_passage:
-            self.delete_documents([p.title() for p in embeddings])
+            self.delete_documents([p.id() for p in embeddings])
 
-        p_parameters = [(p.title(), p.part(), p.get_text()) for p in embeddings]
+        p_parameters = [(p.id(), p.part(), p.get_text()) for p in embeddings]
         execute_concurrent_with_args(self.session, self.insert_chunk_stmt, p_parameters)
 
         for passage_emb in embeddings:
-            title = passage_emb.title()
+            id = passage_emb.id()
             parameters = [
-                (title, e[1].part, e[1].id, e[1].get_embeddings())
+                (id, e[1].part, e[1].id, e[1].get_embeddings())
                 for e in enumerate(passage_emb.get_all_token_embeddings())
             ]
             execute_concurrent_with_args(
@@ -112,9 +112,9 @@ class CassandraColBERTVectorStore(ColBERTVectorStore):
     ) -> None:
         return self.insert_colbert_embeddings_chunks(embeddings, delete_existed_passage)
 
-    def delete_documents(self, titles: List[str]):
+    def delete_documents(self, ids: List[str]):
         execute_concurrent_with_args(
-            self.session, self.delete_part_by_title_stmt, [(t,) for t in titles]
+            self.session, self.delete_part_by_id_stmt, [(t,) for t in ids]
         )
 
     def close(self):

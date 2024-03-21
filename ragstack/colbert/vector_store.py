@@ -22,14 +22,14 @@ class ColBERTVectorStore(ABC):
         pass
 
     @abstractmethod
-    def delete_documents(self, titles: List[str]):
+    def delete_documents(self, ids: List[str]):
         """Delete a document from the store."""
         pass
 
 
 @dataclasses.dataclass
 class Document:
-    title: str
+    id: str
     body: str
     rank: int
     score: Number

@@ -44,6 +44,6 @@ class ColBERTVectorStoreLangChainRetriever(BaseRetriever):
         """Get documents relevant to a query."""
         answers = self.retriever.retrieve(query, self.k)
         return [
-            Document(metadata={"title": d.title, "rank": d.rank}, page_content=d.body)
+            Document(metadata={"id": d.id, "rank": d.rank}, page_content=d.body)
             for d in answers
         ]

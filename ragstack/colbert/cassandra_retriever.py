@@ -120,25 +120,25 @@ class ColbertCassandraRetriever(ColBERTVectorStoreRetriever):
 
         for future in doc_futures:
             rows = future.result()
-            docparts.update((row.title, row.part) for row in rows)
+            docparts.update((row.id, row.part) for row in rows)
 
         # score each document
         scores = {}
         futures = []
-        for title, part in docparts:
+        for id, part in docparts:
             future = self.vector_store.session.execute_async(
-                self.vector_store.query_colbert_parts_stmt, [title, part]
+                self.vector_store.query_colbert_parts_stmt, [id, part]
             )
-            futures.append((future, title, part))
+            futures.append((future, id, part))
 
-        for title, part in docparts:
+        for id, part in docparts:
             # blocking call until the future is done
             rows = future.result()
             # find all the found parts so that we can do max similarity search
             embeddings_for_part = [tensor(row.bert_embedding) for row in rows]
             # score based on The function returns the highest similarity score
             # (i.e., the maximum dot product value) between the query vector and any of the embedding vectors in the list.
-            scores[(title, part)] = sum(
+            scores[(id, part)] = sum(
                 max_similarity_torch(qv, embeddings_for_part, self.is_cuda)
                 for qv in query_encodings
             )
@@ -147,19 +147,19 @@ class ColbertCassandraRetriever(ColBERTVectorStoreRetriever):
 
         # query the doc body
         doc_futures = {}
-        for title, part in docs_by_score:
+        for id, part in docs_by_score:
             future = self.vector_store.session.execute_async(
-                self.vector_store.query_part_by_pk_stmt, [title, part]
+                self.vector_store.query_part_by_pk_stmt, [id, part]
             )
-            doc_futures[(title, part)] = future
+            doc_futures[(id, part)] = future
 
         answers: List[Document] = []
         rank = 1
-        for title, part in docs_by_score:
-            rs = doc_futures[(title, part)].result()
-            score = scores[(title, part)]
+        for id, part in docs_by_score:
+            rs = doc_futures[(id, part)].result()
+            score = scores[(id, part)]
             answers.append(
-                Document(title=title, score=score.item(), rank=rank, body=rs.one().body)
+                Document(id=id, score=score.item(), rank=rank, body=rs.one().body)
             )
             rank = rank + 1
         # clean up on tensor memory on GPU

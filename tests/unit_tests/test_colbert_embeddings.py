@@ -14,17 +14,17 @@ def test_colbert_token_embeddings():
     assert passagesEmbeddings[0].get_text() == "test1"
     assert passagesEmbeddings[1].get_text() == "test2"
 
-    # generate uuid based title
-    assert passagesEmbeddings[0].title() != ""
-    assert passagesEmbeddings[1].title() != ""
+    # generate uuid based id
+    assert passagesEmbeddings[0].id() != ""
+    assert passagesEmbeddings[1].id() != ""
 
     passageEmbeddings = colbert.embed_documents(
-        texts=["test1", "test2"], title="test-title"
+        texts=["test1", "test2"], id="test-id"
     )
 
     assert passageEmbeddings[0].get_text() == "test1"
-    assert passageEmbeddings[0].title() == "test-title"
-    assert passageEmbeddings[1].title() == "test-title"
+    assert passageEmbeddings[0].id() == "test-id"
+    assert passageEmbeddings[1].id() == "test-id"
 
     token_embeddings = passagesEmbeddings[0].get_all_token_embeddings()
     assert len(token_embeddings[0].get_embeddings()) == DEFAULT_COLBERT_DIM

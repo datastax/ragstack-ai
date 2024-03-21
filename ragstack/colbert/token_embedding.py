@@ -14,13 +14,11 @@ class PerTokenEmbeddings:
         self,
         id: int,
         part: int,
-        parent_id: uuid.UUID = None,
-        title: str = "",
+        parent_id: uuid.UUID = None
     ):
         self.id = id
         self.parent_id = parent_id
         self.__embeddings = []
-        self.title = title
         self.part = part
 
     def add_embeddings(self, embeddings: List[float]):
@@ -42,13 +40,11 @@ class PerTokenEmbeddings:
 class PassageEmbeddings:
     __token_embeddings: List[PerTokenEmbeddings]
     __text: str
-    __title: str
     __id: uuid.UUID
 
     def __init__(
         self,
         text: str,
-        title: str = "",
         part: int = 0,
         id: uuid.UUID = None,
         model: str = DEFAULT_COLBERT_MODEL,
@@ -62,7 +58,6 @@ class PassageEmbeddings:
             self.__id = id
         self.__model = model
         self.__dim = dim
-        self.__title = title
         self.__part = part
 
     def model(self):
@@ -73,9 +68,6 @@ class PassageEmbeddings:
 
     def token_size(self):
         return len(self.token_ids)
-
-    def title(self):
-        return self.__title
 
     def __len__(self):
         return len(self.embeddings)

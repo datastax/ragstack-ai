@@ -123,17 +123,17 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
             self.checkpoint = self.checkpoint.cuda()
 
     def embed_documents(
-        self, texts: List[str], title: str = ""
+        self, texts: List[str], id: str = ""
     ) -> List[PassageEmbeddings]:
-        if title == "":
-            title = str(uuid.uuid4())
+        if id == "":
+            id = str(uuid.uuid4())
         """Embed search docs."""
-        return self.encode(texts, title)
+        return self.encode(texts, id)
 
     # this is query embedding without padding
     # it does not reload checkpoint which means faster embedding
     def embed_query(self, text: str) -> Tensor:
-        passage_embeddings = self.embed_documents(texts=[text], title="no-op")[0]
+        passage_embeddings = self.embed_documents(texts=[text], id="no-op")[0]
         embeddings = []
         for token in passage_embeddings.get_all_token_embeddings():
             embeddings.append(token.get_embeddings())
@@ -185,10 +185,10 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
         )
         return queries[0]
 
-    def encode(self, texts: List[str], title: str = "") -> List[PassageEmbeddings]:
+    def encode(self, texts: List[str], id: str = "") -> List[PassageEmbeddings]:
         embeddings, count = self.encoder.encode_passages(texts)
 
-        collection_embds = []
+        collection_embeds = []
         # split up embeddings by counts, a list of the number of tokens in each passage
         start_indices = [0] + list(itertools.accumulate(count[:-1]))
         embeddings_by_part = [
@@ -197,15 +197,15 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
         ]
         for part, embedding in enumerate(embeddings_by_part):
             passage_embeddings = PassageEmbeddings(
-                text=texts[part], title=title, part=part
+                text=texts[part], id=id, part=part
             )
-            pid = passage_embeddings.id()
+            parent_id = passage_embeddings.id()
             for __part_i, perTokenEmbedding in enumerate(embedding):
                 per_token = PerTokenEmbeddings(
-                    parent_id=pid, id=__part_i, title=title, part=part
+                    parent_id=parent_id, id=__part_i, part=part
                 )
                 per_token.add_embeddings(perTokenEmbedding.tolist())
                 passage_embeddings.add_token_embeddings(per_token)
-            collection_embds.append(passage_embeddings)
+            collection_embeds.append(passage_embeddings)
 
-        return collection_embds
+        return collection_embeds
