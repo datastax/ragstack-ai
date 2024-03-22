@@ -3,10 +3,16 @@ import logging
 import itertools
 import torch
 from torch import Tensor
+import torch.distributed as dist
+from torch.multiprocessing import Process, set_start_method
+from torch.nn.parallel import DistributedDataParallel as DDP
+
 import uuid
 from .token_embedding import TokenEmbeddings, PerTokenEmbeddings, PassageEmbeddings
 from .constant import MAX_MODEL_TOKENS
 from .distributed import Distributed, reconcile_nranks
+from .passage_encoder import PassageEncoder
+from .runner import Runner
 
 from colbert.infra import Run, RunConfig, ColBERTConfig
 from colbert.indexing.collection_encoder import CollectionEncoder
@@ -27,6 +33,31 @@ def calculate_query_maxlen(tokens: List[List[str]], min_num: int, max_num: int) 
         power = power * 2
     return power
 
+
+def encode(encoder: PassageEncoder, texts: List[str], title: str = "") -> List[PassageEmbeddings]:
+    embeddings, count = encoder.encode_passages(texts)
+
+    collection_embds = []
+    # split up embeddings by counts, a list of the number of tokens in each passage
+    start_indices = [0] + list(itertools.accumulate(count[:-1]))
+    embeddings_by_part = [
+        embeddings[start : start + count]
+        for start, count in zip(start_indices, count)
+    ]
+    for part, embedding in enumerate(embeddings_by_part):
+        passage_embeddings = PassageEmbeddings(
+            text=texts[part], title=title, part=part
+        )
+        pid = passage_embeddings.id()
+        for __part_i, perTokenEmbedding in enumerate(embedding):
+            per_token = PerTokenEmbeddings(
+                parent_id=pid, id=__part_i, title=title, part=part
+            )
+            per_token.add_embeddings(perTokenEmbedding.tolist())
+            passage_embeddings.add_token_embeddings(per_token)
+        collection_embds.append(passage_embeddings)
+
+    return collection_embds
 
 class ColbertTokenEmbeddings(TokenEmbeddings):
     """
@@ -87,7 +118,7 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
         if self.__cuda:
             self.__cuda_device_count = torch.cuda.device_count()
         logging.info(f"run nranks {self._nranks}")
-        if distributed_communication:
+        if self._nranks > 1 and not dist.is_initialized() and distributed_communication:
             logging.warn(f"distribution initialization must complete on {nranks} gpus")
             Distributed(self._nranks)
             logging.info("distribution initialization completed")
@@ -183,7 +214,7 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
         )
         return queries[0]
 
-    def encode(self, texts: List[str], title: str = "") -> List[PassageEmbeddings]:
+    def encode_passages(self, texts: List[str], title: str = "") -> List[PassageEmbeddings]:
         embeddings, count = self.encoder.encode_passages(texts)
 
         collection_embds = []
@@ -207,3 +238,19 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
             collection_embds.append(passage_embeddings)
 
         return collection_embds
+
+    def cuda_encode_passages (gpu_id: int, encoder: PassageEncoder, texts: List[str], title: str = "", return_list: List[PassageEmbeddings] = None):
+        torch.cuda.set_device(gpu_id)
+        results = encode(encoder, texts, title)
+
+        torch.cuda.empty_cache()
+        return_list.extend(results)
+
+
+    def encode(self, texts: List[str], title: str = "") -> List[PassageEmbeddings]:
+        if self.__nranks > 1:
+            runner = Runner(cuda_encode_passages)
+            results = runner.run(self.encoder, texts, title)
+            return results
+        else:
+            return encode(self.encoder, texts, title)
