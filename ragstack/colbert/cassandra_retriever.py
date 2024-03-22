@@ -8,6 +8,8 @@ from torch import tensor
 import torch
 import math
 
+from cassandra import ConsistencyLevel
+
 from .vector_store import ColBERTVectorStoreRetriever, Document
 
 # max similarity between a query vector and a list of embeddings
@@ -113,9 +115,12 @@ class ColbertCassandraRetriever(ColBERTVectorStoreRetriever):
         doc_futures = []
         for qv in query_encodings:
             # per token based retrieval
-            doc_future = self.vector_store.session.execute_async(
-                self.vector_store.query_colbert_ann_stmt, [list(qv), top_k]
-            )
+            bound_statement = self.vector_store.query_colbert_ann_stmt.bind([list(qv), top_k])
+
+            # top-k queries can only be run with consistency level ONE / LOCAL_ONE / NODE_LOCAL
+            bound_statement.consistency_level = ConsistencyLevel.LOCAL_ONE
+
+            doc_future = self.vector_store.session.execute_async(bound_statement)
             doc_futures.append(doc_future)
 
         for future in doc_futures:
