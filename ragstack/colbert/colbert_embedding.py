@@ -48,26 +48,6 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
     encoder: CollectionEncoder
     query_tokenizer: QueryTokenizer
 
-    # these are default values aligned with the colbert library
-    __doc_maxlen: int = (220,)
-    __nbits: int = (1,)
-    __kmeans_niters: int = (4,)
-    __nranks: int = (1,)
-    __index_bsize: int = (64,)
-
-    # TODO: expose these values
-    # these are default values aligned with the colbert library
-    __resume: bool = (False,)
-    __similarity: str = ("cosine",)
-    __bsize: int = (32,)
-    __accumsteps: int = (1,)
-    __lr: float = (0.000003,)
-    __maxsteps: int = (500000,)
-    __nway: int = (2,)
-    __use_ib_negatives: bool = (False,)
-    __reranker: bool = (False,)
-    __is_cuda: bool = False
-
     def __init__(
         self,
         checkpoint: str = "colbert-ir/colbertv2.0",
