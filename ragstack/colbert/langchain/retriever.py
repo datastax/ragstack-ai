@@ -4,10 +4,10 @@ from typing import List
 from langchain_core.callbacks.manager import CallbackManagerForRetrieverRun
 from langchain_core.documents import Document
 from langchain_core.retrievers import BaseRetriever
-from ..vector_store import ColBERTVectorStoreRetriever
+from ..vector_store import ColbertVectorStoreRetriever
 
 
-class ColBERTVectorStoreLangChainRetriever(BaseRetriever):
+class ColbertVectorStoreLangChainRetriever(BaseRetriever):
     """Chain for langchain retrieve using ColBERT vector store.
 
     Example:
@@ -17,11 +17,11 @@ class ColBERTVectorStoreLangChainRetriever(BaseRetriever):
         from langchain_openai import AzureChatOpenAI
 
         llm = AzureChatOpenAI()
-        retriever = ColBERTVectorStoreLangChainRetriever(colbertCassandraRetriever, k=2)
+        retriever = ColbertVectorStoreLangChainRetriever(colbertCassandraRetriever, k=5)
         qa = RetrievalQA.from_chain_type(llm=llm, chain_type="stuff", retriever=retriever)
         qa.run("what happened on June 4th?")
     """
-    retriever: ColBERTVectorStoreRetriever = Field(default=None)
+    retriever: ColbertVectorStoreRetriever = Field(default=None)
     kwargs: dict = {}
     k: int = 10
 
@@ -30,7 +30,7 @@ class ColBERTVectorStoreLangChainRetriever(BaseRetriever):
 
         arbitrary_types_allowed = True
 
-    def __init__(self, retriever: ColBERTVectorStoreRetriever, k: int = 10, **kwargs):
+    def __init__(self, retriever: ColbertVectorStoreRetriever, k: int = 10, **kwargs):
         super().__init__(retriever=retriever, k=k, **kwargs)
         self.retriever = retriever
         self.k = k
@@ -42,8 +42,8 @@ class ColBERTVectorStoreLangChainRetriever(BaseRetriever):
         run_manager: CallbackManagerForRetrieverRun,  # noqa
     ) -> List[Document]:
         """Get documents relevant to a query."""
-        answers = self.retriever.retrieve(query, self.k)
+        chunks = self.retriever.retrieve(query, self.k)
         return [
-            Document(metadata={"id": d.id, "rank": d.rank}, page_content=d.body)
-            for d in answers
+            Document(metadata={"id": c.doc_id, "rank": c.rank}, page_content=c.text)
+            for c in chunks
         ]

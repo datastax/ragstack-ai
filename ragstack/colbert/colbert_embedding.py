@@ -5,7 +5,7 @@ import torch
 from torch import Tensor
 import uuid
 from .token_embedding import TokenEmbeddings, PerTokenEmbeddings, PassageEmbeddings
-from .constant import MAX_MODEL_TOKENS
+from .constant import MAX_MODEL_TOKENS, DEFAULT_COLBERT_MODEL
 
 from colbert.infra import Run, RunConfig, ColBERTConfig
 from colbert.indexing.collection_encoder import CollectionEncoder
@@ -70,7 +70,7 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
 
     def __init__(
         self,
-        checkpoint: str = "colbert-ir/colbertv2.0",
+        checkpoint: str = DEFAULT_COLBERT_MODEL,
         doc_maxlen: int = 220,
         nbits: int = 1,
         kmeans_niters: int = 4,
@@ -123,17 +123,15 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
             self.checkpoint = self.checkpoint.cuda()
 
     def embed_documents(
-        self, texts: List[str], id: str = ""
+        self, texts: List[str], doc_id: str = ""
     ) -> List[PassageEmbeddings]:
-        if id == "":
-            id = str(uuid.uuid4())
         """Embed search docs."""
-        return self.encode(texts, id)
+        return self.encode(texts, doc_id)
 
     # this is query embedding without padding
     # it does not reload checkpoint which means faster embedding
     def embed_query(self, text: str) -> Tensor:
-        passage_embeddings = self.embed_documents(texts=[text], id="no-op")[0]
+        passage_embeddings = self.encode(texts=[text], doc_id="no-op")[0]
         embeddings = []
         for token in passage_embeddings.get_all_token_embeddings():
             embeddings.append(token.get_embeddings())
@@ -178,15 +176,18 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
         self,
         query: str,
         full_length_search: bool = False,
-        query_maxlen: int = 32,
+        query_maxlen: int = -1,
     ):
         queries = self.encode_queries(
             query, full_length_search, query_maxlen=query_maxlen
         )
         return queries[0]
 
-    def encode(self, texts: List[str], id: str = "") -> List[PassageEmbeddings]:
+    def encode(self, texts: List[str], doc_id: str = "") -> List[PassageEmbeddings]:
         embeddings, count = self.encoder.encode_passages(texts)
+
+        if doc_id == "":
+            doc_id = str(uuid.uuid4())
 
         collection_embeds = []
         # split up embeddings by counts, a list of the number of tokens in each passage
@@ -195,14 +196,14 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
             embeddings[start : start + count]
             for start, count in zip(start_indices, count)
         ]
-        for part, embedding in enumerate(embeddings_by_part):
+        for part_id, embedding in enumerate(embeddings_by_part):
             passage_embeddings = PassageEmbeddings(
-                text=texts[part], id=id, part=part
+                text=texts[part_id], doc_id=doc_id, part_id=part_id
             )
-            parent_id = passage_embeddings.id()
-            for __part_i, perTokenEmbedding in enumerate(embedding):
+
+            for embedding_id, perTokenEmbedding in enumerate(embedding):
                 per_token = PerTokenEmbeddings(
-                    parent_id=parent_id, id=__part_i, part=part
+                    embedding_id=embedding_id, part_id=part_id
                 )
                 per_token.add_embeddings(perTokenEmbedding.tolist())
                 passage_embeddings.add_token_embeddings(per_token)

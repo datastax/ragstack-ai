@@ -11,20 +11,20 @@ def test_colbert_token_embeddings():
 
     assert len(passagesEmbeddings) == 2
 
-    assert passagesEmbeddings[0].get_text() == "test1"
-    assert passagesEmbeddings[1].get_text() == "test2"
+    assert passagesEmbeddings[0].text() == "test1"
+    assert passagesEmbeddings[1].text() == "test2"
 
     # generate uuid based id
-    assert passagesEmbeddings[0].id() != ""
-    assert passagesEmbeddings[1].id() != ""
+    assert passagesEmbeddings[0].doc_id() != ""
+    assert passagesEmbeddings[1].doc_id() != ""
 
     passageEmbeddings = colbert.embed_documents(
-        texts=["test1", "test2"], id="test-id"
+        texts=["test1", "test2"], doc_id="test-id"
     )
 
-    assert passageEmbeddings[0].get_text() == "test1"
-    assert passageEmbeddings[0].id() == "test-id"
-    assert passageEmbeddings[1].id() == "test-id"
+    assert passageEmbeddings[0].text() == "test1"
+    assert passageEmbeddings[0].doc_id() == "test-id"
+    assert passageEmbeddings[1].doc_id() == "test-id"
 
     token_embeddings = passagesEmbeddings[0].get_all_token_embeddings()
     assert len(token_embeddings[0].get_embeddings()) == DEFAULT_COLBERT_DIM
@@ -44,8 +44,8 @@ def test_colbert_token_embeddings_with_params():
 
     assert len(passage_embeddings) == 3
 
-    assert passage_embeddings[0].get_text() == "test1"
-    assert passage_embeddings[1].get_text() == "test2"
+    assert passage_embeddings[0].text() == "test1"
+    assert passage_embeddings[1].text() == "test2"
 
     token_embeddings = passage_embeddings[0].get_all_token_embeddings()
     assert len(token_embeddings) > 1

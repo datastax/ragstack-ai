@@ -4,10 +4,10 @@ from cassandra.concurrent import execute_concurrent_with_args
 import logging
 
 from .token_embedding import PassageEmbeddings
-from .vector_store import ColBERTVectorStore
+from .vector_store import ColbertVectorStore
 
 
-class CassandraColBERTVectorStore(ColBERTVectorStore):
+class CassandraColbertVectorStore(ColbertVectorStore):
     session: Session
     keyspace: str
     table_name: str
@@ -22,22 +22,23 @@ class CassandraColBERTVectorStore(ColBERTVectorStore):
         # prepare statements
         self.insert_chunk_stmt = self.session.prepare(
             f"""
-        INSERT INTO {self.full_table_name} (id, part, body, embedding_id)
+        INSERT INTO {self.full_table_name} (doc_id, part_id, body, embedding_id)
         VALUES (?, ?, ?, -1)
         """
         )
 
         self.insert_colbert_stmt = self.session.prepare(
             f"""
-        INSERT INTO {self.full_table_name} (id, part, embedding_id, bert_embedding)
+        INSERT INTO {self.full_table_name} (doc_id, part_id, embedding_id, bert_embedding)
         VALUES (?, ?, ?, ?)
         """
         )
 
         self.query_colbert_ann_stmt = self.session.prepare(
             f"""
-        SELECT id, part
+        SELECT doc_id, part_id
         FROM {self.full_table_name}
+        WHERE embedding_id != -1
         ORDER BY bert_embedding ANN OF ?
         LIMIT ?
         """
@@ -45,23 +46,23 @@ class CassandraColBERTVectorStore(ColBERTVectorStore):
 
         self.query_colbert_parts_stmt = self.session.prepare(
             f"""
-        SELECT id, part, bert_embedding
+        SELECT doc_id, part_id, bert_embedding
         FROM {self.full_table_name}
-        WHERE id = ? AND part = ? AND embedding_id != -1
+        WHERE doc_id = ? AND part_id = ? AND embedding_id != -1
         """
         )
 
-        self.query_part_by_pk_stmt = self.session.prepare(
+        self.query_chunk_stmt = self.session.prepare(
             f"""
         SELECT body
         FROM {self.full_table_name}
-        WHERE id = ? AND part = ? AND embedding_id = -1
+        WHERE doc_id = ? AND part_id = ? AND embedding_id = -1
         """
         )
 
         self.delete_part_by_id_stmt = self.session.prepare(
             f"""
-            DELETE FROM {self.full_table_name} WHERE id = ?
+            DELETE FROM {self.full_table_name} WHERE doc_id = ?
         """
         )
 
@@ -69,12 +70,12 @@ class CassandraColBERTVectorStore(ColBERTVectorStore):
         self.session.execute(
             f"""
             CREATE TABLE IF NOT EXISTS {self.full_table_name} (
-                id text,
-                part int,
+                doc_id text,
+                part_id int,
                 embedding_id int,
                 body text,
                 bert_embedding vector<float, 128>,
-                PRIMARY KEY (id, part, embedding_id)
+                PRIMARY KEY (doc_id, part_id, embedding_id)
             ) WITH COMMENT = 'Colbert embeddings embedding_id=-1 contains the body chunk';
         """
         )
@@ -92,15 +93,16 @@ class CassandraColBERTVectorStore(ColBERTVectorStore):
         self, embeddings: List[PassageEmbeddings], delete_existed_passage: bool = False
     ) -> None:
         if delete_existed_passage:
-            self.delete_documents([p.id() for p in embeddings])
+            self.delete_documents([p.doc_id() for p in embeddings])
 
-        p_parameters = [(p.id(), p.part(), p.get_text()) for p in embeddings]
+        p_parameters = [(p.doc_id(), p.part_id(), p.text()) for p in embeddings]
         execute_concurrent_with_args(self.session, self.insert_chunk_stmt, p_parameters)
 
         for passage_emb in embeddings:
-            id = passage_emb.id()
+            doc_id = passage_emb.doc_id()
+            part_id = passage_emb.part_id()
             parameters = [
-                (id, e[1].part, e[1].id, e[1].get_embeddings())
+                (doc_id, part_id, e[1].embedding_id(), e[1].get_embeddings())
                 for e in enumerate(passage_emb.get_all_token_embeddings())
             ]
             execute_concurrent_with_args(
@@ -112,9 +114,9 @@ class CassandraColBERTVectorStore(ColBERTVectorStore):
     ) -> None:
         return self.insert_colbert_embeddings_chunks(embeddings, delete_existed_passage)
 
-    def delete_documents(self, ids: List[str]):
+    def delete_documents(self, doc_ids: List[str]):
         execute_concurrent_with_args(
-            self.session, self.delete_part_by_id_stmt, [(t,) for t in ids]
+            self.session, self.delete_part_by_id_stmt, [(t,) for t in doc_ids]
         )
 
     def close(self):
