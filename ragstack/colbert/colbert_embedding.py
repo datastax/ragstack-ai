@@ -86,10 +86,6 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
                 query_maxlen=query_maxlen,
                 gpus=total_visible_gpus,
             )
-        self.__doc_maxlen = doc_maxlen
-        self.__nbits = nbits
-        self.__kmeans_niters = kmeans_niters
-        self.__nranks = nranks
         logging.info("creating checkpoint")
         self.checkpoint = Checkpoint(
             self.colbert_config.checkpoint, colbert_config=self.colbert_config
@@ -126,7 +122,7 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
         # the length does not grow or shrink despite the number of tokens in the query
         # we continue to use the same term to align with ColBERT documentation/library
         query_maxlen: int = -1,
-    ):
+    ) -> Tensor:
         queries = query if isinstance(query, list) else [query]
         bsize = 128 if len(queries) > 128 else None
 
@@ -157,7 +153,7 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
         query: str,
         full_length_search: bool = False,
         query_maxlen: int = -1,
-    ):
+    ) -> Tensor:
         queries = self.encode_queries(
             query, full_length_search, query_maxlen=query_maxlen
         )

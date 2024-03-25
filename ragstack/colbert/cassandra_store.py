@@ -65,7 +65,7 @@ class CassandraColbertVectorStore(ColbertVectorStore):
         """
         )
 
-    def __create_tables(self):
+    def __create_tables(self) -> None:
         self.session.execute(
             f"""
             CREATE TABLE IF NOT EXISTS {self.full_table_name} (
@@ -113,10 +113,10 @@ class CassandraColbertVectorStore(ColbertVectorStore):
     ) -> None:
         return self.insert_colbert_embeddings_chunks(embeddings, delete_existed_passage)
 
-    def delete_documents(self, doc_ids: List[str]):
+    def delete_documents(self, doc_ids: List[str]) -> None:
         execute_concurrent_with_args(
             self.session, self.delete_part_by_id_stmt, [(t,) for t in doc_ids]
         )
 
-    def close(self):
+    def close(self) -> None:
         pass

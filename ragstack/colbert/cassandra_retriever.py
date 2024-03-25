@@ -1,10 +1,12 @@
-from typing import List
+from typing import List, Set, Tuple, Any, Dict
+
+from cassandra.cluster import ResponseFuture
 
 from .colbert_embedding import ColbertTokenEmbeddings
 
 from .cassandra_store import CassandraColbertVectorStore
 import logging
-from torch import tensor
+from torch import tensor, Tensor
 import torch
 import math
 
@@ -43,7 +45,9 @@ def max_similarity_numpy_based(query_vector, embedding_list):
 
 # this torch based max similary has the best performance.
 # it is at least 20 times faster than dot product operator and numpy based implementation CuDA and CPU
-def max_similarity_torch(query_vector, embedding_list, is_cuda: bool = False):
+def max_similarity_torch(
+    query_vector: Tensor, embedding_list: List[Tensor], is_cuda: bool = False
+) -> Tensor:
     """
     Calculate the maximum similarity (dot product) between a query vector and a list of embedding vectors,
     optimized for performance using PyTorch for GPU acceleration.
@@ -59,12 +63,12 @@ def max_similarity_torch(query_vector, embedding_list, is_cuda: bool = False):
     # stacks the list of embedding tensors into a single tensor
     if is_cuda:
         query_vector = query_vector.to("cuda")
-        embedding_list = torch.stack(embedding_list).to("cuda")
+        _embedding_list = torch.stack(embedding_list).to("cuda")
     else:
-        embedding_list = torch.stack(embedding_list)
+        _embedding_list = torch.stack(embedding_list)
 
     # Calculate the dot products in a vectorized manner on the GPU
-    sims = torch.matmul(embedding_list, query_vector)
+    sims = torch.matmul(_embedding_list, query_vector)
 
     # Find the maximum similarity (dot product) value
     max_sim = torch.max(sims)
@@ -90,11 +94,11 @@ class ColbertCassandraRetriever(ColbertVectorStoreRetriever):
         self.colbert_embeddings = colbert_embeddings
         self.is_cuda = torch.cuda.is_available()
 
-    def close(self):
+    def close(self) -> None:
         pass
 
     def retrieve(
-        self, query: str, k: int = 10, query_maxlen: int = 64, **kwargs
+        self, query: str, k: int = 10, query_maxlen: int = 64, **kwargs: Any
     ) -> List[Chunk]:
         #
         # if the query has fewer than a predefined number of tokens Nq,
@@ -109,7 +113,7 @@ class ColbertCassandraRetriever(ColbertVectorStoreRetriever):
         logging.debug(f"query length {len(query)} embeddings top_k: {top_k}")
 
         # find the most relevant documents
-        docparts = set()
+        docparts: Set[Tuple[Any, Any]] = set()
         doc_futures = []
         for qv in query_encodings:
             # per token based retrieval
@@ -120,7 +124,9 @@ class ColbertCassandraRetriever(ColbertVectorStoreRetriever):
 
         for future in doc_futures:
             embeddings = future.result()
-            docparts.update((embedding.doc_id, embedding.part_id) for embedding in embeddings)
+            docparts.update(
+                (embedding.doc_id, embedding.part_id) for embedding in embeddings
+            )
 
         # score each document
         scores = {}
@@ -146,20 +152,26 @@ class ColbertCassandraRetriever(ColbertVectorStoreRetriever):
         chunks_by_score = sorted(scores, key=scores.get, reverse=True)[:k]
 
         # query the doc body
-        doc_futures = {}
+        doc_futures2: Dict[Tuple[Any, Any], ResponseFuture] = {}
         for doc_id, part_id in chunks_by_score:
             future = self.vector_store.session.execute_async(
                 self.vector_store.query_chunk_stmt, [doc_id, part_id]
             )
-            doc_futures[(doc_id, part_id)] = future
+            doc_futures2[(doc_id, part_id)] = future
 
         answers: List[Chunk] = []
         rank = 1
         for doc_id, part_id in chunks_by_score:
-            rs = doc_futures[(doc_id, part_id)].result()
+            rs = doc_futures2[(doc_id, part_id)].result()
             score = scores[(doc_id, part_id)]
             answers.append(
-                Chunk(doc_id=doc_id, part_id=part_id, score=score.item(), rank=rank, text=rs.one().body)
+                Chunk(
+                    doc_id=doc_id,
+                    part_id=part_id,
+                    score=score.item(),
+                    rank=rank,
+                    text=rs.one().body,
+                )
             )
             rank = rank + 1
         # clean up on tensor memory on GPU
