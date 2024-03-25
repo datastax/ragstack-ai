@@ -159,7 +159,7 @@ class ColbertCassandraRetriever(ColbertVectorStoreRetriever):
             rs = doc_futures[(doc_id, part_id)].result()
             score = scores[(doc_id, part_id)]
             answers.append(
-                Chunk(doc_id=doc_id, score=score.item(), rank=rank, text=rs.one().body)
+                Chunk(doc_id=doc_id, part_id=part_id, score=score.item(), rank=rank, text=rs.one().body)
             )
             rank = rank + 1
         # clean up on tensor memory on GPU
