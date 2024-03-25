@@ -1,10 +1,9 @@
 from typing import List, Union
 import logging
-import itertools
 import torch
-from torch import Tensor
 import uuid
-from .token_embedding import TokenEmbeddings, PerTokenEmbeddings, PassageEmbeddings
+from torch import Tensor
+from .token_embedding import TokenEmbeddings, EmbeddedChunk
 from .constant import MAX_MODEL_TOKENS, DEFAULT_COLBERT_MODEL
 
 from colbert.infra import Run, RunConfig, ColBERTConfig
@@ -98,21 +97,20 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
         if self.__cuda:
             self.checkpoint = self.checkpoint.cuda()
 
-    def embed_documents(
-        self, texts: List[str], doc_id: str = ""
-    ) -> List[PassageEmbeddings]:
+    def embed_chunks(self, chunk_texts: List[str], doc_id: str = None) -> List[EmbeddedChunk]:
         """Embed search docs."""
-        return self.encode(texts, doc_id)
+        if doc_id is None:
+            doc_id = str(uuid.uuid4())
+
+        return self.encode(chunk_texts, doc_id)
+
 
     # this is query embedding without padding
     # it does not reload checkpoint which means faster embedding
-    def embed_query(self, text: str) -> Tensor:
-        passage_embeddings = self.encode(texts=[text], doc_id="no-op")[0]
-        embeddings = []
-        for token in passage_embeddings.get_all_token_embeddings():
-            embeddings.append(token.get_embeddings())
+    def embed_query(self, query_text : str) -> Tensor:
+        chunk_embedding = self.encode(chunk_texts=[query_text])[0]
+        return chunk_embedding.vectors().flatten()
 
-        return torch.tensor(embeddings)
 
     def encode_queries(
         self,
@@ -148,6 +146,7 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
         )
         return queriesQ
 
+
     def encode_query(
         self,
         query: str,
@@ -159,30 +158,31 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
         )
         return queries[0]
 
-    def encode(self, texts: List[str], doc_id: str = "") -> List[PassageEmbeddings]:
-        embeddings, count = self.encoder.encode_passages(texts)
 
-        if doc_id == "":
-            doc_id = str(uuid.uuid4())
+    def encode(self, text_chunks: List[str], doc_id: str) -> List[EmbeddedChunk]:
+        # this returns an list of tensors (vectors) and a list of counts
+        # where the list of counts has the same size as the list of input text_chunks
+        #
+        # for each text_chunk, we need to pull off "count" vectors to create
+        # the ColBERT embedding
+        vectors, counts = self.encoder.encode_passages(text_chunks)
 
-        collection_embeds = []
-        # split up embeddings by counts, a list of the number of tokens in each passage
-        start_indices = [0] + list(itertools.accumulate(count[:-1]))
-        embeddings_by_part = [
-            embeddings[start : start + count]
-            for start, count in zip(start_indices, count)
-        ]
-        for part_id, embedding in enumerate(embeddings_by_part):
-            passage_embeddings = PassageEmbeddings(
-                text=texts[part_id], doc_id=doc_id, part_id=part_id
+        # Starting index for slicing the vectors tensor
+        start_idx = 0
+
+        embedded_chunks = []
+        for chunk_idx in range(len(text_chunks)):
+            # The end index for slicing
+            end_idx = start_idx + counts[chunk_idx]
+
+            embedded_chunks.append(
+                EmbeddedChunk(
+                    text=text_chunks[chunk_idx],
+                    doc_id=doc_id,
+                    token_embeddings=vectors[start_idx:end_idx]
+                )
             )
 
-            for embedding_id, perTokenEmbedding in enumerate(embedding):
-                per_token = PerTokenEmbeddings(
-                    embedding_id=embedding_id, part_id=part_id
-                )
-                per_token.add_embeddings(perTokenEmbedding.tolist())
-                passage_embeddings.add_token_embeddings(per_token)
-            collection_embeds.append(passage_embeddings)
+            start_idx = end_idx
 
-        return collection_embeds
+        return embedded_chunks

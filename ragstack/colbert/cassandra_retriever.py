@@ -10,7 +10,7 @@ from torch import tensor, Tensor
 import torch
 import math
 
-from .vector_store import ColbertVectorStoreRetriever, Chunk
+from .vector_store import ColbertVectorStoreRetriever, RetrievedChunk
 
 # max similarity between a query vector and a list of embeddings
 # The function returns the highest similarity score (i.e., the maximum dot product value)
@@ -98,8 +98,8 @@ class ColbertCassandraRetriever(ColbertVectorStoreRetriever):
         pass
 
     def retrieve(
-        self, query: str, k: int = 10, query_maxlen: int = 64, **kwargs: Any
-    ) -> List[Chunk]:
+        self, query: str, k: int = 10, query_maxlen: int = 64, **kwargs
+    ) -> List[RetrievedChunk]:
         #
         # if the query has fewer than a predefined number of tokens Nq,
         # colbert_embeddings will pad it with BERT special [mast] token up to length Nq.
@@ -124,27 +124,25 @@ class ColbertCassandraRetriever(ColbertVectorStoreRetriever):
 
         for future in doc_futures:
             embeddings = future.result()
-            docparts.update(
-                (embedding.doc_id, embedding.part_id) for embedding in embeddings
-            )
+            docparts.update((embedding.doc_id, embedding.chunk_id) for embedding in embeddings)
 
         # score each document
         scores = {}
         futures = []
-        for doc_id, part_id in docparts:
+        for doc_id, chunk_id in docparts:
             future = self.vector_store.session.execute_async(
-                self.vector_store.query_colbert_parts_stmt, [doc_id, part_id]
+                self.vector_store.query_colbert_parts_stmt, [doc_id, chunk_id]
             )
-            futures.append((future, doc_id, part_id))
+            futures.append((future, doc_id, chunk_id))
 
-        for doc_id, part_id in docparts:
+        for doc_id, chunk_id in docparts:
             # blocking call until the future is done
             rows = future.result()
             # find all the found parts so that we can do max similarity search
             embeddings_for_part = [tensor(row.bert_embedding) for row in rows]
             # score based on The function returns the highest similarity score
             # (i.e., the maximum dot product value) between the query vector and any of the embedding vectors in the list.
-            scores[(doc_id, part_id)] = sum(
+            scores[(doc_id, chunk_id)] = sum(
                 max_similarity_torch(qv, embeddings_for_part, self.is_cuda)
                 for qv in query_encodings
             )
@@ -153,25 +151,19 @@ class ColbertCassandraRetriever(ColbertVectorStoreRetriever):
 
         # query the doc body
         doc_futures2: Dict[Tuple[Any, Any], ResponseFuture] = {}
-        for doc_id, part_id in chunks_by_score:
+        for doc_id, chunk_id, in chunks_by_score:
             future = self.vector_store.session.execute_async(
-                self.vector_store.query_chunk_stmt, [doc_id, part_id]
+                self.vector_store.query_chunk_stmt, [doc_id, chunk_id]
             )
-            doc_futures2[(doc_id, part_id)] = future
+            doc_futures2[(doc_id, chunk_id)] = future
 
-        answers: List[Chunk] = []
+        answers: List[RetrievedChunk] = []
         rank = 1
-        for doc_id, part_id in chunks_by_score:
-            rs = doc_futures2[(doc_id, part_id)].result()
-            score = scores[(doc_id, part_id)]
+        for doc_id, chunk_id in chunks_by_score:
+            rs = doc_futures2[(doc_id, chunk_id)].result()
+            score = scores[(doc_id, chunk_id)]
             answers.append(
-                Chunk(
-                    doc_id=doc_id,
-                    part_id=part_id,
-                    score=score.item(),
-                    rank=rank,
-                    text=rs.one().body,
-                )
+                RetrievedChunk(doc_id=doc_id, chunk_id=chunk_id, score=score.item(), rank=rank, text=rs.one().body)
             )
             rank = rank + 1
         # clean up on tensor memory on GPU
