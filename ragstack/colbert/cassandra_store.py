@@ -22,8 +22,8 @@ class CassandraColbertVectorStore(ColbertVectorStore):
         # prepare statements
         self.insert_chunk_stmt = self.session.prepare(
             f"""
-        INSERT INTO {self.full_table_name} (doc_id, part_id, body, embedding_id)
-        VALUES (?, ?, ?, -1)
+        INSERT INTO {self.full_table_name} (doc_id, part_id, embedding_id, body)
+        VALUES (?, ?, -1, ?)
         """
         )
 
@@ -38,7 +38,6 @@ class CassandraColbertVectorStore(ColbertVectorStore):
             f"""
         SELECT doc_id, part_id
         FROM {self.full_table_name}
-        WHERE embedding_id != -1
         ORDER BY bert_embedding ANN OF ?
         LIMIT ?
         """
