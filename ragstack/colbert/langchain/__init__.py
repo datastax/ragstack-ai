@@ -1,3 +1,3 @@
-from .retriever import ColBERTVectorStoreLangChainRetriever
+from .retriever import ColbertVectorStoreLangChainRetriever
 
-__all__ = (ColBERTVectorStoreLangChainRetriever,)
+__all__ = (ColbertVectorStoreLangChainRetriever,)
