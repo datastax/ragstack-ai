@@ -70,6 +70,7 @@ jobs:
       - name: Setup AstraDB
         uses: ./.github/actions/setup-astra-db
         id: astra-db
+        timeout-minutes: 10
         if: ${{ inputs.astradb }}
         with:
           astra-token: ${{ secrets[inputs.astradb-token-secret-name] }}
@@ -81,11 +82,10 @@ jobs:
       - name: Run notebook tests
         if: ${{ inputs.run-notebooks }}
         env:
-          ASTRA_DB_TOKEN: "${{ secrets[inputs.astradb-token-secret-name] }}"
-          ASTRA_DB_ENDPOINT: "${{ steps.astra-db.outputs.db_endpoint }}"
+          ASTRA_DB_APPLICATION_TOKEN: "${{ secrets[inputs.astradb-token-secret-name] }}"
+          ASTRA_DB_API_ENDPOINT: "${{ steps.astra-db.outputs.db_endpoint }}"
           ASTRA_DB_ID: "${{ steps.astra-db.outputs.db_id }}"
           OPENAI_API_KEY: "${{ secrets.E2E_TESTS_OPEN_AI_KEY }}"
-          OPEN_AI_KEY: "${{ secrets.E2E_TESTS_OPEN_AI_KEY }}"
           LANGCHAIN_API_KEY: "${{ secrets.E2E_TESTS_LANGCHAIN_API_KEY }}"
           LLAMA_CLOUD_API_KEY: "${{ secrets.E2E_TESTS_LLAMA_CLOUD_API_KEY }}"
           GCLOUD_ACCOUNT_KEY_JSON: "${{ secrets.E2E_TESTS_GCLOUD_ACCOUNT_KEY_JSON }}"
@@ -101,13 +101,13 @@ jobs:
         if: ${{ inputs.run-tests }}
         env:
           VECTOR_DATABASE_TYPE: "${{ inputs.vector-database-type }}"
-          ASTRA_DB_TOKEN: "${{ secrets[inputs.astradb-token-secret-name] }}"
-          ASTRA_DB_ENDPOINT: "${{ steps.astra-db.outputs.db_endpoint }}"
+          ASTRA_DB_APPLICATION_TOKEN: "${{ secrets[inputs.astradb-token-secret-name] }}"
+          ASTRA_DB_API_ENDPOINT: "${{ steps.astra-db.outputs.db_endpoint }}"
           ASTRA_DB_ID: "${{ steps.astra-db.outputs.db_id }}"
           ASTRA_DB_ENV: "${{ inputs.astradb-env }}"
-          OPEN_AI_KEY: "${{ secrets.E2E_TESTS_OPEN_AI_KEY }}"
-          AZURE_OPEN_AI_KEY: "${{ secrets.E2E_TESTS_AZURE_OPEN_AI_KEY }}"
-          AZURE_OPEN_AI_ENDPOINT: "${{ secrets.E2E_TESTS_AZURE_OPEN_AI_ENDPOINT }}"
+          OPENAI_API_KEY: "${{ secrets.E2E_TESTS_OPEN_AI_KEY }}"
+          AZURE_OPENAI_API_KEY: "${{ secrets.E2E_TESTS_AZURE_OPEN_AI_KEY }}"
+          AZURE_OPENAI_ENDPOINT: "${{ secrets.E2E_TESTS_AZURE_OPEN_AI_ENDPOINT }}"
           AZURE_BLOB_STORAGE_CONNECTION_STRING: "${{ secrets.E2E_TESTS_AZURE_BLOB_STORAGE_CONNECTION_STRING }}"
           GCLOUD_ACCOUNT_KEY_JSON: "${{ secrets.E2E_TESTS_GCLOUD_ACCOUNT_KEY_JSON }}"
           GOOGLE_API_KEY: "${{ secrets.E2E_TESTS_GOOGLE_API_KEY }}"

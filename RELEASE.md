@@ -15,3 +15,4 @@ python3 scripts/generate-changelog.py 0.3.0
 ```
 
 Then prepend the script output to the [changelog doc page](https://github.com/datastax/ragstack-ai/blob/main/docs/modules/ROOT/pages/changelog.adoc).
+Also, update the API Reference list in the [nav page](https://github.com/datastax/ragstack-ai/blob/main/docs/modules/ROOT/nav.adoc).

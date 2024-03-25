@@ -16,7 +16,7 @@ Python::
 ----
 import os
 from dotenv import load_dotenv
-from langchain_community.vectorstores import AstraDB
+from langchain_astradb import AstraDBVectorStore
 from langchain_openai import OpenAIEmbeddings
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnablePassthrough
@@ -27,7 +27,7 @@ load_dotenv()
 
 OPEN_AI_API_KEY = os.environ["OPENAI_API_KEY"]
 
-vstore = AstraDB(
+vstore = AstraDBVectorStore(
     embedding=OpenAIEmbeddings(openai_api_key=OPEN_AI_API_KEY),
     collection_name="test",
     token=os.environ["ASTRA_DB_APPLICATION_TOKEN"],

@@ -13,7 +13,7 @@ This code embeds the loaded `Documents` from the xref:splitting.adoc[] example a
 ----
 import os
 from dotenv import load_dotenv
-from langchain_community.vectorstores import AstraDB
+from langchain_astradb import AstraDBVectorStore
 from langchain_openai import OpenAIEmbeddings
 
 load_dotenv()
@@ -21,7 +21,7 @@ load_dotenv()
 ASTRA_DB_COLLECTION = os.environ.get("ASTRA_DB_COLLECTION")
 
 embedding = OpenAIEmbeddings()
-vstore = AstraDB(
+vstore = AstraDBVectorStore(
     embedding=embedding,
     collection_name="test",
     token=os.environ["ASTRA_DB_APPLICATION_TOKEN"],

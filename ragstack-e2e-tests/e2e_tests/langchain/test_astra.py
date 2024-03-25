@@ -7,7 +7,7 @@ import pytest
 from httpx import ConnectError, HTTPStatusError
 
 from langchain.schema.embeddings import Embeddings
-from langchain.vectorstores import AstraDB
+from langchain_astradb import AstraDBVectorStore
 from e2e_tests.conftest import (
     is_astra,
 )
@@ -20,14 +20,14 @@ from e2e_tests.test_utils.astradb_vector_store_handler import AstraDBVectorStore
 from e2e_tests.test_utils.vector_store_handler import VectorStoreImplementation
 
 
-def test_basic_vector_search(vectorstore: AstraDB):
+def test_basic_vector_search(vectorstore: AstraDBVectorStore):
     print("Running test_basic_vector_search")
     vectorstore.add_texts(["RAGStack is a framework to run LangChain in production"])
     retriever = vectorstore.as_retriever()
     assert len(retriever.get_relevant_documents("RAGStack")) > 0
 
 
-def test_ingest_errors(vectorstore: AstraDB):
+def test_ingest_errors(vectorstore: AstraDBVectorStore):
     print("Running test_ingestion")
 
     empty_text = ""
@@ -45,10 +45,19 @@ def test_ingest_errors(vectorstore: AstraDB):
             pytest.fail(
                 f"Should have thrown ValueError with Zero vectors cannot be indexed or queried with cosine similarity but it was {e}"
             )
+    very_long_text = "RAGStack is a framework to run LangChain in production. " * 10_000
+    # body is not indexed by default, but metadata is
+    vectorstore.add_texts([very_long_text])
 
-    very_long_text = "RAGStack is a framework to run LangChain in production. " * 1000
+    vectorstore.add_documents([Document(page_content=very_long_text, metadata={})])
     try:
-        vectorstore.add_texts([very_long_text])
+        vectorstore.add_documents(
+            [
+                Document(
+                    page_content="some short text", metadata={"text": very_long_text}
+                )
+            ]
+        )
         pytest.fail("Should have thrown ValueError")
     except ValueError as e:
         print("Error:", e)
@@ -59,9 +68,9 @@ def test_ingest_errors(vectorstore: AstraDB):
             )
 
 
-def test_wrong_connection_parameters(vectorstore: AstraDB):
+def test_wrong_connection_parameters(vectorstore: AstraDBVectorStore):
     try:
-        AstraDB(
+        AstraDBVectorStore(
             collection_name="something",
             embedding=MockEmbeddings(),
             token="xxxxx",
@@ -77,7 +86,7 @@ def test_wrong_connection_parameters(vectorstore: AstraDB):
     api_endpoint = vectorstore.api_endpoint
     try:
         print("api_endpoint:", api_endpoint)
-        AstraDB(
+        AstraDBVectorStore(
             collection_name="something",
             embedding=MockEmbeddings(),
             token="this-is-a-wrong-token",
@@ -92,7 +101,7 @@ def test_wrong_connection_parameters(vectorstore: AstraDB):
             )
 
 
-def test_basic_metadata_filtering_no_vector(vectorstore: AstraDB):
+def test_basic_metadata_filtering_no_vector(vectorstore: AstraDBVectorStore):
     collection = vectorstore.collection
     vectorstore.add_texts(
         texts=["RAGStack is a framework to run LangChain in production"],
@@ -423,7 +432,7 @@ class MockEmbeddings(Embeddings):
 
 
 @pytest.fixture
-def vectorstore() -> AstraDB:
+def vectorstore() -> AstraDBVectorStore:
     if not is_astra:
         skip_test_due_to_implementation_not_supported("astradb")
     handler = AstraDBVectorStoreHandler(VectorStoreImplementation.ASTRADB)
