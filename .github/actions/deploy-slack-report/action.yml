@@ -40,8 +40,10 @@ runs:
         else
           summary="PASSED ✅"
         fi
+        # truncate to 3500 characters because the hard limit for posting a message in slack is 4000
+        # https://api.slack.com/apis/rate-limits
         jq \
-          --arg content "$(cat $from_file)" \
+          --arg content "$(cat $from_file | sed 's/\(.\{3500\}\).*/\1.../')" \
           --arg summary "$summary" \
           --arg commit "${{ inputs.commit-url }}" \
           --arg url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
