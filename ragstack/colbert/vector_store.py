@@ -8,7 +8,7 @@ from numbers import Number
 from typing import List, Optional
 
 
-class ColBERTVectorStore(ABC):
+class ColbertVectorStore(ABC):
     """Interface for a vector store."""
 
     @abstractmethod
@@ -22,20 +22,21 @@ class ColBERTVectorStore(ABC):
         pass
 
     @abstractmethod
-    def delete_documents(self, titles: List[str]):
+    def delete_documents(self, ids: List[str]):
         """Delete a document from the store."""
         pass
 
 
 @dataclasses.dataclass
-class Document:
-    title: str
-    body: str
+class Chunk:
+    doc_id: str
+    part_id: int
+    text: str
     rank: int
     score: Number
 
 
-class ColBERTVectorStoreRetriever(ABC):
+class ColbertVectorStoreRetriever(ABC):
     @abstractmethod
     def close(self):
         """Close the store."""
@@ -44,6 +45,6 @@ class ColBERTVectorStoreRetriever(ABC):
     @abstractmethod
     def retrieve(
         self, query: str, k: Optional[int], query_maxlen: Optional[int], **kwargs
-    ) -> List[Document]:
-        """Retrieve documents from the store"""
+    ) -> List[Chunk]:
+        """Retrieve chunks from the store"""
         pass

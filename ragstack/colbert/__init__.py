@@ -1,19 +1,19 @@
 from .colbert_embedding import ColbertTokenEmbeddings
-from .cassandra_store import CassandraColBERTVectorStore
+from .cassandra_store import CassandraColbertVectorStore
 from .cassandra_retriever import ColbertCassandraRetriever, max_similarity_torch
 from .token_embedding import PerTokenEmbeddings, PassageEmbeddings, TokenEmbeddings
-from .vector_store import ColBERTVectorStore
+from .vector_store import ColbertVectorStore
 from .constant import DEFAULT_COLBERT_MODEL, DEFAULT_COLBERT_DIM
 
 __all__ = (
     ColbertTokenEmbeddings,
-    CassandraColBERTVectorStore,
+    CassandraColbertVectorStore,
     ColbertCassandraRetriever,
     max_similarity_torch,
     PerTokenEmbeddings,
     PassageEmbeddings,
     TokenEmbeddings,
-    ColBERTVectorStore,
+    ColbertVectorStore,
     DEFAULT_COLBERT_MODEL,
     DEFAULT_COLBERT_DIM,
 )

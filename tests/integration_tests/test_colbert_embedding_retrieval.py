@@ -3,8 +3,8 @@ import logging
 import pytest
 from ragstack.colbert import ColbertTokenEmbeddings
 from ragstack.colbert import ColbertCassandraRetriever
-from ragstack.colbert import CassandraColBERTVectorStore
-from ragstack.colbert.langchain import ColBERTVectorStoreLangChainRetriever
+from ragstack.colbert import CassandraColbertVectorStore
+from ragstack.colbert.langchain import ColbertVectorStoreLangChainRetriever
 
 from tests.integration_tests.conftest import (
     get_local_cassandra_test_store,
@@ -65,7 +65,7 @@ def test_embedding_cassandra_retriever(request, vector_store: str):
     for i, chunk in enumerate(chunks[:3]):  # Displaying the first 3 chunks for brevity
         logging.info(f"Chunk {i + 1}:\n{chunk}\n{'-' * 50}\n")
 
-    title = "Marine Animals habitat"
+    doc_id = "Marine Animals habitat"
 
     # colbert stuff starts
     colbert = ColbertTokenEmbeddings(
@@ -74,11 +74,11 @@ def test_embedding_cassandra_retriever(request, vector_store: str):
         kmeans_niters=4,
     )
 
-    passage_embeddings = colbert.embed_documents(texts=chunks, title=title)
+    passage_embeddings = colbert.embed_documents(texts=chunks, doc_id=doc_id)
 
     logging.info(f"passage embeddings size {len(passage_embeddings)}")
 
-    store = CassandraColBERTVectorStore(
+    store = CassandraColbertVectorStore(
         keyspace=KEYSPACE,
         table_name="colbert_embeddings",
         session=vector_store.create_cassandra_session(),
@@ -93,6 +93,6 @@ def test_embedding_cassandra_retriever(request, vector_store: str):
         logging.info(f"got {doc}")
     assert len(docs) == 5
 
-    lc_retriever = ColBERTVectorStoreLangChainRetriever(retriever, k=2)
+    lc_retriever = ColbertVectorStoreLangChainRetriever(retriever, k=2)
     docs = lc_retriever.get_relevant_documents("what kind fish lives shallow coral reefs atlantic, india ocean, red sea, gulf of mexico, pacific, and arctic ocean")
     assert len(docs) == 2
