@@ -5,15 +5,15 @@ from .token_embedding import PerTokenEmbeddings, PassageEmbeddings, TokenEmbeddi
 from .vector_store import ColbertVectorStore
 from .constant import DEFAULT_COLBERT_MODEL, DEFAULT_COLBERT_DIM
 
-__all__ = (
-    ColbertTokenEmbeddings,
-    CassandraColbertVectorStore,
-    ColbertCassandraRetriever,
-    max_similarity_torch,
-    PerTokenEmbeddings,
-    PassageEmbeddings,
-    TokenEmbeddings,
-    ColbertVectorStore,
-    DEFAULT_COLBERT_MODEL,
-    DEFAULT_COLBERT_DIM,
-)
+__all__ = [
+    "ColbertTokenEmbeddings",
+    "CassandraColbertVectorStore",
+    "ColbertCassandraRetriever",
+    "max_similarity_torch",
+    "PerTokenEmbeddings",
+    "PassageEmbeddings",
+    "TokenEmbeddings",
+    "ColbertVectorStore",
+    "DEFAULT_COLBERT_MODEL",
+    "DEFAULT_COLBERT_DIM",
+]
