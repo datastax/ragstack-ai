@@ -13,10 +13,10 @@ class BaseChunk:
 
 @dataclass(frozen=True)
 class EmbeddedChunk(BaseChunk):
-    vectors: Tensor
+    embeddings: Tensor
 
     def __len__(self):
-        return len(self.vectors)
+        return len(self.embeddings)
 
 
 @dataclass(frozen=True)

@@ -1,5 +1,5 @@
 """
-This module contains the VectorStore class, which is used to store vectors.
+This module contains the VectorStore class, which is used to store embeddings.
 """
 
 from abc import ABC, abstractmethod

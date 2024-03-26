@@ -13,23 +13,23 @@ def test_colbert_token_embeddings():
 
     assert len(embedded_chunks) == 2
 
-    assert embedded_chunks[0].text() == "test1"
-    assert embedded_chunks[1].text() == "test2"
+    assert embedded_chunks[0].text == "test1"
+    assert embedded_chunks[1].text == "test2"
 
     # generate uuid based id
-    assert embedded_chunks[0].doc_id() != ""
-    assert embedded_chunks[1].doc_id() != ""
+    assert embedded_chunks[0].doc_id != ""
+    assert embedded_chunks[1].doc_id != ""
 
     embedded_chunks = colbert.embed_chunks(
         texts=["test1", "test2"], doc_id="test-id"
     )
 
-    assert embedded_chunks[0].text() == "test1"
-    assert embedded_chunks[0].doc_id() == "test-id"
-    assert embedded_chunks[1].doc_id() == "test-id"
+    assert embedded_chunks[0].text == "test1"
+    assert embedded_chunks[0].doc_id == "test-id"
+    assert embedded_chunks[1].doc_id == "test-id"
 
-    vectors = embedded_chunks[0].vectors()
-    assert len(vectors[0]) == DEFAULT_COLBERT_DIM
+    embeddings = embedded_chunks[0].embeddings
+    assert len(embeddings[0]) == DEFAULT_COLBERT_DIM
 
 
 def test_colbert_token_embeddings_with_params():
@@ -46,12 +46,12 @@ def test_colbert_token_embeddings_with_params():
 
     assert len(embedded_chunks) == 3
 
-    assert embedded_chunks[0].text() == "test1"
-    assert embedded_chunks[1].text() == "test2"
+    assert embedded_chunks[0].text == "test1"
+    assert embedded_chunks[1].text == "test2"
 
-    vectors = embedded_chunks[0].vectors()
-    assert len(vectors) > 1
-    assert len(vectors[0]) == DEFAULT_COLBERT_DIM
+    embeddings = embedded_chunks[0].embeddings
+    assert len(embeddings) > 1
+    assert len(embeddings[0]) == DEFAULT_COLBERT_DIM
 
 
 def test_colbert_query_embeddings():

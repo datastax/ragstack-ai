@@ -104,7 +104,7 @@ class CassandraColbertVectorStore(ColbertVectorStore):
             chunk_id = chunk.chunk_id()
             parameters = [
                 (doc_id, chunk_id, index, vector)
-                for index, vector in enumerate(chunk.vectors().tolist())
+                for index, vector in enumerate(chunk.embeddings.tolist())
             ]
             execute_concurrent_with_args(
                 self.session, self.insert_colbert_stmt, parameters

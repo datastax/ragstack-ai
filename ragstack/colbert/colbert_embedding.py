@@ -111,7 +111,7 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
     # it does not reload checkpoint which means faster embedding
     def embed_query(self, query_text: str) -> Tensor:
         chunk_embedding = self.encode(texts=[query_text])[0]
-        return chunk_embedding.vectors().flatten()
+        return chunk_embedding.embeddings
 
     def encode_queries(
         self,
@@ -158,15 +158,15 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
         )
         return queries[0]
 
-    def encode(self, texts: List[str], doc_id: str) -> List[EmbeddedChunk]:
+    def encode(self, texts: List[str], doc_id: Optional[str] = None) -> List[EmbeddedChunk]:
         # this returns an list of tensors (vectors) and a list of counts
         # where the list of counts has the same size as the list of input texts
         #
         # for each chunk_text, we need to pull off "count" vectors to create
         # the ColBERT embedding
-        vectors, counts = self.encoder.encode_passages(texts)
+        embeddings, counts = self.encoder.encode_passages(texts)
 
-        # Starting index for slicing the vectors tensor
+        # Starting index for slicing the embeddings tensor
         start_idx = 0
 
         embedded_chunks = []
@@ -176,9 +176,10 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
 
             embedded_chunks.append(
                 EmbeddedChunk(
-                    text=texts[chunk_idx],
                     doc_id=doc_id,
-                    token_embeddings=vectors[start_idx:end_idx],
+                    chunk_id=chunk_idx,
+                    text=texts[chunk_idx],
+                    embeddings=embeddings[start_idx:end_idx],
                 )
             )
 
