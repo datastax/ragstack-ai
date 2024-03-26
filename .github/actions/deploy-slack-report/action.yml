@@ -44,18 +44,18 @@ runs:
         # https://api.slack.com/apis/rate-limits
         max_chars=3500
         lines=$(cat $from_file | wc -l)
-        
+
         if [ $lines -eq 0 ]; then
           content=""
         else
           content=$(cat $from_file)
           echo "Content before: $content"
           cut_at=$((max_chars/lines))
-          echo "Keeping $cut_at char per line ($chars/$lines)" 
+          echo "Keeping $cut_at char per line ($chars/$lines)"
           content=$(cat $from_file | cut -c -$cut_at)
           echo "New content: $content"
         fi
-        
+
         jq \
           --arg content "$content" \
           --arg summary "$summary" \
