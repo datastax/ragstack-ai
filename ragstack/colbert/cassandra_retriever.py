@@ -138,7 +138,7 @@ class ColbertCassandraRetriever(ColbertVectorStoreRetriever):
         futures = []
         for doc_id, chunk_id in docparts:
             future = self.vector_store.session.execute_async(
-                self.vector_store.query_colbert_parts_stmt, [doc_id, chunk_id]
+                self.vector_store.query_colbert_chunks_stmt, [doc_id, chunk_id]
             )
             futures.append((future, doc_id, chunk_id))
 

@@ -44,7 +44,7 @@ class CassandraColbertVectorStore(ColbertVectorStore):
         """
         )
 
-        self.query_colbert_parts_stmt = self.session.prepare(
+        self.query_colbert_chunks_stmt = self.session.prepare(
             f"""
         SELECT doc_id, chunk_id, bert_embedding
         FROM {self.full_table_name}
@@ -60,7 +60,7 @@ class CassandraColbertVectorStore(ColbertVectorStore):
         """
         )
 
-        self.delete_part_by_id_stmt = self.session.prepare(
+        self.delete_chunks_by_doc_id_stmt = self.session.prepare(
             f"""
             DELETE FROM {self.full_table_name} WHERE doc_id = ?
         """
@@ -89,7 +89,7 @@ class CassandraColbertVectorStore(ColbertVectorStore):
         )
         logging.info(f"Created index on table {self.full_table_name}")
 
-    def insert_colbert_embedding_docs(
+    def insert_colbert_embedded_chunks(
         self, chunks: List[EmbeddedChunk], delete_existing: Optional[bool] = False
     ) -> None:
         if delete_existing:
@@ -113,11 +113,11 @@ class CassandraColbertVectorStore(ColbertVectorStore):
     def put_chunks(
         self, chunks: List[EmbeddedChunk], delete_existing: Optional[bool] = False
     ) -> None:
-        return self.insert_colbert_embedding_docs(chunks, delete_existing)
+        return self.insert_colbert_embedded_chunks(chunks, delete_existing)
 
     def delete_documents(self, doc_ids: List[str]) -> None:
         execute_concurrent_with_args(
-            self.session, self.delete_part_by_id_stmt, [(t,) for t in doc_ids]
+            self.session, self.delete_chunks_by_doc_id_stmt, [(t,) for t in doc_ids]
         )
 
     def close(self) -> None:
