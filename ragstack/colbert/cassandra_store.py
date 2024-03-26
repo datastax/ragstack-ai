@@ -93,15 +93,15 @@ class CassandraColbertVectorStore(ColbertVectorStore):
         self, chunks: List[EmbeddedChunk], delete_existing: Optional[bool] = False
     ) -> None:
         if delete_existing:
-            doc_ids = [c.doc_id() for c in chunks]
+            doc_ids = [c.doc_id for c in chunks]
             self.delete_documents(list(set(doc_ids)))
 
-        p_parameters = [(c.doc_id(), c.chunk_id(), c.text()) for c in chunks]
+        p_parameters = [(c.doc_id, c.chunk_id(), c.text()) for c in chunks]
         execute_concurrent_with_args(self.session, self.insert_chunk_stmt, p_parameters)
 
         for chunk in chunks:
-            doc_id = chunk.doc_id()
-            chunk_id = chunk.chunk_id()
+            doc_id = chunk.doc_id
+            chunk_id = chunk.chunk_id
             parameters = [
                 (doc_id, chunk_id, index, vector)
                 for index, vector in enumerate(chunk.embeddings.tolist())

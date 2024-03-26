@@ -151,7 +151,10 @@ class ColbertCassandraRetriever(ColbertVectorStoreRetriever):
 
         # query the doc body
         doc_futures2: Dict[Tuple[Any, Any], ResponseFuture] = {}
-        for doc_id, chunk_id, in chunks_by_score:
+        for (
+            doc_id,
+            chunk_id,
+        ) in chunks_by_score:
             future = self.vector_store.session.execute_async(
                 self.vector_store.query_chunk_stmt, [doc_id, chunk_id]
             )

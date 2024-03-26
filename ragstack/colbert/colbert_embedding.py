@@ -158,7 +158,9 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
         )
         return queries[0]
 
-    def encode(self, texts: List[str], doc_id: Optional[str] = None) -> List[EmbeddedChunk]:
+    def encode(
+        self, texts: List[str], doc_id: Optional[str] = None
+    ) -> List[EmbeddedChunk]:
         # this returns an list of tensors (vectors) and a list of counts
         # where the list of counts has the same size as the list of input texts
         #
