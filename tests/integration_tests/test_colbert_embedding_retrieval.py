@@ -86,10 +86,10 @@ def test_embedding_cassandra_retriever(request, vector_store: str):
         vector_store=store, colbert_embeddings=colbert
     )
     chunks = retriever.retrieve("what kind fish lives shallow coral reefs", k=5)
-    for chunks in chunks:
+    for chunk in chunks:
         logging.info(f"got {chunk}")
     assert len(chunks) == 5
-    assert len(chunk[0].text) > 0
+    assert len(chunks[0].text) > 0
 
     lc_retriever = ColbertVectorStoreLangChainRetriever(retriever, k=2)
     docs = lc_retriever.get_relevant_documents("what kind fish lives shallow coral reefs atlantic, india ocean, red sea, gulf of mexico, pacific, and arctic ocean")
