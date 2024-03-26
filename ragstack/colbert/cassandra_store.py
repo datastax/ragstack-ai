@@ -1,5 +1,5 @@
 import logging
-from typing import List
+from typing import List, Optional
 
 from cassandra.cluster import Session
 from cassandra.concurrent import execute_concurrent_with_args
@@ -90,7 +90,7 @@ class CassandraColbertVectorStore(ColbertVectorStore):
         logging.info(f"Created index on table {self.full_table_name}")
 
     def insert_colbert_embedding_docs(
-        self, chunks: List[EmbeddedChunk], delete_existing: bool = False
+        self, chunks: List[EmbeddedChunk], delete_existing: Optional[bool] = False
     ) -> None:
         if delete_existing:
             doc_ids = [c.doc_id() for c in chunks]
@@ -111,7 +111,7 @@ class CassandraColbertVectorStore(ColbertVectorStore):
             )
 
     def put_chunks(
-        self, chunks: List[EmbeddedChunk], delete_existing: bool = False
+        self, chunks: List[EmbeddedChunk], delete_existing: Optional[bool] = False
     ) -> None:
         return self.insert_colbert_embedding_docs(chunks, delete_existing)
 

@@ -3,7 +3,7 @@ from typing import List, Set, Tuple, Any, Dict
 from cassandra.cluster import ResponseFuture
 import logging
 import math
-from typing import List
+from typing import List, Optional
 
 import torch
 from torch import tensor
@@ -48,10 +48,10 @@ def max_similarity_numpy_based(query_vector, embedding_list):
 """
 
 
-# this torch based max similary has the best performance.
+# this torch based max similarity has the best performance.
 # it is at least 20 times faster than dot product operator and numpy based implementation CuDA and CPU
 def max_similarity_torch(
-    query_vector: Tensor, embedding_list: List[Tensor], is_cuda: bool = False
+    query_vector: Tensor, embedding_list: List[Tensor], is_cuda: Optional[bool] = False
 ) -> Tensor:
     """
     Calculate the maximum similarity (dot product) between a query vector and a list of embedding vectors,

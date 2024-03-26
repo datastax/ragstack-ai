@@ -4,7 +4,7 @@ ColBERT token embeddings is an example of a class that inherits from this class
 """
 
 from abc import ABC, abstractmethod
-from typing import List
+from typing import List, Optional
 
 from torch import Tensor
 
@@ -18,7 +18,9 @@ class TokenEmbeddings(ABC):
     """
 
     @abstractmethod
-    def embed_chunks(self, texts: List[str], doc_id: str = None) -> List[EmbeddedChunk]:
+    def embed_chunks(
+        self, texts: List[str], doc_id: Optional[str] = None
+    ) -> List[EmbeddedChunk]:
         """Embed search chunks."""
 
     @abstractmethod

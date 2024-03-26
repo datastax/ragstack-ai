@@ -116,7 +116,7 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
     def encode_queries(
         self,
         query: Union[str, List[str]],
-        full_length_search: bool = False,
+        full_length_search: Optional[bool] = False,
         # query_maxlen is really a fixed length for query token embeddings
         # the length does not grow or shrink despite the number of tokens in the query
         # we continue to use the same term to align with ColBERT documentation/library
@@ -150,7 +150,7 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
     def encode_query(
         self,
         query: str,
-        full_length_search: bool = False,
+        full_length_search: Optional[bool] = False,
         query_maxlen: int = -1,
     ) -> Tensor:
         queries = self.encode_queries(

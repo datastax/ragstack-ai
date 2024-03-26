@@ -13,7 +13,7 @@ class ColbertVectorStore(ABC):
 
     @abstractmethod
     def put_chunks(
-        self, chunks: List[EmbeddedChunk], delete_existing: bool = False
+        self, chunks: List[EmbeddedChunk], delete_existing: Optional[bool] = False
     ) -> None:
         """Put a document into the store."""
 
