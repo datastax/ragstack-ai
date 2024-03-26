@@ -2,15 +2,14 @@
 This module contains the VectorStore class, which is used to store vectors.
 """
 
-import dataclasses
 from abc import ABC, abstractmethod
-from numbers import Number
-from typing import List, Optional, Any
-from .token_embedding import EmbeddedChunk
+from typing import List, Optional
+
+from .chunks import EmbeddedChunk, RetrievedChunk
 
 
 class ColbertVectorStore(ABC):
-    """Interface for a vector store."""
+    """Interface for a colbert vector store."""
 
     @abstractmethod
     def put_chunks(
@@ -23,16 +22,9 @@ class ColbertVectorStore(ABC):
         """Delete a document from the store."""
 
 
-@dataclasses.dataclass
-class RetrievedChunk:
-    doc_id: str
-    chunk_id: int
-    text: str
-    rank: int
-    score: Number
-
-
 class ColbertVectorStoreRetriever(ABC):
+    """Interface for a colbert vector store retriever."""
+
     @abstractmethod
     def close(self) -> None:
         """Close the store."""

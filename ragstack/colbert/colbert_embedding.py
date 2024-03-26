@@ -1,15 +1,16 @@
-from typing import List, Union
 import logging
-import torch
 import uuid
-from torch import Tensor
-from .token_embedding import TokenEmbeddings, EmbeddedChunk
-from .constant import MAX_MODEL_TOKENS, DEFAULT_COLBERT_MODEL
+from typing import List, Optional, Union
 
-from colbert.infra import Run, RunConfig, ColBERTConfig
+import torch
 from colbert.indexing.collection_encoder import CollectionEncoder
+from colbert.infra import ColBERTConfig, Run, RunConfig
 from colbert.modeling.checkpoint import Checkpoint
 from colbert.modeling.tokenization import QueryTokenizer
+from torch import Tensor
+
+from .constant import DEFAULT_COLBERT_MODEL, MAX_MODEL_TOKENS
+from .token_embedding import EmbeddedChunk, TokenEmbeddings
 
 
 def calculate_query_maxlen(tokens: List[List[str]], min_num: int, max_num: int) -> int:
@@ -97,20 +98,20 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
         if self.__cuda:
             self.checkpoint = self.checkpoint.cuda()
 
-    def embed_chunks(self, chunk_texts: List[str], doc_id: str = None) -> List[EmbeddedChunk]:
+    def embed_chunks(
+        self, texts: List[str], doc_id: Optional[str] = None
+    ) -> List[EmbeddedChunk]:
         """Embed search docs."""
         if doc_id is None:
             doc_id = str(uuid.uuid4())
 
-        return self.encode(chunk_texts, doc_id)
-
+        return self.encode(texts=texts, doc_id=doc_id)
 
     # this is query embedding without padding
     # it does not reload checkpoint which means faster embedding
-    def embed_query(self, query_text : str) -> Tensor:
-        chunk_embedding = self.encode(chunk_texts=[query_text])[0]
+    def embed_query(self, query_text: str) -> Tensor:
+        chunk_embedding = self.encode(texts=[query_text])[0]
         return chunk_embedding.vectors().flatten()
-
 
     def encode_queries(
         self,
@@ -146,7 +147,6 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
         )
         return queriesQ
 
-
     def encode_query(
         self,
         query: str,
@@ -158,28 +158,27 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
         )
         return queries[0]
 
-
-    def encode(self, text_chunks: List[str], doc_id: str) -> List[EmbeddedChunk]:
+    def encode(self, texts: List[str], doc_id: str) -> List[EmbeddedChunk]:
         # this returns an list of tensors (vectors) and a list of counts
-        # where the list of counts has the same size as the list of input text_chunks
+        # where the list of counts has the same size as the list of input texts
         #
-        # for each text_chunk, we need to pull off "count" vectors to create
+        # for each chunk_text, we need to pull off "count" vectors to create
         # the ColBERT embedding
-        vectors, counts = self.encoder.encode_passages(text_chunks)
+        vectors, counts = self.encoder.encode_passages(texts)
 
         # Starting index for slicing the vectors tensor
         start_idx = 0
 
         embedded_chunks = []
-        for chunk_idx in range(len(text_chunks)):
+        for chunk_idx in range(len(texts)):
             # The end index for slicing
             end_idx = start_idx + counts[chunk_idx]
 
             embedded_chunks.append(
                 EmbeddedChunk(
-                    text=text_chunks[chunk_idx],
+                    text=texts[chunk_idx],
                     doc_id=doc_id,
-                    token_embeddings=vectors[start_idx:end_idx]
+                    token_embeddings=vectors[start_idx:end_idx],
                 )
             )
 

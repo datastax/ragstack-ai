@@ -1,7 +1,8 @@
+import logging
 from typing import List
+
 from cassandra.cluster import Session
 from cassandra.concurrent import execute_concurrent_with_args
-import logging
 
 from .token_embedding import EmbeddedChunk
 from .vector_store import ColbertVectorStore

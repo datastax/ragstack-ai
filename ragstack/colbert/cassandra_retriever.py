@@ -1,8 +1,12 @@
 from typing import List, Set, Tuple, Any, Dict
 
 from cassandra.cluster import ResponseFuture
+import logging
+import math
+from typing import List
 
-from .colbert_embedding import ColbertTokenEmbeddings
+import torch
+from torch import tensor
 
 from .cassandra_store import CassandraColbertVectorStore
 import logging
@@ -10,6 +14,7 @@ from torch import tensor, Tensor
 import torch
 import math
 
+from .colbert_embedding import ColbertTokenEmbeddings
 from .vector_store import ColbertVectorStoreRetriever, RetrievedChunk
 
 # max similarity between a query vector and a list of embeddings
@@ -124,7 +129,9 @@ class ColbertCassandraRetriever(ColbertVectorStoreRetriever):
 
         for future in doc_futures:
             embeddings = future.result()
-            docparts.update((embedding.doc_id, embedding.chunk_id) for embedding in embeddings)
+            docparts.update(
+                (embedding.doc_id, embedding.chunk_id) for embedding in embeddings
+            )
 
         # score each document
         scores = {}
@@ -163,7 +170,13 @@ class ColbertCassandraRetriever(ColbertVectorStoreRetriever):
             rs = doc_futures2[(doc_id, chunk_id)].result()
             score = scores[(doc_id, chunk_id)]
             answers.append(
-                RetrievedChunk(doc_id=doc_id, chunk_id=chunk_id, score=score.item(), rank=rank, text=rs.one().body)
+                RetrievedChunk(
+                    doc_id=doc_id,
+                    chunk_id=chunk_id,
+                    score=score.item(),
+                    rank=rank,
+                    text=rs.one().body,
+                )
             )
             rank = rank + 1
         # clean up on tensor memory on GPU

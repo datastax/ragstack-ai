@@ -1,16 +1,13 @@
 import logging
 
 import pytest
-from ragstack.colbert import ColbertTokenEmbeddings
-from ragstack.colbert import ColbertCassandraRetriever
-from ragstack.colbert import CassandraColbertVectorStore
-from ragstack.colbert.langchain import ColbertVectorStoreLangChainRetriever
 
-from tests.integration_tests.conftest import (
-    get_local_cassandra_test_store,
-    get_astradb_test_store,
-    KEYSPACE,
-)
+from ragstack.colbert import (CassandraColbertVectorStore,
+                              ColbertCassandraRetriever,
+                              ColbertTokenEmbeddings)
+from ragstack.colbert.langchain import ColbertVectorStoreLangChainRetriever
+from tests.integration_tests.conftest import (KEYSPACE, get_astradb_test_store,
+                                              get_local_cassandra_test_store)
 
 
 @pytest.fixture
