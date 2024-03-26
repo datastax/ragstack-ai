@@ -96,7 +96,7 @@ class CassandraColbertVectorStore(ColbertVectorStore):
             doc_ids = [c.doc_id for c in chunks]
             self.delete_documents(list(set(doc_ids)))
 
-        p_parameters = [(c.doc_id, c.chunk_id(), c.text()) for c in chunks]
+        p_parameters = [(c.doc_id, c.chunk_id, c.text) for c in chunks]
         execute_concurrent_with_args(self.session, self.insert_chunk_stmt, p_parameters)
 
         for chunk in chunks:
