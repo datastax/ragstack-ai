@@ -1,16 +1,13 @@
 import logging
 
 import pytest
-from ragstack.colbert import ColbertTokenEmbeddings
-from ragstack.colbert import ColbertCassandraRetriever
-from ragstack.colbert import CassandraColbertVectorStore
-from ragstack.colbert.langchain import ColbertVectorStoreLangChainRetriever
 
-from tests.integration_tests.conftest import (
-    get_local_cassandra_test_store,
-    get_astradb_test_store,
-    KEYSPACE,
-)
+from ragstack.colbert import (CassandraColbertVectorStore,
+                              ColbertCassandraRetriever,
+                              ColbertTokenEmbeddings)
+from ragstack.colbert.langchain import ColbertVectorStoreLangChainRetriever
+from tests.integration_tests.conftest import (KEYSPACE, get_astradb_test_store,
+                                              get_local_cassandra_test_store)
 
 
 @pytest.fixture
@@ -74,25 +71,27 @@ def test_embedding_cassandra_retriever(request, vector_store: str):
         kmeans_niters=4,
     )
 
-    passage_embeddings = colbert.embed_documents(texts=chunks, doc_id=doc_id)
+    embedded_chunks = colbert.embed_chunks(texts=chunks, doc_id=doc_id)
 
-    logging.info(f"passage embeddings size {len(passage_embeddings)}")
+    logging.info(f"embedded chunks size {len(embedded_chunks)}")
 
     store = CassandraColbertVectorStore(
         keyspace=KEYSPACE,
         table_name="colbert_embeddings",
         session=vector_store.create_cassandra_session(),
     )
-    store.put_document(embeddings=passage_embeddings, delete_existed_passage=True)
+    store.put_chunks(chunks=embedded_chunks, delete_existing=True)
 
     retriever = ColbertCassandraRetriever(
         vector_store=store, colbert_embeddings=colbert
     )
-    docs = retriever.retrieve("what kind fish lives shallow coral reefs", k=5)
-    for doc in docs:
-        logging.info(f"got {doc}")
-    assert len(docs) == 5
+    chunks = retriever.retrieve("what kind fish lives shallow coral reefs", k=5)
+    for chunk in chunks:
+        logging.info(f"got {chunk}")
+    assert len(chunks) == 5
+    assert len(chunks[0].text) > 0
 
     lc_retriever = ColbertVectorStoreLangChainRetriever(retriever, k=2)
     docs = lc_retriever.get_relevant_documents("what kind fish lives shallow coral reefs atlantic, india ocean, red sea, gulf of mexico, pacific, and arctic ocean")
     assert len(docs) == 2
+    assert len(docs[0].page_content) > 0

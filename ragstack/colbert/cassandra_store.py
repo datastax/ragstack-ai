@@ -1,9 +1,10 @@
-from typing import List
+import logging
+from typing import List, Optional
+
 from cassandra.cluster import Session
 from cassandra.concurrent import execute_concurrent_with_args
-import logging
 
-from .token_embedding import PassageEmbeddings
+from .token_embedding import EmbeddedChunk
 from .vector_store import ColbertVectorStore
 
 
@@ -22,32 +23,32 @@ class CassandraColbertVectorStore(ColbertVectorStore):
         # prepare statements
         self.insert_chunk_stmt = self.session.prepare(
             f"""
-        INSERT INTO {self.full_table_name} (doc_id, part_id, embedding_id, body)
+        INSERT INTO {self.full_table_name} (doc_id, chunk_id, embedding_id, body)
         VALUES (?, ?, -1, ?)
         """
         )
 
         self.insert_colbert_stmt = self.session.prepare(
             f"""
-        INSERT INTO {self.full_table_name} (doc_id, part_id, embedding_id, bert_embedding)
+        INSERT INTO {self.full_table_name} (doc_id, chunk_id, embedding_id, bert_embedding)
         VALUES (?, ?, ?, ?)
         """
         )
 
         self.query_colbert_ann_stmt = self.session.prepare(
             f"""
-        SELECT doc_id, part_id
+        SELECT doc_id, chunk_id
         FROM {self.full_table_name}
         ORDER BY bert_embedding ANN OF ?
         LIMIT ?
         """
         )
 
-        self.query_colbert_parts_stmt = self.session.prepare(
+        self.query_colbert_chunks_stmt = self.session.prepare(
             f"""
-        SELECT doc_id, part_id, bert_embedding
+        SELECT doc_id, chunk_id, bert_embedding
         FROM {self.full_table_name}
-        WHERE doc_id = ? AND part_id = ? AND embedding_id != -1
+        WHERE doc_id = ? AND chunk_id = ? AND embedding_id != -1
         """
         )
 
@@ -55,11 +56,11 @@ class CassandraColbertVectorStore(ColbertVectorStore):
             f"""
         SELECT body
         FROM {self.full_table_name}
-        WHERE doc_id = ? AND part_id = ? AND embedding_id = -1
+        WHERE doc_id = ? AND chunk_id = ? AND embedding_id = -1
         """
         )
 
-        self.delete_part_by_id_stmt = self.session.prepare(
+        self.delete_chunks_by_doc_id_stmt = self.session.prepare(
             f"""
             DELETE FROM {self.full_table_name} WHERE doc_id = ?
         """
@@ -70,11 +71,11 @@ class CassandraColbertVectorStore(ColbertVectorStore):
             f"""
             CREATE TABLE IF NOT EXISTS {self.full_table_name} (
                 doc_id text,
-                part_id int,
+                chunk_id int,
                 embedding_id int,
                 body text,
                 bert_embedding vector<float, 128>,
-                PRIMARY KEY (doc_id, part_id, embedding_id)
+                PRIMARY KEY (doc_id, chunk_id, embedding_id)
             ) WITH COMMENT = 'Colbert embeddings embedding_id=-1 contains the body chunk';
         """
         )
@@ -88,34 +89,35 @@ class CassandraColbertVectorStore(ColbertVectorStore):
         )
         logging.info(f"Created index on table {self.full_table_name}")
 
-    def insert_colbert_embeddings_chunks(
-        self, embeddings: List[PassageEmbeddings], delete_existed_passage: bool = False
+    def insert_colbert_embedded_chunks(
+        self, chunks: List[EmbeddedChunk], delete_existing: Optional[bool] = False
     ) -> None:
-        if delete_existed_passage:
-            self.delete_documents([p.doc_id() for p in embeddings])
+        if delete_existing:
+            doc_ids = [c.doc_id for c in chunks]
+            self.delete_documents(list(set(doc_ids)))
 
-        p_parameters = [(p.doc_id(), p.part_id(), p.text()) for p in embeddings]
+        p_parameters = [(c.doc_id, c.chunk_id, c.text) for c in chunks]
         execute_concurrent_with_args(self.session, self.insert_chunk_stmt, p_parameters)
 
-        for passage_emb in embeddings:
-            doc_id = passage_emb.doc_id()
-            part_id = passage_emb.part_id()
+        for chunk in chunks:
+            doc_id = chunk.doc_id
+            chunk_id = chunk.chunk_id
             parameters = [
-                (doc_id, part_id, e[1].embedding_id(), e[1].get_embeddings())
-                for e in enumerate(passage_emb.get_all_token_embeddings())
+                (doc_id, chunk_id, index, vector)
+                for index, vector in enumerate(chunk.embeddings.tolist())
             ]
             execute_concurrent_with_args(
                 self.session, self.insert_colbert_stmt, parameters
             )
 
-    def put_document(
-        self, embeddings: List[PassageEmbeddings], delete_existed_passage: bool = False
+    def put_chunks(
+        self, chunks: List[EmbeddedChunk], delete_existing: Optional[bool] = False
     ) -> None:
-        return self.insert_colbert_embeddings_chunks(embeddings, delete_existed_passage)
+        return self.insert_colbert_embedded_chunks(chunks, delete_existing)
 
     def delete_documents(self, doc_ids: List[str]) -> None:
         execute_concurrent_with_args(
-            self.session, self.delete_part_by_id_stmt, [(t,) for t in doc_ids]
+            self.session, self.delete_chunks_by_doc_id_stmt, [(t,) for t in doc_ids]
         )
 
     def close(self) -> None:
