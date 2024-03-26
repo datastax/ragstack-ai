@@ -1,4 +1,4 @@
-from typing import List
+from typing import Any, List
 
 from langchain_core.callbacks.manager import CallbackManagerForRetrieverRun
 from langchain_core.documents import Document
@@ -32,7 +32,7 @@ class ColbertVectorStoreLangChainRetriever(BaseRetriever):
 
         arbitrary_types_allowed = True
 
-    def __init__(self, retriever: ColbertVectorStoreRetriever, k: int = 10, **kwargs):
+    def __init__(self, retriever: ColbertVectorStoreRetriever, k: int = 10, **kwargs: Any):
         super().__init__(retriever=retriever, k=k, **kwargs)
         self.retriever = retriever
         self.k = k

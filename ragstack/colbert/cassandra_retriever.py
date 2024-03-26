@@ -1,19 +1,12 @@
-from typing import List, Set, Tuple, Any, Dict
-
-from cassandra.cluster import ResponseFuture
 import logging
 import math
-from typing import List, Optional
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 import torch
-from torch import tensor
+from cassandra.cluster import ResponseFuture
+from torch import Tensor
 
 from .cassandra_store import CassandraColbertVectorStore
-import logging
-from torch import tensor, Tensor
-import torch
-import math
-
 from .colbert_embedding import ColbertTokenEmbeddings
 from .vector_store import ColbertVectorStoreRetriever, RetrievedChunk
 
@@ -103,7 +96,7 @@ class ColbertCassandraRetriever(ColbertVectorStoreRetriever):
         pass
 
     def retrieve(
-        self, query: str, k: int = 10, query_maxlen: int = 64, **kwargs
+        self, query: str, k: int = 10, query_maxlen: int = 64, **kwargs: Any
     ) -> List[RetrievedChunk]:
         #
         # if the query has fewer than a predefined number of tokens Nq,
@@ -146,7 +139,7 @@ class ColbertCassandraRetriever(ColbertVectorStoreRetriever):
             # blocking call until the future is done
             rows = future.result()
             # find all the found parts so that we can do max similarity search
-            embeddings_for_part = [tensor(row.bert_embedding) for row in rows]
+            embeddings_for_part = [torch.tensor(row.bert_embedding) for row in rows]
             # score based on The function returns the highest similarity score
             # (i.e., the maximum dot product value) between the query vector and any of the embedding vectors in the list.
             scores[(doc_id, chunk_id)] = sum(
