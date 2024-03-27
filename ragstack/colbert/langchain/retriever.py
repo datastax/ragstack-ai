@@ -23,6 +23,7 @@ class ColbertVectorStoreLangChainRetriever(BaseRetriever):
         qa.run("what happened on June 4th?")
     """
 
+
     retriever: ColbertVectorStoreRetriever = Field(default=None)
     kwargs: dict = {}
     k: int = 10
