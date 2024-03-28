@@ -184,7 +184,7 @@ jobs:
     # we run notebook tests only on PROD env since we CassIO need different parameters for DEV, and we don't want to dirty the notebook
     name: "Notebooks"
     needs: ["preconditions"]
-    if: ${{ needs.preconditions.outputs.notebooks == 'true' }}
+    if: ${{ needs.preconditions.outputs.notebooks == 'true' && needs.preconditions.outputs.is-scheduled != 'true' }}
     uses: ./.github/workflows/_run_e2e_tests.yml
     secrets: inherit
     with:
