@@ -96,7 +96,12 @@ class ColbertCassandraRetriever(ColbertVectorStoreRetriever):
         pass
 
     def retrieve(
-        self, query: str, k: int = 10, query_maxlen: int = 64, **kwargs: Any
+        self,
+        query: str,
+        k: int = 10,
+        query_maxlen: int = 64,
+        query_timeout: int = 180,  # seconds
+        **kwargs: Any,
     ) -> List[RetrievedChunk]:
         #
         # if the query has fewer than a predefined number of tokens Nq,
@@ -116,7 +121,8 @@ class ColbertCassandraRetriever(ColbertVectorStoreRetriever):
         for qv in query_encodings:
             # per token based retrieval
             doc_future = self.vector_store.session.execute_async(
-                self.vector_store.query_colbert_ann_stmt, [list(qv), top_k]
+                self.vector_store.query_colbert_ann_stmt, [list(qv), top_k],
+                timeout = query_timeout
             )
             doc_futures.append(doc_future)
 
@@ -131,7 +137,8 @@ class ColbertCassandraRetriever(ColbertVectorStoreRetriever):
         futures = []
         for doc_id, chunk_id in docparts:
             future = self.vector_store.session.execute_async(
-                self.vector_store.query_colbert_chunks_stmt, [doc_id, chunk_id]
+                self.vector_store.query_colbert_chunks_stmt, [doc_id, chunk_id],
+                timeout = query_timeout
             )
             futures.append((future, doc_id, chunk_id))
 
