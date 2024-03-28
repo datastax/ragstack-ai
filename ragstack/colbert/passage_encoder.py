@@ -20,7 +20,7 @@ class PassageEncoder:
     def __init__(self, config: ColBERTConfig, checkpoint: Checkpoint):
         self.config = config
         self.checkpoint = checkpoint
-        self.use_gpu = self.config.nranks > 0
+        self.use_gpu = self.config.total_visible_gpus > 0
 
     def encode_passages(self, passages: list[str], batch_size: int = 64):
         logging.info(f"#> Encoding {len(passages)} passages..")
