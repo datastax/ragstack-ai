@@ -13,11 +13,15 @@ class CassandraColbertVectorStore(ColbertVectorStore):
     keyspace: str
     table_name: str
 
-    def __init__(self, session: Session, keyspace: str, table_name: str):
+    def __init__(
+            self, session: Session, keyspace: str, table_name: str, timeout: int = 180
+        ):
         self.keyspace = keyspace
         self.session = session
         self.table_name = table_name
         self.full_table_name = f"{keyspace}.{table_name}"
+
+        self.session.default_timeout = timeout
         self.__create_tables()
 
         # prepare statements
