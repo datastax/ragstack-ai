@@ -115,73 +115,70 @@ class ColbertCassandraRetriever(ColbertVectorStoreRetriever):
         top_k = max(math.floor(len(query_encodings) / 2), 16)
         logging.debug(f"query length {len(query)} embeddings top_k: {top_k}")
 
-        # find the most relevant documents
-        docparts: Set[Tuple[Any, Any]] = set()
-        doc_futures = []
+        # find the most relevant chunks
+        chunks: Set[Tuple[str, int]] = set()
+        ann_futures: List[ResponseFuture] = []
         for qv in query_encodings:
             # per token based retrieval
-            doc_future = self.vector_store.session.execute_async(
+            future = self.vector_store.session.execute_async(
                 self.vector_store.query_colbert_ann_stmt, [list(qv), top_k],
-                timeout = query_timeout
+                timeout=query_timeout,
             )
-            doc_futures.append(doc_future)
+            ann_futures.append(future)
 
-        for future in doc_futures:
+        for future in ann_futures:
             embeddings = future.result()
-            docparts.update(
+            chunks.update(
                 (embedding.doc_id, embedding.chunk_id) for embedding in embeddings
             )
 
         # score each document
-        scores = {}
-        futures = []
-        for doc_id, chunk_id in docparts:
+        chunk_scores: Dict[Tuple[str, int], Tensor] = {}
+        score_futures: List[Tuple[ResponseFuture, str, int]] = []
+        for doc_id, chunk_id in chunks:
             future = self.vector_store.session.execute_async(
                 self.vector_store.query_colbert_chunks_stmt, [doc_id, chunk_id],
                 timeout = query_timeout
             )
-            futures.append((future, doc_id, chunk_id))
+            score_futures.append((future, doc_id, chunk_id))
 
-        for doc_id, chunk_id in docparts:
-            # blocking call until the future is done
+        for future, doc_id, chunk_id in score_futures:
             rows = future.result()
             # find all the found parts so that we can do max similarity search
-            embeddings_for_part = [torch.tensor(row.bert_embedding) for row in rows]
+            embeddings_for_chunk = [torch.tensor(row.bert_embedding) for row in rows]
             # score based on The function returns the highest similarity score
             # (i.e., the maximum dot product value) between the query vector and any of the embedding vectors in the list.
-            scores[(doc_id, chunk_id)] = sum(
-                max_similarity_torch(qv, embeddings_for_part, self.is_cuda)
+            chunk_scores[(doc_id, chunk_id)] = sum(
+                max_similarity_torch(qv, embeddings_for_chunk, self.is_cuda)
                 for qv in query_encodings
             )
-        # load the source chunk for the top k documents
-        chunks_by_score = sorted(scores, key=scores.get, reverse=True)[:k]
 
-        # query the doc body
-        doc_futures2: Dict[Tuple[Any, Any], ResponseFuture] = {}
-        for (
-            doc_id,
-            chunk_id,
-        ) in chunks_by_score:
+        # load the source chunk for the top k documents
+        chunks_by_score = sorted(chunk_scores, key=chunk_scores.get, reverse=True)[:k]
+
+        # grab the chunk texts
+        text_futures: List[Tuple[ResponseFuture, str, int]] = []
+        for doc_id, chunk_id in chunks_by_score:
             future = self.vector_store.session.execute_async(
                 self.vector_store.query_chunk_stmt, [doc_id, chunk_id]
             )
-            doc_futures2[(doc_id, chunk_id)] = future
+            score_futures.append((future, doc_id, chunk_id))
 
         answers: List[RetrievedChunk] = []
         rank = 1
-        for doc_id, chunk_id in chunks_by_score:
-            rs = doc_futures2[(doc_id, chunk_id)].result()
-            score = scores[(doc_id, chunk_id)]
+        for future, doc_id, chunk_id in text_futures:
+            rows = future.result()
+            score = chunk_scores[(doc_id, chunk_id)]
             answers.append(
                 RetrievedChunk(
                     doc_id=doc_id,
                     chunk_id=chunk_id,
                     score=score.item(),
                     rank=rank,
-                    text=rs.one().body,
+                    text=rows.one().body,
                 )
             )
             rank = rank + 1
         # clean up on tensor memory on GPU
-        del scores
+        del chunk_scores
         return answers
