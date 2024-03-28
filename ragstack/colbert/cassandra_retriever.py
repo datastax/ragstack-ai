@@ -162,7 +162,7 @@ class ColbertCassandraRetriever(ColbertVectorStoreRetriever):
             future = self.vector_store.session.execute_async(
                 self.vector_store.query_chunk_stmt, [doc_id, chunk_id]
             )
-            score_futures.append((future, doc_id, chunk_id))
+            text_futures.append((future, doc_id, chunk_id))
 
         answers: List[RetrievedChunk] = []
         rank = 1
