@@ -9,10 +9,10 @@ from colbert.utils.utils import batch
 from .token_embedding import EmbeddedChunk
 
 
-def encode_passages(config, collection, title, shared_lists, shared_queues):
+def encode_passages(config, rank: int, collection, title):
     checkpoint = Checkpoint(config.checkpoint, colbert_config=config)
     encoder = PassageEncoder(config=config, checkpoint=checkpoint)
-    return encoder.encode_and_map(collection, title)
+    return encoder.encode_and_map(rank, collection, title)
 
 
 class PassageEncoder:
@@ -23,6 +23,8 @@ class PassageEncoder:
 
     def encode_passages(self, passages: list[str]):
         logging.info(f"#> Encoding {len(passages)} passages..")
+
+        logging.info(f"passages is {passages}")
 
         if len(passages) == 0:
             return None, None
@@ -49,7 +51,7 @@ class PassageEncoder:
 
         return embs, doclens
 
-    def encode_and_map(self, passages: list[str], doc_id: str):
+    def encode_and_map(self, nrank: int, passages: list[str], doc_id: str):
         embedded_chunks = []
         # this returns an list of tensors (vectors) and a list of counts
         # where the list of counts has the same size as the list of input texts
@@ -58,6 +60,8 @@ class PassageEncoder:
         # the ColBERT embedding
         embeddings, counts = self.encode_passages(passages)
 
+        # if the function runs on cuda device, we use base_chunk_idx as offset
+        base_chunk_idx = nrank * 1000000000
         # Starting index for slicing the embeddings tensor
         start_idx = 0
 
@@ -69,7 +73,7 @@ class PassageEncoder:
             embedded_chunks.append(
                 EmbeddedChunk(
                     doc_id=doc_id,
-                    chunk_id=chunk_idx,
+                    chunk_id = chunk_idx + base_chunk_idx,
                     text=passages[chunk_idx],
                     embeddings=embeddings[start_idx:end_idx],
                 )

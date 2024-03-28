@@ -11,7 +11,7 @@ from .token_embedding import TokenEmbeddings, EmbeddedChunk
 from .constant import MAX_MODEL_TOKENS
 from .distributed import Distributed, reconcile_nranks
 from .passage_encoder import encode_passages
-from .launcher import Launcher
+from .runner import Runner
 
 import torch
 from colbert.indexing.collection_encoder import CollectionEncoder
@@ -174,14 +174,8 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
     def encode(
         self, texts: List[str], doc_id: Optional[str] = None
     ) -> List[EmbeddedChunk]:
-        launcher = Launcher(encode_passages, nranks=self.__nranks)
-
-        manager = mp.Manager()
-        shared_lists = [manager.list() for _ in range(self.__nranks)]
-        shared_queues = [manager.Queue(maxsize=1) for _ in range(self.__nranks)]
-
-        # Encodes collection into index using the CollectionIndexer class
-        logging.info(f"nranks: {self.__nranks}")
-        return launcher.launch(
-            self.colbert_config, texts, doc_id, shared_lists, shared_queues
+        runner = Runner(self.__nranks)
+        return runner.encode(
+            self.colbert_config, texts, doc_id,
         )
+

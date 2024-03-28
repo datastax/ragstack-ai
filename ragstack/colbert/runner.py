@@ -4,6 +4,7 @@ import torch.multiprocessing as mp
 from typing import List
 
 from .distributed import reconcile_nranks
+from .passage_encoder import encode_passages
 
 """
 Sample the work load across n number of processors
@@ -35,39 +36,52 @@ def map_work_load(collections: List[str], processors: int = 1) -> List[List[str]
     return [[collections[i] for i in workload] for workload in work_loads]
 
 
+def cuda_encode_passages(config, rank: int, collection, doc_id, return_dict):
+    results = encode_passages(config, rank, collection, doc_id)
+    return_dict[rank] = results
+    device_id = torch.cuda.current_device()
+    logging.info("encoder runs on cuda id {device_id}")
+
+
 """
 This class runs process on CUDA devices in multi-process mode.
 """
 
 
 class Runner:
-    def __init__(self, func, nranks: int = 1):
-        self.func = func
+    def __init__(self, nranks: int = 1):
         # nrank is the processor number of ranks
         # this runner is only useful when nrank > 1
-        self._cuda = torch.cuda.is_available()
-        self._nranks = reconcile_nranks(nranks)
+        self._is_cuda = torch.cuda.is_available()
+        self._nranks = 1
+        if self._is_cuda:
+            self._nranks = reconcile_nranks(nranks)
 
-    def run(self, encoder, collections: List[str], title: str, *args, **kwargs):
+    def encode(self, config, collections: List[str], doc_id: str):
         manager = mp.Manager()
-        results = manager.list()
+        return_dict = manager.dict()
 
-        work_load_size = len(collections)
-        work_loads = sample_work_load(work_load_size, self.nranks)
+        work_loads = map_work_load(collections, self._nranks)
+        logging.info(f"work loads runs on {len(work_loads)} gpu nranks {self._nranks}")
 
         processes = []
-        gpu_id = 0
+        rank = 0
         for work_load in work_loads:
             p = mp.Process(
-                target=self.func, args=(gpu_id, encoder, work_load, title, results)
+                target=cuda_encode_passages, args=(config, rank, work_load, doc_id, return_dict)
             )
             processes.append(p)
-            gpu_id = gpu_id + 1
+            rank = rank + 1
             p.start()
+            logging.info(f"start process on rank {rank} nranks {self._nranks}")
 
         for p in processes:
             p.join()
 
-        logging.info(f"running {self.nranks} ranks")
+        # Aggregate results from each GPU
+        result_list = []
+        for new_rank in range(rank):
+            result_list.extend(return_dict[new_rank])
 
-        return list(results)
+        return result_list
+
