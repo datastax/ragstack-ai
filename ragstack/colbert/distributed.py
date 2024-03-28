@@ -87,7 +87,7 @@ class Distributed:
         if nranks < 1:
             nranks = torch.cuda.device_count()
         world_size = min(torch.cuda.device_count(), nranks)
-        logging.info(f"setting up resource group {world_size=}")
+        logging.info(f"setting up resource group {world_size}")
         self._world_size = world_size
         mp.spawn(
             setup_process,

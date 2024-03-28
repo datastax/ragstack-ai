@@ -39,8 +39,9 @@ def map_work_load(collections: List[str], processors: int = 1) -> List[List[str]
 def cuda_encode_passages(config, rank: int, collection, doc_id, return_dict):
     results = encode_passages(config, rank, collection, doc_id)
     return_dict[rank] = results
-    device_id = torch.cuda.current_device()
-    logging.info("encoder runs on cuda id {device_id}")
+    if torch.cuda.is_available():
+        device_id = torch.cuda.current_device()
+        logging.info("encoder runs on cuda id {device_id}")
 
 
 """

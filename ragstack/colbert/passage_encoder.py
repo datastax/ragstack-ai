@@ -1,4 +1,4 @@
-import itertools
+from typing import List
 import logging
 import torch
 
@@ -7,6 +7,7 @@ from colbert.modeling.checkpoint import Checkpoint
 from colbert.utils.utils import batch
 
 from .token_embedding import EmbeddedChunk
+from .constant import CHUNK_MAX_PER_DOC
 
 
 def encode_passages(config, rank: int, collection, title):
@@ -19,12 +20,10 @@ class PassageEncoder:
     def __init__(self, config: ColBERTConfig, checkpoint: Checkpoint):
         self.config = config
         self.checkpoint = checkpoint
-        self.use_gpu = self.config.total_visible_gpus > 0
+        self.use_gpu = self.config.nranks > 0
 
-    def encode_passages(self, passages: list[str]):
+    def encode_passages(self, passages: list[str], batch_size: int = 64):
         logging.info(f"#> Encoding {len(passages)} passages..")
-
-        logging.info(f"passages is {passages}")
 
         if len(passages) == 0:
             return None, None
@@ -35,11 +34,11 @@ class PassageEncoder:
             # Batch here to avoid OOM from storing intermediate embeddings on GPU.
             # Storing on the GPU helps with speed of masking, etc.
             # But ideally this batching happens internally inside docFromText.
-            for passages_batch in batch(passages, self.config.index_bsize * 50):
+            for passages_batch in batch(passages, batch_size*10):
                 logging.info(f"#> Encoding batch of {len(passages_batch)} passages..")
                 embs_, doclens_ = self.checkpoint.docFromText(
                     passages_batch,
-                    bsize=self.config.index_bsize,
+                    bsize=batch_size,
                     to_cpu=not self.use_gpu,
                     keep_dims="flatten",
                     showprogress=(not self.use_gpu),
@@ -51,7 +50,9 @@ class PassageEncoder:
 
         return embs, doclens
 
-    def encode_and_map(self, nrank: int, passages: list[str], doc_id: str):
+    def encode_and_map(
+            self, rank: int, passages: list[str], doc_id: str
+        )-> List[EmbeddedChunk]:
         embedded_chunks = []
         # this returns an list of tensors (vectors) and a list of counts
         # where the list of counts has the same size as the list of input texts
@@ -61,7 +62,8 @@ class PassageEncoder:
         embeddings, counts = self.encode_passages(passages)
 
         # if the function runs on cuda device, we use base_chunk_idx as offset
-        base_chunk_idx = nrank * 1000000000
+        # rank should be 0 on single GPU or CPU device
+        chunk_idx_offset = rank * CHUNK_MAX_PER_DOC
         # Starting index for slicing the embeddings tensor
         start_idx = 0
 
@@ -73,7 +75,7 @@ class PassageEncoder:
             embedded_chunks.append(
                 EmbeddedChunk(
                     doc_id=doc_id,
-                    chunk_id = chunk_idx + base_chunk_idx,
+                    chunk_id = chunk_idx + chunk_idx_offset,
                     text=passages[chunk_idx],
                     embeddings=embeddings[start_idx:end_idx],
                 )
