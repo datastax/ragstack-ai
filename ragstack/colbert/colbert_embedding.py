@@ -1,6 +1,17 @@
 import logging
 import uuid
 from typing import List, Optional, Union
+import itertools
+import torch
+from torch import Tensor
+import torch.distributed as dist
+import torch.multiprocessing as mp
+
+from .token_embedding import TokenEmbeddings, EmbeddedChunk
+from .constant import MAX_MODEL_TOKENS
+from .distributed import Distributed, reconcile_nranks
+from .passage_encoder import encode_passages
+from .runner import Runner
 
 import torch
 from colbert.indexing.collection_encoder import CollectionEncoder
@@ -10,7 +21,6 @@ from colbert.modeling.tokenization import QueryTokenizer
 from torch import Tensor
 
 from .constant import DEFAULT_COLBERT_MODEL, MAX_MODEL_TOKENS
-from .token_embedding import EmbeddedChunk, TokenEmbeddings
 
 
 def calculate_query_maxlen(tokens: List[List[str]], min_num: int, max_num: int) -> int:
@@ -56,23 +66,24 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
         kmeans_niters: int = 4,
         nranks: int = -1,
         query_maxlen: int = 32,
+        verbose: int = 3,  # 3 is the default on ColBERT checkpoint
+        distributed_communication: bool = False,
+        **kwargs,
     ):
         self.__cuda = torch.cuda.is_available()
-        total_visible_gpus = 0
+        self.__nranks = reconcile_nranks(nranks)
+        total_visible_gpus = torch.cuda.device_count()
         if self.__cuda:
             self.__cuda_device_count = torch.cuda.device_count()
-            self.__cuda_device_name = torch.cuda.get_device_name()
-            logging.info(f"nrank {nranks}")
-            if nranks < 1:
-                nranks = self.__cuda_device_count
-            if nranks > 1:
-                total_visible_gpus = self.__cuda_device_count
-            logging.info(
-                f"run on {self.__cuda_device_count} gpus and visible {total_visible_gpus} gpus embeddings on {nranks} gpus"
-            )
-        else:
-            if nranks < 1:
-                nranks = 1
+        logging.info(f"run nranks {self.__nranks}")
+        if (
+            self.__nranks > 1
+            and not dist.is_initialized()
+            and distributed_communication
+        ):
+            logging.warn(f"distribution initialization must complete on {nranks} gpus")
+            Distributed(self.__nranks)
+            logging.info("distribution initialization completed")
 
         with Run().context(RunConfig(nranks=nranks)):
             if self.__cuda:
@@ -88,7 +99,9 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
             )
         logging.info("creating checkpoint")
         self.checkpoint = Checkpoint(
-            self.colbert_config.checkpoint, colbert_config=self.colbert_config
+            self.colbert_config.checkpoint,
+            colbert_config=self.colbert_config,
+            verbose=verbose,
         )
         self.encoder = CollectionEncoder(
             config=self.colbert_config, checkpoint=self.checkpoint
@@ -161,30 +174,8 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
     def encode(
         self, texts: List[str], doc_id: Optional[str] = None
     ) -> List[EmbeddedChunk]:
-        # this returns an list of tensors (vectors) and a list of counts
-        # where the list of counts has the same size as the list of input texts
-        #
-        # for each chunk_text, we need to pull off "count" vectors to create
-        # the ColBERT embedding
-        embeddings, counts = self.encoder.encode_passages(texts)
+        runner = Runner(self.__nranks)
+        return runner.encode(
+            self.colbert_config, texts, doc_id,
+        )
 
-        # Starting index for slicing the embeddings tensor
-        start_idx = 0
-
-        embedded_chunks = []
-        for chunk_idx in range(len(texts)):
-            # The end index for slicing
-            end_idx = start_idx + counts[chunk_idx]
-
-            embedded_chunks.append(
-                EmbeddedChunk(
-                    doc_id=doc_id,
-                    chunk_id=chunk_idx,
-                    text=texts[chunk_idx],
-                    embeddings=embeddings[start_idx:end_idx],
-                )
-            )
-
-            start_idx = end_idx
-
-        return embedded_chunks
