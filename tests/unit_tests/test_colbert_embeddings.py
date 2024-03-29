@@ -1,8 +1,7 @@
 import torch
 
 from ragstack.colbert.colbert_embedding import ColbertTokenEmbeddings
-from ragstack.colbert.constant import (DEFAULT_COLBERT_DIM,
-                                       DEFAULT_COLBERT_MODEL)
+from ragstack.colbert.constant import DEFAULT_COLBERT_DIM, DEFAULT_COLBERT_MODEL
 
 
 def test_colbert_token_embeddings():
@@ -20,9 +19,7 @@ def test_colbert_token_embeddings():
     assert embedded_chunks[0].doc_id != ""
     assert embedded_chunks[1].doc_id != ""
 
-    embedded_chunks = colbert.embed_chunks(
-        texts=["test1", "test2"], doc_id="test-id"
-    )
+    embedded_chunks = colbert.embed_chunks(texts=["test1", "test2"], doc_id="test-id")
 
     assert embedded_chunks[0].text == "test1"
     assert embedded_chunks[0].doc_id == "test-id"

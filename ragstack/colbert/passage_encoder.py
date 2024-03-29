@@ -1,13 +1,13 @@
-from typing import List
 import logging
-import torch
+from typing import List
 
+import torch
 from colbert.infra import ColBERTConfig
 from colbert.modeling.checkpoint import Checkpoint
 from colbert.utils.utils import batch
 
-from .token_embedding import EmbeddedChunk
 from .constant import CHUNK_MAX_PER_DOC
+from .token_embedding import EmbeddedChunk
 
 
 def encode_passages(config, rank: int, collection, title):
@@ -34,7 +34,7 @@ class PassageEncoder:
             # Batch here to avoid OOM from storing intermediate embeddings on GPU.
             # Storing on the GPU helps with speed of masking, etc.
             # But ideally this batching happens internally inside docFromText.
-            for passages_batch in batch(passages, batch_size*10):
+            for passages_batch in batch(passages, batch_size * 10):
                 logging.info(f"#> Encoding batch of {len(passages_batch)} passages..")
                 embs_, doclens_ = self.checkpoint.docFromText(
                     passages_batch,
@@ -51,8 +51,8 @@ class PassageEncoder:
         return embs, doclens
 
     def encode_and_map(
-            self, rank: int, passages: list[str], doc_id: str
-        )-> List[EmbeddedChunk]:
+        self, rank: int, passages: list[str], doc_id: str
+    ) -> List[EmbeddedChunk]:
         embedded_chunks = []
         # this returns an list of tensors (vectors) and a list of counts
         # where the list of counts has the same size as the list of input texts
@@ -75,11 +75,11 @@ class PassageEncoder:
             embedded_chunks.append(
                 EmbeddedChunk(
                     doc_id=doc_id,
-                    chunk_id = chunk_idx + chunk_idx_offset,
+                    chunk_id=chunk_idx + chunk_idx_offset,
                     text=passages[chunk_idx],
                     embeddings=embeddings[start_idx:end_idx],
                 )
             )
-        
+
         start_idx = end_idx
         return embedded_chunks
