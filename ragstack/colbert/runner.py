@@ -1,7 +1,8 @@
 import logging
+from typing import List
+
 import torch
 import torch.multiprocessing as mp
-from typing import List
 
 from .distributed import reconcile_nranks
 from .passage_encoder import encode_passages
@@ -68,7 +69,8 @@ class Runner:
         rank = 0
         for work_load in work_loads:
             p = mp.Process(
-                target=cuda_encode_passages, args=(config, rank, work_load, doc_id, return_dict)
+                target=cuda_encode_passages,
+                args=(config, rank, work_load, doc_id, return_dict),
             )
             processes.append(p)
             rank = rank + 1
@@ -84,4 +86,3 @@ class Runner:
             result_list.extend(return_dict[new_rank])
 
         return result_list
-

@@ -121,7 +121,8 @@ class ColbertCassandraRetriever(ColbertVectorStoreRetriever):
         for qv in query_encodings:
             # per token based retrieval
             future = self.vector_store.session.execute_async(
-                self.vector_store.query_colbert_ann_stmt, [list(qv), top_k],
+                self.vector_store.query_colbert_ann_stmt,
+                [list(qv), top_k],
                 timeout=query_timeout,
             )
             ann_futures.append(future)
@@ -137,8 +138,9 @@ class ColbertCassandraRetriever(ColbertVectorStoreRetriever):
         score_futures: List[Tuple[ResponseFuture, str, int]] = []
         for doc_id, chunk_id in chunks:
             future = self.vector_store.session.execute_async(
-                self.vector_store.query_colbert_chunks_stmt, [doc_id, chunk_id],
-                timeout = query_timeout
+                self.vector_store.query_colbert_chunks_stmt,
+                [doc_id, chunk_id],
+                timeout=query_timeout,
             )
             score_futures.append((future, doc_id, chunk_id))
 

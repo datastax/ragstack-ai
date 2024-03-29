@@ -1,19 +1,11 @@
+import itertools
 import logging
 import uuid
 from typing import List, Optional, Union
-import itertools
+
 import torch
-from torch import Tensor
 import torch.distributed as dist
 import torch.multiprocessing as mp
-
-from .token_embedding import TokenEmbeddings, EmbeddedChunk
-from .constant import MAX_MODEL_TOKENS
-from .distributed import Distributed, reconcile_nranks
-from .passage_encoder import encode_passages
-from .runner import Runner
-
-import torch
 from colbert.indexing.collection_encoder import CollectionEncoder
 from colbert.infra import ColBERTConfig, Run, RunConfig
 from colbert.modeling.checkpoint import Checkpoint
@@ -21,6 +13,10 @@ from colbert.modeling.tokenization import QueryTokenizer
 from torch import Tensor
 
 from .constant import DEFAULT_COLBERT_MODEL, MAX_MODEL_TOKENS
+from .distributed import Distributed, reconcile_nranks
+from .passage_encoder import encode_passages
+from .runner import Runner
+from .token_embedding import EmbeddedChunk, TokenEmbeddings
 
 
 def calculate_query_maxlen(tokens: List[List[str]], min_num: int, max_num: int) -> int:
@@ -176,6 +172,7 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
     ) -> List[EmbeddedChunk]:
         runner = Runner(self.__nranks)
         return runner.encode(
-            self.colbert_config, texts, doc_id,
+            self.colbert_config,
+            texts,
+            doc_id,
         )
-
