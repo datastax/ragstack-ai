@@ -56,6 +56,7 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
 
     '''
     checkpoint is the where the ColBERT model can be specified or downloaded from huggingface
+    colbert_model_url overwrites the checkpoint value if it exists
     doc_maxlen is the number tokens each passage is truncated to
     nbits is the number bits that each dimension encodes to
     kmeans_niters specifies the number of iterations of kmeans clustering
@@ -66,6 +67,7 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
     def __init__(
         self,
         checkpoint: str = DEFAULT_COLBERT_MODEL,
+        colbert_model_url: str = "",
         doc_maxlen: int = 220,
         nbits: int = 2,
         kmeans_niters: int = 4,
@@ -78,6 +80,8 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
         self.__cuda = torch.cuda.is_available()
         self.__nranks = reconcile_nranks(nranks)
         total_visible_gpus = torch.cuda.device_count()
+        if colbert_model_url:
+            checkpoint = colbert_model_url
         logging.info(f"run nranks {self.__nranks}")
         if (
             self.__nranks > 1
