@@ -54,11 +54,20 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
     encoder: CollectionEncoder
     query_tokenizer: QueryTokenizer
 
+    '''
+    checkpoint is the where the ColBERT model can be specified or downloaded from huggingface
+    doc_maxlen is the number tokens each passages are truncated to
+    nbits is the number bits that each dimension encodes to
+    kmeans_niters specifies the number of iterations of kmeans clustering
+    nrank is the number of processors embeddings can run on
+          under the default value of -1, the program runs on all available GPUs under CUDA
+    query_maxlen is the fixed length of the tokens for query/recall encoding. Anything less will be padded.
+    '''
     def __init__(
         self,
         checkpoint: str = DEFAULT_COLBERT_MODEL,
         doc_maxlen: int = 220,
-        nbits: int = 1,
+        nbits: int = 2,
         kmeans_niters: int = 4,
         nranks: int = -1,
         query_maxlen: int = 32,
@@ -69,8 +78,6 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
         self.__cuda = torch.cuda.is_available()
         self.__nranks = reconcile_nranks(nranks)
         total_visible_gpus = torch.cuda.device_count()
-        if self.__cuda:
-            self.__cuda_device_count = torch.cuda.device_count()
         logging.info(f"run nranks {self.__nranks}")
         if (
             self.__nranks > 1
@@ -88,7 +95,7 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
                 doc_maxlen=doc_maxlen,
                 nbits=nbits,
                 kmeans_niters=kmeans_niters,
-                nranks=nranks,
+                nranks=self.__nranks,
                 checkpoint=checkpoint,
                 query_maxlen=query_maxlen,
                 gpus=total_visible_gpus,
@@ -103,7 +110,6 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
             config=self.colbert_config, checkpoint=self.checkpoint
         )
         self.query_tokenizer = QueryTokenizer(self.colbert_config)
-        self.__cuda = torch.cuda.is_available()
         if self.__cuda:
             self.checkpoint = self.checkpoint.cuda()
 
@@ -168,11 +174,15 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
         return queries[0]
 
     def encode(
-        self, texts: List[str], doc_id: Optional[str] = None
+        self,
+        texts: List[str],
+        doc_id: Optional[str] = None,
+        timeout: int = 60,
     ) -> List[EmbeddedChunk]:
         runner = Runner(self.__nranks)
         return runner.encode(
             self.colbert_config,
             texts,
             doc_id,
+            timeout = timeout,
         )
