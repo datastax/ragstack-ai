@@ -1,19 +1,39 @@
+"""
+Facilitates parallel processing of text chunk encoding by distributing workload across multiple processors or CUDA
+devices. This module includes utilities to evenly distribute collections of text for encoding, leveraging multiprocessing
+and CUDA capabilities for improved performance. The `Runner` class orchestrates the parallel encoding process, managing
+processes and collecting their results efficiently.
+
+Designed to optimize encoding tasks in distributed computing environments, the module ensures workload balance and
+maximizes resource utilization by dynamically adjusting to the number of available processors or CUDA-enabled GPUs.
+"""
+
 import logging
-from typing import List
+from typing import Dict, List
 
 import torch
 import torch.multiprocessing as mp
+from colbert.infra import ColBERTConfig
 
+from .chunk_encoder import encode_chunks
+from .chunks import EmbeddedChunk
 from .distributed import reconcile_nranks
-from .passage_encoder import encode_passages
-
-"""
-Sample the work load across n number of processors
-generate a list to distribute the work load across the processors
-"""
 
 
-def sample_work_load(work_load_size: int = 1, processors: int = 1):
+def distribute_work_load(
+    work_load_size: int = 1, processors: int = 1
+) -> List[List[int]]:
+    """
+    Distributes a given workload size across a specified number of processors.
+
+    Parameters:
+        work_load_size (int): The total size of the workload to be distributed.
+        processors (int): The number of processors available for workload distribution.
+
+    Returns:
+        List[List[int]]: A nested list where each sublist contains indices representing the workload assigned to each processor.
+    """
+
     if work_load_size == 0:
         return []
     # ensure no empty workload assigns to a processor
@@ -27,32 +47,66 @@ def sample_work_load(work_load_size: int = 1, processors: int = 1):
     return result
 
 
-"""
-Map collections work load to processors
-"""
+def map_work_load(texts: List[str], processors: int = 1) -> List[List[str]]:
+    """
+    Maps a list of text chunks to a specified number of processors for distributed processing. This function
+    leverages `distribute_work_load` to evenly distribute the collections among available processors.
+
+    Parameters:
+        texts (List[str]): The chunk texts to be processed.
+        processors (int): The number of processors available for distribution.
+
+    Returns:
+        List[List[str]]: A nested list where each sublist contains the texts assigned to each processor.
+    """
+
+    work_loads = distribute_work_load(len(texts), processors)
+    return [[texts[i] for i in workload] for workload in work_loads]
 
 
-def map_work_load(collections: List[str], processors: int = 1) -> List[List[str]]:
-    work_loads = sample_work_load(len(collections), processors)
-    return [[collections[i] for i in workload] for workload in work_loads]
+def cuda_encode_chunks(
+    config: ColBERTConfig,
+    rank: int,
+    texts: List[str],
+    doc_id: str,
+    return_dict: Dict[int, List[EmbeddedChunk]],
+):
+    """
+    Encodes a collection of text chunks using CUDA-enabled devices, storing the results in a shared dictionary.
+    This function is designed to be run in a separate process for each chunk of the workload.
 
-
-def cuda_encode_passages(config, rank: int, collection, doc_id, return_dict):
-    results = encode_passages(config, rank, collection, doc_id)
-    return_dict[rank] = results
+    Parameters:
+        config: The configuration settings for the encoding process.
+        rank (int): The rank of the current process in the distributed setting.
+        collection (List[str]): The collection of text chunks to encode.
+        doc_id (str): The document ID associated with the collection of text chunks.
+        return_dict: A multiprocessing.Manager().dict() to store the results of the encoding process.
+    """
     if torch.cuda.is_available():
-        logging.info("encoder runs on cuda id {torch.cuda.current_device()}")
-
-
-"""
-This class runs process on CUDA devices in multi-process mode.
-"""
+        logging.info(f"encoder runs on cuda id {torch.cuda.current_device()}")
+    results = encode_chunks(config=config, rank=rank, texts=texts, doc_id=doc_id)
+    return_dict[rank] = results
 
 
 class Runner:
-    def __init__(self, nranks: int = 1):
-        # nrank is the processor number of ranks
-        # this runner is only useful when nrank > 1
+    """
+    Orchestrates the distribution and parallel processing of text chunk encoding tasks across multiple processors or CUDA (GPU)
+    devices. Utilizes multiprocessing to initiate separate encoding processes and aggregates their results upon completion.
+
+    Attributes:
+        _is_cuda (bool): Indicates if CUDA is available for GPU acceleration.
+        _nranks (int): The number of processor ranks determined based on availability and the provided configuration.
+    """
+
+    def __init__(self, nranks: int = 1) -> None:
+        """
+        Initializes the Runner with a specified number of ranks, adjusting for the availability of CUDA devices.
+
+        Parameters:
+            nranks (int): The desired number of ranks (processors) for distributing the encoding workload.
+        """
+
+        # this runner is only useful when nranks > 1
         self._is_cuda = torch.cuda.is_available()
         self._nranks = 1
         if self._is_cuda:
@@ -60,41 +114,61 @@ class Runner:
 
     def encode(
         self,
-        config,
-        collections: List[str],
+        config: ColBERTConfig,
+        texts: List[str],
         doc_id: str,
         timeout: int = 60,
-    ):
+    ) -> List[EmbeddedChunk]:
+        """
+        Encodes a collection of text across multiple processors or CUDA devices in parallel. Manages the lifecycle
+        of subprocesses, ensuring timely completion and aggregating their results.
+
+        Parameters:
+            config: The configuration settings for the encoding process.
+            texts (List[str]): The text chunks to encode.
+            doc_id (str): The document id associated with the text chunks.
+            timeout (int): The maximum time (in seconds) allowed for each subprocess to complete.
+
+        Returns:
+            A list of encoded results aggregated from all subprocesses.
+        """
+
         manager = mp.Manager()
         return_dict = manager.dict()
 
-        work_loads = map_work_load(collections, self._nranks)
-        logging.info(f"work loads runs on {len(work_loads)} gpu nranks {self._nranks}")
+        work_loads = map_work_load(texts, self._nranks)
+        logging.info(f"encoding {len(work_loads)} texts on nranks {self._nranks}")
 
         processes = []
         proc_info = []
         ranks = len(work_loads)
         for rank, work_load in enumerate(work_loads):
             p = mp.Process(
-                target=cuda_encode_passages,
+                target=cuda_encode_chunks,
                 args=(config, rank, work_load, doc_id, return_dict),
             )
             p.start()
             processes.append(p)
-            proc_info.append((p.pid, p.name)) 
-            logging.info(f"start process on rank {rank} nranks {self._nranks}")
+            proc_info.append((p.pid, p.name))
+            logging.debug(f"start process on rank {rank} of {self._nranks} nranks")
 
         timed_out_processes = []
         for p, info in zip(processes, proc_info):
             p.join(timeout=timeout)
             if p.is_alive():
-                logging.warn(f"embedding process timed out PID: {info[0]}, Name: {info[1]}")
+                logging.warn(
+                    f"embedding process timed out process PID: {info[0]}, Name: {info[1]}"
+                )
                 timed_out_processes.append(p)
             else:
-                logging.info(f"joined embedding process ID: {info[0]}, Name: {info[1]}")
+                logging.debug(
+                    f"joined embedding process ID: {info[0]}, Name: {info[1]}"
+                )
 
         if timed_out_processes:
-            raise Exception("One or more processes did not complete within the timeout period")
+            raise Exception(
+                "one or more processes did not complete within the timeout period"
+            )
         else:
             logging.info("all processes completed")
 
