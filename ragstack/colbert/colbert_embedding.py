@@ -56,7 +56,7 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
 
     '''
     checkpoint is the where the ColBERT model can be specified or downloaded from huggingface
-    doc_maxlen is the number tokens each passages are truncated to
+    doc_maxlen is the number tokens each passage is truncated to
     nbits is the number bits that each dimension encodes to
     kmeans_niters specifies the number of iterations of kmeans clustering
     nrank is the number of processors embeddings can run on

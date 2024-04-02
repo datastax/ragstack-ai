@@ -94,9 +94,9 @@ class Runner:
                 logging.info(f"joined embedding process ID: {info[0]}, Name: {info[1]}")
 
         if timed_out_processes:
-            raise Exception("One or more processes did not complete within the timeout period.")
+            raise Exception("One or more processes did not complete within the timeout period")
         else:
-            logging.info("all processes joined successfully.")
+            logging.info("all processes completed")
 
         # Aggregate results from each GPU
         result_list = []
