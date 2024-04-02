@@ -58,7 +58,13 @@ class Runner:
         if self._is_cuda:
             self._nranks = reconcile_nranks(nranks)
 
-    def encode(self, config, collections: List[str], doc_id: str):
+    def encode(
+        self,
+        config,
+        collections: List[str],
+        doc_id: str,
+        timeout: int = 60,
+    ):
         manager = mp.Manager()
         return_dict = manager.dict()
 
@@ -66,23 +72,35 @@ class Runner:
         logging.info(f"work loads runs on {len(work_loads)} gpu nranks {self._nranks}")
 
         processes = []
-        rank = 0
-        for work_load in work_loads:
+        proc_info = []
+        ranks = len(work_loads)
+        for rank, work_load in enumerate(work_loads):
             p = mp.Process(
                 target=cuda_encode_passages,
                 args=(config, rank, work_load, doc_id, return_dict),
             )
-            processes.append(p)
-            rank = rank + 1
             p.start()
+            processes.append(p)
+            proc_info.append((p.pid, p.name)) 
             logging.info(f"start process on rank {rank} nranks {self._nranks}")
 
-        for p in processes:
-            p.join()
+        timed_out_processes = []
+        for p, info in zip(processes, proc_info):
+            p.join(timeout=timeout)
+            if p.is_alive():
+                logging.warn(f"embedding process timed out PID: {info[0]}, Name: {info[1]}")
+                timed_out_processes.append(p)
+            else:
+                logging.info(f"joined embedding process ID: {info[0]}, Name: {info[1]}")
+
+        if timed_out_processes:
+            raise Exception("One or more processes did not complete within the timeout period")
+        else:
+            logging.info("all processes completed")
 
         # Aggregate results from each GPU
         result_list = []
-        for new_rank in range(rank):
+        for new_rank in range(ranks):
             result_list.extend(return_dict[new_rank])
 
         return result_list
