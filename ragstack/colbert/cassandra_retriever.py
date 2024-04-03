@@ -10,6 +10,7 @@ variety of hardware environments.
 
 import logging
 import math
+import time
 from typing import Any, Dict, List, Optional, Set, Tuple
 
 import torch
@@ -133,6 +134,7 @@ class ColbertCassandraRetriever(ColbertVectorStoreRetriever):
             embeddings, scoring these embeddings for similarity, and retrieving the corresponding text chunks.
         """
 
+        start = time.perf_counter()
         # if the query has fewer than a predefined number of tokens Nq,
         # colbert_embeddings will pad it with BERT special [mast] token up to length Nq.
         query_encodings = self.colbert_embeddings.encode_query(
@@ -160,6 +162,7 @@ class ColbertCassandraRetriever(ColbertVectorStoreRetriever):
             chunks.update(
                 (embedding.doc_id, embedding.chunk_id) for embedding in embeddings
             )
+        print(f"found all relevant {len(ann_futures)} chunks {time.perf_counter()-start}")
 
         # score each document
         chunk_scores: Dict[Tuple[str, int], Tensor] = {}
@@ -172,16 +175,22 @@ class ColbertCassandraRetriever(ColbertVectorStoreRetriever):
             )
             score_futures.append((future, doc_id, chunk_id))
 
+        embeddings_for_chunks = []
+        print(f"wait on ann chunk embedding search {time.perf_counter()-start} on doc size {len(score_futures)}")
         for future, doc_id, chunk_id in score_futures:
             rows = future.result()
             # find all the found parts so that we can do max similarity search
-            embeddings_for_chunk = [torch.tensor(row.bert_embedding) for row in rows]
+            embeddings_for_chunks.append(([torch.tensor(row.bert_embedding) for row in rows], doc_id, chunk_id))
+
+        print(f"complete ann chunk embeddings results {time.perf_counter()-start}")
+        for embeddings_for_chunk, doc_id, chunk_id in embeddings_for_chunks:
             # score based on The function returns the highest similarity score
             # (i.e., the maximum dot product value) between the query vector and any of the embedding vectors in the list.
             chunk_scores[(doc_id, chunk_id)] = sum(
                 max_similarity_torch(qv, embeddings_for_chunk, self.is_cuda)
                 for qv in query_encodings
             )
+        print(f"end max_sim {time.perf_counter()-start}")
 
         # load the source chunk for the top k documents
         chunks_by_score = sorted(chunk_scores, key=chunk_scores.get, reverse=True)[:k]
