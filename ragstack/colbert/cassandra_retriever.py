@@ -10,10 +10,11 @@ variety of hardware environments.
 
 import logging
 import math
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any, Dict, List, Optional, Set, Tuple
 
 import torch
-from cassandra.cluster import ResponseFuture
+from cassandra import ReadTimeout
 from torch import Tensor
 
 from .cassandra_store import CassandraColbertVectorStore
@@ -21,8 +22,36 @@ from .colbert_embedding import ColbertTokenEmbeddings
 from .vector_store import ColbertVectorStoreRetriever, RetrievedChunk
 
 
+def all_gpus_support_fp16(is_cuda: Optional[bool] = False):
+    """
+    Check if all available GPU devices support FP16 (half-precision) operations.
+
+    Returns:
+        bool: True if all GPUs support FP16, False otherwise.
+    """
+    if not is_cuda:
+        return False
+
+    for device_id in range(torch.cuda.device_count()):
+        compute_capability = torch.cuda.get_device_capability(device_id)
+        # FP16 support requires compute capability of 5.3 or higher
+        if compute_capability[0] < 5 or (
+            compute_capability[0] == 5 and compute_capability[1] < 3
+        ):
+            logging.info(
+                f"Device {device_id} with compute capability {compute_capability} does not support FP16 (half-precision) operations. Using FP32 (full-precision) operations."
+            )
+            return False
+
+    # If all GPUs passed the check
+    return True
+
+
 def max_similarity_torch(
-    query_vector: Tensor, embedding_list: List[Tensor], is_cuda: Optional[bool] = False
+    query_vector: Tensor,
+    embedding_list: List[Tensor],
+    is_cuda: Optional[bool] = False,
+    is_fp16: Optional[bool] = False,
 ) -> Tensor:
     """
     Calculates the maximum similarity (dot product) between a query vector and a list of embedding vectors,
@@ -32,6 +61,8 @@ def max_similarity_torch(
         query_vector (Tensor): A 1D tensor representing the query vector.
         embedding_list (List[Tensor]): A list of 1D tensors, each representing an embedding vector.
         is_cuda (Optional[bool]): A flag indicating whether to use CUDA (GPU) for computation. Defaults to False.
+        is_fp16 (bool): A flag indicating whether to half-precision floating point operations on CUDA (GPU).
+                        Has no effect on CPU computation. Defaults to False.
 
     Returns:
         Tensor: A tensor containing the highest similarity score (dot product value) found between the query vector
@@ -41,17 +72,23 @@ def max_similarity_torch(
         This function is designed to run on GPU for enhanced performance but can also execute on CPU.
     """
 
-    # stacks the list of embedding tensors into a single tensor
+    # Convert embedding list to a tensor
+    embedding_tensor = torch.stack(embedding_list)
+
     if is_cuda:
-        query_vector = query_vector.to("cuda")
-        _embedding_list = torch.stack(embedding_list).to("cuda")
-    else:
-        _embedding_list = torch.stack(embedding_list)
+        device = torch.device("cuda")
+        query_vector = query_vector.to(device)
+        embedding_tensor = embedding_tensor.to(device)
 
-    # Calculate the dot products in a vectorized manner on the GPU
-    sims = torch.matmul(_embedding_list, query_vector)
+        # Use half-precision operations if supported
+        if is_fp16:
+            query_vector = query_vector.half()
+            embedding_tensor = embedding_tensor.half()
 
-    # Find the maximum similarity (dot product) value
+    # Perform the dot product operation
+    sims = torch.matmul(embedding_tensor, query_vector)
+
+    # Find the maximum similarity
     max_sim = torch.max(sims)
 
     # returns a tensor; the item() is the score
@@ -69,6 +106,9 @@ class ColbertCassandraRetriever(ColbertVectorStoreRetriever):
                                                     Cassandra database.
         colbert_embeddings (ColbertTokenEmbeddings): The ColbertTokenEmbeddings instance for encoding queries.
         is_cuda (bool): A flag indicating whether to use CUDA (GPU) for computation.
+        is_fp16 (bool): A flag indicating whether to half-precision floating point operations on CUDA (GPU).
+                        Has no effect on CPU computation.
+        max_casandra_workers: The maximum number of concurrent requests to make to Cassandra on a per-retrieval basis.
 
     Note:
         The class is designed to work with a GPU for optimal performance but will automatically fall back to CPU
@@ -77,7 +117,9 @@ class ColbertCassandraRetriever(ColbertVectorStoreRetriever):
 
     vector_store: CassandraColbertVectorStore
     colbert_embeddings: ColbertTokenEmbeddings
+    max_casandra_workers: int
     is_cuda: bool = False
+    is_fp16: bool = False
 
     class Config:
         arbitrary_types_allowed = True
@@ -86,6 +128,7 @@ class ColbertCassandraRetriever(ColbertVectorStoreRetriever):
         self,
         vector_store: CassandraColbertVectorStore,
         colbert_embeddings: ColbertTokenEmbeddings,
+        max_casandra_workers: Optional[int] = 10,
     ):
         """
         Initializes the retriever with a specific vector store and Colbert embeddings model.
@@ -94,17 +137,181 @@ class ColbertCassandraRetriever(ColbertVectorStoreRetriever):
             vector_store (CassandraColbertVectorStore): The vector store to be used for retrieving embeddings.
             colbert_embeddings (ColbertTokenEmbeddings): The ColBERT embeddings model to be used for encoding
                                                          queries.
+            max_casandra_workers: The maximum number of concurrent requests to make to Cassandra on a
+                                  per-retrieval basis.
         """
 
         self.vector_store = vector_store
         self.colbert_embeddings = colbert_embeddings
         self.is_cuda = torch.cuda.is_available()
+        self.is_fp16 = all_gpus_support_fp16(self.is_cuda)
+        self.executor = ThreadPoolExecutor(max_workers=max_casandra_workers)
 
     def close(self) -> None:
         """
         Closes any open resources held by the retriever.
         """
-        pass
+        self.executor.shutdown(wait=True)
+
+    def _query_relevant_chunks(
+        self, query_encodings: Tensor, top_k: int, query_timeout: int
+    ) -> Set[Tuple[str, int]]:
+        """
+        Retrieves the top_k ANN results for each embedded query token.
+        """
+        chunks: Set[Tuple[str, int]] = set()
+
+        def query_and_process(query_vector: Tensor) -> Set[Tuple[str, int]]:
+            local_chunks = set()
+            try:
+                async_future = self.vector_store.session.execute_async(
+                    self.vector_store.query_colbert_ann_stmt,
+                    [list(query_vector), top_k],
+                    timeout=query_timeout,
+                )
+                embeddings = async_future.result()
+                for embedding in embeddings:
+                    local_chunks.add((embedding.doc_id, embedding.chunk_id))
+            except ReadTimeout:
+                logging.warn(f"Query timeout with params: {query_vector}, {top_k}")
+                # Handle the timeout or other potential exceptions as needed
+            except Exception as e:
+                logging.error(
+                    f"Error during query execution or result fetching: {str(e)}"
+                )
+            return local_chunks
+
+        executor_futures = {
+            self.executor.submit(query_and_process, qv): qv for qv in query_encodings
+        }
+        for executor_future in as_completed(executor_futures):
+            query_vector = executor_futures[executor_future]
+            try:
+                result_chunks = executor_future.result()
+                chunks.update(result_chunks)
+            except Exception as exc:
+                logging.error(
+                    f"query_vector: {query_vector} generated an exception: {exc}"
+                )
+
+        return chunks
+
+    def _retrieve_chunks(
+        self, chunks: Set[Tuple[str, int]], query_timeout: int
+    ) -> Dict[Tuple[str, int], List[Tensor]]:
+        """
+        Retrieves chunk data for a set of doc_id and chunk_id pairs, returning a dictionary mapping each pair to a list of PyTorch tensors.
+        """
+        chunk_data: Dict[Tuple[str, int], List[Tensor]] = {}
+
+        def fetch_chunk_data(
+            doc_id: str, chunk_id: int
+        ) -> Tuple[Tuple[str, int], List[Tensor]] | None:
+            try:
+                async_future = self.vector_store.session.execute_async(
+                    self.vector_store.query_chunk_stmt,
+                    [doc_id, chunk_id],
+                    timeout=query_timeout,
+                )
+                rows = async_future.result()
+                return (doc_id, chunk_id), [
+                    torch.tensor(row.bert_embedding) for row in rows
+                ]
+            except ReadTimeout:
+                logging.warn(f"Query timeout for doc_id {doc_id}, chunk_id {chunk_id}")
+            except Exception as e:
+                logging.error(
+                    f"Error fetching chunk data for doc_id {doc_id}, chunk_id {chunk_id}: {e}"
+                )
+
+        executor_futures = [
+            self.executor.submit(fetch_chunk_data, doc_id, chunk_id)
+            for doc_id, chunk_id in chunks
+        ]
+        for executor_future in as_completed(executor_futures):
+            try:
+                result = executor_future.result()
+                if result:
+                    doc_chunk_pair, embeddings = result
+                    chunk_data[doc_chunk_pair] = embeddings
+            except Exception as exc:
+                logging.error(f"executor future generated an exception: {exc}")
+
+        return chunk_data
+
+    def _score_chunks(
+        self, query_encodings: Tensor, chunk_data: Dict[Tuple[str, int], List[Tensor]]
+    ) -> Dict[Tuple[str, int], Tensor]:
+        """
+        Process the retrieved chunk data to calculate scores.
+        """
+        chunk_scores = {}
+        for doc_chunk_pair, embeddings in chunk_data.items():
+            chunk_scores[doc_chunk_pair] = sum(
+                max_similarity_torch(
+                    query_vector=qv,
+                    embedding_list=embeddings,
+                    is_cuda=self.is_cuda,
+                    is_fp16=self.is_fp16,
+                )
+                for qv in query_encodings
+            )
+        return chunk_scores
+
+    def _fetch_chunk_texts(
+        self,
+        chunks_by_score: List[Tuple[str, int]],
+        chunk_scores: Dict[Tuple[str, int], Tensor],
+    ) -> List[RetrievedChunk]:
+        """
+        Fetches texts for each chunk in parallel and ranks them based on scores.
+
+        Parameters:
+            chunks_by_score (List[Tuple[str, int]]): List of tuples containing (doc_id, chunk_id) sorted by score.
+            chunk_scores (Dict[Tuple[str, int], Tensor]): Dictionary mapping (doc_id, chunk_id) to their respective scores.
+
+        Returns:
+            List[RetrievedChunk]: A list of RetrievedChunk objects with populated fields.
+        """
+
+        def fetch_text(doc_id: str, chunk_id: int):
+            """
+            Fetches the text for a given doc_id and chunk_id.
+
+            Returns:
+                Tuple containing the future result, doc_id, and chunk_id.
+            """
+            async_future = self.vector_store.session.execute_async(
+                self.vector_store.query_chunk_stmt, [doc_id, chunk_id]
+            )
+            rows = async_future.result()
+            return rows, doc_id, chunk_id
+
+        answers: List[RetrievedChunk] = []
+
+        rank = 1
+        executor_futures = {
+            self.executor.submit(fetch_text, doc_id, chunk_id): (doc_id, chunk_id)
+            for doc_id, chunk_id in chunks_by_score
+        }
+        for executor_future in as_completed(executor_futures):
+            try:
+                rows, doc_id, chunk_id = executor_future.result()
+                score = chunk_scores[(doc_id, chunk_id)]
+                answers.append(
+                    RetrievedChunk(
+                        doc_id=doc_id,
+                        chunk_id=chunk_id,
+                        score=score.item(),  # Ensure score is a scalar if it's a tensor
+                        rank=rank,
+                        text=rows.one().body,
+                    )
+                )
+                rank += 1
+            except Exception as e:
+                print(f"Failed to fetch or process chunk ({doc_id}, {chunk_id}): {e}")
+
+        return answers
 
     def retrieve(
         self,
@@ -143,72 +350,20 @@ class ColbertCassandraRetriever(ColbertVectorStoreRetriever):
         top_k = max(math.floor(len(query_encodings) / 2), 16)
         logging.debug(f"query length {len(query)} embeddings top_k: {top_k}")
 
-        # find the most relevant chunks
-        chunks: Set[Tuple[str, int]] = set()
-        ann_futures: List[ResponseFuture] = []
-        for qv in query_encodings:
-            # per token based retrieval
-            future = self.vector_store.session.execute_async(
-                self.vector_store.query_colbert_ann_stmt,
-                [list(qv), top_k],
-                timeout=query_timeout,
-            )
-            ann_futures.append(future)
+        chunks = self._query_relevant_chunks(
+            query_encodings=query_encodings, top_k=top_k, query_timeout=query_timeout
+        )
 
-        for future in ann_futures:
-            embeddings = future.result()
-            chunks.update(
-                (embedding.doc_id, embedding.chunk_id) for embedding in embeddings
-            )
-
-        # score each document
-        chunk_scores: Dict[Tuple[str, int], Tensor] = {}
-        score_futures: List[Tuple[ResponseFuture, str, int]] = []
-        for doc_id, chunk_id in chunks:
-            future = self.vector_store.session.execute_async(
-                self.vector_store.query_colbert_chunks_stmt,
-                [doc_id, chunk_id],
-                timeout=query_timeout,
-            )
-            score_futures.append((future, doc_id, chunk_id))
-
-        for future, doc_id, chunk_id in score_futures:
-            rows = future.result()
-            # find all the found parts so that we can do max similarity search
-            embeddings_for_chunk = [torch.tensor(row.bert_embedding) for row in rows]
-            # score based on The function returns the highest similarity score
-            # (i.e., the maximum dot product value) between the query vector and any of the embedding vectors in the list.
-            chunk_scores[(doc_id, chunk_id)] = sum(
-                max_similarity_torch(qv, embeddings_for_chunk, self.is_cuda)
-                for qv in query_encodings
-            )
+        # score each chunk
+        chunk_data = self._retrieve_chunks(chunks=chunks, query_timeout=query_timeout)
+        chunk_scores = self._score_chunks(
+            query_encodings=query_encodings, chunk_data=chunk_data
+        )
 
         # load the source chunk for the top k documents
         chunks_by_score = sorted(chunk_scores, key=chunk_scores.get, reverse=True)[:k]
 
-        # grab the chunk texts
-        text_futures: List[Tuple[ResponseFuture, str, int]] = []
-        for doc_id, chunk_id in chunks_by_score:
-            future = self.vector_store.session.execute_async(
-                self.vector_store.query_chunk_stmt, [doc_id, chunk_id]
-            )
-            text_futures.append((future, doc_id, chunk_id))
-
-        answers: List[RetrievedChunk] = []
-        rank = 1
-        for future, doc_id, chunk_id in text_futures:
-            rows = future.result()
-            score = chunk_scores[(doc_id, chunk_id)]
-            answers.append(
-                RetrievedChunk(
-                    doc_id=doc_id,
-                    chunk_id=chunk_id,
-                    score=score.item(),
-                    rank=rank,
-                    text=rows.one().body,
-                )
-            )
-            rank = rank + 1
-        # clean up on tensor memory on GPU
-        del chunk_scores
+        answers = self._fetch_chunk_texts(
+            chunks_by_score=chunks_by_score, chunk_scores=chunk_scores
+        )
         return answers
