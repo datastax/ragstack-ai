@@ -60,7 +60,7 @@ class ChunkEncoder:
 
     def encode_chunks(
         self, texts: List[str], batch_size: int = 64
-    ) -> tuple[None, None] | tuple[Tensor, List[int]]:
+    ) -> tuple[Tensor, List[int]]:
         """
         Encodes a list of chunks into embeddings, processing in batches to efficiently manage memory.
 
