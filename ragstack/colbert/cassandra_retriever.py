@@ -209,7 +209,7 @@ class ColbertCassandraRetriever(ColbertVectorStoreRetriever):
         ) -> Tuple[Tuple[str, int], List[Tensor]] | None:
             try:
                 async_future = self.vector_store.session.execute_async(
-                    self.vector_store.query_chunk_stmt,
+                    self.vector_store.query_colbert_chunks_stmt,
                     [doc_id, chunk_id],
                     timeout=query_timeout,
                 )

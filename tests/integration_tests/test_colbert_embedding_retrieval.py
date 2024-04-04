@@ -28,6 +28,8 @@ def astra_db():
 
 @pytest.mark.parametrize("vector_store", ["cassandra"])
 def test_embedding_cassandra_retriever(request, vector_store: str):
+    logging.getLogger('cassandra').setLevel(logging.ERROR)
+    
     vector_store = request.getfixturevalue(vector_store)
     narrative = """
     Marine animals inhabit some of the most diverse environments on our planet. From the shallow coral reefs teeming with colorful fish to the dark depths of the ocean where mysterious creatures lurk, the marine world is full of wonder and mystery.
