@@ -158,27 +158,27 @@ class ColbertCassandraRetriever(ColbertVectorStoreRetriever):
         for future in ann_futures:
             embeddings = future.result()
             chunks.update(
-                (embedding.doc_id, embedding.chunk_id) for embedding in embeddings
+                (embedding.title, embedding.part) for embedding in embeddings
             )
 
         # score each document
         chunk_scores: Dict[Tuple[str, int], Tensor] = {}
         score_futures: List[Tuple[ResponseFuture, str, int]] = []
-        for doc_id, chunk_id in chunks:
+        for title, part in chunks:
             future = self.vector_store.session.execute_async(
-                self.vector_store.query_colbert_chunks_stmt,
-                [doc_id, chunk_id],
+                self.vector_store.query_colbert_parts_stmt,
+                [title, part],
                 timeout=query_timeout,
             )
-            score_futures.append((future, doc_id, chunk_id))
+            score_futures.append((future, title, part))
 
-        for future, doc_id, chunk_id in score_futures:
+        for future, title, part in score_futures:
             rows = future.result()
             # find all the found parts so that we can do max similarity search
             embeddings_for_chunk = [torch.tensor(row.bert_embedding) for row in rows]
             # score based on The function returns the highest similarity score
             # (i.e., the maximum dot product value) between the query vector and any of the embedding vectors in the list.
-            chunk_scores[(doc_id, chunk_id)] = sum(
+            chunk_scores[(title, part)] = sum(
                 max_similarity_torch(qv, embeddings_for_chunk, self.is_cuda)
                 for qv in query_encodings
             )
@@ -188,21 +188,21 @@ class ColbertCassandraRetriever(ColbertVectorStoreRetriever):
 
         # grab the chunk texts
         text_futures: List[Tuple[ResponseFuture, str, int]] = []
-        for doc_id, chunk_id in chunks_by_score:
+        for title, part in chunks_by_score:
             future = self.vector_store.session.execute_async(
-                self.vector_store.query_chunk_stmt, [doc_id, chunk_id]
+                self.vector_store.query_part_by_pk_stmt, [title, part]
             )
-            text_futures.append((future, doc_id, chunk_id))
+            text_futures.append((future, title, part))
 
         answers: List[RetrievedChunk] = []
         rank = 1
-        for future, doc_id, chunk_id in text_futures:
+        for future, title, part in text_futures:
             rows = future.result()
-            score = chunk_scores[(doc_id, chunk_id)]
+            score = chunk_scores[(title, part)]
             answers.append(
                 RetrievedChunk(
-                    doc_id=doc_id,
-                    chunk_id=chunk_id,
+                    title=title,
+                    part=part,
                     score=score.item(),
                     rank=rank,
                     text=rows.one().body,

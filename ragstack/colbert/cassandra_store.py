@@ -58,53 +58,29 @@ class CassandraColbertVectorStore(ColbertVectorStore):
         self.full_table_name = f"{keyspace}.{table_name}"
 
         self.session.default_timeout = timeout
-        self.__create_tables()
+        #self.__create_tables()
 
-        # prepare statements
-        self.insert_chunk_stmt = self.session.prepare(
-            f"""
-        INSERT INTO {self.full_table_name} (doc_id, chunk_id, embedding_id, body)
-        VALUES (?, ?, -1, ?)
-        """
-        )
-
-        self.insert_colbert_stmt = self.session.prepare(
-            f"""
-        INSERT INTO {self.full_table_name} (doc_id, chunk_id, embedding_id, bert_embedding)
-        VALUES (?, ?, ?, ?)
-        """
-        )
-
-        self.query_colbert_ann_stmt = self.session.prepare(
-            f"""
-        SELECT doc_id, chunk_id
-        FROM {self.full_table_name}
+        query_colbert_ann_cql = f"""
+        SELECT title, part
+        FROM {keyspace}.colbert_embeddings
         ORDER BY bert_embedding ANN OF ?
         LIMIT ?
         """
-        )
+        self.query_colbert_ann_stmt = self.session.prepare(query_colbert_ann_cql)
 
-        self.query_colbert_chunks_stmt = self.session.prepare(
-            f"""
-        SELECT doc_id, chunk_id, bert_embedding
-        FROM {self.full_table_name}
-        WHERE doc_id = ? AND chunk_id = ? AND embedding_id != -1
+        query_colbert_parts_cql = f"""
+        SELECT title, part, bert_embedding
+        FROM {keyspace}.colbert_embeddings
+        WHERE title = ? AND part = ?
         """
-        )
+        self.query_colbert_parts_stmt = self.session.prepare(query_colbert_parts_cql)
 
-        self.query_chunk_stmt = self.session.prepare(
-            f"""
+        query_part_by_pk = f"""
         SELECT body
-        FROM {self.full_table_name}
-        WHERE doc_id = ? AND chunk_id = ? AND embedding_id = -1
+        FROM {keyspace}.chunks
+        WHERE title = ? AND part = ?
         """
-        )
-
-        self.delete_chunks_by_doc_id_stmt = self.session.prepare(
-            f"""
-            DELETE FROM {self.full_table_name} WHERE doc_id = ?
-        """
-        )
+        self.query_part_by_pk_stmt = self.session.prepare(query_part_by_pk)
 
     def __create_tables(self) -> None:
         """
