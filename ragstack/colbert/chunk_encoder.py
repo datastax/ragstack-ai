@@ -139,9 +139,11 @@ class ChunkEncoder:
                     doc_id=doc_id,
                     chunk_id=chunk_idx + chunk_idx_offset,
                     text=texts[chunk_idx],
+                    # Grab the embeddings for the chunk
                     embeddings=embeddings[start_idx:end_idx],
                 )
             )
 
+            # Reset for the next chunk
             start_idx = end_idx
         return embedded_chunks
