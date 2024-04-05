@@ -143,5 +143,5 @@ class ChunkEncoder:
                 )
             )
 
-        start_idx = end_idx
+            start_idx = end_idx
         return embedded_chunks
