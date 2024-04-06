@@ -172,7 +172,9 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
         if doc_id is None:
             doc_id = str(uuid.uuid4())
 
-        return self.encode(texts=texts, doc_id=doc_id)
+        timeout = 30 + len(texts)
+
+        return self.encode(texts=texts, doc_id=doc_id, timeout=timeout)
 
     def embed_query(self, query_text: str) -> Tensor:
         """
