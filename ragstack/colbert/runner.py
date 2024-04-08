@@ -156,7 +156,7 @@ class Runner:
         for p, info in zip(processes, proc_info):
             p.join(timeout=timeout)
             if p.is_alive():
-                logging.warn(
+                logging.warning(
                     f"embedding process timed out process PID: {info[0]}, Name: {info[1]}"
                 )
                 timed_out_processes.append(p)
