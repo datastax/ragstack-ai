@@ -4,6 +4,10 @@ from typing import List
 from torch import Tensor
 from torch.nn.functional import cosine_similarity
 
+from colbert.infra.config import ColBERTConfig
+from colbert.modeling.checkpoint import Checkpoint
+from colbert.indexing.collection_encoder import CollectionEncoder
+
 from ragstack.colbert.colbert_embedding import ColbertTokenEmbeddings
 from ragstack.colbert.constant import DEFAULT_COLBERT_DIM, DEFAULT_COLBERT_MODEL
 
@@ -11927,3 +11931,28 @@ def test_embeddings_with_baseline():
 
     # make sure it generates same number of embeddings between the two runs 
     assert n == len(embedded_tensors)
+
+def test_colbert_embedding_against_vanilla_impl():
+
+    cf = ColBERTConfig(checkpoint='colbert-ir/colbertv2.0')
+    cp = Checkpoint(cf.checkpoint, colbert_config=cf)
+    encoder = CollectionEncoder(cf, cp)
+
+    embeddings_flat, counts = encoder.encode_passages(arctic_botany_chunks)
+
+
+    colbertSvc = ColbertTokenEmbeddings(
+        checkpoint=DEFAULT_COLBERT_MODEL,
+    )
+    embedded_chunks = colbertSvc.embed_chunks(arctic_botany_chunks) 
+    n = 0
+    pdist = torch.nn.PairwiseDistance(p=2)
+    for embedded_chunk in embedded_chunks:
+        for embedding in embedded_chunk.embeddings:
+            
+            # we still have outlier over the specified limit but almost 0
+            assert pdist(embedding, embeddings_flat[n]).item() < 0.0001
+
+            similarity = cosine_similarity(embedding.unsqueeze(0), embeddings_flat[n].unsqueeze(0))
+            assert similarity.item() > 0.999
+            n = n + 1
