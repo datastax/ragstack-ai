@@ -1,0 +1,30 @@
+= Migrate to RAGStack
+
+Migrating existing LangChain applications to RAGStack is very easy.
+RAGStack comes with a set of pinned, tested versions of the LangChain libraries and integrations.
+
+The RAGStack CLI is the recommended way to manage your RAGStack projects.
+With the `install` command you can safely add or change the RAGStack version without worrying about transitive dependencies versions.
+This is especially important because RAGStack is a stack of multiple packages that are tested together for compatibility, performance, and security.
+
+You don't need to install the CLI, using `npx` is the recommended way to run it.
+
+Move your terminal to the project you want to install RAGStack in and run the following command:
+[source,bash]
+----
+npx @datastax/ragstack-ai-cli install
+----
+
+This command will modify the `package.json`, install `@datastax/ragstack-ai` and refresh your local dependencies.
+The supported package managers are `npm` and `yarn` (both classic and berry).
+
+The CLI automatically detects the package manager you are using and installs the correct version of RAGStack.
+However, if you never built the project before, it's recommended to force a specific package manager by setting the `--use-npm` or `--use-yarn` option.
+
+
+`@datastax/ragstack-ai` only includes a subset of the LangChain libraries, therefore you might want to keep some `@langchain/*` packages that are not included in RAGStack.
+To check what packages are included in RAGStack, you can run the following command:
+[source,bash]
+----
+npm show @datastax/ragstack-ai dependencies
+----
