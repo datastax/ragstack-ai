@@ -11960,7 +11960,7 @@ def test_colbert_embedding_against_vanilla_impl():
 
 def model_embedding(model: str):
     colbertSvc = ColbertTokenEmbeddings(
-         checkpoin=model,
+         checkpoint=model,
          query_maxlen=32,
     )
     embedded_chunks = colbertSvc.embed_chunks(arctic_botany_chunks)
