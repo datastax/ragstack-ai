@@ -11959,6 +11959,7 @@ def test_colbert_embedding_against_vanilla_impl():
 
 
 def model_embedding(model: str):
+    logging.info(f"test model compatibility {model}")
     colbertSvc = ColbertTokenEmbeddings(
          checkpoint=model,
          query_maxlen=32,
@@ -11988,7 +11989,7 @@ def test_compatible_models():
      # evaluation is not within this test scope
      models = [
           "colbert-ir/colbertv1.9",
-          "colbert-ir/colbertv2.0_msmarco_64way",
+          # "colbert-ir/colbertv2.0_msmarco_64way", # this model is large
           "mixedbread-ai/mxbai-colbert-large-v1",
           # "antoinelouis/colbert-xm", # XMOD based
           # "jinaai/jina-colbert-v1-en",  # requires HF token and code changes
