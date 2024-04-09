@@ -11956,3 +11956,45 @@ def test_colbert_embedding_against_vanilla_impl():
     embedded_chunks = colbertSvc.embed_chunks(arctic_botany_chunks) 
 
     are_they_similar(embedded_chunks, embeddings_flat)
+
+
+def model_embedding(model: str):
+    colbertSvc = ColbertTokenEmbeddings(
+         checkpoin=model,
+         query_maxlen=32,
+    )
+    embedded_chunks = colbertSvc.embed_chunks(arctic_botany_chunks)
+
+    assert len(embedded_chunks) == 8
+    n = 0
+    for embedded_chunk in embedded_chunks:
+        for embedding in embedded_chunk.embeddings:
+            assert embedding.shape == (128, )
+            n = n + 1
+
+    assert n == 645
+
+    # recall embeddings test
+    encoded = colbertSvc.encode_query(
+        query="What adaptations enable Arctic plants to survive and thrive in extremely cold temperatures and minimal sunlight?",
+        query_maxlen=32,
+    )
+    assert encoded.shape == torch.Size([32,128])
+
+
+def test_compatible_models():
+     # ColBERT models and Google BERT models on HF
+     # test representive models's compatibility with this repo's ColBERT embedding
+     # evaluation is not within this test scope
+     models = [
+          "colbert-ir/colbertv1.9",
+          "colbert-ir/colbertv2.0_msmarco_64way",
+          "mixedbread-ai/mxbai-colbert-large-v1",
+          # "antoinelouis/colbert-xm", # XMOD based
+          # "jinaai/jina-colbert-v1-en",  # requires HF token and code changes
+          "google-bert/bert-base-uncased", # BERT compatibility test only, do not recommend
+                                           # some colbert is trained on uncased
+          # "google-bert/bert-base-cased",   # already tested uncased
+     ]
+
+     [model_embedding(model) for model in models]
