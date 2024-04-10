@@ -1,85 +1,57 @@
-#
-# this is a base class for ColBERT per token based embedding
+"""
+This module defines an abstract base class (ABC) for generating token-based embeddings for text.
+"""
 
 from abc import ABC, abstractmethod
-from typing import List
+from typing import List, Optional
 
-class PerTokenEmbeddings:
-    __embeddings: List[float]
-    __embedding_id: int
-    __part_id: int
+from torch import Tensor
 
-    def __init__(
-        self,
-        embedding_id: int,
-        part_id: int
-    ):
-        self.__embeddings = []
-        self.__embedding_id = embedding_id
-        self.__part_id = part_id
-
-    def embedding_id(self):
-        return self.__embedding_id
-
-    def part_id(self):
-        return self.__part_id
-
-    def add_embeddings(self, embeddings: List[float]):
-        self.__embeddings = embeddings
-
-    def get_embeddings(self) -> List[float]:
-        return self.__embeddings
+from .chunks import EmbeddedChunk
 
 
-class PassageEmbeddings:
-    __token_embeddings: List[PerTokenEmbeddings]
-    __text: str
-    __doc_id: str
-    __part_id: int
-
-    def __init__(
-        self,
-        text: str,
-        doc_id: str = None,
-        part_id: int = 0,
-    ):
-        self.__text = text
-        self.__token_embeddings = []
-        self.__doc_id = doc_id
-        self.__part_id = part_id
-
-    def __len__(self):
-        return len(self.embeddings)
-
-    def doc_id(self):
-        return self.__doc_id
-
-    def part_id(self):
-        return self.__part_id
-
-    def text(self):
-        return self.__text
-
-    def add_token_embeddings(self, token_embeddings: PerTokenEmbeddings):
-        self.__token_embeddings.append(token_embeddings)
-
-    def get_all_token_embeddings(self) -> List[PerTokenEmbeddings]:
-        return self.__token_embeddings
-
-
-
-
-"""
-This is the base class for token based embedding
-ColBERT token embeddings is an example of a class that inherits from this class
-"""
 class TokenEmbeddings(ABC):
-    """Interface for token embedding models."""
+    """
+    Abstract base class (ABC) for token-based embedding models.
+
+    This class defines the interface for models that generate embeddings for text chunks and queries.
+    It's designed to be subclassed by specific token embedding implementations, such as ColBERT token
+    embeddings. Subclasses must implement the `embed_chunks` and `embed_query` abstract methods.
+    """
 
     @abstractmethod
-    def embed_documents(self, texts: List[str]) -> List[PassageEmbeddings]:
-        """Embed search docs."""
+    def embed_chunks(
+        self, texts: List[str], doc_id: Optional[str] = None
+    ) -> List[EmbeddedChunk]:
+        """
+        Embeds a list of text chunks into their corresponding vector representations.
+
+        This method takes multiple chunks of text and optionally their associated document identifier,
+        returning a list of `EmbeddedChunk` instances containing the embeddings.
+
+        Parameters:
+            texts (List[str]): A list of text strings, each representing a chunk of text to be embedded.
+            doc_id (Optional[str], optional): An optional document identifier that all chunks belong to.
+                                               This can be used for tracing back embeddings to their
+                                               source document. If not passed, an uuid will be generated.
+
+        Returns:
+            List[EmbeddedChunk]: A list of `EmbeddedChunk` instances with embeddings populated,
+                                  corresponding to the input text chunks.
+        """
 
     @abstractmethod
-    def embed_query(self, text: str) -> PassageEmbeddings:
-        """Embed query text."""
+    def embed_query(self, text: str) -> Tensor:
+        """
+        Embeds a single query text into its vector representation.
+
+        This method processes a query string, converting it into a tensor of embeddings that
+        represent the query in the embedded space. This is typically used for matching against
+        embedded documents or chunks in retrieval tasks.
+
+        Parameters:
+            text (str): The query text to be embedded.
+
+        Returns:
+            Tensor: A tensor representing the embedded query.
+        """

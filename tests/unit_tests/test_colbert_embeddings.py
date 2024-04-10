@@ -1,33 +1,32 @@
-from ragstack.colbert.colbert_embedding import ColbertTokenEmbeddings
-from ragstack.colbert.constant import DEFAULT_COLBERT_MODEL, DEFAULT_COLBERT_DIM
 import torch
+
+from ragstack.colbert.colbert_embedding import ColbertTokenEmbeddings
+from ragstack.colbert.constant import DEFAULT_COLBERT_DIM, DEFAULT_COLBERT_MODEL
 
 
 def test_colbert_token_embeddings():
     colbert = ColbertTokenEmbeddings()
     assert colbert.colbert_config is not None
 
-    passagesEmbeddings = colbert.embed_documents(["test1", "test2"])
+    embedded_chunks = colbert.embed_chunks(["test1", "test2"])
 
-    assert len(passagesEmbeddings) == 2
+    assert len(embedded_chunks) == 2
 
-    assert passagesEmbeddings[0].text() == "test1"
-    assert passagesEmbeddings[1].text() == "test2"
+    assert embedded_chunks[0].text == "test1"
+    assert embedded_chunks[1].text == "test2"
 
     # generate uuid based id
-    assert passagesEmbeddings[0].doc_id() != ""
-    assert passagesEmbeddings[1].doc_id() != ""
+    assert embedded_chunks[0].doc_id != ""
+    assert embedded_chunks[1].doc_id != ""
 
-    passageEmbeddings = colbert.embed_documents(
-        texts=["test1", "test2"], doc_id="test-id"
-    )
+    embedded_chunks = colbert.embed_chunks(texts=["test1", "test2"], doc_id="test-id")
 
-    assert passageEmbeddings[0].text() == "test1"
-    assert passageEmbeddings[0].doc_id() == "test-id"
-    assert passageEmbeddings[1].doc_id() == "test-id"
+    assert embedded_chunks[0].text == "test1"
+    assert embedded_chunks[0].doc_id == "test-id"
+    assert embedded_chunks[1].doc_id == "test-id"
 
-    token_embeddings = passagesEmbeddings[0].get_all_token_embeddings()
-    assert len(token_embeddings[0].get_embeddings()) == DEFAULT_COLBERT_DIM
+    embeddings = embedded_chunks[0].embeddings
+    assert len(embeddings[0]) == DEFAULT_COLBERT_DIM
 
 
 def test_colbert_token_embeddings_with_params():
@@ -40,16 +39,16 @@ def test_colbert_token_embeddings_with_params():
     )
     assert colbert.colbert_config is not None
 
-    passage_embeddings = colbert.embed_documents(["test1", "test2", "test3"])
+    embedded_chunks = colbert.embed_chunks(["test1", "test2", "test3"])
 
-    assert len(passage_embeddings) == 3
+    assert len(embedded_chunks) == 3
 
-    assert passage_embeddings[0].text() == "test1"
-    assert passage_embeddings[1].text() == "test2"
+    assert embedded_chunks[0].text == "test1"
+    assert embedded_chunks[1].text == "test2"
 
-    token_embeddings = passage_embeddings[0].get_all_token_embeddings()
-    assert len(token_embeddings) > 1
-    assert len(token_embeddings[0].get_embeddings()) == DEFAULT_COLBERT_DIM
+    embeddings = embedded_chunks[0].embeddings
+    assert len(embeddings) > 1
+    assert len(embeddings[0]) == DEFAULT_COLBERT_DIM
 
 
 def test_colbert_query_embeddings():
