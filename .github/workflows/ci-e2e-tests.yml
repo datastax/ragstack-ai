@@ -3,10 +3,10 @@ on:
   workflow_dispatch: {}
   schedule:
     # keep different crons to reduce the n. of databases at the same time on astra
-    - cron: "0 0/4 * * *"
-    - cron: "0 1/4 * * *"
-    - cron: "0 2/4 * * *"
-    - cron: "0 3/4 * * *"
+    - cron: "0 0 * * *"
+    - cron: "0 1 * * *"
+    - cron: "0 2 * * *"
+    - cron: "0 3 * * *"
   pull_request:
     branches:
       - main
@@ -28,13 +28,13 @@ jobs:
       astradb-prod-cloud: "aws"
       is-scheduled: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
       # yamllint disable-line rule:line-length
-      is-ragstack-dev-cron: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'schedule' && github.event.schedule == '0 0/4 * * *') }}
+      is-ragstack-dev-cron: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'schedule' && github.event.schedule == '0 0 * * *') }}
       # yamllint disable-line rule:line-length
-      is-ragstack-latest-release-cron: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'schedule' && github.event.schedule == '0 1/4 * * *') }}
+      is-ragstack-latest-release-cron: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'schedule' && github.event.schedule == '0 1 * * *') }}
       # yamllint disable-line rule:line-length
-      is-langchain-dev-cron: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'schedule' && github.event.schedule == '0 2/4 * * *') }}
+      is-langchain-dev-cron: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'schedule' && github.event.schedule == '0 2 * * *') }}
       # yamllint disable-line rule:line-length
-      is-llamaindex-dev-cron: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'schedule' && github.event.schedule == '0 3/4 * * *') }}
+      is-llamaindex-dev-cron: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'schedule' && github.event.schedule == '0 3 * * *') }}
     steps:
       - uses: actions/checkout@v4
       - name: Run lint
@@ -47,7 +47,7 @@ jobs:
   ragstack-dev-dse-tests:
     name: "RAGStack dev / DSE"
     needs: ["preconditions"]
-    if: ${{ needs.preconditions.outputs.is-scheduled == 'true' || needs.preconditions.outputs.e2e_tests == 'true' }}
+    if: ${{ needs.preconditions.outputs.is-ragstack-dev-cron == 'true' || needs.preconditions.outputs.e2e_tests == 'true' }}
     uses: ./.github/workflows/_run_e2e_tests.yml
     secrets: inherit
     with:
@@ -81,7 +81,7 @@ jobs:
   langchain-dse-tests:
     name: "LangChain dev / DSE"
     needs: ["preconditions"]
-    if: ${{ needs.preconditions.outputs.is-scheduled == 'true' || needs.preconditions.outputs.e2e_tests == 'true' }}
+    if: ${{ needs.preconditions.outputs.is-langchain-dev-cron = 'true' || needs.preconditions.outputs.e2e_tests == 'true' }}
     uses: ./.github/workflows/_run_e2e_tests.yml
     secrets: inherit
     with:
@@ -115,7 +115,7 @@ jobs:
   llamaindex-dse-tests:
     name: "LLamaIndex dev / DSE"
     needs: ["preconditions"]
-    if: ${{ needs.preconditions.outputs.is-scheduled == 'true' || needs.preconditions.outputs.e2e_tests == 'true' }}
+    if: ${{ needs.preconditions.outputs.is-llamaindex-dev-cron == 'true' || needs.preconditions.outputs.e2e_tests == 'true' }}
     uses: ./.github/workflows/_run_e2e_tests.yml
     secrets: inherit
     with:
@@ -149,7 +149,7 @@ jobs:
   ragstack-latest-release-dse-tests:
     name: "RAGStack latest / DSE"
     needs: ["preconditions"]
-    if: ${{ needs.preconditions.outputs.is-scheduled == 'true' || needs.preconditions.outputs.e2e_tests == 'true' }}
+    if: ${{ needs.preconditions.outputs.is-ragstack-latest-release-cron == 'true' || needs.preconditions.outputs.e2e_tests == 'true' }}
     uses: ./.github/workflows/_run_e2e_tests.yml
     secrets: inherit
     with:
