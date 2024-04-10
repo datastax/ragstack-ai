@@ -25,16 +25,12 @@ from .runner import Runner
 from .token_embedding import EmbeddedChunk, TokenEmbeddings
 
 
-def calculate_query_maxlen(tokens: List[List[str]], min_num: int, max_num: int) -> int:
+def calculate_query_maxlen(tokens: List[List[str]]) -> int:
     """
     Calculates an appropriate maximum query length for token embeddings, based on the length of the tokenized input.
-    It ensures the length is within specified bounds and rounds up to the nearest power of two for efficiency in
-    batch processing.
 
     Parameters:
         tokens (List[List[str]]): A nested list where each sublist contains tokens from a single query or chunk.
-        min_num (int): The minimum allowable query length.
-        max_num (int): The maximum allowable query length.
 
     Returns:
         int: The calculated maximum length for query tokens, adhering to the specified minimum and maximum bounds,
@@ -42,16 +38,11 @@ def calculate_query_maxlen(tokens: List[List[str]], min_num: int, max_num: int) 
     """
 
     max_token_length = max(len(inner_list) for inner_list in tokens)
-    if max_token_length < min_num:
-        return min_num
 
-    if max_token_length > max_num:
-        return max_num
-
-    power = min_num
-    while power < max_token_length:
-        power = power * 2
-    return power
+    # tokens from the query tokenizer does not include the SEP, CLS
+    # SEP, CLS, and Q tokens are added to the query
+    # although there could be more SEP tokens if there are more than one sentences, we only add one
+    return max_token_length + 3
 
 
 class ColbertTokenEmbeddings(TokenEmbeddings):
@@ -236,7 +227,7 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
         # All query embeddings in the ColBERT documentation
         # this name, EQ or Q, maps the exact name in most colBERT papers
         queriesQ = self.checkpoint.queryFromText(
-            queries, bsize=bsize, to_cpu=True, full_length_search=full_length_search
+            queries, bsize=bsize, to_cpu=not self.__cuda, full_length_search=full_length_search
         )
         return queriesQ
 
