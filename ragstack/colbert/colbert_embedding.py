@@ -212,11 +212,7 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
         tokens = self.query_tokenizer.tokenize(queries)
         fixed_length = max(query_maxlen, self.colbert_config.query_maxlen)
         if query_maxlen < 0:
-            fixed_length = calculate_query_maxlen(
-                tokens,
-                max(query_maxlen, self.colbert_config.query_maxlen),
-                MAX_MODEL_TOKENS,
-            )
+            fixed_length = calculate_query_maxlen(tokens)
         # we only send one query at a time therefore tokens[0]
         logging.info(
             f"{len(tokens[0])} tokens in first query with query_maxlen {fixed_length}"
