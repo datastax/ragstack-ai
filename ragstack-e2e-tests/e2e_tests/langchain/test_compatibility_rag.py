@@ -59,15 +59,17 @@ def cassandra():
     handler.after_test()
 
 
-def _chat_openai(**kwargs) -> ChatOpenAI:
-    return ChatOpenAI(
-        openai_api_key=get_required_env("OPENAI_API_KEY"), temperature=0, **kwargs
-    )
+def _chat_openai(**kwargs) -> callable:
+    def llm():
+        return ChatOpenAI(
+            openai_api_key=get_required_env("OPENAI_API_KEY"), temperature=0, **kwargs
+        )
+
+    return llm
 
 
 @pytest.fixture
 def openai_gpt35turbo_llm():
-    # NeMo guardrails fails for this model with the given prompts.
     model = "gpt-3.5-turbo"
     return {"llm": _chat_openai(model=model, streaming=False), "nemo_config": None}
 
@@ -84,14 +86,20 @@ def openai_gpt4_llm():
 @pytest.fixture
 def openai_gpt4_llm_streaming():
     model = "gpt-4"
+
     return {
         "llm": _chat_openai(model=model, streaming=True),
         "nemo_config": {"engine": "openai", "model": model},
     }
 
 
-def _openai_embeddings(**kwargs) -> OpenAIEmbeddings:
-    return OpenAIEmbeddings(openai_api_key=get_required_env("OPENAI_API_KEY"), **kwargs)
+def _openai_embeddings(**kwargs) -> callable:
+    def embedding():
+        return OpenAIEmbeddings(
+            openai_api_key=get_required_env("OPENAI_API_KEY"), **kwargs
+        )
+
+    return embedding
 
 
 @pytest.fixture
@@ -113,13 +121,16 @@ def openai_3large_embedding():
 def azure_openai_gpt35turbo_llm():
     # model is configurable because it can be different from the deployment
     # but the targeting model must be gpt-35-turbo
-    return {
-        "llm": AzureChatOpenAI(
+    def llm():
+        return AzureChatOpenAI(
             azure_deployment=get_required_env("AZURE_OPEN_AI_CHAT_MODEL_DEPLOYMENT"),
             azure_endpoint=get_required_env("AZURE_OPENAI_ENDPOINT"),
             openai_api_key=get_required_env("AZURE_OPENAI_API_KEY"),
             openai_api_version="2023-07-01-preview",
-        ),
+        )
+
+    return {
+        "llm": llm,
         "nemo_config": None,
     }
 
@@ -128,30 +139,42 @@ def azure_openai_gpt35turbo_llm():
 def azure_openai_ada002_embedding():
     # model is configurable because it can be different from the deployment
     # but the targeting model must be ada-002
-
     model_and_deployment = get_required_env("AZURE_OPEN_AI_EMBEDDINGS_MODEL_DEPLOYMENT")
-    return AzureOpenAIEmbeddings(
-        model=model_and_deployment,
-        deployment=model_and_deployment,
-        openai_api_key=get_required_env("AZURE_OPENAI_API_KEY"),
-        azure_endpoint=get_required_env("AZURE_OPENAI_ENDPOINT"),
-        openai_api_version="2023-05-15",
-        chunk_size=1,
-    )
+
+    def embedding():
+        return AzureOpenAIEmbeddings(
+            model=model_and_deployment,
+            deployment=model_and_deployment,
+            openai_api_key=get_required_env("AZURE_OPENAI_API_KEY"),
+            azure_endpoint=get_required_env("AZURE_OPENAI_ENDPOINT"),
+            openai_api_version="2023-05-15",
+            chunk_size=1,
+        )
+
+    return embedding
 
 
 @pytest.fixture
 def vertex_bison_llm():
-    return {"llm": ChatVertexAI(model_name="chat-bison"), "nemo_config": None}
+    def llm():
+        return ChatVertexAI(model_name="chat-bison")
+
+    return {"llm": llm, "nemo_config": None}
 
 
 @pytest.fixture
-def vertex_gecko_embedding():
-    return VertexAIEmbeddings(model_name="textembedding-gecko")
+def vertex_gecko_embedding() -> callable:
+    def embedding():
+        return VertexAIEmbeddings(model_name="textembedding-gecko")
+
+    return embedding
 
 
-def _bedrock_chat(**kwargs) -> BedrockChat:
-    return BedrockChat(region_name=get_required_env("BEDROCK_AWS_REGION"), **kwargs)
+def _bedrock_chat(**kwargs) -> callable:
+    def llm():
+        return BedrockChat(region_name=get_required_env("BEDROCK_AWS_REGION"), **kwargs)
+
+    return llm
 
 
 @pytest.fixture
@@ -167,9 +190,7 @@ def bedrock_anthropic_claudev2_llm():
 @pytest.fixture
 def bedrock_mistral_mistral7b_llm():
     return {
-        "llm": _bedrock_chat(
-            model_id="mistral.mistral-7b-instruct-v0:2",
-        ),
+        "llm": _bedrock_chat(model_id="mistral.mistral-7b-chat-v0:2"),
         "nemo_config": None,
     }
 
@@ -183,39 +204,51 @@ def bedrock_meta_llama2_llm():
 
 
 @pytest.fixture
-def bedrock_titan_embedding():
-    return BedrockEmbeddings(
-        model_id="amazon.titan-embed-text-v1",
-        region_name=get_required_env("BEDROCK_AWS_REGION"),
-    )
+def bedrock_titan_embedding() -> callable:
+    def embedding():
+        return BedrockEmbeddings(
+            model_id="amazon.titan-embed-text-v1",
+            region_name=get_required_env("BEDROCK_AWS_REGION"),
+        )
+
+    return embedding
 
 
 @pytest.fixture
-def bedrock_cohere_embedding():
-    return BedrockEmbeddings(
-        model_id="cohere.embed-english-v3",
-        region_name=get_required_env("BEDROCK_AWS_REGION"),
-    )
+def bedrock_cohere_embedding() -> callable:
+    def embedding():
+        return BedrockEmbeddings(
+            model_id="cohere.embed-english-v3",
+            region_name=get_required_env("BEDROCK_AWS_REGION"),
+        )
+
+    return embedding
 
 
 @pytest.fixture
 def huggingface_hub_flant5xxl_llm():
-    return {
-        "llm": HuggingFaceHub(
+    def llm():
+        return HuggingFaceHub(
             repo_id="google/flan-t5-xxl",
             huggingfacehub_api_token=get_required_env("HUGGINGFACE_HUB_KEY"),
             model_kwargs={"temperature": 1, "max_length": 256},
-        ),
+        )
+
+    return {
+        "llm": llm,
         "nemo_config": None,
     }
 
 
 @pytest.fixture
 def huggingface_hub_minilml6v2_embedding():
-    return HuggingFaceInferenceAPIEmbeddings(
-        api_key=get_required_env("HUGGINGFACE_HUB_KEY"),
-        model_name="sentence-transformers/all-MiniLM-l6-v2",
-    )
+    def embedding():
+        return HuggingFaceInferenceAPIEmbeddings(
+            api_key=get_required_env("HUGGINGFACE_HUB_KEY"),
+            model_name="sentence-transformers/all-MiniLM-l6-v2",
+        )
+
+    return embedding
 
 
 @pytest.fixture
@@ -223,7 +256,10 @@ def nvidia_aifoundation_nvolveqa40k_embedding():
     get_required_env("NVIDIA_API_KEY")
     from langchain_nvidia_ai_endpoints.embeddings import NVIDIAEmbeddings
 
-    return NVIDIAEmbeddings(model="playground_nvolveqa_40k")
+    def embedding():
+        return NVIDIAEmbeddings(model="playground_nvolveqa_40k")
+
+    return embedding
 
 
 @pytest.fixture
@@ -231,7 +267,10 @@ def nvidia_aifoundation_mixtral8x7b_llm():
     get_required_env("NVIDIA_API_KEY")
     from langchain_nvidia_ai_endpoints import ChatNVIDIA
 
-    return {"llm": ChatNVIDIA(model="playground_mixtral_8x7b"), "nemo_config": None}
+    def llm():
+        return ChatNVIDIA(model="playground_mixtral_8x7b")
+
+    return {"llm": llm, "nemo_config": None}
 
 
 @pytest.mark.parametrize(
@@ -246,8 +285,8 @@ def nvidia_aifoundation_mixtral8x7b_llm():
     "embedding,llm",
     [
         ("openai_ada002_embedding", "openai_gpt35turbo_llm"),
-        # ("openai_3small_embedding", "openai_gpt4_llm"),
-        # ("openai_3large_embedding", "openai_gpt4_llm_streaming"),
+        ("openai_3small_embedding", "openai_gpt4_llm"),
+        ("openai_3large_embedding", "openai_gpt4_llm_streaming"),
         ("azure_openai_ada002_embedding", "azure_openai_gpt35turbo_llm"),
         ("vertex_gecko_embedding", "vertex_bison_llm"),
         ("bedrock_titan_embedding", "bedrock_anthropic_claudev2_llm"),
@@ -266,13 +305,13 @@ def test_rag(test_case, vector_store, embedding, llm, request, record_property):
         f"{llm},{embedding},{vector_store}",
     )
     resolved_vector_store = request.getfixturevalue(vector_store)
-    resolved_embedding = request.getfixturevalue(embedding)
-    resolved_llm = request.getfixturevalue(llm)
+    resolved_embedding_fn = request.getfixturevalue(embedding)
+    resolved_llm_fn = request.getfixturevalue(llm)
     _run_test(
         test_case,
         resolved_vector_store,
-        resolved_embedding,
-        resolved_llm,
+        resolved_embedding_fn,
+        resolved_llm_fn,
         record_property,
     )
 
@@ -280,12 +319,19 @@ def test_rag(test_case, vector_store, embedding, llm, request, record_property):
 def _run_test(
     test_case: str,
     vector_store_context,
-    embedding,
+    embedding_fn,
     resolved_llm,
     record_property,
 ):
-    vector_store = vector_store_context.new_langchain_vector_store(embedding=embedding)
-    llm = resolved_llm["llm"]
+    # NeMo guardrails running only with certain LLMs
+    if not resolved_llm["nemo_config"]:
+        skip_test_due_to_implementation_not_supported("nemo_guardrails")
+
+    vector_store = vector_store_context.new_langchain_vector_store(
+        embedding=embedding_fn()
+    )
+    llm = resolved_llm["llm"]()  # llm is a callable
+
     if test_case == "rag_custom_chain":
         run_rag_custom_chain(
             vector_store=vector_store, llm=llm, record_property=record_property
@@ -302,14 +348,11 @@ def _run_test(
         run_trulens_evaluation(vector_store=vector_store, llm=llm)
     elif test_case == "nemo_guardrails":
         config = resolved_llm["nemo_config"]
-        if config:
-            # NeMo creates the LLM internally using the config
-            run_nemo_guardrails(
-                vector_store=vector_store,
-                config=config,
-            )
-        else:
-            skip_test_due_to_implementation_not_supported("nemo_guardrails")
+        # NeMo creates the LLM internally using the config
+        run_nemo_guardrails(
+            vector_store=vector_store,
+            config=config,
+        )
     else:
         raise ValueError(f"Unknown test case: {test_case}")
 
