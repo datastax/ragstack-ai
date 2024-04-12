@@ -212,8 +212,8 @@ def huggingface_hub_minilml6v2_embedding():
     "embedding,llm",
     [
         ("openai_ada002_embedding", "openai_gpt35turbo_llm"),
-        # ("openai_3large_embedding", "openai_gpt4_llm"),
-        # ("openai_3small_embedding", "openai_gpt4_llm"),
+        ("openai_3large_embedding", "openai_gpt35turbo_llm"),
+        ("openai_3small_embedding", "openai_gpt4_llm"),
         ("azure_openai_ada002_embedding", "azure_openai_gpt35turbo_llm"),
         ("vertex_gecko_langchain_embedding", "vertex_bison_llm"),
         ("bedrock_titan_embedding", "bedrock_anthropic_claudev2_llm"),
