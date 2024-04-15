@@ -289,7 +289,7 @@ def nvidia_aifoundation_mixtral8x7b_llm():
         ("bedrock_titan_embedding", "bedrock_anthropic_claudev2_llm"),
         ("bedrock_cohere_embedding", "bedrock_mistral_mistral7b_llm"),
         ("bedrock_cohere_embedding", "bedrock_meta_llama2_llm"),
-        ("huggingface_hub_minilml6v2_embedding", "huggingface_hub_flant5xxl_llm"),
+        # ("huggingface_hub_minilml6v2_embedding", "huggingface_hub_flant5xxl_llm"),
         (
             "nvidia_aifoundation_nvolveqa40k_embedding",
             "nvidia_aifoundation_mixtral8x7b_llm",
