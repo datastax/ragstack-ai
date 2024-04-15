@@ -129,7 +129,7 @@ class CassandraColbertVectorStore(ColbertVectorStore):
         self.session.execute(
             f"""
             CREATE CUSTOM INDEX IF NOT EXISTS colbert_ann_{self.table_name} ON {self.full_table_name}(bert_embedding) USING 'StorageAttachedIndex'
-  WITH OPTIONS = {{'similarity_function': 'DOT_PRODUCT' }};
+  WITH OPTIONS = {{'source_model': 'bert' }};
         """
         )
         logging.info(f"Created index on table {self.full_table_name}")
