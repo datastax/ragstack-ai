@@ -1,0 +1,44 @@
+[tool.poetry]
+name = "ragstack-e2e-tests"
+version = "0.0.1.pre"
+description = "RAGStack tests"
+license = ""
+authors = ["DataStax"]
+
+[tool.poetry.dependencies]
+python = ">=3.9,<3.12,!=3.9.7"
+
+[tool.poetry.group.test.dependencies]
+ragstack-ai-tests-utils = { path = "../tests-utils", develop = true }
+black = "*"
+ruff = "*"
+llama-index-embeddings-huggingface = "^0.1.0"
+llama-index-llms-huggingface = "^0.1.0"
+azure-storage-blob = "^12.19.0"
+pillow = "^10.2.0"
+python-dotenv = "^1.0.1"
+trulens-eval = "^0.21.0"
+nemoguardrails = "^0.8.0"
+
+# From LangChain optional deps, needed by WebBaseLoader
+beautifulsoup4 = "^4"
+
+ragstack-ai = { path = "../..", develop = false, extras = ["langchain-google", "langchain-nvidia", "llama-index-google", "llama-index-azure", "llama-index-bedrock"] }
+
+# benchmarks
+pyperf = "^2.6.2"
+matplotlib = "^3.8.2"
+prettytable = "^3.9.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+line-length = 250
+
+[tool.pytest.ini_options]
+log_cli = true
+log_cli_level = "INFO"
+log_cli_format = "%(asctime)s [%(levelname)8s] %(message)s (%(filename)s:%(lineno)s)"
+log_cli_date_format = "%Y-%m-%d %H:%M:%S"

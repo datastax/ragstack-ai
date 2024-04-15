@@ -1,6 +1,4 @@
 def test_import():
-    from llama_index.vector_stores.astra_db import AstraDBVectorStore  # noqa
-    from llama_index.vector_stores.cassandra import CassandraVectorStore  # noqa
     from langchain.vectorstores import AstraDB  # noqa
     from langchain_astradb import AstraDBVectorStore  # noqa
     import langchain_core  # noqa
@@ -20,9 +18,6 @@ def test_meta():
         assert meta["version"]
         assert meta["license"] == "BUSL-1.1"
 
-    check_meta("ragstack-ai")
     check_meta("ragstack-ai-langchain")
-    check_meta("ragstack-ai-llamaindex")
-    check_meta("ragstack-ai-colbert")
 
 

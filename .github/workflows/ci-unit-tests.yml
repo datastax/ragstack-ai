@@ -44,17 +44,22 @@ jobs:
       - name: Run lint
         uses: ./.github/actions/lint
 
-      - name: "Build"
-        run: |
-          tox -e build
+      - name: "Unit tests (root)"
+        run: tox -e unit-tests
 
-      - name: "Unit tests"
-        run: |
-          tox -e unit-tests
+      - name: "Unit tests (colbert)"
+        run: tox -e unit-tests -c libs/colbert
+
+      - name: "Unit tests (langchain)"
+        run: tox -e unit-tests -c libs/langchain
+
+      - name: "Unit tests (llamaindex)"
+        run: tox -e unit-tests -c libs/llamaindex
 
   integration-tests:
     name: Integration Tests
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - name: Check out the repo
         uses: actions/checkout@v4
@@ -71,7 +76,6 @@ jobs:
       - name: Setup AstraDB
         uses: ./.github/actions/setup-astra-db
         id: astra-db
-        timeout-minutes: 10
         with:
           astra-token: ${{ secrets.E2E_TESTS_ASTRA_DEV_DB_TOKEN }}
           db-name: ${{ steps.db-name.outputs.db-name }}
@@ -80,14 +84,21 @@ jobs:
           cloud: "aws"
 
       - name: "Integration tests"
-        timeout-minutes: 10
         env:
           ASTRA_DB_TOKEN: "${{ secrets.E2E_TESTS_ASTRA_DEV_DB_TOKEN }}"
           ASTRA_DB_ID: "${{ steps.astra-db.outputs.db_id }}"
           ASTRA_DB_ENV: "DEV"
         run: |
-          rm -rf .tox
-          tox -e integration-tests
+          set -e
+          echo "::group::libs/colbert"
+          tox -e integration-tests -c libs/colbert
+          echo "::endgroup::"
+          echo "::group::libs/langchain"
+          tox -e integration-tests -c libs/langchain
+          echo "::endgroup::"
+          echo "::group::libs/llamaindex"
+          tox -e integration-tests -c libs/llamaindex
+          echo "::endgroup::"
 
       - name: Cleanup AstraDB
         uses: ./.github/actions/cleanup-astra-db
