@@ -89,46 +89,16 @@ jobs:
           ASTRA_DB_ID: "${{ steps.astra-db.outputs.db_id }}"
           ASTRA_DB_ENV: "DEV"
         run: |
-          set -ex
-          du -sh ~/*
-          du -sh *
-          du -sh libs/*
-          du -sh libs/colbert/*
-          du -sh libs/langchain/*
-          du -sh libs/llamaindex/*
-          rm -rf **/.tox
-          du -sh ~/*
-          du -sh *
-          du -sh libs/*
-          du -sh libs/colbert/*
-          du -sh libs/langchain/*
-          du -sh libs/llamaindex/*
+          set -e
+          echo "::group::libs/colbert"
           tox -e integration-tests -c libs/colbert
-          du -sh ~/*
-          du -sh *
-          du -sh libs/*
-          du -sh libs/colbert/*
-          du -sh libs/langchain/*
-          du -sh libs/llamaindex/*
-          rm -rf **/.tox
-          du -sh libs/*
-          du -sh libs/colbert/*
-          du -sh libs/langchain/*
-          du -sh libs/llamaindex/*
-          tox -e integration-tests -c libs/llamaindex
-          du -sh ~/*
-          du -sh *
-          du -sh libs/colbert/*
-          du -sh libs/langchain/*
-          du -sh libs/llamaindex/*
-          rm -rf **/.tox
-          du -sh libs/colbert/*
-          du -sh libs/langchain/*
-          du -sh libs/llamaindex/*
+          echo "::endgroup::"
+          echo "::group::libs/langchain"
           tox -e integration-tests -c libs/langchain
-          du -sh libs/colbert/*
-          du -sh libs/langchain/*
-          du -sh libs/llamaindex/*
+          echo "::endgroup::"
+          echo "::group::libs/llamaindex"
+          tox -e integration-tests -c libs/llamaindex
+          echo "::endgroup::"
 
       - name: Cleanup AstraDB
         uses: ./.github/actions/cleanup-astra-db
