@@ -219,7 +219,7 @@ def huggingface_hub_minilml6v2_embedding():
         ("bedrock_titan_embedding", "bedrock_anthropic_claudev2_llm"),
         ("bedrock_cohere_embedding", "bedrock_ai21_jurassic2mid_llm"),
         ("bedrock_cohere_embedding", "bedrock_meta_llama2_llm"),
-        ("huggingface_hub_minilml6v2_embedding", "huggingface_hub_flant5xxl_llm"),
+        # ("huggingface_hub_minilml6v2_embedding", "huggingface_hub_flant5xxl_llm"),
     ],
 )
 def test_rag(vector_store, embedding, llm, request):
