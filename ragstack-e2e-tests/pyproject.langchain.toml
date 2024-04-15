@@ -13,7 +13,6 @@ pytest = "*"
 black = "*"
 ruff = "*"
 google-cloud-aiplatform = "^1.36.4"
-boto3 = "^1.29.6"
 huggingface-hub = "^0.20.3"
 azure-storage-blob = "^12.19.0"
 pillow = "^10.2.0"
@@ -32,15 +31,30 @@ langchain-core = { git = "https://github.com/langchain-ai/langchain.git", branch
 langchain-community = { git = "https://github.com/langchain-ai/langchain.git", branch = "master", subdirectory = "libs/community" }
 langchain-astradb = { git = "https://github.com/langchain-ai/langchain-datastax.git", branch = "main", subdirectory = "libs/astradb" }
 langchain-openai = { git = "https://github.com/langchain-ai/langchain.git", branch = "master", subdirectory = "libs/partners/openai" }
-langchain-google-genai = { git = "https://github.com/langchain-ai/langchain-google.git", branch = "main", subdirectory = "libs/genai" }
+# langchain-google-genai main branch depends on google-generativeai 0.5.x which is not supported by llama-index
+#langchain-google-genai = { git = "https://github.com/langchain-ai/langchain-google.git", branch = "main", subdirectory = "libs/genai" }
+langchain-google-genai = "1.0.1"
 langchain-google-vertexai = { git = "https://github.com/langchain-ai/langchain-google.git", branch = "main", subdirectory = "libs/vertexai" }
 langchain-nvidia-ai-endpoints = { git = "https://github.com/langchain-ai/langchain-nvidia.git", branch = "main", subdirectory = "libs/ai-endpoints" }
-llama-index = { version = "0.9.48", extras = ["langchain"] }
-llama-parse = { version = "0.1.4" }
+
+llama-index = "0.10.28"
+llama-index-vector-stores-astra-db = "0.1.5"
+llama-index-vector-stores-cassandra = "0.1.3"
+llama-index-embeddings-langchain = "0.1.2"
+llama-parse = "0.4.0"
+llama-index-llms-azure-openai = { version = "0.1.5" }
+llama-index-embeddings-azure-openai = { version = "0.1.6" }
+llama-index-llms-bedrock = { version = "0.1.5" }
+llama-index-embeddings-bedrock = { version = "0.1.4" }
+llama-index-llms-gemini = { version = "0.1.7" }
+llama-index-multi-modal-llms-gemini = { version = "0.1.5" }
+llama-index-llms-vertex = { version = "0.1.5" }
+llama-index-embeddings-gemini = { version = "0.1.6" }
+llama-index-llms-huggingface = "^0.1.0"
+
 astrapy = ">=0.7.7, <2"
-# we need this specific feature from cassio: https://github.com/CassioML/cassio/pull/128
 cassio = "~0.1.4"
-unstructured = { git = "https://github.com/Unstructured-IO/unstructured.git", branch = "main" }
+unstructured = "0.12.5"
 
 [build-system]
 requires = ["poetry-core"]
