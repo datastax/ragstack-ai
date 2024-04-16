@@ -173,7 +173,7 @@ class ColbertCassandraRetriever(ColbertVectorStoreRetriever):
                 for embedding in embeddings:
                     local_chunks.add((embedding.doc_id, embedding.chunk_id))
             except ReadTimeout:
-                logging.warn(f"Query timeout with params: {query_vector}, {top_k}")
+                logging.error(f"Query timeout with params: {query_vector}, {top_k}")
                 # Handle the timeout or other potential exceptions as needed
             except Exception as e:
                 logging.error(
@@ -218,7 +218,7 @@ class ColbertCassandraRetriever(ColbertVectorStoreRetriever):
                     torch.tensor(row.bert_embedding) for row in rows
                 ]
             except ReadTimeout:
-                logging.warn(f"Query timeout for doc_id {doc_id}, chunk_id {chunk_id}")
+                logging.error(f"Query timeout for doc_id {doc_id}, chunk_id {chunk_id}")
             except Exception as e:
                 logging.error(
                     f"Error fetching chunk data for doc_id {doc_id}, chunk_id {chunk_id}: {e}"
