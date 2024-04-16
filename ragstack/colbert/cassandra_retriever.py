@@ -139,13 +139,13 @@ class ColbertCassandraRetriever(ColbertVectorStoreRetriever):
             query, query_maxlen=query_maxlen
         )
 
-        # the min of query_maxlen is 32
-        top_k = max(math.floor(len(query_encodings) / 2), 16)
-        logging.debug(f"query length {len(query)} embeddings top_k: {top_k}")
+        top_k = k
+        if k < 1:
+            top_k = max(math.floor(len(query_encodings) / 2), 16)
+        logging.info(f"query length {len(query)} embeddings top_k: {top_k}")
 
         # find the most relevant chunks
-        chunks: Set[Tuple[str, int]] = set()
-        ann_futures: List[ResponseFuture] = []
+        ann_futures: List[Tuple[Tensor, ResponseFuture]] = []
         for qv in query_encodings:
             # per token based retrieval
             future = self.vector_store.session.execute_async(
@@ -153,18 +153,30 @@ class ColbertCassandraRetriever(ColbertVectorStoreRetriever):
                 [list(qv), top_k],
                 timeout=query_timeout,
             )
-            ann_futures.append(future)
+            ann_futures.append((qv, future))
 
-        for future in ann_futures:
-            embeddings = future.result()
-            chunks.update(
-                (embedding.doc_id, embedding.chunk_id) for embedding in embeddings
-            )
+        chunk_candidates: Dict[Tuple[str, int, Tensor]] = {}
+        for qv, future in ann_futures:
+            rows = future.result()
+            for row in rows:
+                # pre_score is the dot product between the query vector and the embedding vector
+                pre_score = torch.matmul(qv, torch.tensor(row.bert_embedding))
+                # should it be previous score + the current score?
+                key = (row.doc_id, row.chunk_id, qv)
+                chunk_candidates[key] = max(chunk_candidates.get(key, -1), pre_score)
+
+        candidate_scores: Dict[Tuple(str, int)] = {}
+        for (doc_id, chunk_id, qv), pre_score in chunk_candidates.items():
+            candidate_scores[(doc_id, chunk_id)] = candidate_scores.get((doc_id, chunk_id), 0) + pre_score
+
+        final_candidates = candidate_scores
+        if k > 0:
+            final_candidates = sorted(candidate_scores, key=candidate_scores.get, reverse=True)[:2*k]
 
         # score each document
         chunk_scores: Dict[Tuple[str, int], Tensor] = {}
         score_futures: List[Tuple[ResponseFuture, str, int]] = []
-        for doc_id, chunk_id in chunks:
+        for doc_id, chunk_id in final_candidates:
             future = self.vector_store.session.execute_async(
                 self.vector_store.query_colbert_chunks_stmt,
                 [doc_id, chunk_id],
@@ -184,7 +196,10 @@ class ColbertCassandraRetriever(ColbertVectorStoreRetriever):
             )
 
         # load the source chunk for the top k documents
-        chunks_by_score = sorted(chunk_scores, key=chunk_scores.get, reverse=True)[:k]
+        rank_k = 10
+        if k >= 0:
+            rank_k = min(k, 10)
+        chunks_by_score = sorted(chunk_scores, key=chunk_scores.get, reverse=True)[:rank_k]
 
         # grab the chunk texts
         text_futures: List[Tuple[ResponseFuture, str, int]] = []

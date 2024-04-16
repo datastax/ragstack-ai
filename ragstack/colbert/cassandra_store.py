@@ -77,7 +77,7 @@ class CassandraColbertVectorStore(ColbertVectorStore):
 
         self.query_colbert_ann_stmt = self.session.prepare(
             f"""
-        SELECT doc_id, chunk_id
+        SELECT doc_id, chunk_id, bert_embedding
         FROM {self.full_table_name}
         ORDER BY bert_embedding ANN OF ?
         LIMIT ?
