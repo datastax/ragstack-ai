@@ -108,7 +108,7 @@ class ColbertCassandraRetriever(ColbertVectorStoreRetriever):
         is_cuda (bool): A flag indicating whether to use CUDA (GPU) for computation.
         is_fp16 (bool): A flag indicating whether to half-precision floating point operations on CUDA (GPU).
                         Has no effect on CPU computation.
-        max_casandra_workers: The maximum number of concurrent requests to make to Cassandra on a per-retrieval basis.
+        max_workers: The maximum number of concurrent requests to make to the vector store on a per-retrieval basis.
 
     Note:
         The class is designed to work with a GPU for optimal performance but will automatically fall back to CPU
@@ -117,7 +117,7 @@ class ColbertCassandraRetriever(ColbertVectorStoreRetriever):
 
     vector_store: CassandraColbertVectorStore
     colbert_embeddings: ColbertTokenEmbeddings
-    max_casandra_workers: int
+    max_workers: int
     is_cuda: bool = False
     is_fp16: bool = False
 
