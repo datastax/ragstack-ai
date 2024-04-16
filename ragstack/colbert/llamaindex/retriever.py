@@ -1,6 +1,5 @@
 
-from llama_index.core import QueryBundle
-from llama_index.core.schema import NodeWithScore, TextNode
+from llama_index.core.schema import NodeWithScore, QueryBundle, TextNode
 from llama_index.core.callbacks.base import CallbackManager
 from llama_index.core.retrievers import BaseRetriever
 from llama_index.core.constants import DEFAULT_SIMILARITY_TOP_K
@@ -29,28 +28,14 @@ class ColbertVectorStoreLlamaIndexRetriever(BaseRetriever):
     ) -> None:
         """Initialize params."""
         self._retriever = retriever
-        self._vector_store = self._index.vector_store
         self._similarity_top_k = similarity_top_k
         self._query_maxlen = query_maxlen
-
-        callback_manager = callback_manager or CallbackManager()
         super().__init__(
             callback_manager=callback_manager,
             object_map=object_map,
             verbose=verbose,
         )
 
-    @property
-    def similarity_top_k(self) -> int:
-        """Return similarity top k."""
-        return self._similarity_top_k
-
-    @similarity_top_k.setter
-    def similarity_top_k(self, similarity_top_k: int) -> None:
-        """Set similarity top k."""
-        self._similarity_top_k = similarity_top_k
-
-    @dispatcher.span
     def _retrieve(
         self,
         query_bundle: QueryBundle,
