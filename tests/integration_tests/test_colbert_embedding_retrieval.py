@@ -8,6 +8,7 @@ from ragstack.colbert import (
     ColbertTokenEmbeddings,
 )
 from ragstack.colbert.langchain import ColbertVectorStoreLangChainRetriever
+from ragstack.colbert.llamaindex import ColbertVectorStoreLlamaIndexRetriever
 from tests.integration_tests.conftest import (
     KEYSPACE,
     get_astradb_test_store,
@@ -102,3 +103,7 @@ def test_embedding_cassandra_retriever(request, vector_store: str):
     )
     assert len(docs) == 2
     assert len(docs[0].page_content) > 0
+
+    li_retriever = ColbertVectorStoreLlamaIndexRetriever(retriever, similarity_top_k=3)
+    nodes = li_retriever.retrieve("what kind fish lives shallow coral reefs")
+    assert len(nodes) == 3
