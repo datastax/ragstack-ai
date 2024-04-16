@@ -58,6 +58,9 @@ class CassandraColbertVectorStore(ColbertVectorStore):
         self.full_table_name = f"{keyspace}.{table_name}"
 
         self.session.default_timeout = timeout
+        cluster_name = self.session.cluster.metadata.cluster_name.lower()
+        self.is_astra = "cndb" == cluster_name
+        logging.info(f"cassandra cluster name {cluster_name} is this astra {self.is_astra}")
         self.__create_tables()
 
         # prepare statements
@@ -126,12 +129,20 @@ class CassandraColbertVectorStore(ColbertVectorStore):
         )
         logging.info(f"Created table {self.full_table_name}")
 
-        self.session.execute(
-            f"""
-            CREATE CUSTOM INDEX IF NOT EXISTS colbert_ann_{self.table_name} ON {self.full_table_name}(bert_embedding) USING 'StorageAttachedIndex'
-  WITH OPTIONS = {{'source_model': 'bert' }};
-        """
-        )
+        if self.is_astra:
+            self.session.execute(
+                f"""
+                CREATE CUSTOM INDEX IF NOT EXISTS colbert_ann_{self.table_name} ON {self.full_table_name}(bert_embedding) USING 'StorageAttachedIndex'
+                WITH OPTIONS = {{'source_model': 'bert' }};
+            """
+            )
+        else:
+            self.session.execute(
+                f"""
+                CREATE CUSTOM INDEX IF NOT EXISTS colbert_ann_{self.table_name} ON {self.full_table_name}(bert_embedding) USING 'StorageAttachedIndex'
+                WITH OPTIONS = {{'similarity_function': 'DOT_PRODUCT'}};
+            """
+            )
         logging.info(f"Created index on table {self.full_table_name}")
 
     def put_chunks(
