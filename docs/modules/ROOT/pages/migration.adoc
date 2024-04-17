@@ -42,7 +42,7 @@ from dotenv import load_dotenv
 from langchain_community.document_loaders import PyPDFDirectoryLoader
 from langchain_astradb import AstraDBVectorStore
 from langchain_openai import OpenAIEmbeddings
-from langchain_core import Document
+from langchain_core.documents import Document
 
 load_dotenv()
 
@@ -54,7 +54,7 @@ ASTRA_DB_COLLECTION = os.environ.get("ASTRA_DB_COLLECTION")
 embedding = OpenAIEmbeddings()
 vstore = AstraDBVectorStore(
     embedding=embedding,
-    collection_name="test3",
+    collection_name=ASTRA_DB_COLLECTION,
     token=os.environ["ASTRA_DB_APPLICATION_TOKEN"],
     api_endpoint=os.environ["ASTRA_DB_API_ENDPOINT"],
 )
