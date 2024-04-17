@@ -321,7 +321,7 @@ def _run_test(
     record_property,
 ):
     # NeMo guardrails running only with certain LLMs
-    if not resolved_llm["nemo_config"]:
+    if test_case == "nemo_guardrails" and not resolved_llm["nemo_config"]:
         skip_test_due_to_implementation_not_supported("nemo_guardrails")
 
     vector_store = vector_store_context.new_langchain_vector_store(
@@ -344,11 +344,9 @@ def _run_test(
     elif test_case == "trulens":
         run_trulens_evaluation(vector_store=vector_store, llm=llm)
     elif test_case == "nemo_guardrails":
-        config = resolved_llm["nemo_config"]
         # NeMo creates the LLM internally using the config
         run_nemo_guardrails(
-            vector_store=vector_store,
-            config=config,
+            vector_store=vector_store, config=resolved_llm["nemo_config"]
         )
     else:
         raise ValueError(f"Unknown test case: {test_case}")
