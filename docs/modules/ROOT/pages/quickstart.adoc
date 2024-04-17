@@ -75,28 +75,6 @@ The Astra API endpoint is available in the {astra_ui}. Its format is \https://<A
 +
 Create an OpenAI key at https://platform.openai.com/.
 +
-You must have an existing collection in {db-serverless}, such as `test`). If you don't have one, create one in {astra-ui}, or with the Data API (using the `.env` values from the next step):
-+
-[source,curl]
-----
-curl -v -s --location \
---request POST https://${ASTRA_DB_ID}-${ASTRA_DB_REGION}.apps.astra.datastax.com/api/json/v1/default_keyspace \
---header "X-Cassandra-Token: $ASTRA_DB_APPLICATION_TOKEN" \
---header "Content-Type: application/json" \
---header "Accept: application/json" \
---data '{
-  "createCollection": {
-    "name": "test",
-    "options" : {
-      "vector" : {
-      "dimension" : 5,
-      "metric" : "cosine"
-      }
-    }
-  }
-}'
-----
-+
 . Create a `.env` file in the root of your program with the values from your Astra Connect tab.
 +
 [source,bash]
@@ -120,11 +98,11 @@ from dotenv import load_dotenv
 from datasets import load_dataset
 from langchain_astradb import AstraDBVectorStore
 from langchain_openai import OpenAIEmbeddings
-from langchain_core import Document
+from langchain_core.documents import Document
 from langchain.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
-from langchain_core.output_parser import StrOutputParser
-from langchain_core.runnable import RunnablePassthrough
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.runnables import RunnablePassthrough
 ----
 
 . Load the environment variables:
@@ -147,7 +125,7 @@ ASTRA_DB_COLLECTION = os.environ.get("ASTRA_DB_COLLECTION")
 embedding = OpenAIEmbeddings()
 vstore = AstraDBVectorStore(
     embedding=embedding,
-    collection_name="test",
+    collection_name=ASTRA_DB_COLLECTION,
     token=os.environ["ASTRA_DB_APPLICATION_TOKEN"],
     api_endpoint=os.environ["ASTRA_DB_API_ENDPOINT"],
 )
