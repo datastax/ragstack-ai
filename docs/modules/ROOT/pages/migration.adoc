@@ -228,9 +228,15 @@ Here is an application that uses LlamaIndex to index a set of documents.
 [source,python]
 ----
 import os
-from llama_index.llama_dataset import download_llama_dataset
+from dotenv import load_dotenv
+from llama_index.core.llama_dataset import download_llama_dataset
 from llama_index.vector_stores import AstraDBVectorStore
 from llama_index import VectorStoreIndex, SimpleDirectoryReader, StorageContext
+
+load_dotenv()
+
+ASTRA_DB_APPLICATION_TOKEN = os.environ.get("ASTRA_DB_APPLICATION_TOKEN")
+ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
 
 # Download and load dataset
 dataset = download_llama_dataset("PaulGrahamEssayDataset", "./data")
