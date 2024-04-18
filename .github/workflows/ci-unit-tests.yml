@@ -83,12 +83,26 @@ jobs:
           region: "us-west-2"
           cloud: "aws"
 
-      - name: "Integration tests (colbert)"
+      - name: "Integration tests"
         env:
           ASTRA_DB_TOKEN: "${{ secrets.E2E_TESTS_ASTRA_DEV_DB_TOKEN }}"
           ASTRA_DB_ID: "${{ steps.astra-db.outputs.db_id }}"
           ASTRA_DB_ENV: "DEV"
-        run: rm -rf **/.tox && tox -e integration-tests -c libs/colbert
+        run: |
+          set -ex
+          du -sh *
+          rm -rf **/.tox
+          du -sh *
+          tox -e integration-tests -c libs/colbert
+          du -sh *
+          rm -rf **/.tox
+          du -sh *
+          tox -e integration-tests -c libs/llamaindex
+          du -sh *
+          rm -rf **/.tox
+          du -sh *
+          tox -e integration-tests -c libs/langchain
+          du -sh *
 
       - name: "Integration tests (llamaindex)"
         env:
