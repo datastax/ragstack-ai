@@ -116,7 +116,7 @@ class ColbertTokenEmbeddings(TokenEmbeddings):
             and not dist.is_initialized()
             and distributed_communication
         ):
-            logging.warn(f"distribution initialization must complete on {nranks} gpus")
+            logging.info(f"distribution initialization must complete on {nranks} gpus")
             Distributed(self.__nranks)
             logging.info("distribution initialization completed")
 
