@@ -83,22 +83,26 @@ jobs:
           region: "us-west-2"
           cloud: "aws"
 
-      - name: "Integration tests"
+      - name: "Integration tests (colbert)"
         env:
           ASTRA_DB_TOKEN: "${{ secrets.E2E_TESTS_ASTRA_DEV_DB_TOKEN }}"
           ASTRA_DB_ID: "${{ steps.astra-db.outputs.db_id }}"
           ASTRA_DB_ENV: "DEV"
-        run: |
-          set -e
-          echo "::group::libs/colbert"
-          tox -e integration-tests -c libs/colbert
-          echo "::endgroup::"
-          echo "::group::libs/llamaindex"
-          tox -e integration-tests -c libs/llamaindex
-          echo "::endgroup::"
-          echo "::group::libs/langchain"
-          tox -e integration-tests -c libs/langchain
-          echo "::endgroup::"
+        run: tox -e integration-tests -c libs/colbert
+
+      - name: "Integration tests (llamaindex)"
+        env:
+          ASTRA_DB_TOKEN: "${{ secrets.E2E_TESTS_ASTRA_DEV_DB_TOKEN }}"
+          ASTRA_DB_ID: "${{ steps.astra-db.outputs.db_id }}"
+          ASTRA_DB_ENV: "DEV"
+        run: tox -e integration-tests -c libs/llamaindex
+
+      - name: "Integration tests (langchain)"
+        env:
+          ASTRA_DB_TOKEN: "${{ secrets.E2E_TESTS_ASTRA_DEV_DB_TOKEN }}"
+          ASTRA_DB_ID: "${{ steps.astra-db.outputs.db_id }}"
+          ASTRA_DB_ENV: "DEV"
+        run: tox -e integration-tests -c libs/langchain
 
       - name: Cleanup AstraDB
         uses: ./.github/actions/cleanup-astra-db
