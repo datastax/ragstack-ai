@@ -128,7 +128,7 @@ class ColbertCassandraRetriever(ColbertVectorStoreRetriever):
         self,
         vector_store: CassandraColbertVectorStore,
         colbert_embeddings: ColbertTokenEmbeddings,
-        max_casandra_workers: Optional[int] = 10,
+        max_workers: Optional[int] = 20,
     ):
         """
         Initializes the retriever with a specific vector store and Colbert embeddings model.
@@ -137,15 +137,15 @@ class ColbertCassandraRetriever(ColbertVectorStoreRetriever):
             vector_store (CassandraColbertVectorStore): The vector store to be used for retrieving embeddings.
             colbert_embeddings (ColbertTokenEmbeddings): The ColBERT embeddings model to be used for encoding
                                                          queries.
-            max_casandra_workers: The maximum number of concurrent requests to make to Cassandra on a
-                                  per-retrieval basis.
+            max_workers: The maximum number of concurrent requests to make to Cassandra on a per-retrieval basis.
         """
 
         self.vector_store = vector_store
         self.colbert_embeddings = colbert_embeddings
         self.is_cuda = torch.cuda.is_available()
         self.is_fp16 = all_gpus_support_fp16(self.is_cuda)
-        self.executor = ThreadPoolExecutor(max_workers=max_casandra_workers)
+        self.max_workers = max_workers
+        self.executor = ThreadPoolExecutor(max_workers=max_workers)
 
     def close(self) -> None:
         """
