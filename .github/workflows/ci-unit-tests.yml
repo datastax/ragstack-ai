@@ -104,20 +104,6 @@ jobs:
           tox -e integration-tests -c libs/langchain
           du -sh *
 
-      - name: "Integration tests (llamaindex)"
-        env:
-          ASTRA_DB_TOKEN: "${{ secrets.E2E_TESTS_ASTRA_DEV_DB_TOKEN }}"
-          ASTRA_DB_ID: "${{ steps.astra-db.outputs.db_id }}"
-          ASTRA_DB_ENV: "DEV"
-        run: rm -rf **/.tox && tox -e integration-tests -c libs/llamaindex
-
-      - name: "Integration tests (langchain)"
-        env:
-          ASTRA_DB_TOKEN: "${{ secrets.E2E_TESTS_ASTRA_DEV_DB_TOKEN }}"
-          ASTRA_DB_ID: "${{ steps.astra-db.outputs.db_id }}"
-          ASTRA_DB_ENV: "DEV"
-        run: rm -rf **/.tox && tox -e integration-tests -c libs/langchain
-
       - name: Cleanup AstraDB
         uses: ./.github/actions/cleanup-astra-db
         if: ${{ always() }}
