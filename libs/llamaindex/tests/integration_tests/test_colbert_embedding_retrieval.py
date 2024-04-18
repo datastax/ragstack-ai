@@ -89,9 +89,6 @@ def test_embedding_cassandra_retriever(request, vector_store: str):
     retriever = ColbertCassandraRetriever(
         vector_store=store, colbert_embeddings=colbert
     )
-    lc_retriever = ColbertVectorStoreLlamaIndexRetriever(retriever, k=2)
-    docs = lc_retriever.get_relevant_documents(
-        "what kind fish lives shallow coral reefs atlantic, india ocean, red sea, gulf of mexico, pacific, and arctic ocean"
-    )
-    assert len(docs) == 2
-    assert len(docs[0].page_content) > 0
+    li_retriever = ColbertVectorStoreLlamaIndexRetriever(retriever, similarity_top_k=3)
+    nodes = li_retriever.retrieve("what kind fish lives shallow coral reefs")
+    assert len(nodes) == 3
