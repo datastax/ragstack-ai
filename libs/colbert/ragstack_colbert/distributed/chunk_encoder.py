@@ -142,6 +142,7 @@ class ChunkEncoder:
                     text=texts[chunk_idx],
                     # Grab the embeddings for the chunk
                     embeddings=embeddings[start_idx:end_idx],
+                    metadata=None,
                 )
             )
 

@@ -8,9 +8,9 @@ to CPU computation if needed. This flexibility ensures that the retrieval system
 variety of hardware environments.
 """
 
+import asyncio
 import logging
 import math
-from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any, Dict, List, Optional, Set, Tuple
 
 import torch
@@ -108,7 +108,6 @@ class ColbertRetriever(BaseRetriever):
         is_cuda (bool): A flag indicating whether to use CUDA (GPU) for computation.
         is_fp16 (bool): A flag indicating whether to half-precision floating point operations on CUDA (GPU).
                         Has no effect on CPU computation.
-        max_workers: The maximum number of concurrent requests to make to the vector store on a per-retrieval basis.
 
     Note:
         The class is designed to work with a GPU for optimal performance but will automatically fall back to CPU
@@ -118,6 +117,8 @@ class ColbertRetriever(BaseRetriever):
     vector_store: BaseVectorStore
     colbert_embeddings: BaseEmbedding
     max_workers: int
+    vector_store: CassandraColbertVectorStore
+    colbert_embeddings: ColbertTokenEmbeddings
     is_cuda: bool = False
     is_fp16: bool = False
 
@@ -129,6 +130,8 @@ class ColbertRetriever(BaseRetriever):
         vector_store: BaseVectorStore,
         colbert_embeddings: BaseEmbedding,
         max_workers: Optional[int] = 20,
+        vector_store: CassandraColbertVectorStore,
+        colbert_embeddings: ColbertTokenEmbeddings,
     ):
         """
         Initializes the retriever with a specific vector store and Colbert embeddings model.
@@ -137,66 +140,40 @@ class ColbertRetriever(BaseRetriever):
             vector_store (BaseVectorStore): The vector store to be used for retrieving embeddings.
             colbert_embeddings (BaseEmbedding): The ColBERT embeddings model to be used for encoding
                                                          queries.
-            max_workers: The maximum number of concurrent requests to make to Cassandra on a per-retrieval basis.
         """
 
         self.vector_store = vector_store
         self.colbert_embeddings = colbert_embeddings
         self.is_cuda = torch.cuda.is_available()
         self.is_fp16 = all_gpus_support_fp16(self.is_cuda)
-        self.max_workers = max_workers
-        self.executor = ThreadPoolExecutor(max_workers=max_workers)
 
     def close(self) -> None:
         """
         Closes any open resources held by the retriever.
         """
-        self.executor.shutdown(wait=True)
+        pass
 
-    def _query_relevant_chunks(
-        self, query_encodings: Tensor, top_k: int, query_timeout: int
+    async def _query_relevant_chunks(
+        self, query_encodings: List[Tensor], top_k: int, query_timeout: int
     ) -> Set[Tuple[str, int]]:
         """
         Retrieves the top_k ANN results for each embedded query token.
         """
         chunks: Set[Tuple[str, int]] = set()
+        # Collect all tasks
+        tasks = [self.vector_store.get_relevant_chunks(vector=v, n=top_k) for v in query_encodings]
+        results = await asyncio.gather(*tasks, return_exceptions=True)
 
-        def query_and_process(query_vector: Tensor) -> Set[Tuple[str, int]]:
-            local_chunks = set()
-            try:
-                async_future = self.vector_store.session.execute_async(
-                    self.vector_store.query_colbert_ann_stmt,
-                    [list(query_vector), top_k],
-                    timeout=query_timeout,
-                )
-                embeddings = async_future.result()
-                for embedding in embeddings:
-                    local_chunks.add((embedding.doc_id, embedding.chunk_id))
-            except ReadTimeout:
-                logging.error(f"Query timeout with params: {query_vector}, {top_k}")
-                # Handle the timeout or other potential exceptions as needed
-            except Exception as e:
-                logging.error(
-                    f"Error during query execution or result fetching: {str(e)}"
-                )
-            return local_chunks
-
-        executor_futures = {
-            self.executor.submit(query_and_process, qv): qv for qv in query_encodings
-        }
-        for executor_future in as_completed(executor_futures):
-            query_vector = executor_futures[executor_future]
-            try:
-                result_chunks = executor_future.result()
-                chunks.update(result_chunks)
-            except Exception as exc:
-                logging.error(
-                    f"query_vector: {query_vector} generated an exception: {exc}"
-                )
+        # Process results and handle potential exceptions
+        for result in results:
+            if isinstance(result, Exception):
+                logging.error(f"Generated an exception: {result}")
+            else:
+                chunks.update(result)
 
         return chunks
 
-    def _retrieve_chunks(
+    async def _retrieve_chunks(
         self, chunks: Set[Tuple[str, int]], query_timeout: int
     ) -> Dict[Tuple[str, int], List[Tensor]]:
         """
@@ -204,38 +181,17 @@ class ColbertRetriever(BaseRetriever):
         """
         chunk_data: Dict[Tuple[str, int], List[Tensor]] = {}
 
-        def fetch_chunk_data(
-            doc_id: str, chunk_id: int
-        ) -> Tuple[Tuple[str, int], List[Tensor]]:
-            try:
-                async_future = self.vector_store.session.execute_async(
-                    self.vector_store.query_colbert_chunks_stmt,
-                    [doc_id, chunk_id],
-                    timeout=query_timeout,
-                )
-                rows = async_future.result()
-                return (doc_id, chunk_id), [
-                    torch.tensor(row.bert_embedding) for row in rows
-                ]
-            except ReadTimeout:
-                logging.error(f"Query timeout for doc_id {doc_id}, chunk_id {chunk_id}")
-            except Exception as e:
-                logging.error(
-                    f"Error fetching chunk data for doc_id {doc_id}, chunk_id {chunk_id}: {e}"
-                )
+        # Collect all tasks
+        tasks = [self.vector_store.get_chunk_embeddings(doc_id=doc_id, chunk_id=chunk_id) for doc_id, chunk_id in chunks]
+        results = await asyncio.gather(*tasks, return_exceptions=True)
 
-        executor_futures = [
-            self.executor.submit(fetch_chunk_data, doc_id, chunk_id)
-            for doc_id, chunk_id in chunks
-        ]
-        for executor_future in as_completed(executor_futures):
-            try:
-                result = executor_future.result()
-                if result:
-                    doc_chunk_pair, embeddings = result
-                    chunk_data[doc_chunk_pair] = embeddings
-            except Exception as exc:
-                logging.error(f"executor future generated an exception: {exc}")
+        # Process results and handle potential exceptions
+        for result in results:
+            if isinstance(result, Exception):
+                logging.error(f"Generated an exception: {result}")
+            else:
+                doc_chunk_pair, embeddings = result
+                chunk_data[doc_chunk_pair] = embeddings
 
         return chunk_data
 
@@ -258,13 +214,13 @@ class ColbertRetriever(BaseRetriever):
             )
         return chunk_scores
 
-    def _fetch_chunk_texts(
+    async def _fetch_chunk_data(
         self,
         chunks_by_score: List[Tuple[str, int]],
         chunk_scores: Dict[Tuple[str, int], Tensor],
     ) -> List[RetrievedChunk]:
         """
-        Fetches texts for each chunk in parallel and ranks them based on scores.
+        Fetches text and metadata for each chunk and ranks them based on scores.
 
         Parameters:
             chunks_by_score (List[Tuple[str, int]]): List of tuples containing (doc_id, chunk_id) sorted by score.
@@ -274,46 +230,37 @@ class ColbertRetriever(BaseRetriever):
             List[RetrievedChunk]: A list of RetrievedChunk objects with populated fields.
         """
 
-        def fetch_text(doc_id: str, chunk_id: int):
-            """
-            Fetches the text for a given doc_id and chunk_id.
+        # Collect all tasks
+        tasks = [self.vector_store.get_chunk_text_and_metadata(doc_id=doc_id, chunk_id=chunk_id) for doc_id, chunk_id in chunks_by_score]
+        results = await asyncio.gather(*tasks, return_exceptions=True)
 
-            Returns:
-                Tuple containing the future result, doc_id, and chunk_id.
-            """
-            async_future = self.vector_store.session.execute_async(
-                self.vector_store.query_chunk_stmt, [doc_id, chunk_id]
-            )
-            rows = async_future.result()
-            return rows, doc_id, chunk_id
+        # Process results and handle potential exceptions
+        chunk_data: Dict[Tuple[str, int], Tuple[str, Dict[str, Any]]] = {}
+        for result in results:
+            if isinstance(result, Exception):
+                logging.error(f"Generated an exception: {result}")
+            else:
+                doc_id, chunk_id, text, metadata = result
+                chunk_data[(doc_id, chunk_id)] = (text, metadata)
 
         answers: List[RetrievedChunk] = []
-
         rank = 1
-        executor_futures = {
-            self.executor.submit(fetch_text, doc_id, chunk_id): (doc_id, chunk_id)
-            for doc_id, chunk_id in chunks_by_score
-        }
-        for executor_future in as_completed(executor_futures):
-            try:
-                rows, doc_id, chunk_id = executor_future.result()
-                score = chunk_scores[(doc_id, chunk_id)]
-                answers.append(
+        for doc_id, chunk_id in chunks_by_score:
+            score = chunk_scores[(doc_id, chunk_id)]
+            text, metadata = chunk_data[(doc_id, chunk_id)]
+            answers.append(
                     RetrievedChunk(
                         doc_id=doc_id,
                         chunk_id=chunk_id,
                         score=score.item(),  # Ensure score is a scalar if it's a tensor
                         rank=rank,
-                        text=rows.one().body,
+                        text=text,
                     )
                 )
-                rank += 1
-            except Exception as e:
-                print(f"Failed to fetch or process chunk ({doc_id}, {chunk_id}): {e}")
 
         return answers
 
-    def retrieve(
+    async def aretrieve(
         self,
         query: str,
         k: int = 10,
@@ -350,12 +297,12 @@ class ColbertRetriever(BaseRetriever):
         top_k = max(math.floor(len(query_encodings) / 2), 16)
         logging.debug(f"query length {len(query)} embeddings top_k: {top_k}")
 
-        chunks = self._query_relevant_chunks(
+        chunks = await self._query_relevant_chunks(
             query_encodings=query_encodings, top_k=top_k, query_timeout=query_timeout
         )
 
         # score each chunk
-        chunk_data = self._retrieve_chunks(chunks=chunks, query_timeout=query_timeout)
+        chunk_data = await self._retrieve_chunks(chunks=chunks, query_timeout=query_timeout)
         chunk_scores = self._score_chunks(
             query_encodings=query_encodings, chunk_data=chunk_data
         )
@@ -363,7 +310,36 @@ class ColbertRetriever(BaseRetriever):
         # load the source chunk for the top k documents
         chunks_by_score = sorted(chunk_scores, key=chunk_scores.get, reverse=True)[:k]
 
-        answers = self._fetch_chunk_texts(
+        answers = await self._fetch_chunk_data(
             chunks_by_score=chunks_by_score, chunk_scores=chunk_scores
         )
         return answers
+
+    def retrieve(
+        self,
+        query: str,
+        k: int = 10,
+        query_maxlen: int = 64,
+        query_timeout: int = 180,  # seconds
+        **kwargs: Any,
+    ) -> List[RetrievedChunk]:
+        """
+        Retrieves a list of text chunks most relevant to the given query, using semantic similarity as the criteria.
+
+        Parameters:
+            query (str): The text query for which relevant chunks are to be retrieved.
+            k (int, optional): The number of top relevant chunks to retrieve. Defaults to 10.
+            query_maxlen (int, optional): //TODO figure out a better description for this parameter, and/or a better name.
+            query_timeout (int, optional): The timeout in seconds for query execution. Defaults to 180.
+            **kwargs (Any): Additional keyword arguments that can be used for extending functionality.
+
+        Returns:
+            List[RetrievedChunk]: A list of RetrievedChunk objects, each representing a text chunk that is relevant
+                                  to the query, along with its similarity score and rank.
+
+        Note:
+            The actual retrieval process involves encoding the query, performing an ANN search to find relevant
+            embeddings, scoring these embeddings for similarity, and retrieving the corresponding text chunks.
+        """
+        loop = asyncio.get_event_loop()
+        return loop.run_until_complete(self.aretrieve(query=query, k=k, query_maxlen=query_maxlen, query_timeout=query_timeout))

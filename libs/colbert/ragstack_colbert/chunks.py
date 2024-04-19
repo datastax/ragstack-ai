@@ -6,6 +6,8 @@ processing within the ColBERT retrieval system.
 from dataclasses import dataclass
 from numbers import Number
 
+from typing import Dict, Any
+
 from torch import Tensor
 
 
@@ -23,6 +25,7 @@ class BaseChunk:
     doc_id: str
     chunk_id: int
     text: str
+    metadata: Dict[str, Any]
 
 
 @dataclass(frozen=True)
