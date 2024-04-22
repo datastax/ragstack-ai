@@ -125,13 +125,13 @@ jobs:
           # workaround for FileLocked https://github.com/datastax/ragstack-ai/actions/runs/8629355336/job/23653432063?pr=316
           rm -rf **/.tox
           if [ "${{ inputs.suite-name == 'ragstack' }}" == "true" ]; then
-            tox -c ragstack-e2e-tests
+            tox -c libs/e2e-tests
           elif [ "${{ inputs.suite-name == 'langchain' }}" == "true" ]; then
-            tox -c ragstack-e2e-tests -e langchain
+            tox -c libs/e2e-tests -e langchain
           elif [ "${{ inputs.suite-name == 'llamaindex' }}" == "true" ]; then
-            tox -c ragstack-e2e-tests -e llamaindex
+            tox -c libs/e2e-tests -e llamaindex
           elif [ "${{ inputs.suite-name == 'ragstack-latest-release' }}" == "true" ]; then
-            tox -c ragstack-e2e-tests -e ragstack-ai-latest
+            tox -c libs/e2e-tests -e ragstack-ai-latest
           else
             echo "Unknown suite name: ${{ inputs.suite-name }}"
             exit 1
@@ -150,15 +150,15 @@ jobs:
             echo "commit-url=https://github.com/datastax/ragstack-ai/commits/${commit_ref}" >> $GITHUB_OUTPUT
 
           elif [ "${{ inputs.suite-name == 'langchain' }}" == "true" ]; then
-            commit_ref=$(grep resolved_reference ragstack-e2e-tests/poetry.lock | awk -F'"' '{print $2}' | head -1)
+            commit_ref=$(grep resolved_reference libs/e2e-tests/poetry.lock | awk -F'"' '{print $2}' | head -1)
             echo "commit-url=https://github.com/langchain-ai/langchain/commits/${commit_ref}" >> $GITHUB_OUTPUT
 
           elif [ "${{ inputs.suite-name == 'llamaindex' }}" == "true" ]; then
-            commit_ref=$(grep resolved_reference ragstack-e2e-tests/poetry.lock | awk -F'"' '{print $2}' | head -1)
+            commit_ref=$(grep resolved_reference libs/e2e-tests/poetry.lock | awk -F'"' '{print $2}' | head -1)
             echo "commit-url=https://github.com/run-llama/llama_index/commits/${commit_ref}" >> $GITHUB_OUTPUT
 
           elif [ "${{ inputs.suite-name == 'ragstack-latest-release' }}" == "true" ]; then
-            (tox run -c ragstack-e2e-tests -e get-latest-ragstack-ai-version -q) | tail -3 | head -n 1 > /tmp/ragstack-ai-version
+            (tox run -c libs/e2e-tests -e get-latest-ragstack-ai-version -q) | tail -3 | head -n 1 > /tmp/ragstack-ai-version
             cat /tmp/ragstack-ai-version
             ragstack_version=$(cat /tmp/ragstack-ai-version)
             echo "commit-url=https://pypi.org/project/ragstack-ai/${ragstack_version}" >> $GITHUB_OUTPUT
@@ -168,7 +168,7 @@ jobs:
         if: ${{ always() && inputs.deploy-to-slack }}
         uses: ./.github/actions/deploy-slack-report
         with:
-          from-report-file: "ragstack-e2e-tests/failed-tests-report.txt"
+          from-report-file: "libs/e2e-tests/failed-tests-report.txt"
           type: "${{ inputs.title }}"
           outcome: ${{ steps.e2e-tests.outcome }}
           commit-url: "${{ steps.info.outputs.commit-url }}"
@@ -180,7 +180,7 @@ jobs:
         with:
           report-type: tests
           token: ${{ secrets.TESTSPACE_TOKEN }}
-          report-file: ragstack-e2e-tests/results.xml
+          report-file: libs/e2e-tests/results.xml
           space: ${{ inputs.testspace-space }}
 
       - name: Cleanup AstraDB

@@ -1,0 +1,37 @@
+[tool.poetry]
+name = "ragstack-ai-langchain"
+version = "0.0.1.pre"
+description = "DataStax RAGStack Langchain"
+license = "BUSL-1.1"
+authors = ["DataStax"]
+readme = "README.md"
+repository = "https://github.com/datastax/ragstack-ai"
+documentation = "https://docs.datastax.com/en/ragstack"
+packages = [{ include = "ragstack_langchain" }]
+
+[tool.poetry.dependencies]
+python = ">=3.9,<3.12"
+astrapy = ">=0.7.7, <2"
+cassio = "~0.1.4"
+unstructured = "0.12.5"
+# THIS MUST BE CHANGED WITH ACTUAL VERSIONS AFTER FIRST RELEASES ARE PUBLISHED
+ragstack-ai-colbert = { path = "../colbert", develop = true, optional = true }
+
+# langchain
+langchain = "0.1.12"
+langchain-core = "0.1.31"
+langchain-community = "0.0.28"
+langchain-astradb = "0.1.0"
+langchain-openai = "0.0.8"
+langchain-google-genai = { version = "1.0.1", optional = true }
+langchain-google-vertexai = { version = "0.1.0", optional = true }
+langchain-nvidia-ai-endpoints = { version = "0.0.3", optional = true }
+
+[tool.poetry.extras]
+colbert = ["ragstack-ai-colbert"]
+
+google = ["langchain-google-genai", "langchain-google-vertexai"]
+nvidia = ["langchain-nvidia-ai-endpoints"]
+
+[tool.poetry.group.test.dependencies]
+ragstack-ai-tests-utils = { path = "../tests-utils", develop = true }

@@ -45,8 +45,7 @@ jobs:
       - name: Prepare dev docker image
         if: ${{ always() }}
         run: |
-          poetry build
-          docker build -t datastax/ragstack-ai:latest-dev -f docker/Dockerfile.dev dist
+          docker build -t datastax/ragstack-ai:latest-dev -f docker/Dockerfile.dev .
 
       - name: Run Snyk to check Docker image for vulnerabilities
         uses: snyk/actions/docker@master
@@ -114,7 +113,7 @@ jobs:
           mv snyk.json snyk_reports/snyk-docker.json
 
       - name: "Setup: Python 3.11"
-        if: ${{ always() }}
+        if: ${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
         uses: ./.github/actions/setup-python
 
       - name: Testspace deploy report

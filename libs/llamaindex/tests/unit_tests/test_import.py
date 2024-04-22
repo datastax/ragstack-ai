@@ -1,16 +1,28 @@
+import importlib
+
+
 def test_import():
     from llama_index.vector_stores.astra_db import AstraDBVectorStore  # noqa
     from llama_index.vector_stores.cassandra import CassandraVectorStore  # noqa
-    from langchain.vectorstores import AstraDB  # noqa
-    from langchain_astradb import AstraDBVectorStore  # noqa
-    import langchain_core  # noqa
-    import langsmith  # noqa
     import astrapy  # noqa
     import cassio  # noqa
     import unstructured  # noqa
     import openai  # noqa
     import tiktoken  # noqa
 
+
+def check_no_import(fn: callable):
+    try:
+        fn()
+        raise Exception("Should have failed to import")
+    except ImportError:
+        pass
+
+def test_not_import():
+    check_no_import(lambda: importlib.import_module("langchain.vectorstores"))
+    check_no_import(lambda: importlib.import_module("langchain_astradb"))
+    check_no_import(lambda: importlib.import_module("langchain_core"))
+    check_no_import(lambda: importlib.import_module("langsmith"))
 
 def test_meta():
     from importlib import metadata
@@ -20,9 +32,6 @@ def test_meta():
         assert meta["version"]
         assert meta["license"] == "BUSL-1.1"
 
-    check_meta("ragstack-ai")
-    check_meta("ragstack-ai-langchain")
     check_meta("ragstack-ai-llamaindex")
-    check_meta("ragstack-ai-colbert")
 
 

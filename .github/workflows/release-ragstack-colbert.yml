@@ -1,0 +1,25 @@
+name: Release RAGStack Colbert package
+
+on:
+  push:
+    tags:
+      - "ragstack-ai-colbert-*"
+
+jobs:
+  release:
+    name: Release package
+    runs-on: ubuntu-latest
+    permissions: write-all
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: "Setup: Python 3.11"
+        uses: ./.github/actions/setup-python
+
+      - name: Release
+        uses: ./.github/actions/release-package
+        with:
+          package-directory: "libs/colbert"
+          pypi-token: ${{ secrets.PYPI_API_TOKEN }}
+          pypi-test-token: ${{ secrets.PYPI_TEST_API_TOKEN }}
