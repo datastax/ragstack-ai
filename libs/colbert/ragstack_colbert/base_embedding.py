@@ -7,7 +7,7 @@ from typing import List, Optional
 
 from torch import Tensor
 
-from .chunks import EmbeddedChunk
+from .objects import ChunkData, EmbeddedChunk
 
 
 class BaseEmbedding(ABC):
@@ -21,7 +21,7 @@ class BaseEmbedding(ABC):
 
     @abstractmethod
     def embed_chunks(
-        self, texts: List[str], doc_id: Optional[str] = None
+        self, chunks: List[ChunkData], doc_id: Optional[str] = None
     ) -> List[EmbeddedChunk]:
         """
         Embeds a list of text chunks into their corresponding vector representations.
@@ -30,14 +30,15 @@ class BaseEmbedding(ABC):
         returning a list of `EmbeddedChunk` instances containing the embeddings.
 
         Parameters:
-            texts (List[str]): A list of text strings, each representing a chunk of text to be embedded.
+            chunks (List[ChunkData]): A list of chunks including document text and any associated metadata.
             doc_id (Optional[str], optional): An optional document identifier that all chunks belong to.
                                                This can be used for tracing back embeddings to their
                                                source document. If not passed, an uuid will be generated.
 
         Returns:
-            List[EmbeddedChunk]: A list of `EmbeddedChunk` instances with embeddings populated,
-                                  corresponding to the input text chunks.
+            List[EmbeddedChunk]: A list of `EmbeddedChunks` instances with embeddings populated,
+                                  corresponding to the input text chunks, ready for insertion into
+                                  a vector store.
         """
 
     @abstractmethod

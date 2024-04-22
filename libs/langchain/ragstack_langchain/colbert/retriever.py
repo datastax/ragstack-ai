@@ -46,7 +46,12 @@ class ColbertLCRetriever(LangChainBaseRetriever):
     ) -> List[Document]:
         """Get documents relevant to a query."""
         chunks = self.retriever.retrieve(query, self.k)
-        return [
-            Document(metadata={"id": c.doc_id, "rank": c.rank}, page_content=c.text)
-            for c in chunks
-        ]
+
+        output: List[Document] = []
+        for chunk in chunks:
+            page_content = chunk.data.text
+            metadata=chunk.data.metadata
+            metadata["rank"] = chunk.rank
+            output.append(Document(page_content=page_content, metadata=metadata))
+
+        return output

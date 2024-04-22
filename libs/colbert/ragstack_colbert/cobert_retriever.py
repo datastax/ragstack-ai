@@ -11,16 +11,15 @@ variety of hardware environments.
 import asyncio
 import logging
 import math
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Set
 
 import torch
-from cassandra import ReadTimeout
 from torch import Tensor
 
 from .base_embedding import BaseEmbedding
 from .base_retriever import BaseRetriever
 from .base_vector_store import BaseVectorStore
-from .chunks import RetrievedChunk
+from .objects import BaseChunk, ChunkData, RetrievedChunk
 
 
 def all_gpus_support_fp16(is_cuda: Optional[bool] = False):
@@ -124,9 +123,6 @@ class ColbertRetriever(BaseRetriever):
 
     vector_store: BaseVectorStore
     colbert_embeddings: BaseEmbedding
-    max_workers: int
-    vector_store: CassandraColbertVectorStore
-    colbert_embeddings: ColbertTokenEmbeddings
     is_cuda: bool = False
     is_fp16: bool = False
 
@@ -137,9 +133,6 @@ class ColbertRetriever(BaseRetriever):
         self,
         vector_store: BaseVectorStore,
         colbert_embeddings: BaseEmbedding,
-        max_workers: Optional[int] = 20,
-        vector_store: CassandraColbertVectorStore,
-        colbert_embeddings: ColbertTokenEmbeddings,
     ):
         """
         Initializes the retriever with a specific vector store and Colbert embeddings model.
@@ -162,14 +155,14 @@ class ColbertRetriever(BaseRetriever):
         pass
 
     async def _query_relevant_chunks(
-        self, query_encodings: List[Tensor], top_k: int, query_timeout: int
-    ) -> Set[Tuple[str, int]]:
+        self, query_encodings: List[Tensor], top_k: int
+    ) -> Set[BaseChunk]:
         """
         Retrieves the top_k ANN results for each embedded query token.
         """
-        chunks: Set[Tuple[str, int]] = set()
+        chunks: Set[BaseChunk] = set()
         # Collect all tasks
-        tasks = [self.vector_store.get_relevant_chunks(vector=v, n=top_k) for v in query_encodings]
+        tasks = [self.vector_store.search_relevant_chunks(vector=v, n=top_k) for v in query_encodings]
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
         # Process results and handle potential exceptions
@@ -182,15 +175,15 @@ class ColbertRetriever(BaseRetriever):
         return chunks
 
     async def _retrieve_chunks(
-        self, chunks: Set[Tuple[str, int]], query_timeout: int
-    ) -> Dict[Tuple[str, int], List[Tensor]]:
+        self, chunks: Set[BaseChunk]
+    ) -> Dict[BaseChunk, List[Tensor]]:
         """
-        Retrieves chunk data for a set of doc_id and chunk_id pairs, returning a dictionary mapping each pair to a list of PyTorch tensors.
+        Retrieves embeddings for a list of chunks, returning a dictionary mapping chunk to a list of PyTorch tensors.
         """
-        chunk_data: Dict[Tuple[str, int], List[Tensor]] = {}
+        chunk_embeddings: Dict[BaseChunk, List[Tensor]] = {}
 
         # Collect all tasks
-        tasks = [self.vector_store.get_chunk_embeddings(doc_id=doc_id, chunk_id=chunk_id) for doc_id, chunk_id in chunks]
+        tasks = [self.vector_store.get_chunk_embeddings(chunk) for chunk in chunks]
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
         # Process results and handle potential exceptions
@@ -198,20 +191,20 @@ class ColbertRetriever(BaseRetriever):
             if isinstance(result, Exception):
                 logging.error(f"Issue on vector_store.get_chunk_embeddings(): {result} at {get_trace(result)}")
             else:
-                doc_chunk_pair, embeddings = result
-                chunk_data[doc_chunk_pair] = embeddings
+                chunk, embeddings = result
+                chunk_embeddings[chunk] = embeddings
 
-        return chunk_data
+        return chunk_embeddings
 
     def _score_chunks(
-        self, query_encodings: Tensor, chunk_data: Dict[Tuple[str, int], List[Tensor]]
-    ) -> Dict[Tuple[str, int], Tensor]:
+        self, query_encodings: Tensor, chunk_data: Dict[BaseChunk, List[Tensor]]
+    ) -> Dict[BaseChunk, Tensor]:
         """
         Process the retrieved chunk data to calculate scores.
         """
         chunk_scores = {}
-        for doc_chunk_pair, embeddings in chunk_data.items():
-            chunk_scores[doc_chunk_pair] = sum(
+        for chunk, embeddings in chunk_data.items():
+            chunk_scores[chunk] = sum(
                 max_similarity_torch(
                     query_vector=qv,
                     embedding_list=embeddings,
@@ -224,8 +217,8 @@ class ColbertRetriever(BaseRetriever):
 
     async def _fetch_chunk_data(
         self,
-        chunks_by_score: List[Tuple[str, int]],
-        chunk_scores: Dict[Tuple[str, int], Tensor],
+        chunks_by_score: List[BaseChunk],
+        chunk_scores:  Dict[BaseChunk, Tensor],
     ) -> List[RetrievedChunk]:
         """
         Fetches text and metadata for each chunk and ranks them based on scores.
@@ -239,31 +232,30 @@ class ColbertRetriever(BaseRetriever):
         """
 
         # Collect all tasks
-        tasks = [self.vector_store.get_chunk_text_and_metadata(doc_id=doc_id, chunk_id=chunk_id) for doc_id, chunk_id in chunks_by_score]
+        tasks = [self.vector_store.get_chunk_data(chunk=chunk) for chunk in chunks_by_score]
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
         # Process results and handle potential exceptions
-        chunk_data: Dict[Tuple[str, int], Tuple[str, Dict[str, Any]]] = {}
+        chunk_data_map: Dict[BaseChunk, ChunkData] = {}
         for result in results:
             if isinstance(result, Exception):
                 logging.error(f"Issue on vector_store.get_chunk_text_and_metadata(): {result} at {get_trace(result)}")
             else:
-                doc_id, chunk_id, text, metadata = result
-                chunk_data[(doc_id, chunk_id)] = (text, metadata)
+                chunk, chunk_data = result
+                chunk_data_map[chunk] = chunk_data
 
         answers: List[RetrievedChunk] = []
         rank = 1
-        for doc_id, chunk_id in chunks_by_score:
-            score = chunk_scores[(doc_id, chunk_id)]
-            text, metadata = chunk_data[(doc_id, chunk_id)]
+        for chunk in chunks_by_score:
+            score = chunk_scores[chunk]
+            chunk_data = chunk_data_map[chunk]
             answers.append(
                     RetrievedChunk(
-                        doc_id=doc_id,
-                        chunk_id=chunk_id,
+                        doc_id=chunk.doc_id,
+                        chunk_id=chunk.chunk_id,
                         score=score.item(),  # Ensure score is a scalar if it's a tensor
                         rank=rank,
-                        text=text,
-                        metadata=metadata,
+                        data=chunk_data,
                     )
                 )
 
@@ -274,7 +266,6 @@ class ColbertRetriever(BaseRetriever):
         query: str,
         k: int = 10,
         query_maxlen: int = 64,
-        query_timeout: int = 180,  # seconds
         **kwargs: Any,
     ) -> List[RetrievedChunk]:
         """
@@ -307,11 +298,11 @@ class ColbertRetriever(BaseRetriever):
         logging.debug(f"query length {len(query)} embeddings top_k: {top_k}")
 
         chunks = await self._query_relevant_chunks(
-            query_encodings=query_encodings, top_k=top_k, query_timeout=query_timeout
+            query_encodings=query_encodings, top_k=top_k
         )
 
         # score each chunk
-        chunk_data = await self._retrieve_chunks(chunks=chunks, query_timeout=query_timeout)
+        chunk_data = await self._retrieve_chunks(chunks=chunks)
         chunk_scores = self._score_chunks(
             query_encodings=query_encodings, chunk_data=chunk_data
         )
@@ -329,7 +320,6 @@ class ColbertRetriever(BaseRetriever):
         query: str,
         k: int = 10,
         query_maxlen: int = 64,
-        query_timeout: int = 180,  # seconds
         **kwargs: Any,
     ) -> List[RetrievedChunk]:
         """
@@ -339,7 +329,6 @@ class ColbertRetriever(BaseRetriever):
             query (str): The text query for which relevant chunks are to be retrieved.
             k (int, optional): The number of top relevant chunks to retrieve. Defaults to 10.
             query_maxlen (int, optional): //TODO figure out a better description for this parameter, and/or a better name.
-            query_timeout (int, optional): The timeout in seconds for query execution. Defaults to 180.
             **kwargs (Any): Additional keyword arguments that can be used for extending functionality.
 
         Returns:
@@ -351,4 +340,4 @@ class ColbertRetriever(BaseRetriever):
             embeddings, scoring these embeddings for similarity, and retrieving the corresponding text chunks.
         """
         loop = asyncio.get_event_loop()
-        return loop.run_until_complete(self.aretrieve(query=query, k=k, query_maxlen=query_maxlen, query_timeout=query_timeout))
+        return loop.run_until_complete(self.aretrieve(query=query, k=k, query_maxlen=query_maxlen))

@@ -15,13 +15,14 @@ Exports:
 """
 
 from .cassandra_vector_store import CassandraVectorStore
-from .chunks import EmbeddedChunk, RetrievedChunk
 from .cobert_retriever import ColbertRetriever
 from .colbert_embedding import ColbertEmbedding
 from .constant import DEFAULT_COLBERT_DIM, DEFAULT_COLBERT_MODEL
+from .objects import ChunkData, EmbeddedChunk, RetrievedChunk
 
 __all__ = [
     "CassandraVectorStore",
+    "ChunkData",
     "ColbertEmbedding",
     "ColbertRetriever",
     "DEFAULT_COLBERT_DIM",

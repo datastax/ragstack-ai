@@ -16,7 +16,7 @@ import torch.multiprocessing as mp
 
 from colbert.infra import ColBERTConfig
 
-from ..chunks import EmbeddedChunk
+from ..objects import BaseText, EmbeddedText
 from .chunk_encoder import encode_chunks
 from .distributed import reconcile_nranks
 
@@ -48,7 +48,7 @@ def distribute_work_load(
     return result
 
 
-def map_work_load(texts: List[str], processors: int = 1) -> List[List[str]]:
+def map_work_load(texts: List[BaseText], processors: int = 1) -> List[List[BaseText]]:
     """
     Maps a list of text chunks to a specified number of processors for distributed processing. This function
     leverages `distribute_work_load` to evenly distribute the collections among available processors.
@@ -65,12 +65,11 @@ def map_work_load(texts: List[str], processors: int = 1) -> List[List[str]]:
     return [[texts[i] for i in workload] for workload in work_loads]
 
 
-def cuda_encode_chunks(
+def cuda_encode_texts(
     config: ColBERTConfig,
     rank: int,
-    texts: List[str],
-    doc_id: str,
-    return_dict: Dict[int, List[EmbeddedChunk]],
+    texts: List[BaseText],
+    return_dict: Dict[int, List[EmbeddedText]],
 ):
     """
     Encodes a collection of text chunks using CUDA-enabled devices, storing the results in a shared dictionary.
@@ -80,12 +79,11 @@ def cuda_encode_chunks(
         config: The configuration settings for the encoding process.
         rank (int): The rank of the current process in the distributed setting.
         collection (List[str]): The collection of text chunks to encode.
-        doc_id (str): The document ID associated with the collection of text chunks.
         return_dict: A multiprocessing.Manager().dict() to store the results of the encoding process.
     """
     if torch.cuda.is_available():
         logging.info(f"encoder runs on cuda id {torch.cuda.current_device()}")
-    results = encode_chunks(config=config, rank=rank, texts=texts, doc_id=doc_id)
+    results = encode_chunks(config=config, rank=rank, texts=texts)
     return_dict[rank] = results
 
 
@@ -113,13 +111,13 @@ class Runner:
         if self._is_cuda:
             self._nranks = reconcile_nranks(nranks)
 
+    # this is the entrypoint to the distributed embedding code
     def encode(
         self,
         config: ColBERTConfig,
         texts: List[str],
-        doc_id: str,
         timeout: int = 60,
-    ) -> List[EmbeddedChunk]:
+    ) -> List[EmbeddedText]:
         """
         Encodes a collection of text across multiple processors or CUDA devices in parallel. Manages the lifecycle
         of subprocesses, ensuring timely completion and aggregating their results.
@@ -127,7 +125,6 @@ class Runner:
         Parameters:
             config: The configuration settings for the encoding process.
             texts (List[str]): The text chunks to encode.
-            doc_id (str): The document id associated with the text chunks.
             timeout (int): The maximum time (in seconds) allowed for each subprocess to complete.
 
         Returns:
@@ -137,7 +134,9 @@ class Runner:
         manager = mp.Manager()
         return_dict = manager.dict()
 
-        work_loads = map_work_load(texts, self._nranks)
+        _texts = [BaseText(original_index=index, text=text) for index, text in enumerate(texts)]
+
+        work_loads = map_work_load(_texts, self._nranks)
         logging.info(f"encoding {len(work_loads)} texts on nranks {self._nranks}")
 
         processes = []
@@ -145,8 +144,8 @@ class Runner:
         ranks = len(work_loads)
         for rank, work_load in enumerate(work_loads):
             p = mp.Process(
-                target=cuda_encode_chunks,
-                args=(config, rank, work_load, doc_id, return_dict),
+                target=cuda_encode_texts,
+                args=(config, rank, work_load, return_dict),
             )
             p.start()
             processes.append(p)
@@ -174,7 +173,7 @@ class Runner:
             logging.info("all processes completed")
 
         # Aggregate results from each GPU
-        result_list = []
+        result_list:List[EmbeddedText] = []
         for new_rank in range(ranks):
             result_list.extend(return_dict[new_rank])
 

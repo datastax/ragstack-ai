@@ -9,7 +9,7 @@ for high-relevancy retrieval tasks, with support for both CPU and GPU computing 
 
 import logging
 import uuid
-from typing import List, Optional, Union
+from typing import Dict, List, Optional, Union
 
 import torch
 import torch.distributed as dist
@@ -21,9 +21,9 @@ from colbert.modeling.checkpoint import Checkpoint
 from colbert.modeling.tokenization import QueryTokenizer
 
 from .base_embedding import BaseEmbedding
-from .chunks import EmbeddedChunk
 from .constant import DEFAULT_COLBERT_MODEL
-from .distributed import Distributed, reconcile_nranks, Runner
+from .distributed import Distributed, Runner, reconcile_nranks
+from .objects import ChunkData, EmbeddedChunk, EmbeddedText
 
 
 def calculate_query_maxlen(tokens: List[List[str]]) -> int:
@@ -147,7 +147,7 @@ class ColbertEmbedding(BaseEmbedding):
             self.checkpoint = self.checkpoint.cuda()
 
     def embed_chunks(
-        self, texts: List[str], doc_id: Optional[str] = None
+        self, chunks: List[ChunkData], doc_id: Optional[str] = None
     ) -> List[EmbeddedChunk]:
         """
         Encodes a list of text chunks into embeddings, returning them as a list of EmbeddedChunk objects.
@@ -164,9 +164,28 @@ class ColbertEmbedding(BaseEmbedding):
         if doc_id is None:
             doc_id = str(uuid.uuid4())
 
-        timeout = 30 + len(texts)
+        timeout = 30 + len(chunks)
 
-        return self.encode(texts=texts, doc_id=doc_id, timeout=timeout)
+        chunk_data_map: Dict[int, ChunkData] = {}
+        texts: List[str] = []
+
+        for chunk_idx, chunk in enumerate(chunks):
+            chunk_data_map[chunk_idx] = chunk
+            texts.append(chunk.text)
+
+        embedded_texts = self.encode(texts=texts, timeout=timeout)
+
+        output: List[EmbeddedChunk] = []
+        for embedded_text in embedded_texts:
+            chunk_data = chunk_data_map[embedded_text.original_index]
+            output.append(EmbeddedChunk(
+                data=chunk_data,
+                doc_id=doc_id,
+                chunk_id=embedded_text.chunk_id,
+                embeddings=embedded_text.embeddings,
+            ))
+
+        return output
 
     def embed_query(self, query_text: str) -> Tensor:
         """
@@ -183,8 +202,8 @@ class ColbertEmbedding(BaseEmbedding):
             reload the checkpoint, therefore improving embedding speed.
         """
 
-        chunk_embedding = self.encode(texts=[query_text])[0]
-        return chunk_embedding.embeddings
+        embedded_text = self.encode(texts=[query_text])[0]
+        return embedded_text.embeddings
 
     def encode_queries(
         self,
@@ -257,9 +276,8 @@ class ColbertEmbedding(BaseEmbedding):
     def encode(
         self,
         texts: List[str],
-        doc_id: Optional[str] = None,
         timeout: int = 60,
-    ) -> List[EmbeddedChunk]:
+    ) -> List[EmbeddedText]:
         """
         Encodes a list of texts chunks into embeddings, represented as EmbeddedChunk objects. This
         method leverages the ColBERT model's encoding capabilities to convert textual content into
@@ -267,8 +285,7 @@ class ColbertEmbedding(BaseEmbedding):
 
         Parameters:
             texts (List[str]): The list of text chunks to encode.
-            doc_id (Optional[str]): An optional identifier for the document from which the chunks are derived.
-                                    If not provided, a UUID will be generated.
+            doc_id: An identifier for the document from which the chunks are derived.
             timeout (int): The timeout in seconds for the encoding operation. Defaults to 60 seconds.
 
         Returns:
@@ -278,8 +295,7 @@ class ColbertEmbedding(BaseEmbedding):
 
         runner = Runner(self.__nranks)
         return runner.encode(
-            self.colbert_config,
-            texts,
-            doc_id,
+            config=self.colbert_config,
+            texts=texts,
             timeout=timeout,
         )

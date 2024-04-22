@@ -8,8 +8,7 @@ from torch.nn.functional import cosine_similarity
 from colbert.indexing.collection_encoder import CollectionEncoder
 from colbert.infra.config import ColBERTConfig
 from colbert.modeling.checkpoint import Checkpoint
-from ragstack_colbert.chunks import EmbeddedChunk
-from ragstack_colbert.colbert_embedding import ColbertEmbedding
+from ragstack_colbert import ChunkData, ColbertEmbedding, EmbeddedChunk
 from ragstack_colbert.constant import DEFAULT_COLBERT_MODEL
 
 baseline_tensors = [
@@ -11867,7 +11866,7 @@ arctic_botany_dict = {
     "Future Directions in Arctic Botanical Studies": "The future of Arctic botany lies in interdisciplinary research, combining traditional knowledge with modern scientific techniques. As the Arctic undergoes rapid changes, understanding the ecological, cultural, and climatic dimensions of Arctic flora becomes increasingly important. Future research will need to address the challenges of climate change, explore the potential for Arctic plants in biotechnology, and continue to conserve this unique biome. The resilience of Arctic flora offers lessons in adaptation and survival relevant to global challenges."
 }
 
-arctic_botany_chunks = list(arctic_botany_dict.values())
+arctic_botany_chunks = [ChunkData(text=text) for text in arctic_botany_dict.values()]
 
 # a uility function to evaluate similarity of two embeddings at per token level
 def are_they_similar(embedded_chunks: List[EmbeddedChunk], tensors: List[Tensor]):

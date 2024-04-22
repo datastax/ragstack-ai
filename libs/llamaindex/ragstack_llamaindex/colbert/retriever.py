@@ -40,9 +40,14 @@ class ColbertRetriever(LlamaIndexBaseRetriever):
         self,
         query_bundle: QueryBundle,
     ) -> List[NodeWithScore]:
-        results = self._retriever.retrieve(query_bundle.query_str, k=self._similarity_top_k, query_maxlen=self._query_maxlen)
-        nodes = []
-        for result in results:
-            node = TextNode(text=result.text)
-            nodes.append(NodeWithScore(node=node, score=result.score))
+        nodes: List[NodeWithScore] = []
+
+        chunks = self._retriever.retrieve(query_bundle.query_str, k=self._similarity_top_k, query_maxlen=self._query_maxlen)
+        for chunk in chunks:
+            text = chunk.data.text
+            metadata=chunk.data.metadata
+            metadata["rank"] = chunk.rank
+
+            node = TextNode(text=text, metadata=metadata)
+            nodes.append(NodeWithScore(node=node, score=chunk.score))
         return nodes

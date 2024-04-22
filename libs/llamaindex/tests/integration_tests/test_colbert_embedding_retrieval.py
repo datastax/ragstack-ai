@@ -6,6 +6,7 @@ from ragstack_colbert import (
     CassandraVectorStore,
     ColbertRetriever,
     ColbertEmbedding,
+    ChunkData,
 )
 from ragstack_llamaindex.colbert import ColbertLIRetriever
 from tests.integration_tests.conftest import (
@@ -46,24 +47,24 @@ def test_embedding_cassandra_retriever(request, vector_store: str):
     overlap_size = 50
 
     # Function to generate chunks with the specified size and overlap
-    def generate_chunks(text, chunk_size, overlap_size):
-        chunks = []
+    def generate_texts(text, chunk_size, overlap_size):
+        texts = []
         start = 0
         end = chunk_size
         while start < len(text):
             # If this is not the first chunk, move back 'overlap_size' characters to create the overlap
             if start != 0:
                 start -= overlap_size
-            chunks.append(text[start:end])
+            texts.append(text[start:end])
             start = end
             end += chunk_size
-        return chunks
+        return texts
 
     # Generate the chunks based on the narrative
-    chunks = generate_chunks(narrative, chunk_size, overlap_size)
+    texts = generate_texts(narrative, chunk_size, overlap_size)
 
     # Output the first few chunks to ensure they meet the specifications
-    for i, chunk in enumerate(chunks[:3]):  # Displaying the first 3 chunks for brevity
+    for i, chunk in enumerate(texts[:3]):  # Displaying the first 3 chunks for brevity
         logging.info(f"Chunk {i + 1}:\n{chunk}\n{'-' * 50}\n")
 
     doc_id = "Marine Animals habitat"
@@ -74,6 +75,8 @@ def test_embedding_cassandra_retriever(request, vector_store: str):
         nbits=1,
         kmeans_niters=4,
     )
+
+    chunks = [ChunkData(text=text) for text in texts]
 
     embedded_chunks = colbert.embed_chunks(texts=chunks, doc_id=doc_id)
 
