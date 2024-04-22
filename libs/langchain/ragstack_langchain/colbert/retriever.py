@@ -17,7 +17,7 @@ class ColbertLCRetriever(LangChainBaseRetriever):
         from langchain_openai import AzureChatOpenAI
 
         llm = AzureChatOpenAI()
-        retriever = CassandraVectorStoreLangChainRetriever(colbertCassandraRetriever, k=5)
+        retriever = ColbertLCRetriever(colbert_retriever, k=5)
         qa = RetrievalQA.from_chain_type(llm=llm, chain_type="stuff", retriever=retriever)
         qa.run("what happened on June 4th?")
     """

@@ -9,10 +9,10 @@ from ragstack_colbert.base_retriever import BaseRetriever
 
 
 class ColbertRetriever(LlamaIndexBaseRetriever):
-    """ColBERT vector index retriever.
+    """ColBERT vector store retriever.
 
     Args:
-        retriever (CassandraVectorStoreRetriever): vector store index.
+        retriever (BaseRetriever): vector store index.
         similarity_top_k (int): number of top k results to return.
     """
 
