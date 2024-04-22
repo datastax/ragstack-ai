@@ -23,8 +23,7 @@ from colbert.modeling.tokenization import QueryTokenizer
 from .base_embedding import BaseEmbedding
 from .chunks import EmbeddedChunk
 from .constant import DEFAULT_COLBERT_MODEL
-from .distributed.distributed import Distributed, reconcile_nranks
-from .distributed.runner import Runner
+from .distributed import Distributed, reconcile_nranks, Runner
 
 
 def calculate_query_maxlen(tokens: List[List[str]]) -> int:
