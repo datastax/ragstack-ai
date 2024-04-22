@@ -90,45 +90,15 @@ jobs:
           ASTRA_DB_ENV: "DEV"
         run: |
           set -ex
-          du -sh ~/*
-          du -sh *
-          du -sh libs/*
-          du -sh libs/colbert/*
-          du -sh libs/langchain/*
-          du -sh libs/llamaindex/*
-          rm -rf **/.tox
-          du -sh ~/*
-          du -sh *
-          du -sh libs/*
-          du -sh libs/colbert/*
-          du -sh libs/langchain/*
-          du -sh libs/llamaindex/*
-          tox -e integration-tests -c libs/colbert
-          du -sh ~/*
-          du -sh *
-          du -sh libs/*
-          du -sh libs/colbert/*
-          du -sh libs/langchain/*
-          du -sh libs/llamaindex/*
-          rm -rf **/.tox
-          du -sh libs/*
-          du -sh libs/colbert/*
-          du -sh libs/langchain/*
-          du -sh libs/llamaindex/*
-          tox -e integration-tests -c libs/llamaindex
-          du -sh ~/*
-          du -sh *
-          du -sh libs/colbert/*
-          du -sh libs/langchain/*
-          du -sh libs/llamaindex/*
-          rm -rf **/.tox
-          du -sh libs/colbert/*
-          du -sh libs/langchain/*
-          du -sh libs/llamaindex/*
-          tox -e integration-tests -c libs/langchain
-          du -sh libs/colbert/*
-          du -sh libs/langchain/*
-          du -sh libs/llamaindex/*
+          run_itests() {
+            local dir=$1
+            tox -e integration-tests -c $dir
+            rm -rf $dir/.tox
+          }
+
+          run_itests libs/colbert
+          run_itests libs/langchain
+          run_itests libs/llamaindex
 
       - name: Cleanup AstraDB
         uses: ./.github/actions/cleanup-astra-db
