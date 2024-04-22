@@ -61,8 +61,8 @@ def cassandra():
 
 def _chat_openai(**kwargs) -> callable:
     return lambda: ChatOpenAI(
-            openai_api_key=get_required_env("OPENAI_API_KEY"), temperature=0, **kwargs
-        )
+        openai_api_key=get_required_env("OPENAI_API_KEY"), temperature=0, **kwargs
+    )
 
 
 @pytest.fixture
@@ -89,7 +89,7 @@ def openai_gpt4_llm():
 
 def _openai_embeddings(**kwargs) -> callable:
     return lambda: OpenAIEmbeddings(
-            openai_api_key=get_required_env("OPENAI_API_KEY"), **kwargs
+        openai_api_key=get_required_env("OPENAI_API_KEY"), **kwargs
     )
 
 
@@ -131,7 +131,9 @@ def azure_openai_ada002_embedding():
     def embedding():
         # model is configurable because it can be different from the deployment
         # but the targeting model must be ada-002
-        model_and_deployment = get_required_env("AZURE_OPEN_AI_EMBEDDINGS_MODEL_DEPLOYMENT")
+        model_and_deployment = get_required_env(
+            "AZURE_OPEN_AI_EMBEDDINGS_MODEL_DEPLOYMENT"
+        )
         return AzureOpenAIEmbeddings(
             model=model_and_deployment,
             deployment=model_and_deployment,
@@ -158,7 +160,9 @@ def vertex_gecko_embedding() -> callable:
 
 
 def _bedrock_chat(**kwargs) -> callable:
-    return lambda: BedrockChat(region_name=get_required_env("BEDROCK_AWS_REGION"), **kwargs)
+    return lambda: BedrockChat(
+        region_name=get_required_env("BEDROCK_AWS_REGION"), **kwargs
+    )
 
 
 @pytest.fixture
@@ -189,18 +193,18 @@ def bedrock_meta_llama2_llm():
 
 @pytest.fixture
 def bedrock_titan_embedding() -> callable:
-    return lambda :BedrockEmbeddings(
-            model_id="amazon.titan-embed-text-v1",
-            region_name=get_required_env("BEDROCK_AWS_REGION"),
-        )
+    return lambda: BedrockEmbeddings(
+        model_id="amazon.titan-embed-text-v1",
+        region_name=get_required_env("BEDROCK_AWS_REGION"),
+    )
 
 
 @pytest.fixture
 def bedrock_cohere_embedding() -> callable:
     return lambda: BedrockEmbeddings(
-            model_id="cohere.embed-english-v3",
-            region_name=get_required_env("BEDROCK_AWS_REGION"),
-        )
+        model_id="cohere.embed-english-v3",
+        region_name=get_required_env("BEDROCK_AWS_REGION"),
+    )
 
 
 @pytest.fixture
@@ -219,9 +223,9 @@ def huggingface_hub_flant5xxl_llm():
 def huggingface_hub_minilml6v2_embedding():
 
     return lambda: HuggingFaceInferenceAPIEmbeddings(
-            api_key=get_required_env("HUGGINGFACE_HUB_KEY"),
-            model_name="sentence-transformers/all-MiniLM-l6-v2",
-        )
+        api_key=get_required_env("HUGGINGFACE_HUB_KEY"),
+        model_name="sentence-transformers/all-MiniLM-l6-v2",
+    )
 
 
 @pytest.fixture
@@ -229,6 +233,7 @@ def nvidia_aifoundation_nvolveqa40k_embedding():
     def embedding():
         get_required_env("NVIDIA_API_KEY")
         from langchain_nvidia_ai_endpoints.embeddings import NVIDIAEmbeddings
+
         return NVIDIAEmbeddings(model="playground_nvolveqa_40k")
 
     return embedding
@@ -239,6 +244,7 @@ def nvidia_aifoundation_mixtral8x7b_llm():
     def llm():
         get_required_env("NVIDIA_API_KEY")
         from langchain_nvidia_ai_endpoints import ChatNVIDIA
+
         return ChatNVIDIA(model="playground_mixtral_8x7b")
 
     return {"llm": llm, "nemo_config": None}
