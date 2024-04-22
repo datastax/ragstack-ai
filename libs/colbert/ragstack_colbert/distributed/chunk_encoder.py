@@ -9,13 +9,14 @@ import logging
 from typing import List
 
 import torch
+from torch import Tensor
+
 from colbert.infra import ColBERTConfig
 from colbert.modeling.checkpoint import Checkpoint
 from colbert.utils.utils import batch
-from torch import Tensor
 
-from .constant import CHUNK_MAX_PER_DOC
-from .token_embeddings import EmbeddedChunk
+from ..base_embeddings import EmbeddedChunk
+from ..constant import CHUNK_MAX_PER_DOC
 
 
 def encode_chunks(

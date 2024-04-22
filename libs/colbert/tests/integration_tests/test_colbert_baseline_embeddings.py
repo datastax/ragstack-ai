@@ -1,15 +1,15 @@
 import logging
-import torch
 from typing import List
+
+import torch
 from torch import Tensor
 from torch.nn.functional import cosine_similarity
 
+from colbert.indexing.collection_encoder import CollectionEncoder
 from colbert.infra.config import ColBERTConfig
 from colbert.modeling.checkpoint import Checkpoint
-from colbert.indexing.collection_encoder import CollectionEncoder
-
-from ragstack_colbert.colbert_embeddings import ColbertEmbeddings
 from ragstack_colbert.chunks import EmbeddedChunk
+from ragstack_colbert.colbert_embeddings import ColbertEmbeddings
 from ragstack_colbert.constant import DEFAULT_COLBERT_DIM, DEFAULT_COLBERT_MODEL
 
 baseline_tensors = [

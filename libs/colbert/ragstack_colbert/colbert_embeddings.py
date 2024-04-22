@@ -13,16 +13,17 @@ from typing import List, Optional, Union
 
 import torch
 import torch.distributed as dist
+from torch import Tensor
+
 from colbert.indexing.collection_encoder import CollectionEncoder
 from colbert.infra import ColBERTConfig, Run, RunConfig
 from colbert.modeling.checkpoint import Checkpoint
 from colbert.modeling.tokenization import QueryTokenizer
-from torch import Tensor
 
+from .base_embeddings import BaseEmbeddings, EmbeddedChunk
 from .constant import DEFAULT_COLBERT_MODEL
-from .distributed import Distributed, reconcile_nranks
-from .runner import Runner
-from .token_embeddings import EmbeddedChunk, TokenEmbeddings
+from .distributed.distributed import Distributed, reconcile_nranks
+from .distributed.runner import Runner
 
 
 def calculate_query_maxlen(tokens: List[List[str]]) -> int:
@@ -45,7 +46,7 @@ def calculate_query_maxlen(tokens: List[List[str]]) -> int:
     return max_token_length + 3
 
 
-class ColbertEmbeddings(TokenEmbeddings):
+class ColbertEmbeddings(BaseEmbeddings):
     """
     A class for generating token embeddings using a ColBERT model. This class provides functionalities for
     encoding queries and document chunks into dense vector representations, facilitating semantic search and

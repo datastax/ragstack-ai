@@ -8,9 +8,10 @@ from typing import Any, List, Optional
 
 from .chunks import RetrievedChunk
 
-class Retriever(ABC):
+
+class BaseRetriever(ABC):
     """
-    Abstract base class for a retrieval system that operates on a ColBERT vector store, facilitating
+    Abstract base class (ABC) for a retrieval system that operates on a ColBERT vector store, facilitating
     the search and retrieval of text chunks based on query embeddings.
     """
 

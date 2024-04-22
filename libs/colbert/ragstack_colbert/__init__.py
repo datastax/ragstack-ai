@@ -1,33 +1,31 @@
 """
-This package provides a suite of tools for encoding and retrieving text using the Colbert model, integrated with a
+This package provides a suite of tools for encoding and retrieving text using the ColBERT model, integrated with a
 Cassandra database for scalable storage and retrieval operations. It includes classes for token embeddings,
 managing the vector store, and performing efficient similarity searches. Utilities for working with embeddings
-and constants related to the Colbert model configuration are also provided.
+and constants related to the ColBERT model configuration are also provided.
 
 Exports:
-- ColbertEmbeddings: Class for generating and managing token embeddings using the Colbert model.
-- ColbertVectorStore: Implementation of a vector store using Cassandra for embedding storage.
-- ColbertCassandraRetriever: Retriever class for executing similarity searches within a Cassandra vector store.
-- max_similarity_torch: Function for calculating the maximum similarity between embeddings using PyTorch.
+- CassandraVectorStore: Implementation of a ColBERT vector store using Cassandra for storage.
+- ColbertEmbeddings: Class for generating and managing token embeddings using the ColBERT model.
+- ColbertRetriever: Retriever class for executing ColBERT searches within a vector store.
+- DEFAULT_COLBERT_MODEL: The default identifier for the ColBERT model.
+- DEFAULT_COLBERT_DIM: The default dimensionality for ColBERT model embeddings.
 - EmbeddedChunk: Data class for representing a chunk of embedded text.
-- TokenEmbeddings: Abstract base class for token embedding models.
-- ColbertVectorStore: Abstract base class for a vector store.
-- DEFAULT_COLBERT_MODEL: The default identifier for the Colbert model.
-- DEFAULT_COLBERT_DIM: The default dimensionality for Colbert model embeddings.
+- RetrievedChunk: Data class for representing a chunk of retrieved text.
 """
 
-from .cobert_retriever import ColbertRetriever, max_similarity_torch
-from .colbert_store import ColbertVectorStore
+from .cassandra_vector_store import CassandraVectorStore
+from .chunks import EmbeddedChunk, RetrievedChunk
+from .cobert_retriever import ColbertRetriever
 from .colbert_embeddings import ColbertEmbeddings
 from .constant import DEFAULT_COLBERT_DIM, DEFAULT_COLBERT_MODEL
-from .chunks import EmbeddedChunk
 
 __all__ = [
+    "CassandraVectorStore",
     "ColbertEmbeddings",
     "ColbertRetriever",
-    "ColbertVectorStore",
-    "DEFAULT_COLBERT_MODEL",
     "DEFAULT_COLBERT_DIM",
+    "DEFAULT_COLBERT_MODEL",
     "EmbeddedChunk",
-    "max_similarity_torch",
+    "RetrievedChunk",
 ]

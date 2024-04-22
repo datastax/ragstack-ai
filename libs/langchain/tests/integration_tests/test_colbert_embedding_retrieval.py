@@ -1,10 +1,10 @@
 import logging
 
 import pytest
-from ragstack_langchain.colbert import ColbertVectorStoreLangChainRetriever
+from ragstack_langchain.colbert import ColbertLCRetriever
 from ragstack_colbert import (
-    CassandraColbertVectorStore,
-    ColbertCassandraRetriever,
+    CassandraVectorStore,
+    ColbertRetriever,
     ColbertEmbeddings,
 )
 from tests.integration_tests.conftest import (
@@ -78,17 +78,17 @@ def test_embedding_cassandra_retriever(request, vector_store: str):
 
     logging.info(f"embedded chunks size {len(embedded_chunks)}")
 
-    store = CassandraColbertVectorStore(
+    store = CassandraVectorStore(
         keyspace="default_keyspace",
         table_name="colbert_embeddings",
         session=vector_store.create_cassandra_session(),
     )
     store.put_chunks(chunks=embedded_chunks, delete_existing=True)
 
-    retriever = ColbertCassandraRetriever(
+    retriever = ColbertRetriever(
         vector_store=store, colbert_embeddings=colbert
     )
-    lc_retriever = ColbertVectorStoreLangChainRetriever(retriever, k=2)
+    lc_retriever = ColbertLCRetriever(retriever, k=2)
     docs = lc_retriever.get_relevant_documents(
         "what kind fish lives shallow coral reefs atlantic, india ocean, red sea, gulf of mexico, pacific, and arctic ocean"
     )
