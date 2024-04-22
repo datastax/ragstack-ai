@@ -3,7 +3,7 @@ This module integrates the ColBERT model with token embedding functionalities, o
 encoding queries and text chunks into dense vector representations. It facilitates semantic search and
 retrieval by providing optimized methods for embedding generation and manipulation.
 
-The core component, ColbertEmbeddings, leverages pre-trained ColBERT models to produce embeddings suitable
+The core component, ColbertEmbedding, leverages pre-trained ColBERT models to produce embeddings suitable
 for high-relevancy retrieval tasks, with support for both CPU and GPU computing environments.
 """
 
@@ -20,7 +20,8 @@ from colbert.infra import ColBERTConfig, Run, RunConfig
 from colbert.modeling.checkpoint import Checkpoint
 from colbert.modeling.tokenization import QueryTokenizer
 
-from .base_embeddings import BaseEmbeddings, EmbeddedChunk
+from .base_embedding import BaseEmbedding
+from .chunks import EmbeddedChunk
 from .constant import DEFAULT_COLBERT_MODEL
 from .distributed.distributed import Distributed, reconcile_nranks
 from .distributed.runner import Runner
@@ -46,7 +47,7 @@ def calculate_query_maxlen(tokens: List[List[str]]) -> int:
     return max_token_length + 3
 
 
-class ColbertEmbeddings(BaseEmbeddings):
+class ColbertEmbedding(BaseEmbedding):
     """
     A class for generating token embeddings using a ColBERT model. This class provides functionalities for
     encoding queries and document chunks into dense vector representations, facilitating semantic search and
@@ -90,7 +91,7 @@ class ColbertEmbeddings(BaseEmbeddings):
         **kwargs,
     ):
         """
-        Initializes a new instance of the ColbertEmbeddings class, setting up the model configuration,
+        Initializes a new instance of the ColbertEmbedding class, setting up the model configuration,
         loading the necessary checkpoints, and preparing the tokenizer and encoder.
 
         Parameters:

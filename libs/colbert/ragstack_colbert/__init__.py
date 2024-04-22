@@ -6,7 +6,7 @@ and constants related to the ColBERT model configuration are also provided.
 
 Exports:
 - CassandraVectorStore: Implementation of a ColBERT vector store using Cassandra for storage.
-- ColbertEmbeddings: Class for generating and managing token embeddings using the ColBERT model.
+- ColbertEmbedding: Class for generating and managing token embeddings using the ColBERT model.
 - ColbertRetriever: Retriever class for executing ColBERT searches within a vector store.
 - DEFAULT_COLBERT_MODEL: The default identifier for the ColBERT model.
 - DEFAULT_COLBERT_DIM: The default dimensionality for ColBERT model embeddings.
@@ -17,12 +17,12 @@ Exports:
 from .cassandra_vector_store import CassandraVectorStore
 from .chunks import EmbeddedChunk, RetrievedChunk
 from .cobert_retriever import ColbertRetriever
-from .colbert_embeddings import ColbertEmbeddings
+from .colbert_embedding import ColbertEmbedding
 from .constant import DEFAULT_COLBERT_DIM, DEFAULT_COLBERT_MODEL
 
 __all__ = [
     "CassandraVectorStore",
-    "ColbertEmbeddings",
+    "ColbertEmbedding",
     "ColbertRetriever",
     "DEFAULT_COLBERT_DIM",
     "DEFAULT_COLBERT_MODEL",

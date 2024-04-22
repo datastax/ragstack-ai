@@ -5,7 +5,7 @@ import pytest
 from ragstack_colbert import (
     CassandraVectorStore,
     ColbertRetriever,
-    ColbertEmbeddings,
+    ColbertEmbedding,
 )
 from ragstack_llamaindex.colbert import ColbertLIRetriever
 from tests.integration_tests.conftest import (
@@ -69,7 +69,7 @@ def test_embedding_cassandra_retriever(request, vector_store: str):
     doc_id = "Marine Animals habitat"
 
     # colbert stuff starts
-    colbert = ColbertEmbeddings(
+    colbert = ColbertEmbedding(
         doc_maxlen=220,
         nbits=1,
         kmeans_niters=4,
@@ -79,14 +79,14 @@ def test_embedding_cassandra_retriever(request, vector_store: str):
 
     logging.info(f"embedded chunks size {len(embedded_chunks)}")
 
-    store = CassandraCassandraVectorStore(
+    store = CassandraVectorStore(
         keyspace="default_keyspace",
         table_name="colbert_embeddings",
         session=vector_store.create_cassandra_session(),
     )
     store.put_chunks(chunks=embedded_chunks, delete_existing=True)
 
-    retriever = ColbertCassandraRetriever(
+    retriever = ColbertRetriever(
         vector_store=store, colbert_embeddings=colbert
     )
     li_retriever = ColbertLIRetriever(retriever, similarity_top_k=3)

@@ -15,7 +15,7 @@ from colbert.infra import ColBERTConfig
 from colbert.modeling.checkpoint import Checkpoint
 from colbert.utils.utils import batch
 
-from ..base_embeddings import EmbeddedChunk
+from ..base_embedding import EmbeddedChunk
 from ..constant import CHUNK_MAX_PER_DOC
 
 
