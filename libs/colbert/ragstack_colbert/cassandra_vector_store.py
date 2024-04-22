@@ -143,12 +143,11 @@ class CassandraVectorStore(BaseVectorStore):
         # TODO: only return partition_id and row_id after cassio supports this
         rows = await self._table.aann_search(vector=vector, n=n)
         for row in rows:
-            print(row)
             doc_id = row["partition_id"]
             chunk_id = row["row_id"][0]
 
             chunks.add((doc_id, chunk_id))
-        return chunks
+        return list(chunks)
 
     async def get_chunk_embeddings(self, doc_id: str, chunk_id: int) -> Tuple[Tuple[str, int], List[Tensor]]:
         """
@@ -162,7 +161,7 @@ class CassandraVectorStore(BaseVectorStore):
         row_id = (chunk_id, Predicate(PredicateOperator.GT, -1))
         rows = await self._table.aget_partition(partition_id=doc_id, row_id=row_id)
 
-        embeddings = [torch.Tensor(row.vector) for row in rows]
+        embeddings = [torch.Tensor(row["vector"]) for row in rows]
 
         return ((doc_id, chunk_id), embeddings)
 

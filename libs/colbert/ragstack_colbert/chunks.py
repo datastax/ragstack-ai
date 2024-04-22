@@ -14,22 +14,63 @@ from torch import Tensor
 @dataclass(frozen=True)
 class BaseChunk:
     """
-    Represents a chunk of text from a document
+    The base class a chunk of text from a document
 
     Attributes:
         doc_id (str): The document id from which this chunk originates.
         chunk_id (int): The id of this chunk.
-        text (str): The text content of this chunk.
     """
 
     doc_id: str
     chunk_id: int
+
+
+@dataclass(frozen=True)
+class DataChunk(BaseChunk):
+    """
+    Represents a chunk of text from a document including any associated metadata
+
+    Attributes:
+        text (str): The text content of this chunk.
+        metadata (dict): The metadata of this chunk.
+
+    Inherits from:
+        BaseChunk: Inherits all attributes and methods from the BaseChunk class.
+    """
+
     text: str
     metadata: Dict[str, Any]
 
 
 @dataclass(frozen=True)
-class EmbeddedChunk(BaseChunk):
+class EmbeddedChunk(DataChunk):
+    """
+    Extends DataChunk with the ColBERT embedding for the chunk's text.
+
+    Attributes:
+        embeddings (Tensor): A tensor representing the embeddings of the chunk's text. The dimensions
+                              are 'the count of tokens in the chunk' by 'the Colbert embedding size
+                              per chunk (default 128)'
+
+    Inherits from:
+        DataChunk: Inherits all attributes and methods from the DataChunk class.
+    """
+
+    embeddings: Tensor
+
+    def __len__(self):
+        """
+        Returns the length of the embeddings tensor, representing the number of dimensions
+        in the embedded space.
+
+        Returns:
+            int: The number of dimensions in the embeddings tensor.
+        """
+        return len(self.embeddings)
+
+
+@dataclass(frozen=True)
+class RetrievedChunk(BaseChunk):
     """
     Extends BaseChunk with the ColBERT embedding for the chunk's text.
 
@@ -56,7 +97,7 @@ class EmbeddedChunk(BaseChunk):
 
 
 @dataclass(frozen=True)
-class RetrievedChunk(BaseChunk):
+class ScoredChunk(DataChunk):
     """
     Represents a chunk of text that has been retrieved, including ranking and scoring information.
 
@@ -67,7 +108,7 @@ class RetrievedChunk(BaseChunk):
                         its relevancy. Higher scores are better.
 
     Inherits from:
-        BaseChunk: Inherits all attributes and methods from the BaseChunk class.
+        DataChunk: Inherits all attributes and methods from the DataChunk class.
     """
 
     rank: int

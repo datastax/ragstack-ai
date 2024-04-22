@@ -95,6 +95,14 @@ def max_similarity_torch(
     # returns a tensor; the item() is the score
     return max_sim
 
+def get_trace(e: Exception) -> str:
+    trace = ""
+    tb = e.__traceback__
+    while tb is not None:
+        trace += f"\tFile: {tb.tb_frame.f_code.co_filename} Line: {tb.tb_lineno}\n"
+        tb = tb.tb_next
+    return trace
+
 
 class ColbertRetriever(BaseRetriever):
     """
@@ -167,7 +175,7 @@ class ColbertRetriever(BaseRetriever):
         # Process results and handle potential exceptions
         for result in results:
             if isinstance(result, Exception):
-                logging.error(f"Generated an exception: {result}")
+                logging.error(f"Issue on vector_store.get_relevant_chunks(): {result} at {get_trace(result)}")
             else:
                 chunks.update(result)
 
@@ -188,7 +196,7 @@ class ColbertRetriever(BaseRetriever):
         # Process results and handle potential exceptions
         for result in results:
             if isinstance(result, Exception):
-                logging.error(f"Generated an exception: {result}")
+                logging.error(f"Issue on vector_store.get_chunk_embeddings(): {result} at {get_trace(result)}")
             else:
                 doc_chunk_pair, embeddings = result
                 chunk_data[doc_chunk_pair] = embeddings
@@ -238,7 +246,7 @@ class ColbertRetriever(BaseRetriever):
         chunk_data: Dict[Tuple[str, int], Tuple[str, Dict[str, Any]]] = {}
         for result in results:
             if isinstance(result, Exception):
-                logging.error(f"Generated an exception: {result}")
+                logging.error(f"Issue on vector_store.get_chunk_text_and_metadata(): {result} at {get_trace(result)}")
             else:
                 doc_id, chunk_id, text, metadata = result
                 chunk_data[(doc_id, chunk_id)] = (text, metadata)
@@ -255,6 +263,7 @@ class ColbertRetriever(BaseRetriever):
                         score=score.item(),  # Ensure score is a scalar if it's a tensor
                         rank=rank,
                         text=text,
+                        metadata=metadata,
                     )
                 )
 

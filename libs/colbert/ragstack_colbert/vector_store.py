@@ -7,7 +7,7 @@ from abc import ABC, abstractmethod
 from typing import Any, List, Optional, Tuple, Dict
 from torch import Tensor
 
-from .chunks import EmbeddedChunk, RetrievedChunk
+from .chunks import BaseChunk, DataChunk, EmbeddedChunk, RetrievedChunk, ScoredChunk
 
 
 class ColbertVectorStore(ABC):
@@ -44,18 +44,26 @@ class ColbertVectorStore(ABC):
         """
 
     @abstractmethod
-    async def get_relevant_chunks(self, vector: List[float], n: int) -> List[Tuple[str, int]]:
+    async def search_relevant_chunks(self, vector: List[float], n: int) -> List[BaseChunk]:
         """
-        Retrieves 'n' ANN results for an embedded token vector.
+        Searches for relevant chunks using ANN for an embedded token vector.
+
+        Parameters:
+            vector (List[float]): A vector embedding for a query token.
+            n (int): The number of items to return from the search
 
         Returns:
-            A set of tuples of (doc_id, chunk_id). Fewer than 'n' results may be returned.
+            A list of tuples of (doc_id, chunk_id). Fewer than 'n' results may be returned.
         """
 
     @abstractmethod
-    async def get_chunk_embeddings(self, doc_id: str, chunk_id: int) -> Tuple[Tuple[str, int], List[Tensor]]:
+    async def get_chunk_embeddings(self, doc_id: str, chunk_id: int) -> RetrievedChunk:
         """
         Retrieve all the embedding data for a chunk.
+
+        Parameters:
+            doc_id (str): The document id of the chunk to return
+            chunk_id (int): The chunk id
 
         Returns:
             A tuple where the first value is a tuple of (doc_id, chunk_id), and the second
@@ -63,9 +71,13 @@ class ColbertVectorStore(ABC):
         """
 
     @abstractmethod
-    async def get_chunk_text_and_metadata(self, doc_id: str, chunk_id: int) -> Tuple[str, int, str, Dict[str, Any]]:
+    async def get_chunk_text_and_metadata(self, doc_id: str, chunk_id: int) -> DataChunk:
         """
-        Fetches the text for a given doc_id and chunk_id.
+        Fetches the text and metadata for a given doc_id and chunk_id.
+
+        Parameters:
+            doc_id (str): The document id of the chunk to return
+            chunk_id (int): The chunk id
 
         Returns:
             Tuple containing the doc_id, chunk_id, text, and metadata
@@ -92,7 +104,7 @@ class ColbertVectorStoreRetriever(ABC):
         k: Optional[int] = None,
         query_maxlen: Optional[int] = None,
         **kwargs: Any
-    ) -> List[RetrievedChunk]:
+    ) -> List[ScoredChunk]:
         """
         Retrieves a list of text chunks relevant to a given query from the vector store, ranked by
         relevance or other metrics.
@@ -118,7 +130,7 @@ class ColbertVectorStoreRetriever(ABC):
         k: Optional[int] = None,
         query_maxlen: Optional[int] = None,
         **kwargs: Any
-    ) -> List[RetrievedChunk]:
+    ) -> List[ScoredChunk]:
         """
         Retrieves a list of text chunks relevant to a given query from the vector store, ranked by
         relevance or other metrics.
