@@ -5,7 +5,7 @@ from ragstack_langchain.colbert import ColbertVectorStoreLangChainRetriever
 from ragstack_colbert import (
     CassandraColbertVectorStore,
     ColbertCassandraRetriever,
-    ColbertTokenEmbeddings,
+    ColbertEmbeddings,
 )
 from tests.integration_tests.conftest import (
     get_astradb_test_store,
@@ -68,7 +68,7 @@ def test_embedding_cassandra_retriever(request, vector_store: str):
     doc_id = "Marine Animals habitat"
 
     # colbert stuff starts
-    colbert = ColbertTokenEmbeddings(
+    colbert = ColbertEmbeddings(
         doc_maxlen=220,
         nbits=1,
         kmeans_niters=4,

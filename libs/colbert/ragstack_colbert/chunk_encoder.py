@@ -15,7 +15,7 @@ from colbert.utils.utils import batch
 from torch import Tensor
 
 from .constant import CHUNK_MAX_PER_DOC
-from .token_embedding import EmbeddedChunk
+from .token_embeddings import EmbeddedChunk
 
 
 def encode_chunks(
