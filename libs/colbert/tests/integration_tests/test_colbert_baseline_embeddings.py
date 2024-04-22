@@ -1,16 +1,16 @@
 import logging
-import torch
 from typing import List
+
+import torch
 from torch import Tensor
 from torch.nn.functional import cosine_similarity
 
+from colbert.indexing.collection_encoder import CollectionEncoder
 from colbert.infra.config import ColBERTConfig
 from colbert.modeling.checkpoint import Checkpoint
-from colbert.indexing.collection_encoder import CollectionEncoder
-
-from ragstack_colbert.colbert_embedding import ColbertTokenEmbeddings
 from ragstack_colbert.chunks import EmbeddedChunk
-from ragstack_colbert.constant import DEFAULT_COLBERT_DIM, DEFAULT_COLBERT_MODEL
+from ragstack_colbert.colbert_embedding import ColbertEmbedding
+from ragstack_colbert.constant import DEFAULT_COLBERT_MODEL
 
 baseline_tensors = [
     torch.tensor([-0.0855,  0.0171, -0.0917,  0.0023,  0.0630,  0.0211,  0.0054,  0.1178,
@@ -11888,7 +11888,7 @@ def are_they_similar(embedded_chunks: List[EmbeddedChunk], tensors: List[Tensor]
 
 
 def test_embeddings_with_baseline():
-    colbert = ColbertTokenEmbeddings(
+    colbert = ColbertEmbedding(
         doc_maxlen=220,
         nbits=2,
         kmeans_niters=4,
@@ -11932,10 +11932,10 @@ def test_embeddings_with_baseline():
     use the same ColBERT configurations but reload the checkpoint with the default settings
     this also make sure the default ColBERT configurations have not changed
     """
-    colbert2 = ColbertTokenEmbeddings(
+    colbert2 = ColbertEmbedding(
         checkpoint=DEFAULT_COLBERT_MODEL,
     )
-    embedded_chunks2 = colbert2.embed_chunks(arctic_botany_chunks) 
+    embedded_chunks2 = colbert2.embed_chunks(arctic_botany_chunks)
 
     are_they_similar(embedded_chunks2, embedded_tensors)
 
@@ -11950,17 +11950,17 @@ def test_colbert_embedding_against_vanilla_impl():
     embeddings_flat, _ = encoder.encode_passages(arctic_botany_chunks)
 
 
-    colbertSvc = ColbertTokenEmbeddings(
+    colbertSvc = ColbertEmbedding(
         checkpoint=DEFAULT_COLBERT_MODEL,
     )
-    embedded_chunks = colbertSvc.embed_chunks(arctic_botany_chunks) 
+    embedded_chunks = colbertSvc.embed_chunks(arctic_botany_chunks)
 
     are_they_similar(embedded_chunks, embeddings_flat)
 
 
 def model_embedding(model: str):
     logging.info(f"test model compatibility {model}")
-    colbertSvc = ColbertTokenEmbeddings(
+    colbertSvc = ColbertEmbedding(
          checkpoint=model,
          query_maxlen=32,
     )

@@ -1,24 +1,24 @@
 
 from llama_index.core.schema import NodeWithScore, QueryBundle, TextNode
 from llama_index.core.callbacks.base import CallbackManager
-from llama_index.core.retrievers import BaseRetriever
+from llama_index.core.retrievers import BaseRetriever as LlamaIndexBaseRetriever
 from llama_index.core.constants import DEFAULT_SIMILARITY_TOP_K
 from typing import Any, List, Optional
 
-from ragstack_colbert.vector_store import ColbertVectorStoreRetriever
+from ragstack_colbert.base_retriever import BaseRetriever
 
 
-class ColbertVectorStoreLlamaIndexRetriever(BaseRetriever):
-    """ColBERT vector index retriever.
+class ColbertRetriever(LlamaIndexBaseRetriever):
+    """ColBERT vector store retriever.
 
     Args:
-        retriever (ColbertVectorStoreRetriever): vector store index.
+        retriever (BaseRetriever): vector store index.
         similarity_top_k (int): number of top k results to return.
     """
 
     def __init__(
         self,
-        retriever: ColbertVectorStoreRetriever,
+        retriever: BaseRetriever,
         similarity_top_k: int = DEFAULT_SIMILARITY_TOP_K,
         callback_manager: Optional[CallbackManager] = None,
         object_map: Optional[dict] = None,

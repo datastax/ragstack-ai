@@ -1,11 +1,11 @@
-from .retriever import ColbertVectorStoreLangChainRetriever
-
 try:
-    from ragstack_colbert.vector_store import ColbertVectorStoreRetriever
+    from ragstack_colbert.base_retriever import BaseRetriever
 except (ImportError, ModuleNotFoundError):
     raise ImportError(
         "Could not import ragstack-ai-colbert. "
         "Please install it with `pip install ragstack-ai-langchain[colbert]`."
     )
 
-__all__ = ["ColbertVectorStoreLangChainRetriever"]
+from .retriever import ColbertLCRetriever
+
+__all__ = ["ColbertLCRetriever"]

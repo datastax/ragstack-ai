@@ -2,13 +2,12 @@ from typing import Any, List
 
 from langchain_core.callbacks.manager import CallbackManagerForRetrieverRun
 from langchain_core.documents import Document
-from langchain_core.retrievers import BaseRetriever
+from langchain_core.retrievers import BaseRetriever as LangChainBaseRetriever
 from pydantic import Field
 
-from ragstack_colbert.vector_store import ColbertVectorStoreRetriever
+from ragstack_colbert.base_retriever import BaseRetriever
 
-
-class ColbertVectorStoreLangChainRetriever(BaseRetriever):
+class ColbertLCRetriever(LangChainBaseRetriever):
     """Chain for langchain retrieve using ColBERT vector store.
 
     Example:
@@ -18,12 +17,12 @@ class ColbertVectorStoreLangChainRetriever(BaseRetriever):
         from langchain_openai import AzureChatOpenAI
 
         llm = AzureChatOpenAI()
-        retriever = ColbertVectorStoreLangChainRetriever(colbertCassandraRetriever, k=5)
+        retriever = ColbertLCRetriever(colbert_retriever, k=5)
         qa = RetrievalQA.from_chain_type(llm=llm, chain_type="stuff", retriever=retriever)
         qa.run("what happened on June 4th?")
     """
 
-    retriever: ColbertVectorStoreRetriever = Field(default=None)
+    retriever: BaseRetriever = Field(default=None)
     kwargs: dict = {}
     k: int = 10
 
@@ -33,7 +32,7 @@ class ColbertVectorStoreLangChainRetriever(BaseRetriever):
         arbitrary_types_allowed = True
 
     def __init__(
-        self, retriever: ColbertVectorStoreRetriever, k: int = 10, **kwargs: Any
+        self, retriever: BaseRetriever, k: int = 10, **kwargs: Any
     ):
         super().__init__(retriever=retriever, k=k, **kwargs)
         self.retriever = retriever

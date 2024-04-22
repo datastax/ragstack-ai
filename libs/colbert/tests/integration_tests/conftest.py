@@ -1,7 +1,5 @@
-from ragstack_tests_utils import LocalCassandraTestStore, AstraDBTestStore
-
 import pytest
-
+from ragstack_tests_utils import AstraDBTestStore, LocalCassandraTestStore
 
 status = {
     "local_cassandra_test_store": None,
