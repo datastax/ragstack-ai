@@ -99,20 +99,20 @@ class CassandraVectorStore(BaseVectorStore):
 
             future = self._table.put_async(partition_id=doc_id, row_id=(chunk_id, -1), body_blob=chunk.text, metadata=chunk.metadata)
 
-            futures.append(doc_id, chunk_id, -1, future)
+            futures.append((doc_id, chunk_id, -1, future))
 
             for index, vector in enumerate(chunk.embeddings.tolist()):
-                future = self._table.aput(partition_id=doc_id, row_id=(chunk_id, index), vector=vector)
-                futures.append(doc_id, chunk_id, index, future)
+                future = self._table.put_async(partition_id=doc_id, row_id=(chunk_id, index), vector=vector)
+                futures.append((doc_id, chunk_id, index, future))
 
             for (doc_id, chunk_id, embedding_id, future) in futures:
                 try:
                     future.result()
                 except Exception as e:
                     if embedding_id == -1:
-                        logging.error(f"issue inserting document data: {doc_id} chunk: {chunk_id}")
+                        logging.error(f"issue inserting document data: {doc_id} chunk: {chunk_id}: {e}")
                     else:
-                        logging.error(f"issue inserting document embedding: {doc_id} chunk: {chunk_id} embedding: {embedding_id}")
+                        logging.error(f"issue inserting document embedding: {doc_id} chunk: {chunk_id} embedding: {embedding_id}: {e}")
 
     def delete_chunks(self, doc_ids: List[str]) -> None:
         """
@@ -143,6 +143,7 @@ class CassandraVectorStore(BaseVectorStore):
         # TODO: only return partition_id and row_id after cassio supports this
         rows = await self._table.aann_search(vector=vector, n=n)
         for row in rows:
+            print(row)
             doc_id = row["partition_id"]
             chunk_id = row["row_id"][0]
 
