@@ -5,8 +5,8 @@ managing the vector store, and performing efficient similarity searches. Utiliti
 and constants related to the Colbert model configuration are also provided.
 
 Exports:
-- ColbertEmbeddings: Class for generating and managing token embeddings using the Colbert model.
-- ColbertVectorStore: Implementation of a vector store using Cassandra for embedding storage.
+- ColbertTokenEmbeddings: Class for generating and managing token embeddings using the Colbert model.
+- CassandraColbertVectorStore: Implementation of a vector store using Cassandra for embedding storage.
 - ColbertCassandraRetriever: Retriever class for executing similarity searches within a Cassandra vector store.
 - max_similarity_torch: Function for calculating the maximum similarity between embeddings using PyTorch.
 - EmbeddedChunk: Data class for representing a chunk of embedded text.
@@ -16,18 +16,21 @@ Exports:
 - DEFAULT_COLBERT_DIM: The default dimensionality for Colbert model embeddings.
 """
 
-from .cobert_retriever import ColbertRetriever, max_similarity_torch
-from .colbert_store import ColbertVectorStore
-from .colbert_embeddings import ColbertEmbeddings
+from .cassandra_retriever import ColbertCassandraRetriever, max_similarity_torch
+from .cassandra_store import CassandraColbertVectorStore
+from .colbert_embedding import ColbertTokenEmbeddings
 from .constant import DEFAULT_COLBERT_DIM, DEFAULT_COLBERT_MODEL
-from .chunks import EmbeddedChunk
+from .token_embedding import EmbeddedChunk, TokenEmbeddings
+from .vector_store import ColbertVectorStore
 
 __all__ = [
-    "ColbertEmbeddings",
-    "ColbertRetriever",
+    "ColbertTokenEmbeddings",
+    "CassandraColbertVectorStore",
+    "ColbertCassandraRetriever",
+    "max_similarity_torch",
+    "EmbeddedChunk",
+    "TokenEmbeddings",
     "ColbertVectorStore",
     "DEFAULT_COLBERT_MODEL",
     "DEFAULT_COLBERT_DIM",
-    "EmbeddedChunk",
-    "max_similarity_torch",
 ]

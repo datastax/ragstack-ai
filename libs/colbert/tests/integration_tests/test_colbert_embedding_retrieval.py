@@ -3,9 +3,9 @@ import logging
 import pytest
 
 from ragstack_colbert import (
-    ColbertVectorStore,
-    ColbertRetriever,
-    ColbertEmbeddings,
+    CassandraColbertVectorStore,
+    ColbertCassandraRetriever,
+    ColbertTokenEmbeddings,
 )
 from tests.integration_tests.conftest import (
     get_astradb_test_store,
@@ -68,7 +68,7 @@ def test_embedding_cassandra_retriever(request, vector_store: str):
     doc_id = "Marine Animals habitat"
 
     # colbert stuff starts
-    colbert = ColbertEmbeddings(
+    colbert = ColbertTokenEmbeddings(
         doc_maxlen=220,
         nbits=1,
         kmeans_niters=4,
@@ -78,14 +78,14 @@ def test_embedding_cassandra_retriever(request, vector_store: str):
 
     logging.info(f"embedded chunks size {len(embedded_chunks)}")
 
-    store = ColbertVectorStore(
+    store = CassandraColbertVectorStore(
         keyspace="default_keyspace",
         table_name="colbert_embeddings",
         session=vector_store.create_cassandra_session(),
     )
     store.put_chunks(chunks=embedded_chunks, delete_existing=True)
 
-    retriever = ColbertRetriever(
+    retriever = ColbertCassandraRetriever(
         vector_store=store, colbert_embeddings=colbert
     )
     chunks = retriever.retrieve("what kind fish lives shallow coral reefs", k=5)

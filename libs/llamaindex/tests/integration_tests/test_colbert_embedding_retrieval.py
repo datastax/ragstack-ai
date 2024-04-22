@@ -5,7 +5,7 @@ import pytest
 from ragstack_colbert import (
     CassandraColbertVectorStore,
     ColbertCassandraRetriever,
-    ColbertEmbeddings,
+    ColbertTokenEmbeddings,
 )
 from ragstack_llamaindex.colbert import ColbertVectorStoreLlamaIndexRetriever
 from tests.integration_tests.conftest import (
@@ -69,7 +69,7 @@ def test_embedding_cassandra_retriever(request, vector_store: str):
     doc_id = "Marine Animals habitat"
 
     # colbert stuff starts
-    colbert = ColbertEmbeddings(
+    colbert = ColbertTokenEmbeddings(
         doc_maxlen=220,
         nbits=1,
         kmeans_niters=4,
