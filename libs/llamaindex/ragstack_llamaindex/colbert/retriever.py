@@ -8,7 +8,7 @@ from typing import Any, List, Optional
 from ragstack_colbert.base_retriever import BaseRetriever
 
 
-class ColbertRetriever(LlamaIndexBaseRetriever):
+class ColbertLIRetriever(LlamaIndexBaseRetriever):
     """ColBERT vector store retriever.
 
     Args:
