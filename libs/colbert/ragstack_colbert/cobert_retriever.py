@@ -1,6 +1,6 @@
 """
-This module integrates text embedding retrieval and similarity computation functionalities with a Cassandra
-database backend, optimized for high-performance operations in large-scale text retrieval applications.
+This module integrates text embedding retrieval and similarity computation functionalities with a vector
+store backend, optimized for high-performance operations in large-scale text retrieval applications.
 
 Note:
 The implementation assumes the availability of a GPU for optimal performance but is designed to fallback
@@ -17,9 +17,10 @@ import torch
 from cassandra import ReadTimeout
 from torch import Tensor
 
-from .cassandra_store import CassandraColbertVectorStore
-from .colbert_embedding import ColbertTokenEmbeddings
-from .vector_store import ColbertVectorStoreRetriever, RetrievedChunk
+from .base_embedding import BaseEmbedding
+from .base_retriever import BaseRetriever
+from .base_vector_store import BaseVectorStore
+from .chunks import RetrievedChunk
 
 
 def all_gpus_support_fp16(is_cuda: Optional[bool] = False):
@@ -95,16 +96,15 @@ def max_similarity_torch(
     return max_sim
 
 
-class ColbertCassandraRetriever(ColbertVectorStoreRetriever):
+class ColbertRetriever(BaseRetriever):
     """
-    A retriever class that implements the retrieval of text chunks from a Cassandra database, based on
+    A retriever class that implements the retrieval of text chunks from a vector store, based on
     their semantic similarity to a given query. This implementation leverages the ColBERT model for
     generating embeddings of the query.
 
     Attributes:
-        vector_store (CassandraColbertVectorStore): The ColBERT vector store instance for interacting with the
-                                                    Cassandra database.
-        colbert_embeddings (ColbertTokenEmbeddings): The ColbertTokenEmbeddings instance for encoding queries.
+        vector_store (BaseVectorStore): The vector store instance where chunks are stored.
+        colbert_embeddings (BaseEmbedding): The ColBERT embeddings model for encoding queries.
         is_cuda (bool): A flag indicating whether to use CUDA (GPU) for computation.
         is_fp16 (bool): A flag indicating whether to half-precision floating point operations on CUDA (GPU).
                         Has no effect on CPU computation.
@@ -115,8 +115,8 @@ class ColbertCassandraRetriever(ColbertVectorStoreRetriever):
         computation if a GPU is not available.
     """
 
-    vector_store: CassandraColbertVectorStore
-    colbert_embeddings: ColbertTokenEmbeddings
+    vector_store: BaseVectorStore
+    colbert_embeddings: BaseEmbedding
     max_workers: int
     is_cuda: bool = False
     is_fp16: bool = False
@@ -126,16 +126,16 @@ class ColbertCassandraRetriever(ColbertVectorStoreRetriever):
 
     def __init__(
         self,
-        vector_store: CassandraColbertVectorStore,
-        colbert_embeddings: ColbertTokenEmbeddings,
+        vector_store: BaseVectorStore,
+        colbert_embeddings: BaseEmbedding,
         max_workers: Optional[int] = 20,
     ):
         """
         Initializes the retriever with a specific vector store and Colbert embeddings model.
 
         Parameters:
-            vector_store (CassandraColbertVectorStore): The vector store to be used for retrieving embeddings.
-            colbert_embeddings (ColbertTokenEmbeddings): The ColBERT embeddings model to be used for encoding
+            vector_store (BaseVectorStore): The vector store to be used for retrieving embeddings.
+            colbert_embeddings (BaseEmbedding): The ColBERT embeddings model to be used for encoding
                                                          queries.
             max_workers: The maximum number of concurrent requests to make to Cassandra on a per-retrieval basis.
         """

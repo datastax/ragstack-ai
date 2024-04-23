@@ -1,6 +1,8 @@
-from ragstack_colbert.distributed import Distributed
-from ragstack_colbert.runner import distribute_work_load, map_work_load
 import torch
+
+from ragstack_colbert.distributed.distributed import Distributed
+from ragstack_colbert.distributed.runner import distribute_work_load, map_work_load
+
 
 def test_distributed():
     distributed = Distributed(nranks=-1)

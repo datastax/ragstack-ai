@@ -1,6 +1,6 @@
 import torch
 
-from ragstack_colbert.cassandra_retriever import max_similarity_torch
+from ragstack_colbert.cobert_retriever import max_similarity_torch
 from ragstack_colbert.colbert_embedding import calculate_query_maxlen
 
 

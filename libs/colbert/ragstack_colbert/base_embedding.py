@@ -10,7 +10,7 @@ from torch import Tensor
 from .chunks import EmbeddedChunk
 
 
-class TokenEmbeddings(ABC):
+class BaseEmbedding(ABC):
     """
     Abstract base class (ABC) for token-based embedding models.
 

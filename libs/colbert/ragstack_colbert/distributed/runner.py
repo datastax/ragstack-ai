@@ -13,10 +13,11 @@ from typing import Dict, List
 
 import torch
 import torch.multiprocessing as mp
+
 from colbert.infra import ColBERTConfig
 
+from ..chunks import EmbeddedChunk
 from .chunk_encoder import encode_chunks
-from .chunks import EmbeddedChunk
 from .distributed import reconcile_nranks
 
 
