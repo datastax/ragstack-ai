@@ -49,9 +49,7 @@ class BaseEmbeddingModel(ABC):
         query_maxlen: int = -1,
     ) -> Tensor:
         """
-        Encodes a single query string into a dense vector representation. This method is optimized for encoding
-        individual queries, allowing for control over the encoding length and supporting full-length search encoding.
-        The encoded query is adjusted to a specified or default maximum token length.
+        Embeds a single query text into its vector representation.
 
         If the query has fewer than query_maxlen tokens it will be padded with BERT special [mast] tokens.
 
@@ -62,5 +60,5 @@ class BaseEmbeddingModel(ABC):
             query_maxlen (int): The fixed length for the query token embedding. If -1, uses a dynamically calculated value.
 
         Returns:
-            Tensor: A tensor representing the encoded query's embedding.
+            Tensor: A tensor representing the embedded query.
         """

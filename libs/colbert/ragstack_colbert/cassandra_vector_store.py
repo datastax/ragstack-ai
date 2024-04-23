@@ -36,8 +36,6 @@ class CassandraVectorStore(BaseVectorStore):
         delete_chunks_by_doc_id_stmt (PreparedStatement): Prepared statement for deleting chunks.
 
     The table schema and custom index for ANN queries are automatically created if they do not exist.
-    An implementation of the ColbertVectorStore abstract base class using CassIO as the backend
-    storage system.
     """
 
     _table: ClusteredMetadataVectorCassandraTable
@@ -57,7 +55,7 @@ class CassandraVectorStore(BaseVectorStore):
 
         cluster_name = session.cluster.metadata.cluster_name.lower()
         is_astra = "cndb" == cluster_name
-        logging.debug(f"colbert store is running on {'astra' if is_astra else 'cassandra'}")
+        logging.debug(f"colbert store is running on {'astra' if is_astra else 'apache cassandra'}")
 
         session.default_timeout = timeout
 
