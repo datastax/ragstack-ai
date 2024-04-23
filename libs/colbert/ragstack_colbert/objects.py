@@ -35,13 +35,7 @@ class ChunkData():
     """
 
     text: str
-    metadata: Dict[str, Any] = field(default_factory=dict, hash=False, compare=False)
-
-    def __post_init__(self):
-        object.__setattr__(self, 'metadata', frozenset(self.metadata.items()))
-
-    def __hash__(self):
-        return hash((super().__hash__(), self.text, frozenset(self.metadata.items())))
+    metadata: Dict[str, Any]
 
 
 @dataclass(frozen=True)
