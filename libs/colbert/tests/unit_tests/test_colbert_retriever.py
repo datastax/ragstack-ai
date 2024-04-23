@@ -1,7 +1,7 @@
 import torch
 
 from ragstack_colbert.cobert_retriever import max_similarity_torch
-from ragstack_colbert.colbert_embedding import calculate_query_maxlen
+from ragstack_colbert.colbert_embedding_model import calculate_query_maxlen
 
 
 def test_max_similarity_torch():

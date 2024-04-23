@@ -84,7 +84,7 @@ class ColbertEmbeddingModel(BaseEmbeddingModel):
         nbits: int = 2,
         kmeans_niters: int = 4,
         nranks: int = -1,
-        query_maxlen: int = 32,
+        query_maxlen: int = -1,
         verbose: int = 3,  # 3 is the default on ColBERT checkpoint
         distributed_communication: bool = False,
         **kwargs,

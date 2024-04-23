@@ -1,6 +1,6 @@
 import torch
 
-from ragstack_colbert.colbert_embedding import ChunkData, ColbertEmbeddingModel
+from ragstack_colbert import ChunkData, ColbertEmbeddingModel
 from ragstack_colbert.constant import DEFAULT_COLBERT_DIM, DEFAULT_COLBERT_MODEL
 
 
@@ -67,7 +67,7 @@ def test_colbert_query_embeddings():
 
     queryTensor = colbert.embed_query("who is the president of the united states?")
     assert isinstance(queryTensor, torch.Tensor)
-    assert queryTensor.shape == (11, 128)
+    assert queryTensor.shape == (12, 128)
 
     # test query encoding
     queryEncoding = colbert.encode_query("test-query", query_maxlen=512)

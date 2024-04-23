@@ -64,8 +64,8 @@ def test_embedding_cassandra_retriever(request, vector_store: str):
     texts = generate_texts(narrative, chunk_size, overlap_size)
 
     # Output the first few chunks to ensure they meet the specifications
-    for i, chunk in enumerate(texts[:3]):  # Displaying the first 3 chunks for brevity
-        logging.info(f"Chunk {i + 1}:\n{chunk}\n{'-' * 50}\n")
+    for i, text in enumerate(texts[:3]):  # Displaying the first 3 chunks for brevity
+        logging.info(f"Chunk {i + 1}:\n{text}\n{'-' * 50}\n")
 
     doc_id = "Marine Animals habitat"
 
@@ -78,7 +78,7 @@ def test_embedding_cassandra_retriever(request, vector_store: str):
 
     chunks = [ChunkData(text=text, metadata={}) for text in texts]
 
-    embedded_chunks = colbert.embed_chunks(texts=chunks, doc_id=doc_id)
+    embedded_chunks = colbert.embed_chunks(chunks=chunks, doc_id=doc_id)
 
     logging.info(f"embedded chunks size {len(embedded_chunks)}")
 

@@ -16,7 +16,7 @@ Exports:
 
 from .cassandra_vector_store import CassandraVectorStore
 from .cobert_retriever import ColbertRetriever
-from .colbert_embedding import ColbertEmbeddingModel
+from .colbert_embedding_model import ColbertEmbeddingModel
 from .constant import DEFAULT_COLBERT_DIM, DEFAULT_COLBERT_MODEL
 from .objects import ChunkData, EmbeddedChunk, RetrievedChunk
 

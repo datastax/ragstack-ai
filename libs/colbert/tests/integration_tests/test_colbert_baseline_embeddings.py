@@ -11976,7 +11976,7 @@ def model_embedding(model: str):
     assert n == 645
 
     # recall embeddings test
-    encoded = colbertSvc.encode_query(
+    encoded = colbertSvc.embed_query(
         query="What adaptations enable Arctic plants to survive and thrive in extremely cold temperatures and minimal sunlight?",
         query_maxlen=32,
     )
