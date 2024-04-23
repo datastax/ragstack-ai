@@ -1,11 +1,11 @@
 import torch
 
-from ragstack_colbert.colbert_embedding import ChunkData, ColbertEmbedding
+from ragstack_colbert.colbert_embedding import ChunkData, ColbertEmbeddingModel
 from ragstack_colbert.constant import DEFAULT_COLBERT_DIM, DEFAULT_COLBERT_MODEL
 
 
 def test_colbert_token_embeddings():
-    colbert = ColbertEmbedding()
+    colbert = ColbertEmbeddingModel()
     assert colbert.colbert_config is not None
 
     chunks = [
@@ -35,9 +35,9 @@ def test_colbert_token_embeddings():
 
 
 def test_colbert_token_embeddings_with_params():
-    colbert = ColbertEmbedding(
+    colbert = ColbertEmbeddingModel(
         doc_maxlen=220,
-        nbits=1,
+        nbits=2,
         kmeans_niters=4,
         checkpoint=DEFAULT_COLBERT_MODEL,
         query_maxlen=32,
@@ -63,7 +63,7 @@ def test_colbert_token_embeddings_with_params():
 
 
 def test_colbert_query_embeddings():
-    colbert = ColbertEmbedding()
+    colbert = ColbertEmbeddingModel()
 
     queryTensor = colbert.embed_query("who is the president of the united states?")
     assert isinstance(queryTensor, torch.Tensor)

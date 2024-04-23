@@ -5,7 +5,7 @@ import pytest
 from ragstack_colbert import (
     CassandraVectorStore,
     ColbertRetriever,
-    ColbertEmbedding,
+    ColbertEmbeddingModel,
     ChunkData,
 )
 from ragstack_llamaindex.colbert import ColbertLIRetriever
@@ -70,9 +70,9 @@ def test_embedding_cassandra_retriever(request, vector_store: str):
     doc_id = "Marine Animals habitat"
 
     # colbert stuff starts
-    colbert = ColbertEmbedding(
+    colbert = ColbertEmbeddingModel(
         doc_maxlen=220,
-        nbits=1,
+        nbits=2,
         kmeans_niters=4,
     )
 
@@ -90,7 +90,7 @@ def test_embedding_cassandra_retriever(request, vector_store: str):
     store.put_chunks(chunks=embedded_chunks, delete_existing=True)
 
     retriever = ColbertRetriever(
-        vector_store=store, colbert_embeddings=colbert
+        vector_store=store, embedding_model=colbert
     )
     li_retriever = ColbertLIRetriever(retriever, similarity_top_k=3)
     nodes = li_retriever.retrieve("what kind fish lives shallow coral reefs")

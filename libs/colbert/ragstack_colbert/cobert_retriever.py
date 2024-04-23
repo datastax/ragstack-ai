@@ -16,7 +16,7 @@ from typing import Any, Dict, List, Optional, Set
 import torch
 from torch import Tensor
 
-from .base_embedding import BaseEmbedding
+from .base_embedding_model import BaseEmbeddingModel
 from .base_retriever import BaseRetriever
 from .base_vector_store import BaseVectorStore
 from .objects import BaseChunk, ChunkData, RetrievedChunk
@@ -111,7 +111,7 @@ class ColbertRetriever(BaseRetriever):
 
     Attributes:
         vector_store (BaseVectorStore): The vector store instance where chunks are stored.
-        colbert_embeddings (BaseEmbedding): The ColBERT embeddings model for encoding queries.
+        embedding_model (BaseEmbeddingModel): The ColBERT embeddings model for encoding queries.
         is_cuda (bool): A flag indicating whether to use CUDA (GPU) for computation.
         is_fp16 (bool): A flag indicating whether to half-precision floating point operations on CUDA (GPU).
                         Has no effect on CPU computation.
@@ -122,7 +122,7 @@ class ColbertRetriever(BaseRetriever):
     """
 
     vector_store: BaseVectorStore
-    colbert_embeddings: BaseEmbedding
+    embedding_model: BaseEmbeddingModel
     is_cuda: bool = False
     is_fp16: bool = False
 
@@ -132,19 +132,19 @@ class ColbertRetriever(BaseRetriever):
     def __init__(
         self,
         vector_store: BaseVectorStore,
-        colbert_embeddings: BaseEmbedding,
+        embedding_model: BaseEmbeddingModel,
     ):
         """
         Initializes the retriever with a specific vector store and Colbert embeddings model.
 
         Parameters:
             vector_store (BaseVectorStore): The vector store to be used for retrieving embeddings.
-            colbert_embeddings (BaseEmbedding): The ColBERT embeddings model to be used for encoding
+            embedding_model (BaseEmbeddingModel): The ColBERT embeddings model to be used for encoding
                                                          queries.
         """
 
         self.vector_store = vector_store
-        self.colbert_embeddings = colbert_embeddings
+        self.embedding_model = embedding_model
         self.is_cuda = torch.cuda.is_available()
         self.is_fp16 = all_gpus_support_fp16(self.is_cuda)
 
@@ -155,14 +155,14 @@ class ColbertRetriever(BaseRetriever):
         pass
 
     async def _query_relevant_chunks(
-        self, query_encodings: List[Tensor], top_k: int
+        self, query_embeddings: List[Tensor], top_k: int
     ) -> Set[BaseChunk]:
         """
         Retrieves the top_k ANN results for each embedded query token.
         """
         chunks: Set[BaseChunk] = set()
         # Collect all tasks
-        tasks = [self.vector_store.search_relevant_chunks(vector=v, n=top_k) for v in query_encodings]
+        tasks = [self.vector_store.search_relevant_chunks(vector=v, n=top_k) for v in query_embeddings]
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
         # Process results and handle potential exceptions
@@ -197,7 +197,7 @@ class ColbertRetriever(BaseRetriever):
         return chunk_embeddings
 
     def _score_chunks(
-        self, query_encodings: Tensor, chunk_data: Dict[BaseChunk, List[Tensor]]
+        self, query_embeddings: Tensor, chunk_data: Dict[BaseChunk, List[Tensor]]
     ) -> Dict[BaseChunk, Tensor]:
         """
         Process the retrieved chunk data to calculate scores.
@@ -211,7 +211,7 @@ class ColbertRetriever(BaseRetriever):
                     is_cuda=self.is_cuda,
                     is_fp16=self.is_fp16,
                 )
-                for qv in query_encodings
+                for qv in query_embeddings
             )
         return chunk_scores
 
@@ -274,7 +274,7 @@ class ColbertRetriever(BaseRetriever):
         Parameters:
             query (str): The text query for which relevant chunks are to be retrieved.
             k (int, optional): The number of top relevant chunks to retrieve. Defaults to 10.
-            query_maxlen (int, optional): //TODO figure out a better description for this parameter, and/or a better name.
+            query_maxlen (int, optional): The maximum number of tokens in the query. If -1, this will be calculated dynamically.
             query_timeout (int, optional): The timeout in seconds for query execution. Defaults to 180.
             **kwargs (Any): Additional keyword arguments that can be used for extending functionality.
 
@@ -287,24 +287,21 @@ class ColbertRetriever(BaseRetriever):
             embeddings, scoring these embeddings for similarity, and retrieving the corresponding text chunks.
         """
 
-        # if the query has fewer than a predefined number of tokens Nq,
-        # colbert_embeddings will pad it with BERT special [mast] token up to length Nq.
-        query_encodings = self.colbert_embeddings.encode_query(
+        query_embeddings = self.embedding_model.embed_query(
             query, query_maxlen=query_maxlen
         )
 
-        # the min of query_maxlen is 32
-        top_k = max(math.floor(len(query_encodings) / 2), 16)
-        logging.debug(f"query length {len(query)} embeddings top_k: {top_k}")
+        top_k = max(math.floor(len(query_embeddings) / 2), 16)
+        logging.debug(f"based on query length of {len(query_embeddings)} tokens, retrieving {top_k} results per token-embedding")
 
         chunks = await self._query_relevant_chunks(
-            query_encodings=query_encodings, top_k=top_k
+            query_embeddings=query_embeddings, top_k=top_k
         )
 
         # score each chunk
         chunk_data = await self._retrieve_chunks(chunks=chunks)
         chunk_scores = self._score_chunks(
-            query_encodings=query_encodings, chunk_data=chunk_data
+            query_embeddings=query_embeddings, chunk_data=chunk_data
         )
 
         # load the source chunk for the top k documents

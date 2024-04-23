@@ -10,7 +10,7 @@ from torch import Tensor
 from .objects import ChunkData, EmbeddedChunk
 
 
-class BaseEmbedding(ABC):
+class BaseEmbeddingModel(ABC):
     """
     Abstract base class (ABC) for token-based embedding models.
 
@@ -42,17 +42,25 @@ class BaseEmbedding(ABC):
         """
 
     @abstractmethod
-    def embed_query(self, text: str) -> Tensor:
+    def embed_query(
+        self,
+        query: str,
+        full_length_search: Optional[bool] = False,
+        query_maxlen: int = -1,
+    ) -> Tensor:
         """
-        Embeds a single query text into its vector representation.
+        Encodes a single query string into a dense vector representation. This method is optimized for encoding
+        individual queries, allowing for control over the encoding length and supporting full-length search encoding.
+        The encoded query is adjusted to a specified or default maximum token length.
 
-        This method processes a query string, converting it into a tensor of embeddings that
-        represent the query in the embedded space. This is typically used for matching against
-        embedded documents or chunks in retrieval tasks.
+        If the query has fewer than query_maxlen tokens it will be padded with BERT special [mast] tokens.
 
         Parameters:
-            text (str): The query text to be embedded.
+            query (str): The query string to encode.
+            full_length_search (Optional[bool]): Indicates whether to encode the query for a full-length search.
+                                                  Defaults to False.
+            query_maxlen (int): The fixed length for the query token embedding. If -1, uses a dynamically calculated value.
 
         Returns:
-            Tensor: A tensor representing the embedded query.
+            Tensor: A tensor representing the encoded query's embedding.
         """

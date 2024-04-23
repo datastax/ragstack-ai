@@ -8,7 +8,7 @@ from torch.nn.functional import cosine_similarity
 from colbert.indexing.collection_encoder import CollectionEncoder
 from colbert.infra.config import ColBERTConfig
 from colbert.modeling.checkpoint import Checkpoint
-from ragstack_colbert import ChunkData, ColbertEmbedding, EmbeddedChunk
+from ragstack_colbert import ChunkData, ColbertEmbeddingModel, EmbeddedChunk
 from ragstack_colbert.constant import DEFAULT_COLBERT_MODEL
 
 baseline_tensors = [
@@ -11887,7 +11887,7 @@ def are_they_similar(embedded_chunks: List[EmbeddedChunk], tensors: List[Tensor]
 
 
 def test_embeddings_with_baseline():
-    colbert = ColbertEmbedding(
+    colbert = ColbertEmbeddingModel(
         doc_maxlen=220,
         nbits=2,
         kmeans_niters=4,
@@ -11931,7 +11931,7 @@ def test_embeddings_with_baseline():
     use the same ColBERT configurations but reload the checkpoint with the default settings
     this also make sure the default ColBERT configurations have not changed
     """
-    colbert2 = ColbertEmbedding(
+    colbert2 = ColbertEmbeddingModel(
         checkpoint=DEFAULT_COLBERT_MODEL,
     )
     embedded_chunks2 = colbert2.embed_chunks(arctic_botany_chunks)
@@ -11949,7 +11949,7 @@ def test_colbert_embedding_against_vanilla_impl():
     embeddings_flat, _ = encoder.encode_passages(arctic_botany_chunks)
 
 
-    colbertSvc = ColbertEmbedding(
+    colbertSvc = ColbertEmbeddingModel(
         checkpoint=DEFAULT_COLBERT_MODEL,
     )
     embedded_chunks = colbertSvc.embed_chunks(arctic_botany_chunks)
@@ -11959,7 +11959,7 @@ def test_colbert_embedding_against_vanilla_impl():
 
 def model_embedding(model: str):
     logging.info(f"test model compatibility {model}")
-    colbertSvc = ColbertEmbedding(
+    colbertSvc = ColbertEmbeddingModel(
          checkpoint=model,
          query_maxlen=32,
     )
