@@ -164,7 +164,7 @@ class ColbertEmbeddingModel(BaseEmbeddingModel):
         if doc_id is None:
             doc_id = str(uuid.uuid4())
 
-        timeout = 30 + len(chunks)
+        timeout = 60 + len(chunks)
 
         chunk_data_map: Dict[int, ChunkData] = {}
         texts: List[str] = []

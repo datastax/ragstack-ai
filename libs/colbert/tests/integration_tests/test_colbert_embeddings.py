@@ -9,8 +9,8 @@ def test_colbert_token_embeddings():
     assert colbert.colbert_config is not None
 
     chunks = [
-        ChunkData(text="test1"),
-        ChunkData(text="test2"),
+        ChunkData(text="test1", metadata={}),
+        ChunkData(text="test2", metadata={}),
     ]
 
     embedded_chunks = colbert.embed_chunks(chunks=chunks)
@@ -45,9 +45,9 @@ def test_colbert_token_embeddings_with_params():
     assert colbert.colbert_config is not None
 
     chunks = [
-        ChunkData(text="test1"),
-        ChunkData(text="test2"),
-        ChunkData(text="test3"),
+        ChunkData(text="test1", metadata={}),
+        ChunkData(text="test2", metadata={}),
+        ChunkData(text="test3", metadata={}),
     ]
 
     embedded_chunks = colbert.embed_chunks(chunks=chunks)
