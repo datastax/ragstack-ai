@@ -70,5 +70,5 @@ def test_colbert_query_embeddings():
     assert queryTensor.shape == (12, 128)
 
     # test query encoding
-    queryEncoding = colbert.encode_query("test-query", query_maxlen=512)
+    queryEncoding = colbert.embed_query("test-query", query_maxlen=512)
     assert len(queryEncoding) == 512
