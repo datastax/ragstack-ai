@@ -29,7 +29,7 @@ def embed_docs(docs, keyspace):
     from llama_index.core.ingestion import IngestionPipeline
     from llama_index.core.text_splitter import SentenceSplitter
 
-    from ragstack_colbert import ColbertEmbedding, CassandraVectorStore, ChunkData
+    from ragstack_colbert import ColbertEmbeddingModel, CassandraVectorStore, ChunkData
 
     load_dotenv()
 
@@ -86,7 +86,7 @@ def embed_docs(docs, keyspace):
 
     print(f"found {len(file_chunks)} files inside the chunks")
 
-    colbert = ColbertEmbedding(
+    colbert = ColbertEmbeddingModel(
         doc_maxlen=doc_maxlen,
         nbits=nbits,
         kmeans_niters=kmeans_niters,
