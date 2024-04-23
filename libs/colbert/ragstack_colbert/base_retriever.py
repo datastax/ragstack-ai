@@ -6,7 +6,7 @@ embeddings, specifically designed to work with ColBERT or similar embedding mode
 from abc import ABC, abstractmethod
 from typing import Any, List, Optional
 
-from .chunks import RetrievedChunk
+from .objects import RetrievedChunk
 
 
 class BaseRetriever(ABC):
