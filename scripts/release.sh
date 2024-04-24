@@ -2,7 +2,7 @@
 set -e
 version=$1
 package=$2
-if [ -z "$version" || -z "$package" ]; then
+if [[ -z "$version" || -z "$package" ]]; then
     echo "Usage: $0 <version> <package>"
     echo "Packages: ragstack-ai, ragstack-ai-langchain, ragstack-ai-llamaindex, ragstack-ai-colbert."
     exit 1
