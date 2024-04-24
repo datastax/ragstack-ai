@@ -5,36 +5,67 @@ except ImportError:
     exit(1)
 import sys
 
-IMPORTANT_DEPENDENCIES = ["langchain", "langchain-astradb", "langchain-community", "langchain-core", "llama-index", "astrapy", "cassio", "unstructured"]
+IMPORTANT_DEPENDENCIES = [
+    "ragstack-ai-langchain",
+    "ragstack-ai-colbert",
+    "ragstack-ai-llamaindex",
+    "langchain",
+    "langchain-astradb",
+    "langchain-community",
+    "langchain-core",
+    "llama-index",
+    "astrapy",
+    "cassio",
+    "unstructured",
+    "colbert-ai",
+    "torch",
+    "pyarrow"
+]
 
 
 def main():
     if len(sys.argv) < 2:
-        print("Usage: generate-changelog.py {version}")
+        print("Usage: generate-changelog.py {version} {package_name}")
         sys.exit(1)
     package_version = sys.argv[1]
-    url = f"https://pypi.org/pypi/ragstack-ai/{package_version}/json"
+    root_package_name = sys.argv[2]
+    url = f"https://pypi.org/pypi/{root_package_name}/{package_version}/json"
     deps_str = ""
     json_response = requests.get(url).json()
     requires = json_response['info']['requires_dist']
     for require in requires:
-        split = require.split(' ')
-        package_name = split[0]
+        version_range = ""
+        extra = ""
+        require = require.replace(" ", "")
+        if ";extra" in require:
+            extra = require[require.index(";extra") + 8:]
+            require = require[:require.index(";extra")]
+
+        for i in range(len(require)):
+            if require[i] == "=":
+                package_name = require[:i]
+                version_range = require[i:]
+                break
+            if require[i] == ">" or require[i] == "<":
+                package_name = require[:i]
+                version_range = require[i:]
+                break
+        if not version_range:
+            raise ValueError(f"Could not parse version range from {require}")
         for important_dependency in IMPORTANT_DEPENDENCIES:
             if package_name.startswith(important_dependency + "["):
                 package_name = important_dependency
                 break
         if package_name in IMPORTANT_DEPENDENCIES:
-            version_range = split[1].replace('(', '').replace(')', '')
             if package_name == "langchain":
-                version_range = f"https://datastax.github.io/ragstack-ai/api_reference/{package_version}/langchain[{version_range}]{{external-link-icon}}" # noqa
-
-            deps_str += f"\n| {package_name}\n| {version_range}\n"
+                version_range = f"https://datastax.github.io/ragstack-ai/api_reference/{package_version}/langchain[{version_range}]{{external-link-icon}}"  # noqa
+            extra_str = f" (via extra `{extra}`)" if extra else ""
+            deps_str += f"\n| {package_name}{extra_str}\n| {version_range}\n"
 
     release_date = json_response["urls"][0]["upload_time"][:10]
 
     print(f"""
-== {package_version} ({release_date})
+== `{root_package_name}`@{package_version} ({release_date})
 
 [caption=]
 .Requirements
