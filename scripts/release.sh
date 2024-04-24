@@ -36,9 +36,6 @@ echo ":: Bumping version to $version for package $package"
 poetry version $version
 git commit -am "Release $package $version"
 git tag $tag
-echo ":: Bumping version to ${version}.post for package $package"
-poetry version "${version}.post"
-git commit -am "Bump $package to ${version}.post"
 git push origin main
 git push origin $tag
 echo "done."
