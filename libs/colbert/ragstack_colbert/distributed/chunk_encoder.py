@@ -15,13 +15,13 @@ from colbert.infra import ColBERTConfig
 from colbert.modeling.checkpoint import Checkpoint
 from colbert.utils.utils import batch
 
-from ..base_embedding import EmbeddedChunk
 from ..constant import CHUNK_MAX_PER_DOC
+from ..objects import BaseText, EmbeddedText
 
 
 def encode_chunks(
-    config: ColBERTConfig, rank: int, texts: List[str], doc_id: str
-) -> List[EmbeddedChunk]:
+    config: ColBERTConfig, rank: int, texts: List[BaseText]
+) -> List[EmbeddedText]:
     """
     Encodes a text chunks using a specified ColBERT model configuration. This function initializes
     a ChunkEncoder with the given model configuration and checkpoint, then encodes the texts.
@@ -29,8 +29,7 @@ def encode_chunks(
     Parameters:
         config (ColBERTConfig): Configuration for the ColBERT model.
         rank (int): The rank of the process.
-        texts (List[str]): A list of text chunks to encode.
-        doc_id (str): The document id for the collection of chunks.
+        texts (List[Text]): A list of text chunks to encode.
 
     Returns:
         Encoded representations of the chunks, along with their mapped indices.
@@ -38,7 +37,7 @@ def encode_chunks(
 
     checkpoint = Checkpoint(config.checkpoint, colbert_config=config)
     encoder = ChunkEncoder(config=config, checkpoint=checkpoint)
-    return encoder.encode_and_map(rank, texts, doc_id)
+    return encoder.encode_and_map(rank, texts)
 
 
 class ChunkEncoder:
@@ -101,28 +100,27 @@ class ChunkEncoder:
         return embs, doclens
 
     def encode_and_map(
-        self, rank: int, texts: list[str], doc_id: str
-    ) -> List[EmbeddedChunk]:
+        self, rank: int, texts: list[BaseText]
+    ) -> List[EmbeddedText]:
         """
-        Encodes chunks and maps them to their corresponding document id, adjusting for process rank in a
+        Encodes texts and maps them to their original index, adjusting for process rank in a
         distributed setting.
 
         Parameters:
             rank (int): The process rank, used to adjust chunk indexing in distributed settings.
-            texts (List[str]): The text chunks to encode.
-            doc_id (str): The document id associated with these chunks.
+            texts (List[Text]): The texts to encode.
 
         Returns:
-            A list of EmbeddedChunk objects, each containing the chunk text, its embeddings, and
-            document and chunk ids.
+            A list of EmbeddedText objects, each containing the chunk text,
+             chunk_id, embeddings, and original index.
         """
-        embedded_chunks = []
         # this returns an list of tensors (vectors) and a list of counts
         # where the list of counts has the same size as the list of input texts
         #
         # for each chunk text, we need to pull off "count" vectors to create
         # the ColBERT embedding
-        embeddings, counts = self.encode_chunks(texts)
+        _texts = [text.text for text in texts]
+        embeddings, counts = self.encode_chunks(_texts)
 
         # if the function runs on cuda device, we use base_chunk_idx as offset
         # rank should be 0 on single GPU or CPU device
@@ -130,21 +128,20 @@ class ChunkEncoder:
         # Starting index for slicing the embeddings tensor
         start_idx = 0
 
-        embedded_chunks = []
-        for chunk_idx in range(len(texts)):
+        embedded_texts: List[EmbeddedText] = []
+        for text_index, text in enumerate(texts):
             # The end index for slicing
-            end_idx = start_idx + counts[chunk_idx]
+            end_idx = start_idx + counts[text_index]
 
-            embedded_chunks.append(
-                EmbeddedChunk(
-                    doc_id=doc_id,
-                    chunk_id=chunk_idx + chunk_idx_offset,
-                    text=texts[chunk_idx],
-                    # Grab the embeddings for the chunk
+            embedded_texts.append(
+                EmbeddedText(
+                    chunk_id=text_index + chunk_idx_offset,
                     embeddings=embeddings[start_idx:end_idx],
+                    text=text.text,
+                    original_index=text.original_index,
                 )
             )
 
             # Reset for the next chunk
             start_idx = end_idx
-        return embedded_chunks
+        return embedded_texts

@@ -3,13 +3,13 @@ This module integrates the ColBERT model with token embedding functionalities, o
 encoding queries and text chunks into dense vector representations. It facilitates semantic search and
 retrieval by providing optimized methods for embedding generation and manipulation.
 
-The core component, ColbertEmbedding, leverages pre-trained ColBERT models to produce embeddings suitable
+The core component, ColbertEmbeddingModel, leverages pre-trained ColBERT models to produce embeddings suitable
 for high-relevancy retrieval tasks, with support for both CPU and GPU computing environments.
 """
 
 import logging
 import uuid
-from typing import List, Optional, Union
+from typing import Dict, List, Optional
 
 import torch
 import torch.distributed as dist
@@ -20,10 +20,10 @@ from colbert.infra import ColBERTConfig, Run, RunConfig
 from colbert.modeling.checkpoint import Checkpoint
 from colbert.modeling.tokenization import QueryTokenizer
 
-from .base_embedding import BaseEmbedding
-from .chunks import EmbeddedChunk
+from .base_embedding_model import BaseEmbeddingModel
 from .constant import DEFAULT_COLBERT_MODEL
-from .distributed import Distributed, reconcile_nranks, Runner
+from .distributed import Distributed, Runner, reconcile_nranks
+from .objects import ChunkData, EmbeddedChunk, EmbeddedText
 
 
 def calculate_query_maxlen(tokens: List[List[str]]) -> int:
@@ -46,7 +46,7 @@ def calculate_query_maxlen(tokens: List[List[str]]) -> int:
     return max_token_length + 3
 
 
-class ColbertEmbedding(BaseEmbedding):
+class ColbertEmbeddingModel(BaseEmbeddingModel):
     """
     A class for generating token embeddings using a ColBERT model. This class provides functionalities for
     encoding queries and document chunks into dense vector representations, facilitating semantic search and
@@ -84,13 +84,13 @@ class ColbertEmbedding(BaseEmbedding):
         nbits: int = 2,
         kmeans_niters: int = 4,
         nranks: int = -1,
-        query_maxlen: int = 32,
+        query_maxlen: int = -1,
         verbose: int = 3,  # 3 is the default on ColBERT checkpoint
         distributed_communication: bool = False,
         **kwargs,
     ):
         """
-        Initializes a new instance of the ColbertEmbedding class, setting up the model configuration,
+        Initializes a new instance of the ColbertEmbeddingModel class, setting up the model configuration,
         loading the necessary checkpoints, and preparing the tokenizer and encoder.
 
         Parameters:
@@ -147,7 +147,7 @@ class ColbertEmbedding(BaseEmbedding):
             self.checkpoint = self.checkpoint.cuda()
 
     def embed_chunks(
-        self, texts: List[str], doc_id: Optional[str] = None
+        self, chunks: List[ChunkData], doc_id: Optional[str] = None
     ) -> List[EmbeddedChunk]:
         """
         Encodes a list of text chunks into embeddings, returning them as a list of EmbeddedChunk objects.
@@ -164,11 +164,31 @@ class ColbertEmbedding(BaseEmbedding):
         if doc_id is None:
             doc_id = str(uuid.uuid4())
 
-        timeout = 30 + len(texts)
+        timeout = 60 + len(chunks)
 
-        return self.encode(texts=texts, doc_id=doc_id, timeout=timeout)
+        chunk_data_map: Dict[int, ChunkData] = {}
+        texts: List[str] = []
 
-    def embed_query(self, query_text: str) -> Tensor:
+        for chunk_idx, chunk in enumerate(chunks):
+            chunk_data_map[chunk_idx] = chunk
+            texts.append(chunk.text)
+
+        embedded_texts = self._encode_texts_using_distributed(texts=texts, timeout=timeout)
+
+        output: List[EmbeddedChunk] = []
+        for embedded_text in embedded_texts:
+            chunk_data = chunk_data_map[embedded_text.original_index]
+            output.append(EmbeddedChunk(
+                data=chunk_data,
+                doc_id=doc_id,
+                chunk_id=embedded_text.chunk_id,
+                embeddings=embedded_text.embeddings,
+            ))
+
+        return output
+
+    # this is an alternative method for embedding the query that might give better results
+    def embed_query_alternative(self, query_text: str) -> List[Tensor]:
         """
         Encodes a single query text into its embedding representation, optimized for retrieval tasks.
 
@@ -183,61 +203,19 @@ class ColbertEmbedding(BaseEmbedding):
             reload the checkpoint, therefore improving embedding speed.
         """
 
-        chunk_embedding = self.encode(texts=[query_text])[0]
-        return chunk_embedding.embeddings
+        embedded_text = self._encode_texts_using_distributed(texts=[query_text])[0]
+        return embedded_text.embeddings
 
-    def encode_queries(
-        self,
-        query: Union[str, List[str]],
-        full_length_search: Optional[bool] = False,
-        query_maxlen: int = -1,
-    ) -> Tensor:
-        """
-        Encodes one or more queries into dense vector representations. It supports encoding queries to a fixed
-        length, adjusting for the maximum token length or padding as necessary. The method is suitable for both
-        single and batch query processing, with optional support for full-length search encoding.
-
-        Parameters:
-            query (Union[str, List[str]]): A single query string or a list of query strings to be encoded.
-            full_length_search (Optional[bool]): If True, encodes queries for full-length search. Defaults to False.
-            query_maxlen (int): A fixed length for query token embeddings. If -1, uses a dynamically calculated value.
-
-        Returns:
-            Tensor: A tensor containing the encoded queries. If multiple queries are provided, the tensor will
-                    contain one row per query.
-        """
-
-        queries = query if isinstance(query, list) else [query]
-        bsize = 128 if len(queries) > 128 else None
-
-        tokens = self.query_tokenizer.tokenize(queries)
-        fixed_length = max(query_maxlen, self.colbert_config.query_maxlen)
-        if query_maxlen < 0:
-            fixed_length = calculate_query_maxlen(tokens)
-        # we only send one query at a time therefore tokens[0]
-        logging.info(
-            f"{len(tokens[0])} tokens in first query with query_maxlen {fixed_length}"
-        )
-
-        self.checkpoint.query_tokenizer.query_maxlen = fixed_length
-
-        # All query embeddings in the ColBERT documentation
-        # this name, EQ or Q, maps the exact name in most colBERT papers
-        queriesQ = self.checkpoint.queryFromText(
-            queries, bsize=bsize, to_cpu=not self.__cuda, full_length_search=full_length_search
-        )
-        return queriesQ
-
-    def encode_query(
+    def embed_query(
         self,
         query: str,
         full_length_search: Optional[bool] = False,
         query_maxlen: int = -1,
     ) -> Tensor:
         """
-        Encodes a single query string into a dense vector representation. This method is optimized for encoding
-        individual queries, allowing for control over the encoding length and supporting full-length search encoding.
-        The encoded query is adjusted to a specified or default maximum token length.
+        Embeds a single query text into its vector representation.
+
+        If the query has fewer than query_maxlen tokens it will be padded with BERT special [mast] tokens.
 
         Parameters:
             query (str): The query string to encode.
@@ -246,20 +224,19 @@ class ColbertEmbedding(BaseEmbedding):
             query_maxlen (int): The fixed length for the query token embedding. If -1, uses a dynamically calculated value.
 
         Returns:
-            Tensor: A tensor representing the encoded query's embedding.
+            Tensor: A tensor representing the embedded query.
         """
 
-        queries = self.encode_queries(
-            query, full_length_search, query_maxlen=query_maxlen
+        embeddings = self._encode_queries_using_local(
+            [query], full_length_search, query_maxlen=query_maxlen
         )
-        return queries[0]
+        return embeddings[0]
 
-    def encode(
+    def _encode_texts_using_distributed(
         self,
         texts: List[str],
-        doc_id: Optional[str] = None,
         timeout: int = 60,
-    ) -> List[EmbeddedChunk]:
+    ) -> List[EmbeddedText]:
         """
         Encodes a list of texts chunks into embeddings, represented as EmbeddedChunk objects. This
         method leverages the ColBERT model's encoding capabilities to convert textual content into
@@ -267,8 +244,7 @@ class ColbertEmbedding(BaseEmbedding):
 
         Parameters:
             texts (List[str]): The list of text chunks to encode.
-            doc_id (Optional[str]): An optional identifier for the document from which the chunks are derived.
-                                    If not provided, a UUID will be generated.
+            doc_id: An identifier for the document from which the chunks are derived.
             timeout (int): The timeout in seconds for the encoding operation. Defaults to 60 seconds.
 
         Returns:
@@ -278,8 +254,45 @@ class ColbertEmbedding(BaseEmbedding):
 
         runner = Runner(self.__nranks)
         return runner.encode(
-            self.colbert_config,
-            texts,
-            doc_id,
+            config=self.colbert_config,
+            texts=texts,
             timeout=timeout,
         )
+
+    def _encode_queries_using_local(
+        self,
+        queries: List[str],
+        full_length_search: Optional[bool] = False,
+        query_maxlen: int = -1,
+    ) -> Tensor:
+        """
+        Encodes one or more texts (queries) into dense vector representations. It supports encoding queries to a fixed
+        length, adjusting for the maximum token length or padding as necessary. The method is suitable for both
+        single and batch query processing, with optional support for full-length search encoding.
+
+        Parameters:
+            queries (List[str]): A single query string or a list of query strings to be encoded.
+            full_length_search (Optional[bool]): If True, encodes queries for full-length search. Defaults to False.
+            query_maxlen (int): A fixed length for query token embeddings. If -1, uses a dynamically calculated value.
+
+        Returns:
+            Tensor: A tensor containing the encoded queries. If multiple queries are provided, the tensor will
+                    contain one row per query.
+        """
+
+        tokens = self.query_tokenizer.tokenize(queries)
+        _query_maxlen = max(query_maxlen, self.colbert_config.query_maxlen)
+        if _query_maxlen < 0:
+            _query_maxlen = calculate_query_maxlen(tokens)
+            logging.debug(f"Calculated dynamic query_maxlen of {_query_maxlen}")
+
+        self.checkpoint.query_tokenizer.query_maxlen = _query_maxlen
+
+        # All query embeddings in the ColBERT documentation
+        # this name, EQ or Q, maps the exact name in most colBERT papers
+        batch_size = 128 if len(queries) > 128 else None
+        to_cpu = not self.__cuda
+        queriesQ = self.checkpoint.queryFromText(
+            queries, bsize=batch_size, to_cpu=to_cpu, full_length_search=full_length_search
+        )
+        return queriesQ

@@ -4,9 +4,11 @@ embeddings, specifically designed to work with ColBERT or similar embedding mode
 """
 
 from abc import ABC, abstractmethod
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
-from .chunks import EmbeddedChunk
+from torch import Tensor
+
+from .objects import BaseChunk, ChunkData, EmbeddedChunk
 
 
 class BaseVectorStore(ABC):
@@ -40,4 +42,41 @@ class BaseVectorStore(ABC):
 
         Parameters:
             doc_ids (List[str]): A list of document identifiers specifying the chunks to be deleted.
+        """
+
+    @abstractmethod
+    async def search_relevant_chunks(self, vector: List[float], n: int) -> List[BaseChunk]:
+        """
+        Searches for relevant chunks using ANN for an embedded token vector.
+
+        Parameters:
+            vector (List[float]): A vector embedding for a query token.
+            n (int): The number of items to return from the search
+
+        Returns:
+            A list of chunks with doc_id and chunk_id. Fewer than 'n' results may be returned.
+        """
+
+    @abstractmethod
+    async def get_chunk_embeddings(self, chunk: BaseChunk) -> Tuple[BaseChunk, List[Tensor]]:
+        """
+        Retrieve all the embedding data for a chunk.
+
+        Parameters:
+            chunk (BaseChunk): The chunk to return.
+
+        Returns:
+            A RetrievedChunk including doc_id, chunk_id, and the embeddings for the chunk.
+        """
+
+    @abstractmethod
+    async def get_chunk_data(self, chunk: BaseChunk) -> Tuple[BaseChunk, ChunkData]:
+        """
+        Fetches the text and metadata for a given doc_id and chunk_id.
+
+        Parameters:
+            chunk (BaseChunk): The chunk to return.
+
+        Returns:
+            ChunkData including text and metadata for the chunk.
         """
