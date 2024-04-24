@@ -45,16 +45,16 @@ jobs:
         uses: ./.github/actions/lint
 
       - name: "Unit tests (root)"
-        run: tox -e unit-tests
+        run: tox -e unit-tests && rm -rf .tox
 
       - name: "Unit tests (colbert)"
-        run: tox -e unit-tests -c libs/colbert
+        run: tox -e unit-tests -c libs/colbert && rm -rf libs/colbert/.tox
 
       - name: "Unit tests (langchain)"
-        run: tox -e unit-tests -c libs/langchain
+        run: tox -e unit-tests -c libs/langchain && rm -rf libs/langchain/.tox
 
       - name: "Unit tests (llamaindex)"
-        run: tox -e unit-tests -c libs/llamaindex
+        run: tox -e unit-tests -c libs/llamaindex && rm -rf libs/llamaindex/.tox
 
   integration-tests:
     name: Integration Tests
