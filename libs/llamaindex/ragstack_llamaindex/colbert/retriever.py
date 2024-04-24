@@ -1,24 +1,24 @@
 
 from llama_index.core.schema import NodeWithScore, QueryBundle, TextNode
 from llama_index.core.callbacks.base import CallbackManager
-from llama_index.core.retrievers import BaseRetriever
+from llama_index.core.retrievers import BaseRetriever as LlamaIndexBaseRetriever
 from llama_index.core.constants import DEFAULT_SIMILARITY_TOP_K
 from typing import Any, List, Optional
 
-from ragstack_colbert.vector_store import ColbertVectorStoreRetriever
+from ragstack_colbert.base_retriever import BaseRetriever
 
 
-class ColbertVectorStoreLlamaIndexRetriever(BaseRetriever):
-    """ColBERT vector index retriever.
+class ColbertLIRetriever(LlamaIndexBaseRetriever):
+    """ColBERT vector store retriever.
 
     Args:
-        retriever (ColbertVectorStoreRetriever): vector store index.
+        retriever (BaseRetriever): vector store index.
         similarity_top_k (int): number of top k results to return.
     """
 
     def __init__(
         self,
-        retriever: ColbertVectorStoreRetriever,
+        retriever: BaseRetriever,
         similarity_top_k: int = DEFAULT_SIMILARITY_TOP_K,
         callback_manager: Optional[CallbackManager] = None,
         object_map: Optional[dict] = None,
@@ -40,9 +40,14 @@ class ColbertVectorStoreLlamaIndexRetriever(BaseRetriever):
         self,
         query_bundle: QueryBundle,
     ) -> List[NodeWithScore]:
-        results = self._retriever.retrieve(query_bundle.query_str, k=self._similarity_top_k, query_maxlen=self._query_maxlen)
-        nodes = []
-        for result in results:
-            node = TextNode(text=result.text)
-            nodes.append(NodeWithScore(node=node, score=result.score))
+        nodes: List[NodeWithScore] = []
+
+        chunks = self._retriever.retrieve(query_bundle.query_str, k=self._similarity_top_k, query_maxlen=self._query_maxlen)
+        for chunk in chunks:
+            text = chunk.data.text
+            metadata=chunk.data.metadata
+            metadata["rank"] = chunk.rank
+
+            node = TextNode(text=text, metadata=metadata)
+            nodes.append(NodeWithScore(node=node, score=chunk.score))
         return nodes
