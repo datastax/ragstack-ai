@@ -84,7 +84,7 @@ class ColbertEmbeddingModel(BaseEmbeddingModel):
         nbits: int = 2,
         kmeans_niters: int = 4,
         nranks: int = -1,
-        query_maxlen: int = -1,
+        query_maxlen: int = 64,
         verbose: int = 3,  # 3 is the default on ColBERT checkpoint
         distributed_communication: bool = False,
         **kwargs,
@@ -210,18 +210,18 @@ class ColbertEmbeddingModel(BaseEmbeddingModel):
         self,
         query: str,
         full_length_search: Optional[bool] = False,
-        query_maxlen: int = -1,
+        query_maxlen: int = 64,
     ) -> Tensor:
         """
         Embeds a single query text into its vector representation.
 
-        If the query has fewer than query_maxlen tokens it will be padded with BERT special [mast] tokens.
+        If the query has fewer than query_maxlen tokens it will be padded with BERT special [mask] tokens.
 
         Parameters:
             query (str): The query string to encode.
             full_length_search (Optional[bool]): Indicates whether to encode the query for a full-length search.
                                                   Defaults to False.
-            query_maxlen (int): The fixed length for the query token embedding. If -1, uses a dynamically calculated value.
+            query_maxlen (int): The fixed length for the query token embedding.
 
         Returns:
             Tensor: A tensor representing the embedded query.
@@ -231,6 +231,45 @@ class ColbertEmbeddingModel(BaseEmbeddingModel):
             [query], full_length_search, query_maxlen=query_maxlen
         )
         return embeddings[0]
+
+    def optimized_query_embeddings(
+        self,
+        query: str,
+        full_length_search: Optional[bool] = False,
+        query_maxlen: int = 64,
+    ) -> Tensor:
+        """
+        Embeds a single query text into its vector representation, optimized for retrieval tasks.
+
+        Parameters:
+            query (str): The query string to encode.
+            full_length_search (Optional[bool]): Indicates whether to encode the query for a full-length search.
+                                                  Defaults to False.
+            query_maxlen (int): The fixed length for the query token embedding.
+
+        Returns:
+            Tensor: A tensor representing the encoded query's embedding.
+        """
+        _query_maxlen = max(query_maxlen, self.colbert_config.query_maxlen)
+        self.checkpoint.query_tokenizer.query_maxlen = _query_maxlen
+
+        queriesE = self.embed_query(query, full_length_search, _query_maxlen)
+        ids, masks = self.checkpoint.query_tokenizer.tensorize([query])
+ 
+        # Exclude the special tokens such as PAD, SEP, CLS, and MASK
+        # 100 is UNK, the unknown token, it is required, DO NOT exclude it
+        exclude_encode = torch.tensor([1, 101, 102, 103])
+        # Create a mask where each position is False if the tensor element is in 'values_to_mask'
+        special_token_masks = ~(ids[0].unsqueeze(1) == exclude_encode).any(dim=1)
+
+        # Apply logical AND between the original mask (converted to boolean) and the new mask
+        final_mask = masks[0].bool() & special_token_masks
+
+
+        # Convert final boolean mask to integer if necessary
+        # final_mask = final_mask.int()
+        return queriesE[final_mask]
+
 
     def _encode_texts_using_distributed(
         self,
@@ -263,7 +302,7 @@ class ColbertEmbeddingModel(BaseEmbeddingModel):
         self,
         queries: List[str],
         full_length_search: Optional[bool] = False,
-        query_maxlen: int = -1,
+        query_maxlen: int = 64, 
     ) -> Tensor:
         """
         Encodes one or more texts (queries) into dense vector representations. It supports encoding queries to a fixed
@@ -280,12 +319,7 @@ class ColbertEmbeddingModel(BaseEmbeddingModel):
                     contain one row per query.
         """
 
-        tokens = self.query_tokenizer.tokenize(queries)
         _query_maxlen = max(query_maxlen, self.colbert_config.query_maxlen)
-        if _query_maxlen < 0:
-            _query_maxlen = calculate_query_maxlen(tokens)
-            logging.debug(f"Calculated dynamic query_maxlen of {_query_maxlen}")
-
         self.checkpoint.query_tokenizer.query_maxlen = _query_maxlen
 
         # All query embeddings in the ColBERT documentation

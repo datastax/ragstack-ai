@@ -27,7 +27,7 @@ class BaseRetriever(ABC):
         self,
         query: str,
         k: Optional[int] = None,
-        query_maxlen: Optional[int] = None,
+        query_maxlen: int = 64,
         **kwargs: Any
     ) -> List[RetrievedChunk]:
         """
@@ -37,8 +37,7 @@ class BaseRetriever(ABC):
         Parameters:
             query (str): The query text to search for relevant text chunks.
             k (Optional[int]): The number of top results to retrieve.
-            query_maxlen (Optional[int]): The maximum length of the query to consider. If None, the
-                                          maxlen will be dynamically generated.
+            query_maxlen (int): defaults to 64 specified in the ColBERT library.
             **kwargs (Any): Additional parameters that implementations might require for customized
                             retrieval operations.
 

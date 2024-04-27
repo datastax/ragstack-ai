@@ -288,9 +288,14 @@ class ColbertRetriever(BaseRetriever):
             embeddings, scoring these embeddings for similarity, and retrieving the corresponding text chunks.
         """
 
-        query_embeddings = self.embedding_model.embed_query(
+        query_embeddings = self.embedding_model.optimized_query_embeddings(
             query, query_maxlen=query_maxlen
         )
+
+        # make sure query embeddings is 128 dim vector
+        if query_embeddings.size(1) != 128:
+            logging.error(f"query embedding shape is {filtered_tensor.shape} but 128 dim is expected.")
+            raise ValueError("query embedding tensor shape is not 128")
 
         top_k = max(math.floor(len(query_embeddings) / 2), 16)
         logging.debug(f"based on query length of {len(query_embeddings)} tokens, retrieving {top_k} results per token-embedding")

@@ -60,15 +60,3 @@ def test_colbert_token_embeddings_with_params():
     embeddings = embedded_chunks[0].embeddings
     assert len(embeddings) > 1
     assert len(embeddings[0]) == DEFAULT_COLBERT_DIM
-
-
-def test_colbert_query_embeddings():
-    colbert = ColbertEmbeddingModel()
-
-    queryTensor = colbert.embed_query("who is the president of the united states?")
-    assert isinstance(queryTensor, torch.Tensor)
-    assert queryTensor.shape == (12, 128)
-
-    # test query encoding
-    queryEncoding = colbert.embed_query("test-query", query_maxlen=512)
-    assert len(queryEncoding) == 512

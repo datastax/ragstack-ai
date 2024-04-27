@@ -62,3 +62,21 @@ class BaseEmbeddingModel(ABC):
         Returns:
             Tensor: A tensor representing the embedded query.
         """
+
+    @abstractmethod
+    def optimized_query_embeddings(
+        self, query: str, query_maxlen: int = -1
+    ) -> Tensor:
+        """
+        Embeds a single query text into its vector representation for optimized retrieval.
+
+        This method is used to generate optimized query embeddings for retrieval operations. 
+        It excludes all the mask, padding, CLS, SEP tokens for faster retrieval.
+
+        Parameters:
+            query (str): The query string to encode.
+            query_maxlen (int): The fixed length for the query token embedding. If -1, uses a dynamically calculated value.
+
+        Returns:
+            Tensor: A tensor representing the embedded query for optimized retrieval.
+        """
