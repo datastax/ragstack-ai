@@ -1,2 +1,23 @@
 = Introduction to ColBERT
 
+ColBERT stands for "Contextualized Late Interaction over BERT".
+"Contextualized Late Interaction" describes a unique method of interacting with Stanford University's link:https://arxiv.org/abs/2004.12832[BERT]{external-link-icon} model.
+
+In the common RAG usage, a standard embedding model represents each chunk as a single vector embedding.
+This is called "sparse embedding".
+A cosine similarity search performs similarity matching between document and query embeddings, and the top-k results are returned.
+This is fast and straightforward, but some context and efficiency are lost.
+
+In the ColBERT model, each chunk is represented as a list of token-level embedding vectors.
+This is called "dense embedding".
+This per-token "bag of words" within a chunk offers far deeper context than a single vector per chunk.
+Document embeddings are pre-computed and indexed with a uniform length to facilitate batch processing.
+
+ColBERT queries are performed in two stages:
+
+1. The query is embedded (densely) and an Approximate Nearest Neighbor (ANN) search compares every query vector token to every context vector token.
+Recall that the BERT context chunks have embeddings for each token, so this is a dense comparison.
+The closest matches are returned as the top-k chunks.
+2. Contextualized Late Interaction ranks the top-k chunks by a fine-grained similarity score. For each query’s token encoding, the score function generates a highest similarity score based on the max dot product of this query token vector and all the token embeddings per chunk. The aggregate of all the max scores across all the query tokens is the overall score of that particular chunk.
+
+
