@@ -1,6 +1,6 @@
-# RAGStack Colbert
+# RAGStack ColBERT
 
-RAGStack colbert implementation, part of [`ragstack-ai`](https://pypi.org/project/ragstack-ai/).
+RAGStack ColBERT implementation, part of [`ragstack-ai`](https://pypi.org/project/ragstack-ai/).
 
 ## Documentation
 

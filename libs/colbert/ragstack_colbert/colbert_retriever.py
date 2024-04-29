@@ -11,6 +11,7 @@ variety of hardware environments.
 import asyncio
 import logging
 import math
+import nest_asyncio
 from typing import Any, Dict, List, Optional, Set
 
 import torch
@@ -336,5 +337,8 @@ class ColbertRetriever(BaseRetriever):
             The actual retrieval process involves encoding the query, performing an ANN search to find relevant
             embeddings, scoring these embeddings for similarity, and retrieving the corresponding text chunks.
         """
+        # nest_asyncio does not a new event loop to be created
+        # in the case there is already an event loop such as colab, it's required
+        nest_asyncio.apply()
         loop = asyncio.get_event_loop()
         return loop.run_until_complete(self.aretrieve(query=query, k=k, query_maxlen=query_maxlen))
