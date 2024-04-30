@@ -1,7 +1,32 @@
 = Introduction to ColBERT
 
 ColBERT stands for "Contextualized Late Interaction over BERT".
-"Contextualized Late Interaction" describes a unique method of interacting with Stanford University's link:https://arxiv.org/abs/2004.12832[BERT]{external-link-icon} model.
+
+"Contextualized Late Interaction" describes a unique method of interacting with Stanford University's https://arxiv.org/abs/2004.12832[BERT]{external-link-icon} model.
+
+ColBERT is a machine learning retrieval model that improves the computational efficiency and contextual depth of information retrieval tasks.
+
+*TL;DR:*
+
+1. BERT embeds text chunks as matrices of token-level vectors, enabling much deeper context matching than a single vector embedding per chunk.
+2. BERT manages this additional depth by pre-processing documents and queries into uniform lengths with the https://huggingface.co/learn/nlp-course/en/chapter6/6[Wordpiece] tokenizer, ideal for batch processing on GPUs.
+3. "Contextualized Late Interaction" first retrieves the top-k chunks with the highest similarity scores to the query token.
+The top-k chunks are then sorted again. The query token is compared to every token in the chunk to rank the chunks by the highest aggregate similarity score.
+
+See the xref:examples:colbert.adoc[ColBERT example code] to get started using ColBERT with RAGStack and AstraDB.
+
+== RAGStack-ai-colbert packages
+
+`ragstack-ai-colbert` contains the implementation of the ColBERT retrieval.
+
+The `colbert` module provides a vanilla implementation for ColBERT retrieval. It is not tied to any specific framework and can be used with any of the RAGStack packages.
+
+To use ColBERT with LangChain or LLamaIndex, install ColBERT as an extra:
+
+. `ragstack-ai-langchain[colbert]`
+. `ragstack-ai-llamaindex[colbert]`
+
+== How is ColBERT different from RAG?
 
 In the common RAG usage, a standard embedding model represents each chunk as a single vector embedding.
 This is called "sparse embedding".
@@ -25,12 +50,12 @@ For each query’s token embedding, the score function generates a highest simil
 
 The https://huggingface.co/colbert-ir/colbertv2.0[ColBERT v2.0]{external-link-icon} library transforms a text chunk into a matrix of token-level embeddings. The output is a 128-dimensional vector for each token in a chunk. This results in a two-dimensional matrix, which doesn't align with the current LangChain interface that outputs a list of floats.
 
-To solve this problem, the ragstack-ai-colbert packages include a new abstract class for mapping token-level embedding vectors to the AstraDB vector database.
+To solve this problem, the ragstack-ai-colbert packages and extras include a new abstract class for mapping token-level embedding vectors to the AstraDB vector database.
 
 The vector storage creates two tables. One table stores the actual text chunks with their unique IDs.
 The `chunk_id` links to token tables for that unique chunk.
 The values in the `part` column are derived from the `embed_documents` and `embed_tokens` methods.
-+
+
 .Chunks table schema
 [source,bash]
 ----
@@ -42,7 +67,8 @@ chunks(
 
 ----
 
-The second table stores the per-token vectors and the BERT index
+The second table stores the per-token vectors and the BERT index.
+
 .Colbert embeddings schema
 [source,bash]
 ----
@@ -54,6 +80,11 @@ colbert_embeddings(
     PRIMARY KEY(title, part, embedding_id));
 
 ----
+
+Retrieval logic is defined in the https://github.com/datastax/ragstack-ai/blob/main/libs/colbert/ragstack_colbert/colbert_retriever.py[ColbertRetriever] class, which asynchronously retrieves and scores chunks.
+
+
+
 
 
 
