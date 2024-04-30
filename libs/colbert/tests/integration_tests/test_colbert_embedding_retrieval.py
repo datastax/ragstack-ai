@@ -97,3 +97,5 @@ def test_embedding_cassandra_retriever(request, vector_store: str):
         logging.info(f"got {chunk}")
     assert len(chunks) == 5
     assert len(chunks[0].data.text) > 0
+    assert chunks[0].rank == 1
+    assert chunks[1].rank == 2

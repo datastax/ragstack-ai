@@ -246,8 +246,8 @@ class ColbertRetriever(BaseRetriever):
                 chunk_data_map[chunk] = chunk_data
 
         answers: List[RetrievedChunk] = []
-        rank = 1
-        for chunk in chunks_by_score:
+
+        for idx, chunk in enumerate(chunks_by_score):
             score = chunk_scores[chunk]
             chunk_data = chunk_data_map[chunk]
             answers.append(
@@ -255,7 +255,7 @@ class ColbertRetriever(BaseRetriever):
                         doc_id=chunk.doc_id,
                         chunk_id=chunk.chunk_id,
                         score=score.item(),  # Ensure score is a scalar if it's a tensor
-                        rank=rank,
+                        rank=idx + 1,
                         data=chunk_data,
                     )
                 )
