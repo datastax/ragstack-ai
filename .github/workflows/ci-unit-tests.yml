@@ -56,6 +56,14 @@ jobs:
       - name: "Unit tests (llamaindex)"
         run: tox -e unit-tests -c libs/llamaindex && rm -rf libs/llamaindex/.tox
 
+      - name: "Build (langflow)"
+        run: |
+          cd libs/langflow
+          make init
+          make build_frontend
+          make build_langflow_base
+          #make build_langflow
+
   integration-tests:
     name: Integration Tests
     runs-on: ubuntu-latest
