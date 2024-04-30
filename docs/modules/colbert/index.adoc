@@ -18,6 +18,42 @@ ColBERT queries are performed in two stages:
 1. The query is embedded (densely) and an Approximate Nearest Neighbor (ANN) search compares every query vector token to every context vector token.
 Recall that the BERT context chunks have embeddings for each token, so this is a dense comparison.
 The closest matches are returned as the top-k chunks.
-2. Contextualized Late Interaction ranks the top-k chunks by a fine-grained similarity score. For each query’s token encoding, the score function generates a highest similarity score based on the max dot product of this query token vector and all the token embeddings per chunk. The aggregate of all the max scores across all the query tokens is the overall score of that particular chunk.
+2. Contextualized Late Interaction ranks the top-k chunks by a fine-grained similarity score.
+For each query’s token embedding, the score function generates a highest similarity score based on the max dot product of the query token vector, and all the token embeddings per chunk. The aggregate of all the max scores across all the query tokens is the overall similarity score of that particular chunk.
+
+== ColBERT, RAGStack, and AstraDB
+
+The https://huggingface.co/colbert-ir/colbertv2.0[ColBERT v2.0]{external-link-icon} library transforms a text chunk into a matrix of token-level embeddings. The output is a 128-dimensional vector for each token in a chunk. This results in a two-dimensional matrix, which doesn't align with the current LangChain interface that outputs a list of floats.
+
+To solve this problem, the ragstack-ai-colbert packages include a new abstract class for mapping token-level embedding vectors to the AstraDB vector database.
+
+The vector storage creates two tables. One table stores the actual text chunks with their unique IDs.
+The `chunk_id` links to token tables for that unique chunk.
+The values in the `part` column are derived from the `embed_documents` and `embed_tokens` methods.
++
+.Chunks table schema
+[source,bash]
+----
+chunks(
+    title text,
+    chunk_id int,
+    body text,
+    PRIMARY KEY (title,part));
+
+----
+
+The second table stores the per-token vectors and the BERT index
+.Colbert embeddings schema
+[source,bash]
+----
+colbert_embeddings(
+    title text,
+    chunk_id int,
+    embedding_id int,
+    bert_embedding_vector<float,128>,
+    PRIMARY KEY(title, part, embedding_id));
+
+----
+
 
 
