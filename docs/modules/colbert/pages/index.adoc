@@ -46,6 +46,8 @@ The closest matches are returned as the top-k chunks.
 2. Contextualized Late Interaction ranks the top-k chunks by a fine-grained similarity score.
 For each query’s token embedding, the score function generates a highest similarity score based on the max dot product of the query token vector, and all the token embeddings per chunk. The aggregate of all the max scores across all the query tokens is the overall similarity score of that particular chunk.
 
+A vector index in the database significantly improves the speed of this process.
+
 == ColBERT, RAGStack, and Astra DB
 
 The https://huggingface.co/colbert-ir/colbertv2.0[ColBERT v2.0]{external-link-icon} library transforms a text chunk into a matrix of token-level embeddings. The output is a 128-dimensional vector for each token in a chunk. This results in a two-dimensional matrix, which doesn't align with the current LangChain interface that outputs a list of floats.
