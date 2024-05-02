@@ -8,32 +8,15 @@ from e2e_tests.conftest import get_required_env, is_astra
 from langchain.chains import ConversationalRetrievalChain
 from langchain_astradb import AstraDBVectorStore as LangChainAstraDBVectorStore
 
-try:
-    # llamaindex 0.9.x
-    from llama_index import (
-        Document,
-        OpenAIEmbedding,
-        ServiceContext,
-        StorageContext,
-        VectorStoreIndex,
-    )
-    from llama_index.llms import OpenAI
-    from llama_index.vector_stores import (
-        AstraDBVectorStore,
-        MetadataFilters,
-        ExactMatchFilter,
-    )
-except ImportError:
-    # llamaindex 0.10.x
-    from llama_index.core import ServiceContext, StorageContext, VectorStoreIndex
-    from llama_index.core.schema import Document
-    from llama_index.core.vector_stores import (
-        MetadataFilters,
-        ExactMatchFilter,
-    )
-    from llama_index.vector_stores.astra_db import AstraDBVectorStore
-    from llama_index.embeddings.openai import OpenAIEmbedding
-    from llama_index.llms.openai import OpenAI
+from llama_index.core import ServiceContext, StorageContext, VectorStoreIndex
+from llama_index.core.schema import Document
+from llama_index.core.vector_stores import (
+    MetadataFilters,
+    ExactMatchFilter,
+)
+from llama_index.vector_stores.astra_db import AstraDBVectorStore
+from llama_index.embeddings.openai import OpenAIEmbedding
+from llama_index.llms.openai import OpenAI
 
 
 from e2e_tests.test_utils import skip_test_due_to_implementation_not_supported
