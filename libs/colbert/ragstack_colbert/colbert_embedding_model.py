@@ -12,18 +12,16 @@ import uuid
 from typing import Dict, List, Optional
 
 import torch
-import torch.distributed as dist
 from torch import Tensor
 
-from colbert.indexing.collection_encoder import CollectionEncoder
 from colbert.infra import ColBERTConfig, Run, RunConfig
 from colbert.modeling.checkpoint import Checkpoint
 from colbert.modeling.tokenization import QueryTokenizer
 
 from .base_embedding_model import BaseEmbeddingModel
 from .constant import DEFAULT_COLBERT_MODEL
-from .distributed import Distributed, Runner, reconcile_nranks
-from .objects import ChunkData, EmbeddedChunk, EmbeddedText
+from .distributed import ChunkEncoder, Runner
+from .objects import Embedding, TextChunk, TextEmbedding
 
 
 def calculate_query_maxlen(tokens: List[List[str]]) -> int:
@@ -57,13 +55,11 @@ class ColbertEmbeddingModel(BaseEmbeddingModel):
     Attributes:
         colbert_config (ColBERTConfig): Configuration parameters for the Colbert model.
         checkpoint (Checkpoint): Manages the loading of the model and its parameters.
-        encoder (CollectionEncoder): Facilitates the encoding of texts into embeddings.
         query_tokenizer (QueryTokenizer): Tokenizes queries for embedding.
     """
 
     colbert_config: ColBERTConfig
     checkpoint: Checkpoint
-    encoder: CollectionEncoder
     query_tokenizer: QueryTokenizer
 
     """
@@ -86,7 +82,7 @@ class ColbertEmbeddingModel(BaseEmbeddingModel):
         nranks: int = -1,
         query_maxlen: int = -1,
         verbose: int = 3,  # 3 is the default on ColBERT checkpoint
-        distributed_communication: bool = False,
+        multiprocessing_enabled: bool = False,
         **kwargs,
     ):
         """
@@ -101,7 +97,7 @@ class ColbertEmbeddingModel(BaseEmbeddingModel):
             nranks (int): Number of ranks (processors) to use for distributed computing; -1 uses all available CPUs/GPUs.
             query_maxlen (int): Maximum length of query tokens for embedding.
             verbose (int): Verbosity level for logging.
-            distributed_communication (bool): Flag to enable distributed computation.
+            multiprocessing_enabled (bool): Flag to enable distributed computation.
             **kwargs: Additional keyword arguments for future extensions.
 
         Note:
@@ -109,21 +105,38 @@ class ColbertEmbeddingModel(BaseEmbeddingModel):
         """
 
         self.__cuda = torch.cuda.is_available()
-        self.__nranks = reconcile_nranks(nranks)
-        total_visible_gpus = torch.cuda.device_count()
-        logging.info(f"run nranks {self.__nranks}")
-        if (
-            self.__nranks > 1
-            and not dist.is_initialized()
-            and distributed_communication
-        ):
-            logging.info(f"distribution initialization must complete on {nranks} gpus")
-            Distributed(self.__nranks)
+        self.__nranks = nranks
+        self.__query_maxlen = query_maxlen
+
+        logging.info(f"Cuda enabled GPU available: {self.__cuda}")
+        self.__use_multiprocessing = multiprocessing_enabled and self.__cud
+
+        if self.__use_multiprocessing:
             logging.info("distribution initialization completed")
 
-        with Run().context(RunConfig(nranks=nranks)):
+            total_visible_gpus = torch.cuda.device_count()
+            with Run().context(RunConfig(nranks=total_visible_gpus)):
+                if self.__cuda:
+                    torch.cuda.empty_cache()
+                self.colbert_config = ColBERTConfig(
+                    doc_maxlen=doc_maxlen,
+                    nbits=nbits,
+                    kmeans_niters=kmeans_niters,
+                    nranks=total_visible_gpus,
+                    checkpoint=checkpoint,
+                    query_maxlen=query_maxlen,
+                    gpus=total_visible_gpus,
+                )
+            logging.info("creating checkpoint")
+            self.checkpoint = Checkpoint(
+                self.colbert_config.checkpoint,
+                colbert_config=self.colbert_config,
+                verbose=verbose,
+            )
+            self.query_tokenizer = QueryTokenizer(self.colbert_config)
             if self.__cuda:
-                torch.cuda.empty_cache()
+                self.checkpoint = self.checkpoint.cuda()
+        else:
             self.colbert_config = ColBERTConfig(
                 doc_maxlen=doc_maxlen,
                 nbits=nbits,
@@ -131,87 +144,47 @@ class ColbertEmbeddingModel(BaseEmbeddingModel):
                 nranks=self.__nranks,
                 checkpoint=checkpoint,
                 query_maxlen=query_maxlen,
-                gpus=total_visible_gpus,
             )
-        logging.info("creating checkpoint")
-        self.checkpoint = Checkpoint(
-            self.colbert_config.checkpoint,
-            colbert_config=self.colbert_config,
-            verbose=verbose,
-        )
-        self.encoder = CollectionEncoder(
-            config=self.colbert_config, checkpoint=self.checkpoint
-        )
-        self.query_tokenizer = QueryTokenizer(self.colbert_config)
-        if self.__cuda:
-            self.checkpoint = self.checkpoint.cuda()
+            self.checkpoint = Checkpoint(
+                name=self.colbert_config.checkpoint,
+                colbert_config=self.colbert_config,
+                verbose=verbose,
+            )
+            self.query_tokenizer = QueryTokenizer(self.colbert_config)
 
-    def embed_chunks(
-        self, chunks: List[ChunkData], doc_id: Optional[str] = None
-    ) -> List[EmbeddedChunk]:
+    # implements the Abstract Class Method
+    def embed_texts(
+        self, texts: List[str]
+    ) -> List[Embedding]:
         """
-        Encodes a list of text chunks into embeddings, returning them as a list of EmbeddedChunk objects.
-        Each chunk text is converted into a dense vector representation.
+        Embeds a list of texts into their corresponding vector embedding representations.
 
         Parameters:
-            texts (List[str]): The list of chunk texts to be embedded.
-            doc_id (Optional[str]): An optional document identifier. If not provided, a UUID is generated.
+            texts (List[str]): A list of string texts.
 
         Returns:
-            List[EmbeddedChunk]: A list of EmbeddedChunk objects containing the embeddings and document/chunk identifiers.
+            List[Embedding]: A list of embeddings, in the order of the input list
         """
 
-        if doc_id is None:
-            doc_id = str(uuid.uuid4())
+        chunks = [TextChunk(index=i, text=t) for i, t in enumerate(texts)]
 
-        timeout = 60 + len(chunks)
+        if self.__use_multiprocessing:
+            timeout = 60 + len(chunks)
+            embedded_texts = self._encode_texts_using_multiprocessing(chunks=chunks, timeout=timeout)
+        else:
+            embedded_texts = self._encode_texts_using_local(chunks=chunks)
 
-        chunk_data_map: Dict[int, ChunkData] = {}
-        texts: List[str] = []
+        sorted_embedded_texts = sorted(embedded_texts, key=lambda x: x.index)
 
-        for chunk_idx, chunk in enumerate(chunks):
-            chunk_data_map[chunk_idx] = chunk
-            texts.append(chunk.text)
+        return [t.embedding for t in sorted_embedded_texts]
 
-        embedded_texts = self._encode_texts_using_distributed(texts=texts, timeout=timeout)
-
-        output: List[EmbeddedChunk] = []
-        for embedded_text in embedded_texts:
-            chunk_data = chunk_data_map[embedded_text.original_index]
-            output.append(EmbeddedChunk(
-                data=chunk_data,
-                doc_id=doc_id,
-                chunk_id=embedded_text.chunk_id,
-                embeddings=embedded_text.embeddings,
-            ))
-
-        return output
-
-    # this is an alternative method for embedding the query that might give better results
-    def embed_query_alternative(self, query_text: str) -> List[Tensor]:
-        """
-        Encodes a single query text into its embedding representation, optimized for retrieval tasks.
-
-        Parameters:
-            query_text (str): The query text to be encoded.
-
-        Returns:
-            Tensor: A tensor representing the encoded query's embedding.
-
-        Note:
-            This method does not pad the query text to query_maxlen. Additionally, it does not
-            reload the checkpoint, therefore improving embedding speed.
-        """
-
-        embedded_text = self._encode_texts_using_distributed(texts=[query_text])[0]
-        return embedded_text.embeddings
-
+    # implements the Abstract Class Method
     def embed_query(
         self,
         query: str,
         full_length_search: Optional[bool] = False,
         query_maxlen: int = -1,
-    ) -> Tensor:
+    ) -> Embedding:
         """
         Embeds a single query text into its vector representation.
 
@@ -224,7 +197,7 @@ class ColbertEmbeddingModel(BaseEmbeddingModel):
             query_maxlen (int): The fixed length for the query token embedding. If -1, uses a dynamically calculated value.
 
         Returns:
-            Tensor: A tensor representing the embedded query.
+            Embedding: A vector embedding representation of the query text
         """
 
         embeddings = self._encode_queries_using_local(
@@ -232,32 +205,53 @@ class ColbertEmbeddingModel(BaseEmbeddingModel):
         )
         return embeddings[0]
 
-    def _encode_texts_using_distributed(
+    def _encode_texts_using_multiprocessing(
         self,
-        texts: List[str],
+        chunks: List[TextChunk],
         timeout: int = 60,
-    ) -> List[EmbeddedText]:
+    ) -> List[TextEmbedding]:
         """
-        Encodes a list of texts chunks into embeddings, represented as EmbeddedChunk objects. This
+        Encodes a list of texts chunks into embeddings, represented as TextEmbedding objects. This
         method leverages the ColBERT model's encoding capabilities to convert textual content into
         dense vector representations suitable for semantic search and retrieval applications.
 
         Parameters:
-            texts (List[str]): The list of text chunks to encode.
+            chunks (List[TextChunk]): The list of text chunks to encode.
             doc_id: An identifier for the document from which the chunks are derived.
             timeout (int): The timeout in seconds for the encoding operation. Defaults to 60 seconds.
 
         Returns:
-            List[EmbeddedChunk]: A list of EmbeddedChunk objects containing the embeddings for each chunk text, along
-                                  with their associated document and chunk identifiers.
+            List[TextEmbedding]: A list of TextEmbedding objects containing the embeddings for each text, along
+                                  with their associated chunk identifiers.
         """
 
         runner = Runner(self.__nranks)
         return runner.encode(
             config=self.colbert_config,
-            texts=texts,
+            chunks=chunks,
             timeout=timeout,
         )
+
+    def _encode_texts_using_local(
+        self,
+        chunks: List[TextChunk],
+    ) -> List[TextEmbedding]:
+        """
+        Encodes a list of texts chunks into embeddings, represented as TextEmbedding objects. This
+        method leverages the ColBERT model's encoding capabilities to convert textual content into
+        dense vector representations suitable for semantic search and retrieval applications.
+
+        Parameters:
+            chunks (List[TextChunk]): The list of text chunks to encode.
+            doc_id: An identifier for the document from which the chunks are derived.
+            timeout (int): The timeout in seconds for the encoding operation. Defaults to 60 seconds.
+
+        Returns:
+            List[TextEmbedding]: A list of TextEmbedding objects containing the embeddings for each text, along
+                                  with their associated chunk identifiers.
+        """
+        encoder = ChunkEncoder(config=self.colbert_config)
+        return encoder.encode_chunks(chunks=chunks)
 
     def _encode_queries_using_local(
         self,
@@ -280,9 +274,9 @@ class ColbertEmbeddingModel(BaseEmbeddingModel):
                     contain one row per query.
         """
 
-        tokens = self.query_tokenizer.tokenize(queries)
         _query_maxlen = max(query_maxlen, self.colbert_config.query_maxlen)
         if _query_maxlen < 0:
+            tokens = self.query_tokenizer.tokenize(queries)
             _query_maxlen = calculate_query_maxlen(tokens)
             logging.debug(f"Calculated dynamic query_maxlen of {_query_maxlen}")
 

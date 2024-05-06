@@ -1,8 +1,7 @@
-from .distributed import Distributed, reconcile_nranks
+from .chunk_encoder import ChunkEncoder
 from .runner import Runner
 
 __all__ = [
-    "Distributed",
-    "reconcile_nranks",
+    "ChunkEncoder",
     "Runner",
 ]

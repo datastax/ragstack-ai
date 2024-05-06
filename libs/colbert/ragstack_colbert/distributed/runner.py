@@ -16,60 +16,69 @@ import torch.multiprocessing as mp
 
 from colbert.infra import ColBERTConfig
 
-from ..objects import BaseText, EmbeddedText
-from .chunk_encoder import encode_chunks
-from .distributed import reconcile_nranks
+from ..objects import TextChunk, TextEmbedding
+from .chunk_encoder import ChunkEncoder
 
 
-def distribute_work_load(
-    work_load_size: int = 1, processors: int = 1
-) -> List[List[int]]:
+def reconcile_nranks(nranks: int) -> int:
     """
-    Distributes a given workload size across a specified number of processors.
+    Determines the appropriate number of ranks (parallel processes) for distributed operations based on the
+    passed value and the available CUDA (GPU) or CPU devices.
 
     Parameters:
-        work_load_size (int): The total size of the workload to be distributed.
-        processors (int): The number of processors available for workload distribution.
+        nranks (int): The desired number of ranks (parallel processes). If less than 1, the function aims to use all available processors.
 
     Returns:
-        List[List[int]]: A nested list where each sublist contains indices representing the workload assigned to each processor.
+        int: The number of ranks to be used, which may be adjusted based on the availability of processors.
     """
+    cuda = torch.cuda.is_available()
+    if cuda:
+        cuda_device_count = torch.cuda.device_count()
+        if nranks < 1:
+            return cuda_device_count
+        else:
+            return min(nranks, cuda_device_count)
+    else:
+        if nranks < 1:
+            return 1
+        else:
+            # currently let user set nranks on CPU
+            return nranks
 
-    if work_load_size == 0:
-        return []
-    # ensure no empty workload assigns to a processor
-    processors = min(work_load_size, processors)
-    # Initialize an empty list for each processor
-    result = [[] for _ in range(processors)]
 
-    # Distribute each workload to a processor in a round-robin fashion
-    for i in range(work_load_size):
-        result[i % processors].append(i)
-    return result
-
-
-def map_work_load(texts: List[BaseText], processors: int = 1) -> List[List[BaseText]]:
+def map_work_load(chunks: List[TextChunk], processors: int = 1) -> List[List[TextChunk]]:
     """
     Maps a list of text chunks to a specified number of processors for distributed processing. This function
     leverages `distribute_work_load` to evenly distribute the collections among available processors.
 
     Parameters:
-        texts (List[str]): The chunk texts to be processed.
+        chunks (List[TextChunk]): The chunk texts to be processed.
         processors (int): The number of processors available for distribution.
 
     Returns:
-        List[List[str]]: A nested list where each sublist contains the texts assigned to each processor.
+        List[List[TextChunk]]: A nested list where each sublist contains the text chunks assigned to each processor.
     """
 
-    work_loads = distribute_work_load(len(texts), processors)
-    return [[texts[i] for i in workload] for workload in work_loads]
+    work_load_size = len(chunks)
+    if work_load_size == 0:
+        return []
+
+    # ensure no empty workload assigns to a processor
+    processors = min(work_load_size, processors)
+    # Initialize an empty list for each processor
+    work_loads = [[] for _ in range(processors)]
+
+    for index, chunk in enumerate(chunks):
+        work_loads[index % processors].append(chunk)
+
+    return work_loads
 
 
-def cuda_encode_texts(
+def cuda_encode_chunks(
     config: ColBERTConfig,
     rank: int,
-    texts: List[BaseText],
-    return_dict: Dict[int, List[EmbeddedText]],
+    chunks: List[TextChunk],
+    return_dict: Dict[int, List[TextChunk]],
 ):
     """
     Encodes a collection of text chunks using CUDA-enabled devices, storing the results in a shared dictionary.
@@ -78,13 +87,13 @@ def cuda_encode_texts(
     Parameters:
         config: The configuration settings for the encoding process.
         rank (int): The rank of the current process in the distributed setting.
-        collection (List[str]): The collection of text chunks to encode.
+        chunks (List[TextChunk]): The text chunks to encode.
         return_dict: A multiprocessing.Manager().dict() to store the results of the encoding process.
     """
     if torch.cuda.is_available():
         logging.info(f"encoder runs on cuda id {torch.cuda.current_device()}")
-    results = encode_chunks(config=config, rank=rank, texts=texts)
-    return_dict[rank] = results
+    encoder = ChunkEncoder(config=config)
+    return_dict[rank] = encoder.encode_chunks(chunks=chunks)
 
 
 class Runner:
@@ -115,28 +124,26 @@ class Runner:
     def encode(
         self,
         config: ColBERTConfig,
-        texts: List[str],
+        chunks: List[TextChunk],
         timeout: int = 60,
-    ) -> List[EmbeddedText]:
+    ) -> List[TextEmbedding]:
         """
-        Encodes a collection of text across multiple processors or CUDA devices in parallel. Manages the lifecycle
+        Encodes a collection of text chunks across multiple processors or CUDA devices in parallel. Manages the lifecycle
         of subprocesses, ensuring timely completion and aggregating their results.
 
         Parameters:
             config: The configuration settings for the encoding process.
-            texts (List[str]): The text chunks to encode.
+            chunks (List[TextChunk]): The text chunks to encode.
             timeout (int): The maximum time (in seconds) allowed for each subprocess to complete.
 
         Returns:
-            A list of encoded results aggregated from all subprocesses.
+            A list of TextEmbedding results aggregated from all subprocesses. Order is not guaranteed.
         """
 
         manager = mp.Manager()
         return_dict = manager.dict()
 
-        _texts = [BaseText(original_index=index, text=text) for index, text in enumerate(texts)]
-
-        work_loads = map_work_load(_texts, self._nranks)
+        work_loads = map_work_load(chunks, self._nranks)
         logging.info(f"encoding {len(work_loads)} texts on nranks {self._nranks}")
 
         processes = []
@@ -144,7 +151,7 @@ class Runner:
         ranks = len(work_loads)
         for rank, work_load in enumerate(work_loads):
             p = mp.Process(
-                target=cuda_encode_texts,
+                target=cuda_encode_chunks,
                 args=(config, rank, work_load, return_dict),
             )
             p.start()
@@ -173,7 +180,7 @@ class Runner:
             logging.info("all processes completed")
 
         # Aggregate results from each GPU
-        result_list:List[EmbeddedText] = []
+        result_list:List[TextEmbedding] = []
         for new_rank in range(ranks):
             result_list.extend(return_dict[new_rank])
 

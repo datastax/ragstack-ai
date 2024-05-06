@@ -10,6 +10,9 @@ from typing import Any, Dict, List
 from torch import Tensor
 
 
+Vector = List[float]
+Embedding = List[Vector]
+
 @dataclass(frozen=True)
 class BaseChunk:
     """
@@ -69,6 +72,23 @@ class EmbeddedChunk(BaseChunk):
 
 
 @dataclass(frozen=True)
+class TextChunk:
+    index: int
+    text: str
+
+@dataclass(frozen=True)
+class TextEmbedding(TextChunk):
+    embedding: Embedding
+
+    @staticmethod
+    def from_text_and_embedding(text: TextChunk, embedding: Embedding) -> "TextEmbedding":
+        return TextEmbedding(
+            index=text.index,
+            text=text.text,
+            embedding=embedding
+        )
+
+@dataclass(frozen=True)
 class RetrievedChunk(BaseChunk):
     """
     Represents a chunk of text that has been retrieved, including ranking and scoring information.
@@ -88,12 +108,3 @@ class RetrievedChunk(BaseChunk):
     rank: int
     score: Number
 
-@dataclass(frozen=True)
-class BaseText:
-    original_index: int
-    text: str
-
-@dataclass(frozen=True)
-class EmbeddedText(BaseText):
-    chunk_id: int
-    embeddings: List[Tensor]
