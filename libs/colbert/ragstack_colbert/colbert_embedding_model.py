@@ -18,8 +18,8 @@ from colbert.modeling.tokenization import QueryTokenizer
 
 from .base_embedding_model import BaseEmbeddingModel
 from .constant import DEFAULT_COLBERT_MODEL
-from .distributed import ChunkEncoder, Runner
-from .objects import Embedding, TextChunk, TextEmbedding
+from .chunk_encoder import ChunkEncoder
+from .objects import Embedding, TextChunk
 
 class ColbertEmbeddingModel(BaseEmbeddingModel):
     """
@@ -59,7 +59,6 @@ class ColbertEmbeddingModel(BaseEmbeddingModel):
         nranks: int = -1,
         query_maxlen: int = -1,
         verbose: int = 3,  # 3 is the default on ColBERT checkpoint
-        multiprocessing_enabled: bool = False,
         batch_size: int = 640,
         **kwargs,
     ):
@@ -83,38 +82,19 @@ class ColbertEmbeddingModel(BaseEmbeddingModel):
         """
 
         self.__cuda = torch.cuda.is_available()
-        self.__nranks = nranks
         self.query_maxlen = query_maxlen
 
         logging.info(f"Cuda enabled GPU available: {self.__cuda}")
-        self.__use_multiprocessing = multiprocessing_enabled and self.__cuda
-        if self.__use_multiprocessing:
-            logging.info("distribution initialization completed")
-            total_visible_gpus = torch.cuda.device_count()
-            colbert_config = ColBERTConfig(
-                doc_maxlen=doc_maxlen,
-                nbits=nbits,
-                kmeans_niters=kmeans_niters,
-                nranks=total_visible_gpus,
-                checkpoint=checkpoint,
-                query_maxlen=query_maxlen,
-                gpus=total_visible_gpus,
-            )
-            with Run().context(RunConfig(nranks=total_visible_gpus)):
-                if self.__cuda:
-                    torch.cuda.empty_cache()
-            self.runner = Runner(colbert_config, self.__nranks)
-        else:
-            colbert_config = ColBERTConfig(
-                doc_maxlen=doc_maxlen,
-                nbits=nbits,
-                kmeans_niters=kmeans_niters,
-                nranks=1,
-                checkpoint=checkpoint,
-                query_maxlen=query_maxlen,
-            )
-            self.batch_size = batch_size
 
+        colbert_config = ColBERTConfig(
+            doc_maxlen=doc_maxlen,
+            nbits=nbits,
+            kmeans_niters=kmeans_niters,
+            nranks=nranks,
+            checkpoint=checkpoint,
+            query_maxlen=query_maxlen,
+        )
+        self.batch_size = batch_size
         self.encoder = ChunkEncoder(config=colbert_config, verbose=verbose)
 
     # implements the Abstract Class Method
@@ -133,11 +113,11 @@ class ColbertEmbeddingModel(BaseEmbeddingModel):
 
         chunks = [TextChunk(index=i, text=t) for i, t in enumerate(texts)]
 
-        if self.__use_multiprocessing:
-            timeout = 60 + len(chunks)
-            embedded_texts = self._encode_texts_using_multiprocessing(chunks=chunks, timeout=timeout)
-        else:
-            embedded_texts = self._encode_texts_using_single_process(chunks=chunks)
+        embedded_texts = []
+
+        for i in range(0, len(chunks), self.batch_size):
+            chunk_batch = chunks[i:i + self.batch_size]
+            embedded_texts.extend(self.encoder.encode_chunks(chunks=chunk_batch))
 
         sorted_embedded_texts = sorted(embedded_texts, key=lambda x: x.index)
 
@@ -167,52 +147,3 @@ class ColbertEmbeddingModel(BaseEmbeddingModel):
 
         query_maxlen = max(query_maxlen, self.query_maxlen)
         return self.encoder.encode_query(text=query, query_maxlen=query_maxlen, full_length_search=full_length_search)
-
-    def _encode_texts_using_multiprocessing(
-        self,
-        chunks: List[TextChunk],
-        timeout: int = 60,
-    ) -> List[TextEmbedding]:
-        """
-        Encodes a list of texts chunks into embeddings, represented as TextEmbedding objects. This
-        method leverages the ColBERT model's encoding capabilities to convert textual content into
-        dense vector representations suitable for semantic search and retrieval applications.
-
-        Parameters:
-            chunks (List[TextChunk]): The list of text chunks to encode.
-            doc_id: An identifier for the document from which the chunks are derived.
-            timeout (int): The timeout in seconds for the encoding operation. Defaults to 60 seconds.
-
-        Returns:
-            List[TextEmbedding]: A list of TextEmbedding objects containing the embeddings for each text, along
-                                  with their associated chunk identifiers.
-        """
-
-        return self.runner.encode(chunks=chunks, timeout=timeout)
-
-    def _encode_texts_using_single_process(
-        self,
-        chunks: List[TextChunk],
-    ) -> List[TextEmbedding]:
-        """
-        Encodes a list of texts chunks into embeddings, represented as TextEmbedding objects. This
-        method leverages the ColBERT model's encoding capabilities to convert textual content into
-        dense vector representations suitable for semantic search and retrieval applications.
-
-        Parameters:
-            chunks (List[TextChunk]): The list of text chunks to encode.
-            doc_id: An identifier for the document from which the chunks are derived.
-            timeout (int): The timeout in seconds for the encoding operation. Defaults to 60 seconds.
-
-        Returns:
-            List[TextEmbedding]: A list of TextEmbedding objects containing the embeddings for each text, along
-                                  with their associated chunk identifiers.
-        """
-
-        embeddings = []
-
-        for i in range(0, len(chunks), self.batch_size):
-            chunk_batch = chunks[i:i + self.batch_size]
-            embeddings.extend(self.encoder.encode_chunks(chunks=chunk_batch))
-
-        return embeddings

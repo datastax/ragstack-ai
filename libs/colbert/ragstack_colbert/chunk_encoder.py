@@ -13,7 +13,7 @@ import torch
 from colbert.infra import ColBERTConfig
 from colbert.modeling.checkpoint import Checkpoint
 
-from ..objects import TextChunk, TextEmbedding, Embedding
+from .objects import TextChunk, TextEmbedding, Embedding
 
 def calculate_query_maxlen(tokens: List[List[str]]) -> int:
     """
