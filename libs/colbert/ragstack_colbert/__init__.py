@@ -18,7 +18,7 @@ from .cassandra_vector_store import CassandraVectorStore
 from .colbert_retriever import ColbertRetriever
 from .colbert_embedding_model import ColbertEmbeddingModel
 from .constant import DEFAULT_COLBERT_DIM, DEFAULT_COLBERT_MODEL
-from .objects import ChunkData, EmbeddedChunk, RetrievedChunk
+from .objects import ChunkData, EmbeddedChunk, RetrievedChunk, Embedding, Vector
 
 __all__ = [
     "CassandraVectorStore",
@@ -29,4 +29,6 @@ __all__ = [
     "DEFAULT_COLBERT_MODEL",
     "EmbeddedChunk",
     "RetrievedChunk",
+    "Embedding",
+    "Vector",
 ]

@@ -20,7 +20,7 @@ from torch import Tensor
 from .base_embedding_model import BaseEmbeddingModel
 from .base_retriever import BaseRetriever
 from .base_vector_store import BaseVectorStore
-from .objects import BaseChunk, ChunkData, RetrievedChunk
+from .objects import BaseChunk, ChunkData, RetrievedChunk, Embedding, Vector
 
 
 def all_gpus_support_fp16(is_cuda: Optional[bool] = False):
@@ -49,18 +49,18 @@ def all_gpus_support_fp16(is_cuda: Optional[bool] = False):
 
 
 def max_similarity_torch(
-    query_vector: Tensor,
-    embedding_list: List[Tensor],
+    query_vector: Vector,
+    chunk_embedding: Embedding,
     is_cuda: Optional[bool] = False,
     is_fp16: Optional[bool] = False,
-) -> Tensor:
+) -> float:
     """
-    Calculates the maximum similarity (dot product) between a query vector and a list of embedding vectors,
+    Calculates the maximum similarity (dot product) between a query vector and a chunk embedding,
     leveraging PyTorch for efficient computation.
 
     Parameters:
-        query_vector (Tensor): A 1D tensor representing the query vector.
-        embedding_list (List[Tensor]): A list of 1D tensors, each representing an embedding vector.
+        query_vector (Vector): A list of float representing the query text.
+        chunk_embedding (Embedding): A list of Vector, each representing an chunk embedding vector.
         is_cuda (Optional[bool]): A flag indicating whether to use CUDA (GPU) for computation. Defaults to False.
         is_fp16 (bool): A flag indicating whether to half-precision floating point operations on CUDA (GPU).
                         Has no effect on CPU computation. Defaults to False.
@@ -73,27 +73,28 @@ def max_similarity_torch(
         This function is designed to run on GPU for enhanced performance but can also execute on CPU.
     """
 
-    # Convert embedding list to a tensor
-    embedding_tensor = torch.stack(embedding_list)
+    # Convert inputs to tensors
+    query_tensor = torch.Tensor(query_vector)
+    embedding_tensor = torch.stack([torch.Tensor(v) for v in chunk_embedding])
 
     if is_cuda:
         device = torch.device("cuda")
-        query_vector = query_vector.to(device)
+        query_tensor = query_tensor.to(device)
         embedding_tensor = embedding_tensor.to(device)
 
         # Use half-precision operations if supported
         if is_fp16:
-            query_vector = query_vector.half()
+            query_tensor = query_tensor.half()
             embedding_tensor = embedding_tensor.half()
 
     # Perform the dot product operation
-    sims = torch.matmul(embedding_tensor, query_vector)
+    sims = torch.matmul(embedding_tensor, query_tensor)
 
     # Find the maximum similarity
     max_sim = torch.max(sims)
 
     # returns a tensor; the item() is the score
-    return max_sim
+    return float(max_sim.item())
 
 def get_trace(e: Exception) -> str:
     trace = ""
@@ -156,14 +157,14 @@ class ColbertRetriever(BaseRetriever):
         pass
 
     async def _query_relevant_chunks(
-        self, query_embeddings: List[Tensor], top_k: int
+        self, query_embedding: Embedding, top_k: int
     ) -> Set[BaseChunk]:
         """
         Retrieves the top_k ANN results for each embedded query token.
         """
         chunks: Set[BaseChunk] = set()
         # Collect all tasks
-        tasks = [self.vector_store.search_relevant_chunks(vector=v, n=top_k) for v in query_embeddings]
+        tasks = [self.vector_store.search_relevant_chunks(vector=v, n=top_k) for v in query_embedding]
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
         # Process results and handle potential exceptions
@@ -177,14 +178,14 @@ class ColbertRetriever(BaseRetriever):
 
     async def _retrieve_chunks(
         self, chunks: Set[BaseChunk]
-    ) -> Dict[BaseChunk, List[Tensor]]:
+    ) -> Dict[BaseChunk, Embedding]:
         """
         Retrieves embeddings for a list of chunks, returning a dictionary mapping chunk to a list of PyTorch tensors.
         """
-        chunk_embeddings: Dict[BaseChunk, List[Tensor]] = {}
+        chunk_embeddings: Dict[BaseChunk, Embedding] = {}
 
         # Collect all tasks
-        tasks = [self.vector_store.get_chunk_embeddings(chunk) for chunk in chunks]
+        tasks = [self.vector_store.get_chunk_embedding(chunk) for chunk in chunks]
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
         # Process results and handle potential exceptions
@@ -192,34 +193,34 @@ class ColbertRetriever(BaseRetriever):
             if isinstance(result, Exception):
                 logging.error(f"Issue on vector_store.get_chunk_embeddings(): {result} at {get_trace(result)}")
             else:
-                chunk, embeddings = result
-                chunk_embeddings[chunk] = embeddings
+                chunk, embedding = result
+                chunk_embeddings[chunk] = embedding
 
         return chunk_embeddings
 
     def _score_chunks(
-        self, query_embeddings: Tensor, chunk_data: Dict[BaseChunk, List[Tensor]]
-    ) -> Dict[BaseChunk, Tensor]:
+        self, query_embedding: Embedding, chunk_data: Dict[BaseChunk, Embedding]
+    ) -> Dict[BaseChunk, float]:
         """
         Process the retrieved chunk data to calculate scores.
         """
         chunk_scores = {}
-        for chunk, embeddings in chunk_data.items():
+        for chunk, chunk_embedding in chunk_data.items():
             chunk_scores[chunk] = sum(
                 max_similarity_torch(
                     query_vector=qv,
-                    embedding_list=embeddings,
+                    chunk_embedding=chunk_embedding,
                     is_cuda=self.is_cuda,
                     is_fp16=self.is_fp16,
                 )
-                for qv in query_embeddings
+                for qv in query_embedding
             )
         return chunk_scores
 
     async def _fetch_chunk_data(
         self,
         chunks_by_score: List[BaseChunk],
-        chunk_scores:  Dict[BaseChunk, Tensor],
+        chunk_scores:  Dict[BaseChunk, float],
     ) -> List[RetrievedChunk]:
         """
         Fetches text and metadata for each chunk and ranks them based on scores.
@@ -254,7 +255,7 @@ class ColbertRetriever(BaseRetriever):
                     RetrievedChunk(
                         doc_id=chunk.doc_id,
                         chunk_id=chunk.chunk_id,
-                        score=score.item(),  # Ensure score is a scalar if it's a tensor
+                        score=score,
                         rank=idx + 1,
                         data=chunk_data,
                     )
@@ -288,21 +289,21 @@ class ColbertRetriever(BaseRetriever):
             embeddings, scoring these embeddings for similarity, and retrieving the corresponding text chunks.
         """
 
-        query_embeddings = self.embedding_model.embed_query(
+        query_embedding = self.embedding_model.embed_query(
             query, query_maxlen=query_maxlen
         )
 
-        top_k = max(math.floor(len(query_embeddings) / 2), 16)
-        logging.debug(f"based on query length of {len(query_embeddings)} tokens, retrieving {top_k} results per token-embedding")
+        top_k = max(math.floor(len(query_embedding) / 2), 16)
+        logging.debug(f"based on query length of {len(query_embedding)} tokens, retrieving {top_k} results per token-embedding")
 
         chunks = await self._query_relevant_chunks(
-            query_embeddings=query_embeddings, top_k=top_k
+            query_embedding=query_embedding, top_k=top_k
         )
 
         # score each chunk
         chunk_data = await self._retrieve_chunks(chunks=chunks)
         chunk_scores = self._score_chunks(
-            query_embeddings=query_embeddings, chunk_data=chunk_data
+            query_embedding=query_embedding, chunk_data=chunk_data
         )
 
         # load the source chunk for the top k documents

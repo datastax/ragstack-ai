@@ -14,7 +14,7 @@ from cassio.table.tables import ClusteredMetadataVectorCassandraTable
 from torch import Tensor
 
 from .base_vector_store import BaseVectorStore
-from .objects import BaseChunk, ChunkData, EmbeddedChunk
+from .objects import BaseChunk, ChunkData, EmbeddedChunk, Embedding, Vector
 
 
 class CassandraVectorStore(BaseVectorStore):
@@ -128,7 +128,7 @@ class CassandraVectorStore(BaseVectorStore):
             except Exception as e:
                 logging.error(f"issue on delete of document: {doc_id}: {e}")
 
-    async def search_relevant_chunks(self, vector: List[float], n: int) -> List[BaseChunk]:
+    async def search_relevant_chunks(self, vector: Vector, n: int) -> List[BaseChunk]:
         """
         Retrieves 'n' ANN results for an embedded token vector.
 
@@ -147,7 +147,7 @@ class CassandraVectorStore(BaseVectorStore):
             ))
         return list(chunks)
 
-    async def get_chunk_embeddings(self, chunk: BaseChunk) -> Tuple[BaseChunk, List[Tensor]]:
+    async def get_chunk_embedding(self, chunk: BaseChunk) -> Tuple[BaseChunk, Embedding]:
         """
         Retrieve all the embedding data for a chunk.
 
@@ -159,9 +159,9 @@ class CassandraVectorStore(BaseVectorStore):
         row_id = (chunk.chunk_id, Predicate(PredicateOperator.GT, -1))
         rows = await self._table.aget_partition(partition_id=chunk.doc_id, row_id=row_id)
 
-        embeddings = [torch.Tensor(row["vector"]) for row in rows]
+        embedding = [row["vector"] for row in rows]
 
-        return (chunk, embeddings)
+        return (chunk, embedding)
 
     async def get_chunk_data(self, chunk: BaseChunk) -> Tuple[BaseChunk, ChunkData]:
         """

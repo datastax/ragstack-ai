@@ -8,7 +8,7 @@ from typing import List, Optional, Tuple
 
 from torch import Tensor
 
-from .objects import BaseChunk, ChunkData, EmbeddedChunk
+from .objects import BaseChunk, ChunkData, EmbeddedChunk, Embedding, Vector
 
 
 class BaseVectorStore(ABC):
@@ -45,12 +45,12 @@ class BaseVectorStore(ABC):
         """
 
     @abstractmethod
-    async def search_relevant_chunks(self, vector: List[float], n: int) -> List[BaseChunk]:
+    async def search_relevant_chunks(self, vector: Vector, n: int) -> List[BaseChunk]:
         """
         Searches for relevant chunks using ANN for an embedded token vector.
 
         Parameters:
-            vector (List[float]): A vector embedding for a query token.
+            vector (Vector): A vector embedding for a query token.
             n (int): The number of items to return from the search
 
         Returns:
@@ -58,7 +58,7 @@ class BaseVectorStore(ABC):
         """
 
     @abstractmethod
-    async def get_chunk_embeddings(self, chunk: BaseChunk) -> Tuple[BaseChunk, List[Tensor]]:
+    async def get_chunk_embedding(self, chunk: BaseChunk) -> Tuple[BaseChunk, Embedding]:
         """
         Retrieve all the embedding data for a chunk.
 
@@ -66,7 +66,7 @@ class BaseVectorStore(ABC):
             chunk (BaseChunk): The chunk to return.
 
         Returns:
-            A RetrievedChunk including doc_id, chunk_id, and the embeddings for the chunk.
+            A Tuple[BaseChunk, Embedding] including doc_id, chunk_id, and the embedding for the chunk.
         """
 
     @abstractmethod
@@ -78,5 +78,5 @@ class BaseVectorStore(ABC):
             chunk (BaseChunk): The chunk to return.
 
         Returns:
-            ChunkData including text and metadata for the chunk.
+            Tuple[BaseChunk, ChunkData] including text and metadata for the chunk.
         """

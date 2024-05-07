@@ -57,7 +57,7 @@ class EmbeddedChunk(BaseChunk):
     """
 
     data: ChunkData
-    embeddings: Tensor
+    embedding: Embedding
 
 
     def __len__(self):
@@ -68,7 +68,7 @@ class EmbeddedChunk(BaseChunk):
         Returns:
             int: The number of dimensions in the embeddings tensor.
         """
-        return len(self.embeddings)
+        return len(self.embedding)
 
 
 @dataclass(frozen=True)

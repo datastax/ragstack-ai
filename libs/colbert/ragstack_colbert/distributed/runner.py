@@ -106,7 +106,7 @@ class Runner:
         _nranks (int): The number of processor ranks determined based on availability and the provided configuration.
     """
 
-    def __init__(self, nranks: int = 1) -> None:
+    def __init__(self, config: ColBERTConfig, nranks: int = 1) -> None:
         """
         Initializes the Runner with a specified number of ranks, adjusting for the availability of CUDA devices.
 
@@ -116,6 +116,7 @@ class Runner:
 
         # this runner is only useful when nranks > 1
         self._is_cuda = torch.cuda.is_available()
+        self._colbert_config = config
         self._nranks = 1
         if self._is_cuda:
             self._nranks = reconcile_nranks(nranks)
@@ -123,7 +124,6 @@ class Runner:
     # this is the entrypoint to the distributed embedding code
     def encode(
         self,
-        config: ColBERTConfig,
         chunks: List[TextChunk],
         timeout: int = 60,
     ) -> List[TextEmbedding]:
@@ -152,7 +152,7 @@ class Runner:
         for rank, work_load in enumerate(work_loads):
             p = mp.Process(
                 target=cuda_encode_chunks,
-                args=(config, rank, work_load, return_dict),
+                args=(self._colbert_config, rank, work_load, return_dict),
             )
             p.start()
             processes.append(p)

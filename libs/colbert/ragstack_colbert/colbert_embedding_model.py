@@ -8,11 +8,9 @@ for high-relevancy retrieval tasks, with support for both CPU and GPU computing 
 """
 
 import logging
-import uuid
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 import torch
-from torch import Tensor
 
 from colbert.infra import ColBERTConfig, Run, RunConfig
 from colbert.modeling.checkpoint import Checkpoint
@@ -22,27 +20,6 @@ from .base_embedding_model import BaseEmbeddingModel
 from .constant import DEFAULT_COLBERT_MODEL
 from .distributed import ChunkEncoder, Runner
 from .objects import Embedding, TextChunk, TextEmbedding
-
-
-def calculate_query_maxlen(tokens: List[List[str]]) -> int:
-    """
-    Calculates an appropriate maximum query length for token embeddings, based on the length of the tokenized input.
-
-    Parameters:
-        tokens (List[List[str]]): A nested list where each sublist contains tokens from a single query or chunk.
-
-    Returns:
-        int: The calculated maximum length for query tokens, adhering to the specified minimum and maximum bounds,
-             and adjusted to the nearest power of two.
-    """
-
-    max_token_length = max(len(inner_list) for inner_list in tokens)
-
-    # tokens from the query tokenizer does not include the SEP, CLS
-    # SEP, CLS, and Q tokens are added to the query
-    # although there could be more SEP tokens if there are more than one sentences, we only add one
-    return max_token_length + 3
-
 
 class ColbertEmbeddingModel(BaseEmbeddingModel):
     """
@@ -83,6 +60,7 @@ class ColbertEmbeddingModel(BaseEmbeddingModel):
         query_maxlen: int = -1,
         verbose: int = 3,  # 3 is the default on ColBERT checkpoint
         multiprocessing_enabled: bool = False,
+        batch_size: int = 640,
         **kwargs,
     ):
         """
@@ -106,51 +84,38 @@ class ColbertEmbeddingModel(BaseEmbeddingModel):
 
         self.__cuda = torch.cuda.is_available()
         self.__nranks = nranks
-        self.__query_maxlen = query_maxlen
+        self.query_maxlen = query_maxlen
 
         logging.info(f"Cuda enabled GPU available: {self.__cuda}")
-        self.__use_multiprocessing = multiprocessing_enabled and self.__cud
-
+        self.__use_multiprocessing = multiprocessing_enabled and self.__cuda
         if self.__use_multiprocessing:
             logging.info("distribution initialization completed")
-
             total_visible_gpus = torch.cuda.device_count()
-            with Run().context(RunConfig(nranks=total_visible_gpus)):
-                if self.__cuda:
-                    torch.cuda.empty_cache()
-                self.colbert_config = ColBERTConfig(
-                    doc_maxlen=doc_maxlen,
-                    nbits=nbits,
-                    kmeans_niters=kmeans_niters,
-                    nranks=total_visible_gpus,
-                    checkpoint=checkpoint,
-                    query_maxlen=query_maxlen,
-                    gpus=total_visible_gpus,
-                )
-            logging.info("creating checkpoint")
-            self.checkpoint = Checkpoint(
-                self.colbert_config.checkpoint,
-                colbert_config=self.colbert_config,
-                verbose=verbose,
-            )
-            self.query_tokenizer = QueryTokenizer(self.colbert_config)
-            if self.__cuda:
-                self.checkpoint = self.checkpoint.cuda()
-        else:
-            self.colbert_config = ColBERTConfig(
+            colbert_config = ColBERTConfig(
                 doc_maxlen=doc_maxlen,
                 nbits=nbits,
                 kmeans_niters=kmeans_niters,
-                nranks=self.__nranks,
+                nranks=total_visible_gpus,
+                checkpoint=checkpoint,
+                query_maxlen=query_maxlen,
+                gpus=total_visible_gpus,
+            )
+            with Run().context(RunConfig(nranks=total_visible_gpus)):
+                if self.__cuda:
+                    torch.cuda.empty_cache()
+            self.runner = Runner(colbert_config, self.__nranks)
+        else:
+            colbert_config = ColBERTConfig(
+                doc_maxlen=doc_maxlen,
+                nbits=nbits,
+                kmeans_niters=kmeans_niters,
+                nranks=1,
                 checkpoint=checkpoint,
                 query_maxlen=query_maxlen,
             )
-            self.checkpoint = Checkpoint(
-                name=self.colbert_config.checkpoint,
-                colbert_config=self.colbert_config,
-                verbose=verbose,
-            )
-            self.query_tokenizer = QueryTokenizer(self.colbert_config)
+            self.batch_size = batch_size
+
+        self.encoder = ChunkEncoder(config=colbert_config, verbose=verbose)
 
     # implements the Abstract Class Method
     def embed_texts(
@@ -172,7 +137,7 @@ class ColbertEmbeddingModel(BaseEmbeddingModel):
             timeout = 60 + len(chunks)
             embedded_texts = self._encode_texts_using_multiprocessing(chunks=chunks, timeout=timeout)
         else:
-            embedded_texts = self._encode_texts_using_local(chunks=chunks)
+            embedded_texts = self._encode_texts_using_single_process(chunks=chunks)
 
         sorted_embedded_texts = sorted(embedded_texts, key=lambda x: x.index)
 
@@ -200,10 +165,8 @@ class ColbertEmbeddingModel(BaseEmbeddingModel):
             Embedding: A vector embedding representation of the query text
         """
 
-        embeddings = self._encode_queries_using_local(
-            [query], full_length_search, query_maxlen=query_maxlen
-        )
-        return embeddings[0]
+        query_maxlen = max(query_maxlen, self.query_maxlen)
+        return self.encoder.encode_query(text=query, query_maxlen=query_maxlen, full_length_search=full_length_search)
 
     def _encode_texts_using_multiprocessing(
         self,
@@ -225,14 +188,9 @@ class ColbertEmbeddingModel(BaseEmbeddingModel):
                                   with their associated chunk identifiers.
         """
 
-        runner = Runner(self.__nranks)
-        return runner.encode(
-            config=self.colbert_config,
-            chunks=chunks,
-            timeout=timeout,
-        )
+        return self.runner.encode(chunks=chunks, timeout=timeout)
 
-    def _encode_texts_using_local(
+    def _encode_texts_using_single_process(
         self,
         chunks: List[TextChunk],
     ) -> List[TextEmbedding]:
@@ -250,43 +208,11 @@ class ColbertEmbeddingModel(BaseEmbeddingModel):
             List[TextEmbedding]: A list of TextEmbedding objects containing the embeddings for each text, along
                                   with their associated chunk identifiers.
         """
-        encoder = ChunkEncoder(config=self.colbert_config)
-        return encoder.encode_chunks(chunks=chunks)
 
-    def _encode_queries_using_local(
-        self,
-        queries: List[str],
-        full_length_search: Optional[bool] = False,
-        query_maxlen: int = -1,
-    ) -> Tensor:
-        """
-        Encodes one or more texts (queries) into dense vector representations. It supports encoding queries to a fixed
-        length, adjusting for the maximum token length or padding as necessary. The method is suitable for both
-        single and batch query processing, with optional support for full-length search encoding.
+        embeddings = []
 
-        Parameters:
-            queries (List[str]): A single query string or a list of query strings to be encoded.
-            full_length_search (Optional[bool]): If True, encodes queries for full-length search. Defaults to False.
-            query_maxlen (int): A fixed length for query token embeddings. If -1, uses a dynamically calculated value.
+        for i in range(0, len(chunks), self.batch_size):
+            chunk_batch = chunks[i:i + self.batch_size]
+            embeddings.extend(self.encoder.encode_chunks(chunks=chunk_batch))
 
-        Returns:
-            Tensor: A tensor containing the encoded queries. If multiple queries are provided, the tensor will
-                    contain one row per query.
-        """
-
-        _query_maxlen = max(query_maxlen, self.colbert_config.query_maxlen)
-        if _query_maxlen < 0:
-            tokens = self.query_tokenizer.tokenize(queries)
-            _query_maxlen = calculate_query_maxlen(tokens)
-            logging.debug(f"Calculated dynamic query_maxlen of {_query_maxlen}")
-
-        self.checkpoint.query_tokenizer.query_maxlen = _query_maxlen
-
-        # All query embeddings in the ColBERT documentation
-        # this name, EQ or Q, maps the exact name in most colBERT papers
-        batch_size = 128 if len(queries) > 128 else None
-        to_cpu = not self.__cuda
-        queriesQ = self.checkpoint.queryFromText(
-            queries, bsize=batch_size, to_cpu=to_cpu, full_length_search=full_length_search
-        )
-        return queriesQ
+        return embeddings
