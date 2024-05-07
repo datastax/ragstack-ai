@@ -4,7 +4,6 @@ import pytest
 
 from ragstack_colbert import (
     CassandraVectorStore,
-    ChunkData,
     ColbertEmbeddingModel,
     ColbertRetriever,
 )
@@ -76,11 +75,9 @@ def test_embedding_cassandra_retriever(request, vector_store: str):
         kmeans_niters=4,
     )
 
-    chunks = [ChunkData(text=text, metadata={}) for text in texts]
+    embeddings = colbert.embed_texts(texts=text)
 
-    embedded_chunks = colbert.embed_chunks(chunks=chunks, doc_id=doc_id)
-
-    logging.info(f"embedded chunks size {len(embedded_chunks)}")
+    logging.info(f"embedded chunks size {len(embeddings)}")
 
     store = CassandraVectorStore(
         keyspace="default_keyspace",

@@ -115,4 +115,4 @@ class ChunkEncoder:
 
         self._checkpoint.query_tokenizer.query_maxlen = prev_query_maxlen
 
-        return query_embedding.tolist()
+        return query_embedding.tolist()[0]

@@ -8,7 +8,7 @@ from torch.nn.functional import cosine_similarity
 from colbert.indexing.collection_encoder import CollectionEncoder
 from colbert.infra.config import ColBERTConfig
 from colbert.modeling.checkpoint import Checkpoint
-from ragstack_colbert import ChunkData, ColbertEmbeddingModel, EmbeddedChunk
+from ragstack_colbert import ChunkData, ColbertEmbeddingModel, EmbeddedChunk, Embedding, Vector
 from ragstack_colbert.constant import DEFAULT_COLBERT_MODEL
 
 baseline_tensors = [
@@ -11866,20 +11866,21 @@ arctic_botany_dict = {
     "Future Directions in Arctic Botanical Studies": "The future of Arctic botany lies in interdisciplinary research, combining traditional knowledge with modern scientific techniques. As the Arctic undergoes rapid changes, understanding the ecological, cultural, and climatic dimensions of Arctic flora becomes increasingly important. Future research will need to address the challenges of climate change, explore the potential for Arctic plants in biotechnology, and continue to conserve this unique biome. The resilience of Arctic flora offers lessons in adaptation and survival relevant to global challenges."
 }
 
-arctic_botany_chunks = [ChunkData(text=text, metadata={}) for text in arctic_botany_dict.values()]
+arctic_botany_chunks = [text for text in arctic_botany_dict.values()]
 
 # a uility function to evaluate similarity of two embeddings at per token level
-def are_they_similar(embedded_chunks: List[EmbeddedChunk], tensors: List[Tensor]):
+def are_they_similar(embedded_chunks: List[Embedding], tensors: List[Tensor]):
     n = 0
     pdist = torch.nn.PairwiseDistance(p=2)
-    for embedded_chunk in embedded_chunks:
-        for embedding in embedded_chunk.embeddings:
-            assert embedding.shape == tensors[n].shape
+    for embedding in embedded_chunks:
+        for vector in embedding:
+            vector_tensor = torch.tensor(vector)
+            assert vector_tensor.shape == tensors[n].shape
 
             # we still have outlier over the specified limit but almost 0
-            assert pdist(embedding, tensors[n]).item() < 0.0001
+            assert pdist(vector_tensor, tensors[n]).item() < 0.0001
 
-            similarity = cosine_similarity(embedding.unsqueeze(0), tensors[n].unsqueeze(0))
+            similarity = cosine_similarity(vector_tensor.unsqueeze(0), tensors[n].unsqueeze(0))
             assert similarity.item() > 0.999
             n = n + 1
 
@@ -11902,21 +11903,22 @@ def test_embeddings_with_baseline():
     please add to the model and implementions resultsed euclidian and cosine threshold change
     2024-04-08 default model - https://huggingface.co/colbert-ir/colbertv2.0
     """
-    embedded_chunks = colbert.embed_chunks(arctic_botany_chunks, doc_id="arctic_botany")
+    embeddings: List[Embedding] = colbert.embed_texts(arctic_botany_chunks)
 
     pdist = torch.nn.PairwiseDistance(p=2)
     embedded_tensors = []
     n = 0
-    for embedded_chunk in embedded_chunks:
-        for embedding in embedded_chunk.embeddings:
-            embedded_tensors.append(embedding)
-            distance = torch.norm(embedding - baseline_tensors[n])
+    for embedding in embeddings:
+        for vector in embedding:
+            vector_tensor = torch.tensor(vector)
+            embedded_tensors.append(vector_tensor)
+            distance = torch.norm(vector_tensor - baseline_tensors[n])
             assert abs(distance) < 0.001
             # another way to measure pairwise distance
             # it must be a positive since it's from square root
-            assert pdist(embedding, baseline_tensors[n]).item() < 0.001
+            assert pdist(vector_tensor, baseline_tensors[n]).item() < 0.001
 
-            similarity = cosine_similarity(embedding.unsqueeze(0), baseline_tensors[n].unsqueeze(0))
+            similarity = cosine_similarity(vector_tensor.unsqueeze(0), baseline_tensors[n].unsqueeze(0))
             assert similarity.shape == torch.Size([1]) # this has to be scalar
             # debug code to identify which token deviates
             if similarity.item() < 0.99:
@@ -11934,7 +11936,7 @@ def test_embeddings_with_baseline():
     colbert2 = ColbertEmbeddingModel(
         checkpoint=DEFAULT_COLBERT_MODEL,
     )
-    embedded_chunks2 = colbert2.embed_chunks(arctic_botany_chunks)
+    embedded_chunks2 = colbert2.embed_texts(arctic_botany_chunks)
 
     are_they_similar(embedded_chunks2, embedded_tensors)
 
@@ -11946,14 +11948,12 @@ def test_colbert_embedding_against_vanilla_impl():
     cp = Checkpoint(cf.checkpoint, colbert_config=cf)
     encoder = CollectionEncoder(cf, cp)
 
-    texts = [chunk.text for chunk in arctic_botany_chunks]
-
-    embeddings_flat, _ = encoder.encode_passages(texts)
+    embeddings_flat, _ = encoder.encode_passages(arctic_botany_chunks)
 
     colbertSvc = ColbertEmbeddingModel(
         checkpoint=DEFAULT_COLBERT_MODEL,
     )
-    embedded_chunks = colbertSvc.embed_chunks(arctic_botany_chunks)
+    embedded_chunks = colbertSvc.embed_texts(arctic_botany_chunks)
 
     are_they_similar(embedded_chunks, embeddings_flat)
 
@@ -11964,23 +11964,23 @@ def model_embedding(model: str):
          checkpoint=model,
          query_maxlen=32,
     )
-    embedded_chunks = colbertSvc.embed_chunks(arctic_botany_chunks)
+    embeddings = colbertSvc.embed_texts(arctic_botany_chunks)
 
-    assert len(embedded_chunks) == 8
+    assert len(embeddings) == 8
     n = 0
-    for embedded_chunk in embedded_chunks:
-        for embedding in embedded_chunk.embeddings:
-            assert embedding.shape == (128, )
+    for embedding in embeddings:
+        for vector in embedding:
+            assert len(vector) == 128
             n = n + 1
 
     assert n == 645
 
     # recall embeddings test
-    encoded = colbertSvc.embed_query(
+    embedding = colbertSvc.embed_query(
         query="What adaptations enable Arctic plants to survive and thrive in extremely cold temperatures and minimal sunlight?",
         query_maxlen=32,
     )
-    assert encoded.shape == torch.Size([32,128])
+    assert len(embedding) == 32
 
 
 def test_compatible_models():
