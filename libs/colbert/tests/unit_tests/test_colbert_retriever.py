@@ -1,7 +1,7 @@
 import torch
 
 from ragstack_colbert.colbert_retriever import max_similarity_torch
-from ragstack_colbert.chunk_encoder import calculate_query_maxlen
+from ragstack_colbert.text_encoder import calculate_query_maxlen
 
 
 def test_max_similarity_torch():
@@ -21,7 +21,7 @@ def test_max_similarity_torch():
     )  # Should be the highest
 
     # Call the function under test
-    max_sim = max_similarity_torch(query_vector, embedding_list, is_cuda=False)
+    max_sim = max_similarity_torch(query_vector, embedding_list)
 
     # Check if the returned max similarity matches the expected value
     assert (

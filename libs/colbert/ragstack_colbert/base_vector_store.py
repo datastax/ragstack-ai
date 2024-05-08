@@ -1,14 +1,25 @@
 """
-This module defines abstract base classes for implementing storage mechanisms for text chunk
-embeddings, specifically designed to work with ColBERT or similar embedding models.
+This module defines the abstract base class for a standard vector store
+specifically designed to work with ColBERT or similar dense embedding models,
+and can be used to create a LangChain or LlamaIndex ColBERT vector store.
 """
 
 from abc import ABC, abstractmethod
 from typing import List, Optional, Tuple
 
-from torch import Tensor
+from .objects import Chunk, Metadata
+from .base_retriever import BaseRetriever
 
-from .objects import BaseChunk, ChunkData, EmbeddedChunk, Embedding, Vector
+# LlamaIndex Node (chunk) has ids, text, embedding, metadata
+#            VectorStore.add(nodes: List[Node]) -> List[str](ids): embeds texts OUTside add
+#                       .delete(id)
+#                       .query(embedding) -> Nodes, Scores, Ids
+
+# LangChain Document (doc or chunk) has page_content, metadata
+#           VectorStore.add(texts: List[str], metadatas: Optional[List[dict]]) -> List[str](ids): embeds texts INside add
+#                      .delete(ids: List[str]): deletes by id
+#                      .search(query: str) -> List[Document]: uses retriever to search in store
+#                      .as_retriever() -> Retriever
 
 
 class BaseVectorStore(ABC):
@@ -20,21 +31,29 @@ class BaseVectorStore(ABC):
     operations like adding new chunks to the store and deleting existing documents by their identifiers.
     """
 
+    # handles LlamaIndex add
     @abstractmethod
-    def put_chunks(
-        self, chunks: List[EmbeddedChunk], delete_existing: Optional[bool] = False
-    ) -> None:
+    def add_chunks(self, chunks: List[Chunk]) -> List[Tuple[str, int]]:
         """
-        Stores a list of embedded text chunks in the vector store, with an option to delete existing
-        entries before insertion.
+        Stores a list of embedded text chunks in the vector store
 
         Parameters:
-            chunks (List[EmbeddedChunk]): A list of `EmbeddedChunk` instances to be stored.
-            delete_existing (Optional[bool]): If True, any existing chunks with the same doc_ids
-                                               as those in the `chunks` list will be deleted before
-                                               inserting the new ones. Defaults to False.
+            chunks (List[Chunk]): A list of `Chunk` instances to be stored.
         """
 
+    # handles LangChain add
+    @abstractmethod
+    def add_texts(self, texts: List[str], metadatas: Optional[List[Metadata]]) -> List[Tuple[str, int]]:
+        """
+        Embeds and stores a list of text chunks and optional metadata into the vector store
+
+        Parameters:
+            texts (List[str]): The list of text chunks to be embedded
+            metadatas (Optional[List[Metadata]])): An optional list of Metadata to be stored.
+                        If provided, these are set 1 to 1 with the texts list.
+        """
+
+    # handles LangChain and LlamaIndex delete
     @abstractmethod
     def delete_chunks(self, doc_ids: List[str]) -> None:
         """
@@ -44,39 +63,9 @@ class BaseVectorStore(ABC):
             doc_ids (List[str]): A list of document identifiers specifying the chunks to be deleted.
         """
 
+    # handles LangChain as_retriever
     @abstractmethod
-    async def search_relevant_chunks(self, vector: Vector, n: int) -> List[BaseChunk]:
+    def as_retriever(self) -> BaseRetriever:
         """
-        Searches for relevant chunks using ANN for an embedded token vector.
-
-        Parameters:
-            vector (Vector): A vector embedding for a query token.
-            n (int): The number of items to return from the search
-
-        Returns:
-            A list of chunks with doc_id and chunk_id. Fewer than 'n' results may be returned.
-        """
-
-    @abstractmethod
-    async def get_chunk_embedding(self, chunk: BaseChunk) -> Tuple[BaseChunk, Embedding]:
-        """
-        Retrieve all the embedding data for a chunk.
-
-        Parameters:
-            chunk (BaseChunk): The chunk to return.
-
-        Returns:
-            A Tuple[BaseChunk, Embedding] including doc_id, chunk_id, and the embedding for the chunk.
-        """
-
-    @abstractmethod
-    async def get_chunk_data(self, chunk: BaseChunk) -> Tuple[BaseChunk, ChunkData]:
-        """
-        Fetches the text and metadata for a given doc_id and chunk_id.
-
-        Parameters:
-            chunk (BaseChunk): The chunk to return.
-
-        Returns:
-            Tuple[BaseChunk, ChunkData] including text and metadata for the chunk.
+        Gets a retriever using the vector store.
         """

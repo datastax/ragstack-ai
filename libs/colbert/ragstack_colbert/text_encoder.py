@@ -13,7 +13,7 @@ import torch
 from colbert.infra import ColBERTConfig
 from colbert.modeling.checkpoint import Checkpoint
 
-from .objects import TextChunk, TextEmbedding, Embedding
+from .objects import Chunk, Embedding
 
 def calculate_query_maxlen(tokens: List[List[str]]) -> int:
     """
@@ -34,9 +34,9 @@ def calculate_query_maxlen(tokens: List[List[str]]) -> int:
     # although there could be more SEP tokens if there are more than one sentences, we only add one
     return max_token_length + 3
 
-class ChunkEncoder:
+class TextEncoder:
     """
-    Encapsulates the logic for encoding chunks into dense vector representations using a specified ColBERT model
+    Encapsulates the logic for encoding text chunks and queries into dense vector representations using a specified ColBERT model
     configuration and checkpoint. This class is optimized for batch processing to manage GPU memory usage efficiently.
     """
 
@@ -49,12 +49,14 @@ class ChunkEncoder:
             verbose (int): The level of logging to use
         """
 
+        logging.info(f"Cuda enabled GPU available: {torch.cuda.is_available()}")
+
         self._checkpoint = Checkpoint(config.checkpoint, colbert_config=config, verbose=verbose)
         self._use_cpu = config.total_visible_gpus == 0
 
     def encode_chunks(
-        self, chunks: List[TextChunk], batch_size: int = 640
-    ) -> List[TextEmbedding]:
+        self, chunks: List[Chunk], batch_size: int = 640
+    ) -> List[Chunk]:
         """
         Encodes a list of chunks into embeddings, processing in batches to efficiently manage memory.
 
@@ -68,10 +70,10 @@ class ChunkEncoder:
 
         logging.info(f"#> Encoding {len(chunks)} chunks..")
 
-        embedded_texts: List[TextEmbedding] = []
+        embedded_chunks: List[Chunk] = []
 
         if len(chunks) == 0:
-            return embedded_texts
+            return embedded_chunks
 
         with torch.inference_mode():
             texts = [chunk.text for chunk in chunks]
@@ -87,19 +89,14 @@ class ChunkEncoder:
         for index, chunk in enumerate(chunks):
             # The end index for slicing
             end_idx = start_idx + counts[index]
-            chunk_embedding = embeddings[start_idx:end_idx]
+            chunk.embedding =  embeddings[start_idx:end_idx]
 
-            embedded_texts.append(
-                TextEmbedding.from_text_and_embedding(
-                    text=chunk,
-                    embedding=chunk_embedding.tolist()
-                )
-            )
+            embedded_chunks.append(chunk)
 
             # Reset for the next chunk
             start_idx = end_idx
 
-        return embedded_texts
+        return embedded_chunks
 
     def encode_query(self, text: str, query_maxlen: int, full_length_search: Optional[bool] = False) -> Embedding:
         if query_maxlen < 0:

@@ -3,9 +3,9 @@ import logging
 import pytest
 
 from ragstack_colbert import (
-    CassandraVectorStore,
+    CassandraDatabase,
+    ColbertVectorStore,
     ColbertEmbeddingModel,
-    ColbertRetriever,
 )
 from tests.integration_tests.conftest import (
     get_astradb_test_store,
@@ -66,33 +66,39 @@ def test_embedding_cassandra_retriever(request, vector_store: str):
     for i, text in enumerate(texts[:3]):  # Displaying the first 3 chunks for brevity
         logging.info(f"Chunk {i + 1}:\n{text}\n{'-' * 50}\n")
 
-    doc_id = "Marine Animals habitat"
+    doc_id = "marine_animals"
 
-    # colbert stuff starts
-    colbert = ColbertEmbeddingModel(
+    session=vector_store.create_cassandra_session()
+    session.default_timeout = 180
+
+    database = CassandraDatabase.from_session(
+        keyspace="default_keyspace",
+        table_name="colbert_embeddings",
+        session=session,
+    )
+
+    embedding_model = ColbertEmbeddingModel(
         doc_maxlen=220,
         nbits=2,
         kmeans_niters=4,
     )
 
-    embeddings = colbert.embed_texts(texts=text)
-
-    logging.info(f"embedded chunks size {len(embeddings)}")
-
-    store = CassandraVectorStore(
-        keyspace="default_keyspace",
-        table_name="colbert_embeddings",
-        session=vector_store.create_cassandra_session(),
+    store = ColbertVectorStore(
+        database=database,
+        embedding_model=embedding_model,
     )
-    store.put_chunks(chunks=embedded_chunks, delete_existing=True)
 
-    retriever = ColbertRetriever(
-        vector_store=store, embedding_model=colbert
-    )
-    chunks = retriever.retrieve("what kind fish lives shallow coral reefs", k=5)
-    for chunk in chunks:
-        logging.info(f"got {chunk}")
-    assert len(chunks) == 5
-    assert len(chunks[0].data.text) > 0
-    assert chunks[0].rank == 1
-    assert chunks[1].rank == 2
+    store.add_texts(texts=texts, doc_id=doc_id)
+
+    retriever = store.as_retriever()
+
+    chunk_scores = retriever.search(query_text="what kind fish lives shallow coral reefs", k=5)
+    assert len(chunk_scores) == 5
+    for (chunk, score) in chunk_scores:
+        logging.info(f"got chunk_id {chunk.chunk_id} with score {score}")
+
+    best_chunk = chunk_scores[0][0]
+    assert len(best_chunk.text) > 0
+    logging.info(f"Highest scoring chunk_id: {best_chunk.chunk_id} with text: {best_chunk.text}")
+
+

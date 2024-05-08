@@ -12,15 +12,14 @@ import asyncio
 import logging
 import math
 import nest_asyncio
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 import torch
-from torch import Tensor
 
 from .base_embedding_model import BaseEmbeddingModel
 from .base_retriever import BaseRetriever
-from .base_vector_store import BaseVectorStore
-from .objects import BaseChunk, ChunkData, RetrievedChunk, Embedding, Vector
+from .base_database import BaseDatabase
+from .objects import Chunk, Embedding, Vector
 
 
 def all_gpus_support_fp16(is_cuda: Optional[bool] = False):
@@ -123,32 +122,32 @@ class ColbertRetriever(BaseRetriever):
         computation if a GPU is not available.
     """
 
-    vector_store: BaseVectorStore
-    embedding_model: BaseEmbeddingModel
-    is_cuda: bool = False
-    is_fp16: bool = False
+    _database: BaseDatabase
+    _embedding_model: BaseEmbeddingModel
+    _is_cuda: bool
+    _is_fp16: bool
 
     class Config:
         arbitrary_types_allowed = True
 
     def __init__(
         self,
-        vector_store: BaseVectorStore,
+        database: BaseDatabase,
         embedding_model: BaseEmbeddingModel,
     ):
         """
         Initializes the retriever with a specific vector store and Colbert embeddings model.
 
         Parameters:
-            vector_store (BaseVectorStore): The vector store to be used for retrieving embeddings.
+            database (BaseDatabase): The data store to be used for retrieving embeddings.
             embedding_model (BaseEmbeddingModel): The ColBERT embeddings model to be used for encoding
                                                          queries.
         """
 
-        self.vector_store = vector_store
-        self.embedding_model = embedding_model
-        self.is_cuda = torch.cuda.is_available()
-        self.is_fp16 = all_gpus_support_fp16(self.is_cuda)
+        self._database = database
+        self._embedding_model = embedding_model
+        self._is_cuda = torch.cuda.is_available()
+        self._is_fp16 = all_gpus_support_fp16(self.is_cuda)
 
     def close(self) -> None:
         """
@@ -158,188 +157,235 @@ class ColbertRetriever(BaseRetriever):
 
     async def _query_relevant_chunks(
         self, query_embedding: Embedding, top_k: int
-    ) -> Set[BaseChunk]:
+    ) -> Set[Chunk]:
         """
-        Retrieves the top_k ANN results for each embedded query token.
+        Retrieves the top_k ANN Chunks (`doc_id` and `chunk_id` only) for each embedded query token.
         """
-        chunks: Set[BaseChunk] = set()
+        chunks: Set[Chunk] = set()
         # Collect all tasks
-        tasks = [self.vector_store.search_relevant_chunks(vector=v, n=top_k) for v in query_embedding]
+        tasks = [self._database.search_relevant_chunks(vector=v, n=top_k) for v in query_embedding]
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
         # Process results and handle potential exceptions
         for result in results:
             if isinstance(result, Exception):
-                logging.error(f"Issue on vector_store.get_relevant_chunks(): {result} at {get_trace(result)}")
+                logging.error(f"Issue on database.get_relevant_chunks(): {result} at {get_trace(result)}")
             else:
                 chunks.update(result)
 
         return chunks
 
-    async def _retrieve_chunks(
-        self, chunks: Set[BaseChunk]
-    ) -> Dict[BaseChunk, Embedding]:
+    async def _get_chunk_embeddings(
+        self, chunks: Set[Chunk]
+    ) -> List[Chunk]:
         """
-        Retrieves embeddings for a list of chunks, returning a dictionary mapping chunk to a list of PyTorch tensors.
+        Retrieves Chunks with `doc_id`, `chunk_id`, and `embedding` set.
         """
-        chunk_embeddings: Dict[BaseChunk, Embedding] = {}
-
         # Collect all tasks
-        tasks = [self.vector_store.get_chunk_embedding(chunk) for chunk in chunks]
+        tasks = [self._database.get_chunk_embedding(doc_id=c.doc_id, chunk_id=c.chunk_id) for c in chunks]
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
         # Process results and handle potential exceptions
         for result in results:
             if isinstance(result, Exception):
-                logging.error(f"Issue on vector_store.get_chunk_embeddings(): {result} at {get_trace(result)}")
-            else:
-                chunk, embedding = result
-                chunk_embeddings[chunk] = embedding
+                logging.error(f"Issue on database.get_chunk_embeddings(): {result} at {get_trace(result)}")
 
-        return chunk_embeddings
+        return results
 
     def _score_chunks(
-        self, query_embedding: Embedding, chunk_data: Dict[BaseChunk, Embedding]
-    ) -> Dict[BaseChunk, float]:
+        self, query_embedding: Embedding, chunk_embeddings: List[Chunk]
+    ) -> Dict[Chunk, float]:
         """
         Process the retrieved chunk data to calculate scores.
         """
         chunk_scores = {}
-        for chunk, chunk_embedding in chunk_data.items():
+        for chunk in chunk_embeddings:
             chunk_scores[chunk] = sum(
                 max_similarity_torch(
-                    query_vector=qv,
-                    chunk_embedding=chunk_embedding,
-                    is_cuda=self.is_cuda,
-                    is_fp16=self.is_fp16,
+                    query_vector=query_vector,
+                    chunk_embedding=chunk.embedding,
+                    is_cuda=self._is_cuda,
+                    is_fp16=self._is_fp16,
                 )
-                for qv in query_embedding
+                for query_vector in query_embedding
             )
         return chunk_scores
 
-    async def _fetch_chunk_data(
+    async def _get_chunk_data(
         self,
-        chunks_by_score: List[BaseChunk],
-        chunk_scores:  Dict[BaseChunk, float],
-    ) -> List[RetrievedChunk]:
+        chunks: List[Chunk],
+        include_embedding: Optional[bool] = False,
+    ) -> List[Chunk]:
         """
-        Fetches text and metadata for each chunk and ranks them based on scores.
-
-        Parameters:
-            chunks_by_score (List[Tuple[str, int]]): List of tuples containing (doc_id, chunk_id) sorted by score.
-            chunk_scores (Dict[Tuple[str, int], Tensor]): Dictionary mapping (doc_id, chunk_id) to their respective scores.
+        Fetches text and metadata for each chunk.
 
         Returns:
-            List[RetrievedChunk]: A list of RetrievedChunk objects with populated fields.
+            List[Chunk]: A list of chunks with `doc_id`, `chunk_id`, `text`, `metadata`, and optionally `embedding` set.
         """
 
         # Collect all tasks
-        tasks = [self.vector_store.get_chunk_data(chunk=chunk) for chunk in chunks_by_score]
+        tasks = [self._database.get_chunk_data(doc_id=c.doc_id, chunk_id=c.chunk_id, include_embedding=include_embedding) for c in chunks]
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
-        # Process results and handle potential exceptions
-        chunk_data_map: Dict[BaseChunk, ChunkData] = {}
+
         for result in results:
             if isinstance(result, Exception):
-                logging.error(f"Issue on vector_store.get_chunk_text_and_metadata(): {result} at {get_trace(result)}")
-            else:
-                chunk, chunk_data = result
-                chunk_data_map[chunk] = chunk_data
+                logging.error(f"Issue on database.get_chunk_data(): {result} at {get_trace(result)}")
 
-        answers: List[RetrievedChunk] = []
+        return results
 
-        for idx, chunk in enumerate(chunks_by_score):
-            score = chunk_scores[chunk]
-            chunk_data = chunk_data_map[chunk]
-            answers.append(
-                    RetrievedChunk(
-                        doc_id=chunk.doc_id,
-                        chunk_id=chunk.chunk_id,
-                        score=score,
-                        rank=idx + 1,
-                        data=chunk_data,
-                    )
-                )
-
-        return answers
-
-    async def aretrieve(
+    async def asearch(
         self,
-        query: str,
-        k: int = 10,
-        query_maxlen: int = 64,
-        **kwargs: Any,
-    ) -> List[RetrievedChunk]:
+        query_text: str,
+        k: Optional[int] = 5,
+        query_maxlen: Optional[int] = None,
+        include_embedding: Optional[bool] = False,
+        **kwargs: Any
+    ) -> List[Tuple[Chunk, float]]:
         """
         Retrieves a list of text chunks most relevant to the given query, using semantic similarity as the criteria.
 
         Parameters:
-            query (str): The text query for which relevant chunks are to be retrieved.
-            k (int, optional): The number of top relevant chunks to retrieve. Defaults to 10.
-            query_maxlen (int, optional): The maximum number of tokens in the query. If -1, this will be calculated dynamically.
-            query_timeout (int, optional): The timeout in seconds for query execution. Defaults to 180.
-            **kwargs (Any): Additional keyword arguments that can be used for extending functionality.
+            query_text (str): The query text to search for relevant text chunks.
+            k (Optional[int]): The number of top results to retrieve. Default 5.
+            query_maxlen (Optional[int]): The maximum length of the query to consider. If None, the
+                                          maxlen will be dynamically generated.
+            include_embedding (Optional[bool]): Optional (default False) flag to include the
+                                                embedding vectors in the returned chunks
+            **kwargs (Any): Additional parameters that implementations might require for customized
+                            retrieval operations.
 
         Returns:
-            List[RetrievedChunk]: A list of RetrievedChunk objects, each representing a text chunk that is relevant
-                                  to the query, along with its similarity score and rank.
-
-        Note:
-            The actual retrieval process involves encoding the query, performing an ANN search to find relevant
-            embeddings, scoring these embeddings for similarity, and retrieving the corresponding text chunks.
+            List[Tuple[Chunk, float]]: A list of retrieved Chunk, float Tuples, each representing a text chunk that is relevant
+                                  to the query, along with its similarity score.
         """
 
-        query_embedding = self.embedding_model.embed_query(
-            query, query_maxlen=query_maxlen
+        query_embedding = self._embedding_model.embed_query(query=query_text, query_maxlen=query_maxlen)
+
+        return self.aquery(
+            query_embedding=query_embedding,
+            k=k,
+            include_embedding=include_embedding,
+            kwargs=kwargs,
         )
+
+    async def aquery(
+        self,
+        query_embedding: Embedding,
+        k: Optional[int] = 5,
+        include_embedding: Optional[bool] = False,
+        **kwargs: Any
+    ) -> List[Tuple[Chunk, float]]:
+        """
+        Retrieves a list of text chunks most relevant to the given query, using semantic similarity as the criteria.
+
+        Parameters:
+            query_embedding (Embedding): The query embedding to search for relevant text chunks.
+            k (Optional[int]): The number of top results to retrieve. Default 5.
+            include_embedding (Optional[bool]): Optional (default False) flag to include the
+                                                embedding vectors in the returned chunks
+            **kwargs (Any): Additional parameters that implementations might require for customized
+                            retrieval operations.
+
+        Returns:
+            List[Tuple[Chunk, float]]: A list of retrieved Chunk, float Tuples, each representing a text chunk that is relevant
+                                  to the query, along with its similarity score.
+        """
 
         top_k = max(math.floor(len(query_embedding) / 2), 16)
         logging.debug(f"based on query length of {len(query_embedding)} tokens, retrieving {top_k} results per token-embedding")
 
-        chunks = await self._query_relevant_chunks(
+        # search for relevant chunks (only with `doc_id` and `chunk_id` set)
+        relevant_chunks: List[Chunk] = await self._query_relevant_chunks(
             query_embedding=query_embedding, top_k=top_k
         )
 
-        # score each chunk
-        chunk_data = await self._retrieve_chunks(chunks=chunks)
-        chunk_scores = self._score_chunks(
-            query_embedding=query_embedding, chunk_data=chunk_data
+        # get the embedding for each chunk (with `doc_id`, `chunk_id`, and `embedding` set)
+        chunk_embeddings: List[Chunk] = await self._get_chunk_embeddings(chunks=relevant_chunks)
+
+        # score the chunks using max_similarity
+        chunk_scores: Dict[Chunk, float] = self._score_chunks(
+            query_embedding=query_embedding,
+            chunk_embeddings=chunk_embeddings,
         )
 
-        # load the source chunk for the top k documents
-        chunks_by_score = sorted(chunk_scores, key=chunk_scores.get, reverse=True)[:k]
+        # only keep the top k sorted results
+        top_k_chunks: List[Chunk] = sorted(chunk_scores, key=chunk_scores.get, reverse=True)[:k]
 
-        answers = await self._fetch_chunk_data(
-            chunks_by_score=chunks_by_score, chunk_scores=chunk_scores
-        )
-        return answers
+        chunks: List[Chunk] = await self._get_chunk_data(chunks=top_k_chunks, include_embedding=include_embedding)
 
-    def retrieve(
+        return [(chunk, chunk_scores[chunk]) for chunk in chunks]
+
+    def search(
         self,
-        query: str,
-        k: int = 10,
-        query_maxlen: int = 64,
-        **kwargs: Any,
-    ) -> List[RetrievedChunk]:
+        query_text: str,
+        k: Optional[int] = 5,
+        query_maxlen: Optional[int] = None,
+        include_embedding: Optional[bool] = False,
+        **kwargs: Any
+    ) -> List[Tuple[Chunk, float]]:
         """
-        Retrieves a list of text chunks most relevant to the given query, using semantic similarity as the criteria.
+        Retrieves a list of text chunks relevant to a given query from the vector store, ranked by
+        relevance or other metrics.
 
         Parameters:
-            query (str): The text query for which relevant chunks are to be retrieved.
-            k (int, optional): The number of top relevant chunks to retrieve. Defaults to 10.
-            query_maxlen (int, optional): //TODO figure out a better description for this parameter, and/or a better name.
-            **kwargs (Any): Additional keyword arguments that can be used for extending functionality.
+            query_text (str): The query text to search for relevant text chunks.
+            k (Optional[int]): The number of top results to retrieve. Default 5.
+            query_maxlen (Optional[int]): The maximum length of the query to consider. If None, the
+                                          maxlen will be dynamically generated.
+            include_embedding (Optional[bool]): Optional (default False) flag to include the
+                                                embedding vectors in the returned chunks
+            **kwargs (Any): Additional parameters that implementations might require for customized
+                            retrieval operations.
 
         Returns:
-            List[RetrievedChunk]: A list of RetrievedChunk objects, each representing a text chunk that is relevant
-                                  to the query, along with its similarity score and rank.
-
-        Note:
-            The actual retrieval process involves encoding the query, performing an ANN search to find relevant
-            embeddings, scoring these embeddings for similarity, and retrieving the corresponding text chunks.
+            List[Tuple[Chunk, float]]: A list of retrieved Chunk, float Tuples, each representing a text chunk that is relevant
+                                  to the query, along with its similarity score.
         """
         # nest_asyncio does not a new event loop to be created
         # in the case there is already an event loop such as colab, it's required
         nest_asyncio.apply()
         loop = asyncio.get_event_loop()
-        return loop.run_until_complete(self.aretrieve(query=query, k=k, query_maxlen=query_maxlen))
+        return loop.run_until_complete(
+            self.asearch(
+                query_text=query_text,
+                k=k,
+                query_maxlen=query_maxlen,
+                include_embedding=include_embedding,
+            )
+        )
+
+    def query(
+        self,
+        query_embedding: Embedding,
+        k: Optional[int] = 5,
+        include_embedding: Optional[bool] = False,
+        **kwargs: Any
+    ) -> List[Tuple[Chunk, float]]:
+        """
+        Retrieves a list of text chunks relevant to a given query from the vector store, ranked by
+        relevance or other metrics.
+
+        Parameters:
+            query_embedding (Embedding): The query embedding to search for relevant text chunks.
+            k (Optional[int]): The number of top results to retrieve. Default 5.
+            include_embedding (Optional[bool]): Optional (default False) flag to include the
+                                                embedding vectors in the returned chunks
+            **kwargs (Any): Additional parameters that implementations might require for customized
+                            retrieval operations.
+
+        Returns:
+            List[Tuple[Chunk, float]]: A list of retrieved Chunk, float Tuples, each representing a text chunk that is relevant
+                                  to the query, along with its similarity score.
+        """
+        # nest_asyncio does not a new event loop to be created
+        # in the case there is already an event loop such as colab, it's required
+        nest_asyncio.apply()
+        loop = asyncio.get_event_loop()
+        return loop.run_until_complete(
+            self.aquery(
+                query_embedding=query_embedding,
+                k=k,
+                include_embedding=include_embedding,
+            )
+        )

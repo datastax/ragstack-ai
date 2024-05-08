@@ -3,8 +3,6 @@ import torch
 from ragstack_colbert import ColbertEmbeddingModel
 from ragstack_colbert.constant import DEFAULT_COLBERT_DIM, DEFAULT_COLBERT_MODEL
 
-from typing import List
-
 
 def test_colbert_token_embeddings():
     colbert = ColbertEmbeddingModel()

@@ -7,19 +7,14 @@ The core component, ColbertEmbeddingModel, leverages pre-trained ColBERT models 
 for high-relevancy retrieval tasks, with support for both CPU and GPU computing environments.
 """
 
-import logging
 from typing import List, Optional
 
-import torch
-
-from colbert.infra import ColBERTConfig, Run, RunConfig
-from colbert.modeling.checkpoint import Checkpoint
-from colbert.modeling.tokenization import QueryTokenizer
+from colbert.infra import ColBERTConfig
 
 from .base_embedding_model import BaseEmbeddingModel
 from .constant import DEFAULT_COLBERT_MODEL
-from .chunk_encoder import ChunkEncoder
-from .objects import Embedding, TextChunk
+from .text_encoder import TextEncoder
+from .objects import Chunk, Embedding
 
 class ColbertEmbeddingModel(BaseEmbeddingModel):
     """
@@ -28,38 +23,18 @@ class ColbertEmbeddingModel(BaseEmbeddingModel):
     retrieval tasks. It leverages a pre-trained ColBERT model and supports distributed computing environments.
 
     The class supports both GPU and CPU operations, with GPU usage recommended for performance efficiency.
-
-    Attributes:
-        colbert_config (ColBERTConfig): Configuration parameters for the Colbert model.
-        checkpoint (Checkpoint): Manages the loading of the model and its parameters.
-        query_tokenizer (QueryTokenizer): Tokenizes queries for embedding.
-    """
-
-    colbert_config: ColBERTConfig
-    checkpoint: Checkpoint
-    query_tokenizer: QueryTokenizer
-
-    """
-    checkpoint is the where the ColBERT model can be specified or downloaded from huggingface
-    colbert_model_url overwrites the checkpoint value if it exists
-    doc_maxlen is the number tokens each passage is truncated to
-    nbits is the number bits that each dimension encodes to
-    kmeans_niters specifies the number of iterations of kmeans clustering
-    nrank is the number of processors embeddings can run on
-          under the default value of -1, the program runs on all available GPUs under CUDA
-    query_maxlen is the fixed length of the tokens for query/recall encoding. Anything less will be padded.
     """
 
     def __init__(
         self,
-        checkpoint: str = DEFAULT_COLBERT_MODEL,
-        doc_maxlen: int = 220,
-        nbits: int = 2,
-        kmeans_niters: int = 4,
-        nranks: int = -1,
-        query_maxlen: int = -1,
-        verbose: int = 3,  # 3 is the default on ColBERT checkpoint
-        batch_size: int = 640,
+        checkpoint: Optional[str] = DEFAULT_COLBERT_MODEL,
+        doc_maxlen: Optional[int] = 256,
+        nbits: Optional[int] = 2,
+        kmeans_niters: Optional[int] = 4,
+        nranks: Optional[int] = -1,
+        query_maxlen: Optional[int] = -1,
+        verbose: Optional[int] = 3,  # 3 is the default on ColBERT checkpoint
+        chunk_batch_size: Optional[int] = 640,
         **kwargs,
     ):
         """
@@ -67,13 +42,14 @@ class ColbertEmbeddingModel(BaseEmbeddingModel):
         loading the necessary checkpoints, and preparing the tokenizer and encoder.
 
         Parameters:
-            checkpoint (str): Path or URL to the Colbert model checkpoint. Default is a pre-defined model.
-            doc_maxlen (int): Maximum number of tokens for document chunks.
-            nbits (int): The number bits that each dimension encodes to.
-            kmeans_niters (int): Number of iterations for k-means clustering during quantization.
-            nranks (int): Number of ranks (processors) to use for distributed computing; -1 uses all available CPUs/GPUs.
-            query_maxlen (int): Maximum length of query tokens for embedding.
-            verbose (int): Verbosity level for logging.
+            checkpoint (Optional[str]): Path or URL to the Colbert model checkpoint. Default is a pre-defined model.
+            doc_maxlen (Optional[int]): Maximum number of tokens for document chunks. Should equal the chunk_size.
+            nbits (Optional[int]): The number bits that each dimension encodes to.
+            kmeans_niters (Optional[int]): Number of iterations for k-means clustering during quantization.
+            nranks (Optional[int]): Number of ranks (processors) to use for distributed computing; -1 uses all available CPUs/GPUs.
+            query_maxlen (Optional[int]): Maximum length of query tokens for embedding.
+            verbose (Optional[int]): Verbosity level for logging.
+            chunk_batch_size (Optional[int]): The number of chunks to batch during embedding. Defaults to 640.
             multiprocessing_enabled (bool): Flag to enable distributed computation.
             **kwargs: Additional keyword arguments for future extensions.
 
@@ -81,10 +57,8 @@ class ColbertEmbeddingModel(BaseEmbeddingModel):
             This initializer also prepares the system for distributed computation if specified and available.
         """
 
-        self.__cuda = torch.cuda.is_available()
-        self.query_maxlen = query_maxlen
-
-        logging.info(f"Cuda enabled GPU available: {self.__cuda}")
+        self._query_maxlen = query_maxlen
+        self._chunk_batch_size = chunk_batch_size
 
         colbert_config = ColBERTConfig(
             doc_maxlen=doc_maxlen,
@@ -94,8 +68,7 @@ class ColbertEmbeddingModel(BaseEmbeddingModel):
             checkpoint=checkpoint,
             query_maxlen=query_maxlen,
         )
-        self.batch_size = batch_size
-        self.encoder = ChunkEncoder(config=colbert_config, verbose=verbose)
+        self._encoder = TextEncoder(config=colbert_config, verbose=verbose)
 
     # implements the Abstract Class Method
     def embed_texts(
@@ -111,17 +84,17 @@ class ColbertEmbeddingModel(BaseEmbeddingModel):
             List[Embedding]: A list of embeddings, in the order of the input list
         """
 
-        chunks = [TextChunk(index=i, text=t) for i, t in enumerate(texts)]
+        chunks = [Chunk(doc_id="dummy", chunk_id=i, text=t) for i, t in enumerate(texts)]
 
-        embedded_texts = []
+        embedded_chunks = []
 
-        for i in range(0, len(chunks), self.batch_size):
-            chunk_batch = chunks[i:i + self.batch_size]
-            embedded_texts.extend(self.encoder.encode_chunks(chunks=chunk_batch))
+        for i in range(0, len(chunks), self._chunk_batch_size):
+            chunk_batch = chunks[i:i + self._chunk_batch_size]
+            embedded_chunks.extend(self._encoder.encode_chunks(chunks=chunk_batch))
 
-        sorted_embedded_texts = sorted(embedded_texts, key=lambda x: x.index)
+        sorted_embedded_chunks = sorted(embedded_chunks, key=lambda c: c.chunk_id)
 
-        return [t.embedding for t in sorted_embedded_texts]
+        return [c.embedding for c in sorted_embedded_chunks]
 
     # implements the Abstract Class Method
     def embed_query(
@@ -145,5 +118,5 @@ class ColbertEmbeddingModel(BaseEmbeddingModel):
             Embedding: A vector embedding representation of the query text
         """
 
-        query_maxlen = max(query_maxlen, self.query_maxlen)
-        return self.encoder.encode_query(text=query, query_maxlen=query_maxlen, full_length_search=full_length_search)
+        query_maxlen = max(query_maxlen, self._query_maxlen)
+        return self._encoder.encode_query(text=query, query_maxlen=query_maxlen, full_length_search=full_length_search)
