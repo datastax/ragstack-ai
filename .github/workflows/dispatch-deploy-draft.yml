@@ -1,0 +1,45 @@
+name: Deploy Draft
+
+on:
+  pull_request:
+    branches:
+      - '*'
+
+jobs:
+  dispatch-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+        # Determine the build branch and draft branch for dispatch.
+      - name: Determine Dispatch Parameters
+        run: |
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            # If this workflow is kicked off by a pull request, build
+            # a draft using the pull request base branch and PR branch.
+            build_branch="${{ github.base_ref }}"
+            draft_branch="${{ github.event.pull_request.head.ref }}"
+          else
+            if [ "$(basename ${{ github.event.ref }})" == "stage" ]; then
+              # This was a merge to stage so kick off a build to update stage draft.
+              build_branch=stage
+              draft_branch=stage
+            else
+              # Otherwise this is a push to one of the source branches so
+              # dispatch a build for the main draft to pick up the changes.
+              build_branch=main
+              draft_branch=main
+            fi
+          fi
+          echo "build_branch=$build_branch" >> $GITHUB_OUTPUT
+          echo "draft_branch=$draft_branch" >> $GITHUB_OUTPUT
+        id: branches
+
+      - name: Deploy Draft
+        uses: convictional/trigger-workflow-and-wait@v1.6.1
+        with:
+          owner: riptano
+          repo: datastax-docs-site
+          github_token: ${{ secrets.DISPATCH_GITHUB_TOKEN }}
+          github_user: ${{ secrets.DISPATCH_GITHUB_USER }}
+          workflow_file_name: deploy-draft.yml
+          client_payload: '{ "build_repository": "${{ github.event.repository.full_name }}", "build_branch": "${{ steps.branches.outputs.build_branch }}", "draft_branch": "${{ steps.branches.outputs.draft_branch }}", "pull_request_number": "${{ github.event.pull_request.number }}" }'
