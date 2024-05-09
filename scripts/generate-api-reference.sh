@@ -19,6 +19,7 @@ clone_lc() {
 install_requirements() {
   poetry run pip install -r docs/api_reference/requirements.txt
   rm -rf libs/experimental
+  rm -rf libs/standard-tests
   rm -rf libs/partners/*
 
 }
