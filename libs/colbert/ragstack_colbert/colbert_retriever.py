@@ -343,7 +343,6 @@ class ColbertRetriever(BaseRetriever):
             List[Tuple[Chunk, float]]: A list of retrieved Chunk, float Tuples, each representing a text chunk that is relevant
                                   to the query, along with its similarity score.
         """
-        logging.info(f"starting text search with query: {query_text}, k: {k}, query_maxlen: {query_maxlen}, include_embedding: {include_embedding}")
 
         return asyncio.run(
             self.atext_search(

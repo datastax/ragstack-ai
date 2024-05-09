@@ -135,7 +135,7 @@ class CassandraDatabase(BaseDatabase):
                     else:
                         logging.error(f"issue inserting document embedding: {doc_id} chunk: {chunk_id} embedding: {embedding_id}: {e}")
 
-            return results
+        return results
 
     def delete_chunks(self, doc_ids: List[str]) -> None:
         """

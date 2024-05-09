@@ -11,7 +11,7 @@ from ragstack_llamaindex.colbert import ColbertRetriever
 from ragstack_tests_utils import TestData
 
 from llama_index.core.ingestion import IngestionPipeline
-from llama_index.core.schema import Document
+from llama_index.core.schema import Document, NodeWithScore
 from llama_index.core.text_splitter import SentenceSplitter
 
 
@@ -19,6 +19,13 @@ from tests.integration_tests.conftest import (
     get_astradb_test_store,
     get_local_cassandra_test_store,
 )
+
+def validate_retrieval(results: List[NodeWithScore], key_value: str):
+    passed = False
+    for result in results:
+        if key_value in result.text:
+            passed = True
+    return passed
 
 
 @pytest.fixture
@@ -61,10 +68,7 @@ def test_sync(request, vector_store: str):
     splitter = SentenceSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
     pipeline = IngestionPipeline(transformations=[splitter])
 
-    start_time = time.time()
     nodes = pipeline.run(documents=docs)
-    duration = time.time() - start_time
-    logging.info(f"Split {len(docs)} documents into {len(nodes)} chunks in  {duration} seconds")
 
     docs: Dict[str,Tuple[List[str], List[Metadata]]] = {}
 
@@ -75,28 +79,23 @@ def test_sync(request, vector_store: str):
         docs[doc_id][0].append(node.text)
         docs[doc_id][1].append(node.metadata)
 
-    logging.info("Starting to embed ColBERT docs and save them to the database")
-
-    start_time = time.time()
+    logging.debug("Starting to embed ColBERT docs and save them to the database")
 
     for doc_id in docs:
         texts = docs[doc_id][0]
         metadatas = docs[doc_id][1]
 
-        logging.info(f"processing {doc_id} that has {len(texts)} chunks")
+        logging.debug(f"processing {doc_id} that has {len(texts)} chunks")
 
         vector_store.add_texts(texts=texts, metadatas=metadatas, doc_id=doc_id)
 
-    duration = time.time() - start_time
-    logging.info(f"It took {duration} seconds to load the documents via colBERT into {table_name}.")
-
-
     retriever = ColbertRetriever(retriever=vector_store.as_retriever(), similarity_top_k=5)
 
-    start_time = time.time()
-
     results = retriever.retrieve("Who developed the Astroflux Navigator?")
-    duration = time.time() - start_time
-    logging.info(f"It took {duration} seconds to query the documents via colBERT.")
+    assert validate_retrieval(results, key_value="Astroflux Navigator")
 
-    logging.info(f"Results: {results}")
+    results = retriever.retrieve("Describe the phenomena known as 'Chrono-spatial Echoes'")
+    assert validate_retrieval(results, key_value="Chrono-spatial Echoes")
+
+    results = retriever.retrieve("How do anglerfish adapt to the deep ocean's darkness?")
+    assert validate_retrieval(results, key_value="anglerfish")
