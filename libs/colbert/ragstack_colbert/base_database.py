@@ -24,15 +24,21 @@ class BaseDatabase(ABC):
 
         Parameters:
             chunks (List[Chunk]): A list of `Chunk` instances to be stored.
+
+        Returns:
+            a list of tuples: (doc_id, chunk_id)
         """
 
     @abstractmethod
-    def delete_chunks(self, doc_ids: List[str]) -> None:
+    def delete_chunks(self, doc_ids: List[str]) -> bool:
         """
         Deletes chunks from the vector store based on their document id.
 
         Parameters:
             doc_ids (List[str]): A list of document identifiers specifying the chunks to be deleted.
+
+        Returns:
+            True if the delete was successful.
         """
 
     @abstractmethod

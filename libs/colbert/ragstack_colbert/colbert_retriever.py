@@ -234,7 +234,7 @@ class ColbertRetriever(BaseRetriever):
 
         return results
 
-    async def asearch(
+    async def atext_search(
         self,
         query_text: str,
         k: Optional[int] = 5,
@@ -266,10 +266,10 @@ class ColbertRetriever(BaseRetriever):
             query_embedding=query_embedding,
             k=k,
             include_embedding=include_embedding,
-            kwargs=kwargs,
+            **kwargs,
         )
 
-    async def aquery(
+    async def aembedding_search(
         self,
         query_embedding: Embedding,
         k: Optional[int] = 5,
@@ -316,7 +316,7 @@ class ColbertRetriever(BaseRetriever):
 
         return [(chunk, chunk_scores[chunk]) for chunk in chunks]
 
-    def search(
+    def text_search(
         self,
         query_text: str,
         k: Optional[int] = 5,
@@ -355,7 +355,7 @@ class ColbertRetriever(BaseRetriever):
             )
         )
 
-    def query(
+    def embedding_search(
         self,
         query_embedding: Embedding,
         k: Optional[int] = 5,

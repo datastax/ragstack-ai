@@ -39,28 +39,39 @@ class BaseVectorStore(ABC):
 
         Parameters:
             chunks (List[Chunk]): A list of `Chunk` instances to be stored.
+
+        Returns:
+            a list of tuples: (doc_id, chunk_id)
         """
 
     # handles LangChain add
     @abstractmethod
-    def add_texts(self, texts: List[str], metadatas: Optional[List[Metadata]]) -> List[Tuple[str, int]]:
+    def add_texts(self, texts: List[str], metadatas: Optional[List[Metadata]], doc_id: Optional[str] = None) -> List[Tuple[str, int]]:
         """
         Embeds and stores a list of text chunks and optional metadata into the vector store
 
         Parameters:
             texts (List[str]): The list of text chunks to be embedded
             metadatas (Optional[List[Metadata]])): An optional list of Metadata to be stored.
-                        If provided, these are set 1 to 1 with the texts list.
+                                                   If provided, these are set 1 to 1 with the texts list.
+            doc_id (Optional[str]): The document id associated with the texts. If not provided,
+                                    it is generated.
+
+        Returns:
+            a list of tuples: (doc_id, chunk_id)
         """
 
     # handles LangChain and LlamaIndex delete
     @abstractmethod
-    def delete_chunks(self, doc_ids: List[str]) -> None:
+    def delete_chunks(self, doc_ids: List[str]) -> bool:
         """
         Deletes chunks from the vector store based on their document id.
 
         Parameters:
             doc_ids (List[str]): A list of document identifiers specifying the chunks to be deleted.
+
+        Returns:
+            True if the delete was successful.
         """
 
     # handles LangChain as_retriever

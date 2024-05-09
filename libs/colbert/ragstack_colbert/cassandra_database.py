@@ -103,6 +103,9 @@ class CassandraDatabase(BaseDatabase):
 
         Parameters:
             chunks (List[Chunk]): A list of `Chunk` instances to be stored.
+
+        Returns:
+            a list of tuples: (doc_id, chunk_id)
         """
 
         futures: List[Tuple[str, int, int, ResponseFuture]] = []
@@ -121,30 +124,40 @@ class CassandraDatabase(BaseDatabase):
                 future = self._table.put_async(partition_id=doc_id, row_id=(chunk_id, index), vector=vector)
                 futures.append((doc_id, chunk_id, index, future))
 
+            results: List[Tuple[str, int]] = []
             for (doc_id, chunk_id, embedding_id, future) in futures:
                 try:
                     future.result()
+                    results.append((doc_id, chunk_id))
                 except Exception as e:
                     if embedding_id == -1:
                         logging.error(f"issue inserting document data: {doc_id} chunk: {chunk_id}: {e}")
                     else:
                         logging.error(f"issue inserting document embedding: {doc_id} chunk: {chunk_id} embedding: {embedding_id}: {e}")
 
+            return results
+
     def delete_chunks(self, doc_ids: List[str]) -> None:
         """
-        Deletes all chunks associated with the specified document identifiers.
+        Deletes chunks from the vector store based on their document id.
 
         Parameters:
-            doc_ids (List[str]): A list of document identifiers whose chunks should be deleted.
+            doc_ids (List[str]): A list of document identifiers specifying the chunks to be deleted.
+
+        Returns:
+            True if the delete was successful.
         """
 
         futures = [(doc_id, self._table.delete_partition_async(partition_id = doc_id)) for doc_id in doc_ids]
 
+        success = True
         for (doc_id, future) in futures:
             try:
                 future.result()
             except Exception as e:
+                success = False
                 logging.error(f"issue on delete of document: {doc_id}: {e}")
+        return success
 
     async def search_relevant_chunks(self, vector: Vector, n: int) -> List[Chunk]:
         """

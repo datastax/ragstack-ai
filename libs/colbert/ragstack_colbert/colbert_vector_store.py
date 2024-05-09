@@ -50,6 +50,9 @@ class ColbertVectorStore(BaseVectorStore):
 
         Parameters:
             chunks (List[Chunk]): A list of `Chunk` instances to be stored.
+
+        Returns:
+            a list of tuples: (doc_id, chunk_id)
         """
 
         return self._database.add_chunks(chunks=chunks)
@@ -62,9 +65,12 @@ class ColbertVectorStore(BaseVectorStore):
         Parameters:
             texts (List[str]): The list of text chunks to be embedded
             metadatas (Optional[List[Metadata]])): An optional list of Metadata to be stored.
-                        If provided, these are set 1 to 1 with the texts list.
+                                                   If provided, these are set 1 to 1 with the texts list.
             doc_id (Optional[str]): The document id associated with the texts. If not provided,
-                        it is generated.
+                                    it is generated.
+
+        Returns:
+            a list of tuples: (doc_id, chunk_id)
         """
         self._validate_embedding_model()
 
@@ -76,7 +82,7 @@ class ColbertVectorStore(BaseVectorStore):
 
         embeddings = self._embedding_model.embed_texts(texts=texts)
 
-        chunks: List[Chunk]
+        chunks: List[Chunk] = []
         for i, text in enumerate(texts):
             chunks.append(
                 Chunk(
@@ -91,12 +97,15 @@ class ColbertVectorStore(BaseVectorStore):
         return self._database.add_chunks(chunks=chunks)
 
     # implements the abc method to handle LangChain and LlamaIndex delete
-    def delete_chunks(self, doc_ids: List[str]) -> None:
+    def delete_chunks(self, doc_ids: List[str]) -> bool:
         """
-        Deletes all chunks associated with the specified document identifiers.
+        Deletes chunks from the vector store based on their document id.
 
         Parameters:
-            doc_ids (List[str]): A list of document identifiers whose chunks should be deleted.
+            doc_ids (List[str]): A list of document identifiers specifying the chunks to be deleted.
+
+        Returns:
+            True if the delete was successful.
         """
 
         return self._database.delete_chunks(doc_ids=doc_ids)

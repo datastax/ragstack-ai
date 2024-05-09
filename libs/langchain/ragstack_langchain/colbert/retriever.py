@@ -1,13 +1,13 @@
-from typing import Any, List
+from typing import Any, List, Optional, Tuple
 
-from langchain_core.callbacks.manager import CallbackManagerForRetrieverRun
+from langchain_core.callbacks.manager import CallbackManagerForRetrieverRun, AsyncCallbackManagerForRetrieverRun
 from langchain_core.documents import Document
-from langchain_core.retrievers import BaseRetriever as LangChainBaseRetriever
-from pydantic import Field
+from langchain_core.retrievers import BaseRetriever
 
-from ragstack_colbert.base_retriever import BaseRetriever
+from ragstack_colbert.base_retriever import BaseRetriever as ColbertBaseRetriever
+from ragstack_colbert import Chunk
 
-class ColbertLCRetriever(LangChainBaseRetriever):
+class ColbertRetriever(BaseRetriever):
     """Chain for langchain retrieve using ColBERT vector store.
 
     Example:
@@ -22,21 +22,21 @@ class ColbertLCRetriever(LangChainBaseRetriever):
         qa.run("what happened on June 4th?")
     """
 
-    retriever: BaseRetriever = Field(default=None)
-    kwargs: dict = {}
-    k: int = 10
-
-    class Config:
-        """Configuration for this pydantic object."""
-
-        arbitrary_types_allowed = True
+    _retriever: ColbertBaseRetriever
+    _k: int
+    _query_maxlen: Optional[int]
 
     def __init__(
-        self, retriever: BaseRetriever, k: int = 10, **kwargs: Any
+        self,
+        retriever: ColbertBaseRetriever,
+        k: Optional[int] = 5,
+        query_maxlen: Optional[int] = None,
+        **kwargs: Any
     ):
         super().__init__(retriever=retriever, k=k, **kwargs)
-        self.retriever = retriever
-        self.k = k
+        self._retriever = retriever
+        self._k = k
+        self._query_maxlen = query_maxlen
 
     def _get_relevant_documents(
         self,
@@ -44,14 +44,30 @@ class ColbertLCRetriever(LangChainBaseRetriever):
         *,
         run_manager: CallbackManagerForRetrieverRun,  # noqa
     ) -> List[Document]:
-        """Get documents relevant to a query."""
-        chunks = self.retriever.retrieve(query, self.k)
+        """Get documents relevant to a query.
+        Args:
+            query: String to find relevant documents for
+            run_manager: The callbacks handler to use
+        Returns:
+            List of relevant documents
+        """
+        chunk_scores: List[Tuple[Chunk, float]] = self._retriever.text_search(query_text=query, k=self._k, query_maxlen=self._query_maxlen)
 
-        output: List[Document] = []
-        for chunk in chunks:
-            page_content = chunk.data.text
-            metadata=chunk.data.metadata
-            metadata["rank"] = chunk.rank
-            output.append(Document(page_content=page_content, metadata=metadata))
+        return [Document(page_content=c.text, metadata=c.metadata) for (c,_) in chunk_scores]
 
-        return output
+    async def _aget_relevant_documents(
+        self,
+        query: str,
+        *,
+        run_manager: AsyncCallbackManagerForRetrieverRun,  # noqa
+    ) -> List[Document]:
+        """Asynchronously get documents relevant to a query.
+        Args:
+            query: String to find relevant documents for
+            run_manager: The callbacks handler to use
+        Returns:
+            List of relevant documents
+        """
+        chunk_scores: List[Tuple[Chunk, float]] = await self._retriever.atext_search(query_text=query, k=self._k, query_maxlen=self._query_maxlen)
+
+        return [Document(page_content=c.text, metadata=c.metadata) for (c,_) in chunk_scores]
