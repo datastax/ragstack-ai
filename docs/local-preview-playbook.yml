@@ -6,23 +6,32 @@ git:
   fetch_concurrency: 10
 
 site:
-  title: DataStax RAGStack Docs
-  start_page: docs::index.adoc
-  url: https://docs.datastax.com/en/ragstack
+  title: DataStax Docs
+  start_page: ragstack::index.adoc
+  robots: disallow
 
 content:
+  branches: main # Sources default to this branch if none are specified.
   sources:
-  - url: ../
+  - url: ..
     start_path: docs
+    branches: HEAD
 
 antora:
   extensions:
   - '@antora/collector-extension'
+  - extensions/tailwind-processor.js
+  - id: unlisted-pages
+    enabled: true
+    require: extensions/unlisted-pages-extension.js
+    add_to_navigation: false
+    unlisted_pages_heading: Orphans
 
 asciidoc:
   extensions:
   - '@asciidoctor/tabs'
   - extensions/remote-include-processor.js
+  - extensions/svg-macro.js
   - asciidoctor-kroki
   - asciidoctor-external-callout
   attributes:
@@ -36,37 +45,29 @@ asciidoc:
     max-include-depth: 10
     page-toclevels: 2@
     sectlinks: ''
-    page-pagination: ''
     tabs-sync-option: ''
-    table-caption: false
+    example-caption: false
     figure-caption: false
+    table-caption: false
     xrefstyle: short
     # CUSTOM ATTRIBUTES
     company: 'DataStax'
     astra_db: 'Astra DB'
     astra_stream: 'Astra Streaming'
     astra_ui: 'Astra Portal'
-    db-cassandra: 'Astra DB Serverless (Non-Vector)'
-    db-vector: 'Astra DB Serverless (Vector)'
-    db-serverless: 'Astra DB Serverless'
     support_url: 'https://support.datastax.com'
     glossary-url: 'https://docs.datastax.com/en/glossary/docs/index.html#'
-    external-link-icon: '&#x2197;'
 
 urls:
-  # redirect_facility: httpd
   latest_version_segment_strategy: redirect:from
   latest_version_segment: 'latest'
 
 ui:
   bundle:
-    url: https://github.com/riptano/antora-ui-docs/releases/latest/download/ui-bundle.zip
+    url: https://github.com/riptano/docs-ui/releases/latest/download/ui-bundle.zip
     # url: https://gitlab.com/antora/antora-ui-default/-/jobs/artifacts/HEAD/raw/build/ui-bundle.zip?job=bundle-stable
     snapshot: true
+  # supplemental_files: supplemental-ui
 
 output:
-  # Bsys requires the output.dir in the site-publish playbook to be specifically
-  # set to "~/work/<repo-name>/build/site". This is because bsys clones the
-  # content source repo into "/work", and then looks for the Antora-generated
-  # site in "build/site" within the repo directory when deploying/syncing.
   dir: 'build/site'

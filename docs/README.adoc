@@ -1,14 +1,17 @@
-= {company} {product} Docs
+= {product} Docs
 // Variables:
 :product: RAGStack
-:company: DataStax
+:repo-name: ragstack-ai
+:github-org: datastax
 // Settings:
+:toc: macro
 :!example-caption:
 :experimental:
 :hide-uri-scheme:
-:toc: macro
 ifdef::env-github[]
 :icons: font
+:toclevels: 1
+:toc-title: Contents
 :tip-caption: :bulb:
 :note-caption: :information_source:
 :important-caption: :heavy_exclamation_mark:
@@ -16,23 +19,81 @@ ifdef::env-github[]
 :warning-caption: :warning:
 :badges:
 endif::[]
-// URLs:
-:url-org: https://github.com/datastax
+// Project URLs:
+:url-github-org: https://github.com/{github-org}
+:url-project-repo: {url-github-org}/{repo-name}
+:url-ui-repo: https://github.com/riptano/docs-ui
+:url-playbook-repo: https://github.com/riptano/datastax-docs-site
+:url-contribute:
 :url-datastax: https://datastax.com
 :url-datastax-docs: https://docs.datastax.com
-:url-asciidoc-docs: https://docs.asciidoctor.org/asciidoc/latest/
+:url-docs-preview: http://docs-preview.datastax.com
+// External URLs:
+:asciidoc-language: https://docs.asciidoctor.org/asciidoc/latest/
 
+This repository contains the source files for the {product} documentation.
 
-Documentation source for {company} {product}.
+toc::[]
 
-== Build docs locally
+== Get started
 
-. Clone this repository.
+The documentation is written in {asciidoc-language}[AsciiDoc]-formatted source files located in the `modules` directory.
+
+=== Make a simple update
+
+For simple updates like fixing typos or modifying existing prose, it's easiest to edit the source files directly on GitHub.
+
+NOTE: You'll need Write privileges on the repository to edit files directly on GitHub.
+
+. Find the file you want to edit in the `modules` directory.
+
+. Click the *Edit* icon in the upper-right corner of the file view.
+
+. Make your changes in the editor.
+
+. Click *Commit changes...*
+
+. Enter a description for your commit and click *Propose changes*.
+
+. On the *Open a pull request* screen, enter a title and description for your change, assign reviewers, then click *Create pull request*.
+
+. Once the pull request is open, an automatic draft preview build is triggered.
+Once complete, the build system posts a comment on the pull request with a link to the draft site for you to preview your changes.
+
+=== Edit docs locally
+
+If you need to make substantial updates to the documentation, you'll want to clone the repository so you can work with the source files locally.
+
+. Clone this repository
 +
-[source,shell]
+[source,bash,subs="attributes"]
 ----
-git clone https://github.com/datastax/ragstack-ai.git
+git clone {url-project-repo}.git
 ----
+
+. https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-personal-access-token-classic[Create a _classic_ personal access token] for your GitHub account.
+When configuring the token, set the *Expiration* to at least 90 days and select everything under the *Repo* https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/scopes-for-oauth-apps#available-scopes[scope].
++
+[IMPORTANT]
+====
+Copy your personal access token to a temporary location -- you'll need it later.
+====
+
+. https://docs.github.com/en/enterprise-cloud@latest/authentication/authenticating-with-saml-single-sign-on/authorizing-a-personal-access-token-for-use-with-saml-single-sign-on[Authorize your personal access token] so that it can access repositories in the Riptano and DataStax organizations in GitHub.
+
+. https://docs.antora.org/antora/latest/playbook/private-repository-auth/#populate-credentials-directly[Populate the credential store] with your personal access token.
+For most people this means doing the following:
++
+..  Create the file `$HOME/.git-credentials` and open it in your editor.
+.. Add the following line:
++
+[source,subs="verbatim,quotes"]
+----
+https://**TOKEN**:@github.com
+----
++
+Replace *`TOKEN`* with the personal access token you copied from GitHub.
+.. Save and close the file.
 
 . If you don't already have Node.js installed, do the following:
 
@@ -40,53 +101,58 @@ git clone https://github.com/datastax/ragstack-ai.git
 +
 If you're on macOS, you can install nvm using https://brew.sh/[Homebrew]:
 +
-[source,shell]
+[source,bash]
 ----
 brew install nvm
 ----
 
 .. Use nvm to install Node.js.
 +
-[source,shell]
+[source,bash]
 ----
 nvm install --lts
 ----
 +
-[source,shell]
+[source,bash]
 ----
 nvm use --lts
 ----
 +
-[source,shell]
+[source,bash]
 ----
 nvm alias default node
 ----
 
 . Install the project dependencies.
 +
-[source,shell]
+[source,bash,subs="attributes"]
 ----
-cd ragstack-ai/docs
+cd {repo-name}
 ----
 +
-[source,shell]
+[source,bash]
 ----
 npm install
 ----
 
 . Build the site.
 +
-[source,shell]
+[source,bash]
 ----
-npm run build:local:ragstack
+npm run build:local
 ----
 +
 If the build was successful, you'll see the following output in your terminal:
 +
-[source,console]
+[source,console,subs="attributes"]
 ----
 Site generation complete!
-Open file:///absolute-path-to-repo/ragstack-ai/docs/build/site/index.html in a browser to view your site.
+Open file:///Users/USERNAME/repos/{repo-name}/build/site/index.html in a browser to view your site.
 ----
 +
 To view the site, paste the entire `\file:///` path into your browser's address bar and press kbd:[Return].
+
+[#publish-docs]
+== Publish docs
+
+To learn how to publish documentation to {url-datastax-docs}, see the {url-playbook-repo}#deploy-production[datastax-docs-site README].

@@ -3,13 +3,13 @@
 set -e
 
 here=$(pwd)
-ragstack_version=$1
-if [ -z "$ragstack_version" ]; then
-  echo "Usage: $0 <ragstack_version>"
+ragstack_langchain_version=$1
+if [ -z "$ragstack_langchain_version" ]; then
+  echo "Usage: $0 <ragstack_langchain_version>"
   exit 1
 fi
 
-langchain_version=$(curl -Ls "https://pypi.org/pypi/ragstack-ai/${ragstack_version}/json" | jq -r '.info.requires_dist[] | select((. | startswith("langchain")) and (. | startswith("langchain-") | not)) | . | split(" ") | .[1]' | sed 's/[()=]//g')
+langchain_version=$(curl -Ls "https://pypi.org/pypi/ragstack-ai-langchain/${ragstack_langchain_version}/json" | jq -r '.info.requires_dist[] | select((. | startswith("langchain")) and (. | startswith("langchain-") | not)) | . | split("==") | .[1]')
 echo "langchain_version: $langchain_version"
 
 clone_lc() {
@@ -34,6 +34,6 @@ cat docs/api_reference/_build/html/index.html
 
 mkdir -p $here/dist
 mkdir -p $here/dist/api_reference
-mkdir -p $here/dist/api_reference/$ragstack_version
-mkdir -p $here/dist/api_reference/$ragstack_version/langchain
-cp -r /tmp/lc/docs/api_reference/_build/html/* $here/dist/api_reference/$ragstack_version/langchain
+mkdir -p $here/dist/api_reference/$ragstack_langchain_version
+mkdir -p $here/dist/api_reference/$ragstack_langchain_version/langchain
+cp -r /tmp/lc/docs/api_reference/_build/html/* $here/dist/api_reference/$ragstack_langchain_version/langchain
