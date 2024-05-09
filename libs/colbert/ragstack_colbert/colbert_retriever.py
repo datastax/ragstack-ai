@@ -15,9 +15,9 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 
 import torch
 
+from .base_database import BaseDatabase
 from .base_embedding_model import BaseEmbeddingModel
 from .base_retriever import BaseRetriever
-from .base_database import BaseDatabase
 from .objects import Chunk, Embedding, Vector
 
 
@@ -94,6 +94,7 @@ def max_similarity_torch(
     # returns a tensor; the item() is the score
     return float(max_sim.item())
 
+
 def get_trace(e: Exception) -> str:
     trace = ""
     tb = e.__traceback__
@@ -162,32 +163,40 @@ class ColbertRetriever(BaseRetriever):
         """
         chunks: Set[Chunk] = set()
         # Collect all tasks
-        tasks = [self._database.search_relevant_chunks(vector=v, n=top_k) for v in query_embedding]
+        tasks = [
+            self._database.search_relevant_chunks(vector=v, n=top_k)
+            for v in query_embedding
+        ]
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
         # Process results and handle potential exceptions
         for result in results:
             if isinstance(result, Exception):
-                logging.error(f"Issue on database.get_relevant_chunks(): {result} at {get_trace(result)}")
+                logging.error(
+                    f"Issue on database.get_relevant_chunks(): {result} at {get_trace(result)}"
+                )
             else:
                 chunks.update(result)
 
         return chunks
 
-    async def _get_chunk_embeddings(
-        self, chunks: Set[Chunk]
-    ) -> List[Chunk]:
+    async def _get_chunk_embeddings(self, chunks: Set[Chunk]) -> List[Chunk]:
         """
         Retrieves Chunks with `doc_id`, `chunk_id`, and `embedding` set.
         """
         # Collect all tasks
-        tasks = [self._database.get_chunk_embedding(doc_id=c.doc_id, chunk_id=c.chunk_id) for c in chunks]
+        tasks = [
+            self._database.get_chunk_embedding(doc_id=c.doc_id, chunk_id=c.chunk_id)
+            for c in chunks
+        ]
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
         # Process results and handle potential exceptions
         for result in results:
             if isinstance(result, Exception):
-                logging.error(f"Issue on database.get_chunk_embeddings(): {result} at {get_trace(result)}")
+                logging.error(
+                    f"Issue on database.get_chunk_embeddings(): {result} at {get_trace(result)}"
+                )
 
         return results
 
@@ -223,13 +232,21 @@ class ColbertRetriever(BaseRetriever):
         """
 
         # Collect all tasks
-        tasks = [self._database.get_chunk_data(doc_id=c.doc_id, chunk_id=c.chunk_id, include_embedding=include_embedding) for c in chunks]
+        tasks = [
+            self._database.get_chunk_data(
+                doc_id=c.doc_id,
+                chunk_id=c.chunk_id,
+                include_embedding=include_embedding,
+            )
+            for c in chunks
+        ]
         results = await asyncio.gather(*tasks, return_exceptions=True)
-
 
         for result in results:
             if isinstance(result, Exception):
-                logging.error(f"Issue on database.get_chunk_data(): {result} at {get_trace(result)}")
+                logging.error(
+                    f"Issue on database.get_chunk_data(): {result} at {get_trace(result)}"
+                )
 
         return results
 
@@ -239,7 +256,7 @@ class ColbertRetriever(BaseRetriever):
         k: Optional[int] = 5,
         query_maxlen: Optional[int] = None,
         include_embedding: Optional[bool] = False,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> List[Tuple[Chunk, float]]:
         """
         Retrieves a list of text chunks most relevant to the given query, using semantic similarity as the criteria.
@@ -259,9 +276,9 @@ class ColbertRetriever(BaseRetriever):
                                   to the query, along with its similarity score.
         """
 
-        query_embedding = self._embedding_model.embed_query(query=query_text, query_maxlen=query_maxlen)
-
-        logging.info(f"Embedded query has size: {len(query_embedding)}, {len(query_embedding[0])}")
+        query_embedding = self._embedding_model.embed_query(
+            query=query_text, query_maxlen=query_maxlen
+        )
 
         return await self.aembedding_search(
             query_embedding=query_embedding,
@@ -275,7 +292,7 @@ class ColbertRetriever(BaseRetriever):
         query_embedding: Embedding,
         k: Optional[int] = 5,
         include_embedding: Optional[bool] = False,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> List[Tuple[Chunk, float]]:
         """
         Retrieves a list of text chunks most relevant to the given query, using semantic similarity as the criteria.
@@ -294,7 +311,9 @@ class ColbertRetriever(BaseRetriever):
         """
 
         top_k = max(math.floor(len(query_embedding) / 2), 16)
-        logging.debug(f"based on query length of {len(query_embedding)} tokens, retrieving {top_k} results per token-embedding")
+        logging.debug(
+            f"based on query length of {len(query_embedding)} tokens, retrieving {top_k} results per token-embedding"
+        )
 
         # search for relevant chunks (only with `doc_id` and `chunk_id` set)
         relevant_chunks: List[Chunk] = await self._query_relevant_chunks(
@@ -302,7 +321,9 @@ class ColbertRetriever(BaseRetriever):
         )
 
         # get the embedding for each chunk (with `doc_id`, `chunk_id`, and `embedding` set)
-        chunk_embeddings: List[Chunk] = await self._get_chunk_embeddings(chunks=relevant_chunks)
+        chunk_embeddings: List[Chunk] = await self._get_chunk_embeddings(
+            chunks=relevant_chunks
+        )
 
         # score the chunks using max_similarity
         chunk_scores: Dict[Chunk, float] = self._score_chunks(
@@ -311,9 +332,13 @@ class ColbertRetriever(BaseRetriever):
         )
 
         # only keep the top k sorted results
-        top_k_chunks: List[Chunk] = sorted(chunk_scores, key=chunk_scores.get, reverse=True)[:k]
+        top_k_chunks: List[Chunk] = sorted(
+            chunk_scores, key=chunk_scores.get, reverse=True
+        )[:k]
 
-        chunks: List[Chunk] = await self._get_chunk_data(chunks=top_k_chunks, include_embedding=include_embedding)
+        chunks: List[Chunk] = await self._get_chunk_data(
+            chunks=top_k_chunks, include_embedding=include_embedding
+        )
 
         return [(chunk, chunk_scores[chunk]) for chunk in chunks]
 
@@ -323,7 +348,7 @@ class ColbertRetriever(BaseRetriever):
         k: Optional[int] = 5,
         query_maxlen: Optional[int] = None,
         include_embedding: Optional[bool] = False,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> List[Tuple[Chunk, float]]:
         """
         Retrieves a list of text chunks relevant to a given query from the vector store, ranked by
@@ -358,7 +383,7 @@ class ColbertRetriever(BaseRetriever):
         query_embedding: Embedding,
         k: Optional[int] = 5,
         include_embedding: Optional[bool] = False,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> List[Tuple[Chunk, float]]:
         """
         Retrieves a list of text chunks relevant to a given query from the vector store, ranked by

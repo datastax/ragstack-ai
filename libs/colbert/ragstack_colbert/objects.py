@@ -3,8 +3,9 @@ This module defines a set of data classes for handling chunks of text in various
 processing within the ColBERT retrieval system.
 """
 
+from typing import Any, Dict, List, Optional
+
 from pydantic import BaseModel, Field
-from typing import Dict, Any, List, Optional
 
 # LlamaIndex Node (chunk) has ids, text, embedding, metadata
 #            VectorStore.add(nodes: List[Node]) -> List[str](ids): embeds texts OUTside add
@@ -22,12 +23,17 @@ Vector = List[float]
 Embedding = List[Vector]
 Metadata = Dict[str, Any]
 
+
 class Chunk(BaseModel):
     doc_id: str = Field(..., description="id of the parent document", frozen=True)
     chunk_id: int = Field(..., description="id of the chunk", frozen=True, ge=0)
     text: str = Field(default=None, description="text of the chunk")
-    metadata: Metadata = Field(default_factory=dict, description="flat metadata of the chunk")
-    embedding: Optional[Embedding] = Field(default=None, description="embedding of the chunk")
+    metadata: Metadata = Field(
+        default_factory=dict, description="flat metadata of the chunk"
+    )
+    embedding: Optional[Embedding] = Field(
+        default=None, description="embedding of the chunk"
+    )
 
     class Config:
         validate_assignment = True

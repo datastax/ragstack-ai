@@ -1,19 +1,22 @@
-from typing import Any, List, Optional, Tuple, Iterable, Type, TypeVar
+from typing import Any, Iterable, List, Optional, Tuple, Type, TypeVar
 
 from langchain_core.documents import Document
 from langchain_core.retrievers import BaseRetriever
-from langchain_core.vectorstores import VectorStore
 from langchain_core.runnables.config import run_in_executor
-
+from langchain_core.vectorstores import VectorStore
+from ragstack_colbert import Chunk
+from ragstack_colbert import ColbertVectorStore as RagstackColbertVectorStore
 from ragstack_colbert.base_database import BaseDatabase as ColbertBaseDatabase
-from ragstack_colbert.base_embedding_model import BaseEmbeddingModel as ColbertBaseEmbeddingModel
-from ragstack_colbert.base_retreiver import BaseRetriever as ColbertBaseRetriever
+from ragstack_colbert.base_embedding_model import (
+    BaseEmbeddingModel as ColbertBaseEmbeddingModel,
+)
+from ragstack_colbert.base_retriever import BaseRetriever as ColbertBaseRetriever
 from ragstack_colbert.base_vector_store import BaseVectorStore as ColbertBaseVectorStore
-from ragstack_colbert import ColbertVectorStore, Chunk
 
 from .retriever import ColbertRetriever
 
 CVS = TypeVar("CVS", bound="ColbertVectorStore")
+
 
 class ColbertVectorStore(VectorStore):
 
@@ -21,19 +24,20 @@ class ColbertVectorStore(VectorStore):
     _retriever: ColbertBaseRetriever
 
     def __init__(
-            self,
-            database: ColbertBaseDatabase,
-            embedding_model: ColbertBaseEmbeddingModel,
+        self,
+        database: ColbertBaseDatabase,
+        embedding_model: ColbertBaseEmbeddingModel,
     ):
         self._initialize(database=database, embedding_model=embedding_model)
-
 
     def _initialize(
         self,
         database: ColbertBaseDatabase,
         embedding_model: ColbertBaseEmbeddingModel,
     ):
-        self._vector_store = ColbertVectorStore(database=database, embedding_model=embedding_model)
+        self._vector_store = RagstackColbertVectorStore(
+            database=database, embedding_model=embedding_model
+        )
         self._retriever = self._vector_store.as_retriever()
 
     def add_texts(
@@ -53,7 +57,9 @@ class ColbertVectorStore(VectorStore):
         Returns:
             List of ids from adding the texts into the vectorstore.
         """
-        return self._vector_store.add_texts(texts=list(texts), metadatas=metadatas, doc_id=doc_id)
+        return self._vector_store.add_texts(
+            texts=list(texts), metadatas=metadatas, doc_id=doc_id
+        )
 
     def delete(self, ids: Optional[List[str]] = None, **kwargs: Any) -> Optional[bool]:
         """Delete by vector ID or other criteria.
@@ -73,12 +79,17 @@ class ColbertVectorStore(VectorStore):
         query: str,
         k: Optional[int] = 5,
         query_maxlen: Optional[int] = None,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> List[Document]:
         """Return docs most similar to query."""
-        chunk_scores: List[Tuple[Chunk, float]] = self._retriever.text_search(query_text=query, k=k, query_maxlen=query_maxlen)
+        chunk_scores: List[Tuple[Chunk, float]] = self._retriever.text_search(
+            query_text=query, k=k, query_maxlen=query_maxlen
+        )
 
-        return [Document(page_content=c.text, metadata=c.metadata) for (c,_) in chunk_scores]
+        return [
+            Document(page_content=c.text, metadata=c.metadata)
+            for (c, _) in chunk_scores
+        ]
 
     def similarity_search_with_score(
         self,
@@ -88,21 +99,31 @@ class ColbertVectorStore(VectorStore):
         **kwargs: Any,
     ) -> List[Tuple[Document, float]]:
         """Run similarity search with distance."""
-        chunk_scores: List[Tuple[Chunk, float]] = self._retriever.text_search(query_text=query, k=k, query_maxlen=query_maxlen)
+        chunk_scores: List[Tuple[Chunk, float]] = self._retriever.text_search(
+            query_text=query, k=k, query_maxlen=query_maxlen
+        )
 
-        return [(Document(page_content=c.text, metadata=c.metadata), s) for (c,s) in chunk_scores]
+        return [
+            (Document(page_content=c.text, metadata=c.metadata), s)
+            for (c, s) in chunk_scores
+        ]
 
     async def asimilarity_search(
         self,
         query: str,
         k: Optional[int] = 5,
         query_maxlen: Optional[int] = None,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> List[Document]:
         """Return docs most similar to query."""
-        chunk_scores: List[Tuple[Chunk, float]] = await self._retriever.atext_search(query_text=query, k=k, query_maxlen=query_maxlen)
+        chunk_scores: List[Tuple[Chunk, float]] = await self._retriever.atext_search(
+            query_text=query, k=k, query_maxlen=query_maxlen
+        )
 
-        return [Document(page_content=c.text, metadata=c.metadata) for (c,_) in chunk_scores]
+        return [
+            Document(page_content=c.text, metadata=c.metadata)
+            for (c, _) in chunk_scores
+        ]
 
     async def asimilarity_search_with_score(
         self,
@@ -112,9 +133,14 @@ class ColbertVectorStore(VectorStore):
         **kwargs: Any,
     ) -> List[Tuple[Document, float]]:
         """Run similarity search with distance."""
-        chunk_scores: List[Tuple[Chunk, float]] = await self._retriever.atext_search(query_text=query, k=k, query_maxlen=query_maxlen)
+        chunk_scores: List[Tuple[Chunk, float]] = await self._retriever.atext_search(
+            query_text=query, k=k, query_maxlen=query_maxlen
+        )
 
-        return [(Document(page_content=c.text, metadata=c.metadata), s) for (c,s) in chunk_scores]
+        return [
+            (Document(page_content=c.text, metadata=c.metadata), s)
+            for (c, s) in chunk_scores
+        ]
 
     @classmethod
     def from_documents(
@@ -184,7 +210,8 @@ class ColbertVectorStore(VectorStore):
             None, cls.from_texts, texts, database, embedding_model, metadatas, **kwargs
         )
 
-
     def as_retriever(self, k: Optional[int] = 5, **kwargs: Any) -> BaseRetriever:
         """Return a VectorStoreRetriever initialized from this VectorStore."""
-        return ColbertRetriever(retriever=self._vector_store.as_retriever(), k=k, **kwargs)
+        return ColbertRetriever(
+            retriever=self._vector_store.as_retriever(), k=k, **kwargs
+        )

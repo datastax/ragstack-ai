@@ -6,7 +6,7 @@ dense embeddings are used to measure the semantic similarity between text chunks
 """
 
 import logging
-from typing import Optional, List
+from typing import List, Optional
 
 import torch
 
@@ -14,6 +14,7 @@ from colbert.infra import ColBERTConfig
 from colbert.modeling.checkpoint import Checkpoint
 
 from .objects import Chunk, Embedding
+
 
 def calculate_query_maxlen(tokens: List[List[str]]) -> int:
     """
@@ -34,6 +35,7 @@ def calculate_query_maxlen(tokens: List[List[str]]) -> int:
     # although there could be more SEP tokens if there are more than one sentences, we only add one
     return max_token_length + 3
 
+
 class TextEncoder:
     """
     Encapsulates the logic for encoding text chunks and queries into dense vector representations using a specified ColBERT model
@@ -51,12 +53,12 @@ class TextEncoder:
 
         logging.info(f"Cuda enabled GPU available: {torch.cuda.is_available()}")
 
-        self._checkpoint = Checkpoint(config.checkpoint, colbert_config=config, verbose=verbose)
+        self._checkpoint = Checkpoint(
+            config.checkpoint, colbert_config=config, verbose=verbose
+        )
         self._use_cpu = config.total_visible_gpus == 0
 
-    def encode_chunks(
-        self, chunks: List[Chunk], batch_size: int = 640
-    ) -> List[Chunk]:
+    def encode_chunks(self, chunks: List[Chunk], batch_size: int = 640) -> List[Chunk]:
         """
         Encodes a list of chunks into embeddings, processing in batches to efficiently manage memory.
 
@@ -68,7 +70,7 @@ class TextEncoder:
             A tuple containing the concatenated tensor of embeddings and a list of document lengths.
         """
 
-        logging.info(f"#> Encoding {len(chunks)} chunks..")
+        logging.debug(f"#> Encoding {len(chunks)} chunks..")
 
         embedded_chunks: List[Chunk] = []
 
@@ -89,7 +91,7 @@ class TextEncoder:
         for index, chunk in enumerate(chunks):
             # The end index for slicing
             end_idx = start_idx + counts[index]
-            chunk.embedding =  embeddings[start_idx:end_idx]
+            chunk.embedding = embeddings[start_idx:end_idx]
 
             embedded_chunks.append(chunk)
 
@@ -98,7 +100,9 @@ class TextEncoder:
 
         return embedded_chunks
 
-    def encode_query(self, text: str, query_maxlen: int, full_length_search: Optional[bool] = False) -> Embedding:
+    def encode_query(
+        self, text: str, query_maxlen: int, full_length_search: Optional[bool] = False
+    ) -> Embedding:
         if query_maxlen < 0:
             tokens = self._checkpoint.query_tokenizer.tokenize([text])
             query_maxlen = calculate_query_maxlen(tokens)
@@ -108,7 +112,11 @@ class TextEncoder:
         self._checkpoint.query_tokenizer.query_maxlen = query_maxlen
 
         with torch.inference_mode():
-            query_embedding = self._checkpoint.queryFromText(queries=[text], to_cpu=self._use_cpu, full_length_search=full_length_search)
+            query_embedding = self._checkpoint.queryFromText(
+                queries=[text],
+                to_cpu=self._use_cpu,
+                full_length_search=full_length_search,
+            )
 
         self._checkpoint.query_tokenizer.query_maxlen = prev_query_maxlen
 

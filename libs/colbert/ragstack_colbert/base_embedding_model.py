@@ -7,6 +7,7 @@ from typing import List, Optional
 
 from .objects import Embedding
 
+
 class BaseEmbeddingModel(ABC):
     """
     Abstract base class (ABC) for token-based embedding models.
@@ -17,9 +18,7 @@ class BaseEmbeddingModel(ABC):
     """
 
     @abstractmethod
-    def embed_texts(
-        self, texts: List[str]
-    ) -> List[Embedding]:
+    def embed_texts(self, texts: List[str]) -> List[Embedding]:
         """
         Embeds a list of texts into their corresponding vector embedding representations.
 

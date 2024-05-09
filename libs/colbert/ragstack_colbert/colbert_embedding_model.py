@@ -7,14 +7,16 @@ The core component, ColbertEmbeddingModel, leverages pre-trained ColBERT models 
 for high-relevancy retrieval tasks, with support for both CPU and GPU computing environments.
 """
 
+import logging
 from typing import List, Optional
 
 from colbert.infra import ColBERTConfig
 
 from .base_embedding_model import BaseEmbeddingModel
 from .constant import DEFAULT_COLBERT_MODEL
-from .text_encoder import TextEncoder
 from .objects import Chunk, Embedding
+from .text_encoder import TextEncoder
+
 
 class ColbertEmbeddingModel(BaseEmbeddingModel):
     """
@@ -25,6 +27,9 @@ class ColbertEmbeddingModel(BaseEmbeddingModel):
     The class supports both GPU and CPU operations, with GPU usage recommended for performance efficiency.
     """
 
+    _query_maxlen: int
+    _chunk_batch_size: int
+
     def __init__(
         self,
         checkpoint: Optional[str] = DEFAULT_COLBERT_MODEL,
@@ -32,7 +37,7 @@ class ColbertEmbeddingModel(BaseEmbeddingModel):
         nbits: Optional[int] = 2,
         kmeans_niters: Optional[int] = 4,
         nranks: Optional[int] = -1,
-        query_maxlen: Optional[int] = -1,
+        query_maxlen: Optional[int] = None,
         verbose: Optional[int] = 3,  # 3 is the default on ColBERT checkpoint
         chunk_batch_size: Optional[int] = 640,
         **kwargs,
@@ -57,6 +62,9 @@ class ColbertEmbeddingModel(BaseEmbeddingModel):
             This initializer also prepares the system for distributed computation if specified and available.
         """
 
+        if query_maxlen is None:
+            query_maxlen = -1
+
         self._query_maxlen = query_maxlen
         self._chunk_batch_size = chunk_batch_size
 
@@ -66,14 +74,11 @@ class ColbertEmbeddingModel(BaseEmbeddingModel):
             kmeans_niters=kmeans_niters,
             nranks=nranks,
             checkpoint=checkpoint,
-            query_maxlen=query_maxlen,
         )
         self._encoder = TextEncoder(config=colbert_config, verbose=verbose)
 
     # implements the Abstract Class Method
-    def embed_texts(
-        self, texts: List[str]
-    ) -> List[Embedding]:
+    def embed_texts(self, texts: List[str]) -> List[Embedding]:
         """
         Embeds a list of texts into their corresponding vector embedding representations.
 
@@ -84,12 +89,14 @@ class ColbertEmbeddingModel(BaseEmbeddingModel):
             List[Embedding]: A list of embeddings, in the order of the input list
         """
 
-        chunks = [Chunk(doc_id="dummy", chunk_id=i, text=t) for i, t in enumerate(texts)]
+        chunks = [
+            Chunk(doc_id="dummy", chunk_id=i, text=t) for i, t in enumerate(texts)
+        ]
 
         embedded_chunks = []
 
         for i in range(0, len(chunks), self._chunk_batch_size):
-            chunk_batch = chunks[i:i + self._chunk_batch_size]
+            chunk_batch = chunks[i : i + self._chunk_batch_size]
             embedded_chunks.extend(self._encoder.encode_chunks(chunks=chunk_batch))
 
         sorted_embedded_chunks = sorted(embedded_chunks, key=lambda c: c.chunk_id)
@@ -118,5 +125,10 @@ class ColbertEmbeddingModel(BaseEmbeddingModel):
             Embedding: A vector embedding representation of the query text
         """
 
+        if query_maxlen is None:
+            query_maxlen = -1
+
         query_maxlen = max(query_maxlen, self._query_maxlen)
-        return self._encoder.encode_query(text=query, query_maxlen=query_maxlen, full_length_search=full_length_search)
+        return self._encoder.encode_query(
+            text=query, query_maxlen=query_maxlen, full_length_search=full_length_search
+        )

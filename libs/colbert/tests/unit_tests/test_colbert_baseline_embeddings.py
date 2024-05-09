@@ -10,6 +10,7 @@ from colbert.infra.config import ColBERTConfig
 from colbert.modeling.checkpoint import Checkpoint
 from ragstack_colbert import ColbertEmbeddingModel, Embedding
 from ragstack_colbert.constant import DEFAULT_COLBERT_MODEL
+
 from .baseline_tensors import baseline_tensors
 
 """
@@ -31,10 +32,11 @@ arctic_botany_dict = {
     "Climate Change and Arctic Flora": "Climate change poses a significant threat to Arctic botany, with rising temperatures, melting permafrost, and changing precipitation patterns. These changes can lead to shifts in plant distribution, phenology, and the composition of the Arctic flora. Some species may thrive, while others could face extinction. This dynamic is critical to understanding future Arctic ecosystems and their global impact, including feedback loops that may exacerbate global warming.",
     "Research and Conservation in the Arctic": "Research in Arctic botany is crucial for understanding the intricate balance of this ecosystem and the impacts of climate change. Scientists conduct studies on plant physiology, genetics, and ecosystem dynamics. Conservation efforts are focused on protecting the Arctic's unique biodiversity through protected areas, sustainable management practices, and international cooperation. These efforts aim to preserve the Arctic flora for future generations and maintain its role in the global climate system.",
     "Traditional Knowledge and Arctic Botany": "Indigenous peoples of the Arctic have a deep connection with the land and its plant life. Traditional knowledge, passed down through generations, includes the uses of plants for nutrition, healing, and materials. This body of knowledge is invaluable for both conservation and understanding the ecological relationships in Arctic ecosystems. Integrating traditional knowledge with scientific research enriches our comprehension of Arctic botany and enhances conservation strategies.",
-    "Future Directions in Arctic Botanical Studies": "The future of Arctic botany lies in interdisciplinary research, combining traditional knowledge with modern scientific techniques. As the Arctic undergoes rapid changes, understanding the ecological, cultural, and climatic dimensions of Arctic flora becomes increasingly important. Future research will need to address the challenges of climate change, explore the potential for Arctic plants in biotechnology, and continue to conserve this unique biome. The resilience of Arctic flora offers lessons in adaptation and survival relevant to global challenges."
+    "Future Directions in Arctic Botanical Studies": "The future of Arctic botany lies in interdisciplinary research, combining traditional knowledge with modern scientific techniques. As the Arctic undergoes rapid changes, understanding the ecological, cultural, and climatic dimensions of Arctic flora becomes increasingly important. Future research will need to address the challenges of climate change, explore the potential for Arctic plants in biotechnology, and continue to conserve this unique biome. The resilience of Arctic flora offers lessons in adaptation and survival relevant to global challenges.",
 }
 
 arctic_botany_chunks = [text for text in arctic_botany_dict.values()]
+
 
 # a uility function to evaluate similarity of two embeddings at per token level
 def are_they_similar(embedded_chunks: List[Embedding], tensors: List[Tensor]):
@@ -48,7 +50,9 @@ def are_they_similar(embedded_chunks: List[Embedding], tensors: List[Tensor]):
             # we still have outlier over the specified limit but almost 0
             assert pdist(vector_tensor, tensors[n]).item() < 0.0001
 
-            similarity = cosine_similarity(vector_tensor.unsqueeze(0), tensors[n].unsqueeze(0))
+            similarity = cosine_similarity(
+                vector_tensor.unsqueeze(0), tensors[n].unsqueeze(0)
+            )
             assert similarity.item() > 0.999
             n = n + 1
 
@@ -86,8 +90,10 @@ def test_embeddings_with_baseline():
             # it must be a positive since it's from square root
             assert pdist(vector_tensor, baseline_tensors[n]).item() < 0.001
 
-            similarity = cosine_similarity(vector_tensor.unsqueeze(0), baseline_tensors[n].unsqueeze(0))
-            assert similarity.shape == torch.Size([1]) # this has to be scalar
+            similarity = cosine_similarity(
+                vector_tensor.unsqueeze(0), baseline_tensors[n].unsqueeze(0)
+            )
+            assert similarity.shape == torch.Size([1])  # this has to be scalar
             # debug code to identify which token deviates
             if similarity.item() < 0.99:
                 logging.warning(f"n = {n}, similarity = {similarity.item()}")
@@ -112,7 +118,7 @@ def test_embeddings_with_baseline():
 def test_colbert_embedding_against_vanilla_impl():
     # this is a vanilla ColBERT embedding in a list of per token embeddings
     # based on the just Stanford ColBERT library
-    cf = ColBERTConfig(checkpoint='colbert-ir/colbertv2.0')
+    cf = ColBERTConfig(checkpoint="colbert-ir/colbertv2.0")
     cp = Checkpoint(cf.checkpoint, colbert_config=cf)
     encoder = CollectionEncoder(cf, cp)
 
@@ -129,8 +135,8 @@ def test_colbert_embedding_against_vanilla_impl():
 def model_embedding(model: str):
     logging.info(f"test model compatibility {model}")
     colbertSvc = ColbertEmbeddingModel(
-         checkpoint=model,
-         query_maxlen=32,
+        checkpoint=model,
+        query_maxlen=32,
     )
     embeddings = colbertSvc.embed_texts(arctic_botany_chunks)
 
@@ -152,18 +158,18 @@ def model_embedding(model: str):
 
 
 def test_compatible_models():
-     # ColBERT models and Google BERT models on HF
-     # test representive models's compatibility with this repo's ColBERT embedding
-     # evaluation is not within this test scope
-     models = [
-          "colbert-ir/colbertv1.9",
-          # "colbert-ir/colbertv2.0_msmarco_64way", # this model is large
-          "mixedbread-ai/mxbai-colbert-large-v1",
-          # "antoinelouis/colbert-xm", # XMOD based
-          # "jinaai/jina-colbert-v1-en",  # requires HF token and code changes
-          "google-bert/bert-base-uncased", # BERT compatibility test only, do not recommend
-                                           # some colbert is trained on uncased
-          # "google-bert/bert-base-cased",   # already tested uncased
-     ]
+    # ColBERT models and Google BERT models on HF
+    # test representive models's compatibility with this repo's ColBERT embedding
+    # evaluation is not within this test scope
+    models = [
+        "colbert-ir/colbertv1.9",
+        # "colbert-ir/colbertv2.0_msmarco_64way", # this model is large
+        "mixedbread-ai/mxbai-colbert-large-v1",
+        # "antoinelouis/colbert-xm", # XMOD based
+        # "jinaai/jina-colbert-v1-en",  # requires HF token and code changes
+        "google-bert/bert-base-uncased",  # BERT compatibility test only, do not recommend
+        # some colbert is trained on uncased
+        # "google-bert/bert-base-cased",   # already tested uncased
+    ]
 
-     [model_embedding(model) for model in models]
+    [model_embedding(model) for model in models]

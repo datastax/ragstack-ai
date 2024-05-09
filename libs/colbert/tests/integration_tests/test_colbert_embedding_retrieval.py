@@ -4,8 +4,8 @@ import pytest
 
 from ragstack_colbert import (
     CassandraDatabase,
-    ColbertVectorStore,
     ColbertEmbeddingModel,
+    ColbertVectorStore,
 )
 from tests.integration_tests.conftest import (
     get_astradb_test_store,
@@ -23,7 +23,7 @@ def astra_db():
     return get_astradb_test_store()
 
 
-#@pytest.mark.parametrize("vector_store", ["cassandra", "astra_db"])
+# @pytest.mark.parametrize("vector_store", ["cassandra", "astra_db"])
 @pytest.mark.parametrize("vector_store", ["cassandra"])
 def test_embedding_cassandra_retriever(request, vector_store: str):
     vector_store = request.getfixturevalue(vector_store)
@@ -68,7 +68,7 @@ def test_embedding_cassandra_retriever(request, vector_store: str):
 
     doc_id = "marine_animals"
 
-    session=vector_store.create_cassandra_session()
+    session = vector_store.create_cassandra_session()
     session.default_timeout = 180
 
     database = CassandraDatabase.from_session(
@@ -92,13 +92,15 @@ def test_embedding_cassandra_retriever(request, vector_store: str):
 
     retriever = store.as_retriever()
 
-    chunk_scores = retriever.search(query_text="what kind fish lives shallow coral reefs", k=5)
+    chunk_scores = retriever.text_search(
+        query_text="what kind fish lives shallow coral reefs", k=5
+    )
     assert len(chunk_scores) == 5
-    for (chunk, score) in chunk_scores:
+    for chunk, score in chunk_scores:
         logging.info(f"got chunk_id {chunk.chunk_id} with score {score}")
 
     best_chunk = chunk_scores[0][0]
     assert len(best_chunk.text) > 0
-    logging.info(f"Highest scoring chunk_id: {best_chunk.chunk_id} with text: {best_chunk.text}")
-
-
+    logging.info(
+        f"Highest scoring chunk_id: {best_chunk.chunk_id} with text: {best_chunk.text}"
+    )

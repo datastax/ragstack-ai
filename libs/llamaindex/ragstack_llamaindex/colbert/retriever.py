@@ -1,11 +1,12 @@
-from llama_index.core.schema import NodeWithScore, QueryBundle, TextNode
-from llama_index.core.callbacks.base import CallbackManager
-from llama_index.core.retrievers import BaseRetriever
-from llama_index.core.constants import DEFAULT_SIMILARITY_TOP_K
 from typing import Any, List, Optional, Tuple
 
-from ragstack_colbert.base_retriever import BaseRetriever as ColbertBaseRetriever
+from llama_index.core.callbacks.base import CallbackManager
+from llama_index.core.constants import DEFAULT_SIMILARITY_TOP_K
+from llama_index.core.retrievers import BaseRetriever
+from llama_index.core.schema import NodeWithScore, QueryBundle, TextNode
 from ragstack_colbert import Chunk
+from ragstack_colbert.base_retriever import BaseRetriever as ColbertBaseRetriever
+
 
 class ColbertRetriever(BaseRetriever):
     """ColBERT vector store retriever.
@@ -43,5 +44,12 @@ class ColbertRetriever(BaseRetriever):
         self,
         query_bundle: QueryBundle,
     ) -> List[NodeWithScore]:
-        chunk_scores: List[Tuple[Chunk, float]] = self._retriever.text_search(query_text=query_bundle.query_str, k=self._k, query_maxlen=self._query_maxlen)
-        return [NodeWithScore(node=TextNode(text=c.text, metadata=c.metadata), score=s) for (c,s) in chunk_scores]
+        chunk_scores: List[Tuple[Chunk, float]] = self._retriever.text_search(
+            query_text=query_bundle.query_str,
+            k=self._k,
+            query_maxlen=self._query_maxlen,
+        )
+        return [
+            NodeWithScore(node=TextNode(text=c.text, metadata=c.metadata), score=s)
+            for (c, s) in chunk_scores
+        ]

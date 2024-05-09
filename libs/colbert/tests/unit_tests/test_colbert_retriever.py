@@ -33,6 +33,5 @@ def test_query_maxlen_calculation():
     tokens = [["word1"], ["word2", "word3"]]
     assert calculate_query_maxlen(tokens) == 5
 
-
     tokens = [["word1", "word2", "word3"], ["word1", "word2"]]
     assert calculate_query_maxlen(tokens) == 6

@@ -12,4 +12,4 @@ from .vector_store import ColbertVectorStore
 __all__ = [
     "ColbertRetriever",
     "ColbertVectorStore",
-    ]
+]

@@ -8,6 +8,7 @@ from typing import Any, List, Optional, Tuple
 
 from .objects import Chunk, Embedding
 
+
 class BaseRetriever(ABC):
     """
     Abstract base class (ABC) for a retrieval system that operates on a ColBERT vector store, facilitating
@@ -66,7 +67,6 @@ class BaseRetriever(ABC):
                                   to the query, along with its similarity score.
         """
 
-
     # handles LangChain search
     @abstractmethod
     def text_search(
@@ -124,4 +124,3 @@ class BaseRetriever(ABC):
             List[Tuple[Chunk, float]]: A list of retrieved Chunk, float Tuples, each representing a text chunk that is relevant
                                   to the query, along with its similarity score.
         """
-

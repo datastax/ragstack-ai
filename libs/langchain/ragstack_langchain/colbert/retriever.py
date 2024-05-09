@@ -1,11 +1,14 @@
 from typing import Any, List, Optional, Tuple
 
-from langchain_core.callbacks.manager import CallbackManagerForRetrieverRun, AsyncCallbackManagerForRetrieverRun
+from langchain_core.callbacks.manager import (
+    AsyncCallbackManagerForRetrieverRun,
+    CallbackManagerForRetrieverRun,
+)
 from langchain_core.documents import Document
 from langchain_core.retrievers import BaseRetriever
-
-from ragstack_colbert.base_retriever import BaseRetriever as ColbertBaseRetriever
 from ragstack_colbert import Chunk
+from ragstack_colbert.base_retriever import BaseRetriever as ColbertBaseRetriever
+
 
 class ColbertRetriever(BaseRetriever):
     """Chain for langchain retrieve using ColBERT vector store.
@@ -31,7 +34,7 @@ class ColbertRetriever(BaseRetriever):
         retriever: ColbertBaseRetriever,
         k: Optional[int] = 5,
         query_maxlen: Optional[int] = None,
-        **kwargs: Any
+        **kwargs: Any,
     ):
         super().__init__(retriever=retriever, k=k, **kwargs)
         self._retriever = retriever
@@ -51,9 +54,14 @@ class ColbertRetriever(BaseRetriever):
         Returns:
             List of relevant documents
         """
-        chunk_scores: List[Tuple[Chunk, float]] = self._retriever.text_search(query_text=query, k=self._k, query_maxlen=self._query_maxlen)
+        chunk_scores: List[Tuple[Chunk, float]] = self._retriever.text_search(
+            query_text=query, k=self._k, query_maxlen=self._query_maxlen
+        )
 
-        return [Document(page_content=c.text, metadata=c.metadata) for (c,_) in chunk_scores]
+        return [
+            Document(page_content=c.text, metadata=c.metadata)
+            for (c, _) in chunk_scores
+        ]
 
     async def _aget_relevant_documents(
         self,
@@ -68,6 +76,11 @@ class ColbertRetriever(BaseRetriever):
         Returns:
             List of relevant documents
         """
-        chunk_scores: List[Tuple[Chunk, float]] = await self._retriever.atext_search(query_text=query, k=self._k, query_maxlen=self._query_maxlen)
+        chunk_scores: List[Tuple[Chunk, float]] = await self._retriever.atext_search(
+            query_text=query, k=self._k, query_maxlen=self._query_maxlen
+        )
 
-        return [Document(page_content=c.text, metadata=c.metadata) for (c,_) in chunk_scores]
+        return [
+            Document(page_content=c.text, metadata=c.metadata)
+            for (c, _) in chunk_scores
+        ]

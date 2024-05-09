@@ -7,8 +7,8 @@ and can be used to create a LangChain or LlamaIndex ColBERT vector store.
 from abc import ABC, abstractmethod
 from typing import List, Optional, Tuple
 
-from .objects import Chunk, Metadata
 from .base_retriever import BaseRetriever
+from .objects import Chunk, Metadata
 
 # LlamaIndex Node (chunk) has ids, text, embedding, metadata
 #            VectorStore.add(nodes: List[Node]) -> List[str](ids): embeds texts OUTside add
@@ -46,7 +46,12 @@ class BaseVectorStore(ABC):
 
     # handles LangChain add
     @abstractmethod
-    def add_texts(self, texts: List[str], metadatas: Optional[List[Metadata]], doc_id: Optional[str] = None) -> List[Tuple[str, int]]:
+    def add_texts(
+        self,
+        texts: List[str],
+        metadatas: Optional[List[Metadata]],
+        doc_id: Optional[str] = None,
+    ) -> List[Tuple[str, int]]:
         """
         Embeds and stores a list of text chunks and optional metadata into the vector store
 

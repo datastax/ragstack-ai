@@ -8,6 +8,7 @@ from typing import List, Optional, Tuple
 
 from .objects import Chunk, Vector
 
+
 class BaseDatabase(ABC):
     """
     Abstract base class (ABC) for a storage system designed to hold vector representations of text chunks,
@@ -52,7 +53,7 @@ class BaseDatabase(ABC):
         """
 
     @abstractmethod
-    async def get_chunk_embedding(self, doc_id:str, chunk_id: int) -> Chunk:
+    async def get_chunk_embedding(self, doc_id: str, chunk_id: int) -> Chunk:
         """
         Retrieve the embedding data for a chunk.
 
@@ -61,7 +62,9 @@ class BaseDatabase(ABC):
         """
 
     @abstractmethod
-    async def get_chunk_data(self, doc_id:str, chunk_id: int, include_embedding: Optional[bool]) -> Chunk:
+    async def get_chunk_data(
+        self, doc_id: str, chunk_id: int, include_embedding: Optional[bool]
+    ) -> Chunk:
         """
         Retrieve the text and metadata for a chunk.
 
