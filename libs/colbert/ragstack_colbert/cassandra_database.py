@@ -194,7 +194,7 @@ class CassandraDatabase(BaseDatabase):
 
         return Chunk(doc_id=doc_id, chunk_id=chunk_id, embedding=embedding)
 
-    async def get_chunk_data(self, doc_id:str, chunk_id: int) -> Chunk:
+    async def get_chunk_data(self, doc_id:str, chunk_id: int, include_embedding: Optional[bool]) -> Chunk:
         """
         Retrieve the text and metadata for a chunk.
 
@@ -205,7 +205,19 @@ class CassandraDatabase(BaseDatabase):
         row_id = (chunk_id, Predicate(PredicateOperator.EQ, -1))
         row = await self._table.aget(partition_id=doc_id, row_id=row_id)
 
-        return Chunk(doc_id=doc_id, chunk_id=chunk_id, text=row["body_blob"], metadata=row["metadata"])
+        if include_embedding is True:
+            embedded_chunk = await self.get_chunk_embedding(doc_id=doc_id, chunk_id=chunk_id)
+            embedding = embedded_chunk.embedding
+        else:
+            embedding = None
+
+        return Chunk(
+            doc_id=doc_id,
+            chunk_id=chunk_id,
+            text=row["body_blob"],
+            metadata=row["metadata"],
+            embedding=embedding
+        )
 
     def close(self) -> None:
         """

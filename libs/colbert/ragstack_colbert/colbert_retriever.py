@@ -11,7 +11,6 @@ variety of hardware environments.
 import asyncio
 import logging
 import math
-import nest_asyncio
 from typing import Any, Dict, List, Optional, Set, Tuple
 
 import torch
@@ -262,7 +261,9 @@ class ColbertRetriever(BaseRetriever):
 
         query_embedding = self._embedding_model.embed_query(query=query_text, query_maxlen=query_maxlen)
 
-        return self.aembedding_search(
+        logging.info(f"Embedded query has size: {len(query_embedding)}, {len(query_embedding[0])}")
+
+        return await self.aembedding_search(
             query_embedding=query_embedding,
             k=k,
             include_embedding=include_embedding,
@@ -342,11 +343,9 @@ class ColbertRetriever(BaseRetriever):
             List[Tuple[Chunk, float]]: A list of retrieved Chunk, float Tuples, each representing a text chunk that is relevant
                                   to the query, along with its similarity score.
         """
-        # nest_asyncio does not a new event loop to be created
-        # in the case there is already an event loop such as colab, it's required
-        nest_asyncio.apply()
-        loop = asyncio.get_event_loop()
-        return loop.run_until_complete(
+        logging.info(f"starting text search with query: {query_text}, k: {k}, query_maxlen: {query_maxlen}, include_embedding: {include_embedding}")
+
+        return asyncio.run(
             self.atext_search(
                 query_text=query_text,
                 k=k,
@@ -378,11 +377,8 @@ class ColbertRetriever(BaseRetriever):
             List[Tuple[Chunk, float]]: A list of retrieved Chunk, float Tuples, each representing a text chunk that is relevant
                                   to the query, along with its similarity score.
         """
-        # nest_asyncio does not a new event loop to be created
-        # in the case there is already an event loop such as colab, it's required
-        nest_asyncio.apply()
-        loop = asyncio.get_event_loop()
-        return loop.run_until_complete(
+
+        return asyncio.run(
             self.aembedding_search(
                 query_embedding=query_embedding,
                 k=k,
