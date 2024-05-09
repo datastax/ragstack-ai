@@ -6,6 +6,10 @@ except (ImportError, ModuleNotFoundError):
         "Please install it with `pip install ragstack-ai-llamaindex[colbert]`."
     )
 
-from .retriever import ColbertLIRetriever
+from .retriever import ColbertRetriever
+from .vector_store import ColbertVectorStore
 
-__all__ = ["ColbertLIRetriever"]
+__all__ = [
+    "ColbertRetriever",
+    "ColbertVectorStore",
+    ]

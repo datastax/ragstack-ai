@@ -6,6 +6,10 @@ except (ImportError, ModuleNotFoundError):
         "Please install it with `pip install ragstack-ai-langchain[colbert]`."
     )
 
-from .retriever import ColbertLCRetriever
+from .retriever import ColbertRetriever
+from .vector_store import ColbertVectorStore
 
-__all__ = ["ColbertLCRetriever"]
+__all__ = [
+    "ColbertRetriever",
+    "ColbertVectorStore",
+    ]

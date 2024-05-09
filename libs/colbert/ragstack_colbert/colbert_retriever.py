@@ -147,7 +147,7 @@ class ColbertRetriever(BaseRetriever):
         self._database = database
         self._embedding_model = embedding_model
         self._is_cuda = torch.cuda.is_available()
-        self._is_fp16 = all_gpus_support_fp16(self.is_cuda)
+        self._is_fp16 = all_gpus_support_fp16(self._is_cuda)
 
     def close(self) -> None:
         """
@@ -262,7 +262,7 @@ class ColbertRetriever(BaseRetriever):
 
         query_embedding = self._embedding_model.embed_query(query=query_text, query_maxlen=query_maxlen)
 
-        return self.aquery(
+        return self.aembedding_search(
             query_embedding=query_embedding,
             k=k,
             include_embedding=include_embedding,
@@ -347,7 +347,7 @@ class ColbertRetriever(BaseRetriever):
         nest_asyncio.apply()
         loop = asyncio.get_event_loop()
         return loop.run_until_complete(
-            self.asearch(
+            self.atext_search(
                 query_text=query_text,
                 k=k,
                 query_maxlen=query_maxlen,
@@ -383,7 +383,7 @@ class ColbertRetriever(BaseRetriever):
         nest_asyncio.apply()
         loop = asyncio.get_event_loop()
         return loop.run_until_complete(
-            self.aquery(
+            self.aembedding_search(
                 query_embedding=query_embedding,
                 k=k,
                 include_embedding=include_embedding,

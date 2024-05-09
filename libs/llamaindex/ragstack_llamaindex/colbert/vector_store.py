@@ -37,7 +37,7 @@ class ColbertVectorStore(VectorStore):
 
         ids:Tuple[str, int] = self._vector_store.add_chunks(chunks)
 
-        return ???
+        raise NotImplementedError()
 
     async def async_add(
         self,
@@ -67,7 +67,7 @@ class ColbertVectorStore(VectorStore):
     def query(self, query: VectorStoreQuery, **kwargs: Any) -> VectorStoreQueryResult:
         """Query vector store."""
         ...
-        IMPLEMENT THIS SSTILL
+        raise NotImplementedError()
 
     async def aquery(
         self, query: VectorStoreQuery, **kwargs: Any
@@ -77,4 +77,4 @@ class ColbertVectorStore(VectorStore):
         NOTE: this is not implemented for all vector stores. If not implemented,
         it will just call query synchronously.
         """
-        IMPLEMENT THIS SSTILL
+        raise NotImplementedError()
