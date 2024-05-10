@@ -5,9 +5,7 @@ This module defines an abstract base class (ABC) for generating token-based embe
 from abc import ABC, abstractmethod
 from typing import List, Optional
 
-from torch import Tensor
-
-from .objects import ChunkData, EmbeddedChunk
+from .objects import Embedding
 
 
 class BaseEmbeddingModel(ABC):
@@ -20,25 +18,15 @@ class BaseEmbeddingModel(ABC):
     """
 
     @abstractmethod
-    def embed_chunks(
-        self, chunks: List[ChunkData], doc_id: Optional[str] = None
-    ) -> List[EmbeddedChunk]:
+    def embed_texts(self, texts: List[str]) -> List[Embedding]:
         """
-        Embeds a list of text chunks into their corresponding vector representations.
-
-        This method takes multiple chunks of text and optionally their associated document identifier,
-        returning a list of `EmbeddedChunk` instances containing the embeddings.
+        Embeds a list of texts into their corresponding vector embedding representations.
 
         Parameters:
-            chunks (List[ChunkData]): A list of chunks including document text and any associated metadata.
-            doc_id (Optional[str], optional): An optional document identifier that all chunks belong to.
-                                               This can be used for tracing back embeddings to their
-                                               source document. If not passed, an uuid will be generated.
+            texts (List[str]): A list of string texts.
 
         Returns:
-            List[EmbeddedChunk]: A list of `EmbeddedChunks` instances with embeddings populated,
-                                  corresponding to the input text chunks, ready for insertion into
-                                  a vector store.
+            List[Embedding]: A list of embeddings, in the order of the input list
         """
 
     @abstractmethod
@@ -47,18 +35,18 @@ class BaseEmbeddingModel(ABC):
         query: str,
         full_length_search: Optional[bool] = False,
         query_maxlen: int = -1,
-    ) -> Tensor:
+    ) -> Embedding:
         """
         Embeds a single query text into its vector representation.
 
         If the query has fewer than query_maxlen tokens it will be padded with BERT special [mast] tokens.
 
         Parameters:
-            query (str): The query string to encode.
+            query (str): The query text to encode.
             full_length_search (Optional[bool]): Indicates whether to encode the query for a full-length search.
                                                   Defaults to False.
             query_maxlen (int): The fixed length for the query token embedding. If -1, uses a dynamically calculated value.
 
         Returns:
-            Tensor: A tensor representing the embedded query.
+            Embedding: A vector embedding representation of the query text
         """
