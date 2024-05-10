@@ -48,7 +48,8 @@ class BaseDatabase(ABC):
         Retrieves 'n' ANN results for an embedded token vector.
 
         Returns:
-            A list of Chunks with only `doc_id` and `chunk_id` set.
+            A list of Chunks with only `doc_id`, `chunk_id`, and `embedding` set.
+            Here `embedding` is only a single vector, the one which matched on the ANN search.
             Fewer than 'n' results may be returned.
         """
 

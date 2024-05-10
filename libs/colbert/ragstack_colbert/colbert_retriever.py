@@ -157,11 +157,16 @@ class ColbertRetriever(BaseRetriever):
 
     async def _query_relevant_chunks(
         self, query_embedding: Embedding, top_k: int
-    ) -> Set[Chunk]:
+    ) -> Dict[torch.Tensor, List[Chunk]]:
         """
-        Retrieves the top_k ANN Chunks (`doc_id` and `chunk_id` only) for each embedded query token.
+        Retrieves the top_k ANN Chunks (`doc_id`, `chunk_id`, and `embedding`) for each embedded query token.
+        Here `embedding` is only a single vector, the one which matched on the ANN search.
+
+        Returns:
+            A map of query vector to found chunks.
         """
-        chunks: Set[Chunk] = set()
+        query_vector_to_chunks: Dict[torch.Tensor, List[Chunk]] = {}
+
         # Collect all tasks
         tasks = [
             self._database.search_relevant_chunks(vector=v, n=top_k)
@@ -170,15 +175,15 @@ class ColbertRetriever(BaseRetriever):
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
         # Process results and handle potential exceptions
-        for result in results:
+        for i, result in enumerate(results):
             if isinstance(result, Exception):
                 logging.error(
                     f"Issue on database.get_relevant_chunks(): {result} at {get_trace(result)}"
                 )
             else:
-                chunks.update(result)
+                query_vector_to_chunks[torch.tensor(query_embedding[i])] = result
 
-        return chunks
+        return query_vector_to_chunks
 
     async def _get_chunk_embeddings(self, chunks: Set[Chunk]) -> List[Chunk]:
         """
@@ -310,19 +315,42 @@ class ColbertRetriever(BaseRetriever):
                                   to the query, along with its similarity score.
         """
 
-        top_k = max(math.floor(len(query_embedding) / 2), 16)
-        logging.debug(
+        top_k = k
+        if k < 1:
+            top_k = max(math.floor(len(query_embedding) / 2), 16)
+        logging.info(
             f"based on query length of {len(query_embedding)} tokens, retrieving {top_k} results per token-embedding"
         )
 
+
         # search for relevant chunks (only with `doc_id` and `chunk_id` set)
-        relevant_chunks: List[Chunk] = await self._query_relevant_chunks(
+        query_vector_to_chunks_map: Dict[torch.Tensor, List[Chunk]] = await self._query_relevant_chunks(
             query_embedding=query_embedding, top_k=top_k
         )
 
+        chunk_candidates: Dict[Tuple[Chunk, torch.Tensor], torch.Tensor] = {}
+        default_negative_one = -1
+        for query_vector, chunks in query_vector_to_chunks_map.items():
+            for chunk in chunks:
+                # pre_score is the dot product between the query vector and the embedding vector
+                pre_score = torch.matmul(query_vector, torch.tensor(chunk.embedding[0]))
+                # should it be previous score + the current score?
+                key = (chunk, query_vector)
+                chunk_candidates[key] = max(chunk_candidates.get(key, default_negative_one), pre_score)
+
+        default_zero = 0
+        candidate_scores: Dict[Chunk, torch.Tensor] = {}
+        for (chunk, query_vector), pre_score in chunk_candidates.items():
+            candidate_scores[chunk] = candidate_scores.get(chunk, default_zero) + pre_score
+
+        if k > 0:
+            final_candidates = sorted(candidate_scores, key=candidate_scores.get, reverse=True)[:2*k]
+        else:
+            final_candidates = candidate_scores.keys()
+
         # get the embedding for each chunk (with `doc_id`, `chunk_id`, and `embedding` set)
         chunk_embeddings: List[Chunk] = await self._get_chunk_embeddings(
-            chunks=relevant_chunks
+            chunks=final_candidates
         )
 
         # score the chunks using max_similarity
