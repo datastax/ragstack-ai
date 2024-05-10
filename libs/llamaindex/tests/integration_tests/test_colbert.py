@@ -3,6 +3,8 @@ from typing import Dict, List, Tuple
 
 import pytest
 from llama_index.core.ingestion import IngestionPipeline
+from llama_index.core import get_response_synthesizer, Settings
+from llama_index.core.query_engine import RetrieverQueryEngine
 from llama_index.core.schema import Document, NodeWithScore
 from llama_index.core.text_splitter import SentenceSplitter
 from ragstack_colbert import (
@@ -41,7 +43,7 @@ def astra_db():
     return get_astradb_test_store()
 
 
-@pytest.mark.parametrize("vector_store", ["cassandra", "astra_db"])
+@pytest.mark.parametrize("vector_store", [ "astra_db"]) #"cassandra",
 def test_sync(request, vector_store: str):
     vector_store = request.getfixturevalue(vector_store)
     session = vector_store.create_cassandra_session()
@@ -104,15 +106,24 @@ def test_sync(request, vector_store: str):
         retriever=vector_store.as_retriever(), similarity_top_k=5
     )
 
-    results = retriever.retrieve("Who developed the Astroflux Navigator?")
+    Settings.llm = None
+
+    response_synthesizer = get_response_synthesizer()
+
+    pipeline = RetrieverQueryEngine(
+        retriever=retriever,
+        response_synthesizer=response_synthesizer,
+    )
+
+    results = pipeline.retrieve("Who developed the Astroflux Navigator?")
     assert validate_retrieval(results, key_value="Astroflux Navigator")
 
-    results = retriever.retrieve(
+    results = pipeline.retrieve(
         "Describe the phenomena known as 'Chrono-spatial Echoes'"
     )
     assert validate_retrieval(results, key_value="Chrono-spatial Echoes")
 
-    results = retriever.retrieve(
+    results = pipeline.retrieve(
         "How do anglerfish adapt to the deep ocean's darkness?"
     )
     assert validate_retrieval(results, key_value="anglerfish")

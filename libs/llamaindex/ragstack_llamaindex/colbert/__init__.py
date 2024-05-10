@@ -7,9 +7,7 @@ except (ImportError, ModuleNotFoundError):
     )
 
 from .colbert_retriever import ColbertRetriever
-from .colbert_vector_store import ColbertVectorStore
 
 __all__ = [
     "ColbertRetriever",
-    "ColbertVectorStore",
 ]
