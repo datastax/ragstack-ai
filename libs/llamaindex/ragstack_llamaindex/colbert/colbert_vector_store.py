@@ -12,7 +12,7 @@ from ragstack_colbert import Embedding
 from ragstack_colbert.base_database import BaseDatabase as ColbertBaseDatabase
 from ragstack_colbert.base_vector_store import BaseVectorStore as ColbertBaseVectorStore
 
-from .retriever import ColbertRetriever
+from .colbert_retriever import ColbertRetriever
 
 
 class ColbertTextNode(TextNode):

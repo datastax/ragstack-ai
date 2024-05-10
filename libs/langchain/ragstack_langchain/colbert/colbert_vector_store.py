@@ -13,7 +13,7 @@ from ragstack_colbert.base_embedding_model import (
 from ragstack_colbert.base_retriever import BaseRetriever as ColbertBaseRetriever
 from ragstack_colbert.base_vector_store import BaseVectorStore as ColbertBaseVectorStore
 
-from .retriever import ColbertRetriever
+from .colbert_retriever import ColbertRetriever
 
 CVS = TypeVar("CVS", bound="ColbertVectorStore")
 
