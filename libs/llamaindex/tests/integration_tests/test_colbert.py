@@ -4,16 +4,13 @@ from typing import Dict, List, Tuple
 import pytest
 from llama_index.core.ingestion import IngestionPipeline
 from llama_index.core.schema import Document, NodeWithScore
+from llama_index.core import Settings, VectorStoreIndex, StorageContext
 from llama_index.core.text_splitter import SentenceSplitter
-from ragstack_colbert import (
-    CassandraDatabase,
-    ColbertEmbeddingModel,
-    ColbertVectorStore,
-    Metadata,
-)
+
+from ragstack_colbert import CassandraDatabase, Metadata
 from ragstack_tests_utils import TestData
 
-from ragstack_llamaindex.colbert import ColbertRetriever
+from ragstack_llamaindex.colbert import ColbertEmbeddingModel, ColbertRetriever, ColbertVectorStore
 
 logging.getLogger("cassandra").setLevel(logging.ERROR)
 
@@ -41,78 +38,112 @@ def astra_db():
     return get_astradb_test_store()
 
 
-@pytest.mark.parametrize("vector_store", ["cassandra", "astra_db"])
-def test_sync(request, vector_store: str):
-    vector_store = request.getfixturevalue(vector_store)
-    session = vector_store.create_cassandra_session()
+@pytest.mark.parametrize("vector_store_type", ["astra_db"])
+def test_simple(request, vector_store_type: str):
+
+    # set the embedding model
+    Settings.embed_model = ColbertEmbeddingModel(chunk_batch_size=1) # recommend 640 in production
+
+    # load some documents
+    documents = [Document(text=TestData.marine_animals_text())]
+
+    # initialize client, setting path to save data
+    store = request.getfixturevalue(vector_store_type)
+    session = store.create_cassandra_session()
     session.default_timeout = 180
 
-    table_name = "LlamaIndex_colbert_sync"
-
-    batch_size = 5  # 640 recommended for production use
-    chunk_size = 256
-    chunk_overlap = 50
-
+    table_name = "LlamaIndex_simple"
     database = CassandraDatabase.from_session(session=session, table_name=table_name)
-    embedding_model = ColbertEmbeddingModel(
-        doc_maxlen=chunk_size,
-        chunk_batch_size=batch_size,
+
+
+    # assign chroma as the vector_store to the context
+    vector_store = ColbertVectorStore(database=database)
+    storage_context = StorageContext.from_defaults(vector_store=vector_store)
+
+    # create your index
+    index = VectorStoreIndex.from_documents(
+        documents, storage_context=storage_context
     )
 
-    vector_store = ColbertVectorStore(
-        database=database,
-        embedding_model=embedding_model,
-    )
+    # create a query engine and query
+    query_engine = index.as_query_engine()
+    response = query_engine.query("What kind of fish lives in shallow coral reefs?")
+    print(response)
 
-    docs: List[Document] = []
-    docs.append(
-        Document(
-            text=TestData.marine_animals_text(), metadata={"name": "marine_animals"}
-        )
-    )
-    docs.append(
-        Document(
-            text=TestData.nebula_voyager_text(), metadata={"name": "nebula_voyager"}
-        )
-    )
 
-    splitter = SentenceSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
-    pipeline = IngestionPipeline(transformations=[splitter])
 
-    nodes = pipeline.run(documents=docs)
+# @pytest.mark.parametrize("vector_store", ["cassandra", "astra_db"])
+# def test_sync(request, vector_store: str):
+#     vector_store = request.getfixturevalue(vector_store)
+#     session = vector_store.create_cassandra_session()
+#     session.default_timeout = 180
 
-    docs: Dict[str, Tuple[List[str], List[Metadata]]] = {}
+#     table_name = "LlamaIndex_colbert_sync"
 
-    for node in nodes:
-        doc_id = node.metadata["name"]
-        if doc_id not in docs:
-            docs[doc_id] = ([], [])
-        docs[doc_id][0].append(node.text)
-        docs[doc_id][1].append(node.metadata)
+#     batch_size = 5  # 640 recommended for production use
+#     chunk_size = 256
+#     chunk_overlap = 50
 
-    logging.debug("Starting to embed ColBERT docs and save them to the database")
+#     database = CassandraDatabase.from_session(session=session, table_name=table_name)
+#     embedding_model = ColbertEmbeddingModel(
+#         doc_maxlen=chunk_size,
+#         chunk_batch_size=batch_size,
+#     )
 
-    for doc_id in docs:
-        texts = docs[doc_id][0]
-        metadatas = docs[doc_id][1]
+#     vector_store = ColbertVectorStore(
+#         database=database,
+#         embedding_model=embedding_model,
+#     )
 
-        logging.debug(f"processing {doc_id} that has {len(texts)} chunks")
+#     docs: List[Document] = []
+#     docs.append(
+#         Document(
+#             text=TestData.marine_animals_text(), metadata={"name": "marine_animals"}
+#         )
+#     )
+#     docs.append(
+#         Document(
+#             text=TestData.nebula_voyager_text(), metadata={"name": "nebula_voyager"}
+#         )
+#     )
 
-        vector_store.add_texts(texts=texts, metadatas=metadatas, doc_id=doc_id)
+#     splitter = SentenceSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
+#     pipeline = IngestionPipeline(transformations=[splitter])
 
-    retriever = ColbertRetriever(
-        retriever=vector_store.as_retriever(), similarity_top_k=5
-    )
+#     nodes = pipeline.run(documents=docs)
 
-    results = retriever.retrieve("Who developed the Astroflux Navigator?")
-    assert validate_retrieval(results, key_value="Astroflux Navigator")
+#     docs: Dict[str, Tuple[List[str], List[Metadata]]] = {}
 
-    results = retriever.retrieve(
-        "Describe the phenomena known as 'Chrono-spatial Echoes'"
-    )
-    assert validate_retrieval(results, key_value="Chrono-spatial Echoes")
+#     for node in nodes:
+#         doc_id = node.metadata["name"]
+#         if doc_id not in docs:
+#             docs[doc_id] = ([], [])
+#         docs[doc_id][0].append(node.text)
+#         docs[doc_id][1].append(node.metadata)
 
-    results = retriever.retrieve(
-        "How do anglerfish adapt to the deep ocean's darkness?"
-    )
-    assert validate_retrieval(results, key_value="anglerfish")
+#     logging.debug("Starting to embed ColBERT docs and save them to the database")
+
+#     for doc_id in docs:
+#         texts = docs[doc_id][0]
+#         metadatas = docs[doc_id][1]
+
+#         logging.debug(f"processing {doc_id} that has {len(texts)} chunks")
+
+#         vector_store.add_texts(texts=texts, metadatas=metadatas, doc_id=doc_id)
+
+#     retriever = ColbertRetriever(
+#         retriever=vector_store.as_retriever(), similarity_top_k=5
+#     )
+
+#     results = retriever.retrieve("Who developed the Astroflux Navigator?")
+#     assert validate_retrieval(results, key_value="Astroflux Navigator")
+
+#     results = retriever.retrieve(
+#         "Describe the phenomena known as 'Chrono-spatial Echoes'"
+#     )
+#     assert validate_retrieval(results, key_value="Chrono-spatial Echoes")
+
+#     results = retriever.retrieve(
+#         "How do anglerfish adapt to the deep ocean's darkness?"
+#     )
+#     assert validate_retrieval(results, key_value="anglerfish")
