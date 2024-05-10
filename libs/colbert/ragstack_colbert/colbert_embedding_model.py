@@ -55,11 +55,7 @@ class ColbertEmbeddingModel(BaseEmbeddingModel):
             query_maxlen (Optional[int]): Maximum length of query tokens for embedding.
             verbose (Optional[int]): Verbosity level for logging.
             chunk_batch_size (Optional[int]): The number of chunks to batch during embedding. Defaults to 640.
-            multiprocessing_enabled (bool): Flag to enable distributed computation.
             **kwargs: Additional keyword arguments for future extensions.
-
-        Note:
-            This initializer also prepares the system for distributed computation if specified and available.
         """
 
         if query_maxlen is None:
@@ -108,7 +104,7 @@ class ColbertEmbeddingModel(BaseEmbeddingModel):
         self,
         query: str,
         full_length_search: Optional[bool] = False,
-        query_maxlen: int = -1,
+        query_maxlen: Optional[int] = None,
     ) -> Embedding:
         """
         Embeds a single query text into its vector representation.
@@ -119,7 +115,7 @@ class ColbertEmbeddingModel(BaseEmbeddingModel):
             query (str): The query string to encode.
             full_length_search (Optional[bool]): Indicates whether to encode the query for a full-length search.
                                                   Defaults to False.
-            query_maxlen (int): The fixed length for the query token embedding. If -1, uses a dynamically calculated value.
+            query_maxlen (int): The fixed length for the query token embedding. If None, uses a dynamically calculated value.
 
         Returns:
             Embedding: A vector embedding representation of the query text
