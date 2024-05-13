@@ -1,14 +1,14 @@
+from typing import Any, List, Optional, Tuple
 
-from llama_index.core.schema import NodeWithScore, QueryBundle, TextNode
 from llama_index.core.callbacks.base import CallbackManager
-from llama_index.core.retrievers import BaseRetriever as LlamaIndexBaseRetriever
 from llama_index.core.constants import DEFAULT_SIMILARITY_TOP_K
-from typing import Any, List, Optional
+from llama_index.core.retrievers import BaseRetriever
+from llama_index.core.schema import NodeWithScore, QueryBundle, TextNode
+from ragstack_colbert import Chunk
+from ragstack_colbert.base_retriever import BaseRetriever as ColbertBaseRetriever
 
-from ragstack_colbert.base_retriever import BaseRetriever
 
-
-class ColbertLIRetriever(LlamaIndexBaseRetriever):
+class ColbertRetriever(BaseRetriever):
     """ColBERT vector store retriever.
 
     Args:
@@ -16,9 +16,13 @@ class ColbertLIRetriever(LlamaIndexBaseRetriever):
         similarity_top_k (int): number of top k results to return.
     """
 
+    _retriever: ColbertBaseRetriever
+    _k: int
+    _query_maxlen: Optional[int]
+
     def __init__(
         self,
-        retriever: BaseRetriever,
+        retriever: ColbertBaseRetriever,
         similarity_top_k: int = DEFAULT_SIMILARITY_TOP_K,
         callback_manager: Optional[CallbackManager] = None,
         object_map: Optional[dict] = None,
@@ -28,7 +32,7 @@ class ColbertLIRetriever(LlamaIndexBaseRetriever):
     ) -> None:
         """Initialize params."""
         self._retriever = retriever
-        self._similarity_top_k = similarity_top_k
+        self._k = similarity_top_k
         self._query_maxlen = query_maxlen
         super().__init__(
             callback_manager=callback_manager,
@@ -40,14 +44,12 @@ class ColbertLIRetriever(LlamaIndexBaseRetriever):
         self,
         query_bundle: QueryBundle,
     ) -> List[NodeWithScore]:
-        nodes: List[NodeWithScore] = []
-
-        chunks = self._retriever.retrieve(query_bundle.query_str, k=self._similarity_top_k, query_maxlen=self._query_maxlen)
-        for chunk in chunks:
-            text = chunk.data.text
-            metadata=chunk.data.metadata
-            metadata["rank"] = chunk.rank
-
-            node = TextNode(text=text, metadata=metadata)
-            nodes.append(NodeWithScore(node=node, score=chunk.score))
-        return nodes
+        chunk_scores: List[Tuple[Chunk, float]] = self._retriever.text_search(
+            query_text=query_bundle.query_str,
+            k=self._k,
+            query_maxlen=self._query_maxlen,
+        )
+        return [
+            NodeWithScore(node=TextNode(text=c.text, metadata=c.metadata), score=s)
+            for (c, s) in chunk_scores
+        ]
