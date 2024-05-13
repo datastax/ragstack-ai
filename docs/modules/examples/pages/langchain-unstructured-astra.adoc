@@ -27,7 +27,7 @@ DB Access Token] with Database Administrator permissions.
 Install the following dependencies:
 [source,python]
 ----
-pip install ragstack-ai python-dotenv
+pip install ragstack-ai
 ----
 See the https://docs.datastax.com/en/ragstack/docs/prerequisites.html[Prerequisites] page for more details.
 
@@ -163,13 +163,15 @@ for el in elements:
     if el.category in ["Header", "Footer"]:
         continue # skip these
     if el.category == "Title":
-        documents.append(current_doc)
+        if current_doc is not None:
+            documents.append(current_doc)
         current_doc = None
     if not current_doc:
         current_doc = Document(page_content="", metadata=el.metadata.to_dict())
     current_doc.page_content += el.metadata.text_as_html if el.category == "Table" else el.text
     if el.category == "Table":
-        documents.append(current_doc)
+        if current_doc is not None:
+            documents.append(current_doc)
         current_doc = None
 
 astra_db_store.add_documents(documents)
@@ -197,7 +199,7 @@ chain = (
 
 == Execute queries
 
-. Ask a question that should be answered by the text of the document - this query should return a relevant response.
+. Ask a question that should be answered by the text of the document - this query should return `Reducing the attention key size hurts model quality.`.
 +
 [source,python]
 ----
@@ -206,7 +208,9 @@ print("\n***********New Unstructured Basic Query Engine***********")
 print(response_1)
 ----
 +
-. Ask a question that can be answered from the table data. This highlights the power of using Unstructured.io.
+. Ask a question that can be answered from the table data.
+This query should return `The 'WSJ 23 F1' value for 'Dyer et al. (2016) (5]' was 91.7.` because the table data contains this information.
+This highlights the power of using Unstructured.io.
 +
 [source,python]
 ----
@@ -215,7 +219,7 @@ print("\n***********New Unstructured Basic Query Engine***********")
 print(response_2)
 ----
 . Ask a question with an expected lack of context.
-This query should return `I don't know. The context does not provide any information about George Washington's birthdate.` because your document does not contain information about the George Washington.
+This query should return `I don't know. The context does not provide any information about George Washington's birthdate.` because your document does not contain information about George Washington.
 +
 [source,python]
 ----
@@ -235,12 +239,16 @@ import os
 import requests
 
 from dotenv import load_dotenv
-from langchain_community.document_loaders import unstructured
 from langchain_astradb import AstraDBVectorStore
 from langchain_core.documents import Document
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import PromptTemplate
 from langchain_core.runnables import RunnablePassthrough
+
+from langchain_community.document_loaders import (
+    unstructured,
+    UnstructuredAPIFileLoader,
+)
 
 from langchain_openai import (
     ChatOpenAI,
@@ -249,6 +257,7 @@ from langchain_openai import (
 
 load_dotenv()
 
+# download pdf
 url = "https://raw.githubusercontent.com/datastax/ragstack-ai/48bc55e7dc4de6a8b79fcebcedd242dc1254dd63/examples/notebooks/resources/attention_pages_9_10.pdf"
 file_path = "./attention_pages_9_10.pdf"
 
@@ -259,8 +268,19 @@ if response.status_code == 200:
     print("Download complete.")
 else:
     print("Error downloading the file.")
-    exit(1)
 
+# simple parse
+loader = UnstructuredAPIFileLoader(
+    file_path="./attention_pages_9_10.pdf",
+    api_key=os.getenv("UNSTRUCTURED_API_KEY"),
+    url = os.getenv("UNSTRUCTURED_API_URL"),
+)
+simple_docs = loader.load()
+
+print(len(simple_docs))
+print(simple_docs[0].page_content[0:400])
+
+# complex parse
 elements = unstructured.get_elements_from_api(
     file_path="./attention_pages_9_10.pdf",
     api_key=os.getenv("UNSTRUCTURED_API_KEY"),
@@ -269,6 +289,11 @@ elements = unstructured.get_elements_from_api(
     pdf_infer_table_structure=True,
 )
 
+print(len(elements))
+tables = [el for el in elements if el.category == "Table"]
+print(tables[1].metadata.text_as_html)
+
+# create vector store
 astra_db_store = AstraDBVectorStore(
     collection_name="langchain_unstructured",
     embedding=OpenAIEmbeddings(),
@@ -276,6 +301,7 @@ astra_db_store = AstraDBVectorStore(
     api_endpoint=os.getenv("ASTRA_DB_API_ENDPOINT")
 )
 
+# load documents
 documents = []
 current_doc = None
 
@@ -283,17 +309,20 @@ for el in elements:
     if el.category in ["Header", "Footer"]:
         continue # skip these
     if el.category == "Title":
-        documents.append(current_doc)
+        if current_doc is not None:
+            documents.append(current_doc)
         current_doc = None
     if not current_doc:
         current_doc = Document(page_content="", metadata=el.metadata.to_dict())
     current_doc.page_content += el.metadata.text_as_html if el.category == "Table" else el.text
     if el.category == "Table":
-        documents.append(current_doc)
+        if current_doc is not None:
+            documents.append(current_doc)
         current_doc = None
 
 astra_db_store.add_documents(documents)
 
+# prompt and query
 prompt = """
 Answer the question based only on the supplied context. If you don't know the answer, say "I don't know".
 Context: {context}
@@ -321,7 +350,6 @@ print(response_2)
 response_3 = chain.invoke("When was George Washington born?")
 print("\n***********New Unstructured Basic Query Engine***********")
 print(response_3)
-
 ----
 ====
 
