@@ -1,84 +1,79 @@
 import logging
 import os
 import time
-import cassio
+import asyncio
 
 from llama_index.core import Settings, get_response_synthesizer
 from llama_index.core.query_engine import RetrieverQueryEngine
 
-from ragstack_colbert import ColbertEmbeddingModel, ColbertRetriever, CassandraVectorStore
-from ragstack_llamaindex.colbert import ColbertLIRetriever
 
 import tru_shared
 
-logging.basicConfig(level=logging.INFO)
+framework = tru_shared.Framework.LLAMA_INDEX
+
+import os
+import time
+from dotenv import load_dotenv
+
+from ragstack_colbert import ColbertEmbeddingModel, ColbertVectorStore, CassandraDatabase, Metadata
+
+load_dotenv()
 
 logging.getLogger('cassandra').setLevel(logging.ERROR)
 logging.getLogger('trulens_eval').setLevel(logging.WARNING)
 logging.getLogger('alembic').setLevel(logging.WARNING)
 logging.getLogger('httpx').setLevel(logging.WARNING)
 
-
-
-framework = tru_shared.Framework.LLAMA_INDEX
-
 astra_token = os.getenv("ASTRA_DB_TOKEN_COLBERT2")
 database_id = os.getenv("ASTRA_DB_ID_COLBERT2")
-table_name = "colbert_cassio"
+table_name = "colbert_cassio_cpu_branch_from_cpu"
+keyspace = "relevancy_testing"
 
 doc_maxlen=256
 nbits=2
 kmeans_niters=4
 nranks=1
 
-def query(keyspace, doc_maxlen, query_maxlen, experiment_prefix):
-    cassio.init(token=astra_token, database_id=database_id, keyspace=keyspace)
-    store = CassandraVectorStore(
-        keyspace=keyspace,
-        table_name=table_name,
-        session=cassio.config.resolve_session()
-    )
+chunk_size = doc_maxlen
+chunk_overlap = min(chunk_size / 4, min(chunk_size / 2, 64))
 
-    logging.info("astra db is connected")
+database = CassandraDatabase.from_astra(database_id=database_id, astra_token=astra_token, table_name=table_name, keyspace=keyspace)
 
-    Settings.llm = tru_shared.get_azure_chat_model(framework, "gpt-35-turbo", "0613")
 
-    start_time = time.time()
+embedding_model = ColbertEmbeddingModel(
+    doc_maxlen=doc_maxlen,
+    nbits=nbits,
+    kmeans_niters=kmeans_niters,
+    nranks=nranks,
+)
 
-    colbert = ColbertEmbeddingModel(
-        doc_maxlen=doc_maxlen,
-        nbits=nbits,
-        kmeans_niters=kmeans_niters,
-        nranks=nranks
-    )
+vector_store = ColbertVectorStore(
+    database=database,
+    embedding_model=embedding_model,
+)
 
-    retriever = ColbertRetriever(
-        vector_store=store, embedding_model=colbert
-    )
+logging.info("astra db is connected")
 
-    li_retriever = ColbertLIRetriever(
-        retriever=retriever,
-        similarity_top_k=5,
-    )
+Settings.llm = tru_shared.get_azure_chat_model(framework, "gpt-35-turbo", "0613")
 
-    # define response synthesizer
-    response_synthesizer = get_response_synthesizer()
+from ragstack_llamaindex.colbert import ColbertRetriever
 
-    # assemble query engine
-    pipeline = RetrieverQueryEngine(
-        retriever=li_retriever,
-        response_synthesizer=response_synthesizer,
-    )
+retriever = ColbertRetriever(retriever=vector_store.as_retriever(), similarity_top_k=5)
 
-    if query_maxlen > 0:
-        experiment_name = f"{experiment_prefix}_d_{doc_maxlen}_q{query_maxlen}"
-    else:
-        experiment_name = f"{experiment_prefix}_d_{doc_maxlen}_q_dynamic"
+start_time = time.time()
 
-    tru_shared.execute_experiment(framework, pipeline, experiment_name)
+# define response synthesizer
+response_synthesizer = get_response_synthesizer()
 
-    duration = time.time() - start_time
-    print(f"It took {duration} seconds to query the documents via colBERT.")
+# assemble query engine
+pipeline = RetrieverQueryEngine(
+    retriever=retriever,
+    response_synthesizer=response_synthesizer,
+)
 
-if __name__ == "__main__":
-    query(keyspace="colbert_cassio", doc_maxlen=256, query_maxlen=-1, experiment_prefix="colbert_cassio")
+experiment_name = f"cpu_d_{doc_maxlen}_q_dynamic_presort"
+
+tru_shared.execute_experiment(framework, pipeline, experiment_name, ["braintrust_coda_help_desk"])
+
+duration = time.time() - start_time
+print(f"It took {duration} seconds to query the documents via colBERT.")

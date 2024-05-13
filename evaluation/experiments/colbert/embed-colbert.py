@@ -1,6 +1,5 @@
 import logging
-import multiprocessing
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 logging.basicConfig(level=logging.INFO)
 
@@ -23,13 +22,12 @@ def load_docs():
 def embed_docs(docs, keyspace):
     import os
     import time
-    import cassio
     from dotenv import load_dotenv
 
     from llama_index.core.ingestion import IngestionPipeline
     from llama_index.core.text_splitter import SentenceSplitter
 
-    from ragstack_colbert import ColbertEmbeddingModel, CassandraVectorStore, ChunkData
+    from ragstack_colbert import ColbertEmbeddingModel, ColbertVectorStore, CassandraDatabase, Metadata
 
     load_dotenv()
 
@@ -40,7 +38,8 @@ def embed_docs(docs, keyspace):
 
     astra_token = os.getenv("ASTRA_DB_TOKEN_COLBERT2")
     database_id = os.getenv("ASTRA_DB_ID_COLBERT2")
-    table_name = "colbert_cassio"
+    keyspace = "relevancy_testing"
+    table_name = "colbert_cassio_cpu_branch_from_cpu"
 
     doc_maxlen=256
     nbits=2
@@ -52,13 +51,18 @@ def embed_docs(docs, keyspace):
 
     logging.info(f"Starting ColBERT embedding into: {keyspace}.{table_name}, with doc_maxlen: {doc_maxlen}, nbits: {nbits}, kmeans_niters:{kmeans_niters}, chunk_size: {chunk_size}, chunk_overlap: {chunk_overlap}")
 
-    cassio.init(token=astra_token, database_id=database_id, keyspace=keyspace)
+    database = CassandraDatabase.from_astra(database_id=database_id, astra_token=astra_token, table_name=table_name, keyspace=keyspace)
 
-    store = CassandraVectorStore(
-        keyspace=keyspace,
-        table_name=table_name,
-        session=cassio.config.resolve_session(),
-        timeout=1000,
+    embedding_model = ColbertEmbeddingModel(
+        doc_maxlen=doc_maxlen,
+        nbits=nbits,
+        kmeans_niters=kmeans_niters,
+        nranks=nranks,
+    )
+
+    store = ColbertVectorStore(
+        database=database,
+        embedding_model=embedding_model,
     )
 
     logging.info("astra db is connected")
@@ -74,46 +78,30 @@ def embed_docs(docs, keyspace):
     duration = time.time() - start_time
     logging.info(f"Split {len(docs)} documents into {len(nodes)} chunks in  {duration} seconds")
 
-    file_chunks:Dict[str, List[ChunkData]] = {}
+    docs: Dict[str,Tuple[List[str], List[Metadata]]] = {}
 
     for node in nodes:
         doc_id = os.path.normpath(node.extra_info["file_name"])
-        if doc_id not in file_chunks:
-            file_chunks[doc_id] = []
-
-        file_chunks[doc_id].append(ChunkData(text=node.text, metadata=node.extra_info))
-
-
-    print(f"found {len(file_chunks)} files inside the chunks")
-
-    colbert = ColbertEmbeddingModel(
-        doc_maxlen=doc_maxlen,
-        nbits=nbits,
-        kmeans_niters=kmeans_niters,
-        nranks=nranks,
-    )
+        if doc_id not in docs:
+            docs[doc_id]=([],[])
+        docs[doc_id][0].append(node.text)
+        docs[doc_id][1].append(node.metadata)
 
     logging.info("Starting to embed ColBERT docs and save them to AstraDB")
 
     start_time = time.time()
 
-    for doc_id in file_chunks:
-        chunks = file_chunks[doc_id]
+    for doc_id in docs:
+        texts = docs[doc_id][0]
+        metadatas = docs[doc_id][1]
 
-        logging.info(f"processing {doc_id} that has {len(chunks)} chunks")
+        logging.info(f"processing {doc_id} that has {len(texts)} chunks")
 
-        embedded_chunks = colbert.embed_chunks(chunks=chunks, doc_id=doc_id)
-        store.put_chunks(chunks=embedded_chunks)
+        store.add_texts(texts=texts, metadatas=metadatas, doc_id=doc_id)
 
     duration = time.time() - start_time
     logging.info(f"It took {duration} seconds to load the documents via colBERT into {keyspace}.")
 
 if __name__ == "__main__":
-    multiprocessing.freeze_support()
-
     docs = load_docs()
     embed_docs(docs, keyspace="colbert_cassio")
-
-# INFO:root:It took 5569.702922344208 seconds to load the documents via colBERT into colbert_chunk_512_overlap_50_doc_maxlen_220.
-# INFO:root:It took 12213.770881414413 seconds to load the documents via colBERT into colbert_chunk_512_overlap_50_doc_maxlen_512.
-# INFO:root:It took 14503.289824485779 seconds to load the documents via colBERT into colbert_chunk_200_overlap_50_doc_maxlen_220.
