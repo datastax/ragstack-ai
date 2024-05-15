@@ -6,7 +6,7 @@ def test_import():
     import cassio  # noqa
     import openai  # noqa
     import tiktoken  # noqa
-    import unstructured  # noqa
+    import unstructured_client  # noqa
     from llama_index.vector_stores.astra_db import AstraDBVectorStore  # noqa
     from llama_index.vector_stores.cassandra import CassandraVectorStore  # noqa
 
