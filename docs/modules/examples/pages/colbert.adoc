@@ -4,10 +4,10 @@ image::https://colab.research.google.com/assets/colab-badge.svg[align="left",lin
 
 Use ColBERT, Astra DB, and RAGStack to:
 
-. Create ColBERT embeddings
-. Index embeddings on Astra
-. Retrieve embeddings with RAGStack and Astra
-. Use the LangChain ColBERT retriever plugin
+. Create ColBERT embeddings.
+. Index embeddings on Astra.
+. Retrieve embeddings with RAGStack and Astra.
+.. Optionally, use the LangChain ColBERT retriever plugin.
 
 == Prerequisites
 
@@ -33,70 +33,54 @@ arctic_botany_dict = {
     "Traditional Knowledge and Arctic Botany": "Indigenous peoples of the Arctic have a deep connection with the land and its plant life. Traditional knowledge, passed down through generations, includes the uses of plants for nutrition, healing, and materials. This body of knowledge is invaluable for both conservation and understanding the ecological relationships in Arctic ecosystems. Integrating traditional knowledge with scientific research enriches our comprehension of Arctic botany and enhances conservation strategies.",
     "Future Directions in Arctic Botanical Studies": "The future of Arctic botany lies in interdisciplinary research, combining traditional knowledge with modern scientific techniques. As the Arctic undergoes rapid changes, understanding the ecological, cultural, and climatic dimensions of Arctic flora becomes increasingly important. Future research will need to address the challenges of climate change, explore the potential for Arctic plants in biotechnology, and continue to conserve this unique biome. The resilience of Arctic flora offers lessons in adaptation and survival relevant to global challenges."
 }
-arctic_botany_chunks = list(arctic_botany_dict.values())
+arctic_botany_texts = list(arctic_botany_dict.values())
 ----
 +
-. Start the ColBERT configuration and create embeddings.
-+
-[source,python]
-----
-from ragstack_colbert import ColbertEmbeddingModel, ChunkData
-# colbert stuff starts
-colbert = ColbertEmbeddingModel()
-
-chunks = [ChunkData(text=text, metadata={}) for text in arctic_botany_chunks]
-
-embedded_chunks = colbert.embed_chunks(chunks=chunks, doc_id="arctic botany")
-----
-+
-. Examine the embeddings.
+. Set up the ColBERT and Astra configurations.
 +
 [source,python]
 ----
-assert len(embedded_chunks) == 8
-----
-
-== Create a vector store in Astra
-
-. Ingest embeddings and create a vector store in Astra.
-+
-[source,python]
-----
-from ragstack_colbert import CassandraVectorStore
 from getpass import getpass
-import cassio
+from ragstack_colbert import CassandraDatabase, ColbertEmbeddingModel, ColbertVectorStore
 
 keyspace="default_keyspace"
 database_id=getpass("Enter your Astra Database Id:")
 astra_token=getpass("Enter your Astra Token:")
 
-cassio.init(token=astra_token, database_id=database_id, keyspace=keyspace)
-session=cassio.config.resolve_session()
+database = CassandraDatabase.from_astra(
+    astra_token=astra_token,
+    database_id=database_id,
+    keyspace=keyspace
+)
 
-db = CassandraVectorStore(
-    keyspace = keyspace,
-    table_name="colbert_embeddings4",
-    session = session,
+embedding_model = ColbertEmbeddingModel()
+
+vector_store = ColbertVectorStore(
+    database = database,
+    embedding_model = embedding_model,
 )
 ----
 +
-. Create an index in Astra.
+. Connect to Astra and ingest embeddings.
 +
 [source,python]
 ----
-db.put_chunks(chunks=embedded_chunks, delete_existing=True)
+results = vector_store.add_texts(texts=arctic_botany_texts, doc_id="arctic_botany")
 ----
 
 == Retrieve embeddings from the Astra index
 
-Create a RAGStack retriever and ask questions against the indexed embeddings.
-The library provides:
-
-* Embed query tokens
-* Generate candidate documents using Astra ANN search
+. Create a RAGStack retriever and query the indexed embeddings.
+The library includes:
+* Query token embedding
+* Candidate documents generated using Astra ANN search
 * Max similarity scoring
 * Ranking
-
++
+[tabs]
+======
+Python::
++
 [source,python]
 ----
 import logging
@@ -109,22 +93,24 @@ retriever = ColbertRetriever(
     vector_store=db, embedding_model=colbert
 )
 
-answers = retriever.retrieve("What's artic botany", k=2)
+answers = retriever.retrieve("What's arctic botany", k=2)
 for answer in answers:
   print(f"Rank: {answer.rank} Score: {answer.score} Text: {answer.data.text}\n")
 ----
 
-.Result
-[source, plain]
+Result::
++
+[source,plain]
 ----
-Rank: 1 Score: 35.225955963134766 Text: Arctic botany is the study of plant life in the Arctic, a region characterized by extreme cold, permafrost, and minimal sunlight for much of the year. Despite these harsh conditions, a diverse range of flora thrives here, adapted to survive with minimal water, low temperatures, and high light levels during the summer. This introduction aims to shed light on the resilience and adaptation of Arctic plants, setting the stage for a deeper dive into the unique botanical ecosystem of the Arctic.
+Rank: 0 Score: 5.266005039215088 Text: Arctic botany is the study of plant life in the Arctic, a region characterized by extreme cold, permafrost, and minimal sunlight for much of the year. Despite these harsh conditions, a diverse range of flora thrives here, adapted to survive with minimal water, low temperatures, and high light levels during the summer. This introduction aims to shed light on the resilience and adaptation of Arctic plants, setting the stage for a deeper dive into the unique botanical ecosystem of the Arctic.
 
-Rank: 2 Score: 29.655662536621094 Text: Research in Arctic botany is crucial for understanding the intricate balance of this ecosystem and the impacts of climate change. Scientists conduct studies on plant physiology, genetics, and ecosystem dynamics. Conservation efforts are focused on protecting the Arctic's unique biodiversity through protected areas, sustainable management practices, and international cooperation. These efforts aim to preserve the Arctic flora for future generations and maintain its role in the global climate system.
+Rank: 1 Score: 3.9489646703004837 Text: Research in Arctic botany is crucial for understanding the intricate balance of this ecosystem and the impacts of climate change. Scientists conduct studies on plant physiology, genetics, and ecosystem dynamics. Conservation efforts are focused on protecting the Arctic's unique biodiversity through protected areas, sustainable management practices, and international cooperation. These efforts aim to preserve the Arctic flora for future generations and maintain its role in the global climate system.
 ----
+======
 
-== LangChain retriever
+== Retrieve embeddings LangChain retriever
 
-Alternatively, use the ColBERT extra with your RAGStack package to retrieve documents.
+Alternatively, use the ColBERT extra with your `ragstack-ai-langchain` package to retrieve documents.
 
 . Install the RAGStack LangChain package with the ColBERT extra.
 +
@@ -135,19 +121,29 @@ pip install ragstack-ai-langchain[colbert]
 +
 . Run the LangChain retriever against the indexed embeddings.
 +
+[tabs]
+======
+Python::
++
 [source,python]
 ----
-from ragstack_langchain.colbert import ColbertLCRetriever
+from ragstack_langchain.colbert import ColbertVectorStore as LangchainColbertVectorStore
 
-lc_retriever = ColbertLCRetriever(retriever, k=2)
-docs = lc_retriever.get_relevant_documents("what kind fish lives shallow coral reefs atlantic, india ocean, red sea, gulf of mexico, pacific, and arctic ocean")
+lc_vector_store = LangchainColbertVectorStore(
+    database=database,
+    embedding_model=embedding_model,
+)
+
+docs = lc_vector_store.similarity_search("what kind fish lives shallow coral reefs atlantic, india ocean, red sea, gulf of mexico, pacific, and arctic ocean")
 print(f"first answer: {docs[0].page_content}")
 ----
+
+Result::
 +
-.Result
 [source,plain]
 ----
 ....
 first answer: Despite the challenging environment, the Arctic boasts a significant variety of plant species, each adapted to its niche. From the colorful blooms of Arctic poppies to the hardy dwarf willows, these plants form a complex ecosystem. The biodiversity of Arctic flora is vital for local wildlife, providing food and habitat. This diversity also has implications for Arctic peoples, who depend on certain plant species for food, medicine, and materials.
 ....
 ----
+======
