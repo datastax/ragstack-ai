@@ -7,7 +7,7 @@ def test_import():
     import langsmith  # noqa
     import astrapy  # noqa
     import cassio  # noqa
-    import unstructured  # noqa
+    import unstructured_client  # noqa
     import openai  # noqa
     import tiktoken  # noqa
 
