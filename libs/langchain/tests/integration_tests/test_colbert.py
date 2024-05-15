@@ -2,13 +2,12 @@ import logging
 from typing import List, Tuple
 
 import pytest
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document
 from ragstack_colbert import CassandraDatabase, ColbertEmbeddingModel
+from ragstack_langchain.colbert import ColbertVectorStore
 from ragstack_tests_utils import TestData
 from transformers import BertTokenizer
-
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from ragstack_langchain.colbert import ColbertVectorStore
 
 logging.getLogger("cassandra").setLevel(logging.ERROR)
 
@@ -20,6 +19,7 @@ from tests.integration_tests.conftest import (
 test_data = {
     "chunks": None,
 }
+
 
 def get_test_chunks() -> List[Document]:
     if test_data["chunks"] is None:
@@ -52,7 +52,9 @@ def get_test_chunks() -> List[Document]:
         )
 
         test_data["chunks"] = text_splitter.split_documents(docs)
-        logging.info(f"split {len(docs)} documents into {len(test_data['chunks'])} chunks")
+        logging.info(
+            f"split {len(docs)} documents into {len(test_data['chunks'])} chunks"
+        )
 
     return test_data["chunks"]
 
@@ -124,8 +126,11 @@ def test_sync_from_docs(request, vector_store: str):
     assert validate_retrieval(results, key_value="dolphin")
 
     retriever = vector_store.as_retriever(k=2)
-    results: List[Document] = retriever.invoke("What role do coral reefs play in marine ecosystems?")
+    results: List[Document] = retriever.invoke(
+        "What role do coral reefs play in marine ecosystems?"
+    )
     assert validate_retrieval(results, key_value="coral reefs")
+
 
 @pytest.mark.parametrize("vector_store", ["cassandra", "astra_db"])
 @pytest.mark.asyncio
@@ -158,8 +163,10 @@ async def test_async_from_docs(request, vector_store: str):
     )
     assert validate_retrieval(results, key_value="Quantum Opacity")
 
-    results: List[Tuple[Document, float]] = await vector_store.asimilarity_search_with_score(
-        "What are Xenospheric Particulates?"
+    results: List[Tuple[Document, float]] = (
+        await vector_store.asimilarity_search_with_score(
+            "What are Xenospheric Particulates?"
+        )
     )
 
     assert len(results) > 3
@@ -177,5 +184,7 @@ async def test_async_from_docs(request, vector_store: str):
     assert validate_retrieval(results, key_value="dolphin")
 
     retriever = vector_store.as_retriever(k=2)
-    results: List[Document] = await retriever.ainvoke("What role do coral reefs play in marine ecosystems?")
+    results: List[Document] = await retriever.ainvoke(
+        "What role do coral reefs play in marine ecosystems?"
+    )
     assert validate_retrieval(results, key_value="coral reefs")

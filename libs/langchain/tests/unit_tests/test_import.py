@@ -6,9 +6,8 @@ def test_import():
     import openai  # noqa
     import tiktoken  # noqa
     import unstructured  # noqa
-    from langchain_astradb import AstraDBVectorStore  # noqa
-
     from langchain.vectorstores import AstraDB  # noqa
+    from langchain_astradb import AstraDBVectorStore  # noqa
 
 
 def test_meta():

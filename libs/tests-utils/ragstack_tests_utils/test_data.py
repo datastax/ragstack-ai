@@ -1,11 +1,11 @@
-import os
 import csv
-
+import os
 from typing import List
 
 Embedding = List[List[float]]
 
-class TestData():
+
+class TestData:
 
     @staticmethod
     def _get_test_data_path(file_name: str) -> str:
@@ -13,18 +13,18 @@ class TestData():
         return os.path.join(script_directory, "test_data", file_name)
 
     @staticmethod
-    def _get_text_file(file_name:str) -> str:
-        with open(TestData._get_test_data_path(file_name), 'r') as f:
+    def _get_text_file(file_name: str) -> str:
+        with open(TestData._get_test_data_path(file_name), "r") as f:
             return f.read()
 
     @staticmethod
-    def _get_csv_embedding(csv_file_name:str) -> Embedding:
-        with open(TestData._get_test_data_path(csv_file_name), 'r') as f:
+    def _get_csv_embedding(csv_file_name: str) -> Embedding:
+        with open(TestData._get_test_data_path(csv_file_name), "r") as f:
             reader = csv.reader(f)
             return [[float(value) for value in row] for row in reader]
 
-    def save_csv_embedding(csv_file_name:str, embedding: Embedding):
-        with open(TestData._get_test_data_path(csv_file_name), 'w', newline='') as f:
+    def save_csv_embedding(csv_file_name: str, embedding: Embedding):
+        with open(TestData._get_test_data_path(csv_file_name), "w", newline="") as f:
             writer = csv.writer(f)
             writer.writerows(embedding)
 

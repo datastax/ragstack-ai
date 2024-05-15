@@ -95,7 +95,9 @@ class ColbertVectorStore(VectorStore):
         """
         return None if ids is None else self._vector_store.delete(ids=ids)
 
-    async def adelete(self, ids: Optional[List[str]] = None, **kwargs: Any) -> Optional[bool]:
+    async def adelete(
+        self, ids: Optional[List[str]] = None, **kwargs: Any
+    ) -> Optional[bool]:
         """Delete by vector ID or other criteria.
 
         Args:

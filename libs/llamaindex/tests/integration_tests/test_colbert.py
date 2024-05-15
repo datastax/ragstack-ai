@@ -2,8 +2,8 @@ import logging
 from typing import Dict, List, Tuple
 
 import pytest
+from llama_index.core import Settings, get_response_synthesizer
 from llama_index.core.ingestion import IngestionPipeline
-from llama_index.core import get_response_synthesizer, Settings
 from llama_index.core.query_engine import RetrieverQueryEngine
 from llama_index.core.schema import Document, NodeWithScore
 from llama_index.core.text_splitter import SentenceSplitter
@@ -13,9 +13,8 @@ from ragstack_colbert import (
     ColbertVectorStore,
     Metadata,
 )
-from ragstack_tests_utils import TestData
-
 from ragstack_llamaindex.colbert import ColbertRetriever
+from ragstack_tests_utils import TestData
 
 logging.getLogger("cassandra").setLevel(logging.ERROR)
 
@@ -43,7 +42,7 @@ def astra_db():
     return get_astradb_test_store()
 
 
-@pytest.mark.parametrize("vector_store", [ "astra_db"]) #"cassandra",
+@pytest.mark.parametrize("vector_store", ["astra_db"])  # "cassandra",
 def test_sync(request, vector_store: str):
     vector_store = request.getfixturevalue(vector_store)
     session = vector_store.create_cassandra_session()
@@ -123,7 +122,5 @@ def test_sync(request, vector_store: str):
     )
     assert validate_retrieval(results, key_value="Chrono-spatial Echoes")
 
-    results = pipeline.retrieve(
-        "How do anglerfish adapt to the deep ocean's darkness?"
-    )
+    results = pipeline.retrieve("How do anglerfish adapt to the deep ocean's darkness?")
     assert validate_retrieval(results, key_value="anglerfish")

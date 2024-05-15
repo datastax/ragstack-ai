@@ -1,15 +1,12 @@
 import logging
 
 import pytest
-
 from ragstack_colbert import CassandraDatabase, Chunk
-
+from ragstack_tests_utils import TestData
 from tests.integration_tests.conftest import (
     get_astradb_test_store,
     get_local_cassandra_test_store,
 )
-
-from ragstack_tests_utils import TestData
 
 
 @pytest.fixture
@@ -20,6 +17,7 @@ def cassandra():
 @pytest.fixture
 def astra_db():
     return get_astradb_test_store()
+
 
 @pytest.mark.parametrize("vector_store", ["cassandra", "astra_db"])
 def test_database_sync(request, vector_store: str):
@@ -55,13 +53,14 @@ def test_database_sync(request, vector_store: str):
     results = database.add_chunks(chunks=[chunk_0, chunk_1])
 
     assert len(results) == 2
-    assert results[0] == (doc_id,0)
-    assert results[1] == (doc_id,1)
+    assert results[0] == (doc_id, 0)
+    assert results[1] == (doc_id, 1)
 
     # TODO: verify other db methods.
 
     result = database.delete_chunks(doc_ids=[doc_id])
     assert result == True
+
 
 @pytest.mark.parametrize("vector_store", ["cassandra", "astra_db"])
 @pytest.mark.asyncio
@@ -97,13 +96,10 @@ async def test_database_async(request, vector_store: str):
 
     results = await database.aadd_chunks(chunks=[chunk_0, chunk_1])
     assert len(results) == 2
-    assert results[0] == (doc_id,0)
-    assert results[1] == (doc_id,1)
+    assert results[0] == (doc_id, 0)
+    assert results[1] == (doc_id, 1)
 
-    chunks = await database.search_relevant_chunks(
-        vector=chunk_0.embedding[5],
-        n=2
-    )
+    chunks = await database.search_relevant_chunks(vector=chunk_0.embedding[5], n=2)
     assert len(chunks) == 1
     assert chunks[0].doc_id == doc_id
     assert chunks[0].chunk_id == 0
@@ -127,7 +123,9 @@ async def test_database_async(request, vector_store: str):
     # assert chunk.metadata == chunk_0.metadata
     assert chunk.embedding is None
 
-    chunk = await database.get_chunk_data(doc_id=doc_id, chunk_id=0, include_embedding=True)
+    chunk = await database.get_chunk_data(
+        doc_id=doc_id, chunk_id=0, include_embedding=True
+    )
     assert chunk.doc_id == doc_id
     assert chunk.chunk_id == 0
     assert chunk.text == chunk_0.text

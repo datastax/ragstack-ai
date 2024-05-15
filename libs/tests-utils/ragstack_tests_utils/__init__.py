@@ -1,6 +1,6 @@
 from .cassandra_container import CassandraContainer
 from .test_data import TestData
-from .test_store import TestStore, LocalCassandraTestStore, AstraDBTestStore
+from .test_store import AstraDBTestStore, LocalCassandraTestStore, TestStore
 
 __all__ = [
     "AstraDBTestStore",

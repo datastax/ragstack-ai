@@ -46,9 +46,12 @@ class ColbertVectorStore(BaseVectorStore):
                 "To use this method, `embedding_model` must be set on class creation."
             )
 
-    def _build_chunks(self, texts: List[str],
+    def _build_chunks(
+        self,
+        texts: List[str],
         metadatas: Optional[List[Metadata]] = None,
-        doc_id: Optional[str] = None) -> List[Chunk]:
+        doc_id: Optional[str] = None,
+    ) -> List[Chunk]:
 
         self._validate_embedding_model()
 
@@ -119,7 +122,7 @@ class ColbertVectorStore(BaseVectorStore):
             doc_ids (List[str]): A list of document identifiers specifying the chunks to be deleted.
 
         Returns:
-            True if the delete was successful.
+            True if the all the deletes were successful.
         """
 
         return self._database.delete_chunks(doc_ids=doc_ids)
@@ -170,7 +173,7 @@ class ColbertVectorStore(BaseVectorStore):
             doc_ids (List[str]): A list of document identifiers specifying the chunks to be deleted.
 
         Returns:
-            True if the delete was successful.
+            True if the all the deletes were successful.
         """
         return await self._database.adelete_chunks(doc_ids=doc_ids)
 

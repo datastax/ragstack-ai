@@ -80,6 +80,7 @@ class BaseVectorStore(ABC):
         """
 
         # handles LlamaIndex add
+
     @abstractmethod
     async def aadd_chunks(self, chunks: List[Chunk]) -> List[Tuple[str, int]]:
         """

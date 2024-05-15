@@ -9,7 +9,6 @@ import logging
 from typing import List, Optional
 
 import torch
-
 from colbert.infra import ColBERTConfig
 from colbert.modeling.checkpoint import Checkpoint
 

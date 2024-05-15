@@ -1,5 +1,4 @@
 import torch
-
 from ragstack_colbert.colbert_retriever import max_similarity_torch
 from ragstack_colbert.text_encoder import calculate_query_maxlen
 
