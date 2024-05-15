@@ -25,9 +25,9 @@ class ColbertRetriever(BaseRetriever):
         qa.run("what happened on June 4th?")
     """
 
-    _retriever: ColbertBaseRetriever
-    _k: int
-    _query_maxlen: Optional[int]
+    retriever: ColbertBaseRetriever
+    k: int
+    query_maxlen: Optional[int]
 
     def __init__(
         self,
@@ -37,9 +37,9 @@ class ColbertRetriever(BaseRetriever):
         **kwargs: Any,
     ):
         super().__init__(retriever=retriever, k=k, **kwargs)
-        self._retriever = retriever
-        self._k = k
-        self._query_maxlen = query_maxlen
+        self.retriever = retriever
+        self.k = k
+        self.query_maxlen = query_maxlen
 
     def _get_relevant_documents(
         self,
@@ -54,8 +54,8 @@ class ColbertRetriever(BaseRetriever):
         Returns:
             List of relevant documents
         """
-        chunk_scores: List[Tuple[Chunk, float]] = self._retriever.text_search(
-            query_text=query, k=self._k, query_maxlen=self._query_maxlen
+        chunk_scores: List[Tuple[Chunk, float]] = self.retriever.text_search(
+            query_text=query, k=self.k, query_maxlen=self.query_maxlen
         )
 
         return [
@@ -76,8 +76,8 @@ class ColbertRetriever(BaseRetriever):
         Returns:
             List of relevant documents
         """
-        chunk_scores: List[Tuple[Chunk, float]] = await self._retriever.atext_search(
-            query_text=query, k=self._k, query_maxlen=self._query_maxlen
+        chunk_scores: List[Tuple[Chunk, float]] = await self.retriever.atext_search(
+            query_text=query, k=self.k, query_maxlen=self.query_maxlen
         )
 
         return [

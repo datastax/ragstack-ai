@@ -61,6 +61,27 @@ class ColbertVectorStore(VectorStore):
             texts=list(texts), metadatas=metadatas, doc_id=doc_id
         )
 
+    async def aadd_texts(
+        self,
+        texts: Iterable[str],
+        metadatas: Optional[List[dict]] = None,
+        doc_id: Optional[str] = None,
+        **kwargs: Any,
+    ) -> List[str]:
+        """Run more texts through the embeddings and add to the vectorstore.
+
+        Args:
+            texts: Iterable of strings to add to the vectorstore.
+            metadatas: Optional list of metadatas associated with the texts.
+            kwargs: vectorstore specific parameters
+
+        Returns:
+            List of ids from adding the texts into the vectorstore.
+        """
+        return await self._vector_store.aadd_texts(
+            texts=list(texts), metadatas=metadatas, doc_id=doc_id
+        )
+
     def delete(self, ids: Optional[List[str]] = None, **kwargs: Any) -> Optional[bool]:
         """Delete by vector ID or other criteria.
 
@@ -73,6 +94,19 @@ class ColbertVectorStore(VectorStore):
             False otherwise, None if not implemented.
         """
         return None if ids is None else self._vector_store.delete(ids=ids)
+
+    async def adelete(self, ids: Optional[List[str]] = None, **kwargs: Any) -> Optional[bool]:
+        """Delete by vector ID or other criteria.
+
+        Args:
+            ids: List of ids to delete.
+            **kwargs: Other keyword arguments that subclasses might use.
+
+        Returns:
+            Optional[bool]: True if deletion is successful,
+            False otherwise, None if not implemented.
+        """
+        return None if ids is None else await self._vector_store.adelete(ids=ids)
 
     def similarity_search(
         self,
@@ -206,9 +240,10 @@ class ColbertVectorStore(VectorStore):
         **kwargs: Any,
     ) -> CVS:
         """Return VectorStore initialized from texts and embeddings."""
-        return await run_in_executor(
-            None, cls.from_texts, texts, database, embedding_model, metadatas, **kwargs
-        )
+        instance = super().__new__(cls)
+        instance._initialize(database=database, embedding_model=embedding_model)
+        await instance.aadd_texts(texts=texts, metadatas=metadatas)
+        return instance
 
     def as_retriever(self, k: Optional[int] = 5, **kwargs: Any) -> BaseRetriever:
         """Return a VectorStoreRetriever initialized from this VectorStore."""

@@ -39,7 +39,31 @@ class BaseDatabase(ABC):
             doc_ids (List[str]): A list of document identifiers specifying the chunks to be deleted.
 
         Returns:
-            True if the delete was successful.
+            True if the all the deletes were successful.
+        """
+
+    @abstractmethod
+    async def aadd_chunks(self, chunks: List[Chunk]) -> List[Tuple[str, int]]:
+        """
+        Stores a list of embedded text chunks in the vector store
+
+        Parameters:
+            chunks (List[Chunk]): A list of `Chunk` instances to be stored.
+
+        Returns:
+            a list of tuples: (doc_id, chunk_id)
+        """
+
+    @abstractmethod
+    async def adelete_chunks(self, doc_ids: List[str]) -> bool:
+        """
+        Deletes chunks from the vector store based on their document id.
+
+        Parameters:
+            doc_ids (List[str]): A list of document identifiers specifying the chunks to be deleted.
+
+        Returns:
+            True if the all the deletes were successful.
         """
 
     @abstractmethod
