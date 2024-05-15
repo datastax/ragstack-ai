@@ -205,6 +205,7 @@ class CassandraDatabase(BaseDatabase):
 
         tasks_per_chunk: Dict[Tuple[str, int], int] = defaultdict(int)
         all_tasks: Set[Tuple[str, int, int]] = set()
+        failed_chunks: Set[Tuple[str, int]] = set()
 
         def _result_callback(_: Any, task_id: Tuple[str, int, int]):
             tasks_per_chunk[task_id[:2]] -= 1
@@ -212,6 +213,7 @@ class CassandraDatabase(BaseDatabase):
 
         def _error_callback(e: Any, task_id: Tuple[str, int, int]):
             logging.error(f"Got error: {e} for task: {task_id}")
+            failed_chunks.add(task_id[:2])
             all_tasks.remove(task_id)
 
         def _init_put(
@@ -265,6 +267,9 @@ class CassandraDatabase(BaseDatabase):
             await asyncio.sleep(delay)
             # exponential increase delay, capped at 250 ms
             delay = min(delay * 2, 0.25)
+
+        if len(failed_chunks) > 0:
+            raise Exception(f"add failed for these chunks: {failed_chunks}. See error logs for more info.")
 
         results: List[Tuple[str, int]] = []
         for chunk in tasks_per_chunk:
