@@ -216,7 +216,7 @@ class CassandraDatabase(BaseDatabase):
             failed_chunks.add(task_id[:2])
             all_tasks.remove(task_id)
 
-        def _init_put(
+        async def _init_put(
             doc_id: str,
             chunk_id: int,
             embedding_id: int,
@@ -224,6 +224,12 @@ class CassandraDatabase(BaseDatabase):
             metadata: Optional[Dict[str, Any]] = None,
             vector: Optional[Vector] = None,
         ):
+            # queue up max 150 commands at a time
+            delay = 0.05
+            while len(all_tasks) > 150:
+                logging.info(f"too many tasks queued: {len(all_tasks)}, waiting")
+                await asyncio.sleep(delay)
+
             task_id = (doc_id, chunk_id, embedding_id)
             all_tasks.add(task_id)
             tasks_per_chunk[task_id[:2]] += 1
@@ -249,7 +255,7 @@ class CassandraDatabase(BaseDatabase):
             text = chunk.text
             metadata = chunk.metadata
 
-            _init_put(
+            await _init_put(
                 doc_id=doc_id,
                 chunk_id=chunk_id,
                 embedding_id=-1,
@@ -258,7 +264,7 @@ class CassandraDatabase(BaseDatabase):
             )
 
             for index, vector in enumerate(chunk.embedding):
-                _init_put(
+                await _init_put(
                     doc_id=doc_id, chunk_id=chunk_id, embedding_id=index, vector=vector
                 )
 
