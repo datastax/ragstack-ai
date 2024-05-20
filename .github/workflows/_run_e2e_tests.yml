@@ -61,20 +61,13 @@ jobs:
       - name: "Setup: Python 3.11"
         uses: ./.github/actions/setup-python
 
-      - name: Compute db name
-        id: db-name
-        run: |
-          echo "db-name=${{ github.run_id}}-$(echo $(for((i=1;i<=8;i++))
-          do printf '%s' "${RANDOM:0:1}"; done) | tr '[0-9]' '[a-z]')" >> $GITHUB_OUTPUT
-
       - name: Setup AstraDB
-        uses: ./.github/actions/setup-astra-db
+        uses: nicoloboschi/setup-astradb@v1
         id: astra-db
         timeout-minutes: 10
         if: ${{ inputs.astradb }}
         with:
-          astra-token: ${{ secrets[inputs.astradb-token-secret-name] }}
-          db-name: ${{ steps.db-name.outputs.db-name }}
+          token: ${{ secrets[inputs.astradb-token-secret-name] }}
           env: ${{ inputs.astradb-env }}
           region: ${{ inputs.astradb-region }}
           cloud: ${{ inputs.astradb-cloud }}
@@ -83,8 +76,8 @@ jobs:
         if: ${{ inputs.run-notebooks }}
         env:
           ASTRA_DB_APPLICATION_TOKEN: "${{ secrets[inputs.astradb-token-secret-name] }}"
-          ASTRA_DB_API_ENDPOINT: "${{ steps.astra-db.outputs.db_endpoint }}"
-          ASTRA_DB_ID: "${{ steps.astra-db.outputs.db_id }}"
+          ASTRA_DB_API_ENDPOINT: "${{ steps.astra-db.outputs.api-endpoint }}"
+          ASTRA_DB_ID: "${{ steps.astra-db.outputs.id }}"
           OPENAI_API_KEY: "${{ secrets.E2E_TESTS_OPEN_AI_KEY }}"
           LANGCHAIN_API_KEY: "${{ secrets.E2E_TESTS_LANGCHAIN_API_KEY }}"
           LLAMA_CLOUD_API_KEY: "${{ secrets.E2E_TESTS_LLAMA_CLOUD_API_KEY }}"
@@ -102,8 +95,8 @@ jobs:
         env:
           VECTOR_DATABASE_TYPE: "${{ inputs.vector-database-type }}"
           ASTRA_DB_APPLICATION_TOKEN: "${{ secrets[inputs.astradb-token-secret-name] }}"
-          ASTRA_DB_API_ENDPOINT: "${{ steps.astra-db.outputs.db_endpoint }}"
-          ASTRA_DB_ID: "${{ steps.astra-db.outputs.db_id }}"
+          ASTRA_DB_API_ENDPOINT: "${{ steps.astra-db.outputs.api-endpoint }}"
+          ASTRA_DB_ID: "${{ steps.astra-db.outputs.id }}"
           ASTRA_DB_ENV: "${{ inputs.astradb-env }}"
           OPENAI_API_KEY: "${{ secrets.E2E_TESTS_OPEN_AI_KEY }}"
           AZURE_OPENAI_API_KEY: "${{ secrets.E2E_TESTS_AZURE_OPEN_AI_KEY }}"
@@ -184,9 +177,10 @@ jobs:
           space: ${{ inputs.testspace-space }}
 
       - name: Cleanup AstraDB
-        uses: ./.github/actions/cleanup-astra-db
+        uses: nicoloboschi/cleanup-astradb@v1
         if: ${{ always() && inputs.astradb }}
         with:
-          astra-token: ${{ secrets[inputs.astradb-token-secret-name] }}
-          db-name: ${{ steps.db-name.outputs.db-name }}
+          token: ${{ secrets[inputs.astradb-token-secret-name] }}
+          name: ${{ steps.astra-db.outputs.name }}
           env: ${{ inputs.astradb-env }}
+          wait: false
