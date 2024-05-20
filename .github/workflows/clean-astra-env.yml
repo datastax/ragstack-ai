@@ -23,12 +23,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Clean DBs
-        env:
-          TERM: linux
-          ASTRA_TOKEN: "${{ secrets[matrix.astra_token_secret] }}"
-          ASTRA_ENV: "${{ matrix.env }}"
-        run: |
-          set -e
-          (curl -Ls "https://dtsx.io/get-astra-cli" | bash) || true
-          export ASTRA_BIN=/home/runner/.astra/cli/astra
-          ./scripts/clean-astra-env.sh
+        uses: nicoloboschi/cleanup-astradb-env@v1
+        with:
+          token: ${{ secrets[matrix.astra_token_secret] }}
+          env: ${{ matrix.env }}
+          threshold-seconds: 7200
+          wait: false
