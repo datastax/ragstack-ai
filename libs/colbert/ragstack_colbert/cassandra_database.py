@@ -42,7 +42,7 @@ class CassandraDatabase(BaseDatabase):
         astra_token: str,
         keyspace: Optional[str] = "default_keyspace",
         table_name: Optional[str] = "colbert",
-        timeout: Optional[int] = 180,
+        timeout: Optional[int] = 300,
     ):
         cassio.init(token=astra_token, database_id=database_id, keyspace=keyspace)
         session = cassio.config.resolve_session()
