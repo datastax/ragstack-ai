@@ -82,12 +82,13 @@ class BaseVectorStore(ABC):
         # handles LlamaIndex add
 
     @abstractmethod
-    async def aadd_chunks(self, chunks: List[Chunk]) -> List[Tuple[str, int]]:
+    async def aadd_chunks(self, chunks: List[Chunk], concurrent_inserts: Optional[int] = 100) -> List[Tuple[str, int]]:
         """
         Stores a list of embedded text chunks in the vector store
 
         Parameters:
             chunks (List[Chunk]): A list of `Chunk` instances to be stored.
+            concurrent_inserts (Optional[int]): How many concurrent inserts to make to the database. Defaults to 100.
 
         Returns:
             a list of tuples: (doc_id, chunk_id)
@@ -100,6 +101,7 @@ class BaseVectorStore(ABC):
         texts: List[str],
         metadatas: Optional[List[Metadata]],
         doc_id: Optional[str] = None,
+        concurrent_inserts: Optional[int] = 100,
     ) -> List[Tuple[str, int]]:
         """
         Embeds and stores a list of text chunks and optional metadata into the vector store
@@ -110,6 +112,7 @@ class BaseVectorStore(ABC):
                                                    If provided, these are set 1 to 1 with the texts list.
             doc_id (Optional[str]): The document id associated with the texts. If not provided,
                                     it is generated.
+            concurrent_inserts (Optional[int]): How many concurrent inserts to make to the database. Defaults to 100.
 
         Returns:
             a list of tuples: (doc_id, chunk_id)
@@ -117,12 +120,13 @@ class BaseVectorStore(ABC):
 
     # handles LangChain and LlamaIndex delete
     @abstractmethod
-    async def adelete_chunks(self, doc_ids: List[str]) -> bool:
+    async def adelete_chunks(self, doc_ids: List[str], concurrent_deletes: Optional[int] = 100) -> bool:
         """
         Deletes chunks from the vector store based on their document id.
 
         Parameters:
             doc_ids (List[str]): A list of document identifiers specifying the chunks to be deleted.
+            concurrent_deletes (Optional[int]): How many concurrent deletes to make to the database. Defaults to 100.
 
         Returns:
             True if the all the deletes were successful.

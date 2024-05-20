@@ -108,28 +108,6 @@ class CassandraDatabase(BaseDatabase):
                 f"issue inserting document embedding: {doc_id} chunk: {chunk_id} embedding: {embedding_id}: {exp}"
             )
 
-
-    def _put_async(
-        self,
-        doc_id: str,
-        chunk_id: int,
-        embedding_id: Optional[int] = None,
-        text: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None,
-        vector: Optional[Vector] = None,
-    ) -> ResponseFuture:
-        if vector is None:
-            return self._table.put_async(
-                partition_id=doc_id,
-                row_id=(chunk_id, -1),
-                body_blob=text,
-                metadata=metadata,
-            )
-        else:
-            return self._table.put_async(
-                partition_id=doc_id, row_id=(chunk_id, embedding_id), vector=vector
-            )
-
     def add_chunks(self, chunks: List[Chunk]) -> List[Tuple[str, int]]:
         """
         Stores a list of embedded text chunks in the vector store
@@ -144,43 +122,25 @@ class CassandraDatabase(BaseDatabase):
         all_futures: List[Tuple[str, int, int, ResponseFuture]] = []
         futures_per_chunk: Dict[Tuple[str, int], int] = defaultdict(int)
 
-        def _init_put(
-            doc_id: str,
-            chunk_id: int,
-            embedding_id: int,
-            text: Optional[str] = None,
-            metadata: Optional[Dict[str, Any]] = None,
-            vector: Optional[Vector] = None,
-        ):
-            future = self._put_async(
-                doc_id=doc_id,
-                chunk_id=chunk_id,
-                embedding_id=embedding_id,
-                text=text,
-                metadata=metadata,
-                vector=vector,
-            )
-            all_futures.append((doc_id, chunk_id, embedding_id, future))
-            futures_per_chunk[(doc_id, chunk_id)] += 1
-
         for chunk in chunks:
             doc_id = chunk.doc_id
             chunk_id = chunk.chunk_id
-            text = chunk.text
-            metadata = chunk.metadata
 
-            _init_put(
-                doc_id=doc_id,
-                chunk_id=chunk_id,
-                embedding_id=-1,
-                text=text,
-                metadata=metadata,
-            )
-
-            for index, vector in enumerate(chunk.embedding):
-                _init_put(
-                    doc_id=doc_id, chunk_id=chunk_id, embedding_id=index, vector=vector
+            future = self._table.put_async(
+                    partition_id=doc_id,
+                    row_id=(chunk_id, -1),
+                    body_blob=chunk.text,
+                    metadata=chunk.metadata,
                 )
+            all_futures.append((doc_id, chunk_id, -1, future))
+            futures_per_chunk[(doc_id, chunk_id)] += 1
+
+            for embedding_id, vector in enumerate(chunk.embedding):
+                future = self._table.put_async(
+                    partition_id=doc_id, row_id=(chunk_id, embedding_id), vector=vector
+                )
+                all_futures.append((doc_id, chunk_id, embedding_id, future))
+                futures_per_chunk[(doc_id, chunk_id)] += 1
 
         for doc_id, chunk_id, embedding_id, future in all_futures:
             try:
@@ -190,12 +150,19 @@ class CassandraDatabase(BaseDatabase):
                 self._log_insert_error(doc_id=doc_id, chunk_id=chunk_id, embedding_id=embedding_id, exp=exp)
 
 
-        results: List[Tuple[str, int]] = []
-        for chunk in futures_per_chunk:
-            if futures_per_chunk[chunk] == 0:
-                results.append(chunk)
+        outputs: List[Tuple[str, int]] = []
+        failed_chunks: List[Tuple[str, int]] = []
 
-        return results
+        for (doc_id, chunk_id) in futures_per_chunk:
+            if futures_per_chunk[(doc_id, chunk_id)] == 0:
+                outputs.append((doc_id, chunk_id))
+            else:
+                failed_chunks.append((doc_id, chunk_id))
+
+        if len(failed_chunks) > 0:
+            raise Exception(f"add failed for these chunks: {failed_chunks}. See error logs for more info.")
+
+        return outputs
 
     async def _limited_put(
             self,
@@ -227,17 +194,18 @@ class CassandraDatabase(BaseDatabase):
             finally:
                 return doc_id, chunk_id, embedding_id, exp
 
-    async def aadd_chunks(self, chunks: List[Chunk]) -> List[Tuple[str, int]]:
+    async def aadd_chunks(self, chunks: List[Chunk], concurrent_inserts: Optional[int] = 100) -> List[Tuple[str, int]]:
         """
         Stores a list of embedded text chunks in the vector store
 
         Parameters:
             chunks (List[Chunk]): A list of `Chunk` instances to be stored.
+            concurrent_inserts (Optional[int]): How many concurrent inserts to make to the database. Defaults to 100.
 
         Returns:
             a list of tuples: (doc_id, chunk_id)
         """
-        semaphore = asyncio.Semaphore(100)
+        semaphore = asyncio.Semaphore(concurrent_inserts)
         all_tasks = []
         tasks_per_chunk = defaultdict(int)
 
@@ -276,9 +244,17 @@ class CassandraDatabase(BaseDatabase):
                 self._log_insert_error(doc_id=doc_id, chunk_id=chunk_id, embedding_id=embedding_id, exp=exp)
 
         outputs: List[Tuple[str, int]] = []
+        failed_chunks: List[Tuple[str, int]] = []
+
         for (doc_id, chunk_id) in tasks_per_chunk:
             if tasks_per_chunk[(doc_id, chunk_id)] == 0:
                 outputs.append((doc_id, chunk_id))
+            else:
+                failed_chunks.append((doc_id, chunk_id))
+
+        if len(failed_chunks) > 0:
+            raise Exception(f"add failed for these chunks: {failed_chunks}. See error logs for more info.")
+
         return outputs
 
     def delete_chunks(self, doc_ids: List[str]) -> bool:
@@ -298,12 +274,19 @@ class CassandraDatabase(BaseDatabase):
         ]
 
         success = True
+        failed_docs: List[str] = []
+
         for doc_id, future in futures:
             try:
                 future.result()
             except Exception as e:
                 success = False
                 logging.error(f"issue on delete of document: {doc_id}: {e}")
+                failed_docs.append(doc_id)
+
+        if len(failed_docs) > 0:
+            raise Exception(f"delete failed for these docs: {failed_docs}. See error logs for more info.")
+
         return success
 
     async def _limited_delete(
@@ -320,18 +303,19 @@ class CassandraDatabase(BaseDatabase):
             finally:
                 return doc_id, exp
 
-    async def adelete_chunks(self, doc_ids: List[str]) -> bool:
+    async def adelete_chunks(self, doc_ids: List[str], concurrent_deletes: Optional[int] = 100) -> bool:
         """
         Deletes chunks from the vector store based on their document id.
 
         Parameters:
             doc_ids (List[str]): A list of document identifiers specifying the chunks to be deleted.
+            concurrent_deletes (Optional[int]): How many concurrent deletes to make to the database. Defaults to 100.
 
         Returns:
             True if the all the deletes were successful.
         """
 
-        semaphore = asyncio.Semaphore(10)
+        semaphore = asyncio.Semaphore(concurrent_deletes)
         all_tasks = []
 
         for doc_id in doc_ids:
@@ -340,8 +324,10 @@ class CassandraDatabase(BaseDatabase):
                     doc_id=doc_id,
                 ))
 
-        success = True
         results = await asyncio.gather(*all_tasks, return_exceptions=True)
+
+        success = True
+        failed_docs: List[str] = []
 
         for (doc_id, exp) in results:
             if exp is not None:
@@ -349,7 +335,11 @@ class CassandraDatabase(BaseDatabase):
                     f"issue deleting document: {doc_id}: {exp}"
                 )
                 success = False
-    
+                failed_docs.append(doc_id)
+
+        if len(failed_docs) > 0:
+            raise Exception(f"delete failed for these docs: {failed_docs}. See error logs for more info.")
+
         return success
 
     async def search_relevant_chunks(self, vector: Vector, n: int) -> List[Chunk]:
