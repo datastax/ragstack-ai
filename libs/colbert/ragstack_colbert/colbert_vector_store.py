@@ -46,6 +46,36 @@ class ColbertVectorStore(BaseVectorStore):
                 "To use this method, `embedding_model` must be set on class creation."
             )
 
+    def _build_chunks(
+        self,
+        texts: List[str],
+        metadatas: Optional[List[Metadata]] = None,
+        doc_id: Optional[str] = None,
+    ) -> List[Chunk]:
+
+        self._validate_embedding_model()
+
+        if metadatas is not None and len(texts) != len(metadatas):
+            raise ValueError("Length of texts and metadatas must match.")
+
+        if doc_id is None:
+            doc_id = str(uuid.uuid4())
+
+        embeddings = self._embedding_model.embed_texts(texts=texts)
+
+        chunks: List[Chunk] = []
+        for i, text in enumerate(texts):
+            chunks.append(
+                Chunk(
+                    doc_id=doc_id,
+                    chunk_id=i,
+                    text=text,
+                    metadata={} if metadatas is None else metadatas[i],
+                    embedding=embeddings[i],
+                )
+            )
+        return chunks
+
     # implements the abc method to handle LlamaIndex add
     def add_chunks(self, chunks: List[Chunk]) -> List[Tuple[str, int]]:
         """
@@ -80,28 +110,7 @@ class ColbertVectorStore(BaseVectorStore):
         Returns:
             a list of tuples: (doc_id, chunk_id)
         """
-        self._validate_embedding_model()
-
-        if metadatas is not None and len(texts) != len(metadatas):
-            raise ValueError("Length of texts and metadatas must match.")
-
-        if doc_id is None:
-            doc_id = str(uuid.uuid4())
-
-        embeddings = self._embedding_model.embed_texts(texts=texts)
-
-        chunks: List[Chunk] = []
-        for i, text in enumerate(texts):
-            chunks.append(
-                Chunk(
-                    doc_id=doc_id,
-                    chunk_id=i,
-                    text=text,
-                    metadata={} if metadatas is None else metadatas[i],
-                    embedding=embeddings[i],
-                )
-            )
-
+        chunks = self._build_chunks(texts=texts, metadatas=metadatas, doc_id=doc_id)
         return self._database.add_chunks(chunks=chunks)
 
     # implements the abc method to handle LangChain and LlamaIndex delete
@@ -113,10 +122,64 @@ class ColbertVectorStore(BaseVectorStore):
             doc_ids (List[str]): A list of document identifiers specifying the chunks to be deleted.
 
         Returns:
-            True if the delete was successful.
+            True if the all the deletes were successful.
         """
 
         return self._database.delete_chunks(doc_ids=doc_ids)
+
+    # implements the abc method to handle LlamaIndex add
+    async def aadd_chunks(self, chunks: List[Chunk], concurrent_inserts: Optional[int] = 100) -> List[Tuple[str, int]]:
+        """
+        Stores a list of embedded text chunks in the vector store
+
+        Parameters:
+            chunks (List[Chunk]): A list of `Chunk` instances to be stored.
+            concurrent_inserts (Optional[int]): How many concurrent inserts to make to the database. Defaults to 100.
+
+        Returns:
+            a list of tuples: (doc_id, chunk_id)
+        """
+
+        return await self._database.aadd_chunks(chunks=chunks, concurrent_inserts=concurrent_inserts)
+
+    # implements the abc method to handle LangChain add
+    async def aadd_texts(
+        self,
+        texts: List[str],
+        metadatas: Optional[List[Metadata]] = None,
+        doc_id: Optional[str] = None,
+        concurrent_inserts: Optional[int] = 100,
+    ) -> List[Tuple[str, int]]:
+        """
+        Embeds and stores a list of text chunks and optional metadata into the vector store
+
+        Parameters:
+            texts (List[str]): The list of text chunks to be embedded
+            metadatas (Optional[List[Metadata]])): An optional list of Metadata to be stored.
+                                                   If provided, these are set 1 to 1 with the texts list.
+            doc_id (Optional[str]): The document id associated with the texts. If not provided,
+                                    it is generated.
+            concurrent_inserts (Optional[int]): How many concurrent inserts to make to the database. Defaults to 100.
+
+        Returns:
+            a list of tuples: (doc_id, chunk_id)
+        """
+        chunks = self._build_chunks(texts=texts, metadatas=metadatas, doc_id=doc_id)
+        return await self._database.aadd_chunks(chunks=chunks, concurrent_inserts=concurrent_inserts)
+
+    # implements the abc method to handle LangChain and LlamaIndex delete
+    async def adelete_chunks(self, doc_ids: List[str], concurrent_deletes: Optional[int] = 100) -> bool:
+        """
+        Deletes chunks from the vector store based on their document id.
+
+        Parameters:
+            doc_ids (List[str]): A list of document identifiers specifying the chunks to be deleted.
+            concurrent_deletes (Optional[int]): How many concurrent deletes to make to the database. Defaults to 100.
+
+        Returns:
+            True if the all the deletes were successful.
+        """
+        return await self._database.adelete_chunks(doc_ids=doc_ids, concurrent_deletes=concurrent_deletes)
 
     def as_retriever(self) -> BaseRetriever:
         """

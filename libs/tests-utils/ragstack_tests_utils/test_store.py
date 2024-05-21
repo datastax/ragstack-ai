@@ -1,6 +1,6 @@
 import logging
 import os
-from abc import abstractmethod, ABC
+from abc import ABC, abstractmethod
 
 import cassio
 import pytest

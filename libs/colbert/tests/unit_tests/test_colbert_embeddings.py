@@ -1,5 +1,4 @@
 import torch
-
 from ragstack_colbert import ColbertEmbeddingModel
 from ragstack_colbert.constant import DEFAULT_COLBERT_DIM, DEFAULT_COLBERT_MODEL
 
