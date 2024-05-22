@@ -1,10 +1,11 @@
 #!/bin/bash
 set -e
+ALL_PACKAGES="ragstack-ai, ragstack-ai-langchain, ragstack-ai-llamaindex, ragstack-ai-colbert, ragstack-ai-knowledge-graph, ragstack-ai-knowledge-store"
 version=$1
 package=$2
 if [[ -z "$version" || -z "$package" ]]; then
     echo "Usage: $0 <version> <package>"
-    echo "Packages: ragstack-ai, ragstack-ai-langchain, ragstack-ai-llamaindex, ragstack-ai-colbert."
+    echo "Packages: $ALL_PACKAGES."
     exit 1
 fi
 
@@ -23,8 +24,12 @@ elif [ "$package" == "ragstack-ai-llamaindex" ]; then
     directory="libs/llamaindex"
 elif [ "$package" == "ragstack-ai-colbert" ]; then
     directory="libs/colbert"
+elif [ "$package" == "ragstack-ai-knowledge-graph" ]; then
+    directory="libs/knowledge-graph"
+elif [ "$package" == "ragstack-ai-knowledge-store" ]; then
+    directory="libs/knowledge-store"
 else
-    echo "Invalid package. Please choose from: ragstack-ai, ragstack-ai-langchain, ragstack-ai-llamaindex, ragstack-ai-colbert."
+    echo "Invalid package. Please choose from: $ALL_PACKAGES."
     exit 1
 fi
 
