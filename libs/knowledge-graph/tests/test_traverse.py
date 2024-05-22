@@ -1,6 +1,6 @@
 from precisely import assert_that, contains_exactly
 
-from ragstack_fine_grained_knowledge_store.traverse import Node, Relation, atraverse, traverse
+from ragstack_knowledge_graph.traverse import Node, Relation, atraverse, traverse
 
 from .conftest import DataFixture
 
