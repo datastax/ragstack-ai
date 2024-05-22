@@ -19,7 +19,7 @@ from llama_index.embeddings.azure_openai import AzureOpenAIEmbedding
 from llama_index.embeddings.bedrock import BedrockEmbedding
 from llama_index.llms.vertex import Vertex
 from llama_index.llms.bedrock import Bedrock
-from llama_index.llms.huggingface import HuggingFaceInferenceAPI
+
 from llama_index.llms.gemini import Gemini
 from llama_index.multi_modal_llms.gemini import GeminiMultiModal
 
@@ -167,6 +167,8 @@ def bedrock_cohere_embedding():
 
 @pytest.fixture
 def huggingface_hub_flant5xxl_llm():
+    # lazy import to supported disabling test
+    from llama_index.llms.huggingface import HuggingFaceInferenceAPI
     return HuggingFaceInferenceAPI(
         model_name="google/flan-t5-xxl",
         token=get_required_env("HUGGINGFACE_HUB_KEY"),
