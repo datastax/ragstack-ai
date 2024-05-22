@@ -19,7 +19,6 @@ from llama_index.embeddings.azure_openai import AzureOpenAIEmbedding
 from llama_index.embeddings.bedrock import BedrockEmbedding
 from llama_index.llms.vertex import Vertex
 from llama_index.llms.bedrock import Bedrock
-
 from llama_index.llms.gemini import Gemini
 from llama_index.multi_modal_llms.gemini import GeminiMultiModal
 
