@@ -1,0 +1,74 @@
+[tool.poetry]
+name = "ragstack-ai-fine-grained-knowledge-store"
+version = "0.0.1"
+description = "DataStax RAGStack Fine Grained Knowledge Store"
+license = "BUSL-1.1"
+authors = ["DataStax"]
+readme = "README.md"
+repository = "https://github.com/datastax/ragstack-ai"
+documentation = "https://docs.datastax.com/en/ragstack"
+packages = [{ include = "ragstack_fine_grained_knowledge_store" }]
+include = [
+    { path = "knowledge_graph/prompt_templates/*.md", format = ["sdist", "wheel"] }
+]
+
+
+[tool.poetry.dependencies]
+python = ">=3.9,<3.12"
+langchain = "^0.1.14"
+langchain-community = "^0.0.31"
+langchain-openai = "^0.1.1"
+langchain-experimental = "^0.0.56"
+cassio = "^0.1.5"
+graphviz = "^0.20.3"
+pydantic-yaml = "^1.3.0"
+pyyaml = "^6.0.1"
+
+
+[tool.poetry.group.dev.dependencies]
+python-dotenv = "^1.0.1"
+ipykernel = "^6.29.4"
+ruff = "^0.3.5"
+testcontainers = "~3.7.1"
+pytest = "^8.1.1"
+precisely = "^0.1.9"
+pytest-asyncio = "^0.23.6"
+pytest-dotenv = "^0.5.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+line-length = 98
+
+[tool.ruff.lint]
+# Enable Pyflakes `E` and `F` codes by default.
+select = [
+    # Pyflakes
+    "F",
+    # Pycodestyle
+    "E",
+    "W",
+    # isort
+    "I001",
+]
+ignore = []
+
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+[tool.ruff.lint.mccabe]
+# Unlike Flake8, default to a complexity level of 10.
+max-complexity = 10
+
+[tool.mypy]
+strict = true
+warn_unreachable = true
+pretty = true
+show_column_numbers = true
+show_error_context = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"

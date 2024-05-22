@@ -1,6 +1,6 @@
 from langchain_core.documents import Document
 
-from ragstack_knowledge_store.tests.conftest import DataFixture
+from ragstack_coarse_grained_knowledge_store.tests.conftest import DataFixture
 
 
 def test_write_retrieve(fresh_fixture: DataFixture):
