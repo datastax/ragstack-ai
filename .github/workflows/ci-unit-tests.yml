@@ -32,14 +32,23 @@ jobs:
           sudo docker build -t local-llm .
 
   unit-tests:
-    name: Unit Tests
+    name: Unit Tests (Python ${{ matrix.python-version }})
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version:
+          #- "3.12"
+          - "3.11"
+          - "3.10"
+          - "3.9"
     steps:
       - name: Check out the repo
         uses: actions/checkout@v4
 
-      - name: "Setup: Python 3.11"
+      - name: "Setup: Python ${{ matrix.python-version }}"
         uses: ./.github/actions/setup-python
+        with:
+          python-version: "${{ matrix.python-version }}"
 
       - name: Run lint
         uses: ./.github/actions/lint
