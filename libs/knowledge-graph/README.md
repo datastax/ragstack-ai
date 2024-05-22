@@ -1,4 +1,4 @@
-# RAGStack Fine Grained Knowledge Store
+# RAGStack Knowledge Store
 
 > [!WARNING]
 > This is a proof-of-concept showing how knowledge graphs can be stored in Astra
