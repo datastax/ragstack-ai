@@ -58,7 +58,7 @@ def llm() -> BaseChatModel:
     try:
         from langchain_openai import ChatOpenAI
 
-        model = ChatOpenAI(model_name="gpt-4-turbo-2024-04-09", temperature=0.0)
+        model = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0.0)
         return model
     except ValueError:
         pytest.skip("Unable to create OpenAI model")
