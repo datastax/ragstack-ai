@@ -6,7 +6,7 @@ from langchain_core.documents import Document
 from langchain_core.language_models import BaseChatModel
 from precisely import assert_that, contains_exactly
 
-from knowledge_graph.extraction import (
+from ragstack_fine_grained_knowledge_store.extraction import (
     KnowledgeSchema,
     KnowledgeSchemaExtractor,
 )

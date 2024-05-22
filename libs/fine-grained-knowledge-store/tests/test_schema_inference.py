@@ -2,7 +2,7 @@ from langchain_core.documents import Document
 from langchain_core.language_models import BaseChatModel
 from precisely import assert_that, contains_exactly
 
-from knowledge_graph.schema_inference import KnowledgeSchemaInferer
+from ragstack_fine_grained_knowledge_store.schema_inference import KnowledgeSchemaInferer
 
 MARIE_CURIE_SOURCE = """
 Marie Curie, was a Polish and naturalised-French physicist and chemist who

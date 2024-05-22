@@ -3,8 +3,8 @@ import pytest
 from precisely import assert_that, contains_exactly
 
 from cassandra.cluster import Session
-from knowledge_graph.knowledge_graph import CassandraKnowledgeGraph
-from knowledge_graph.traverse import Node, Relation
+from ragstack_fine_grained_knowledge_store.knowledge_graph import CassandraKnowledgeGraph
+from ragstack_fine_grained_knowledge_store.traverse import Node, Relation
 
 from .conftest import DataFixture
 

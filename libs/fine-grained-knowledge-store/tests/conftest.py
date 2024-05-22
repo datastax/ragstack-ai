@@ -9,7 +9,7 @@ from langchain_core.language_models import BaseChatModel
 from testcontainers.core.container import DockerContainer
 from testcontainers.core.waiting_utils import wait_for_logs
 
-from knowledge_graph.cassandra_graph_store import CassandraGraphStore
+from ragstack_fine_grained_knowledge_store.cassandra_graph_store import CassandraGraphStore
 
 
 @pytest.fixture(scope="session")

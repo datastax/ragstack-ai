@@ -1,7 +1,7 @@
 from precisely import assert_that, contains_exactly
 
-from knowledge_graph.runnables import extract_entities
-from knowledge_graph.traverse import Node
+from ragstack_fine_grained_knowledge_store.runnables import extract_entities
+from ragstack_fine_grained_knowledge_store.traverse import Node
 
 
 def test_extract_entities(llm):
