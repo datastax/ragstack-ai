@@ -8,8 +8,8 @@ from langchain_core.prompts import (
     SystemMessagePromptTemplate,
 )
 
-from knowledge_graph.knowledge_schema import KnowledgeSchema
-from knowledge_graph.templates import load_template
+from .knowledge_schema import KnowledgeSchema
+from .templates import load_template
 
 
 class KnowledgeSchemaInferer:

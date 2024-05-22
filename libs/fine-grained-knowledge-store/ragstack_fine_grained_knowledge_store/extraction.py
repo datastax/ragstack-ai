@@ -16,12 +16,12 @@ from langchain_experimental.graph_transformers.llm import (
     map_to_base_relationship,
 )
 
-from knowledge_graph.knowledge_schema import (
+from .knowledge_schema import (
     Example,
     KnowledgeSchema,
     KnowledgeSchemaValidator,
 )
-from knowledge_graph.templates import load_template
+from .templates import load_template
 
 
 def _format_example(idx: int, example: Example) -> str:

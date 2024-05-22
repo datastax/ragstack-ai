@@ -4,7 +4,7 @@ from typing import Dict, List, Self, Sequence, Union
 from langchain_community.graphs.graph_document import GraphDocument
 from langchain_core.pydantic_v1 import BaseModel
 
-from knowledge_graph.traverse import Node, Relation
+from .traverse import Node, Relation
 
 
 class NodeSchema(BaseModel):

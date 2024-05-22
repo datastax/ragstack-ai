@@ -3,7 +3,7 @@ from typing import Iterable, Union
 import graphviz
 from langchain_community.graphs.graph_document import GraphDocument, Node
 
-from knowledge_graph.knowledge_schema import KnowledgeSchema
+from .knowledge_schema import KnowledgeSchema
 
 
 def _node_label(node: Node) -> str:

@@ -101,8 +101,8 @@ class DataFixture:
 
 @pytest.fixture()
 def fresh_fixture(
-    db_session: Session, db_keyspace: str, local_embedding: Embeddings
+    db_session: Session, db_keyspace: str, openai_embedding: Embeddings
 ) -> Iterator[DataFixture]:
-    data = DataFixture(session=db_session, keyspace=db_keyspace, embedding=local_embedding)
+    data = DataFixture(session=db_session, keyspace=db_keyspace, embedding=openai_embedding)
     yield data
     data.drop()
