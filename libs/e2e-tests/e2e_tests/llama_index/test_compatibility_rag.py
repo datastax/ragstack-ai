@@ -168,6 +168,7 @@ def bedrock_cohere_embedding():
 def huggingface_hub_flant5xxl_llm():
     # lazy import to supported disabling test
     from llama_index.llms.huggingface import HuggingFaceInferenceAPI
+
     return HuggingFaceInferenceAPI(
         model_name="google/flan-t5-xxl",
         token=get_required_env("HUGGINGFACE_HUB_KEY"),
