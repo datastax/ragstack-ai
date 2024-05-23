@@ -23,10 +23,12 @@ def test_tool_with_openai_tool(cassandra):
     );
     """
     )
-    session.execute("""
+    session.execute(
+        """
     CREATE INDEX user_name
    ON default_keyspace.tool_table_users (user_name);
-    """)
+    """
+    )
 
     user_id = uuid.uuid4()
     session.execute(
@@ -46,7 +48,9 @@ def test_tool_with_openai_tool(cassandra):
     llm = OpenAI(model="gpt-4o")
     agent = OpenAIAgent.from_tools(tools, llm=llm, verbose=True)
 
-    response = agent.chat("What is the user_id of the user named 'my_user' in table default_keyspace.tool_table_users?")
+    response = agent.chat(
+        "What is the user_id of the user named 'my_user' in table default_keyspace.tool_table_users?"
+    )
     print(response)
     assert response is not None
     assert str(user_id) in str(response)
