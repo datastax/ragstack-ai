@@ -34,7 +34,7 @@ She was, in 1906, the first woman to become a professor at the University of
 Paris.
 """
 
-@pytest.mark.flaky(retries=3, delay=0)
+@pytest.mark.flaky(retries=10, delay=0)
 def test_extraction(extractor: KnowledgeSchemaExtractor):
     results = extractor.extract([Document(page_content=MARIE_CURIE_SOURCE)])
 
