@@ -1,9 +1,47 @@
 from langchain_core.documents import Document
-
 from .conftest import DataFixture
 
+from precisely import assert_that, contains_exactly
 
-def test_write_retrieve(fresh_fixture: DataFixture):
+def test_write_retrieve_href_url_pair(fresh_fixture: DataFixture):
+    a = Document(
+        page_content="A",
+        metadata={
+            "content_id": "a",
+            "urls": ["http://a"],
+        }
+    )
+    b = Document(
+        page_content="B",
+        metadata={
+            "content_id": "b",
+            "hrefs": ["http://a"],
+            "urls": ["http://b"],
+        }
+    )
+    c = Document(
+        page_content="C",
+        metadata={
+            "content_id": "c",
+            "hrefs": ["http://a"],
+        }
+    )
+    d = Document(
+        page_content="D",
+        metadata={
+            "content_id": "d",
+            "hrefs": ["http://a", "http://b"]
+        }
+    )
+
+    store = fresh_fixture.store([a, b, c, d])
+
+    assert_that(store._linked_ids("a"), contains_exactly())
+    assert_that(store._linked_ids("b"), contains_exactly("a"))
+    assert_that(store._linked_ids("c"), contains_exactly("a"))
+    assert_that(store._linked_ids("d"), contains_exactly("a", "b"))
+
+def test_write_retrieve_keywords(fresh_fixture: DataFixture):
     greetings = Document(
         page_content="Typical Greetings",
         metadata={

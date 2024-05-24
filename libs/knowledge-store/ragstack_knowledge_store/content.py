@@ -1,8 +1,4 @@
 from enum import Enum
-from typing import Optional, Set
-
-from langchain_core.pydantic_v1 import BaseModel, Field
-
 
 class Kind(str, Enum):
     document = "document"
@@ -26,14 +22,3 @@ class Kind(str, Enum):
 
     table = "table"
     """A table within a document."""
-
-
-class Content(BaseModel):
-    source_id: str
-    content_id: str
-    parent_id: Optional[str] = None
-    kind: Kind
-    keywords: Set[str] = Field(default_factory=set)
-    urls: Set[str] = Field(default_factory=set)
-    links: Set[str] = Field(default_factory=set)
-    text_content: Optional[str] = None
