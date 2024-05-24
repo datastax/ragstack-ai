@@ -84,7 +84,7 @@ def run_trulens_evaluation(vector_store: VectorStore, llm: BaseLanguageModel):
 
     # Wait for the feedback results to complete
     for feedback_future in as_completed(tru_record.feedback_results):
-        _, feedback_result = feedback_future.result()
+        feedback_result = feedback_future.result()
 
         feedback_result: FeedbackResult
 
