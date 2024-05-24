@@ -10,7 +10,7 @@ from collections import defaultdict
 from typing import Any, Dict, List, Optional, Set, Tuple
 
 import cassio
-from cassandra.cluster import ResponseFuture, Session
+from cassandra.cluster import Session
 from cassio.table.query import Predicate, PredicateOperator
 from cassio.table.tables import ClusteredMetadataVectorCassandraTable
 
@@ -119,50 +119,44 @@ class CassandraDatabase(BaseDatabase):
             a list of tuples: (doc_id, chunk_id)
         """
 
-        all_futures: List[Tuple[str, int, int, ResponseFuture]] = []
-        futures_per_chunk: Dict[Tuple[str, int], int] = defaultdict(int)
+        failed_chunks: List[Tuple[str, int]] = []
+        success_chunks: List[Tuple[str, int]] = []
 
         for chunk in chunks:
             doc_id = chunk.doc_id
             chunk_id = chunk.chunk_id
 
-            future = self._table.put_async(
+            try:
+                self._table.put(
                     partition_id=doc_id,
                     row_id=(chunk_id, -1),
                     body_blob=chunk.text,
                     metadata=chunk.metadata,
                 )
-            all_futures.append((doc_id, chunk_id, -1, future))
-            futures_per_chunk[(doc_id, chunk_id)] += 1
+            except Exception as exp:
+                self._log_insert_error(doc_id=doc_id, chunk_id=chunk_id, embedding_id=-1, exp=exp)
+                failed_chunks.append((doc_id, chunk_id))
+                continue
+
 
             for embedding_id, vector in enumerate(chunk.embedding):
-                future = self._table.put_async(
-                    partition_id=doc_id, row_id=(chunk_id, embedding_id), vector=vector
-                )
-                all_futures.append((doc_id, chunk_id, embedding_id, future))
-                futures_per_chunk[(doc_id, chunk_id)] += 1
+                try:
+                    self._table.put(
+                        partition_id=doc_id,
+                        row_id=(chunk_id, embedding_id),
+                        vector=vector,
+                    )
+                except Exception as exp:
+                    self._log_insert_error(doc_id=doc_id, chunk_id=chunk_id, embedding_id=-1, exp=exp)
+                    failed_chunks.append((doc_id, chunk_id))
+                    continue
 
-        for doc_id, chunk_id, embedding_id, future in all_futures:
-            try:
-                future.result()
-                futures_per_chunk[(doc_id, chunk_id)] -= 1
-            except Exception as exp:
-                self._log_insert_error(doc_id=doc_id, chunk_id=chunk_id, embedding_id=embedding_id, exp=exp)
-
-
-        outputs: List[Tuple[str, int]] = []
-        failed_chunks: List[Tuple[str, int]] = []
-
-        for (doc_id, chunk_id) in futures_per_chunk:
-            if futures_per_chunk[(doc_id, chunk_id)] == 0:
-                outputs.append((doc_id, chunk_id))
-            else:
-                failed_chunks.append((doc_id, chunk_id))
+            success_chunks.append((doc_id, chunk_id))
 
         if len(failed_chunks) > 0:
             raise Exception(f"add failed for these chunks: {failed_chunks}. See error logs for more info.")
 
-        return outputs
+        return success_chunks
 
     async def _limited_put(
             self,
@@ -268,26 +262,19 @@ class CassandraDatabase(BaseDatabase):
             True if the all the deletes were successful.
         """
 
-        futures = [
-            (doc_id, self._table.delete_partition_async(partition_id=doc_id))
-            for doc_id in doc_ids
-        ]
-
-        success = True
         failed_docs: List[str] = []
 
-        for doc_id, future in futures:
+        for doc_id in doc_ids:
             try:
-                future.result()
-            except Exception as e:
-                success = False
-                logging.error(f"issue on delete of document: {doc_id}: {e}")
+                self._table.delete_partition(partition_id=doc_id)
+            except Exception as exp:
+                logging.error(f"issue on delete of document: {doc_id}: {exp}")
                 failed_docs.append(doc_id)
 
         if len(failed_docs) > 0:
             raise Exception(f"delete failed for these docs: {failed_docs}. See error logs for more info.")
 
-        return success
+        return True
 
     async def _limited_delete(
             self,

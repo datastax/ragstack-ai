@@ -79,8 +79,7 @@ class BaseVectorStore(ABC):
             True if the all the deletes were successful.
         """
 
-        # handles LlamaIndex add
-
+    # handles LlamaIndex add
     @abstractmethod
     async def aadd_chunks(self, chunks: List[Chunk], concurrent_inserts: Optional[int] = 100) -> List[Tuple[str, int]]:
         """
