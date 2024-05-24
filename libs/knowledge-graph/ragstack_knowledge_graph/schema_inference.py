@@ -14,9 +14,6 @@ from .templates import load_template
 
 class KnowledgeSchemaInferer:
     def __init__(self, llm: BaseChatModel) -> None:
-        prompt = load_template(
-            "schema_inference.md",
-        )
         prompt = ChatPromptTemplate.from_messages(
             [
                 SystemMessagePromptTemplate(prompt=load_template("schema_inference.md")),
