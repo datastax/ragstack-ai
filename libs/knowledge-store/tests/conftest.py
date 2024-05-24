@@ -7,9 +7,11 @@ from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
 from testcontainers.core.container import DockerContainer
 from testcontainers.core.waiting_utils import wait_for_logs
+from dotenv import load_dotenv
 
 from ragstack_knowledge_store.knowledge_store import KnowledgeStore
 
+load_dotenv()
 
 @pytest.fixture(scope="session")
 def db_keyspace() -> str:
@@ -59,17 +61,10 @@ def openai_embedding() -> Embeddings:
     return OpenAIEmbeddings()
 
 
-@pytest.fixture(scope="session")
-def local_embedding() -> Embeddings:
-    from langchain_community.embeddings.ollama import OllamaEmbeddings
-
-    return OllamaEmbeddings()
-
-
 class DataFixture:
     def __init__(self, session: Session, keyspace: str, embedding: Embeddings) -> None:
         self.session = session
-        self.keyspace = "default_keyspace"
+        self.keyspace = keyspace
         self.uid = secrets.token_hex(8)
         self.node_table = f"nodes_{self.uid}"
         self.edge_table = f"edges_{self.uid}"
