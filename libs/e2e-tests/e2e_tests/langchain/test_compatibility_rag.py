@@ -31,7 +31,7 @@ from e2e_tests.test_utils import (
     get_local_resource_path,
     skip_test_due_to_implementation_not_supported,
 )
-from e2e_tests.langchain.nemo_guardrails import run_nemo_guardrails
+
 
 from langchain_core.embeddings import Embeddings
 from langchain_core.messages import HumanMessage
@@ -358,6 +358,10 @@ def _run_test(
     elif test_case == "trulens":
         run_trulens_evaluation(vector_store=vector_store, llm=llm)
     elif test_case == "nemo_guardrails":
+        try:
+            from e2e_tests.langchain.nemo_guardrails import run_nemo_guardrails
+        except Exception:
+            skip_test_due_to_implementation_not_supported("nemo_guardrails")
         # NeMo creates the LLM internally using the config
         run_nemo_guardrails(
             vector_store=vector_store, config=resolved_llm["nemo_config"]
