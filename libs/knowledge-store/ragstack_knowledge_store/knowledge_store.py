@@ -1,5 +1,5 @@
 import secrets
-from typing import Any, Dict, Iterable, List, Optional, Set, Union
+from typing import Any, Dict, Iterable, List, NamedTuple, Optional, Sequence, Union
 
 from cassandra.cluster import ResponseFuture, Session
 from cassio.config import check_resolve_keyspace, check_resolve_session
@@ -8,8 +8,8 @@ from langchain_core.embeddings import Embeddings
 from langchain_core.runnables import Runnable, RunnableLambda
 from langchain_core.vectorstores import VectorStore
 
-from .content import Kind
 from .concurrency import ConcurrentQueries
+from .content import Kind
 
 CONTENT_ID = "content_id"
 PARENT_CONTENT_ID = "parent_content_id"
@@ -242,6 +242,9 @@ class KnowledgeStore(VectorStore):
         """Access the query embedding object if available."""
         return self._embedding
 
+    def _concurrent_queries(self) -> ConcurrentQueries:
+        return ConcurrentQueries(self._session, concurrency=self._concurrency)
+
     # TODO: async
     def add_texts(
         self,
@@ -269,21 +272,24 @@ class KnowledgeStore(VectorStore):
         keywords_in_texts = {k for md in metadatas for k in md.get(KEYWORDS, {})}
         keywords_to_ids = {}
         if self._infer_keywords:
-            with ConcurrentQueries(self._session, concurrency=self._concurrency) as cq:
+            with self._concurrent_queries() as cq:
+
                 def handle_keywords(rows, k):
                     related = set(_results_to_ids(rows))
                     keywords_to_ids[k] = related
 
                 for k in keywords_in_texts:
-                    cq.execute(self._query_ids_by_keyword,
-                                parameters = (k,),
-                                callback = lambda rows, k1=k: handle_keywords(rows, k1))
+                    cq.execute(
+                        self._query_ids_by_keyword,
+                        parameters=(k,),
+                        callback=lambda rows, k1=k: handle_keywords(rows, k1),
+                    )
 
         new_hrefs_to_ids = {}
         new_urls_to_ids = {}
 
         ids = []
-        with ConcurrentQueries(self._session, concurrency=self._concurrency) as cq:
+        with self._concurrent_queries() as cq:
             tuples = zip(texts, text_embeddings, metadatas, strict=True)
             for text, text_embedding, metadata in tuples:
                 id = metadata.get(CONTENT_ID) or secrets.token_hex(8)
@@ -297,7 +303,9 @@ class KnowledgeStore(VectorStore):
                 for href in hrefs:
                     new_hrefs_to_ids.setdefault(href, set()).add(id)
 
-                cq.execute(self._insert_passage, (id, text, text_embedding, keywords, urls, hrefs))
+                cq.execute(
+                    self._insert_passage, (id, text, text_embedding, keywords, urls, hrefs)
+                )
 
                 if (parent_content_id := metadata.get(PARENT_CONTENT_ID)) is not None:
                     cq.execute(self._insert_edge, (id, str(parent_content_id)))
@@ -319,7 +327,8 @@ class KnowledgeStore(VectorStore):
 
             href_url_pairs = set()
 
-            with ConcurrentQueries(self._session, concurrency=self._concurrency) as cq:
+            with self._concurrent_queries() as cq:
+
                 def add_href_url_pairs(href_ids, url_ids):
                     for href_id in href_ids:
                         if not isinstance(href_id, str):
@@ -331,19 +340,23 @@ class KnowledgeStore(VectorStore):
                             href_url_pairs.add((href_id, url_id))
 
                 for href, href_ids in new_hrefs_to_ids.items():
-                    cq.execute(self._query_ids_by_url,
-                               parameters=(href, ),
-                               # Weird syntax ensures we capture each `href_ids` instead of the final value.
-                               callback=lambda urls, hrefs=href_ids: add_href_url_pairs(hrefs, urls))
+                    cq.execute(
+                        self._query_ids_by_url,
+                        parameters=(href,),
+                        # Weird syntax to capture each `href_ids` instead of the last iteration.
+                        callback=lambda urls, hrefs=href_ids: add_href_url_pairs(hrefs, urls),
+                    )
 
                 for url, url_ids in new_urls_to_ids.items():
-                    cq.execute(self._query_ids_by_href,
-                               parameters=(url, ),
-                               # Weird syntax ensures we capture each `url_ids` instead of the final value.
-                               callback=lambda hrefs, urls=url_ids: add_href_url_pairs(hrefs, urls))
+                    cq.execute(
+                        self._query_ids_by_href,
+                        parameters=(url,),
+                        # Weird syntax to capture each `url_ids` instead of the last iteration.
+                        callback=lambda hrefs, urls=url_ids: add_href_url_pairs(hrefs, urls),
+                    )
 
-            with ConcurrentQueries(self._session, concurrency=self._concurrency) as cq:
-                for (href, url) in href_url_pairs:
+            with self._concurrent_queries() as cq:
+                for href, url in href_url_pairs:
                     cq.execute(self._insert_edge, (href, url))
             print(f"Added {len(href_url_pairs)} edges based on HREFs/URLs")
 
@@ -409,27 +422,23 @@ class KnowledgeStore(VectorStore):
         results = self._session.execute(self._query_by_embedding, (query_vector, k))
         return _results_to_documents(results)
 
-    def _similarity_search_ids(
-        self,
-        query: str,
-        *,
-        k: int = 4,
-    ) -> Iterable[str]:
-        "Return content IDs of documents by similarity to `query`."
-        query_vector = self._embedding.embed_query(query)
-        results = self._session.execute(self._query_ids_by_embedding, (query_vector, k))
-        return _results_to_ids(results)
-
     def _query_by_ids(
         self,
         ids: Iterable[str],
     ) -> Iterable[Document]:
-        # TODO: Concurrency.
-        return [
-            _row_to_document(row)
-            for id in ids
-            for row in self._session.execute(self._query_by_id, (id,))
-        ]
+        results = []
+        with self._concurrent_queries() as cq:
+            for id in ids:
+
+                def add_documents(rows):
+                    results.extend(_results_to_documents(rows))
+
+                cq.execute(
+                    self._query_by_id,
+                    parameters=(id,),
+                    callback=lambda rows: add_documents(rows),
+                )
+        return results
 
     def _linked_ids(
         self,
@@ -456,25 +465,36 @@ class KnowledgeStore(VectorStore):
             Collection of retrieved documents.
         """
         if isinstance(query, str):
-            query = [query]
+            query = {query}
+        else:
+            query = set(query)
 
-        start_ids = {
-            content_id for q in query for content_id in self._similarity_search_ids(q, k=k)
-        }
+        with self._concurrent_queries() as cq:
+            visited = {}
 
-        result_ids = start_ids
-        source_ids = start_ids
-        for _ in range(0, depth):
-            # TODO: Concurrency
-            level_ids = {
-                content_id
-                for source_id in source_ids
-                for content_id in self._linked_ids(source_id)
-            }
-            result_ids.update(level_ids)
-            source_ids = level_ids
+            def visit(d: int, nodes: Sequence[NamedTuple]):
+                nonlocal visited
+                for node in nodes:
+                    content_id = node.content_id
+                    if d <= visited.get(content_id, depth):
+                        visited[content_id] = d
+                        # We discovered this for the first time, or at a shorter depth.
+                        if d + 1 <= depth:
+                            cq.execute(
+                                self._query_linked_ids,
+                                parameters=(content_id,),
+                                callback=lambda nodes, d=d: visit(d + 1, nodes),
+                            )
 
-        return self._query_by_ids(result_ids)
+            for q in query:
+                query_embedding = self._embedding.embed_query(q)
+                cq.execute(
+                    self._query_ids_by_embedding,
+                    parameters=(query_embedding, k),
+                    callback=lambda nodes: visit(0, nodes),
+                )
+
+        return self._query_by_ids(visited.keys())
 
     def as_retriever(
         self,
