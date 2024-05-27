@@ -3,15 +3,16 @@ from typing import Iterable, Iterator, Optional
 
 import pytest
 from cassandra.cluster import Cluster, Session
+from dotenv import load_dotenv
 from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
 from testcontainers.core.container import DockerContainer
 from testcontainers.core.waiting_utils import wait_for_logs
-from dotenv import load_dotenv
 
 from ragstack_knowledge_store.knowledge_store import KnowledgeStore
 
 load_dotenv()
+
 
 @pytest.fixture(scope="session")
 def db_keyspace() -> str:

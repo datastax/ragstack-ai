@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class Kind(str, Enum):
     document = "document"
     """A root document (PDF, HTML, etc.).

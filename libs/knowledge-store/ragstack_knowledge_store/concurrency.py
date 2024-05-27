@@ -19,10 +19,12 @@ class ConcurrentQueries(contextlib.AbstractContextManager):
 
         self._error = None
 
-    def _handle_result(self,
-                       result: Sequence[NamedTuple],
-                       future: ResponseFuture,
-                       callback: Optional[Callable[[Sequence[NamedTuple]], Any]]):
+    def _handle_result(
+        self,
+        result: Sequence[NamedTuple],
+        future: ResponseFuture,
+        callback: Optional[Callable[[Sequence[NamedTuple]], Any]],
+    ):
         if callback is not None:
             callback(result)
 
@@ -40,10 +42,12 @@ class ConcurrentQueries(contextlib.AbstractContextManager):
             self._error = error
             self._completion.notify()
 
-    def execute(self,
-                query: PreparedStatement,
-                parameters: Optional[Tuple] = None,
-                callback: Optional[str] = None):
+    def execute(
+        self,
+        query: PreparedStatement,
+        parameters: Optional[Tuple] = None,
+        callback: Optional[Callable[[Sequence[NamedTuple]], Any]] = None,
+    ):
         with self._completion:
             self._pending += 1
             if self._error is not None:
@@ -51,11 +55,14 @@ class ConcurrentQueries(contextlib.AbstractContextManager):
 
         self._semaphore.acquire()
         future: ResponseFuture = self._session.execute_async(query, parameters)
-        future.add_callbacks(self._handle_result, self._handle_error,
-                             callback_kwargs={
-                                 "future": future,
-                                 "callback": callback,
-                             })
+        future.add_callbacks(
+            self._handle_result,
+            self._handle_error,
+            callback_kwargs={
+                "future": future,
+                "callback": callback,
+            },
+        )
 
     def __enter__(self) -> "ConcurrentQueries":
         return super().__enter__()
