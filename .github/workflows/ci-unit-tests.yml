@@ -139,7 +139,7 @@ jobs:
 
       - name: Cleanup AstraDB
         uses: nicoloboschi/cleanup-astradb@v1
-        if: ${{ always() }}
+        if: ${{ always() && steps.astra-db.outputs.name != '' }}
         with:
           token: ${{ secrets.E2E_TESTS_ASTRA_DEV_DB_TOKEN }}
           name: ${{ steps.astra-db.outputs.name }}
