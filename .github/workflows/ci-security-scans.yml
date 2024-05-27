@@ -38,9 +38,9 @@ jobs:
         if: ${{ always() }}
         run: |
           # cleanup snyk scan docker resources
-          sudo docker rm -f $(sudo docker ps -a -q)
           sudo docker volume prune -f
           sudo docker system prune -f
+          du -sh *
 
           python -m pip install poetry>=1.7.1
           mkdir -p snyk_reports
