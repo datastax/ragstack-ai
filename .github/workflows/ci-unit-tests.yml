@@ -9,9 +9,25 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  preconditions:
+    name: Preconditions
+    runs-on: ubuntu-latest
+    outputs:
+      notebooks: ${{ steps.filter.outputs.notebooks }}
+      e2e_tests: ${{ steps.filter.outputs.e2e_tests }}
+      docker_examples: ${{ steps.filter.outputs.docker_examples }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: ./.github/changes-filter.yaml
+
   build-docker:
     name: Docker
     runs-on: ubuntu-latest
+    needs: ["preconditions"]
+    if: ${{ needs.preconditions.outputs.docker_examples == 'true' }}
     steps:
       - name: Check out the repo
         uses: actions/checkout@v4
@@ -33,6 +49,7 @@ jobs:
 
   unit-tests:
     name: Unit Tests (Python ${{ matrix.python-version }})
+    needs: ["preconditions"]
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -55,26 +72,28 @@ jobs:
         uses: ./.github/actions/lint
 
       - name: "Unit tests (root)"
-        if: ${{ matrix.python-version != '3.12' }}
         run: tox -e unit-tests && rm -rf .tox
 
       - name: "Unit tests (colbert)"
+        if: ${{ needs.preconditions.outputs.libs_colbert == 'true'}}
         run: tox -e unit-tests -c libs/colbert && rm -rf libs/colbert/.tox
 
       - name: "Unit tests (langchain)"
+        if: ${{ needs.preconditions.outputs.libs_langchain == 'true'}}
         run: tox -e unit-tests -c libs/langchain && rm -rf libs/langchain/.tox
 
       - name: "Unit tests (llamaindex)"
+        if: ${{ needs.preconditions.outputs.libs_llamaindex == 'true'}}
         run: tox -e unit-tests -c libs/llamaindex && rm -rf libs/llamaindex/.tox
 
       - name: "Unit tests (knowledge-store)"
-        if: ${{ matrix.python-version != '3.9' }}
+        if: ${{ needs.preconditions.outputs.libs_knowledge_store == 'true' && matrix.python-version != '3.9' }}
         env:
           OPENAI_API_KEY: "${{ secrets.E2E_TESTS_OPEN_AI_KEY }}"
         run: tox -e unit-tests -c libs/knowledge-store && rm -rf libs/knowledge-store/.tox
 
       - name: "Unit tests (knowledge-graph)"
-        if: ${{ matrix.python-version != '3.9' && matrix.python-version != '3.10' }}
+        if: ${{ needs.preconditions.outputs.libs_knowledge_graph == 'true' && matrix.python-version != '3.9' && matrix.python-version != '3.10' }}
         env:
           OPENAI_API_KEY: "${{ secrets.E2E_TESTS_OPEN_AI_KEY }}"
         run: tox -e unit-tests -c libs/knowledge-graph && rm -rf libs/knowledge-graph/.tox
@@ -82,23 +101,18 @@ jobs:
   integration-tests:
     name: Integration Tests
     runs-on: ubuntu-latest
+    if: ${{ needs.preconditions.outputs.integration_tests == 'true' }}
+    needs: ["preconditions"]
     timeout-minutes: 30
     steps:
       - name: Check out the repo
         uses: actions/checkout@v4
 
-      - uses: dorny/paths-filter@v2
-        id: filter
-        with:
-          filters: ./.github/changes-filter.yaml
-
       - name: "Setup: Python 3.11"
-        if: ${{ steps.filter.outputs.integration_tests == 'true' }}
         uses: ./.github/actions/setup-python
 
       - name: Setup AstraDB
         uses: nicoloboschi/setup-astradb@v1
-        if: ${{ steps.filter.outputs.integration_tests == 'true' }}
         id: astra-db
         with:
           token: ${{ secrets.E2E_TESTS_ASTRA_DEV_DB_TOKEN }}
@@ -107,7 +121,6 @@ jobs:
           cloud: "gcp"
 
       - name: "Integration tests"
-        if: ${{ steps.filter.outputs.integration_tests == 'true' }}
         env:
           ASTRA_DB_TOKEN: "${{ secrets.E2E_TESTS_ASTRA_DEV_DB_TOKEN }}"
           ASTRA_DB_ID: "${{ steps.astra-db.outputs.id }}"
@@ -126,7 +139,7 @@ jobs:
 
       - name: Cleanup AstraDB
         uses: nicoloboschi/cleanup-astradb@v1
-        if: ${{ always() && steps.filter.outputs.integration_tests == 'true' }}
+        if: ${{ always() && steps.astra-db.outputs.name != '' }}
         with:
           token: ${{ secrets.E2E_TESTS_ASTRA_DEV_DB_TOKEN }}
           name: ${{ steps.astra-db.outputs.name }}

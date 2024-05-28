@@ -9,8 +9,7 @@ on:
       - ".github/workflows/ci-security-scans.yml"
       - "scripts/**"
       - "docker/**"
-      - "pyproject.toml"
-      - "poetry.lock"
+      - "**/pyproject.toml"
     branches:
       - main
 
@@ -38,6 +37,11 @@ jobs:
       - name: Move snyk vulnerabilities file
         if: ${{ always() }}
         run: |
+          # cleanup snyk scan docker resources
+          sudo docker volume prune -f
+          sudo docker system prune -f
+          du -sh *
+
           python -m pip install poetry>=1.7.1
           mkdir -p snyk_reports
           mv snyk-vuln.json snyk_reports/snyk-vuln.json
