@@ -1,5 +1,4 @@
 from langchain_core.documents import Document
-from precisely import assert_that, contains_exactly
 
 from .conftest import DataFixture
 
@@ -28,15 +27,16 @@ def test_write_retrieve_href_url_pair(fresh_fixture: DataFixture):
         },
     )
     d = Document(
-        page_content="D", metadata={"content_id": "d", "hrefs": ["http://a", "http://b"]}
+        page_content="D",
+        metadata={"content_id": "d", "hrefs": ["http://a", "http://b"]},
     )
 
     store = fresh_fixture.store([a, b, c, d])
 
-    assert_that(store._linked_ids("a"), contains_exactly())
-    assert_that(store._linked_ids("b"), contains_exactly("a"))
-    assert_that(store._linked_ids("c"), contains_exactly("a"))
-    assert_that(store._linked_ids("d"), contains_exactly("a", "b"))
+    assert list(store._linked_ids("a")) == []
+    assert list(store._linked_ids("b")) == ["a"]
+    assert list(store._linked_ids("c")) == ["a"]
+    assert sorted(store._linked_ids("d")) == ["a", "b"]
 
 
 def test_write_retrieve_keywords(fresh_fixture: DataFixture):
@@ -67,13 +67,19 @@ def test_write_retrieve_keywords(fresh_fixture: DataFixture):
 
     # Doc2 is more similar, but World and Earth are similar enough that doc1 also shows up.
     results = store.similarity_search("Earth", k=2)
-    assert list(map(lambda d: d.page_content, results)) == [doc2.page_content, doc1.page_content]
+    assert list(map(lambda d: d.page_content, results)) == [
+        doc2.page_content,
+        doc1.page_content,
+    ]
 
     results = store.similarity_search("Earth", k=1)
     assert list(map(lambda d: d.page_content, results)) == [doc2.page_content]
 
     results = store.retrieve("Earth", k=2, depth=0)
-    assert set(map(lambda d: d.page_content, results)) == {doc2.page_content, doc1.page_content}
+    assert set(map(lambda d: d.page_content, results)) == {
+        doc2.page_content,
+        doc1.page_content,
+    }
 
     results = store.retrieve("Earth", k=2, depth=1)
     assert set(map(lambda d: d.page_content, results)) == {
