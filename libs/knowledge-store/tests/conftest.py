@@ -6,13 +6,13 @@ from cassandra.cluster import Cluster, Session
 from dotenv import load_dotenv
 from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
-from ragstack_knowledge_store.directed_edge_extractor import DirectedEdgeExtractor
-from ragstack_knowledge_store.parent_edge_extractor import ParentEdgeExtractor
-from ragstack_knowledge_store.undirected_edge_extractor import UndirectedEdgeExtractor
 from testcontainers.core.container import DockerContainer
 from testcontainers.core.waiting_utils import wait_for_logs
 
+from ragstack_knowledge_store.directed_edge_extractor import DirectedEdgeExtractor
 from ragstack_knowledge_store.knowledge_store import KnowledgeStore
+from ragstack_knowledge_store.parent_edge_extractor import ParentEdgeExtractor
+from ragstack_knowledge_store.undirected_edge_extractor import UndirectedEdgeExtractor
 
 load_dotenv()
 

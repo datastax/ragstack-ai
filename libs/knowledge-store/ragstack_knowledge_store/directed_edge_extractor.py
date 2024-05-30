@@ -1,7 +1,9 @@
 from __future__ import annotations
-from typing import Any, Dict, Iterable
+
+from typing import Any, Dict, Iterable, Set
+
 from ragstack_knowledge_store.edge_extractor import EdgeExtractor
-from ragstack_knowledge_store.knowledge_store import KnowledgeStore
+from ragstack_knowledge_store.knowledge_store import CONTENT_ID, KnowledgeStore
 
 
 class DirectedEdgeExtractor(EdgeExtractor):
@@ -15,43 +17,72 @@ class DirectedEdgeExtractor(EdgeExtractor):
     This may also be used for other forms of references, such as Wikipedia article IDs, etc.
     """
 
-    def __init__(self,
-                 sources_field: str,
-                 targets_field: str) -> None:
+    def __init__(self, sources_field: str, targets_field: str, kind: str) -> None:
         """Create a new DirectedEdgeExtractor.
 
         Params:
         - sources_field: The metadata field to read sources from.
         - targets_field: The metadata field to read targets from.
+        - kind: The kind label to apply to created edges. Must be unique.
         """
+
+        # TODO: Assert the kind matches some reasonable regex?
 
         # TODO: Allow specifying how properties should be added to the edge.
         # For instance, `links_to`.
         self._sources_field = sources_field
         self._targets_field = targets_field
+        self._kind = kind
+
+    @property
+    def kind(self) -> str:
+        return self._kind
 
     @staticmethod
     def for_hrefs_to_urls() -> DirectedEdgeExtractor:
-        return DirectedEdgeExtractor(sources_field="hrefs", targets_field="urls")
+        return DirectedEdgeExtractor(sources_field="hrefs", targets_field="urls", kind="link")
 
-    def extract_edges(self,
-                      store: KnowledgeStore,
-                      texts: Iterable[str],
-                      metadatas: Iterable[Dict[str, Any]]) -> int:
+    def _sources(self, metadata: Dict[str, Any]) -> Set[str]:
+        sources = metadata.get(self._sources_field)
+        if not sources:
+            return set()
+        elif isinstance(sources, str):
+            return set({sources})
+        else:
+            return set(sources)
+
+    def _targets(self, metadata: Dict[str, Any]) -> Set[str]:
+        targets = metadata.get(self._targets_field)
+        if not targets:
+            return set()
+        elif isinstance(targets, str):
+            return set({targets})
+        else:
+            return set(targets)
+
+    def tags(self, text: str, metadata: Dict[str, Any]) -> Set[str]:
+        results = set()
+        for source in self._sources(metadata):
+            results.add(f"{self._kind}_s:{source}")
+        for target in self._targets(metadata):
+            results.add(f"{self._kind}_t:{target}")
+        return results
+
+    def extract_edges(
+        self, store: KnowledgeStore, texts: Iterable[str], metadatas: Iterable[Dict[str, Any]]
+    ) -> int:
         # First, iterate over the new nodes, collecting the sources/targets that
         # are referenced and which IDs contain those.
         new_ids = set()
         new_sources_to_ids = {}
         new_targets_to_ids = {}
         for md in metadatas:
-            id = md["content_id"]
-            sources = set(md.get(self._sources_field, []))
-            targets = set(md.get(self._targets_field, []))
+            id = md[CONTENT_ID]
 
             new_ids.add(id)
-            for resource in sources:
+            for resource in self._sources(md):
                 new_sources_to_ids.setdefault(resource, set()).add(id)
-            for target in targets:
+            for target in self._targets(md):
                 new_targets_to_ids.setdefault(target, set()).add(id)
 
         # Then, retrieve the set of persisted items for each of those
@@ -59,6 +90,7 @@ class DirectedEdgeExtractor(EdgeExtractor):
         # Remembering that the the *new* nodes will have been added.
         source_target_pairs = set()
         with store._concurrent_queries() as cq:
+
             def add_source_target_pairs(href_ids, url_ids):
                 for href_id in href_ids:
                     if not isinstance(href_id, str):
@@ -71,22 +103,22 @@ class DirectedEdgeExtractor(EdgeExtractor):
 
             for resource, source_ids in new_sources_to_ids.items():
                 cq.execute(
-                    # TODO: For full generality, we should either prefix what we write
-                    # to this column, or allow per-extractor columns.
-                    store._query_ids_by_url,
-                    parameters=(resource,),
+                    store._query_ids_by_tag,
+                    parameters=(f"{self._kind}_t:{resource}",),
                     # Weird syntax to capture each `source_ids` instead of the last iteration.
-                    callback=lambda targets, sources=source_ids: add_source_target_pairs(sources, targets),
+                    callback=lambda targets, sources=source_ids: add_source_target_pairs(
+                        sources, targets
+                    ),
                 )
 
             for resource, target_ids in new_targets_to_ids.items():
                 cq.execute(
-                    # TODO: For full generality, we should either prefix what we write
-                    # to this column, or allow per-extractor columns.
-                    store._query_ids_by_href,
-                    parameters=(resource,),
+                    store._query_ids_by_tag,
+                    parameters=(f"{self._kind}_s:{resource}",),
                     # Weird syntax to capture each `target_ids` instead of the last iteration.
-                    callback=lambda sources, targets=target_ids: add_source_target_pairs(sources, targets),
+                    callback=lambda sources, targets=target_ids: add_source_target_pairs(
+                        sources, targets
+                    ),
                 )
 
         # TODO: we should allow passing in the concurent queries, and figure out

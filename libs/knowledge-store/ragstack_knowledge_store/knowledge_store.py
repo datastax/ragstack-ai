@@ -1,5 +1,14 @@
 import secrets
-from typing import Any, Coroutine, Dict, Iterable, List, NamedTuple, Optional, Sequence, Union
+from typing import (
+    Any,
+    Dict,
+    Iterable,
+    List,
+    NamedTuple,
+    Optional,
+    Sequence,
+    Union,
+)
 
 from cassandra.cluster import ResponseFuture, Session
 from cassio.config import check_resolve_keyspace, check_resolve_session
@@ -7,16 +16,13 @@ from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
 from langchain_core.runnables import Runnable, RunnableLambda
 from langchain_core.vectorstores import VectorStore
+
 from ragstack_knowledge_store.edge_extractor import EdgeExtractor
 
 from .concurrency import ConcurrentQueries
 from .content import Kind
 
 CONTENT_ID = "content_id"
-PARENT_CONTENT_ID = "parent_content_id"
-KEYWORDS = "keywords"
-HREFS = "hrefs"
-URLS = "urls"
 
 
 def _row_to_document(row) -> Document:
@@ -90,6 +96,7 @@ class KnowledgeStore(VectorStore):
         if apply_schema:
             self._apply_schema()
 
+        assert len(edge_extractors) == len(set([e.kind for e in edge_extractors]))
         self._edge_extractors = edge_extractors
 
         # TODO: Metadata
@@ -97,8 +104,8 @@ class KnowledgeStore(VectorStore):
         self._insert_passage = session.prepare(
             f"""
             INSERT INTO {keyspace}.{node_table} (
-                content_id, kind, text_content, text_embedding, keywords, urls, hrefs
-            ) VALUES (?, '{Kind.passage}', ?, ?, ?, ?, ?)
+                content_id, kind, text_content, text_embedding, tags
+            ) VALUES (?, '{Kind.passage}', ?, ?, ?)
             """
         )
 
@@ -144,27 +151,11 @@ class KnowledgeStore(VectorStore):
             """
         )
 
-        self._query_ids_by_keyword = session.prepare(
+        self._query_ids_by_tag = session.prepare(
             f"""
             SELECT content_id
             FROM {keyspace}.{node_table}
-            WHERE keywords CONTAINS ?
-            """
-        )
-
-        self._query_ids_by_href = session.prepare(
-            f"""
-            SELECT content_id
-            FROM {keyspace}.{node_table}
-            WHERE hrefs CONTAINS ?
-            """
-        )
-
-        self._query_ids_by_url = session.prepare(
-            f"""
-            SELECT content_id
-            FROM {keyspace}.{node_table}
-            WHERE urls CONTAINS ?
+            WHERE tags CONTAINS ?
             """
         )
 
@@ -178,9 +169,7 @@ class KnowledgeStore(VectorStore):
                 text_content TEXT,
                 text_embedding VECTOR<FLOAT, {embedding_dim}>,
 
-                keywords SET<TEXT>,
-                hrefs SET<TEXT>,
-                urls SET<TEXT>,
+                tags SET<TEXT>,
 
                 PRIMARY KEY (content_id)
             )
@@ -191,8 +180,8 @@ class KnowledgeStore(VectorStore):
             f"""CREATE TABLE IF NOT EXISTS {self._keyspace}.{self._edge_table} (
                 source_content_id TEXT,
                 target_content_id TEXT,
-                -- Denormalized target kind for filtering.
-                target_kind TEXT,
+                -- Kind of edge.
+                kind TEXT,
 
                 PRIMARY KEY (source_content_id, target_content_id)
             )
@@ -207,28 +196,12 @@ class KnowledgeStore(VectorStore):
             """
         )
 
-        # Index on keywords
+        # Index on tags
         # TODO: Case insensitivity?
         self._session.execute(
             f"""
-            CREATE CUSTOM INDEX IF NOT EXISTS {self._node_table}_keywords_index
-            ON {self._keyspace}.{self._node_table} (keywords)
-            USING 'StorageAttachedIndex';
-            """
-        )
-
-        self._session.execute(
-            f"""
-            CREATE CUSTOM INDEX IF NOT EXISTS {self._node_table}_hrefs_index
-            ON {self._keyspace}.{self._node_table} (hrefs)
-            USING 'StorageAttachedIndex';
-            """
-        )
-
-        self._session.execute(
-            f"""
-            CREATE CUSTOM INDEX IF NOT EXISTS {self._node_table}_urls_index
-            ON {self._keyspace}.{self._node_table} (urls)
+            CREATE CUSTOM INDEX IF NOT EXISTS {self._node_table}_tags_index
+            ON {self._keyspace}.{self._node_table} (tags)
             USING 'StorageAttachedIndex';
             """
         )
@@ -240,17 +213,6 @@ class KnowledgeStore(VectorStore):
 
     def _concurrent_queries(self) -> ConcurrentQueries:
         return ConcurrentQueries(self._session, concurrency=self._concurrency)
-
-    async def aadd_texts(self, texts: Iterable[str], metadatas: List[Dict] | None = None, **kwargs: Any) -> List[str]:
-        # TODO: Batch texts in case it is too long? Or assume it fits in memory.
-        text_embeddings_future = self._embedding.aembed_documents(texts)
-
-        texts = list(texts)
-        metadatas: Iterable[Dict[str, str]] = (
-            [{} for _ in texts] if metadatas is None else metadatas
-        )
-
-        return super().aadd_texts(texts, metadatas, **kwargs)
 
     def add_texts(
         self,
@@ -284,13 +246,11 @@ class KnowledgeStore(VectorStore):
                     metadata[CONTENT_ID] = secrets.token_hex(8)
                 id = metadata[CONTENT_ID]
                 ids.append(id)
-                keywords = metadata.get(KEYWORDS, set())
-                urls = metadata.get(URLS, set())
-                hrefs = metadata.get(HREFS, set())
 
-                cq.execute(
-                    self._insert_passage, (id, text, text_embedding, keywords, urls, hrefs)
-                )
+                tags = set()
+                tags.update(*[e.tags(text, metadata) for e in self._edge_extractors])
+
+                cq.execute(self._insert_passage, (id, text, text_embedding, tags))
 
         for extractor in self._edge_extractors:
             extractor.extract_edges(self, texts, metadatas)

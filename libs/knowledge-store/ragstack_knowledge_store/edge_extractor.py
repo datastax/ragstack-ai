@@ -1,10 +1,22 @@
 from abc import ABC
-from typing import Any, Dict, Iterable
+from typing import Any, Dict, Iterable, Set
 
 from knowledge_store import KnowledgeStore
 
+
 class EdgeExtractor(ABC):
-    def extract_edges(self, store: KnowledgeStore, texts: Iterable[str], metadatas: Iterable[Dict[str, Any]]) -> int:
+    @property
+    def kind(self) -> str:
+        """Return the kind of edge extracted by this."""
+        ...
+
+    def tags(self, text: str, metadata: Dict[str, Any]) -> Set[str]:
+        """Return the set of tags to add for this extraction."""
+        return set()
+
+    def extract_edges(
+        self, store: KnowledgeStore, texts: Iterable[str], metadatas: Iterable[Dict[str, Any]]
+    ) -> int:
         """Add edges for the given nodes.
 
         The nodes have already been persisted.
@@ -19,7 +31,9 @@ class EdgeExtractor(ABC):
         """
         ...
 
-    def aextract_edges(self, store: KnowledgeStore, texts: Iterable[str], metadatas: Iterable[Dict[str, Any]]) -> int:
+    def aextract_edges(
+        self, store: KnowledgeStore, texts: Iterable[str], metadatas: Iterable[Dict[str, Any]]
+    ) -> int:
         """Add edges for the given nodes.
 
         The nodes have already been persisted.
