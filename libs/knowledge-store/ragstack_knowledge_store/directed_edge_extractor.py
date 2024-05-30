@@ -1,0 +1,98 @@
+from __future__ import annotations
+from typing import Any, Dict, Iterable
+from ragstack_knowledge_store.edge_extractor import EdgeExtractor
+from ragstack_knowledge_store.knowledge_store import KnowledgeStore
+
+
+class DirectedEdgeExtractor(EdgeExtractor):
+    """Extract edges between uses (of a URL or other ID) and definitions (of a URL or other ID).
+
+    While `UndirectedEdgeExtractor` links nodes in both directions if they share
+    a keyword, this only creates links from nodes with a "source" to nodes with
+    a matching "target". For example, uses may be the `href` of `a` tags in the
+    chunk and definitions may be the URLs that the chunk is accessible at.
+
+    This may also be used for other forms of references, such as Wikipedia article IDs, etc.
+    """
+
+    def __init__(self,
+                 sources_field: str,
+                 targets_field: str) -> None:
+        """Create a new DirectedEdgeExtractor.
+
+        Params:
+        - sources_field: The metadata field to read sources from.
+        - targets_field: The metadata field to read targets from.
+        """
+
+        # TODO: Allow specifying how properties should be added to the edge.
+        # For instance, `links_to`.
+        self._sources_field = sources_field
+        self._targets_field = targets_field
+
+    @staticmethod
+    def for_hrefs_to_urls() -> DirectedEdgeExtractor:
+        return DirectedEdgeExtractor(sources_field="hrefs", targets_field="urls")
+
+    def extract_edges(self,
+                      store: KnowledgeStore,
+                      texts: Iterable[str],
+                      metadatas: Iterable[Dict[str, Any]]) -> int:
+        # First, iterate over the new nodes, collecting the sources/targets that
+        # are referenced and which IDs contain those.
+        new_ids = set()
+        new_sources_to_ids = {}
+        new_targets_to_ids = {}
+        for md in metadatas:
+            id = md["content_id"]
+            sources = set(md.get(self._sources_field, []))
+            targets = set(md.get(self._targets_field, []))
+
+            new_ids.add(id)
+            for resource in sources:
+                new_sources_to_ids.setdefault(resource, set()).add(id)
+            for target in targets:
+                new_targets_to_ids.setdefault(target, set()).add(id)
+
+        # Then, retrieve the set of persisted items for each of those
+        # source/targets and link them to the new items as needed.
+        # Remembering that the the *new* nodes will have been added.
+        source_target_pairs = set()
+        with store._concurrent_queries() as cq:
+            def add_source_target_pairs(href_ids, url_ids):
+                for href_id in href_ids:
+                    if not isinstance(href_id, str):
+                        href_id = href_id.content_id
+
+                    for url_id in url_ids:
+                        if not isinstance(url_id, str):
+                            url_id = url_id.content_id
+                    source_target_pairs.add((href_id, url_id))
+
+            for resource, source_ids in new_sources_to_ids.items():
+                cq.execute(
+                    # TODO: For full generality, we should either prefix what we write
+                    # to this column, or allow per-extractor columns.
+                    store._query_ids_by_url,
+                    parameters=(resource,),
+                    # Weird syntax to capture each `source_ids` instead of the last iteration.
+                    callback=lambda targets, sources=source_ids: add_source_target_pairs(sources, targets),
+                )
+
+            for resource, target_ids in new_targets_to_ids.items():
+                cq.execute(
+                    # TODO: For full generality, we should either prefix what we write
+                    # to this column, or allow per-extractor columns.
+                    store._query_ids_by_href,
+                    parameters=(resource,),
+                    # Weird syntax to capture each `target_ids` instead of the last iteration.
+                    callback=lambda sources, targets=target_ids: add_source_target_pairs(sources, targets),
+                )
+
+        # TODO: we should allow passing in the concurent queries, and figure out
+        # how to start sending these before everyting previously finished.
+        with store._concurrent_queries() as cq:
+            for source, target in source_target_pairs:
+                cq.execute(store._insert_edge, (source, target))
+
+        return len(source_target_pairs)

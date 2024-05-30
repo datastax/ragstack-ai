@@ -6,6 +6,9 @@ from cassandra.cluster import Cluster, Session
 from dotenv import load_dotenv
 from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
+from ragstack_knowledge_store.directed_edge_extractor import DirectedEdgeExtractor
+from ragstack_knowledge_store.parent_edge_extractor import ParentEdgeExtractor
+from ragstack_knowledge_store.undirected_edge_extractor import UndirectedEdgeExtractor
 from testcontainers.core.container import DockerContainer
 from testcontainers.core.waiting_utils import wait_for_logs
 
@@ -81,6 +84,11 @@ class DataFixture:
             self._store = KnowledgeStore.from_documents(
                 initial_documents,
                 self.embedding,
+                edge_extractors=[
+                    ParentEdgeExtractor(),
+                    DirectedEdgeExtractor.for_hrefs_to_urls(),
+                    UndirectedEdgeExtractor(),
+                ],
                 session=self.session,
                 keyspace=self.keyspace,
                 node_table=self.node_table,
