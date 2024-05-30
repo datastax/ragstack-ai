@@ -265,12 +265,12 @@ def nvidia_aifoundation_embedqa4_embedding():
 
 
 @pytest.fixture
-def nvidia_aifoundation_mixtral8x7b_llm():
+def nvidia_aifoundation_llama370b_llm():
     def llm():
         get_required_env("NVIDIA_API_KEY")
         from langchain_nvidia_ai_endpoints import ChatNVIDIA
 
-        return ChatNVIDIA(model="playground_mixtral_8x7b")
+        return ChatNVIDIA(model="ai-llama3-70b")
 
     return {"llm": llm, "nemo_config": None}
 
@@ -298,7 +298,7 @@ def nvidia_aifoundation_mixtral8x7b_llm():
         # ("huggingface_hub_minilml6v2_embedding", "huggingface_hub_flant5xxl_llm"),
         (
             "nvidia_aifoundation_embedqa4_embedding",
-            "nvidia_aifoundation_mixtral8x7b_llm",
+            "nvidia_aifoundation_llama370b_llm",
         ),
     ],
 )
