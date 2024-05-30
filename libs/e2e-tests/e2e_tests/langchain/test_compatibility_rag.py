@@ -122,12 +122,13 @@ def openai_3large_embedding():
 def astra_vectorize_openai_small():
     def call():
         from astrapy.info import CollectionVectorServiceOptions
+
         return {
             "collection_vector_service_options": CollectionVectorServiceOptions(
                 provider="openai",
                 model_name="text-embedding-3-small",
             ),
-            "collection_embedding_api_key": get_required_env("OPENAI_API_KEY")
+            "collection_embedding_api_key": get_required_env("OPENAI_API_KEY"),
         }
 
     return call
@@ -276,9 +277,10 @@ def nvidia_aifoundation_mixtral8x7b_llm():
 
 @pytest.mark.parametrize(
     "test_case",
-    ["rag_custom_chain",
-     # "conversational_rag", "trulens", "nemo_guardrails"
-     ],
+    [
+        "rag_custom_chain",
+        # "conversational_rag", "trulens", "nemo_guardrails"
+    ],
 )
 @pytest.mark.parametrize(
     "vector_store",
@@ -321,11 +323,11 @@ def test_rag(test_case, vector_store, embedding, llm, request, record_property):
 
 
 def _run_test(
-        test_case: str,
-        vector_store_context,
-        embedding_fn,
-        resolved_llm,
-        record_property,
+    test_case: str,
+    vector_store_context,
+    embedding_fn,
+    resolved_llm,
+    record_property,
 ):
     # NeMo guardrails running only with certain LLMs
     if test_case == "nemo_guardrails" and not resolved_llm["nemo_config"]:
@@ -476,7 +478,7 @@ def test_multimodal(vector_store, embedding, llm, request, record_property):
         record_langsmith_sharelink(run_id, record_property)
         answer = str(response.content)
         assert (
-                "Coffee Machine Ultra Cool" in answer
+            "Coffee Machine Ultra Cool" in answer
         ), f"Expected Coffee Machine Ultra Cool in the answer but got: {answer}"
 
 
