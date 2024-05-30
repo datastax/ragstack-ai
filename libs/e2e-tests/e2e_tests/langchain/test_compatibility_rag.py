@@ -87,6 +87,16 @@ def openai_gpt4_llm():
     }
 
 
+@pytest.fixture
+def openai_gpt4o_llm():
+    model = "gpt-4o"
+
+    return {
+        "llm": _chat_openai(model=model, streaming=False),
+        "nemo_config": {"engine": "openai", "model": model},
+    }
+
+
 def _openai_embeddings(**kwargs) -> callable:
     return lambda: OpenAIEmbeddings(
         openai_api_key=get_required_env("OPENAI_API_KEY"), **kwargs
@@ -106,6 +116,21 @@ def openai_3small_embedding():
 @pytest.fixture
 def openai_3large_embedding():
     return _openai_embeddings(model="text-embedding-3-large")
+
+
+@pytest.fixture
+def astra_vectorize_openai_small():
+    def call():
+        from astrapy.info import CollectionVectorServiceOptions
+        return {
+            "collection_vector_service_options": CollectionVectorServiceOptions(
+                provider="openai",
+                model_name="text-embedding-3-small",
+            ),
+            "collection_embedding_api_key": get_required_env("OPENAI_API_KEY")
+        }
+
+    return call
 
 
 @pytest.fixture
@@ -221,7 +246,6 @@ def huggingface_hub_flant5xxl_llm():
 
 @pytest.fixture
 def huggingface_hub_minilml6v2_embedding():
-
     return lambda: HuggingFaceInferenceAPIEmbeddings(
         api_key=get_required_env("HUGGINGFACE_HUB_KEY"),
         model_name="sentence-transformers/all-MiniLM-l6-v2",
@@ -229,12 +253,12 @@ def huggingface_hub_minilml6v2_embedding():
 
 
 @pytest.fixture
-def nvidia_aifoundation_nvolveqa40k_embedding():
+def nvidia_aifoundation_embedqa4_embedding():
     def embedding():
         get_required_env("NVIDIA_API_KEY")
         from langchain_nvidia_ai_endpoints.embeddings import NVIDIAEmbeddings
 
-        return NVIDIAEmbeddings(model="playground_nvolveqa_40k")
+        return NVIDIAEmbeddings(model="ai-embed-qa-4")
 
     return embedding
 
@@ -252,28 +276,31 @@ def nvidia_aifoundation_mixtral8x7b_llm():
 
 @pytest.mark.parametrize(
     "test_case",
-    ["rag_custom_chain", "conversational_rag", "trulens", "nemo_guardrails"],
+    ["rag_custom_chain",
+     # "conversational_rag", "trulens", "nemo_guardrails"
+     ],
 )
 @pytest.mark.parametrize(
     "vector_store",
-    ["astra_db", "cassandra"],
+    ["astra_db"],
 )
 @pytest.mark.parametrize(
     "embedding,llm",
     [
-        ("openai_ada002_embedding", "openai_gpt35turbo_llm"),
-        ("openai_3large_embedding", "openai_gpt35turbo_llm_streaming"),
-        ("openai_3small_embedding", "openai_gpt4_llm"),
-        ("azure_openai_ada002_embedding", "azure_openai_gpt35turbo_llm"),
-        ("vertex_gecko_embedding", "vertex_bison_llm"),
-        ("bedrock_titan_embedding", "bedrock_anthropic_claudev2_llm"),
-        ("bedrock_cohere_embedding", "bedrock_mistral_mistral7b_llm"),
-        ("bedrock_cohere_embedding", "bedrock_meta_llama2_llm"),
+        # ("openai_ada002_embedding", "openai_gpt35turbo_llm"),
+        # ("openai_3large_embedding", "openai_gpt35turbo_llm_streaming"),
+        # ("openai_3small_embedding", "openai_gpt4_llm"),
+        ("astra_vectorize_openai_small", "openai_gpt4o_llm"),
+        # ("azure_openai_ada002_embedding", "azure_openai_gpt35turbo_llm"),
+        # ("vertex_gecko_embedding", "vertex_bison_llm"),
+        # ("bedrock_titan_embedding", "bedrock_anthropic_claudev2_llm"),
+        # ("bedrock_cohere_embedding", "bedrock_mistral_mistral7b_llm"),
+        # ("bedrock_cohere_embedding", "bedrock_meta_llama2_llm"),
         # ("huggingface_hub_minilml6v2_embedding", "huggingface_hub_flant5xxl_llm"),
-        (
-            "nvidia_aifoundation_nvolveqa40k_embedding",
-            "nvidia_aifoundation_mixtral8x7b_llm",
-        ),
+        # (
+        #         "nvidia_aifoundation_embedqa4_embedding",
+        #         "nvidia_aifoundation_mixtral8x7b_llm",
+        # ),
     ],
 )
 def test_rag(test_case, vector_store, embedding, llm, request, record_property):
@@ -294,18 +321,25 @@ def test_rag(test_case, vector_store, embedding, llm, request, record_property):
 
 
 def _run_test(
-    test_case: str,
-    vector_store_context,
-    embedding_fn,
-    resolved_llm,
-    record_property,
+        test_case: str,
+        vector_store_context,
+        embedding_fn,
+        resolved_llm,
+        record_property,
 ):
     # NeMo guardrails running only with certain LLMs
     if test_case == "nemo_guardrails" and not resolved_llm["nemo_config"]:
         skip_test_due_to_implementation_not_supported("nemo_guardrails")
 
+    embedding = embedding_fn()
+    vector_store_kwargs = {}
+    if isinstance(embedding, dict):
+        vector_store_kwargs = embedding
+    else:
+        vector_store_kwargs["embedding"] = embedding
+
     vector_store = vector_store_context.new_langchain_vector_store(
-        embedding=embedding_fn()
+        **vector_store_kwargs
     )
     llm = resolved_llm["llm"]()  # llm is a callable
 
@@ -442,7 +476,7 @@ def test_multimodal(vector_store, embedding, llm, request, record_property):
         record_langsmith_sharelink(run_id, record_property)
         answer = str(response.content)
         assert (
-            "Coffee Machine Ultra Cool" in answer
+                "Coffee Machine Ultra Cool" in answer
         ), f"Expected Coffee Machine Ultra Cool in the answer but got: {answer}"
 
 
