@@ -277,9 +277,7 @@ def nvidia_aifoundation_mixtral8x7b_llm():
 
 @pytest.mark.parametrize(
     "test_case",
-    [
-        "rag_custom_chain", "conversational_rag", "trulens", "nemo_guardrails"
-    ],
+    ["rag_custom_chain", "conversational_rag", "trulens", "nemo_guardrails"],
 )
 @pytest.mark.parametrize(
     "vector_store",
@@ -299,8 +297,8 @@ def nvidia_aifoundation_mixtral8x7b_llm():
         ("bedrock_cohere_embedding", "bedrock_meta_llama2_llm"),
         # ("huggingface_hub_minilml6v2_embedding", "huggingface_hub_flant5xxl_llm"),
         (
-                "nvidia_aifoundation_embedqa4_embedding",
-                "nvidia_aifoundation_mixtral8x7b_llm",
+            "nvidia_aifoundation_embedqa4_embedding",
+            "nvidia_aifoundation_mixtral8x7b_llm",
         ),
     ],
 )
@@ -322,11 +320,11 @@ def test_rag(test_case, vector_store, embedding, llm, request, record_property):
 
 
 def _run_test(
-        test_case: str,
-        vector_store_context,
-        embedding_fn,
-        resolved_llm,
-        record_property,
+    test_case: str,
+    vector_store_context,
+    embedding_fn,
+    resolved_llm,
+    record_property,
 ):
     # NeMo guardrails running only with certain LLMs
     if test_case == "nemo_guardrails" and not resolved_llm["nemo_config"]:
@@ -477,7 +475,7 @@ def test_multimodal(vector_store, embedding, llm, request, record_property):
         record_langsmith_sharelink(run_id, record_property)
         answer = str(response.content)
         assert (
-                "Coffee Machine Ultra Cool" in answer
+            "Coffee Machine Ultra Cool" in answer
         ), f"Expected Coffee Machine Ultra Cool in the answer but got: {answer}"
 
 
