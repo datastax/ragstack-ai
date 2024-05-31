@@ -4,7 +4,6 @@ import pytest
 from langchain_community.graphs.graph_document import Node, Relationship
 from langchain_core.documents import Document
 from langchain_core.language_models import BaseChatModel
-from precisely import assert_that, contains_exactly
 
 from ragstack_knowledge_graph.extraction import (
     KnowledgeSchema,
@@ -34,6 +33,7 @@ She was, in 1906, the first woman to become a professor at the University of
 Paris.
 """
 
+
 @pytest.mark.flaky(retries=10, delay=0)
 def test_extraction(extractor: KnowledgeSchemaExtractor):
     results = extractor.extract([Document(page_content=MARIE_CURIE_SOURCE)])
@@ -50,9 +50,8 @@ def test_extraction(extractor: KnowledgeSchemaExtractor):
     # putting things into standard title case, etc.
     university_of_paris = Node(id="University Of Paris", type="Institution")
 
-    assert_that(
-        results[0].nodes,
-        contains_exactly(
+    assert sorted(results[0].nodes, key=lambda x: x.id) == sorted(
+        [
             marie_curie,
             polish,
             french,
@@ -61,18 +60,24 @@ def test_extraction(extractor: KnowledgeSchemaExtractor):
             nobel_prize,
             pierre_curie,
             university_of_paris,
-        ),
+        ],
+        key=lambda x: x.id,
     )
-    assert_that(
-        results[0].relationships,
-        contains_exactly(
+
+    assert sorted(
+        results[0].relationships, key=lambda x: (x.source.id, x.target.id, x.type)
+    ) == sorted(
+        [
             Relationship(source=marie_curie, target=polish, type="HAS_NATIONALITY"),
             Relationship(source=marie_curie, target=french, type="HAS_NATIONALITY"),
             Relationship(source=marie_curie, target=physicist, type="HAS_OCCUPATION"),
             Relationship(source=marie_curie, target=chemist, type="HAS_OCCUPATION"),
             Relationship(source=marie_curie, target=nobel_prize, type="RECEIVED"),
             Relationship(source=pierre_curie, target=nobel_prize, type="RECEIVED"),
-            Relationship(source=marie_curie, target=university_of_paris, type="WORKED_AT"),
+            Relationship(
+                source=marie_curie, target=university_of_paris, type="WORKED_AT"
+            ),
             Relationship(source=marie_curie, target=pierre_curie, type="MARRIED_TO"),
-        ),
+        ],
+        key=lambda x: (x.source.id, x.target.id, x.type),
     )

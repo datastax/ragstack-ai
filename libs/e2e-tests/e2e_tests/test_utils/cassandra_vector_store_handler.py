@@ -17,6 +17,7 @@ from llama_index.vector_stores.cassandra import CassandraVectorStore
 from llama_index.core.vector_stores.types import (
     VectorStoreQuery,
 )
+from e2e_tests.test_utils import skip_test_due_to_implementation_not_supported
 
 
 from e2e_tests.test_utils import (
@@ -133,6 +134,8 @@ class CassandraVectorStoreTestContext(VectorStoreTestContext):
     def new_langchain_vector_store(
         self, **kwargs
     ) -> EnhancedCassandraLangChainVectorStore:
+        if "embedding" not in kwargs:
+            skip_test_due_to_implementation_not_supported("astra vectorize")
         return EnhancedCassandraLangChainVectorStore(
             session=self.handler.cassandra_session,
             keyspace="default_keyspace",
