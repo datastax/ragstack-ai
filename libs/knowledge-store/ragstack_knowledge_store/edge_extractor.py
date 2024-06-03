@@ -26,12 +26,12 @@ class EdgeExtractor(ABC):
         The nodes have already been persisted.
 
         Args:
-        - store: KnowledgeStore edges are being extracted for.
-        - texts: The texts of the nodes to be processed.
-        - metadatas: The metadatas of the nodes to be processed.
+            store: KnowledgeStore edges are being extracted for.
+            texts: The texts of the nodes to be processed.
+            metadatas: The metadatas of the nodes to be processed.
 
         Returns:
-        Number of edges extracted involving the given nodes.
+            Number of edges extracted involving the given nodes.
         """
 
     async def aextract_edges(
