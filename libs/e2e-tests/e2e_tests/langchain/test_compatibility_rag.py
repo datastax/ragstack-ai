@@ -265,12 +265,12 @@ def nvidia_aifoundation_embedqa4_embedding():
 
 
 @pytest.fixture
-def nvidia_aifoundation_mistral_llm():
+def nvidia_aifoundation_mixtral8x7b_llm():
     def llm():
         get_required_env("NVIDIA_API_KEY")
         from langchain_nvidia_ai_endpoints import ChatNVIDIA
 
-        return ChatNVIDIA(model="ai-mistral-large")
+        return ChatNVIDIA(model="ai-mixtral-8x7b-instruct", temperature=0)
 
     return {"llm": llm, "nemo_config": None}
 
@@ -353,7 +353,6 @@ def _run_test(
             chat_memory=vector_store_context.new_langchain_chat_memory(),
             record_property=record_property,
         )
-        # TODO: Add record property
     elif test_case == "trulens":
         run_trulens_evaluation(vector_store=vector_store, llm=llm)
     elif test_case == "nemo_guardrails":
