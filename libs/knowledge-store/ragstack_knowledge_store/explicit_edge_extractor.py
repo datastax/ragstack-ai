@@ -5,18 +5,15 @@ from ragstack_knowledge_store.knowledge_store import CONTENT_ID, KnowledgeStore
 
 
 class ExplicitEdgeExtractor(EdgeExtractor):
-    """Extract edges from explicit IDs in the metadata.
-
-    This extraction is faster than using a `DirectedEdgeExtractor` when the IDs
-    are available since it doesn't need to look-up the nodes associated with a
-    given tag.
-    """
-
     def __init__(self,
                  edges_field: str,
                  kind: str,
                  bidir: bool = False) -> None:
-        """Create a new ExplicitEdgeExtractor.
+        """Extract edges from explicit IDs in the metadata.
+
+        This extraction is faster than using a `DirectedEdgeExtractor` when the IDs
+        are available since it doesn't need to look-up the nodes associated with a
+        given tag.
 
         Note: This extractor does not check whether the target ID exists. Edges
         will be created even if the target does not exist. This means traversals
@@ -24,10 +21,10 @@ class ExplicitEdgeExtractor(EdgeExtractor):
         Such "phantom IDs" will be filtered out when loading content for the
         nodes.
 
-        Params:
-        - edges_field: The metadata field containing the IDs of nodes to link to.
-        - kind: The `kind` to apply to edges created by this extractor.
-        - bidir: If true, creates edges in both directions.
+        Args:
+            edges_field: The metadata field containing the IDs of nodes to link to.
+            kind: The `kind` to apply to edges created by this extractor.
+            bidir: If true, creates edges in both directions.
         """
 
         self._edges_field = edges_field

@@ -12,9 +12,9 @@ class UndirectedEdgeExtractor(EdgeExtractor):
     ) -> None:
         """Extract undirected edges between nodes with common keywords.
 
-        Params:
-        - keyword_field: The metadata field to read keywords from.
-        - kind: The kind label to apply to created edges. Must be unique.
+        Args:
+            keyword_field: The metadata field to read keywords from.
+            kind: The kind label to apply to created edges. Must be unique.
         """
         # TODO: Allow specifying how properties should be added to the edge.
         # For instance, `has_keyword: <keyword>`.

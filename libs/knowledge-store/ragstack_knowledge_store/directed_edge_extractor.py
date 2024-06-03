@@ -18,9 +18,9 @@ class DirectedEdgeExtractor(EdgeExtractor):
         article IDs, etc.
 
         Args:
-        - sources_field: The metadata field to read sources from.
-        - targets_field: The metadata field to read targets from.
-        - kind: The kind label to apply to created edges. Must be unique.
+            sources_field: The metadata field to read sources from.
+            targets_field: The metadata field to read targets from.
+            kind: The kind label to apply to created edges. Must be unique.
         """
 
         # TODO: Assert the kind matches some reasonable regex?

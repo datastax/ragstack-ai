@@ -12,8 +12,8 @@ class ParentEdgeExtractor(EdgeExtractor):
         An edge will be created if the `parent_field` is specified, whether or
         not the parent node exists.
 
-        Params:
-        - parent_field: The metadata field containing the parent content ID.
+        Args:
+            parent_field: The metadata field containing the parent content ID.
         """
 
         # TODO: Allow specifying how properties should be added to the edge.
