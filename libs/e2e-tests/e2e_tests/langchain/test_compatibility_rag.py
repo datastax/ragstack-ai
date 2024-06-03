@@ -298,7 +298,7 @@ def nvidia_aifoundation_mixtral8x7b_llm():
         # ("huggingface_hub_minilml6v2_embedding", "huggingface_hub_flant5xxl_llm"),
         (
             "nvidia_aifoundation_embedqa4_embedding",
-            "nvidia_aifoundation_mistral_llm",
+            "nvidia_aifoundation_mixtral8x7b_llm",
         ),
     ],
 )
