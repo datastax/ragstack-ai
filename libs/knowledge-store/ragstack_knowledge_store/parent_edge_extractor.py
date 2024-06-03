@@ -31,5 +31,5 @@ class ParentEdgeExtractor(EdgeExtractor):
                 if (parent_content_id := md.get(self._parent_field)) is not None:
                     id = md[CONTENT_ID]
                     cq.execute(store._insert_edge, (id, str(parent_content_id)))
-                    num_edges += 0
+                    num_edges += 1
         return num_edges
