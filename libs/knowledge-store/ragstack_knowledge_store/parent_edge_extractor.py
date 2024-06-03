@@ -5,10 +5,12 @@ from ragstack_knowledge_store.knowledge_store import CONTENT_ID, KnowledgeStore
 
 
 class ParentEdgeExtractor(EdgeExtractor):
-    """Extract an edge from a node to the `parent_content_id`."""
-
     def __init__(self, parent_field: str = "parent_content_id") -> None:
-        """Create a new ParentEdgeExtractor.
+        """Extract an edge from a node to it's parent.
+
+        If no parent is defined, no edge will be created.
+        An edge will be created if the `parent_field` is specified, whether or
+        not the parent node exists.
 
         Params:
         - parent_field: The metadata field containing the parent content ID.

@@ -5,14 +5,12 @@ from ragstack_knowledge_store.knowledge_store import CONTENT_ID, KnowledgeStore
 
 
 class UndirectedEdgeExtractor(EdgeExtractor):
-    """Extract undirected edges between nodes with common keywords."""
-
     def __init__(
         self,
         keyword_field: str = "keywords",
         kind: str = "kw",
     ) -> None:
-        """Create a new UndirectedEdgeExtractor.
+        """Extract undirected edges between nodes with common keywords.
 
         Params:
         - keyword_field: The metadata field to read keywords from.
