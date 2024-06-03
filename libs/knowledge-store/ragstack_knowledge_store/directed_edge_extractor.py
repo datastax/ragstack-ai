@@ -7,20 +7,17 @@ from ragstack_knowledge_store.knowledge_store import CONTENT_ID, KnowledgeStore
 
 
 class DirectedEdgeExtractor(EdgeExtractor):
-    """Extract edges between uses (of a URL or other ID) and definitions (of a URL or other ID).
-
-    While `UndirectedEdgeExtractor` links nodes in both directions if they share
-    a keyword, this only creates links from nodes with a "source" to nodes with
-    a matching "target". For example, uses may be the `href` of `a` tags in the
-    chunk and definitions may be the URLs that the chunk is accessible at.
-
-    This may also be used for other forms of references, such as Wikipedia article IDs, etc.
-    """
-
     def __init__(self, sources_field: str, targets_field: str, kind: str) -> None:
-        """Create a new DirectedEdgeExtractor.
+        """Extract directed edges between uses and definitions.
+        While `UndirectedEdgeExtractor` links nodes in both directions if they share
+        a keyword, this only creates links from nodes with a "source" to nodes with
+        a matching "target". For example, uses may be the `href` of `a` tags in the
+        chunk and definitions may be the URLs that the chunk is accessible at.
 
-        Params:
+        This may also be used for other forms of references, such as Wikipedia
+        article IDs, etc.
+
+        Args:
         - sources_field: The metadata field to read sources from.
         - targets_field: The metadata field to read targets from.
         - kind: The kind label to apply to created edges. Must be unique.
