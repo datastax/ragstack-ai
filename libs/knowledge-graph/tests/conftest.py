@@ -3,6 +3,7 @@ from typing import Iterator, List
 
 import pytest
 from cassandra.cluster import Cluster, Session
+from dotenv import load_dotenv
 from langchain.graphs.graph_document import GraphDocument, Node, Relationship
 from langchain_core.documents import Document
 from langchain_core.language_models import BaseChatModel
@@ -10,6 +11,8 @@ from testcontainers.core.container import DockerContainer
 from testcontainers.core.waiting_utils import wait_for_logs
 
 from ragstack_knowledge_graph.cassandra_graph_store import CassandraGraphStore
+
+load_dotenv()
 
 
 @pytest.fixture(scope="session")
@@ -65,7 +68,9 @@ def llm() -> BaseChatModel:
 
 
 class DataFixture:
-    def __init__(self, session: Session, keyspace: str, documents: List[GraphDocument]) -> None:
+    def __init__(
+        self, session: Session, keyspace: str, documents: List[GraphDocument]
+    ) -> None:
         self.session = session
         self.keyspace = "default_keyspace"
         self.uid = secrets.token_hex(8)
@@ -130,7 +135,9 @@ def marie_curie(db_session: Session, db_keyspace: str) -> Iterator[DataFixture]:
             Relationship(source=marie_curie, target=nobel_prize, type="WON"),
             Relationship(source=pierre_curie, target=nobel_prize, type="WON"),
             Relationship(source=marie_curie, target=pierre_curie, type="MARRIED_TO"),
-            Relationship(source=marie_curie, target=university_of_paris, type="WORKED_AT"),
+            Relationship(
+                source=marie_curie, target=university_of_paris, type="WORKED_AT"
+            ),
             Relationship(source=marie_curie, target=professor, type="HAS_PROFESSION"),
         ],
         source=Document(page_content="test_content"),

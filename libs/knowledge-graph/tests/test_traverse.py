@@ -1,5 +1,3 @@
-from precisely import assert_that, contains_exactly
-
 from ragstack_knowledge_graph.traverse import Node, Relation, atraverse, traverse
 
 from .conftest import DataFixture
@@ -13,7 +11,7 @@ def test_traverse_empty(marie_curie: DataFixture) -> None:
         session=marie_curie.session,
         keyspace=marie_curie.keyspace,
     )
-    assert_that(results, contains_exactly())
+    assert list(results) == []
 
 
 def test_traverse_marie_curie(marie_curie: DataFixture) -> None:
@@ -25,14 +23,30 @@ def test_traverse_marie_curie(marie_curie: DataFixture) -> None:
         keyspace=marie_curie.keyspace,
     )
     expected = {
-        Relation(Node("Marie Curie", "Person"), Node("Polish", "Nationality"), "HAS_NATIONALITY"),
-        Relation(Node("Marie Curie", "Person"), Node("French", "Nationality"), "HAS_NATIONALITY"),
         Relation(
-            Node("Marie Curie", "Person"), Node("Physicist", "Profession"), "HAS_PROFESSION"
+            Node("Marie Curie", "Person"),
+            Node("Polish", "Nationality"),
+            "HAS_NATIONALITY",
         ),
-        Relation(Node("Marie Curie", "Person"), Node("Chemist", "Profession"), "HAS_PROFESSION"),
         Relation(
-            Node("Marie Curie", "Person"), Node("Professor", "Profession"), "HAS_PROFESSION"
+            Node("Marie Curie", "Person"),
+            Node("French", "Nationality"),
+            "HAS_NATIONALITY",
+        ),
+        Relation(
+            Node("Marie Curie", "Person"),
+            Node("Physicist", "Profession"),
+            "HAS_PROFESSION",
+        ),
+        Relation(
+            Node("Marie Curie", "Person"),
+            Node("Chemist", "Profession"),
+            "HAS_PROFESSION",
+        ),
+        Relation(
+            Node("Marie Curie", "Person"),
+            Node("Professor", "Profession"),
+            "HAS_PROFESSION",
         ),
         Relation(
             Node("Marie Curie", "Person"),
@@ -40,14 +54,16 @@ def test_traverse_marie_curie(marie_curie: DataFixture) -> None:
             "RESEARCHED",
         ),
         Relation(Node("Marie Curie", "Person"), Node("Nobel Prize", "Award"), "WON"),
-        Relation(Node("Marie Curie", "Person"), Node("Pierre Curie", "Person"), "MARRIED_TO"),
+        Relation(
+            Node("Marie Curie", "Person"), Node("Pierre Curie", "Person"), "MARRIED_TO"
+        ),
         Relation(
             Node("Marie Curie", "Person"),
             Node("University of Paris", "Organization"),
             "WORKED_AT",
         ),
     }
-    assert_that(results, contains_exactly(*expected))
+    assert sorted(results) == sorted(expected)
 
     results = traverse(
         start=Node("Marie Curie", "Person"),
@@ -56,8 +72,10 @@ def test_traverse_marie_curie(marie_curie: DataFixture) -> None:
         session=marie_curie.session,
         keyspace=marie_curie.keyspace,
     )
-    expected.add(Relation(Node("Pierre Curie", "Person"), Node("Nobel Prize", "Award"), "WON"))
-    assert_that(results, contains_exactly(*expected))
+    expected.add(
+        Relation(Node("Pierre Curie", "Person"), Node("Nobel Prize", "Award"), "WON")
+    )
+    assert sorted(results) == sorted(expected)
 
 
 async def test_atraverse_empty(marie_curie: DataFixture) -> None:
@@ -68,7 +86,7 @@ async def test_atraverse_empty(marie_curie: DataFixture) -> None:
         session=marie_curie.session,
         keyspace=marie_curie.keyspace,
     )
-    assert_that(results, contains_exactly())
+    assert list(results) == []
 
 
 async def test_atraverse_marie_curie(marie_curie: DataFixture) -> None:
@@ -80,14 +98,30 @@ async def test_atraverse_marie_curie(marie_curie: DataFixture) -> None:
         keyspace=marie_curie.keyspace,
     )
     expected = {
-        Relation(Node("Marie Curie", "Person"), Node("Polish", "Nationality"), "HAS_NATIONALITY"),
-        Relation(Node("Marie Curie", "Person"), Node("French", "Nationality"), "HAS_NATIONALITY"),
         Relation(
-            Node("Marie Curie", "Person"), Node("Physicist", "Profession"), "HAS_PROFESSION"
+            Node("Marie Curie", "Person"),
+            Node("Polish", "Nationality"),
+            "HAS_NATIONALITY",
         ),
-        Relation(Node("Marie Curie", "Person"), Node("Chemist", "Profession"), "HAS_PROFESSION"),
         Relation(
-            Node("Marie Curie", "Person"), Node("Professor", "Profession"), "HAS_PROFESSION"
+            Node("Marie Curie", "Person"),
+            Node("French", "Nationality"),
+            "HAS_NATIONALITY",
+        ),
+        Relation(
+            Node("Marie Curie", "Person"),
+            Node("Physicist", "Profession"),
+            "HAS_PROFESSION",
+        ),
+        Relation(
+            Node("Marie Curie", "Person"),
+            Node("Chemist", "Profession"),
+            "HAS_PROFESSION",
+        ),
+        Relation(
+            Node("Marie Curie", "Person"),
+            Node("Professor", "Profession"),
+            "HAS_PROFESSION",
         ),
         Relation(
             Node("Marie Curie", "Person"),
@@ -95,14 +129,16 @@ async def test_atraverse_marie_curie(marie_curie: DataFixture) -> None:
             "RESEARCHED",
         ),
         Relation(Node("Marie Curie", "Person"), Node("Nobel Prize", "Award"), "WON"),
-        Relation(Node("Marie Curie", "Person"), Node("Pierre Curie", "Person"), "MARRIED_TO"),
+        Relation(
+            Node("Marie Curie", "Person"), Node("Pierre Curie", "Person"), "MARRIED_TO"
+        ),
         Relation(
             Node("Marie Curie", "Person"),
             Node("University of Paris", "Organization"),
             "WORKED_AT",
         ),
     }
-    assert_that(results, contains_exactly(*expected))
+    assert sorted(results) == sorted(expected)
 
     results = await atraverse(
         start=Node("Marie Curie", "Person"),
@@ -111,8 +147,10 @@ async def test_atraverse_marie_curie(marie_curie: DataFixture) -> None:
         session=marie_curie.session,
         keyspace=marie_curie.keyspace,
     )
-    expected.add(Relation(Node("Pierre Curie", "Person"), Node("Nobel Prize", "Award"), "WON"))
-    assert_that(results, contains_exactly(*expected))
+    expected.add(
+        Relation(Node("Pierre Curie", "Person"), Node("Nobel Prize", "Award"), "WON")
+    )
+    assert sorted(results) == sorted(expected)
 
 
 def test_traverse_marie_curie_filtered_edges(marie_curie: DataFixture) -> None:
@@ -125,10 +163,18 @@ def test_traverse_marie_curie_filtered_edges(marie_curie: DataFixture) -> None:
         keyspace=marie_curie.keyspace,
     )
     expected = {
-        Relation(Node("Marie Curie", "Person"), Node("Polish", "Nationality"), "HAS_NATIONALITY"),
-        Relation(Node("Marie Curie", "Person"), Node("French", "Nationality"), "HAS_NATIONALITY"),
+        Relation(
+            Node("Marie Curie", "Person"),
+            Node("Polish", "Nationality"),
+            "HAS_NATIONALITY",
+        ),
+        Relation(
+            Node("Marie Curie", "Person"),
+            Node("French", "Nationality"),
+            "HAS_NATIONALITY",
+        ),
     }
-    assert_that(results, contains_exactly(*expected))
+    assert sorted(results) == sorted(expected)
 
 
 async def test_atraverse_marie_curie_filtered_edges(marie_curie: DataFixture) -> None:
@@ -141,7 +187,15 @@ async def test_atraverse_marie_curie_filtered_edges(marie_curie: DataFixture) ->
         keyspace=marie_curie.keyspace,
     )
     expected = {
-        Relation(Node("Marie Curie", "Person"), Node("Polish", "Nationality"), "HAS_NATIONALITY"),
-        Relation(Node("Marie Curie", "Person"), Node("French", "Nationality"), "HAS_NATIONALITY"),
+        Relation(
+            Node("Marie Curie", "Person"),
+            Node("Polish", "Nationality"),
+            "HAS_NATIONALITY",
+        ),
+        Relation(
+            Node("Marie Curie", "Person"),
+            Node("French", "Nationality"),
+            "HAS_NATIONALITY",
+        ),
     }
-    assert_that(results, contains_exactly(*expected))
+    assert sorted(results) == sorted(expected)

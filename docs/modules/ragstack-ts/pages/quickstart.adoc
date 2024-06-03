@@ -1,0 +1,164 @@
+= Quickstart with RAGStack for TS
+
+This quickstart demonstrates a basic RAG pattern using RAGStack TS and the vector-enabled {db-serverless} database to retrieve context and pass it to a language model for generation.
+
+1. <<Setup>>
+2. <<RAG workflow>>
+3. <<Upgrade RAGStack version>>
+
+== Setup
+
+RAGStack TS includes all the standard libraries you need for the RAG pattern, including the vector database, embeddings pipeline, and retrieval.
+
+. Create a new project using NPM or Yarn:
++
+[tabs]
+======
+NPM::
++
+[source,bash]
+----
+npm init
+----
+
+Yarn::
++
+[source,console]
+----
+yarn init
+----
+======
+
+. Then add the RAGStack package via the CLI:
++
+[tabs]
+======
+NPM::
++
+[source,bash]
+----
+npx @datastax/ragstack-ai install --use-npm
+----
+
+Yarn::
++
+[source,console]
+----
+npx @datastax/ragstack-ai install --use-yarn
+----
+======
++
+. Set the AstraDB vector credentials. If you don't have a vector database, create one at https://astra.datastax.com/.
++
+[source,bash]
+----
+export ASTRA_DB_APPLICATION_TOKEN=AstraCS:xx
+export ASTRA_DB_API_ENDPOINT=https://xx.apps.astra.datastax.com
+----
+The {db-serverless} application token is associated automatically with the Database Administrator permission. An auth token example: `AstraCS:WSnyFUhRxsrg...`).
++
+Both the endpoint and the token are available in the {astra-ui}.
++
+. Create an OpenAI key at https://platform.openai.com/ and set it as an environment variable:
++
+[source,bash]
+----
+export OPENAI_API_TOKEN=sk-xx
+----
+
+== RAG workflow
+
+With your environment set up, you're ready to create a RAG workflow in Javascript.
+Create a new file, `index.js`, and copy the following code:
+
+[source,javascript]
+----
+const { OpenAIEmbeddings, ChatOpenAI } = require("@langchain/openai")
+const { AstraDBVectorStore } = require("@langchain/community/vectorstores/astradb")
+const { ChatPromptTemplate } = require("@langchain/core/prompts")
+const { RunnableSequence, RunnablePassthrough } = require("@langchain/core/runnables")
+const { StringOutputParser } = require("@langchain/core/output_parsers")
+
+
+async function main() {
+    // create the embeddings object with the OpenAI API key
+    const embeddings = new OpenAIEmbeddings()
+
+    // AstraDB connection parameters
+    const astra = {
+        token: process.env.ASTRA_DB_APPLICATION_TOKEN,
+        endpoint: process.env.ASTRA_DB_API_ENDPOINT,
+        collection: "demo",
+        collectionOptions: {
+            vector: {
+                dimension: 1536, /** 1536 for OpenAI embeddings */
+                metric: "cosine",
+            },
+        }
+    }
+
+    /** Index some text into the Astra Vector Store */
+
+    const vectorStore = await AstraDBVectorStore.fromTexts(
+        [
+            "RAGStack is a framework for building RAG applications",
+            "RAGStack has first-class support for AstraDB and Cassandra",
+        ],
+        [{source: "documentation"}, {source: "documentation"}],
+        embeddings,
+        astra
+    )
+    /** Now prepare the retrieval  */
+    const prompt = ChatPromptTemplate.fromMessages([
+        ["system", "You're an helpful assistant. Help the user to understand what is RAGStack. Use only information provided in the CONTEXT.\nCONTEXT:\n{context}"],
+        ["human", "{question}"],
+    ])
+
+    const docParser = (docs) => {
+        const formatted = docs.map((doc, i) => {
+            return `<doc id='${i}'>${doc.pageContent}</doc>`
+        }).join("\n")
+        return formatted
+    }
+
+    const chain = RunnableSequence.from([
+        {
+            context: vectorStore.asRetriever().pipe(docParser),
+            question: new RunnablePassthrough(),
+        },
+        prompt,
+        new ChatOpenAI({}),
+        new StringOutputParser()
+    ]);
+    /** Finally ask a question about RAGStack to the chatbot */
+    const answer = await chain.invoke("What is RAGStack?")
+    console.log("Answer:", answer)
+}
+main()
+----
+
+After that, you can run the script with Node.js:
+[source,bash]
+----
+node index.js
+>Connected to Astra DB collection
+>Answer:  RAGStack is a framework for building RAG applications. It also has first-class support for AstraDB and Cassandra.
+----
+
+== Upgrade RAGStack version
+After you have installed the RAGStack package, you can upgrade it to the latest version using the re-running the cli command:
+[source,bash]
+----
+npx @datastax/ragstack-ai install
+----
+or you can upgrade to a specific version:
+[source,bash]
+----
+npx @datastax/ragstack-ai install x.y.z
+----
+
+
+== What's next?
+
+* xref:ROOT:what-is-rag.adoc[]: Learn more about the RAG pattern.
+
