@@ -1,32 +1,41 @@
-= Knowledge Graph RAG
+= Knowledge Graph
 
-Knowledge Graph RAG is a RAGStack package  graph-based representation of information. It is designed to store and retrieve information in a way that is more efficient and accurate than vector-based similarity search.
+RAGStack offers two libraries supporting knowledge graph extraction and traversal, `ragstack-ai-knowledge-graph` and `ragstack-ai-knowledge-store`.
 
 A knowledge graph represents distinct entities (real world objects, like "Marie Curie" or "maize") as **nodes**. Nodes are connected by **edges** indicating relationships between them. Each edge includes the source (for example, "Marie Curie" the person), the target ("Nobel Prize" the award) and a type, indicating how the source relates to the target (for example, “won”).
 
+The `ragstack-ai-knowledge-graph` library contains functions for the extraction and traversal of knowledge graphs.
+
+The `ragstack-ai-knowledge-store` library contains functions for creating a hybrid vector-and-graph knowledge store. This store combines the benefits of vector search with the context and relationships of a knowledge graph by describing the relationships between Document chunks with edges.
+
+A graph database isn't required to use the knowledge graph library - RAGStack uses Astra DB or Apache Cassandra to store and retrieve graphs.
+
 *TL;DR:*
 
-. RAG based on chunking and vector similarity search has some weaknesses.
+. Retrieval augmented generation based on chunking and vector similarity search has some weaknesses.
 .. Similarity search looks for information most similar to the question. This makes is harder to answer questions with multiple topics.
 .. Similarity search limits the number of chunks retrieved. What if there is similar information spread across multiple places? A similarity search must choose between retrieving multiple copies of the information (inefficient), or choosing only one copy (less context).
-. Knowledge graphs address these shortcomings. For example, if multiple sources say the same thing, that knowledge is stored as one node instead of disparate chunks.
+. Knowledge graphs address these shortcomings. For example, if multiple sources have similar information, that knowledge is stored as one node instead of as disparate chunks.
 . From a developer's perspective, a knowledge graph is built into a RAG pipeline similarly to a vector search. The difference is in the underlying data structure and how the information is stored and retrieved.
 
-See the xref:examples:knowledge-graph.adoc[Knowledge graph example code] to get started using Knowledge Graph RAG.
-
-== The `ragstack-ai-knowledge-graph` package
+== The `ragstack-ai-knowledge-graph` library
 
 `ragstack-ai-knowledge-graph` contains the implementation of Knowledge Graph and all required dependencies, including Langchain and the https://cassio.org/frameworks/langchain/about/[cassio] library for integration with Cassandra databases.
 
-To install the package, run:
+To install the library, run:
 
 [source,bash]
 ====
 pip install ragstack-ai-knowledge-graph
 ====
 
-== How is Knowledge Graph different from RAG?
+== The `ragstack-ai-knowledge-store` library
 
-== Knowledge Graph, RAGStack, and Astra DB
+`ragstack-ai-knowledge-store` contains the implementation of Knowledge Graph and all required dependencies, including Langchain and the https://cassio.org/frameworks/langchain/about/[cassio] library for integration with Cassandra databases.
 
-== Advantages of Knowledge Graph on Astra DB
+To install the package, run:
+
+[source,bash]
+====
+pip install ragstack-ai-knowledge-store
+====
