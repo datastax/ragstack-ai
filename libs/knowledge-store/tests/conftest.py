@@ -6,6 +6,7 @@ from cassandra.cluster import Cluster, Session
 from dotenv import load_dotenv
 from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
+from ragstack_knowledge_store.edge_extractor import EdgeExtractor
 from testcontainers.core.container import DockerContainer
 from testcontainers.core.waiting_utils import wait_for_logs
 
@@ -76,19 +77,25 @@ class DataFixture:
         self._store = None
 
     def store(
-        self, initial_documents: Iterable[Document] = [], ids: Optional[Iterable[str]] = None
+        self,
+        initial_documents: Iterable[Document] = [],
+        ids: Optional[Iterable[str]] = None,
+        edge_extractors: Optional[Iterable[EdgeExtractor]] = None,
+        embedding: Optional[Embeddings] = None,
     ) -> CassandraKnowledgeStore:
         if initial_documents and self._store is not None:
             raise ValueError("Store already initialized")
         elif self._store is None:
-            self._store = CassandraKnowledgeStore.from_documents(
-                initial_documents,
-                self.embedding,
-                edge_extractors=[
+            if edge_extractors is None:
+                edge_extractors = [
                     ParentEdgeExtractor(),
                     DirectedEdgeExtractor.for_hrefs_to_urls(),
                     UndirectedEdgeExtractor(),
-                ],
+                ]
+            self._store = CassandraKnowledgeStore.from_documents(
+                initial_documents,
+                embedding = embedding or self.embedding,
+                edge_extractors=edge_extractors,
                 session=self.session,
                 keyspace=self.keyspace,
                 node_table=self.node_table,

@@ -1,9 +1,37 @@
 import pytest
+import math
+from typing import List
 from langchain_core.documents import Document
+from langchain_core.embeddings import Embeddings
+from ragstack_knowledge_store.explicit_edge_extractor import ExplicitEdgeExtractor
 
 from ragstack_knowledge_store.base import _documents_to_nodes, _texts_to_nodes, TextNode
 from .conftest import DataFixture
 
+class AngularTwoDimensionalEmbeddings(Embeddings):
+    """
+    From angles (as strings in units of pi) to unit embedding vectors on a circle.
+    """
+
+    def embed_documents(self, texts: List[str]) -> List[List[float]]:
+        """
+        Make a list of texts into a list of embedding vectors.
+        """
+        return [self.embed_query(text) for text in texts]
+
+    def embed_query(self, text: str) -> List[float]:
+        """
+        Convert input text to a 'vector' (list of floats).
+        If the text is a number, use it as the angle for the
+        unit vector in units of pi.
+        Any other input text becomes the singular result [0, 0] !
+        """
+        try:
+            angle = float(text)
+            return [math.cos(angle * math.pi), math.sin(angle * math.pi)]
+        except ValueError:
+            # Assume: just test string, no attention is paid to values.
+            return [0.0, 0.0]
 
 def test_write_retrieve_href_url_pair(fresh_fixture: DataFixture):
     a = Document(
@@ -39,6 +67,70 @@ def test_write_retrieve_href_url_pair(fresh_fixture: DataFixture):
     assert list(store._linked_ids("b")) == ["a"]
     assert list(store._linked_ids("c")) == ["a"]
     assert sorted(store._linked_ids("d")) == ["a", "b"]
+
+def test_mmr_traversal(fresh_fixture: DataFixture):
+    """
+    Test end to end construction and MMR search.
+    The embedding function used here ensures `texts` become
+    the following vectors on a circle (numbered v0 through v3):
+
+           ______ v2
+          /      \
+         /        |  v1
+    v3  |     .    | query
+         |        /  v0
+          |______/                 (N.B. very crude drawing)
+
+    With fetch_k==2 and k==2, when query is at (1, ),
+    one expects that v2 and v0 are returned (in some order)
+    because v1 is "too close" to v0 (and v0 is closer than v1)).
+
+    Both v2 and v3 are reachable via edges from v0, so once it is
+    selected, those are both considered.
+    """
+    store = fresh_fixture.store(
+        edge_extractors=[ExplicitEdgeExtractor("edges", "explicit")],
+        embedding=AngularTwoDimensionalEmbeddings(),
+    )
+
+    v0 = Document(
+        page_content="-0.124",
+        metadata = {
+            "content_id": "v0",
+            "edges": ["v2", "v3"]
+        },
+    )
+    v1 = Document(
+        page_content="+0.127",
+        metadata = {
+            "content_id": "v1",
+        },
+    )
+    v2 = Document(
+        page_content = "+0.25",
+        metadata = {
+            "content_id": "v2",
+        },
+    )
+    v3 = Document(
+        page_content = "+1.0",
+        metadata = {
+            "content_id": "v3",
+        },
+    )
+    store.add_documents([v0, v1, v2, v3])
+
+    results = store.mmr_traversal("0.0", k=2, fetch_k=2)
+    assert list(map(lambda d: d.metadata["content_id"], results)) == ["v0", "v2"]
+
+    # With max depth 0, no edges are traversed, so this doesn't reach v2 or v3.
+    # So it ends up picking "v1" even though it's similar to "v0".
+    results = store.mmr_traversal("0.0", k=2, fetch_k=2, max_depth=0)
+    assert list(map(lambda d: d.metadata["content_id"], results)) == ["v0", "v1"]
+
+    # With max depth 0 but higher `fetch_k`, we encounter v2
+    results = store.mmr_traversal("0.0", k=2, fetch_k=3, max_depth=0)
+    assert list(map(lambda d: d.metadata["content_id"], results)) == ["v0", "v2"]
 
 
 def test_write_retrieve_keywords(fresh_fixture: DataFixture):
@@ -102,7 +194,6 @@ def test_write_retrieve_keywords(fresh_fixture: DataFixture):
         doc1.page_content,
         greetings.page_content,
     }
-
 
 def test_texts_to_nodes():
     assert list(_texts_to_nodes(["a", "b"], [{"a": "b"}, {"c": "d"}], ["a", "b"])) == [

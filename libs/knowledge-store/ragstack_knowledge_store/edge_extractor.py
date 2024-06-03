@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import typing
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Iterable, Set
+from typing import Any, Dict, Iterable, List, Set
 
 from langchain_core.runnables import run_in_executor
 
@@ -27,6 +27,7 @@ class EdgeExtractor(ABC):
         self,
         store: CassandraKnowledgeStore,
         texts: Iterable[str],
+        text_embeddings: Iterable[List[float]],
         metadatas: Iterable[Dict[str, Any]],
     ) -> int:
         """Add edges for the given nodes.
@@ -36,6 +37,7 @@ class EdgeExtractor(ABC):
         Args:
             store: CassandraKnowledgeStore edges are being extracted for.
             texts: The texts of the nodes to be processed.
+            text_embeddings: The embeddings of the text nodes.
             metadatas: The metadatas of the nodes to be processed.
 
         Returns:
@@ -46,6 +48,7 @@ class EdgeExtractor(ABC):
         self,
         store: CassandraKnowledgeStore,
         texts: Iterable[str],
+        text_embeddings: Iterable[List[float]],
         metadatas: Iterable[Dict[str, Any]],
     ) -> int:
         """Add edges for the given nodes.
@@ -55,6 +58,7 @@ class EdgeExtractor(ABC):
         Args:
             store: CassandraKnowledgeStore edges are being extracted for.
             texts: The texts of the nodes to be processed.
+            text_embedings: The embeddings of the text nodes.
             metadatas: The metadatas of the nodes to be processed.
 
         Returns:
@@ -65,5 +69,6 @@ class EdgeExtractor(ABC):
             self._extract_edges,
             store,
             texts,
+            text_embeddings,
             metadatas,
         )

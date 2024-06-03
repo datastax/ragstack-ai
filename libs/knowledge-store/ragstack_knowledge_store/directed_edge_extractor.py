@@ -1,10 +1,15 @@
 from __future__ import annotations
 
-from typing import Any, Dict, Iterable, Set
+from typing import Any, Dict, Iterable, List, Set
 
 from ragstack_knowledge_store.cassandra import CONTENT_ID, CassandraKnowledgeStore
 from ragstack_knowledge_store.edge_extractor import EdgeExtractor
 
+def _rows_to_sources(rows) -> Iterable[str]:
+    return [row.content_id for row in rows]
+
+def _rows_to_targets(rows) -> Dict[str, List[float]]:
+    return {row.content_id: row.text_embedding for row in rows}
 
 class DirectedEdgeExtractor(EdgeExtractor):
     def __init__(self, sources_field: str, targets_field: str, kind: str) -> None:
@@ -37,9 +42,7 @@ class DirectedEdgeExtractor(EdgeExtractor):
 
     @staticmethod
     def for_hrefs_to_urls() -> DirectedEdgeExtractor:
-        return DirectedEdgeExtractor(
-            sources_field="hrefs", targets_field="urls", kind="link"
-        )
+        return DirectedEdgeExtractor(sources_field="urls", targets_field="hrefs", kind="link")
 
     def _sources(self, metadata: Dict[str, Any]) -> Set[str]:
         sources = metadata.get(self._sources_field)
@@ -60,73 +63,66 @@ class DirectedEdgeExtractor(EdgeExtractor):
             return set(targets)
 
     def tags(self, text: str, metadata: Dict[str, Any]) -> Set[str]:
-        results = set()
-        for source in self._sources(metadata):
-            results.add(f"{self._kind}_s:{source}")
-        for target in self._targets(metadata):
-            results.add(f"{self._kind}_t:{target}")
-        return results
+        sources = {f"{self._kind}_s:{source}" for source in self._sources(metadata)}
+        targets = {f"{self._kind}_t:{target}" for target in self._targets(metadata)}
+        return sources.union(targets)
 
     def extract_edges(
         self,
         store: CassandraKnowledgeStore,
         texts: Iterable[str],
+        text_embeddings: Iterable[str],
         metadatas: Iterable[Dict[str, Any]],
     ) -> int:
         # First, iterate over the new nodes, collecting the sources/targets that
         # are referenced and which IDs contain those.
         new_ids = set()
-        new_sources_to_ids = {}
-        new_targets_to_ids = {}
-        for md in metadatas:
+        resource_to_new_defs_embs = {}
+        resource_to_new_refs = {}
+        for (md, embedding) in zip(metadatas, text_embeddings, strict=True):
             id = md[CONTENT_ID]
 
             new_ids.add(id)
             for resource in self._sources(md):
-                new_sources_to_ids.setdefault(resource, set()).add(id)
-            for target in self._targets(md):
-                new_targets_to_ids.setdefault(target, set()).add(id)
+                resource_to_new_defs_embs.setdefault(resource, dict())[id] = embedding
+            for target_id in self._targets(md):
+                resource_to_new_refs.setdefault(target_id, set()).add(id)
 
         # Then, retrieve the set of persisted items for each of those
         # source/targets and link them to the new items as needed.
         # Remembering that the the *new* nodes will have been added.
-        source_target_pairs = set()
+        source_target_pairs = dict()
         with store._concurrent_queries() as cq:
+            def add_source_target_pairs(source_ids: Iterable[str],
+                                        target_id_embeddings: Dict[str, List[float]]):
+                for source_id in source_ids:
+                    for (target_id, target_embedding) in target_id_embeddings.items():
+                        source_target_pairs[(source_id, target_id)] = target_embedding
 
-            def add_source_target_pairs(href_ids, url_ids):
-                for href_id in href_ids:
-                    if not isinstance(href_id, str):
-                        href_id = href_id.content_id
-
-                    for url_id in url_ids:
-                        if not isinstance(url_id, str):
-                            url_id = url_id.content_id
-                    source_target_pairs.add((href_id, url_id))
-
-            for resource, source_ids in new_sources_to_ids.items():
+            for resource, new_defs_embs in resource_to_new_defs_embs.items():
                 cq.execute(
                     store._query_ids_by_tag,
                     parameters=(f"{self._kind}_t:{resource}",),
                     # Weird syntax to capture each `source_ids` instead of the last iteration.
-                    callback=lambda targets, sources=source_ids: add_source_target_pairs(
-                        sources, targets
+                    callback=lambda sources, targets=new_defs_embs: add_source_target_pairs(
+                        _rows_to_sources(sources), targets
                     ),
                 )
 
-            for resource, target_ids in new_targets_to_ids.items():
+            for resource, new_refs in resource_to_new_refs.items():
                 cq.execute(
-                    store._query_ids_by_tag,
+                    store._query_ids_and_embedding_by_tag,
                     parameters=(f"{self._kind}_s:{resource}",),
                     # Weird syntax to capture each `target_ids` instead of the last iteration.
-                    callback=lambda sources, targets=target_ids: add_source_target_pairs(
-                        sources, targets
+                    callback=lambda targets, sources=new_refs: add_source_target_pairs(
+                        sources, _rows_to_targets(targets)
                     ),
                 )
 
         # TODO: we should allow passing in the concurent queries, and figure out
         # how to start sending these before everyting previously finished.
         with store._concurrent_queries() as cq:
-            for source, target in source_target_pairs:
-                cq.execute(store._insert_edge, (source, target))
+            for (source_id, target_id), target_embedding in source_target_pairs.items():
+                cq.execute(store._insert_edge, (source_id, target_id, self._kind, target_embedding))
 
         return len(source_target_pairs)
