@@ -5,10 +5,7 @@ from ragstack_knowledge_store.knowledge_store import CONTENT_ID, KnowledgeStore
 
 
 class ExplicitEdgeExtractor(EdgeExtractor):
-    def __init__(self,
-                 edges_field: str,
-                 kind: str,
-                 bidir: bool = False) -> None:
+    def __init__(self, edges_field: str, kind: str, bidir: bool = False) -> None:
         """Extract edges from explicit IDs in the metadata.
 
         This extraction is faster than using a `DirectedEdgeExtractor` when the IDs

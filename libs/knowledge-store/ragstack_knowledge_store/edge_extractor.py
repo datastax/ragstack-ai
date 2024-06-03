@@ -4,6 +4,7 @@ from typing import Any, Dict, Iterable, Set
 from knowledge_store import KnowledgeStore
 from langchain_core.runnables import run_in_executor
 
+
 class EdgeExtractor(ABC):
     """Extension defining how edges should be created."""
 
