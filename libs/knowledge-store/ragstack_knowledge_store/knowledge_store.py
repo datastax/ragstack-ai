@@ -1,5 +1,14 @@
 import secrets
-from typing import Any, Dict, Iterable, List, NamedTuple, Optional, Sequence, Union
+from typing import (
+    Any,
+    Dict,
+    Iterable,
+    List,
+    NamedTuple,
+    Optional,
+    Sequence,
+    Union,
+)
 
 from cassandra.cluster import ResponseFuture, Session
 from cassio.config import check_resolve_keyspace, check_resolve_session
@@ -8,14 +17,12 @@ from langchain_core.embeddings import Embeddings
 from langchain_core.runnables import Runnable, RunnableLambda
 from langchain_core.vectorstores import VectorStore
 
+from ragstack_knowledge_store.edge_extractor import EdgeExtractor
+
 from .concurrency import ConcurrentQueries
 from .content import Kind
 
 CONTENT_ID = "content_id"
-PARENT_CONTENT_ID = "parent_content_id"
-KEYWORDS = "keywords"
-HREFS = "hrefs"
-URLS = "urls"
 
 
 def _row_to_document(row) -> Document:
@@ -50,6 +57,7 @@ class KnowledgeStore(VectorStore):
     def __init__(
         self,
         embedding: Embeddings,
+        edge_extractors: List[EdgeExtractor],
         *,
         node_table: str = "knowledge_nodes",
         edge_table: str = "knowledge_edges",
@@ -57,8 +65,6 @@ class KnowledgeStore(VectorStore):
         keyspace: Optional[str] = None,
         apply_schema: bool = True,
         concurrency: int = 20,
-        infer_links: bool = True,
-        infer_keywords: bool = True,
     ):
         """
         Create the hybrid knowledge store.
@@ -72,13 +78,10 @@ class KnowledgeStore(VectorStore):
 
         Args:
             embedding: The embeddings to use for the document content.
+            edge_extractors: Edge extractors to use for linking knowledge chunks.
             concurrency: Maximum number of queries to have concurrently executing.
             apply_schema: If true, the schema will be created if necessary. If false,
                 the schema must have already been applied.
-            infer_links: Whether to enable inference based on the `hrefs` and `urls`
-                in the metadata.
-            infer_keywords: Whether to enable nference based on the `keywords` in
-                the metadata.
         """
         session = check_resolve_session(session)
         keyspace = check_resolve_keyspace(keyspace)
@@ -93,16 +96,16 @@ class KnowledgeStore(VectorStore):
         if apply_schema:
             self._apply_schema()
 
-        self._infer_links = infer_links
-        self._infer_keywords = infer_keywords
+        assert len(edge_extractors) == len(set([e.kind for e in edge_extractors]))
+        self._edge_extractors = edge_extractors
 
         # TODO: Metadata
         # TODO: Parent ID / source ID / etc.
         self._insert_passage = session.prepare(
             f"""
             INSERT INTO {keyspace}.{node_table} (
-                content_id, kind, text_content, text_embedding, keywords, urls, hrefs
-            ) VALUES (?, '{Kind.passage}', ?, ?, ?, ?, ?)
+                content_id, kind, text_content, text_embedding, tags
+            ) VALUES (?, '{Kind.passage}', ?, ?, ?)
             """
         )
 
@@ -148,27 +151,11 @@ class KnowledgeStore(VectorStore):
             """
         )
 
-        self._query_ids_by_keyword = session.prepare(
+        self._query_ids_by_tag = session.prepare(
             f"""
             SELECT content_id
             FROM {keyspace}.{node_table}
-            WHERE keywords CONTAINS ?
-            """
-        )
-
-        self._query_ids_by_href = session.prepare(
-            f"""
-            SELECT content_id
-            FROM {keyspace}.{node_table}
-            WHERE hrefs CONTAINS ?
-            """
-        )
-
-        self._query_ids_by_url = session.prepare(
-            f"""
-            SELECT content_id
-            FROM {keyspace}.{node_table}
-            WHERE urls CONTAINS ?
+            WHERE tags CONTAINS ?
             """
         )
 
@@ -182,9 +169,7 @@ class KnowledgeStore(VectorStore):
                 text_content TEXT,
                 text_embedding VECTOR<FLOAT, {embedding_dim}>,
 
-                keywords SET<TEXT>,
-                hrefs SET<TEXT>,
-                urls SET<TEXT>,
+                tags SET<TEXT>,
 
                 PRIMARY KEY (content_id)
             )
@@ -195,8 +180,8 @@ class KnowledgeStore(VectorStore):
             f"""CREATE TABLE IF NOT EXISTS {self._keyspace}.{self._edge_table} (
                 source_content_id TEXT,
                 target_content_id TEXT,
-                -- Denormalized target kind for filtering.
-                target_kind TEXT,
+                -- Kind of edge.
+                kind TEXT,
 
                 PRIMARY KEY (source_content_id, target_content_id)
             )
@@ -211,28 +196,12 @@ class KnowledgeStore(VectorStore):
             """
         )
 
-        # Index on keywords
+        # Index on tags
         # TODO: Case insensitivity?
         self._session.execute(
             f"""
-            CREATE CUSTOM INDEX IF NOT EXISTS {self._node_table}_keywords_index
-            ON {self._keyspace}.{self._node_table} (keywords)
-            USING 'StorageAttachedIndex';
-            """
-        )
-
-        self._session.execute(
-            f"""
-            CREATE CUSTOM INDEX IF NOT EXISTS {self._node_table}_hrefs_index
-            ON {self._keyspace}.{self._node_table} (hrefs)
-            USING 'StorageAttachedIndex';
-            """
-        )
-
-        self._session.execute(
-            f"""
-            CREATE CUSTOM INDEX IF NOT EXISTS {self._node_table}_urls_index
-            ON {self._keyspace}.{self._node_table} (urls)
+            CREATE CUSTOM INDEX IF NOT EXISTS {self._node_table}_tags_index
+            ON {self._keyspace}.{self._node_table} (tags)
             USING 'StorageAttachedIndex';
             """
         )
@@ -245,7 +214,6 @@ class KnowledgeStore(VectorStore):
     def _concurrent_queries(self) -> ConcurrentQueries:
         return ConcurrentQueries(self._session, concurrency=self._concurrency)
 
-    # TODO: async
     def add_texts(
         self,
         texts: Iterable[str],
@@ -262,6 +230,7 @@ class KnowledgeStore(VectorStore):
         Returns:
             List of ids from adding the texts into the vectorstore.
         """
+        # TODO: Batch texts in case it is too long? Or assume it fits in memory.
         texts = list(texts)
 
         metadatas: Iterable[Dict[str, str]] = (
@@ -269,96 +238,22 @@ class KnowledgeStore(VectorStore):
         )
         text_embeddings = self._embedding.embed_documents(texts)
 
-        keywords_in_texts = {k for md in metadatas for k in md.get(KEYWORDS, {})}
-        keywords_to_ids = {}
-        if self._infer_keywords:
-            with self._concurrent_queries() as cq:
-
-                def handle_keywords(rows, k):
-                    related = set(_results_to_ids(rows))
-                    keywords_to_ids[k] = related
-
-                for k in keywords_in_texts:
-                    cq.execute(
-                        self._query_ids_by_keyword,
-                        parameters=(k,),
-                        callback=lambda rows, k1=k: handle_keywords(rows, k1),
-                    )
-
-        new_hrefs_to_ids = {}
-        new_urls_to_ids = {}
-
         ids = []
         with self._concurrent_queries() as cq:
             tuples = zip(texts, text_embeddings, metadatas, strict=True)
             for text, text_embedding, metadata in tuples:
-                id = metadata.get(CONTENT_ID) or secrets.token_hex(8)
+                if CONTENT_ID not in metadata:
+                    metadata[CONTENT_ID] = secrets.token_hex(8)
+                id = metadata[CONTENT_ID]
                 ids.append(id)
-                keywords = metadata.get(KEYWORDS, set())
-                urls = metadata.get(URLS, set())
-                hrefs = metadata.get(HREFS, set())
 
-                for url in urls:
-                    new_urls_to_ids.setdefault(url, set()).add(id)
-                for href in hrefs:
-                    new_hrefs_to_ids.setdefault(href, set()).add(id)
+                tags = set()
+                tags.update(*[e.tags(text, metadata) for e in self._edge_extractors])
 
-                cq.execute(
-                    self._insert_passage, (id, text, text_embedding, keywords, urls, hrefs)
-                )
+                cq.execute(self._insert_passage, (id, text, text_embedding, tags))
 
-                if (parent_content_id := metadata.get(PARENT_CONTENT_ID)) is not None:
-                    cq.execute(self._insert_edge, (id, str(parent_content_id)))
-
-                if self._infer_keywords and keywords:
-                    related_ids = set()
-                    for k in keywords:
-                        k_ids = keywords_to_ids.setdefault(k, set())
-                        related_ids.update(k_ids)
-                        k_ids.add(id)
-
-                    for r in related_ids:
-                        cq.execute(self._insert_edge, (id, r))
-                        cq.execute(self._insert_edge, (r, id))
-
-        if self._infer_links:
-            # Assumption: we only need to add edges for href->url links that involve
-            # one of the new IDs as either the href or the url.
-
-            href_url_pairs = set()
-
-            with self._concurrent_queries() as cq:
-
-                def add_href_url_pairs(href_ids, url_ids):
-                    for href_id in href_ids:
-                        if not isinstance(href_id, str):
-                            href_id = href_id.content_id
-
-                        for url_id in url_ids:
-                            if not isinstance(url_id, str):
-                                url_id = url_id.content_id
-                            href_url_pairs.add((href_id, url_id))
-
-                for href, href_ids in new_hrefs_to_ids.items():
-                    cq.execute(
-                        self._query_ids_by_url,
-                        parameters=(href,),
-                        # Weird syntax to capture each `href_ids` instead of the last iteration.
-                        callback=lambda urls, hrefs=href_ids: add_href_url_pairs(hrefs, urls),
-                    )
-
-                for url, url_ids in new_urls_to_ids.items():
-                    cq.execute(
-                        self._query_ids_by_href,
-                        parameters=(url,),
-                        # Weird syntax to capture each `url_ids` instead of the last iteration.
-                        callback=lambda hrefs, urls=url_ids: add_href_url_pairs(hrefs, urls),
-                    )
-
-            with self._concurrent_queries() as cq:
-                for href, url in href_url_pairs:
-                    cq.execute(self._insert_edge, (href, url))
-            print(f"Added {len(href_url_pairs)} edges based on HREFs/URLs")
+        for extractor in self._edge_extractors:
+            extractor.extract_edges(self, texts, metadatas)
 
         return ids
 
