@@ -10,7 +10,7 @@ from testcontainers.core.container import DockerContainer
 from testcontainers.core.waiting_utils import wait_for_logs
 
 from ragstack_knowledge_store.directed_edge_extractor import DirectedEdgeExtractor
-from ragstack_knowledge_store.knowledge_store import KnowledgeStore
+from ragstack_knowledge_store.cassandra import CassandraKnowledgeStore
 from ragstack_knowledge_store.parent_edge_extractor import ParentEdgeExtractor
 from ragstack_knowledge_store.undirected_edge_extractor import UndirectedEdgeExtractor
 
@@ -77,11 +77,11 @@ class DataFixture:
 
     def store(
         self, initial_documents: Iterable[Document] = [], ids: Optional[Iterable[str]] = None
-    ) -> KnowledgeStore:
+    ) -> CassandraKnowledgeStore:
         if initial_documents and self._store is not None:
             raise ValueError("Store already initialized")
         elif self._store is None:
-            self._store = KnowledgeStore.from_documents(
+            self._store = CassandraKnowledgeStore.from_documents(
                 initial_documents,
                 self.embedding,
                 edge_extractors=[

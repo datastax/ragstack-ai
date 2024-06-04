@@ -8,19 +8,20 @@ from typing import (
     Optional,
     Sequence,
     Union,
+    Tuple,
+    Type,
 )
 
 from cassandra.cluster import ResponseFuture, Session
 from cassio.config import check_resolve_keyspace, check_resolve_session
 from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
-from langchain_core.runnables import Runnable, RunnableLambda
-from langchain_core.vectorstores import VectorStore
 
 from ragstack_knowledge_store.edge_extractor import EdgeExtractor
 
 from .concurrency import ConcurrentQueries
 from .content import Kind
+from .base import KnowledgeStore, Node, TextNode
 
 CONTENT_ID = "content_id"
 
@@ -47,13 +48,7 @@ def _results_to_ids(results: Optional[ResponseFuture]) -> Iterable[str]:
             yield row.content_id
 
 
-class KnowledgeStore(VectorStore):
-    """A hybrid vector-and-graph knowledge store.
-
-    Document chunks support vector-similarity search as well as edges linking
-    chunks based on structural and semantic properties.
-    """
-
+class CassandraKnowledgeStore(KnowledgeStore):
     def __init__(
         self,
         embedding: Embeddings,
@@ -214,28 +209,20 @@ class KnowledgeStore(VectorStore):
     def _concurrent_queries(self) -> ConcurrentQueries:
         return ConcurrentQueries(self._session, concurrency=self._concurrency)
 
-    def add_texts(
+    def add_nodes(
         self,
-        texts: Iterable[str],
-        metadatas: Optional[Iterable[Dict[str, Any]]] = None,
+        nodes: Iterable[Node] = None,
+        links: Iterable[Tuple[str, str]] = None,
         **kwargs: Any,
-    ) -> List[str]:
-        """Run more texts through the embeddings and add to the vectorstore.
+    ):
+        texts = []
+        metadatas = []
+        for node in nodes:
+            if not isinstance(node, TextNode):
+                raise ValueError("Only adding TextNode is supported at the moment")
+            texts.append(node.text)
+            metadatas.append(node.metadata)
 
-        Args:
-            texts: Iterable of strings to add to the vectorstore.
-            metadatas: Optional list of metadatas associated with the texts.
-            kwargs: vectorstore specific parameters
-
-        Returns:
-            List of ids from adding the texts into the vectorstore.
-        """
-        # TODO: Batch texts in case it is too long? Or assume it fits in memory.
-        texts = list(texts)
-
-        metadatas: Iterable[Dict[str, str]] = (
-            [{} for _ in texts] if metadatas is None else metadatas
-        )
         text_embeddings = self._embedding.embed_documents(texts)
 
         ids = []
@@ -257,36 +244,40 @@ class KnowledgeStore(VectorStore):
 
         return ids
 
-    # TODO: Async
     @classmethod
     def from_texts(
-        cls,
-        texts: List[str],
+        cls: Type["CassandraKnowledgeStore"],
+        texts: Iterable[str],
         embedding: Embeddings,
         metadatas: Optional[List[dict]] = None,
+        ids: Optional[Iterable[str]] = None,
         **kwargs: Any,
-    ) -> "KnowledgeStore":
-        """Return VectorStore initialized from texts and embeddings."""
+    ) -> "CassandraKnowledgeStore":
+        """Return CassandraKnowledgeStore initialized from texts and embeddings."""
+        store = cls(embedding, **kwargs)
+        store.add_texts(texts, metadatas, ids=ids)
+        return store
 
-        ids = kwargs.pop("ids")
-        knowledge_store = KnowledgeStore(embedding, **kwargs)
-        knowledge_store.add_texts(texts, metadatas, ids=ids)
-        return knowledge_store
+    @classmethod
+    def from_documents(
+        cls: Type["CassandraKnowledgeStore"],
+        documents: Iterable[Document],
+        embedding: Embeddings,
+        ids: Optional[Iterable[str]] = None,
+        **kwargs: Any,
+    ) -> "CassandraKnowledgeStore":
+        """Return CassandraKnowledgeStore initialized from texts and embeddings."""
+        store = cls(embedding, **kwargs)
+        store.add_documents(documents, ids=ids)
+        return store
 
-    # TODO: Async
     def similarity_search(
-        self,
-        query: str,
-        *,
-        k: int = 4,
-        metadata_filter: Dict[str, str] = {},
+        self, query: str, k: int = 4, **kwargs: Any
     ) -> List[Document]:
         """Return docs most similar to query.
-
         Args:
             query: Text to look up documents similar to.
             k: Number of Documents to return. Defaults to 4.
-            filter: Filter on the metadata to apply.
         Returns:
             List of Document, the most similar to the query vector.
         """
@@ -294,28 +285,21 @@ class KnowledgeStore(VectorStore):
         return self.similarity_search_by_vector(
             embedding_vector,
             k=k,
-            metadata_filter=metadata_filter,
         )
 
-    # TODO: Async
     def similarity_search_by_vector(
-        self,
-        query_vector: List[float],
-        *,
-        k: int = 4,
-        metadata_filter: Dict[str, str] = {},
+        self, embedding: List[float], k: int = 4, **kwargs: Any
     ) -> List[Document]:
         """Return docs most similar to query_vector.
 
         Args:
-            query_vector: Embeding to lookup documents similar to.
+            embedding: Embeding to lookup documents similar to.
             k: Number of Documents to return. Defaults to 4.
-            filter: Filter on the metadata to apply.
         Returns:
             List of Document, the most simliar to the query vector.
         """
-        results = self._session.execute(self._query_by_embedding, (query_vector, k))
-        return _results_to_documents(results)
+        results = self._session.execute(self._query_by_embedding, (embedding, k))
+        return list(_results_to_documents(results))
 
     def _query_by_ids(
         self,
@@ -342,8 +326,13 @@ class KnowledgeStore(VectorStore):
         results = self._session.execute(self._query_linked_ids, (source_id,))
         return _results_to_ids(results)
 
-    def retrieve(
-        self, query: Union[str, Iterable[str]], *, k: int = 4, depth: int = 1
+    def traversing_retrieve(
+        self,
+        query: Union[str, Iterable[str]],
+        *,
+        k: int = 4,
+        depth: int = 1,
+        **kwargs: Any,
     ) -> Iterable[Document]:
         """Return a runnable for retrieving from this knowledge store.
 
@@ -390,26 +379,3 @@ class KnowledgeStore(VectorStore):
                 )
 
         return self._query_by_ids(visited.keys())
-
-    def as_retriever(
-        self,
-        *,
-        k: int = 4,
-        depth: int = 1,
-    ) -> Runnable[Union[str | Iterable[str]], Iterable[Document]]:
-        """Return a runnable for retrieving from this knowldege store.
-
-        The initial nodes are retrieved using a vector search.
-        Additional nodes are discovered up to the given depth from those starting nodes.
-
-        Args:
-            k: The number of Documents to return from the initial vector search.
-                Defaults to 4. Applies to each of the query strings.
-            depth: The maximum depth of edges to traverse. Defaults to 1.
-        Returns:
-            Runnable accepting a query string or collection of query strings and
-            returning corresponding the documents.
-        """
-        # TODO: Async version
-        retriever = RunnableLambda(func=self.retrieve, name="Knowledge Store Retriever")
-        return retriever.bind(k=k, depth=depth)

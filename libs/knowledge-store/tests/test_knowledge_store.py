@@ -81,7 +81,7 @@ def test_write_retrieve_keywords(fresh_fixture: DataFixture):
         doc1.page_content,
     }
 
-    results = store.retrieve("Earth", k=2, depth=1)
+    results = store.traversing_retrieve("Earth", k=2, depth=1)
     assert set(map(lambda d: d.page_content, results)) == {
         doc2.page_content,
         doc1.page_content,
@@ -89,11 +89,11 @@ def test_write_retrieve_keywords(fresh_fixture: DataFixture):
     }
 
     # K=1 only pulls in doc2 (Hello Earth)
-    results = store.retrieve("Earth", k=1, depth=0)
+    results = store.traversing_retrieve("Earth", k=1, depth=0)
     assert set(map(lambda d: d.page_content, results)) == {doc2.page_content}
 
     # K=1 only pulls in doc2 (Hello Earth). Depth=1 traverses to parent and via keyword edge.
-    results = store.retrieve("Earth", k=1, depth=1)
+    results = store.traversing_retrieve("Earth", k=1, depth=1)
     assert set(map(lambda d: d.page_content, results)) == {
         doc2.page_content,
         doc1.page_content,
