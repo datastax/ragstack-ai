@@ -128,6 +128,25 @@ class KnowledgeStore(VectorStore):
     ) -> List[Document]:
         return list(self.traversing_retrieve(query, k=k, depth=0))
 
+    def search(self, query: str, search_type: str, **kwargs: Any) -> List[Document]:
+        if search_type == "similarity":
+            return self.similarity_search(query, **kwargs)
+        elif search_type == "similarity_score_threshold":
+            docs_and_similarities = self.similarity_search_with_relevance_scores(
+                query, **kwargs
+            )
+            return [doc for doc, _ in docs_and_similarities]
+        elif search_type == "mmr":
+            return self.max_marginal_relevance_search(query, **kwargs)
+        elif search_type == "traversal":
+            return list(self.traversing_retrieve(query, **kwargs))
+        else:
+            raise ValueError(
+                f"search_type of {search_type} not allowed. Expected "
+                "search_type to be 'similarity', 'similarity_score_threshold', "
+                "'mmr' or 'traversal'."
+            )
+
     def as_retriever(self, **kwargs: Any) -> "KnowledgeStoreRetriever":
         """Return a Retriever for retrieving from this knowledge store."""
         return KnowledgeStoreRetriever(vectorstore=self, **kwargs)
