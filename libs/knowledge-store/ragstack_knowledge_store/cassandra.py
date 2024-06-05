@@ -10,7 +10,7 @@ from typing import (
     Type,
 )
 
-from cassandra.cluster import ResponseFuture, Session
+from cassandra.cluster import ResponseFuture, Session, ConsistencyLevel
 from cassio.config import check_resolve_keyspace, check_resolve_session
 from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
@@ -172,6 +172,7 @@ class CassandraKnowledgeStore(KnowledgeStore):
             LIMIT ?
             """
         )
+        self._query_by_embedding.consistency_level = ConsistencyLevel.QUORUM
 
         self._query_ids_by_embedding = session.prepare(
             f"""
@@ -181,6 +182,7 @@ class CassandraKnowledgeStore(KnowledgeStore):
             LIMIT ?
             """
         )
+        self._query_ids_by_embedding = ConsistencyLevel.QUORUM
 
         self._query_ids_and_embedding_by_embedding = session.prepare(
             f"""
@@ -190,6 +192,7 @@ class CassandraKnowledgeStore(KnowledgeStore):
             LIMIT ?
             """
         )
+        self._query_ids_by_and_embedding_by_embedding = ConsistencyLevel.QUORUM
 
         self._query_linked_ids = session.prepare(
             f"""
