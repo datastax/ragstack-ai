@@ -9,7 +9,6 @@ from typing import (
     Optional,
     Union,
     Iterator,
-    Tuple,
     ClassVar,
     Collection,
 )
@@ -68,7 +67,6 @@ class KnowledgeStore(VectorStore):
     def add_nodes(
         self,
         nodes: Iterable[Node],
-        links: Iterable[Tuple[str, str]] = None,
         **kwargs: Any,
     ) -> List[str]:
         """Add nodes to the graph"""
@@ -79,25 +77,23 @@ class KnowledgeStore(VectorStore):
         metadatas: Optional[Iterable[dict]] = None,
         *,
         ids: Optional[Iterable[str]] = None,
-        links: Iterable[Tuple[str, str]] = None,
         **kwargs: Any,
     ) -> List[str]:
         metadatas_it = iter(metadatas) if metadatas else itertools.repeat({})
         ids_it = iter(ids) if ids else itertools.repeat(None)
         nodes = _texts_to_nodes(iter(texts), metadatas_it, ids_it)
-        return self.add_nodes(nodes, links, **kwargs)
+        return self.add_nodes(nodes, **kwargs)
 
     def add_documents(
         self,
         documents: Iterable[Document] = None,
         *,
         ids: Optional[Iterable[str]] = None,
-        links: Iterable[Tuple[str, str]] = None,
         **kwargs: Any,
     ) -> List[str]:
         ids_it = iter(ids) if ids else itertools.repeat(None)
         nodes = _documents_to_nodes(iter(documents), ids_it)
-        return self.add_nodes(nodes, links, **kwargs)
+        return self.add_nodes(nodes, **kwargs)
 
     @abstractmethod
     def traversing_retrieve(
