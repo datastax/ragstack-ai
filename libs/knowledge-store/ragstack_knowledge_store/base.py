@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import itertools
 from abc import abstractmethod
 from typing import (
     Any,
@@ -11,7 +10,6 @@ from typing import (
     Iterator,
     List,
     Optional,
-    Union,
 )
 
 from langchain_core.callbacks import (
@@ -23,6 +21,13 @@ from langchain_core.load import Serializable
 from langchain_core.runnables import run_in_executor
 from langchain_core.vectorstores import VectorStore, VectorStoreRetriever
 from pydantic import Field
+
+
+def _has_next(iterator: Iterator) -> None:
+    """Checks if the iterator has more elements.
+    Warning: consumes an element from the iterator"""
+    sentinel = object()
+    return next(iterator, sentinel) is not sentinel
 
 
 class Node(Serializable):
@@ -41,30 +46,48 @@ class TextNode(Node):
 
 
 def _texts_to_nodes(
-    texts: Iterator[str],
-    metadatas: Iterator[dict],
-    ids: Iterator[str],
+    texts: Iterable[str],
+    metadatas: Optional[Iterable[dict]],
+    ids: Optional[Iterable[str]],
 ) -> Iterator[Node]:
-    for text, metadata, node_id in zip(texts, metadatas, ids):
+    metadatas_it = iter(metadatas) if metadatas else None
+    ids_it = iter(ids) if ids else None
+    for text in texts:
+        try:
+            _metadata = next(metadatas_it) if metadatas_it else {}
+        except StopIteration:
+            raise ValueError("texts iterable longer than metadatas")
+        try:
+            _id = next(ids_it) if ids_it else None
+        except StopIteration:
+            raise ValueError("texts iterable longer than ids")
         yield TextNode(
-            id=node_id,
-            metadata=metadata,
+            id=_id,
+            metadata=_metadata,
             text=text,
         )
+    if ids and _has_next(ids_it):
+        raise ValueError("ids iterable longer than texts")
+    if metadatas and _has_next(metadatas_it):
+        raise ValueError("metadatas iterable longer than texts")
 
 
 def _documents_to_nodes(
-    documents: Iterator[Document], ids: Iterator[str]
+    documents: Iterable[Document], ids: Optional[Iterable[str]]
 ) -> Iterator[Node]:
-    for (
-        doc,
-        node_id,
-    ) in zip(documents, ids):
+    ids_it = iter(ids) if ids else None
+    for doc in documents:
+        try:
+            _id = next(ids_it) if ids_it else None
+        except StopIteration:
+            raise ValueError("documents iterable longer than ids")
         yield TextNode(
-            id=node_id,
+            id=_id,
             metadata=doc.metadata,
             text=doc.page_content,
         )
+    if ids and _has_next(ids_it):
+        raise ValueError("ids iterable longer than documents")
 
 
 class KnowledgeStore(VectorStore):
@@ -106,9 +129,7 @@ class KnowledgeStore(VectorStore):
         ids: Optional[Iterable[str]] = None,
         **kwargs: Any,
     ) -> List[str]:
-        metadatas_it = iter(metadatas) if metadatas else itertools.repeat({})
-        ids_it = iter(ids) if ids else itertools.repeat(None)
-        nodes = _texts_to_nodes(iter(texts), metadatas_it, ids_it)
+        nodes = _texts_to_nodes(texts, metadatas, ids)
         return self.add_nodes(nodes, **kwargs)
 
     async def aadd_texts(
@@ -119,9 +140,7 @@ class KnowledgeStore(VectorStore):
         ids: Optional[Iterable[str]] = None,
         **kwargs: Any,
     ) -> List[str]:
-        metadatas_it = iter(metadatas) if metadatas else itertools.repeat({})
-        ids_it = iter(ids) if ids else itertools.repeat(None)
-        nodes = _texts_to_nodes(iter(texts), metadatas_it, ids_it)
+        nodes = _texts_to_nodes(texts, metadatas, ids)
         return await self.aadd_nodes(nodes, **kwargs)
 
     def add_documents(
@@ -131,8 +150,7 @@ class KnowledgeStore(VectorStore):
         ids: Optional[Iterable[str]] = None,
         **kwargs: Any,
     ) -> List[str]:
-        ids_it = iter(ids) if ids else itertools.repeat(None)
-        nodes = _documents_to_nodes(iter(documents), ids_it)
+        nodes = _documents_to_nodes(documents, ids)
         return self.add_nodes(nodes, **kwargs)
 
     async def aadd_documents(
@@ -142,8 +160,7 @@ class KnowledgeStore(VectorStore):
         ids: Optional[Iterable[str]] = None,
         **kwargs: Any,
     ) -> List[str]:
-        ids_it = iter(ids) if ids else itertools.repeat(None)
-        nodes = _documents_to_nodes(iter(documents), ids_it)
+        nodes = _documents_to_nodes(documents, ids)
         return await self.aadd_nodes(nodes, **kwargs)
 
     @abstractmethod
