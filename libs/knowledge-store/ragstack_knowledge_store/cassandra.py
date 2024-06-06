@@ -182,7 +182,7 @@ class CassandraKnowledgeStore(KnowledgeStore):
             LIMIT ?
             """
         )
-        self._query_ids_by_embedding = ConsistencyLevel.QUORUM
+        self._query_ids_by_embedding.consistency_level = ConsistencyLevel.QUORUM
 
         self._query_ids_and_embedding_by_embedding = session.prepare(
             f"""
@@ -192,7 +192,7 @@ class CassandraKnowledgeStore(KnowledgeStore):
             LIMIT ?
             """
         )
-        self._query_ids_by_and_embedding_by_embedding = ConsistencyLevel.QUORUM
+        self._query_ids_and_embedding_by_embedding.consistency_level = ConsistencyLevel.QUORUM
 
         self._query_linked_ids = session.prepare(
             f"""
@@ -394,6 +394,7 @@ class CassandraKnowledgeStore(KnowledgeStore):
         max_depth: int = 2,
         fetch_k: int = 100,
         lambda_mult: float = 0.5,
+        score_threshold: float = 0.0,
     ) -> Iterable[Document]:
         """Retrieve documents from this knowledge store using MMR-traversal.
 
@@ -410,16 +411,15 @@ class CassandraKnowledgeStore(KnowledgeStore):
             k: Number of Documents to return. Defaults to 4.
             fetch_k: Number of Documents to fetch via similarity.
                 Defaults to 10.
-            max_depth: Maximum depth of a node (number of edges) from a node retrieved
-                via similarity. Defaults to 2.
+            max_depth: Maximum depth of a node (number of edges) from a node
+                retrieved via similarity. Defaults to 2.
             lambda_mult: Number between 0 and 1 that determines the degree
                 of diversity among the results with 0 corresponding to maximum
-                diversity and 1 to minimum diversity.
-                Defaults to 0.5.
+                diversity and 1 to minimum diversity. Defaults to 0.5.
+            score_threshold: Only documents with a score greater than or equal
+                this threshold will be chosen. Defaults to 0.0 so all scores are
+                taken.
         """
-
-        # TODO: Add score_threshold?
-
         selected_ids = []
         selected_set = set()
 
@@ -439,6 +439,9 @@ class CassandraKnowledgeStore(KnowledgeStore):
         best_score, next_id = max([(u.score, content_id) for (content_id, u) in unselected.items() ])
 
         while len(selected_ids) < k and next_id is not None:
+            if best_score < score_threshold:
+                break
+
             selected_id = next_id
             selected_set.add(next_id)
             selected_ids.append(next_id)

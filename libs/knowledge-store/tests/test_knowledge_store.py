@@ -1,8 +1,9 @@
 import pytest
 import math
-from typing import List
+from typing import Iterable, List
 from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
+from ragstack_knowledge_store.cassandra import CONTENT_ID
 from ragstack_knowledge_store.explicit_edge_extractor import ExplicitEdgeExtractor
 
 from ragstack_knowledge_store.base import _documents_to_nodes, _texts_to_nodes, TextNode
@@ -32,6 +33,9 @@ class AngularTwoDimensionalEmbeddings(Embeddings):
         except ValueError:
             # Assume: just test string, no attention is paid to values.
             return [0.0, 0.0]
+
+def _result_ids(docs: Iterable[Document]) -> List[str]:
+    return list(map(lambda d: d.metadata[CONTENT_ID], docs))
 
 def test_write_retrieve_href_url_pair(fresh_fixture: DataFixture):
     a = Document(
@@ -121,17 +125,20 @@ def test_mmr_traversal(fresh_fixture: DataFixture):
     store.add_documents([v0, v1, v2, v3])
 
     results = store.mmr_traversal("0.0", k=2, fetch_k=2)
-    assert list(map(lambda d: d.metadata["content_id"], results)) == ["v0", "v2"]
+    assert _result_ids(results) == ["v0", "v2"]
 
     # With max depth 0, no edges are traversed, so this doesn't reach v2 or v3.
     # So it ends up picking "v1" even though it's similar to "v0".
     results = store.mmr_traversal("0.0", k=2, fetch_k=2, max_depth=0)
-    assert list(map(lambda d: d.metadata["content_id"], results)) == ["v0", "v1"]
+    assert _result_ids(results) == ["v0", "v1"]
 
     # With max depth 0 but higher `fetch_k`, we encounter v2
     results = store.mmr_traversal("0.0", k=2, fetch_k=3, max_depth=0)
-    assert list(map(lambda d: d.metadata["content_id"], results)) == ["v0", "v2"]
+    assert _result_ids(results) == ["v0", "v2"]
 
+    # v0 score is .46, v2 score is 0.16 so it won't be chosen.
+    results = store.mmr_traversal("0.0", k=2, score_threshold=0.2)
+    assert _result_ids(results) == ["v0"]
 
 def test_write_retrieve_keywords(fresh_fixture: DataFixture):
     _texts_to_nodes(["a", "b"], {"a": "b"}, None)
@@ -162,38 +169,24 @@ def test_write_retrieve_keywords(fresh_fixture: DataFixture):
 
     # Doc2 is more similar, but World and Earth are similar enough that doc1 also shows up.
     results = store.similarity_search("Earth", k=2)
-    assert list(map(lambda d: d.page_content, results)) == [
-        doc2.page_content,
-        doc1.page_content,
-    ]
+    assert _result_ids(results) == ["doc2", "doc1"]
 
     results = store.similarity_search("Earth", k=1)
-    assert list(map(lambda d: d.page_content, results)) == [doc2.page_content]
+    assert _result_ids(results) == ["doc2"]
 
     results = store.traversing_retrieve("Earth", k=2, depth=0)
-    assert set(map(lambda d: d.page_content, results)) == {
-        doc2.page_content,
-        doc1.page_content,
-    }
+    assert _result_ids(results) == ["doc2", "doc1"]
 
     results = store.traversing_retrieve("Earth", k=2, depth=1)
-    assert set(map(lambda d: d.page_content, results)) == {
-        doc2.page_content,
-        doc1.page_content,
-        greetings.page_content,
-    }
+    assert _result_ids(results) == ["doc2", "doc1", "greetings"]
 
     # K=1 only pulls in doc2 (Hello Earth)
     results = store.traversing_retrieve("Earth", k=1, depth=0)
-    assert set(map(lambda d: d.page_content, results)) == {doc2.page_content}
+    assert _result_ids(results) == ["doc2"]
 
     # K=1 only pulls in doc2 (Hello Earth). Depth=1 traverses to parent and via keyword edge.
     results = store.traversing_retrieve("Earth", k=1, depth=1)
-    assert set(map(lambda d: d.page_content, results)) == {
-        doc2.page_content,
-        doc1.page_content,
-        greetings.page_content,
-    }
+    assert set(_result_ids(results)) == {"doc2", "doc1", "greetings"}
 
 def test_texts_to_nodes():
     assert list(_texts_to_nodes(["a", "b"], [{"a": "b"}, {"c": "d"}], ["a", "b"])) == [
