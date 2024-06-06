@@ -1,7 +1,7 @@
 from typing import Any, Dict, Iterable
 
 from ragstack_knowledge_store.edge_extractor import EdgeExtractor
-from ragstack_knowledge_store.knowledge_store import CONTENT_ID, KnowledgeStore
+from ragstack_knowledge_store.cassandra import CONTENT_ID, CassandraKnowledgeStore
 
 
 class ExplicitEdgeExtractor(EdgeExtractor):
@@ -33,7 +33,10 @@ class ExplicitEdgeExtractor(EdgeExtractor):
         return self._kind
 
     def extract_edges(
-        self, store: KnowledgeStore, texts: Iterable[str], metadatas: Iterable[Dict[str, Any]]
+        self,
+        store: CassandraKnowledgeStore,
+        texts: Iterable[str],
+        metadatas: Iterable[Dict[str, Any]],
     ) -> int:
         num_edges = 0
         with store._concurrent_queries() as cq:

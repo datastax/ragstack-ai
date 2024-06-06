@@ -1,14 +1,11 @@
 import secrets
 from typing import (
     Any,
-    Dict,
     Iterable,
     List,
     NamedTuple,
     Optional,
     Sequence,
-    Union,
-    Tuple,
     Type,
 )
 
@@ -203,7 +200,6 @@ class CassandraKnowledgeStore(KnowledgeStore):
 
     @property
     def embeddings(self) -> Optional[Embeddings]:
-        """Access the query embedding object if available."""
         return self._embedding
 
     def _concurrent_queries(self) -> ConcurrentQueries:
@@ -212,7 +208,6 @@ class CassandraKnowledgeStore(KnowledgeStore):
     def add_nodes(
         self,
         nodes: Iterable[Node] = None,
-        links: Iterable[Tuple[str, str]] = None,
         **kwargs: Any,
     ):
         texts = []
@@ -266,7 +261,7 @@ class CassandraKnowledgeStore(KnowledgeStore):
         ids: Optional[Iterable[str]] = None,
         **kwargs: Any,
     ) -> "CassandraKnowledgeStore":
-        """Return CassandraKnowledgeStore initialized from texts and embeddings."""
+        """Return CassandraKnowledgeStore initialized from documents and embeddings."""
         store = cls(embedding, **kwargs)
         store.add_documents(documents, ids=ids)
         return store
@@ -274,13 +269,6 @@ class CassandraKnowledgeStore(KnowledgeStore):
     def similarity_search(
         self, query: str, k: int = 4, **kwargs: Any
     ) -> List[Document]:
-        """Return docs most similar to query.
-        Args:
-            query: Text to look up documents similar to.
-            k: Number of Documents to return. Defaults to 4.
-        Returns:
-            List of Document, the most similar to the query vector.
-        """
         embedding_vector = self._embedding.embed_query(query)
         return self.similarity_search_by_vector(
             embedding_vector,
@@ -290,14 +278,6 @@ class CassandraKnowledgeStore(KnowledgeStore):
     def similarity_search_by_vector(
         self, embedding: List[float], k: int = 4, **kwargs: Any
     ) -> List[Document]:
-        """Return docs most similar to query_vector.
-
-        Args:
-            embedding: Embeding to lookup documents similar to.
-            k: Number of Documents to return. Defaults to 4.
-        Returns:
-            List of Document, the most simliar to the query vector.
-        """
         results = self._session.execute(self._query_by_embedding, (embedding, k))
         return list(_results_to_documents(results))
 
@@ -328,31 +308,12 @@ class CassandraKnowledgeStore(KnowledgeStore):
 
     def traversing_retrieve(
         self,
-        query: Union[str, Iterable[str]],
+        query: str,
         *,
         k: int = 4,
         depth: int = 1,
         **kwargs: Any,
     ) -> Iterable[Document]:
-        """Return a runnable for retrieving from this knowledge store.
-
-        First, `k` nodes are retrieved using a vector search for each `query` string.
-        Then, additional nodes are discovered up to the given `depth` from those starting
-        nodes.
-
-        Args:
-            query: The query string or collection fo query strings.
-            k: The number of Documents to return from the initial vector search.
-                Defaults to 4. Applies to each of the query strings.
-            depth: The maximum depth of edges to traverse. Defaults to 1.
-        Returns:
-            Collection of retrieved documents.
-        """
-        if isinstance(query, str):
-            query = {query}
-        else:
-            query = set(query)
-
         with self._concurrent_queries() as cq:
             visited = {}
 
@@ -367,15 +328,14 @@ class CassandraKnowledgeStore(KnowledgeStore):
                             cq.execute(
                                 self._query_linked_ids,
                                 parameters=(content_id,),
-                                callback=lambda nodes, d=d: visit(d + 1, nodes),
+                                callback=lambda n, _d=d: visit(_d + 1, n),
                             )
 
-            for q in query:
-                query_embedding = self._embedding.embed_query(q)
-                cq.execute(
-                    self._query_ids_by_embedding,
-                    parameters=(query_embedding, k),
-                    callback=lambda nodes: visit(0, nodes),
-                )
+            query_embedding = self._embedding.embed_query(query)
+            cq.execute(
+                self._query_ids_by_embedding,
+                parameters=(query_embedding, k),
+                callback=lambda nodes: visit(0, nodes),
+            )
 
         return self._query_by_ids(visited.keys())

@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import Any, Dict, Iterable, Set
 
+from ragstack_knowledge_store.cassandra import CONTENT_ID, CassandraKnowledgeStore
 from ragstack_knowledge_store.edge_extractor import EdgeExtractor
-from ragstack_knowledge_store.knowledge_store import CONTENT_ID, KnowledgeStore
 
 
 class DirectedEdgeExtractor(EdgeExtractor):
@@ -37,7 +37,9 @@ class DirectedEdgeExtractor(EdgeExtractor):
 
     @staticmethod
     def for_hrefs_to_urls() -> DirectedEdgeExtractor:
-        return DirectedEdgeExtractor(sources_field="hrefs", targets_field="urls", kind="link")
+        return DirectedEdgeExtractor(
+            sources_field="hrefs", targets_field="urls", kind="link"
+        )
 
     def _sources(self, metadata: Dict[str, Any]) -> Set[str]:
         sources = metadata.get(self._sources_field)
@@ -66,7 +68,10 @@ class DirectedEdgeExtractor(EdgeExtractor):
         return results
 
     def extract_edges(
-        self, store: KnowledgeStore, texts: Iterable[str], metadatas: Iterable[Dict[str, Any]]
+        self,
+        store: CassandraKnowledgeStore,
+        texts: Iterable[str],
+        metadatas: Iterable[Dict[str, Any]],
     ) -> int:
         # First, iterate over the new nodes, collecting the sources/targets that
         # are referenced and which IDs contain those.

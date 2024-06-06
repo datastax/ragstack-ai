@@ -149,7 +149,7 @@ class KnowledgeStore(VectorStore):
     @abstractmethod
     def traversing_retrieve(
         self,
-        query: Union[str, Iterable[str]],
+        query: str,
         *,
         k: int = 4,
         depth: int = 1,
@@ -162,7 +162,7 @@ class KnowledgeStore(VectorStore):
         starting nodes.
 
         Args:
-            query: The query string or collection of query strings.
+            query: The query string.
             k: The number of Documents to return from the initial search.
                 Defaults to 4. Applies to each of the query strings.
             depth: The maximum depth of edges to traverse. Defaults to 1.
@@ -172,7 +172,7 @@ class KnowledgeStore(VectorStore):
 
     async def atraversing_retrieve(
         self,
-        query: Union[str, Iterable[str]],
+        query: str,
         *,
         k: int = 4,
         depth: int = 1,
@@ -185,7 +185,7 @@ class KnowledgeStore(VectorStore):
         starting nodes.
 
         Args:
-            query: The query string or collection of query strings.
+            query: The query string.
             k: The number of Documents to return from the initial search.
                 Defaults to 4. Applies to each of the query strings.
             depth: The maximum depth of edges to traverse. Defaults to 1.

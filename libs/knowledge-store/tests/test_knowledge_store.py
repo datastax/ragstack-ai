@@ -75,7 +75,7 @@ def test_write_retrieve_keywords(fresh_fixture: DataFixture):
     results = store.similarity_search("Earth", k=1)
     assert list(map(lambda d: d.page_content, results)) == [doc2.page_content]
 
-    results = store.retrieve("Earth", k=2, depth=0)
+    results = store.traversing_retrieve("Earth", k=2, depth=0)
     assert set(map(lambda d: d.page_content, results)) == {
         doc2.page_content,
         doc1.page_content,
