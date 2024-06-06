@@ -1,12 +1,12 @@
 from typing import Any, Dict, Iterable
 
 from ragstack_knowledge_store.edge_extractor import EdgeExtractor
-from ragstack_knowledge_store.knowledge_store import CONTENT_ID, KnowledgeStore
+from ragstack_knowledge_store.cassandra import CONTENT_ID, CassandraKnowledgeStore
 
 
 class ParentEdgeExtractor(EdgeExtractor):
     def __init__(self, parent_field: str = "parent_content_id") -> None:
-        """Extract an edge from a node to it's parent.
+        """Extract an edge from a node to its parent.
 
         If no parent is defined, no edge will be created.
         An edge will be created if the `parent_field` is specified, whether or
@@ -25,7 +25,10 @@ class ParentEdgeExtractor(EdgeExtractor):
         return "has_parent"
 
     def extract_edges(
-        self, store: KnowledgeStore, texts: Iterable[str], metadatas: Iterable[Dict[str, Any]]
+        self,
+        store: CassandraKnowledgeStore,
+        texts: Iterable[str],
+        metadatas: Iterable[Dict[str, Any]],
     ) -> int:
         num_edges = 0
         with store._concurrent_queries() as cq:

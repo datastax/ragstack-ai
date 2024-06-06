@@ -1,5 +1,7 @@
+import pytest
 from langchain_core.documents import Document
 
+from ragstack_knowledge_store.base import _documents_to_nodes, _texts_to_nodes, TextNode
 from .conftest import DataFixture
 
 
@@ -40,6 +42,7 @@ def test_write_retrieve_href_url_pair(fresh_fixture: DataFixture):
 
 
 def test_write_retrieve_keywords(fresh_fixture: DataFixture):
+    _texts_to_nodes(["a", "b"], {"a": "b"}, None)
     greetings = Document(
         page_content="Typical Greetings",
         metadata={
@@ -75,13 +78,13 @@ def test_write_retrieve_keywords(fresh_fixture: DataFixture):
     results = store.similarity_search("Earth", k=1)
     assert list(map(lambda d: d.page_content, results)) == [doc2.page_content]
 
-    results = store.retrieve("Earth", k=2, depth=0)
+    results = store.traversing_retrieve("Earth", k=2, depth=0)
     assert set(map(lambda d: d.page_content, results)) == {
         doc2.page_content,
         doc1.page_content,
     }
 
-    results = store.retrieve("Earth", k=2, depth=1)
+    results = store.traversing_retrieve("Earth", k=2, depth=1)
     assert set(map(lambda d: d.page_content, results)) == {
         doc2.page_content,
         doc1.page_content,
@@ -89,13 +92,55 @@ def test_write_retrieve_keywords(fresh_fixture: DataFixture):
     }
 
     # K=1 only pulls in doc2 (Hello Earth)
-    results = store.retrieve("Earth", k=1, depth=0)
+    results = store.traversing_retrieve("Earth", k=1, depth=0)
     assert set(map(lambda d: d.page_content, results)) == {doc2.page_content}
 
     # K=1 only pulls in doc2 (Hello Earth). Depth=1 traverses to parent and via keyword edge.
-    results = store.retrieve("Earth", k=1, depth=1)
+    results = store.traversing_retrieve("Earth", k=1, depth=1)
     assert set(map(lambda d: d.page_content, results)) == {
         doc2.page_content,
         doc1.page_content,
         greetings.page_content,
     }
+
+
+def test_texts_to_nodes():
+    assert list(_texts_to_nodes(["a", "b"], [{"a": "b"}, {"c": "d"}], ["a", "b"])) == [
+        TextNode(id="a", metadata={"a": "b"}, text="a"),
+        TextNode(id="b", metadata={"c": "d"}, text="b"),
+    ]
+    assert list(_texts_to_nodes(["a", "b"], None, ["a", "b"])) == [
+        TextNode(id="a", metadata={}, text="a"),
+        TextNode(id="b", metadata={}, text="b"),
+    ]
+    assert list(_texts_to_nodes(["a", "b"], [{"a": "b"}, {"c": "d"}], None)) == [
+        TextNode(metadata={"a": "b"}, text="a"),
+        TextNode(metadata={"c": "d"}, text="b"),
+    ]
+    with pytest.raises(ValueError):
+        list(_texts_to_nodes(["a", "b"], None, ["a"]))
+    with pytest.raises(ValueError):
+        list(_texts_to_nodes(["a", "b"], [{"a": "b"}], None))
+    with pytest.raises(ValueError):
+        list(_texts_to_nodes(["a"], [{"a": "b"}, {"c": "d"}], None))
+    with pytest.raises(ValueError):
+        list(_texts_to_nodes(["a"], None, ["a", "b"]))
+
+
+def test_documents_to_nodes():
+    documents = [
+        Document(page_content="a", metadata={"a": "b"}),
+        Document(page_content="b", metadata={"c": "d"}),
+    ]
+    assert list(_documents_to_nodes(documents, ["a", "b"])) == [
+        TextNode(id="a", metadata={"a": "b"}, text="a"),
+        TextNode(id="b", metadata={"c": "d"}, text="b"),
+    ]
+    assert list(_documents_to_nodes(documents, None)) == [
+        TextNode(metadata={"a": "b"}, text="a"),
+        TextNode(metadata={"c": "d"}, text="b"),
+    ]
+    with pytest.raises(ValueError):
+        list(_documents_to_nodes(documents, ["a"]))
+    with pytest.raises(ValueError):
+        list(_documents_to_nodes(documents[1:], ["a", "b"]))

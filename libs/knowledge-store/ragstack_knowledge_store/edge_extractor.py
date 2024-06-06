@@ -1,8 +1,13 @@
+from __future__ import annotations
+
+import typing
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Iterable, Set
 
-from knowledge_store import KnowledgeStore
 from langchain_core.runnables import run_in_executor
+
+if typing.TYPE_CHECKING:
+    from ragstack_knowledge_store.cassandra import CassandraKnowledgeStore
 
 
 class EdgeExtractor(ABC):
@@ -19,14 +24,17 @@ class EdgeExtractor(ABC):
 
     @abstractmethod
     def extract_edges(
-        self, store: KnowledgeStore, texts: Iterable[str], metadatas: Iterable[Dict[str, Any]]
+        self,
+        store: CassandraKnowledgeStore,
+        texts: Iterable[str],
+        metadatas: Iterable[Dict[str, Any]],
     ) -> int:
         """Add edges for the given nodes.
 
         The nodes have already been persisted.
 
         Args:
-            store: KnowledgeStore edges are being extracted for.
+            store: CassandraKnowledgeStore edges are being extracted for.
             texts: The texts of the nodes to be processed.
             metadatas: The metadatas of the nodes to be processed.
 
@@ -35,14 +43,17 @@ class EdgeExtractor(ABC):
         """
 
     async def aextract_edges(
-        self, store: KnowledgeStore, texts: Iterable[str], metadatas: Iterable[Dict[str, Any]]
+        self,
+        store: CassandraKnowledgeStore,
+        texts: Iterable[str],
+        metadatas: Iterable[Dict[str, Any]],
     ) -> int:
         """Add edges for the given nodes.
 
         The nodes have already been persisted.
 
         Args:
-            store: KnowledgeStore edges are being extracted for.
+            store: CassandraKnowledgeStore edges are being extracted for.
             texts: The texts of the nodes to be processed.
             metadatas: The metadatas of the nodes to be processed.
 

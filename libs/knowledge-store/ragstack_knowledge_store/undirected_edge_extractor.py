@@ -1,7 +1,7 @@
 from typing import Any, Dict, Iterable, Set
 
 from ragstack_knowledge_store.edge_extractor import EdgeExtractor
-from ragstack_knowledge_store.knowledge_store import CONTENT_ID, KnowledgeStore
+from ragstack_knowledge_store.cassandra import CONTENT_ID, CassandraKnowledgeStore
 
 
 class UndirectedEdgeExtractor(EdgeExtractor):
@@ -41,7 +41,10 @@ class UndirectedEdgeExtractor(EdgeExtractor):
         return {f"{self._kind}:{kw}" for kw in self._keywords(metadata)}
 
     def extract_edges(
-        self, store: KnowledgeStore, texts: Iterable[str], metadatas: Iterable[Dict[str, Any]]
+        self,
+        store: CassandraKnowledgeStore,
+        texts: Iterable[str],
+        metadatas: Iterable[Dict[str, Any]],
     ) -> int:
         # First, iterate over the new nodes, collecting the keywords that are referenced
         # and which IDs contain those.
@@ -81,7 +84,9 @@ class UndirectedEdgeExtractor(EdgeExtractor):
                 cq.execute(
                     store._query_ids_by_tag,
                     (f"{self._kind}:{kw}",),
-                    callback=lambda rows, new_ids=new_ids: handle_keywords(rows, new_ids),
+                    callback=lambda rows, _new_ids=new_ids: handle_keywords(
+                        rows, _new_ids
+                    ),
                 )
 
         return added_edges
