@@ -386,7 +386,7 @@ class CassandraKnowledgeStore(KnowledgeStore):
         results = self._session.execute(self._query_linked_ids, (source_id,))
         return _results_to_ids(results)
 
-    def mmr_traversal(
+    def mmr_traversal_search(
         self,
         query: str,
         *,
@@ -489,7 +489,7 @@ class CassandraKnowledgeStore(KnowledgeStore):
         return self._query_by_ids(selected_ids)
 
 
-    def traversing_retrieve(
+    def traversal_search(
         self,
         query: str,
         *,

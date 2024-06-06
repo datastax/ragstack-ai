@@ -124,20 +124,20 @@ def test_mmr_traversal(fresh_fixture: DataFixture):
     )
     store.add_documents([v0, v1, v2, v3])
 
-    results = store.mmr_traversal("0.0", k=2, fetch_k=2)
+    results = store.mmr_traversal_search("0.0", k=2, fetch_k=2)
     assert _result_ids(results) == ["v0", "v2"]
 
     # With max depth 0, no edges are traversed, so this doesn't reach v2 or v3.
     # So it ends up picking "v1" even though it's similar to "v0".
-    results = store.mmr_traversal("0.0", k=2, fetch_k=2, max_depth=0)
+    results = store.mmr_traversal_search("0.0", k=2, fetch_k=2, max_depth=0)
     assert _result_ids(results) == ["v0", "v1"]
 
     # With max depth 0 but higher `fetch_k`, we encounter v2
-    results = store.mmr_traversal("0.0", k=2, fetch_k=3, max_depth=0)
+    results = store.mmr_traversal_search("0.0", k=2, fetch_k=3, max_depth=0)
     assert _result_ids(results) == ["v0", "v2"]
 
     # v0 score is .46, v2 score is 0.16 so it won't be chosen.
-    results = store.mmr_traversal("0.0", k=2, score_threshold=0.2)
+    results = store.mmr_traversal_search("0.0", k=2, score_threshold=0.2)
     assert _result_ids(results) == ["v0"]
 
 def test_write_retrieve_keywords(fresh_fixture: DataFixture):
@@ -174,18 +174,18 @@ def test_write_retrieve_keywords(fresh_fixture: DataFixture):
     results = store.similarity_search("Earth", k=1)
     assert _result_ids(results) == ["doc2"]
 
-    results = store.traversing_retrieve("Earth", k=2, depth=0)
+    results = store.traversal_search("Earth", k=2, depth=0)
     assert _result_ids(results) == ["doc2", "doc1"]
 
-    results = store.traversing_retrieve("Earth", k=2, depth=1)
+    results = store.traversal_search("Earth", k=2, depth=1)
     assert _result_ids(results) == ["doc2", "doc1", "greetings"]
 
     # K=1 only pulls in doc2 (Hello Earth)
-    results = store.traversing_retrieve("Earth", k=1, depth=0)
+    results = store.traversal_search("Earth", k=1, depth=0)
     assert _result_ids(results) == ["doc2"]
 
     # K=1 only pulls in doc2 (Hello Earth). Depth=1 traverses to parent and via keyword edge.
-    results = store.traversing_retrieve("Earth", k=1, depth=1)
+    results = store.traversal_search("Earth", k=1, depth=1)
     assert set(_result_ids(results)) == {"doc2", "doc1", "greetings"}
 
 def test_texts_to_nodes():
