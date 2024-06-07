@@ -195,8 +195,7 @@ def _bedrock_chat(**kwargs) -> callable:
 def bedrock_anthropic_claudev2_llm():
     return {
         "llm": _bedrock_chat(
-            model_id="anthropic.claude-v2",
-            model_kwargs={"temperature": 0}
+            model_id="anthropic.claude-v2", model_kwargs={"temperature": 0}
         ),
         "nemo_config": None,
     }
@@ -271,7 +270,9 @@ def nvidia_aifoundation_mixtral8x7b_llm():
         get_required_env("NVIDIA_API_KEY")
         from langchain_nvidia_ai_endpoints import ChatNVIDIA
 
-        return ChatNVIDIA(model="ai-mixtral-8x7b-instruct", temperature=0, max_tokens=2048)
+        return ChatNVIDIA(
+            model="ai-mixtral-8x7b-instruct", temperature=0, max_tokens=2048
+        )
 
     return {"llm": llm, "nemo_config": None}
 
