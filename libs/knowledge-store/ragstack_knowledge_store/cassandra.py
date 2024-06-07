@@ -400,7 +400,7 @@ class CassandraKnowledgeStore(KnowledgeStore):
         depth: int = 2,
         fetch_k: int = 100,
         lambda_mult: float = 0.5,
-        score_threshold: float = 0.0,
+        score_threshold: float = float('-inf'),
     ) -> Iterable[Document]:
         """Retrieve documents from this knowledge store using MMR-traversal.
 
@@ -423,8 +423,7 @@ class CassandraKnowledgeStore(KnowledgeStore):
                 of diversity among the results with 0 corresponding to maximum
                 diversity and 1 to minimum diversity. Defaults to 0.5.
             score_threshold: Only documents with a score greater than or equal
-                this threshold will be chosen. Defaults to 0.0 so all scores are
-                taken.
+                this threshold will be chosen. Defaults to -infinity.
         """
         selected_ids = []
         selected_set = set()
@@ -449,7 +448,6 @@ class CassandraKnowledgeStore(KnowledgeStore):
         while len(selected_ids) < k and next_id is not None:
             if best_score < score_threshold:
                 break
-
             selected_id = next_id
             selected_set.add(next_id)
             selected_ids.append(next_id)
@@ -458,7 +456,7 @@ class CassandraKnowledgeStore(KnowledgeStore):
             selected_embedding = next_selected.embedding
             selected_embeddings.append(selected_embedding)
 
-            best_score = 0.0
+            best_score = float('-inf')
             next_id = None
 
             # Update unselected scores.

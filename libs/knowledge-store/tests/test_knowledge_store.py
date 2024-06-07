@@ -143,6 +143,10 @@ def test_mmr_traversal(fresh_fixture: DataFixture):
     results = store.mmr_traversal_search("0.0", k=2, score_threshold=0.2)
     assert _result_ids(results) == ["v0"]
 
+    # with k=4 we should get all of the documents.
+    results = store.mmr_traversal_search("0.0", k=4)
+    assert _result_ids(results) == ["v0", "v2", "v1", "v3"]
+
 
 def test_write_retrieve_keywords(fresh_fixture: DataFixture):
     _texts_to_nodes(["a", "b"], {"a": "b"}, None)
