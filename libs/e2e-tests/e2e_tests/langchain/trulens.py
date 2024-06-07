@@ -1,7 +1,6 @@
 from trulens_eval import TruChain, Feedback, Tru
 from trulens_eval.feedback.provider import Langchain
 from trulens_eval.app import App
-from trulens_eval.schema.feedback import FeedbackResult
 
 from langchain.schema.vectorstore import VectorStore
 from langchain.schema.language_model import BaseLanguageModel
@@ -18,7 +17,6 @@ from e2e_tests.langchain.rag_application import (
 )
 
 import numpy as np
-from concurrent.futures import as_completed
 
 
 def _feedback_functions(chain: Runnable, llm: BaseLanguageModel) -> list[Feedback]:
