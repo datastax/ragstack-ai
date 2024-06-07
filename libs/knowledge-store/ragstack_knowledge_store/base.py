@@ -256,7 +256,7 @@ class KnowledgeStore(VectorStore):
         query: str,
         *,
         k: int = 4,
-        max_depth: int = 2,
+        depth: int = 2,
         fetch_k: int = 100,
         lambda_mult: float = 0.5,
         score_threshold: float = 0.0,
@@ -421,6 +421,8 @@ class KnowledgeStoreRetriever(VectorStoreRetriever):
     ) -> List[Document]:
         if self.search_type == "traversal":
             return list(self.vectorstore.traversal_search(query, **self.search_kwargs))
+        elif self.search_type == "mmr_traversal":
+            return list(self.vectorstore.traversal_search(query, **self.search_kwargs))
         else:
             return super()._get_relevant_documents(query, run_manager=run_manager)
 
@@ -431,6 +433,11 @@ class KnowledgeStoreRetriever(VectorStoreRetriever):
             return [
                 doc
                 async for doc in self.vectorstore.atraversal_search(query, **self.search_kwargs)
+            ]
+        elif self.search_type == "mmr_traversal":
+            return [
+                doc
+                async for doc in self.vectorstore.ammr_traversal_search(query, **self.search_kwargs)
             ]
         else:
             return await super()._aget_relevant_documents(query, run_manager=run_manager)
