@@ -1,13 +1,16 @@
-import pytest
 import math
 from typing import Iterable, List
+
+import pytest
 from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
+
+from ragstack_knowledge_store.base import TextNode, _documents_to_nodes, _texts_to_nodes
 from ragstack_knowledge_store.cassandra import CONTENT_ID
 from ragstack_knowledge_store.explicit_edge_extractor import ExplicitEdgeExtractor
 
-from ragstack_knowledge_store.base import _documents_to_nodes, _texts_to_nodes, TextNode
 from .conftest import DataFixture
+
 
 class AngularTwoDimensionalEmbeddings(Embeddings):
     """
@@ -34,8 +37,10 @@ class AngularTwoDimensionalEmbeddings(Embeddings):
             # Assume: just test string, no attention is paid to values.
             return [0.0, 0.0]
 
+
 def _result_ids(docs: Iterable[Document]) -> List[str]:
     return list(map(lambda d: d.metadata[CONTENT_ID], docs))
+
 
 def test_write_retrieve_href_url_pair(fresh_fixture: DataFixture):
     a = Document(
@@ -72,6 +77,7 @@ def test_write_retrieve_href_url_pair(fresh_fixture: DataFixture):
     assert list(store._linked_ids("c")) == ["a"]
     assert sorted(store._linked_ids("d")) == ["a", "b"]
 
+
 def test_mmr_traversal(fresh_fixture: DataFixture):
     """
     Test end to end construction and MMR search.
@@ -99,26 +105,23 @@ def test_mmr_traversal(fresh_fixture: DataFixture):
 
     v0 = Document(
         page_content="-0.124",
-        metadata = {
-            "content_id": "v0",
-            "edges": ["v2", "v3"]
-        },
+        metadata={"content_id": "v0", "edges": ["v2", "v3"]},
     )
     v1 = Document(
         page_content="+0.127",
-        metadata = {
+        metadata={
             "content_id": "v1",
         },
     )
     v2 = Document(
-        page_content = "+0.25",
-        metadata = {
+        page_content="+0.25",
+        metadata={
             "content_id": "v2",
         },
     )
     v3 = Document(
-        page_content = "+1.0",
-        metadata = {
+        page_content="+1.0",
+        metadata={
             "content_id": "v3",
         },
     )
@@ -139,6 +142,7 @@ def test_mmr_traversal(fresh_fixture: DataFixture):
     # v0 score is .46, v2 score is 0.16 so it won't be chosen.
     results = store.mmr_traversal_search("0.0", k=2, score_threshold=0.2)
     assert _result_ids(results) == ["v0"]
+
 
 def test_write_retrieve_keywords(fresh_fixture: DataFixture):
     _texts_to_nodes(["a", "b"], {"a": "b"}, None)
@@ -187,6 +191,7 @@ def test_write_retrieve_keywords(fresh_fixture: DataFixture):
     # K=1 only pulls in doc2 (Hello Earth). Depth=1 traverses to parent and via keyword edge.
     results = store.traversal_search("Earth", k=1, depth=1)
     assert set(_result_ids(results)) == {"doc2", "doc1", "greetings"}
+
 
 def test_texts_to_nodes():
     assert list(_texts_to_nodes(["a", "b"], [{"a": "b"}, {"c": "d"}], ["a", "b"])) == [

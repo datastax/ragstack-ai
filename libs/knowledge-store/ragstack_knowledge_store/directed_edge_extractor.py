@@ -2,14 +2,18 @@ from __future__ import annotations
 
 from typing import Any, Dict, Iterable, List, Set
 
+from ragstack_knowledge_store._utils import strict_zip
 from ragstack_knowledge_store.cassandra import CONTENT_ID, CassandraKnowledgeStore
 from ragstack_knowledge_store.edge_extractor import EdgeExtractor
+
 
 def _rows_to_sources(rows) -> Iterable[str]:
     return [row.content_id for row in rows]
 
+
 def _rows_to_targets(rows) -> Dict[str, List[float]]:
     return {row.content_id: row.text_embedding for row in rows}
+
 
 class DirectedEdgeExtractor(EdgeExtractor):
     def __init__(self, sources_field: str, targets_field: str, kind: str) -> None:
@@ -79,7 +83,7 @@ class DirectedEdgeExtractor(EdgeExtractor):
         new_ids = set()
         resource_to_new_defs_embs = {}
         resource_to_new_refs = {}
-        for (md, embedding) in zip(metadatas, text_embeddings, strict=True):
+        for md, embedding in strict_zip(metadatas, text_embeddings):
             id = md[CONTENT_ID]
 
             new_ids.add(id)
@@ -93,10 +97,12 @@ class DirectedEdgeExtractor(EdgeExtractor):
         # Remembering that the the *new* nodes will have been added.
         source_target_pairs = dict()
         with store._concurrent_queries() as cq:
-            def add_source_target_pairs(source_ids: Iterable[str],
-                                        target_id_embeddings: Dict[str, List[float]]):
+
+            def add_source_target_pairs(
+                source_ids: Iterable[str], target_id_embeddings: Dict[str, List[float]]
+            ):
                 for source_id in source_ids:
-                    for (target_id, target_embedding) in target_id_embeddings.items():
+                    for target_id, target_embedding in target_id_embeddings.items():
                         source_target_pairs[(source_id, target_id)] = target_embedding
 
             for resource, new_defs_embs in resource_to_new_defs_embs.items():
@@ -123,6 +129,8 @@ class DirectedEdgeExtractor(EdgeExtractor):
         # how to start sending these before everyting previously finished.
         with store._concurrent_queries() as cq:
             for (source_id, target_id), target_embedding in source_target_pairs.items():
-                cq.execute(store._insert_edge, (source_id, target_id, self._kind, target_embedding))
+                cq.execute(
+                    store._insert_edge, (source_id, target_id, self._kind, target_embedding)
+                )
 
         return len(source_target_pairs)

@@ -1,5 +1,5 @@
-from dataclasses import dataclass
 import secrets
+from dataclasses import dataclass
 from typing import (
     Any,
     Iterable,
@@ -10,18 +10,19 @@ from typing import (
     Type,
 )
 
-from cassandra.cluster import ResponseFuture, Session, ConsistencyLevel
+import numpy as np
+from cassandra.cluster import ConsistencyLevel, ResponseFuture, Session
 from cassio.config import check_resolve_keyspace, check_resolve_session
+from langchain_community.utils.math import cosine_similarity
 from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
 
-import numpy as np
 from ragstack_knowledge_store.edge_extractor import EdgeExtractor
-from langchain_community.utils.math import cosine_similarity
 
+from ._utils import strict_zip
+from .base import KnowledgeStore, Node, TextNode
 from .concurrency import ConcurrentQueries
 from .content import Kind
-from .base import KnowledgeStore, Node, TextNode
 
 CONTENT_ID = "content_id"
 
@@ -47,38 +48,44 @@ def _results_to_ids(results: Optional[ResponseFuture]) -> Iterable[str]:
         for row in results:
             yield row.content_id
 
+
 def emb_to_ndarray(embedding: List[float]) -> np.ndarray:
     embedding = np.array(embedding, dtype=np.float32)
     if embedding.ndim == 1:
         embedding = np.expand_dims(embedding, axis=0)
     return embedding
 
+
 @dataclass
 class _Candidate:
-  score: float
-  similarity_to_query: float
-  """Lambda * Similarity to the question."""
+    score: float
+    similarity_to_query: float
+    """Lambda * Similarity to the question."""
 
-  embedding: np.ndarray
-  """Embedding used for updating similarity to selections."""
+    embedding: np.ndarray
+    """Embedding used for updating similarity to selections."""
 
-  redundancy: float
-  """(1 - Lambda) * max(Similarity to selected items)."""
+    redundancy: float
+    """(1 - Lambda) * max(Similarity to selected items)."""
 
-  def __init__(self, embedding: List[float], lambda_mult: float, query_embedding: np.ndarray):
-    self.embedding = emb_to_ndarray(embedding)
+    def __init__(self, embedding: List[float], lambda_mult: float, query_embedding: np.ndarray):
+        self.embedding = emb_to_ndarray(embedding)
 
-    # TODO: Refactor to use cosine_similarity_top_k to allow an array of embeddings?
-    self.similarity_to_query = lambda_mult * cosine_similarity(query_embedding, self.embedding)[0]
-    self.redundancy = 0.0
-    self.score = self.similarity_to_query - self.redundancy
-    self.distance = 0
+        # TODO: Refactor to use cosine_similarity_top_k to allow an array of embeddings?
+        self.similarity_to_query = (
+            lambda_mult * cosine_similarity(query_embedding, self.embedding)[0]
+        )
+        self.redundancy = 0.0
+        self.score = self.similarity_to_query - self.redundancy
+        self.distance = 0
 
-  def update_for_selection(self, lambda_mult: float, selection_embedding: List[float]):
-    selected_r_sim = (1 - lambda_mult) * cosine_similarity(selection_embedding, self.embedding)[0]
-    if selected_r_sim > self.redundancy:
-      self.redundancy = selected_r_sim
-      self.score = self.similarity_to_query - selected_r_sim
+    def update_for_selection(self, lambda_mult: float, selection_embedding: List[float]):
+        selected_r_sim = (1 - lambda_mult) * cosine_similarity(
+            selection_embedding, self.embedding
+        )[0]
+        if selected_r_sim > self.redundancy:
+            self.redundancy = selected_r_sim
+            self.score = self.similarity_to_query - selected_r_sim
 
 
 class CassandraKnowledgeStore(KnowledgeStore):
@@ -97,7 +104,7 @@ class CassandraKnowledgeStore(KnowledgeStore):
         """A hybrid vector-and-graph knowledge store backed by Cassandra.
 
         Document chunks support vector-similarity search as well as edges linking
-        documetns based on structural and semantic properties.
+        documents based on structural and semantic properties.
 
         Parameters configure the ways that edges should be added between
         documents. Many take `Union[bool, Set[str]]`, with `False` disabling
@@ -301,7 +308,7 @@ class CassandraKnowledgeStore(KnowledgeStore):
 
         ids = []
         with self._concurrent_queries() as cq:
-            tuples = zip(texts, text_embeddings, metadatas, strict=True)
+            tuples = strict_zip(texts, text_embeddings, metadatas)
             for text, text_embedding, metadata in tuples:
                 if CONTENT_ID not in metadata:
                     metadata[CONTENT_ID] = secrets.token_hex(8)
@@ -345,9 +352,7 @@ class CassandraKnowledgeStore(KnowledgeStore):
         store.add_documents(documents, ids=ids)
         return store
 
-    def similarity_search(
-        self, query: str, k: int = 4, **kwargs: Any
-    ) -> List[Document]:
+    def similarity_search(self, query: str, k: int = 4, **kwargs: Any) -> List[Document]:
         embedding_vector = self._embedding.embed_query(query)
         return self.similarity_search_by_vector(
             embedding_vector,
@@ -366,6 +371,7 @@ class CassandraKnowledgeStore(KnowledgeStore):
     ) -> Iterable[Document]:
         results = []
         with self._concurrent_queries() as cq:
+
             def add_documents(rows, index):
                 results.extend([(index, _row_to_document(row)) for row in rows])
 
@@ -376,7 +382,7 @@ class CassandraKnowledgeStore(KnowledgeStore):
                     callback=lambda rows, index=index: add_documents(rows, index),
                 )
 
-        results.sort(key = lambda tuple: tuple[0])
+        results.sort(key=lambda tuple: tuple[0])
         return [doc for _, doc in results]
 
     def _linked_ids(
@@ -423,7 +429,7 @@ class CassandraKnowledgeStore(KnowledgeStore):
         selected_ids = []
         selected_set = set()
 
-        selected_embeddings = [] # selected embeddings. saved to compute redundancy of new nodes.
+        selected_embeddings = []  # selected embeddings. saved to compute redundancy of new nodes.
 
         query_embedding = self._embedding.embed_query(query)
         fetched = self._session.execute(
@@ -436,7 +442,9 @@ class CassandraKnowledgeStore(KnowledgeStore):
             row.content_id: _Candidate(row.text_embedding, lambda_mult, query_embedding)
             for row in fetched
         }
-        best_score, next_id = max([(u.score, content_id) for (content_id, u) in unselected.items() ])
+        best_score, next_id = max(
+            [(u.score, content_id) for (content_id, u) in unselected.items()]
+        )
 
         while len(selected_ids) < k and next_id is not None:
             if best_score < score_threshold:
@@ -463,7 +471,7 @@ class CassandraKnowledgeStore(KnowledgeStore):
             # Add unselected edges if reached nodes are within `max_depth`:
             next_depth = next_selected.distance + 1
             if next_depth < max_depth:
-                adjacents = self._session.execute(self._query_edges_by_source, (selected_id, ))
+                adjacents = self._session.execute(self._query_edges_by_source, (selected_id,))
                 for row in adjacents:
                     target_id = row.target_content_id
                     if target_id in selected_set:
@@ -488,14 +496,7 @@ class CassandraKnowledgeStore(KnowledgeStore):
 
         return self._query_by_ids(selected_ids)
 
-
-    def traversal_search(
-        self,
-        query: str,
-        *,
-        k: int = 4,
-        depth: int = 1
-    ) -> Iterable[Document]:
+    def traversal_search(self, query: str, *, k: int = 4, depth: int = 1) -> Iterable[Document]:
         """Retrieve documents from this knowledge store.
 
         First, `k` nodes are retrieved using a vector search for the `query` string.

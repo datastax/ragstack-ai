@@ -1,9 +1,8 @@
-from typing import Any, Dict, Iterable, List, Optional, Set
+from typing import Any, Dict, Iterable, List, Set
 
-from cassandra.cluster import ResponseFuture
-from cachetools import LRUCache
-from ragstack_knowledge_store.edge_extractor import EdgeExtractor
+from ragstack_knowledge_store._utils import strict_zip
 from ragstack_knowledge_store.cassandra import CONTENT_ID, CassandraKnowledgeStore
+from ragstack_knowledge_store.edge_extractor import EdgeExtractor
 
 
 class ExplicitEdgeExtractor(EdgeExtractor):
@@ -53,9 +52,12 @@ class ExplicitEdgeExtractor(EdgeExtractor):
     ) -> int:
         num_edges = 0
 
-        ids_to_embeddings = { md[CONTENT_ID]: embedding for (md, embedding) in zip(metadatas, text_embeddings, strict=True) }
+        ids_to_embeddings = {
+            md[CONTENT_ID]: embedding
+            for (md, embedding) in strict_zip(metadatas, text_embeddings)
+        }
 
-        needed_embeddings = { target_id for md in metadatas for target_id in self._get_edges(md) }
+        needed_embeddings = {target_id for md in metadatas for target_id in self._get_edges(md)}
         needed_embeddings.difference_update(ids_to_embeddings.keys())
 
         # TODO: Test that embeddings are retrieved. Also verify the cases:
@@ -64,12 +66,13 @@ class ExplicitEdgeExtractor(EdgeExtractor):
         # - If the node doesn't exist an error is raised.
 
         with store._concurrent_queries() as cq:
+
             def add_embeddings(rows):
-                    for row in rows:
-                        ids_to_embeddings[row.content_id] = row.text_embedding
+                for row in rows:
+                    ids_to_embeddings[row.content_id] = row.text_embedding
 
             for needed_id in needed_embeddings:
-                cq.execute(store._query_embedding_by_id, (needed_id, ), callback=add_embeddings)
+                cq.execute(store._query_embedding_by_id, (needed_id,), callback=add_embeddings)
 
         # Drop the concurrent queries so we know all the embeddings are available.
         # We could try to do continue concurrently executing, but would need to deal with
@@ -77,21 +80,30 @@ class ExplicitEdgeExtractor(EdgeExtractor):
         # and use that where possible.
 
         with store._concurrent_queries() as cq:
-            for (md, text_embedding) in zip(metadatas, text_embeddings, strict=True):
+            for md, text_embedding in strict_zip(metadatas, text_embeddings):
                 if edges := self._get_edges(md):
                     id = md[CONTENT_ID]
                     for target_id in set(edges):
                         target_embedding = ids_to_embeddings.get(target_id, None)
                         if target_embedding is None:
-                            # Rather than ignoring this case (edges to a node that won't be linked up)
-                            # raise an error. We *could* do a search to find references to nodes that
-                            # are being added, but that would require more book-keeping and queries,
-                            # so wait for this to be a common issue.
-                            raise ValueError(f"Node '{id}' has edge to non-existent node '{target_id}' in '{self._edges_field}'")
+                            # Rather than ignoring this case (edges to a node
+                            # that won't be linked up) raise an error. We
+                            # *could* do a search to find references to nodes
+                            # that are being added, but that would require more
+                            # book-keeping and queries, so wait for this to be a
+                            # common issue.
+                            raise ValueError(
+                                f"Node '{id}' has edge to non-existent node "
+                                f"'{target_id}' in '{self._edges_field}'"
+                            )
 
-                        cq.execute(store._insert_edge, (id, target_id, self.kind, target_embedding))
+                        cq.execute(
+                            store._insert_edge, (id, target_id, self.kind, target_embedding)
+                        )
                         num_edges += 1
                         if self._bidir:
-                            cq.execute(store._insert_edge, (target_id, id, self.kind, text_embedding))
+                            cq.execute(
+                                store._insert_edge, (target_id, id, self.kind, text_embedding)
+                            )
                             num_edges += 1
         return num_edges

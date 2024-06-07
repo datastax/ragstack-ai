@@ -1,5 +1,6 @@
 from ragstack_knowledge_store.explicit_edge_extractor import ExplicitEdgeExtractor
 
+
 class ParentEdgeExtractor(ExplicitEdgeExtractor):
     def __init__(self, parent_field: str = "parent_content_id") -> None:
         """Extract an edge from a node to its parent.
@@ -12,6 +13,4 @@ class ParentEdgeExtractor(ExplicitEdgeExtractor):
         Args:
             parent_field: The metadata field containing the parent content ID.
         """
-        super().__init__(edges_field=parent_field,
-                         kind="has_parent",
-                         bidir=False)
+        super().__init__(edges_field=parent_field, kind="has_parent", bidir=False)
