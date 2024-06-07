@@ -132,11 +132,11 @@ def test_mmr_traversal(fresh_fixture: DataFixture):
 
     # With max depth 0, no edges are traversed, so this doesn't reach v2 or v3.
     # So it ends up picking "v1" even though it's similar to "v0".
-    results = store.mmr_traversal_search("0.0", k=2, fetch_k=2, max_depth=0)
+    results = store.mmr_traversal_search("0.0", k=2, fetch_k=2, depth=0)
     assert _result_ids(results) == ["v0", "v1"]
 
     # With max depth 0 but higher `fetch_k`, we encounter v2
-    results = store.mmr_traversal_search("0.0", k=2, fetch_k=3, max_depth=0)
+    results = store.mmr_traversal_search("0.0", k=2, fetch_k=3, depth=0)
     assert _result_ids(results) == ["v0", "v2"]
 
     # v0 score is .46, v2 score is 0.16 so it won't be chosen.

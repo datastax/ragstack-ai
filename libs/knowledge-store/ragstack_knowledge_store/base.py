@@ -220,7 +220,7 @@ class KnowledgeStore(VectorStore):
         query: str,
         *,
         k: int = 4,
-        max_depth: int = 2,
+        depth: int = 2,
         fetch_k: int = 100,
         lambda_mult: float = 0.5,
         score_threshold: float = 0.0,
@@ -241,7 +241,7 @@ class KnowledgeStore(VectorStore):
             k: Number of Documents to return. Defaults to 4.
             fetch_k: Number of Documents to fetch via similarity.
                 Defaults to 10.
-            max_depth: Maximum depth of a node (number of edges) from a node
+            depth: Maximum depth of a node (number of edges) from a node
                 retrieved via similarity. Defaults to 2.
             lambda_mult: Number between 0 and 1 that determines the degree
                 of diversity among the results with 0 corresponding to maximum
@@ -277,7 +277,7 @@ class KnowledgeStore(VectorStore):
             k: Number of Documents to return. Defaults to 4.
             fetch_k: Number of Documents to fetch via similarity.
                 Defaults to 10.
-            max_depth: Maximum depth of a node (number of edges) from a node
+            depth: Maximum depth of a node (number of edges) from a node
                 retrieved via similarity. Defaults to 2.
             lambda_mult: Number between 0 and 1 that determines the degree
                 of diversity among the results with 0 corresponding to maximum
@@ -292,7 +292,7 @@ class KnowledgeStore(VectorStore):
             query,
             k=k,
             fetch_k=fetch_k,
-            max_depth=max_depth,
+            depth=depth,
             lambda_mult=lambda_mult,
             score_threshold=score_threshold,
             **kwargs,
@@ -413,6 +413,7 @@ class KnowledgeStoreRetriever(VectorStoreRetriever):
         "similarity_score_threshold",
         "mmr",
         "traversal",
+        "mmr_traversal",
     )
 
     def _get_relevant_documents(

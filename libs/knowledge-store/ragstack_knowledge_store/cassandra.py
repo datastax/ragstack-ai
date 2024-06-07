@@ -397,7 +397,7 @@ class CassandraKnowledgeStore(KnowledgeStore):
         query: str,
         *,
         k: int = 4,
-        max_depth: int = 2,
+        depth: int = 2,
         fetch_k: int = 100,
         lambda_mult: float = 0.5,
         score_threshold: float = 0.0,
@@ -417,7 +417,7 @@ class CassandraKnowledgeStore(KnowledgeStore):
             k: Number of Documents to return. Defaults to 4.
             fetch_k: Number of Documents to fetch via similarity.
                 Defaults to 10.
-            max_depth: Maximum depth of a node (number of edges) from a node
+            depth: Maximum depth of a node (number of edges) from a node
                 retrieved via similarity. Defaults to 2.
             lambda_mult: Number between 0 and 1 that determines the degree
                 of diversity among the results with 0 corresponding to maximum
@@ -468,9 +468,9 @@ class CassandraKnowledgeStore(KnowledgeStore):
                     best_score = candidate.score
                     next_id = content_id
 
-            # Add unselected edges if reached nodes are within `max_depth`:
+            # Add unselected edges if reached nodes are within `depth`:
             next_depth = next_selected.distance + 1
-            if next_depth < max_depth:
+            if next_depth < depth:
                 adjacents = self._session.execute(self._query_edges_by_source, (selected_id,))
                 for row in adjacents:
                     target_id = row.target_content_id
