@@ -1,8 +1,7 @@
 from trulens_eval import TruChain, Feedback, Tru
 from trulens_eval.feedback.provider import Langchain
-from trulens_eval.feedback import Groundedness
 from trulens_eval.app import App
-from trulens_eval.schema import FeedbackResult
+from trulens_eval.schema.feedback import FeedbackResult
 
 from langchain.schema.vectorstore import VectorStore
 from langchain.schema.language_model import BaseLanguageModel
@@ -26,12 +25,10 @@ def _feedback_functions(chain: Runnable, llm: BaseLanguageModel) -> list[Feedbac
     provider = Langchain(chain=llm)
     context = App.select_context(chain)
 
-    grounded = Groundedness(groundedness_provider=provider)
     f_groundedness = (
-        Feedback(grounded.groundedness_measure_with_cot_reasons)
+        Feedback(provider.groundedness_measure_with_cot_reasons, name="Groundedness")
         .on(context.collect())  # collect context chunks into a list
         .on_output()
-        .aggregate(grounded.grounded_statements_aggregator)
     )
     f_qa_relevance = Feedback(provider.relevance_with_cot_reasons).on_input_output()
     f_context_relevance = (

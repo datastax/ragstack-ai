@@ -16,7 +16,7 @@ try:
 except ImportError:
     from llama_index.vector_stores.astra_db import AstraDBVectorStore
 
-from e2e_tests.test_utils import get_required_env, random_string
+from e2e_tests.test_utils import get_required_env, random_string, skip_test_due_to_implementation_not_supported
 from e2e_tests.test_utils.vector_store_handler import (
     VectorStoreHandler,
     VectorStoreImplementation,
@@ -158,6 +158,8 @@ class AstraDBVectorStoreTestContext(VectorStoreTestContext):
         )
 
         if self.handler.implementation == VectorStoreImplementation.CASSANDRA:
+            if "embedding" not in kwargs:
+                skip_test_due_to_implementation_not_supported("astra vectorize")
             vector_store = EnhancedCassandraLangChainVectorStore(
                 session=None,
                 keyspace="default_keyspace",
