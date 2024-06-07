@@ -2,17 +2,7 @@ from __future__ import annotations
 
 import abc
 from abc import ABC, abstractmethod
-from typing import (
-    Any,
-    Dict,
-    Generic,
-    Iterable,
-    Iterator,
-    Literal,
-    Set,
-    TypeVar,
-    Union,
-)
+from typing import Any, Dict, Generic, Iterable, Iterator, Literal, Set, TypeVar, Union
 
 from langchain_core.documents import Document
 from pydantic import BaseModel
