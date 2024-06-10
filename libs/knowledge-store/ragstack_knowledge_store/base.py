@@ -223,7 +223,7 @@ class KnowledgeStore(VectorStore):
         depth: int = 2,
         fetch_k: int = 100,
         lambda_mult: float = 0.5,
-        score_threshold: float = 0.0,
+        score_threshold: float = float('-inf'),
         **kwargs: Any,
     ) -> Iterable[Document]:
         """Retrieve documents from this knowledge store using MMR-traversal.
@@ -247,8 +247,7 @@ class KnowledgeStore(VectorStore):
                 of diversity among the results with 0 corresponding to maximum
                 diversity and 1 to minimum diversity. Defaults to 0.5.
             score_threshold: Only documents with a score greater than or equal
-                this threshold will be chosen. Defaults to 0.0 so all scores are
-                taken.
+                this threshold will be chosen. Defaults to negative infinity.
         """
 
     async def ammr_traversal_search(
@@ -259,7 +258,7 @@ class KnowledgeStore(VectorStore):
         depth: int = 2,
         fetch_k: int = 100,
         lambda_mult: float = 0.5,
-        score_threshold: float = 0.0,
+        score_threshold: float = float('-inf'),
         **kwargs: Any,
     ) -> AsyncIterable[Document]:
         """Retrieve documents from this knowledge store using MMR-traversal.
@@ -283,8 +282,7 @@ class KnowledgeStore(VectorStore):
                 of diversity among the results with 0 corresponding to maximum
                 diversity and 1 to minimum diversity. Defaults to 0.5.
             score_threshold: Only documents with a score greater than or equal
-                this threshold will be chosen. Defaults to 0.0 so all scores are
-                taken.
+                this threshold will be chosen. Defaults to negative infinity.
         """
         for doc in await run_in_executor(
             None,
@@ -422,7 +420,7 @@ class KnowledgeStoreRetriever(VectorStoreRetriever):
         if self.search_type == "traversal":
             return list(self.vectorstore.traversal_search(query, **self.search_kwargs))
         elif self.search_type == "mmr_traversal":
-            return list(self.vectorstore.traversal_search(query, **self.search_kwargs))
+            return list(self.vectorstore.mmr_traversal_search(query, **self.search_kwargs))
         else:
             return super()._get_relevant_documents(query, run_manager=run_manager)
 
