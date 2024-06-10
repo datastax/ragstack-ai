@@ -22,16 +22,11 @@ DB Access Token] with Database Administrator permissions.
 +
 [source,text]
 ----
-ASTRA_DB_ID=aad075g999-8ab4-4d81-aa7d-7f58dbed3ead
+ASTRA_DB_API_ENDPOINT=https://...
 ASTRA_DB_APPLICATION_TOKEN=AstraCS:...
-OPENAI_API_KEY=sk-...
 ASTRA_DB_KEYSPACE=default_keyspace #optional
+OPENAI_API_KEY=sk-...
 ----
-+
-[NOTE]
-====
-The `ASTRA_DB_ID` can be found in the {db-serverless} API Endpoint that's displayed for your vector-enabled database in {astra_ui}. If your API Endpoint is `https://aad075g999-8ab4-4d81-aa7d-7f58dbed3ead-us-east-2.apps.astra.datastax.com`, then your `ASTRA_DB_ID` is `aad075g999-8ab4-4d81-aa7d-7f58dbed3ead`.
-====
 +
 . Install the following dependencies:
 +
@@ -49,12 +44,11 @@ See the https://docs.datastax.com/en/ragstack/docs/prerequisites.html[Prerequisi
 [source,python]
 ----
 import os
-import cassio
 from dotenv import load_dotenv
 from langchain.chains.qa_with_sources.retrieval import RetrievalQAWithSourcesChain
 from langchain_openai import OpenAI, OpenAIEmbeddings
 from langchain.indexes.vectorstore import VectorStoreIndexWrapper
-from langchain_community.vectorstores import Cassandra
+from langchain_astradb import AstraDBVectorStore
 
 load_dotenv()
 ----
@@ -71,19 +65,14 @@ myEmbedding = OpenAIEmbeddings()
 +
 [source,python]
 ----
-cassio.init(
-        database_id=os.environ["ASTRA_DB_ID"],
-        token=os.environ["ASTRA_DB_APPLICATION_TOKEN"],
-        keyspace=os.environ.get("ASTRA_DB_KEYSPACE"),  # this is optional
-    )
-
-myCassandraVStore = Cassandra(
+myAstraDBVStore = AstraDBVectorStore(
     embedding=myEmbedding,
-    session=None,
-    keyspace=None,
-    table_name='vs_test2',
+    api_endpoint=os.environ["ASTRA_DB_API_ENDPOINT"],
+    token=os.environ["ASTRA_DB_APPLICATION_TOKEN"],
+    namespace=os.environ.get("ASTRA_DB_KEYSPACE"),  # this is optional
+    collection_name="mmr_test",
 )
-index = VectorStoreIndexWrapper(vectorstore=myCassandraVStore)
+index = VectorStoreIndexWrapper(vectorstore=myAstraDBVStore)
 ----
 
 == Populate the vector store
@@ -95,20 +84,20 @@ Note that the last sentence's content is considerably different from the others.
 ----
 # declare data
 
-BASE_SENTENCE_0 =     ('The frogs and the toads were meeting in the night '
-                       'for a party under the moon.')
+BASE_SENTENCE_0 =     ("The frogs and the toads were meeting in the night "
+                       "for a party under the moon.")
 
-BASE_SENTENCE_1 =     ('There was a party under the moon, that all toads, '
-                       'with the frogs, decided to throw that night.')
+BASE_SENTENCE_1 =     ("There was a party under the moon, that all toads, "
+                       "with the frogs, decided to throw that night.")
 
-BASE_SENTENCE_2 =     ('And the frogs and the toads said: "Let us have a party '
-                       'tonight, as the moon is shining".')
+BASE_SENTENCE_2 =     ("And the frogs and the toads said: \"Let us have a party "
+                       "tonight, as the moon is shining\".")
 
-BASE_SENTENCE_3 =     ('I remember that night... toads, along with frogs, '
-                       'were all busy planning a moonlit celebration.')
+BASE_SENTENCE_3 =     ("I remember that night... toads, along with frogs, "
+                       "were all busy planning a moonlit celebration.")
 
-DIFFERENT_SENTENCE =  ('For the party, frogs and toads set a rule: '
-                       'everyone was to wear a purple hat.')
+DIFFERENT_SENTENCE =  ("For the party, frogs and toads set a rule: "
+                       "everyone was to wear a purple hat.")
 
 # insert into index
 texts = [
@@ -119,11 +108,11 @@ texts = [
     DIFFERENT_SENTENCE,
 ]
 metadatas = [
-    {'source': 'Barney\'s story at the pub'},
-    {'source': 'Barney\'s story at the pub'},
-    {'source': 'Barney\'s story at the pub'},
-    {'source': 'Barney\'s story at the pub'},
-    {'source': 'The chronicles at the village library'},
+    {"source": "Barney's story at the pub"},
+    {"source": "Barney's story at the pub"},
+    {"source": "Barney's story at the pub"},
+    {"source": "Barney's story at the pub"},
+    {"source": "The chronicles at the village library"},
 ]
 ----
 +
@@ -131,11 +120,11 @@ metadatas = [
 +
 [source,python]
 ----
-ids = myCassandraVStore.add_texts(
+ids = myAstraDBVStore.add_texts(
     texts,
     metadatas=metadatas,
     )
-print('\n'.join(ids))
+print("\n".join(ids))
 ----
 
 == Create and compare retrievers
@@ -149,17 +138,17 @@ Ask them a question, and see how the MMR response differs from the similarity re
 +
 [source,python]
 ----
-QUESTION = 'Tell me about the party that night.'
+QUESTION = "Tell me about the party that night."
 ----
 +
 . Create a retriever with similarity search.
 +
 [source,python]
 ----
-retrieverSim = myCassandraVStore.as_retriever(
-    search_type='similarity',
+retrieverSim = myAstraDBVStore.as_retriever(
+    search_type="similarity",
     search_kwargs={
-        'k': 2,
+        "k": 2,
     },
 )
 
@@ -169,19 +158,19 @@ chainSimSrc = RetrievalQAWithSourcesChain.from_chain_type(
 )
 
 responseSimSrc = chainSimSrc.invoke({chainSimSrc.question_key: QUESTION})
-print('Similarity-based chain:')
-print(f'  ANSWER : {responseSimSrc["answer"].strip()}')
-print(f'  SOURCES: {responseSimSrc["sources"].strip()}')
+print("Similarity-based chain:")
+print(f"  ANSWER : {responseSimSrc['answer'].strip()}")
+print(f"  SOURCES: {responseSimSrc['sources'].strip()}")
 ----
 +
 . Create a retriever with MMR search.
 +
 [source,python]
 ----
-retrieverMMR = myCassandraVStore.as_retriever(
-    search_type='mmr',
+retrieverMMR = myAstraDBVStore.as_retriever(
+    search_type="mmr",
     search_kwargs={
-        'k': 2,
+        "k": 2,
     },
 )
 
@@ -191,9 +180,9 @@ chainMMRSrc = RetrievalQAWithSourcesChain.from_chain_type(
 )
 
 responseMMRSrc = chainMMRSrc.invoke({chainMMRSrc.question_key: QUESTION})
-print('MMR-based chain:')
-print(f'  ANSWER : {responseMMRSrc["answer"].strip()}')
-print(f'  SOURCES: {responseMMRSrc["sources"].strip()}')
+print("MMR-based chain:")
+print(f"  ANSWER : {responseMMRSrc['answer'].strip()}")
+print(f"  SOURCES: {responseMMRSrc['sources'].strip()}")
 ----
 +
 . Run the code and observe the differences in the responses.

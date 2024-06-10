@@ -4,50 +4,45 @@
 [source,python]
 ----
 import os
-import cassio
 from dotenv import load_dotenv
 from langchain.chains.qa_with_sources.retrieval import RetrievalQAWithSourcesChain
 from langchain_openai import OpenAI, OpenAIEmbeddings
 from langchain.indexes.vectorstore import VectorStoreIndexWrapper
-from langchain_community.vectorstores import Cassandra
+from langchain_astradb import AstraDBVectorStore
 
 # Load environment variables
 load_dotenv()
 
-# Initialize OpenAI and embeddings
+# Initialize the OpenAI model and embeddings.
 llm = OpenAI(temperature=0)
 myEmbedding = OpenAIEmbeddings()
 
-cassio.init(
-        database_id=os.environ["ASTRA_DB_ID"],
-        token=os.environ["ASTRA_DB_APPLICATION_TOKEN"],
-        keyspace=os.environ.get("ASTRA_DB_KEYSPACE"),  # this is optional
-    )
-
-myCassandraVStore = Cassandra(
+# Initialize the vector store.
+myAstraDBVStore = AstraDBVectorStore(
     embedding=myEmbedding,
-    session=None,
-    keyspace=None,
-    table_name='vs_test2',
+    api_endpoint=os.environ["ASTRA_DB_API_ENDPOINT"],
+    token=os.environ["ASTRA_DB_APPLICATION_TOKEN"],
+    namespace=os.environ.get("ASTRA_DB_KEYSPACE"),  # this is optional
+    collection_name="mmr_test",
 )
-index = VectorStoreIndexWrapper(vectorstore=myCassandraVStore)
+index = VectorStoreIndexWrapper(vectorstore=myAstraDBVStore)
 
 # declare data
 
-BASE_SENTENCE_0 =     ('The frogs and the toads were meeting in the night '
-                       'for a party under the moon.')
+BASE_SENTENCE_0 =     ("The frogs and the toads were meeting in the night "
+                       "for a party under the moon.")
 
-BASE_SENTENCE_1 =     ('There was a party under the moon, that all toads, '
-                       'with the frogs, decided to throw that night.')
+BASE_SENTENCE_1 =     ("There was a party under the moon, that all toads, "
+                       "with the frogs, decided to throw that night.")
 
-BASE_SENTENCE_2 =     ('And the frogs and the toads said: "Let us have a party '
-                       'tonight, as the moon is shining".')
+BASE_SENTENCE_2 =     ("And the frogs and the toads said: \"Let us have a party "
+                       "tonight, as the moon is shining\".")
 
-BASE_SENTENCE_3 =     ('I remember that night... toads, along with frogs, '
-                       'were all busy planning a moonlit celebration.')
+BASE_SENTENCE_3 =     ("I remember that night... toads, along with frogs, "
+                       "were all busy planning a moonlit celebration.")
 
-DIFFERENT_SENTENCE =  ('For the party, frogs and toads set a rule: '
-                       'everyone was to wear a purple hat.')
+DIFFERENT_SENTENCE =  ("For the party, frogs and toads set a rule: "
+                       "everyone was to wear a purple hat.")
 
 # insert into index
 texts = [
@@ -58,29 +53,29 @@ texts = [
     DIFFERENT_SENTENCE,
 ]
 metadatas = [
-    {'source': 'Barney\'s story at the pub'},
-    {'source': 'Barney\'s story at the pub'},
-    {'source': 'Barney\'s story at the pub'},
-    {'source': 'Barney\'s story at the pub'},
-    {'source': 'The chronicles at the village library'},
+    {"source": "Barney's story at the pub"},
+    {"source": "Barney's story at the pub"},
+    {"source": "Barney's story at the pub"},
+    {"source": "Barney's story at the pub"},
+    {"source": "The chronicles at the village library"},
 ]
 
-# add texts to vector store and print first
-ids = myCassandraVStore.add_texts(
+# add texts to vector store and print IDs
+ids = myAstraDBVStore.add_texts(
     texts,
     metadatas=metadatas,
     )
-print('\n'.join(ids))
+print("\n".join(ids))
 
 # query the index
 
-QUESTION = 'Tell me about the party that night.'
+QUESTION = "Tell me about the party that night."
 
 # manual creation of the "retriever" with the 'similarity' search type
-retrieverSim = myCassandraVStore.as_retriever(
-    search_type='similarity',
+retrieverSim = myAstraDBVStore.as_retriever(
+    search_type="similarity",
     search_kwargs={
-        'k': 2,
+        "k": 2,
     },
 )
 
@@ -91,18 +86,18 @@ chainSimSrc = RetrievalQAWithSourcesChain.from_chain_type(
 
 # Run the chain and print results with sources
 responseSimSrc = chainSimSrc.invoke({chainSimSrc.question_key: QUESTION})
-print('Similarity-based chain:')
-print(f'  ANSWER : {responseSimSrc["answer"].strip()}')
-print(f'  SOURCES: {responseSimSrc["sources"].strip()}')
+print("Similarity-based chain:")
+print(f"  ANSWER : {responseSimSrc['answer'].strip()}")
+print(f"  SOURCES: {responseSimSrc['sources'].strip()}")
 
 
 # mmr search with sources
 
 # manual creation of the "retriever" with the 'MMR' search type
-retrieverMMR = myCassandraVStore.as_retriever(
-    search_type='mmr',
+retrieverMMR = myAstraDBVStore.as_retriever(
+    search_type="mmr",
     search_kwargs={
-        'k': 2,
+        "k": 2,
     },
 )
 
@@ -113,8 +108,8 @@ chainMMRSrc = RetrievalQAWithSourcesChain.from_chain_type(
 
 # Run the chain and print results with sources
 responseMMRSrc = chainMMRSrc.invoke({chainMMRSrc.question_key: QUESTION})
-print('MMR-based chain:')
-print(f'  ANSWER : {responseMMRSrc["answer"].strip()}')
-print(f'  SOURCES: {responseMMRSrc["sources"].strip()}')
+print("MMR-based chain:")
+print(f"  ANSWER : {responseMMRSrc['answer'].strip()}")
+print(f"  SOURCES: {responseMMRSrc['sources'].strip()}")
 ----
 ====
