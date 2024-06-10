@@ -1,3 +1,4 @@
-from .knowledge_store import KnowledgeStore
+from .base import KnowledgeStore
+from .cassandra import CassandraKnowledgeStore
 
-__all__ = ["KnowledgeStore"]
+__all__ = ["CassandraKnowledgeStore", "KnowledgeStore"]

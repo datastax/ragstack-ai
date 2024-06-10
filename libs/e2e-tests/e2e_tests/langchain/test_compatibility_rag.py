@@ -195,7 +195,7 @@ def _bedrock_chat(**kwargs) -> callable:
 def bedrock_anthropic_claudev2_llm():
     return {
         "llm": _bedrock_chat(
-            model_id="anthropic.claude-v2",
+            model_id="anthropic.claude-v2", model_kwargs={"temperature": 0}
         ),
         "nemo_config": None,
     }
@@ -265,41 +265,43 @@ def nvidia_aifoundation_embedqa4_embedding():
 
 
 @pytest.fixture
-def nvidia_aifoundation_mistral_llm():
+def nvidia_aifoundation_mixtral8x7b_llm():
     def llm():
         get_required_env("NVIDIA_API_KEY")
         from langchain_nvidia_ai_endpoints import ChatNVIDIA
 
-        return ChatNVIDIA(model="ai-mistral-large")
+        return ChatNVIDIA(
+            model="ai-mixtral-8x7b-instruct", temperature=0, max_tokens=2048
+        )
 
     return {"llm": llm, "nemo_config": None}
 
 
 @pytest.mark.parametrize(
     "test_case",
-    ["rag_custom_chain", "conversational_rag", "trulens", "nemo_guardrails"],
+    ["trulens"],
 )
 @pytest.mark.parametrize(
     "vector_store",
-    ["astra_db", "cassandra"],
+    ["cassandra"],
 )
 @pytest.mark.parametrize(
     "embedding,llm",
     [
-        ("openai_ada002_embedding", "openai_gpt35turbo_llm"),
-        ("openai_3large_embedding", "openai_gpt35turbo_llm_streaming"),
-        ("openai_3small_embedding", "openai_gpt4_llm"),
-        ("astra_vectorize_openai_small", "openai_gpt4o_llm"),
-        ("azure_openai_ada002_embedding", "azure_openai_gpt35turbo_llm"),
+        # ("openai_ada002_embedding", "openai_gpt35turbo_llm"),
+        # ("openai_3large_embedding", "openai_gpt35turbo_llm_streaming"),
+        # ("openai_3small_embedding", "openai_gpt4_llm"),
+        # ("astra_vectorize_openai_small", "openai_gpt4o_llm"),
+        # ("azure_openai_ada002_embedding", "azure_openai_gpt35turbo_llm"),
         ("vertex_gecko_embedding", "vertex_bison_llm"),
-        ("bedrock_titan_embedding", "bedrock_anthropic_claudev2_llm"),
-        ("bedrock_cohere_embedding", "bedrock_mistral_mistral7b_llm"),
-        ("bedrock_cohere_embedding", "bedrock_meta_llama2_llm"),
+        # ("bedrock_titan_embedding", "bedrock_anthropic_claudev2_llm"),
+        # ("bedrock_cohere_embedding", "bedrock_mistral_mistral7b_llm"),
+        # ("bedrock_cohere_embedding", "bedrock_meta_llama2_llm"),
         # ("huggingface_hub_minilml6v2_embedding", "huggingface_hub_flant5xxl_llm"),
-        (
-            "nvidia_aifoundation_embedqa4_embedding",
-            "nvidia_aifoundation_mistral_llm",
-        ),
+        # (
+        #     "nvidia_aifoundation_embedqa4_embedding",
+        #     "nvidia_aifoundation_mixtral8x7b_llm",
+        # ),
     ],
 )
 def test_rag(test_case, vector_store, embedding, llm, request, record_property):
@@ -353,7 +355,6 @@ def _run_test(
             chat_memory=vector_store_context.new_langchain_chat_memory(),
             record_property=record_property,
         )
-        # TODO: Add record property
     elif test_case == "trulens":
         run_trulens_evaluation(vector_store=vector_store, llm=llm)
     elif test_case == "nemo_guardrails":

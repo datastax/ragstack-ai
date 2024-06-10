@@ -13,6 +13,7 @@ from llama_index.tools.cassandra.cassandra_database_wrapper import (
 
 def test_tool_with_openai_tool(cassandra):
     session = cassio.config.resolve_session()
+    session.execute("DROP TABLE IF EXISTS default_keyspace.tool_table_users;")
 
     session.execute(
         """

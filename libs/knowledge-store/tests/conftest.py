@@ -9,8 +9,7 @@ from langchain_core.embeddings import Embeddings
 from testcontainers.core.container import DockerContainer
 from testcontainers.core.waiting_utils import wait_for_logs
 
-from ragstack_knowledge_store.knowledge_store import KnowledgeStore
-
+from ragstack_knowledge_store.cassandra import CassandraKnowledgeStore
 load_dotenv()
 
 
@@ -73,14 +72,17 @@ class DataFixture:
         self._store = None
 
     def store(
-        self, initial_documents: Iterable[Document] = [], ids: Optional[Iterable[str]] = None
-    ) -> KnowledgeStore:
+        self,
+        initial_documents: Iterable[Document] = [],
+        ids: Optional[Iterable[str]] = None,
+        embedding: Optional[Embeddings] = None,
+    ) -> CassandraKnowledgeStore:
         if initial_documents and self._store is not None:
             raise ValueError("Store already initialized")
         elif self._store is None:
-            self._store = KnowledgeStore.from_documents(
+            self._store = CassandraKnowledgeStore.from_documents(
                 initial_documents,
-                self.embedding,
+                embedding=embedding or self.embedding,
                 session=self.session,
                 keyspace=self.keyspace,
                 node_table=self.node_table,

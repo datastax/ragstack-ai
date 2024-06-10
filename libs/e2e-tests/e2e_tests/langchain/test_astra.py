@@ -39,7 +39,7 @@ def test_ingest_errors(vectorstore: AstraDBVectorStore):
         print("Error:", e)
         # API Exception while running bulk insertion: [{'message': "Failed to insert document with _id 'b388435404254c17b720816ee9e0ddc4': Zero vectors cannot be indexed or queried with cosine similarity"}]
         if (
-            "Zero vectors cannot be indexed or queried with cosine similarity"
+            "Zero and near-zero vectors cannot be indexed or queried with cosine similarity"
             not in e.args[0]
         ):
             pytest.fail(

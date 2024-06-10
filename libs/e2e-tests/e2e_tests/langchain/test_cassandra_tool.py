@@ -15,6 +15,7 @@ from langchain_openai import ChatOpenAI
 
 def test_tool_with_openai_tool(cassandra):
     session = cassio.config.resolve_session()
+    session.execute("DROP TABLE IF EXISTS default_keyspace.tool_table_users;")
 
     session.execute(
         """

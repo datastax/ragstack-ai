@@ -1,8 +1,6 @@
 from trulens_eval import TruChain, Feedback, Tru
 from trulens_eval.feedback.provider import Langchain
-from trulens_eval.feedback import Groundedness
 from trulens_eval.app import App
-from trulens_eval.schema import FeedbackResult
 
 from langchain.schema.vectorstore import VectorStore
 from langchain.schema.language_model import BaseLanguageModel
@@ -19,19 +17,16 @@ from e2e_tests.langchain.rag_application import (
 )
 
 import numpy as np
-from concurrent.futures import as_completed
 
 
 def _feedback_functions(chain: Runnable, llm: BaseLanguageModel) -> list[Feedback]:
     provider = Langchain(chain=llm)
     context = App.select_context(chain)
 
-    grounded = Groundedness(groundedness_provider=provider)
     f_groundedness = (
-        Feedback(grounded.groundedness_measure_with_cot_reasons)
+        Feedback(provider.groundedness_measure_with_cot_reasons, name="Groundedness")
         .on(context.collect())  # collect context chunks into a list
         .on_output()
-        .aggregate(grounded.grounded_statements_aggregator)
     )
     f_qa_relevance = Feedback(provider.relevance_with_cot_reasons).on_input_output()
     f_context_relevance = (
@@ -83,10 +78,7 @@ def run_trulens_evaluation(vector_store: VectorStore, llm: BaseLanguageModel):
     tru_record = recording.get()
 
     # Wait for the feedback results to complete
-    for feedback_future in as_completed(tru_record.feedback_results):
+    for feedback_def, feedback_future in tru_record.feedback_and_future_results:
         feedback_result = feedback_future.result()
-
-        feedback_result: FeedbackResult
-
         # basic verification that feedback results were computed
         assert feedback_result.result is not None
