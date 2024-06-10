@@ -20,7 +20,6 @@ from langchain_core.embeddings import Embeddings
 
 from ragstack_knowledge_store.edge_extractor import EdgeExtractor
 
-from ._utils import strict_zip
 from .base import KnowledgeStore, Node, TextNode
 from .concurrency import ConcurrentQueries
 from .content import Kind
