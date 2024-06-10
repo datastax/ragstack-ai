@@ -13,6 +13,7 @@ from typing import (
 import numpy as np
 from cassandra.cluster import ConsistencyLevel, ResponseFuture, Session
 from cassio.config import check_resolve_keyspace, check_resolve_session
+from langchain_community.utilities.cassandra import SetupMode
 from langchain_community.utils.math import cosine_similarity
 from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
@@ -68,7 +69,9 @@ class _Candidate:
     redundancy: float
     """(1 - Lambda) * max(Similarity to selected items)."""
 
-    def __init__(self, embedding: List[float], lambda_mult: float, query_embedding: np.ndarray):
+    def __init__(
+        self, embedding: List[float], lambda_mult: float, query_embedding: np.ndarray
+    ):
         self.embedding = emb_to_ndarray(embedding)
 
         # TODO: Refactor to use cosine_similarity_top_k to allow an array of embeddings?
@@ -79,7 +82,9 @@ class _Candidate:
         self.score = self.similarity_to_query - self.redundancy
         self.distance = 0
 
-    def update_for_selection(self, lambda_mult: float, selection_embedding: List[float]):
+    def update_for_selection(
+        self, lambda_mult: float, selection_embedding: List[float]
+    ):
         selected_r_sim = (1 - lambda_mult) * cosine_similarity(
             selection_embedding, self.embedding
         )[0]
@@ -98,7 +103,7 @@ class CassandraKnowledgeStore(KnowledgeStore):
         edge_table: str = "knowledge_edges",
         session: Optional[Session] = None,
         keyspace: Optional[str] = None,
-        apply_schema: bool = True,
+        setup_mode: SetupMode = SetupMode.SYNC,
         concurrency: int = 20,
     ):
         """A hybrid vector-and-graph knowledge store backed by Cassandra.
@@ -130,8 +135,13 @@ class CassandraKnowledgeStore(KnowledgeStore):
         self._session = session
         self._keyspace = keyspace
 
-        if apply_schema:
+        if setup_mode == SetupMode.SYNC:
             self._apply_schema()
+        elif setup_mode != SetupMode.OFF:
+            raise ValueError(
+                f"Invalid setup mode {setup_mode.name}. "
+                "Only SYNC and OFF are supported at the moment"
+            )
 
         # Ensure the edge extractor `kind`s are unique.
         assert len(edge_extractors) == len(set([e.kind for e in edge_extractors]))
@@ -199,7 +209,9 @@ class CassandraKnowledgeStore(KnowledgeStore):
             LIMIT ?
             """
         )
-        self._query_ids_and_embedding_by_embedding.consistency_level = ConsistencyLevel.QUORUM
+        self._query_ids_and_embedding_by_embedding.consistency_level = (
+            ConsistencyLevel.QUORUM
+        )
 
         self._query_linked_ids = session.prepare(
             f"""
@@ -352,7 +364,9 @@ class CassandraKnowledgeStore(KnowledgeStore):
         store.add_documents(documents, ids=ids)
         return store
 
-    def similarity_search(self, query: str, k: int = 4, **kwargs: Any) -> List[Document]:
+    def similarity_search(
+        self, query: str, k: int = 4, **kwargs: Any
+    ) -> List[Document]:
         embedding_vector = self._embedding.embed_query(query)
         return self.similarity_search_by_vector(
             embedding_vector,
@@ -429,7 +443,9 @@ class CassandraKnowledgeStore(KnowledgeStore):
         selected_ids = []
         selected_set = set()
 
-        selected_embeddings = []  # selected embeddings. saved to compute redundancy of new nodes.
+        selected_embeddings = (
+            []
+        )  # selected embeddings. saved to compute redundancy of new nodes.
 
         query_embedding = self._embedding.embed_query(query)
         fetched = self._session.execute(
@@ -471,7 +487,9 @@ class CassandraKnowledgeStore(KnowledgeStore):
             # Add unselected edges if reached nodes are within `depth`:
             next_depth = next_selected.distance + 1
             if next_depth < depth:
-                adjacents = self._session.execute(self._query_edges_by_source, (selected_id,))
+                adjacents = self._session.execute(
+                    self._query_edges_by_source, (selected_id,)
+                )
                 for row in adjacents:
                     target_id = row.target_content_id
                     if target_id in selected_set:
@@ -485,7 +503,9 @@ class CassandraKnowledgeStore(KnowledgeStore):
                             unselected[target_id].distance = next_depth
                         continue
 
-                    adjacent = _Candidate(row.target_text_embedding, lambda_mult, query_embedding)
+                    adjacent = _Candidate(
+                        row.target_text_embedding, lambda_mult, query_embedding
+                    )
                     for selected_embedding in selected_embeddings:
                         adjacent.update_for_selection(lambda_mult, selected_embedding)
 
@@ -496,7 +516,9 @@ class CassandraKnowledgeStore(KnowledgeStore):
 
         return self._query_by_ids(selected_ids)
 
-    def traversal_search(self, query: str, *, k: int = 4, depth: int = 1) -> Iterable[Document]:
+    def traversal_search(
+        self, query: str, *, k: int = 4, depth: int = 1
+    ) -> Iterable[Document]:
         """Retrieve documents from this knowledge store.
 
         First, `k` nodes are retrieved using a vector search for the `query` string.
