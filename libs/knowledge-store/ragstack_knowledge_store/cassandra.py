@@ -320,7 +320,7 @@ class CassandraKnowledgeStore(KnowledgeStore):
 
         ids = []
         with self._concurrent_queries() as cq:
-            tuples = strict_zip(texts, text_embeddings, metadatas)
+            tuples = zip(texts, text_embeddings, metadatas)
             for text, text_embedding, metadata in tuples:
                 if CONTENT_ID not in metadata:
                     metadata[CONTENT_ID] = secrets.token_hex(8)
