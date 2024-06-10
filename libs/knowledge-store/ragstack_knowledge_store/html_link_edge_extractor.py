@@ -58,7 +58,7 @@ class HtmlLinkEdgeExtractor(EdgeExtractor[Union[str, "BeautifulSoup"]]):
         Args:
             url_field: Name of the metadata field containing the URL
                 of the content. Defaults to "source".
-            kind: The kind of edge to extract. Defaults to "hyperink".
+            kind: The kind of edge to extract. Defaults to "hyperlink".
             drop_fragmets: Whether fragments in URLs and links shoud be
                 dropped. Defaults to `True`.
         """
