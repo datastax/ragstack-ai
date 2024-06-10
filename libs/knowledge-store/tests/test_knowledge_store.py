@@ -7,7 +7,7 @@ from langchain_core.embeddings import Embeddings
 
 from ragstack_knowledge_store.base import TextNode, _documents_to_nodes, _texts_to_nodes
 from ragstack_knowledge_store.cassandra import CONTENT_ID
-from ragstack_knowledge_store.explicit_edge_extractor import ExplicitEdgeExtractor
+from ragstack_knowledge_store.edge_extractor import IncomingLinkTag, OutgoingLinkTag, BidirLinkTag
 
 from .conftest import DataFixture
 
@@ -42,32 +42,44 @@ def _result_ids(docs: Iterable[Document]) -> List[str]:
     return list(map(lambda d: d.metadata[CONTENT_ID], docs))
 
 
-def test_write_retrieve_href_url_pair(fresh_fixture: DataFixture):
+def test_link_directed(fresh_fixture: DataFixture):
     a = Document(
         page_content="A",
         metadata={
             "content_id": "a",
-            "urls": ["http://a"],
+            "link_tags": {
+                IncomingLinkTag(kind="hyperlink", tag="http://a"),
+            },
         },
     )
     b = Document(
         page_content="B",
         metadata={
             "content_id": "b",
-            "hrefs": ["http://a"],
-            "urls": ["http://b"],
+            "link_tags": {
+                IncomingLinkTag(kind="hyperlink", tag="http://b"),
+                OutgoingLinkTag(kind="hyperlink", tag="http://a"),
+            },
         },
     )
     c = Document(
         page_content="C",
         metadata={
             "content_id": "c",
-            "hrefs": ["http://a"],
+            "link_tags": {
+                OutgoingLinkTag(kind="hyperlink", tag="http://a"),
+            },
         },
     )
     d = Document(
         page_content="D",
-        metadata={"content_id": "d", "hrefs": ["http://a", "http://b"]},
+        metadata={
+            "content_id": "d",
+            "link_tags": {
+                OutgoingLinkTag(kind="hyperlink", tag="http://a"),
+                OutgoingLinkTag(kind="hyperlink", tag="http://b"),
+            },
+        }
     )
 
     store = fresh_fixture.store([a, b, c, d])
@@ -76,7 +88,6 @@ def test_write_retrieve_href_url_pair(fresh_fixture: DataFixture):
     assert list(store._linked_ids("b")) == ["a"]
     assert list(store._linked_ids("c")) == ["a"]
     assert sorted(store._linked_ids("d")) == ["a", "b"]
-
 
 def test_mmr_traversal(fresh_fixture: DataFixture):
     """
@@ -99,13 +110,17 @@ def test_mmr_traversal(fresh_fixture: DataFixture):
     selected, those are both considered.
     """
     store = fresh_fixture.store(
-        edge_extractors=[ExplicitEdgeExtractor("edges", "explicit")],
         embedding=AngularTwoDimensionalEmbeddings(),
     )
 
     v0 = Document(
         page_content="-0.124",
-        metadata={"content_id": "v0", "edges": ["v2", "v3"]},
+        metadata={
+            "content_id": "v0",
+            "link_tags": {
+                OutgoingLinkTag(kind="explicit", tag="link"),
+            },
+        },
     )
     v1 = Document(
         page_content="+0.127",
@@ -117,12 +132,18 @@ def test_mmr_traversal(fresh_fixture: DataFixture):
         page_content="+0.25",
         metadata={
             "content_id": "v2",
+            "link_tags": {
+                IncomingLinkTag(kind="explicit", tag="link"),
+            },
         },
     )
     v3 = Document(
         page_content="+1.0",
         metadata={
             "content_id": "v3",
+            "link_tags": {
+                IncomingLinkTag(kind="explicit", tag="link"),
+            },
         },
     )
     store.add_documents([v0, v1, v2, v3])
@@ -154,22 +175,31 @@ def test_write_retrieve_keywords(fresh_fixture: DataFixture):
         page_content="Typical Greetings",
         metadata={
             "content_id": "greetings",
+            "link_tags": {
+                IncomingLinkTag(kind="parent", tag="parent"),
+            }
         },
     )
     doc1 = Document(
         page_content="Hello World",
         metadata={
             "content_id": "doc1",
-            "parent_content_id": "greetings",
-            "keywords": {"greeting", "world"},
+            "link_tags": {
+                OutgoingLinkTag(kind="parent", tag="parent"),
+                BidirLinkTag(kind="kw", tag="greeting"),
+                BidirLinkTag(kind="kw", tag="world"),
+            },
         },
     )
     doc2 = Document(
         page_content="Hello Earth",
         metadata={
             "content_id": "doc2",
-            "parent_content_id": "greetings",
-            "keywords": {"greeting", "earth"},
+            "link_tags": {
+                OutgoingLinkTag(kind="parent", tag="parent"),
+                BidirLinkTag(kind="kw", tag="greeting"),
+                BidirLinkTag(kind="kw", tag="earth"),
+            },
         },
     )
 

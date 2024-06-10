@@ -1,74 +1,71 @@
 from __future__ import annotations
 
-import typing
+import abc
+import dataclasses
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Iterable, List, Set
+from typing import Any, AsyncIterator, Dict, Generic, Iterable, Iterator, Literal, Set, Sequence, TypeVar, Union
 
+import asyncstdlib
 from langchain_core.runnables import run_in_executor
+from langchain_core.documents import Document, BaseDocumentTransformer
+from pydantic import BaseModel
+from ._utils import strict_zip
 
-if typing.TYPE_CHECKING:
-    from ragstack_knowledge_store.cassandra import CassandraKnowledgeStore
 
+class LinkTag(BaseModel, abc.ABC):
+    kind: str
+    direction: Literal["incoming", "outgoing", "bidir"]
+    tag: str
 
-class EdgeExtractor(ABC):
-    """Extension defining how edges should be created."""
+    def __hash__(self):
+        return hash((type(self),) + tuple(self.__dict__.values()))
 
-    @property
+class OutgoingLinkTag(LinkTag):
+    direction: Literal["outgoing"] = "outgoing"
+
+class IncomingLinkTag(LinkTag):
+    direction: Literal["incoming"] = "incoming"
+
+class BidirLinkTag(LinkTag):
+    direction: Literal["bidir"] = "bidir"
+
+LINK_TAGS = "link_tags"
+
+def get_link_tags(doc_or_md: Union[Document, Dict[str, Any]]) -> Set[LinkTag]:
+    """Get the link-tag set from a document or metadata.
+
+    Args:
+        doc_or_md: The document or metadata to get the link tags from.
+
+    Returns:
+        The set of link tags from the document or metadata.
+    """
+    if isinstance(doc_or_md, Document):
+        doc_or_md = doc_or_md.metadata
+
+    link_tags = doc_or_md.setdefault(LINK_TAGS, set())
+    if not isinstance(link_tags, Set):
+        link_tags = set(link_tags)
+        doc_or_md[LINK_TAGS] = link_tags
+    return link_tags
+
+InputT = TypeVar("InputT")
+class EdgeExtractor(ABC, Generic[InputT]):
     @abstractmethod
-    def kind(self) -> str:
-        """Return the kind of edge extracted by this."""
-
-    def tags(self, text: str, metadata: Dict[str, Any]) -> Set[str]:
-        """Return the set of tags to add for this extraction."""
-        return set()
-
-    @abstractmethod
-    def extract_edges(
-        self,
-        store: CassandraKnowledgeStore,
-        texts: Iterable[str],
-        text_embeddings: Iterable[List[float]],
-        metadatas: Iterable[Dict[str, Any]],
-    ) -> int:
-        """Add edges for the given nodes.
-
-        The nodes have already been persisted.
+    def extract_one(self, document: Document, input: InputT):
+        """Add edges from each `input` to the corresponding documents.
 
         Args:
-            store: CassandraKnowledgeStore edges are being extracted for.
-            texts: The texts of the nodes to be processed.
-            text_embeddings: The embeddings of the text nodes.
-            metadatas: The metadatas of the nodes to be processed.
-
-        Returns:
-            Number of edges extracted involving the given nodes.
+            document: Document to add the link tags to.
+            inputs: The input content to extract edges from.
         """
 
-    async def aextract_edges(
-        self,
-        store: CassandraKnowledgeStore,
-        texts: Iterable[str],
-        text_embeddings: Iterable[List[float]],
-        metadatas: Iterable[Dict[str, Any]],
-    ) -> int:
-        """Add edges for the given nodes.
-
-        The nodes have already been persisted.
+    def extract(self, documents: Iterable[Document], inputs: Iterable[InputT]) -> Iterator[Set[LinkTag]]:
+        """Add edges from each `input` to the corresponding documents.
 
         Args:
-            store: CassandraKnowledgeStore edges are being extracted for.
-            texts: The texts of the nodes to be processed.
-            text_embedings: The embeddings of the text nodes.
-            metadatas: The metadatas of the nodes to be processed.
-
-        Returns:
-            Number of edges extracted involving the given nodes.
+            documents: The documents to add the link tags to.
+            inputs: The input content to extract edges from.
         """
-        return await run_in_executor(
-            None,
-            self._extract_edges,
-            store,
-            texts,
-            text_embeddings,
-            metadatas,
-        )
+        for (document, input) in strict_zip(documents, inputs):
+            self.extract_one(document, input)

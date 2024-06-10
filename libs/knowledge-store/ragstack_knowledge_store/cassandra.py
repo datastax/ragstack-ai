@@ -2,11 +2,13 @@ import secrets
 from dataclasses import dataclass
 from typing import (
     Any,
+    Dict,
     Iterable,
     List,
     NamedTuple,
     Optional,
     Sequence,
+    Tuple,
     Type,
 )
 
@@ -18,7 +20,7 @@ from langchain_community.utils.math import cosine_similarity
 from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
 
-from ragstack_knowledge_store.edge_extractor import EdgeExtractor
+from ragstack_knowledge_store.edge_extractor import get_link_tags
 
 from ._utils import strict_zip
 from .base import KnowledgeStore, Node, TextNode
@@ -97,7 +99,6 @@ class CassandraKnowledgeStore(KnowledgeStore):
     def __init__(
         self,
         embedding: Embeddings,
-        edge_extractors: List[EdgeExtractor],
         *,
         node_table: str = "knowledge_nodes",
         edge_table: str = "knowledge_edges",
@@ -111,16 +112,8 @@ class CassandraKnowledgeStore(KnowledgeStore):
         Document chunks support vector-similarity search as well as edges linking
         documents based on structural and semantic properties.
 
-        Parameters configure the ways that edges should be added between
-        documents. Many take `Union[bool, Set[str]]`, with `False` disabling
-        inference, `True` enabling it globally between all documents, and a set
-        of metadata fields defining a scope in which to enable it. Specifically,
-        passing a set of metadata fields such as `source` only links documents
-        with the same `source` metadata value.
-
         Args:
             embedding: The embeddings to use for the document content.
-            edge_extractors: Edge extractors to use for linking knowledge chunks.
             concurrency: Maximum number of queries to have concurrently executing.
             apply_schema: If true, the schema will be created if necessary. If false,
                 the schema must have already been applied.
@@ -143,17 +136,13 @@ class CassandraKnowledgeStore(KnowledgeStore):
                 "Only SYNC and OFF are supported at the moment"
             )
 
-        # Ensure the edge extractor `kind`s are unique.
-        assert len(edge_extractors) == len(set([e.kind for e in edge_extractors]))
-        self._edge_extractors = edge_extractors
-
         # TODO: Metadata
         # TODO: Parent ID / source ID / etc.
         self._insert_passage = session.prepare(
             f"""
             INSERT INTO {keyspace}.{node_table} (
-                content_id, kind, text_content, text_embedding, tags
-            ) VALUES (?, '{Kind.passage}', ?, ?, ?)
+                content_id, kind, text_content, text_embedding, link_to_tags, link_from_tags
+            ) VALUES (?, '{Kind.passage}', ?, ?, ?, ?)
             """
         )
 
@@ -229,19 +218,27 @@ class CassandraKnowledgeStore(KnowledgeStore):
             """
         )
 
-        self._query_ids_by_tag = session.prepare(
+        self._query_ids_by_link_to_tag = session.prepare(
             f"""
             SELECT content_id
             FROM {keyspace}.{node_table}
-            WHERE tags CONTAINS ?
+            WHERE link_to_tags CONTAINS ?
             """
         )
 
-        self._query_ids_and_embedding_by_tag = session.prepare(
+        self._query_ids_and_embedding_by_link_to_tag = session.prepare(
             f"""
             SELECT content_id, text_embedding
             FROM {keyspace}.{node_table}
-            WHERE tags CONTAINS ?
+            WHERE link_to_tags CONTAINS ?
+            """
+        )
+
+        self._query_ids_and_embedding_by_link_from_tag = session.prepare(
+            f"""
+            SELECT content_id, text_embedding
+            FROM {keyspace}.{node_table}
+            WHERE link_from_tags CONTAINS ?
             """
         )
 
@@ -255,7 +252,8 @@ class CassandraKnowledgeStore(KnowledgeStore):
                 text_content TEXT,
                 text_embedding VECTOR<FLOAT, {embedding_dim}>,
 
-                tags SET<TEXT>,
+                link_to_tags SET<TEXT>,
+                link_from_tags SET<TEXT>,
 
                 PRIMARY KEY (content_id)
             )
@@ -289,8 +287,16 @@ class CassandraKnowledgeStore(KnowledgeStore):
         # Index on tags
         self._session.execute(
             f"""
-            CREATE CUSTOM INDEX IF NOT EXISTS {self._node_table}_tags_index
-            ON {self._keyspace}.{self._node_table} (tags)
+            CREATE CUSTOM INDEX IF NOT EXISTS {self._node_table}_link_from_tags_index
+            ON {self._keyspace}.{self._node_table} (link_from_tags)
+            USING 'StorageAttachedIndex';
+            """
+        )
+
+        self._session.execute(
+            f"""
+            CREATE CUSTOM INDEX IF NOT EXISTS {self._node_table}_link_to_tags_index
+            ON {self._keyspace}.{self._node_table} (link_to_tags)
             USING 'StorageAttachedIndex';
             """
         )
@@ -319,6 +325,11 @@ class CassandraKnowledgeStore(KnowledgeStore):
         text_embeddings = self._embedding.embed_documents(texts)
 
         ids = []
+
+        tag_to_new_sources: Dict[str, List[Tuple[str, str]]] = {}
+        tag_to_new_targets: Dict[str, Dict[str, Tuple[str, List[float]]]] = {}
+
+        # Step 1: Add the nodes, collecting the tags and new sources / targets.
         with self._concurrent_queries() as cq:
             tuples = strict_zip(texts, text_embeddings, metadatas)
             for text, text_embedding, metadata in tuples:
@@ -327,13 +338,118 @@ class CassandraKnowledgeStore(KnowledgeStore):
                 id = metadata[CONTENT_ID]
                 ids.append(id)
 
-                tags = set()
-                tags.update(*[e.tags(text, metadata) for e in self._edge_extractors])
+                link_to_tags = set() # link to these tags
+                link_from_tags = set() # link from these tags
 
-                cq.execute(self._insert_passage, (id, text, text_embedding, tags))
+                for tag in get_link_tags(metadata):
+                    tag_str = f"{tag.kind}:{tag.tag}"
+                    if tag.direction == "incoming" or tag.direction == "bidir":
+                        # An incom`ing link should be linked *from* nodes with the given tag.
+                        link_from_tags.add(tag_str)
+                        tag_to_new_targets.setdefault(tag_str, dict())[id] = (tag.kind, text_embedding)
+                    if tag.direction == "outgoing" or tag.direction == "bidir":
+                        link_to_tags.add(tag_str)
+                        tag_to_new_sources.setdefault(tag_str, list()).append((tag.kind, id))
 
-        for extractor in self._edge_extractors:
-            extractor.extract_edges(self, texts, text_embeddings, metadatas)
+                cq.execute(self._insert_passage, (id, text, text_embedding, link_to_tags, link_from_tags))
+
+        # Step 2: Query information about those tags to determine the edges to add.
+        # Add edges as needed.
+        id_set = set(ids)
+        with self._concurrent_queries() as cq:
+            edges = []
+            def add_edge(source_id, target_id, kind, target_embedding):
+                nonlocal added_edges
+                if source_id == target_id:
+                    # Don't add self-cycles (could happen with bidirectional tags).
+                    return
+
+                edges.append((source_id, target_id, kind, target_embedding))
+
+                # TODO: Would be good to be able to execute these... but
+                # may cause problems if we can't execute it right away
+                # (because of a pending query) and we can't complete
+                # the pending queries (because we can't finish the callback).
+
+                # cq.execute(
+                #     self._insert_edge,
+                #     (source_id, target_id, kind, target_embedding),
+                # )
+
+            def add_edges_for_sources(
+                source_rows,
+                target_embeddings: Dict[(str, List[float])],
+            ):
+                for source_id in source_rows:
+                    if source_id in id_set:
+                        # Source ID is new, and anything in `target_embeddings` is too.
+                        # Don't add here.
+                        continue
+
+                    for target_id, (kind, target_emb) in target_embeddings.items():
+                        add_edge(source_id.content_id, target_id, kind, target_emb)
+
+            def add_edges_for_targets(
+                sources: Iterable[Tuple[str, str]],
+                target_rows,
+            ):
+                for target in target_rows:
+                    if target.content_id in id_set:
+                        # Target ID is new, and anything in `sources` is too.
+                        # Don't add here (will be handled later).
+                        continue
+
+                    for (kind, source_id) in sources:
+                         add_edge(source_id, target.content_id, kind, target.text_embedding)
+
+            for tag, new_target_embs in tag_to_new_targets.items():
+                # For each new node with a `link_from_tag`, find the source
+                # nodes with that `link_to_tag`` and create the edges.
+                cq.execute(
+                    self._query_ids_by_link_to_tag,
+                    parameters=(tag, ),
+                    callback=lambda sources, targets=new_target_embs: add_edges_for_sources(
+                        sources, targets)
+                )
+
+            for tag, new_sources in tag_to_new_sources.items():
+                # For each new node with a `link_to_tag`, find the target
+                # nodes with that `link_from_tag` tag and create the edges.
+                cq.execute(
+                    self._query_ids_and_embedding_by_link_from_tag,
+                    parameters=(tag, ),
+                    callback=lambda targets, sources=new_sources: add_edges_for_targets(
+                        sources, targets)
+                )
+
+        # Step 3: Add edges.
+        # TODO: Combine steps, ideally to a single set of concurrent queries.
+        # This should be possible, but will require some form of queueing, since
+        # we need to be able to handle a result set, and that may require us to queue
+        # more than |max concurency| edges.
+        added_edges = 0
+        with self._concurrent_queries() as cq:
+            print("Adding edges")
+            # Add edges from query results (should be one new node and one old node)
+            for edge in edges:
+                added_edges += 1
+                cq.execute(self._insert_edge, edge)
+
+            # Add edges for new nodes
+            for tag, new_sources in tag_to_new_sources.items():
+                for (kind, source_id) in new_sources:
+                    new_targets = tag_to_new_targets.get(tag, None)
+                    if new_targets is None:
+                        continue
+
+                    for (target_id, (target_kind, target_embedding)) in new_targets.items():
+                        # TODO: Improve the structures so this can be a lookup?
+                        if target_kind == kind and source_id != target_id:
+                            added_edges += 1
+                            cq.execute(self._insert_edge,
+                                       (source_id, target_id, kind, target_embedding))
+
+        print(f"Added {added_edges} edges")
 
         return ids
 
