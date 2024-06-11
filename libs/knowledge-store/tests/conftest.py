@@ -10,6 +10,7 @@ from testcontainers.core.container import DockerContainer
 from testcontainers.core.waiting_utils import wait_for_logs
 
 from ragstack_knowledge_store.cassandra import CassandraKnowledgeStore
+
 load_dotenv()
 
 
@@ -101,6 +102,8 @@ class DataFixture:
 def fresh_fixture(
     db_session: Session, db_keyspace: str, openai_embedding: Embeddings
 ) -> Iterator[DataFixture]:
-    data = DataFixture(session=db_session, keyspace=db_keyspace, embedding=openai_embedding)
+    data = DataFixture(
+        session=db_session, keyspace=db_keyspace, embedding=openai_embedding
+    )
     yield data
     data.drop()

@@ -1,56 +1,65 @@
-from typing import TYPE_CHECKING, Iterable, Iterator, Sequence, Set, Union
+from typing import TYPE_CHECKING, Set, Union
 from urllib.parse import urldefrag, urljoin, urlparse
-from ragstack_knowledge_store.edge_extractor import EdgeExtractor, IncomingLinkTag, LinkTag, OutgoingLinkTag, get_link_tags
+from ragstack_knowledge_store.edge_extractor import (
+    EdgeExtractor,
+    IncomingLinkTag,
+    OutgoingLinkTag,
+    get_link_tags,
+)
 from langchain_core.documents import Document
-from ._utils import strict_zip
 
 
 if TYPE_CHECKING:
-   from bs4 import BeautifulSoup
+    from bs4 import BeautifulSoup
 
-def _parse_url(link,
-              page_url,
-              drop_fragments: bool = True):
-  href = link.get('href')
-  if href is None:
-    return None
-  url = urlparse(href)
-  if url.scheme not in ["http", "https", ""]:
-    return None
 
-  # Join the HREF with the page_url to convert relative paths to absolute.
-  url = urljoin(page_url, href)
+def _parse_url(link, page_url, drop_fragments: bool = True):
+    href = link.get("href")
+    if href is None:
+        return None
+    url = urlparse(href)
+    if url.scheme not in ["http", "https", ""]:
+        return None
 
-  # Fragments would be useful if we chunked a page based on section.
-  # Then, each chunk would have a different URL based on the fragment.
-  # Since we aren't doing that yet, they just "break" links. So, drop
-  # the fragment.
-  if drop_fragments:
-    return urldefrag(url).url
-  else:
-     return url
+    # Join the HREF with the page_url to convert relative paths to absolute.
+    url = urljoin(page_url, href)
 
-def _parse_hrefs(soup: "BeautifulSoup",
-                 url: str,
-                 drop_fragments: bool = True) -> Set[str]:
-  links = soup.find_all('a')
-  links = {_parse_url(link, page_url=url, drop_fragments=drop_fragments) for link in links}
+    # Fragments would be useful if we chunked a page based on section.
+    # Then, each chunk would have a different URL based on the fragment.
+    # Since we aren't doing that yet, they just "break" links. So, drop
+    # the fragment.
+    if drop_fragments:
+        return urldefrag(url).url
+    else:
+        return url
 
-  # Remove entries for any 'a' tag that failed to parse (didn't have href,
-  # or invalid domain, etc.)
-  links.discard(None)
 
-  # Remove self links.
-  links.discard(url)
+def _parse_hrefs(
+    soup: "BeautifulSoup", url: str, drop_fragments: bool = True
+) -> Set[str]:
+    links = soup.find_all("a")
+    links = {
+        _parse_url(link, page_url=url, drop_fragments=drop_fragments) for link in links
+    }
 
-  return links
+    # Remove entries for any 'a' tag that failed to parse (didn't have href,
+    # or invalid domain, etc.)
+    links.discard(None)
+
+    # Remove self links.
+    links.discard(url)
+
+    return links
+
 
 class HtmlLinkEdgeExtractor(EdgeExtractor[Union[str, "BeautifulSoup"]]):
-    def __init__(self,
-                 url_field: str = "source",
-                 *,
-                 kind: str = "hyperlink",
-                 drop_fragments: bool = True):
+    def __init__(
+        self,
+        url_field: str = "source",
+        *,
+        kind: str = "hyperlink",
+        drop_fragments: bool = True
+    ):
         """Extract hyperlinks from HTML content.
 
         Expects the `page_content` to be HTML.
@@ -75,12 +84,13 @@ class HtmlLinkEdgeExtractor(EdgeExtractor[Union[str, "BeautifulSoup"]]):
         self.drop_fragments = drop_fragments
 
     def extract_one(
-          self,
-          document: Document,
-          input: Union[str, "BeautifulSoup"],
+        self,
+        document: Document,
+        input: Union[str, "BeautifulSoup"],
     ):
         if isinstance(input, str):
             from bs4 import BeautifulSoup
+
             input = BeautifulSoup(input, "html.parser")
 
         url = document.metadata[self.url_field]
