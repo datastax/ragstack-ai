@@ -50,6 +50,33 @@ jobs:
         run: |
           cd docker/examples/local-llm
           sudo docker build -t local-llm .
+          
+
+  langflow-test-docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        id: qemu
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Build main image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false
+          file: ./docker/langflow/ragstack-ai-langflow.Dockerfile
+          platforms: "linux/amd64,linux/arm64/v8"
+          tags: ghcr.io/datastax/ragstack-ai-langflow:latest-dev
+      - name: Build frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false
+          file: ./docker/langflow/frontend/ragstack-ai-langflow-frontend.Dockerfile
+          platforms: "linux/amd64,linux/arm64/v8"
+          tags: ghcr.io/datastax/ragstack-ai-langflow-frontend:latest-dev
 
   unit-tests:
     name: Unit Tests (Python ${{ matrix.python-version }})
