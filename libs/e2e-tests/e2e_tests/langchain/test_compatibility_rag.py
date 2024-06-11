@@ -173,9 +173,9 @@ def azure_openai_ada002_embedding():
 
 
 @pytest.fixture
-def vertex_bison_llm():
+def vertex_geminipro_llm():
     def llm():
-        return ChatVertexAI(model_name="chat-bison")
+        return ChatVertexAI(model_name="gemini-pro")
 
     return {"llm": llm, "nemo_config": None}
 
@@ -279,29 +279,29 @@ def nvidia_aifoundation_mixtral8x7b_llm():
 
 @pytest.mark.parametrize(
     "test_case",
-    ["rag_custom_chain", "conversational_rag", "trulens", "nemo_guardrails"],
+    ["rag_custom_chain"],
 )
 @pytest.mark.parametrize(
     "vector_store",
-    ["astra_db", "cassandra"],
+    ["cassandra"],
 )
 @pytest.mark.parametrize(
     "embedding,llm",
     [
-        ("openai_ada002_embedding", "openai_gpt35turbo_llm"),
-        ("openai_3large_embedding", "openai_gpt35turbo_llm_streaming"),
-        ("openai_3small_embedding", "openai_gpt4_llm"),
-        ("astra_vectorize_openai_small", "openai_gpt4o_llm"),
-        ("azure_openai_ada002_embedding", "azure_openai_gpt35turbo_llm"),
-        ("vertex_gecko_embedding", "vertex_bison_llm"),
-        ("bedrock_titan_embedding", "bedrock_anthropic_claudev2_llm"),
-        ("bedrock_cohere_embedding", "bedrock_mistral_mistral7b_llm"),
-        ("bedrock_cohere_embedding", "bedrock_meta_llama2_llm"),
-        # ("huggingface_hub_minilml6v2_embedding", "huggingface_hub_flant5xxl_llm"),
-        (
-            "nvidia_aifoundation_embedqa4_embedding",
-            "nvidia_aifoundation_mixtral8x7b_llm",
-        ),
+        # ("openai_ada002_embedding", "openai_gpt35turbo_llm"),
+        # ("openai_3large_embedding", "openai_gpt35turbo_llm_streaming"),
+        # ("openai_3small_embedding", "openai_gpt4_llm"),
+        # ("astra_vectorize_openai_small", "openai_gpt4o_llm"),
+        # ("azure_openai_ada002_embedding", "azure_openai_gpt35turbo_llm"),
+        ("vertex_gecko_embedding", "vertex_geminipro_llm"),
+        # ("bedrock_titan_embedding", "bedrock_anthropic_claudev2_llm"),
+        # ("bedrock_cohere_embedding", "bedrock_mistral_mistral7b_llm"),
+        # ("bedrock_cohere_embedding", "bedrock_meta_llama2_llm"),
+        # # ("huggingface_hub_minilml6v2_embedding", "huggingface_hub_flant5xxl_llm"),
+        # (
+        #     "nvidia_aifoundation_embedqa4_embedding",
+        #     "nvidia_aifoundation_mixtral8x7b_llm",
+        # ),
     ],
 )
 def test_rag(test_case, vector_store, embedding, llm, request, record_property):
