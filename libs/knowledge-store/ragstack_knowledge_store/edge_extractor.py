@@ -1,13 +1,20 @@
 from __future__ import annotations
 
 import abc
-import dataclasses
 from abc import ABC, abstractmethod
-from typing import Any, AsyncIterator, Dict, Generic, Iterable, Iterator, Literal, Set, Sequence, TypeVar, Union
+from typing import (
+    Any,
+    Dict,
+    Generic,
+    Iterable,
+    Iterator,
+    Literal,
+    Set,
+    TypeVar,
+    Union,
+)
 
-import asyncstdlib
-from langchain_core.runnables import run_in_executor
-from langchain_core.documents import Document, BaseDocumentTransformer
+from langchain_core.documents import Document
 from pydantic import BaseModel
 from ._utils import strict_zip
 
@@ -20,16 +27,21 @@ class LinkTag(BaseModel, abc.ABC):
     def __hash__(self):
         return hash((type(self),) + tuple(self.__dict__.values()))
 
+
 class OutgoingLinkTag(LinkTag):
     direction: Literal["outgoing"] = "outgoing"
+
 
 class IncomingLinkTag(LinkTag):
     direction: Literal["incoming"] = "incoming"
 
+
 class BidirLinkTag(LinkTag):
     direction: Literal["bidir"] = "bidir"
 
+
 LINK_TAGS = "link_tags"
+
 
 def get_link_tags(doc_or_md: Union[Document, Dict[str, Any]]) -> Set[LinkTag]:
     """Get the link-tag set from a document or metadata.
@@ -49,7 +61,10 @@ def get_link_tags(doc_or_md: Union[Document, Dict[str, Any]]) -> Set[LinkTag]:
         doc_or_md[LINK_TAGS] = link_tags
     return link_tags
 
+
 InputT = TypeVar("InputT")
+
+
 class EdgeExtractor(ABC, Generic[InputT]):
     @abstractmethod
     def extract_one(self, document: Document, input: InputT):
@@ -60,12 +75,14 @@ class EdgeExtractor(ABC, Generic[InputT]):
             inputs: The input content to extract edges from.
         """
 
-    def extract(self, documents: Iterable[Document], inputs: Iterable[InputT]) -> Iterator[Set[LinkTag]]:
+    def extract(
+        self, documents: Iterable[Document], inputs: Iterable[InputT]
+    ) -> Iterator[Set[LinkTag]]:
         """Add edges from each `input` to the corresponding documents.
 
         Args:
             documents: The documents to add the link tags to.
             inputs: The input content to extract edges from.
         """
-        for (document, input) in strict_zip(documents, inputs):
+        for document, input in strict_zip(documents, inputs):
             self.extract_one(document, input)

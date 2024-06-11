@@ -18,7 +18,7 @@ Paris.
 """
 
 
-@pytest.mark.flaky(retries=5, delay=0)
+@pytest.mark.flaky(reruns=5, reruns_delay=0)
 def test_schema_inference(llm: BaseChatModel):
     schema_inferer = KnowledgeSchemaInferer(llm)
 
