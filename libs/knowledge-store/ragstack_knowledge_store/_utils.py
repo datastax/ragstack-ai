@@ -19,12 +19,14 @@ except ImportError:
         while batch := tuple(islice(it, n)):
             yield batch
 
+
 # TODO: Remove the "polyfill" when we required python is >= 3.10.
 
 if sys.version_info >= (3, 10):
 
     def strict_zip(*iterables):
         return zip(*iterables, strict=True)
+
 else:
 
     def strict_zip(*iterables):

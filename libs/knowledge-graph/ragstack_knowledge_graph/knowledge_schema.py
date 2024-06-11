@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Dict, List, Self, Sequence, Union
+from typing import Dict, List, Sequence, Union
 
 from langchain_community.graphs.graph_document import GraphDocument
 from langchain_core.pydantic_v1 import BaseModel
@@ -56,7 +56,7 @@ class KnowledgeSchema(BaseModel):
     """Allowed relationships for the knowledge schema."""
 
     @classmethod
-    def from_file(cls, path: Union[str, Path]) -> Self:
+    def from_file(cls, path: Union[str, Path]) -> "KnowledgeSchema":
         """Load a KnowledgeSchema from a JSON or YAML file.
 
         Parameters:

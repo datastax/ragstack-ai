@@ -34,7 +34,7 @@ Paris.
 """
 
 
-@pytest.mark.flaky(retries=10, delay=0)
+@pytest.mark.flaky(reruns=10, reruns_delay=0)
 def test_extraction(extractor: KnowledgeSchemaExtractor):
     results = extractor.extract([Document(page_content=MARIE_CURIE_SOURCE)])
 
