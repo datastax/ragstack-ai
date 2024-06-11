@@ -22,7 +22,6 @@ from langchain_core.embeddings import Embeddings
 
 from ragstack_knowledge_store.edge_extractor import get_link_tags
 
-from ._utils import strict_zip
 from .base import KnowledgeStore, Node, TextNode
 from .concurrency import ConcurrentQueries
 from .content import Kind
@@ -331,7 +330,7 @@ class CassandraKnowledgeStore(KnowledgeStore):
 
         # Step 1: Add the nodes, collecting the tags and new sources / targets.
         with self._concurrent_queries() as cq:
-            tuples = strict_zip(texts, text_embeddings, metadatas)
+            tuples = zip(texts, text_embeddings, metadatas)
             for text, text_embedding, metadata in tuples:
                 if CONTENT_ID not in metadata:
                     metadata[CONTENT_ID] = secrets.token_hex(8)
