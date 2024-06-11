@@ -1,4 +1,3 @@
-import logging
 
 from trulens_eval import TruChain, Feedback, Tru
 from trulens_eval.feedback.provider import Langchain
