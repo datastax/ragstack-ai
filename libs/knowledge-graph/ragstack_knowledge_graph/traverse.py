@@ -1,6 +1,6 @@
 import asyncio
 import threading
-from typing import Any, Dict, Iterable, NamedTuple, Optional, Sequence
+from typing import Any, Dict, Iterable, NamedTuple, Optional, Sequence, Union
 
 from cassandra.cluster import PreparedStatement, ResponseFuture, Session
 from cassio.config import check_resolve_keyspace, check_resolve_session
@@ -69,7 +69,7 @@ def _prepare_edge_query(
 
 
 def traverse(
-    start: Node | Sequence[Node],
+    start: Union[Node, Sequence[Node]],
     edge_table: str,
     edge_source_name: str = "source_name",
     edge_source_type: str = "source_type",
@@ -214,7 +214,7 @@ class AsyncPagedQuery(object):
 
 
 async def atraverse(
-    start: Node | Sequence[Node],
+    start: Union[Node, Sequence[Node]],
     edge_table: str,
     edge_source_name: str = "source_name",
     edge_source_type: str = "source_type",
