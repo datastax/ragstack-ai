@@ -48,6 +48,7 @@ RUN --mount=type=cache,target=/root/.cache \
 
 WORKDIR /app
 COPY libs/langflow/pyproject.toml libs/langflow/poetry.lock libs/langflow/README.md ./
+COPY libs/test-utils ./test-utils
 RUN $POETRY_HOME/bin/poetry lock --no-update \
       && $POETRY_HOME/bin/poetry build -f wheel \
       && $POETRY_HOME/bin/poetry run pip install dist/*.whl --force-reinstall
