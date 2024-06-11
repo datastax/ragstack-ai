@@ -7,7 +7,11 @@ from langchain_core.embeddings import Embeddings
 
 from ragstack_knowledge_store.base import TextNode, _documents_to_nodes, _texts_to_nodes
 from ragstack_knowledge_store.cassandra import CONTENT_ID
-from ragstack_knowledge_store.edge_extractor import IncomingLinkTag, OutgoingLinkTag, BidirLinkTag
+from ragstack_knowledge_store.edge_extractor import (
+    IncomingLinkTag,
+    OutgoingLinkTag,
+    BidirLinkTag,
+)
 
 from .conftest import DataFixture
 
@@ -79,7 +83,7 @@ def test_link_directed(fresh_fixture: DataFixture):
                 OutgoingLinkTag(kind="hyperlink", tag="http://a"),
                 OutgoingLinkTag(kind="hyperlink", tag="http://b"),
             },
-        }
+        },
     )
 
     store = fresh_fixture.store([a, b, c, d])
@@ -88,6 +92,7 @@ def test_link_directed(fresh_fixture: DataFixture):
     assert list(store._linked_ids("b")) == ["a"]
     assert list(store._linked_ids("c")) == ["a"]
     assert sorted(store._linked_ids("d")) == ["a", "b"]
+
 
 def test_mmr_traversal(fresh_fixture: DataFixture):
     """
@@ -177,7 +182,7 @@ def test_write_retrieve_keywords(fresh_fixture: DataFixture):
             "content_id": "greetings",
             "link_tags": {
                 IncomingLinkTag(kind="parent", tag="parent"),
-            }
+            },
         },
     )
     doc1 = Document(

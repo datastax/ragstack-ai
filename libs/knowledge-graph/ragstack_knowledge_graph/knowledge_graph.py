@@ -221,7 +221,7 @@ class CassandraKnowledgeGraph:
 
     def subgraph(
         self,
-        start: Node | Sequence[Node],
+        start: Union[Node, Sequence[Node]],
         edge_filters: Sequence[str] = (),
         steps: int = 3,
     ) -> Tuple[Iterable[Node], Iterable[Relation]]:
@@ -249,7 +249,7 @@ class CassandraKnowledgeGraph:
 
     def traverse(
         self,
-        start: Node | Sequence[Node],
+        start: Union[Node, Sequence[Node]],
         edge_filters: Sequence[str] = (),
         steps: int = 3,
     ) -> Iterable[Relation]:
@@ -280,7 +280,7 @@ class CassandraKnowledgeGraph:
 
     async def atraverse(
         self,
-        start: Node | Sequence[Node],
+        start: Union[Node, Sequence[Node]],
         edge_filters: Sequence[str] = (),
         steps: int = 3,
     ) -> Iterable[Relation]:
