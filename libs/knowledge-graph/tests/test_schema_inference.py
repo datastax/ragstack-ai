@@ -22,7 +22,9 @@ Paris.
 def test_schema_inference(llm: BaseChatModel):
     schema_inferer = KnowledgeSchemaInferer(llm)
 
-    results = schema_inferer.infer_schemas_from([Document(page_content=MARIE_CURIE_SOURCE)])[0]
+    results = schema_inferer.infer_schemas_from(
+        [Document(page_content=MARIE_CURIE_SOURCE)]
+    )[0]
 
     print(results.to_yaml_str())
     nodes = [n.type for n in results.nodes]
@@ -38,7 +40,9 @@ def test_schema_inference(llm: BaseChatModel):
     print(rels)
     any_of_in_list(rels, "won", "won_award")
     any_of_in_list(rels, "is_nationality_of", "has_nationality")
-    any_of_in_list(rels, "first_professor_at", "professor_at", "works_at", "has_position_at")
+    any_of_in_list(
+        rels, "first_professor_at", "professor_at", "works_at", "has_position_at"
+    )
     any_of_in_list(rels, "conducted_research_in")
     # We don't do more testing here since this is meant to attempt to infer things.
 

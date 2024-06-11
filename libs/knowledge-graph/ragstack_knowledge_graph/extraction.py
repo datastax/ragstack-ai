@@ -35,7 +35,7 @@ class KnowledgeSchemaExtractor:
         self,
         llm: BaseChatModel,
         schema: KnowledgeSchema,
-        examples: Sequence[Example] = [],
+        examples: Sequence[Example] = (),
         strict: bool = False,
     ) -> None:
         self._validator = KnowledgeSchemaValidator(schema)
@@ -43,7 +43,9 @@ class KnowledgeSchemaExtractor:
 
         messages = [
             SystemMessagePromptTemplate(
-                prompt=load_template("extraction.md", knowledge_schema_yaml=schema.to_yaml_str())
+                prompt=load_template(
+                    "extraction.md", knowledge_schema_yaml=schema.to_yaml_str()
+                )
             )
         ]
 
@@ -66,14 +68,20 @@ class KnowledgeSchemaExtractor:
         self, document: Document, response: Union[Dict, BaseModel]
     ) -> GraphDocument:
         raw_graph = cast(_Graph, response)
-        nodes = [map_to_base_node(node) for node in raw_graph.nodes] if raw_graph.nodes else []
+        nodes = (
+            [map_to_base_node(node) for node in raw_graph.nodes]
+            if raw_graph.nodes
+            else []
+        )
         relationships = (
             [map_to_base_relationship(rel) for rel in raw_graph.relationships]
             if raw_graph.relationships
             else []
         )
 
-        document = GraphDocument(nodes=nodes, relationships=relationships, source=document)
+        document = GraphDocument(
+            nodes=nodes, relationships=relationships, source=document
+        )
 
         if self.strict:
             self._validator.validate_graph_document(document)
@@ -85,4 +93,7 @@ class KnowledgeSchemaExtractor:
         responses = self._chain.batch_as_completed(
             [{"input": doc.page_content} for doc in documents]
         )
-        return [self._process_response(documents[idx], response) for idx, response in responses]
+        return [
+            self._process_response(documents[idx], response)
+            for idx, response in responses
+        ]
