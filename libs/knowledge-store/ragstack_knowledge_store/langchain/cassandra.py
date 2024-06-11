@@ -7,7 +7,6 @@ from typing import (
 )
 
 from cassandra.cluster import ResponseFuture, Session
-from cassio.config import check_resolve_session, check_resolve_keyspace
 from langchain_community.utilities.cassandra import SetupMode
 from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
@@ -79,27 +78,16 @@ class CassandraKnowledgeStore(KnowledgeStore):
                 ASYNC or OFF).
         """
         self._embedding = embedding
-        self._session = check_resolve_session(session)
-        _keyspace = check_resolve_keyspace(keyspace)
         _setup_mode = getattr(knowledge_store.SetupMode, setup_mode.name)
 
         self.store = knowledge_store.KnowledgeStore(
             embedding=EmbeddingModelAdapter(embedding),
             node_table=node_table,
             edge_table=edge_table,
-            session=self._session,
-            keyspace=_keyspace,
+            session=session,
+            keyspace=keyspace,
             setup_mode=_setup_mode,
             concurrency=concurrency,
-        )
-
-        self._query_by_embedding = self._session.prepare(
-            f"""
-            SELECT content_id, kind, text_content
-            FROM {_keyspace}.{node_table}
-            ORDER BY text_embedding ANN OF ?
-            LIMIT ?
-            """
         )
 
     @property
@@ -159,10 +147,13 @@ class CassandraKnowledgeStore(KnowledgeStore):
         )
 
     def similarity_search_by_vector(
-        self, embedding: List[float], k: int = 4, **kwargs: Any
+        self, embedding: List[float], k: int = 4
     ) -> List[Document]:
-        results = self._session.execute(self._query_by_embedding, (embedding, k))
-        return list(_results_to_documents(results))
+        for node in self.store.similarity_search(embedding, k=k):
+            yield Document(
+                page_content=node.text,
+                metadata=node.metadata,
+            )
 
     def traversal_search(
         self,

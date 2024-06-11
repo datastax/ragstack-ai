@@ -2,7 +2,6 @@ import secrets
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import (
-    Any,
     Dict,
     Iterable,
     List,
@@ -10,17 +9,15 @@ from typing import (
     Optional,
     Sequence,
     Tuple,
-    Type,
 )
 
 import numpy as np
 from cassandra.cluster import ConsistencyLevel, ResponseFuture, Session
 from cassio.config import check_resolve_keyspace, check_resolve_session
 
-from ragstack_knowledge_store.edge_extractor import get_link_tags
-
 from .concurrency import ConcurrentQueries
 from .content import Kind
+from .edge_extractor import get_link_tags
 from .embedding_model import EmbeddingModel
 from .math import cosine_similarity
 
@@ -60,7 +57,7 @@ def _row_to_node(row) -> Node:
     )
 
 
-def _results_to_node(results: Optional[ResponseFuture]) -> Iterable[TextNode]:
+def _results_to_nodes(results: Optional[ResponseFuture]) -> Iterable[TextNode]:
     if results:
         for row in results:
             yield _row_to_node(row)
@@ -660,3 +657,11 @@ class KnowledgeStore:
             )
 
         return self._query_by_ids(visited.keys())
+
+    def similarity_search(
+        self,
+        embedding: List[float],
+        k: int = 4,
+    ) -> Iterable[TextNode]:
+        for row in self._session.execute(self._query_by_embedding, (embedding, k)):
+            yield _row_to_node(row)
