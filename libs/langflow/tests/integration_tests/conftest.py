@@ -1,29 +1,112 @@
+import os
+import logging
+from typing import Callable, Optional
 import pytest
-from ragstack_tests_utils import AstraDBTestStore, LocalCassandraTestStore
+from pathlib import Path
 
-status = {
-    "local_cassandra_test_store": None,
-    "astradb_test_store": None,
-}
+from langchain_core.embeddings import Embeddings
 
 
-def get_local_cassandra_test_store():
-    if not status["local_cassandra_test_store"]:
-        status["local_cassandra_test_store"] = LocalCassandraTestStore()
-    return status["local_cassandra_test_store"]
+def pytest_configure():
+    data_path = Path(__file__).parent.absolute() / "data"
+
+    # Uses a URL loader w/ OpenAIEmbeddings to embed into AstraDB.
+    pytest.EMBEDDING_PATH = data_path / "embedding.json"
+    # Uses OpenAIEmbeddings w/ AstraDBSearch to search for similar documents.
+    pytest.VECTOR_STORE_SEARCH_PATH = data_path / "vector_search.json"
+
+    for path in [
+        pytest.EMBEDDING_PATH,
+        pytest.VECTOR_STORE_SEARCH_PATH,
+    ]:
+        assert path.exists(), f"File {path} does not exist. Available files: {list(data_path.iterdir())}"
 
 
-def get_astradb_test_store():
-    if not status["astradb_test_store"]:
-        status["astradb_test_store"] = AstraDBTestStore()
-    return status["astradb_test_store"]
+LOGGER = logging.getLogger(__name__)
+DIR_PATH = os.path.dirname(os.path.abspath(__file__))
 
 
-@pytest.fixture(scope="session", autouse=True)
-def before_after_tests():
-    yield
-    if (
-        status["local_cassandra_test_store"]
-        and status["local_cassandra_test_store"].docker_container
+def _load_env() -> None:
+    dotenv_path = os.path.join(DIR_PATH, os.pardir, ".env")
+    if os.path.exists(dotenv_path):
+        from dotenv import load_dotenv
+
+        load_dotenv(dotenv_path)
+
+
+_load_env()
+
+
+def get_env_var(name: str) -> str:
+    value = os.getenv(name)
+    if not value:
+        LOGGER.warning(f"Missing environment variable: {name}")
+        pytest.skip(f"Missing environment variable: {name}")
+
+    return value
+
+
+class MockEmbeddings(Embeddings):
+    def __init__(self):
+        self.embedded_documents = None
+        self.embedded_query = None
+
+    @staticmethod
+    def mock_embedding(text: str):
+        return [len(text) / 2, len(text) / 5, len(text) / 10]
+
+    def embed_documents(self, texts: list[str]) -> list[list[float]]:
+        self.embedded_documents = texts
+        return [self.mock_embedding(text) for text in texts]
+
+    def embed_query(self, text: str) -> list[float]:
+        self.embedded_query = text
+        return self.mock_embedding(text)
+
+
+@pytest.fixture
+def embedding_flow() -> str:
+    with open(pytest.EMBEDDING_PATH, "r") as f:
+        return f.read()
+
+
+@pytest.fixture
+def vector_store_search_flow() -> str:
+    with open(pytest.VECTOR_STORE_SEARCH_PATH, "r") as f:
+        return f.read()
+
+
+def get_astra_token():
+    return get_env_var("ASTRA_DB_TOKEN")
+
+
+def get_astra_api_endpoint():
+    return get_env_var("ASTRA_DB_API_ENDPOINT")
+
+
+@pytest.fixture
+def astradb_component() -> Callable:
+    from langflow.components.vectorstores.AstraDB import AstraDBVectorStoreComponent
+
+    def component_builder(
+            collection: str,
+            embedding: Optional[Embeddings] = None,
+            inputs: Optional[list] = None,
     ):
-        status["local_cassandra_test_store"].docker_container.stop()
+        if embedding is None:
+            embedding = MockEmbeddings()
+
+        if inputs is None:
+            inputs = []
+
+        token = get_astra_token()
+        api_endpoint = get_astra_api_endpoint()
+        return AstraDBVectorStoreComponent().build(
+            embedding=embedding,
+            collection_name=collection,
+            inputs=inputs,
+            token=token,
+            api_endpoint=api_endpoint,
+        )
+
+    return component_builder

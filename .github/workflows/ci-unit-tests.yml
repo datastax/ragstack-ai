@@ -130,6 +130,8 @@ jobs:
           ASTRA_DB_TOKEN: "${{ secrets.E2E_TESTS_ASTRA_DEV_DB_TOKEN }}"
           ASTRA_DB_ID: "${{ steps.astra-db.outputs.id }}"
           ASTRA_DB_ENV: "DEV"
+          ASTRA_DB_API_ENDPOINT: "${{ steps.astra-db.outputs.api_endpoint }}"
+          OPENAI_API_KEY: "${{ secrets.E2E_TESTS_OPEN_AI_KEY }}"
         run: |
           set -ex
           run_itests() {
@@ -141,6 +143,7 @@ jobs:
           run_itests libs/colbert
           run_itests libs/langchain
           run_itests libs/llamaindex
+          run_itests libs/langflow
 
       - name: Cleanup AstraDB
         uses: nicoloboschi/cleanup-astradb@v1
