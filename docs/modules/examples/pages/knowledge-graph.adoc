@@ -1,6 +1,10 @@
 = Knowledge Graph
-
-image::https://colab.research.google.com/assets/colab-badge.svg[align="left",link="https://colab.research.google.com/github/datastax-labs/knowledge-graphs-langchain/blob/main/notebook.ipynb"]
+:navtitle: Knowledge Graph
+:page-layout: tutorial
+:page-icon-role: bg-[var(--ds-neutral-900)]
+:page-toclevels: 1
+:keywords: Knowledge Graph, Graph Database, Knowledge Graph Triples, GraphViz
+:page-colab-link: https://colab.research.google.com/github/datastax-labs/knowledge-graphs-langchain/blob/main/notebook.ipynb
 
 Use RAGStack, https://python.langchain.com/docs/use_cases/graph/constructing/#llm-graph-transformer[`LLMGraphTransformer`], and https://www.datastax.com/products/datastax-astra[DataStax AstraDB] to extract knowledge triples and store them in a vector database.
 
@@ -97,24 +101,6 @@ print(f"Relationships:{graph_documents[0].relationships}")
 ----
 render_graph_documents(graph_documents)
 graph_store.add_graph_documents(graph_documents)
-----
-
-=== Optional: Predefine relationships between entities
-
-Optionally, pre-configure the `LLMGraphTransformer` with specific kinds of nodes and the relationships it is allowed to extract.
-This is useful for constraining what will be extracted.
-[source,python]
-----
-llm_transformer_filtered = LLMGraphTransformer(
-    llm=llm,
-    allowed_nodes=["Person", "Country", "Organization"],
-    allowed_relationships=["NATIONALITY", "LOCATED_IN", "WORKED_AT", "SPOUSE"],
-)
-graph_documents_filtered = llm_transformer_filtered.convert_to_graph_documents(
-    documents
-)
-print(f"Nodes:{graph_documents_filtered[0].nodes}")
-print(f"Relationships:{graph_documents_filtered[0].relationships}")
 ----
 
 == Query the graph store
@@ -243,13 +229,6 @@ render_graph_documents(graph_documents)
 # Save the extracted graph documents to the AstraDB / Cassandra Graph Store
 graph_store.add_graph_documents(graph_documents)
 
-## Optional: Configure LLMGraphTransformer with filters
-#llm_transformer_filtered = LLMGraphTransformer(
-#    llm=llm,
-#    allowed_nodes=["Person", "Country", "Organization"],
-#    allowed_relationships=["NATIONALITY", "LOCATED_IN", "WORKED_AT", "SPOUSE"],
-#)
-
 # Query the graph
 graph_store.as_runnable(steps=2).invoke(Node("Marie Curie", "Person"))
 
@@ -286,3 +265,98 @@ response=chain.invoke("Who is Marie Curie?")
 print(f"Chain Response: {response}")
 ----
 ====
+
+== Use KnowledgeSchema instead of LLMGraphTransformer
+
+Instead of using `LLMGraphTransformer` to build your graph, the Knowledge Graph library also includes a unique knowledge extraction system called `KnowledgeSchema` that lets you define your nodes and relationships in a YAML file and load it to guide the graph extraction process.
+
+== Example usage
+
+. Copy the sample `marie_curie_schema.yaml` file https://github.com/datastax/ragstack-ai/blob/main/libs/knowledge-graph/tests/marie_curie_schema.yaml[from the RAGStack repo]. This example assumes you copy it to the same directory as your script.
+
+. Create a new Python script and add the following code. In this example, `KnowledgeSchema` is initialized from a YAML file, the `KnowledgeSchemaExtractor` uses an LLM to extract knowledge from the source according to the YAML-defined schema, and the extracted nodes and relationships are printed.
++
+.extraction-test.py
+[source,python]
+----
+from os import path
+
+from langchain_community.graphs.graph_document import Node, Relationship
+from langchain_core.documents import Document
+from langchain_core.language_models import BaseChatModel
+from langchain_openai import ChatOpenAI
+
+OPENAI_API_KEY = "sk-..."
+
+from ragstack_knowledge_graph.extraction import (
+    KnowledgeSchema,
+    KnowledgeSchemaExtractor,
+)
+
+def extractor(llm: BaseChatModel) -> KnowledgeSchemaExtractor:
+    schema = KnowledgeSchema.from_file(
+        path.join(path.dirname(__file__), "./marie_curie_schema.yaml")
+    )
+    return KnowledgeSchemaExtractor(
+        llm=llm,
+        schema=schema,
+    )
+
+MARIE_CURIE_SOURCE = """
+Marie Curie, was a Polish and naturalised-French physicist and chemist who
+conducted pioneering research on radioactivity. She was the first woman to win a
+Nobel Prize, the first person to win a Nobel Prize twice, and the only person to
+win a Nobel Prize in two scientific fields. Her husband, Pierre Curie, was a
+won first Nobel Prize with her, making them the first-ever married couple to
+win the Nobel Prize and launching the Curie family legacy of five Nobel Prizes.
+She was, in 1906, the first woman to become a professor at the University of
+Paris.
+"""
+
+def test_extraction(extractor: KnowledgeSchemaExtractor):
+    results = extractor.extract([Document(page_content=MARIE_CURIE_SOURCE)])
+
+    print("Extracted Nodes:")
+    for node in results[0].nodes:
+        print(f"Node ID: {node.id}, Type: {node.type}")
+
+    print("\nExtracted Relationships:")
+    for relationship in results[0].relationships:
+        print(f"Relationship: {relationship.source.id} -> {relationship.target.id}, Type: {relationship.type}")
+
+if __name__ == "__main__":
+    llm = ChatOpenAI(temperature=0, model_name="gpt-4", openai_api_key=OPENAI_API_KEY)
+    extractor_instance = extractor(llm)
+    test_extraction(extractor_instance)
+
+----
++
+. Run the script with `python3 extraction-test.py` and view the results.
++
+[source,python]
+----
+Extracted Nodes:
+Node ID: Marie Curie, Type: Person
+Node ID: Polish, Type: Nationality
+Node ID: French, Type: Nationality
+Node ID: Physicist, Type: Occupation
+Node ID: Chemist, Type: Occupation
+Node ID: Nobel Prize, Type: Award
+Node ID: Pierre Curie, Type: Person
+Node ID: University Of Paris, Type: Institution
+Node ID: Professor, Type: Occupation
+
+Extracted Relationships:
+Relationship: Marie Curie -> Polish, Type: HAS_NATIONALITY
+Relationship: Marie Curie -> French, Type: HAS_NATIONALITY
+Relationship: Marie Curie -> Physicist, Type: HAS_OCCUPATION
+Relationship: Marie Curie -> Chemist, Type: HAS_OCCUPATION
+Relationship: Marie Curie -> Nobel Prize, Type: RECEIVED
+Relationship: Pierre Curie -> Nobel Prize, Type: RECEIVED
+Relationship: Marie Curie -> Pierre Curie, Type: MARRIED_TO
+Relationship: Pierre Curie -> Marie Curie, Type: MARRIED_TO
+Relationship: Marie Curie -> University Of Paris, Type: WORKED_AT
+Relationship: Marie Curie -> Professor, Type: HAS_OCCUPATION
+----
+
+

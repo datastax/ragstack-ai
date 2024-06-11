@@ -1,4 +1,4 @@
-= Graph-based Knowledge Extraction and Traversal
+= Introduction to Graph-based Knowledge Extraction and Traversal
 
 RAGStack offers two libraries supporting knowledge graph extraction and traversal, `ragstack-ai-knowledge-graph` and `ragstack-ai-knowledge-store`.
 
@@ -6,13 +6,22 @@ A knowledge graph represents distinct entities (real world objects, like "Marie 
 
 A graph database isn't required to use the knowledge graph libraries - RAGStack uses Astra DB or Apache Cassandra to store and retrieve graphs.
 
-*TL;DR:*
+== Overview
 
-. Retrieval augmented generation based on chunking and vector similarity search has some weaknesses.
-.. Similarity search looks for information most similar to the question. This makes is harder to answer questions with multiple topics.
-.. Similarity search limits the number of chunks retrieved. What if there is similar information spread across multiple places? A similarity search must choose between retrieving multiple copies of the information (inefficient), or choosing only one copy (less context).
-. Knowledge graphs address these shortcomings. For example, if multiple sources have similar information, that knowledge is stored as one node instead of as disparate chunks.
-. From a developer's perspective, a knowledge graph is built into a RAG pipeline similarly to a vector search. The difference is in the underlying data structure and how the information is stored and retrieved.
+Retrieval augmented generation based on chunking and vector similarity search has some weaknesses.
+
+. Similarity search only looks for information most similar to the question. This makes it harder to answer questions with multiple topics, or address cases where less-similar information is still relevant to the question.
+. Similarity search limits the number of chunks retrieved. What if there is similar information spread across multiple places? A similarity search must choose between retrieving multiple copies of the information (inefficient), or choosing only one copy (less context).
+
+Knowledge graphs address these shortcomings. For example, if multiple sources have similar information, that knowledge is stored as one node instead of as disparate chunks.
+
+From a developer's perspective, a knowledge graph is built into a RAG pipeline similarly to a vector search. The difference is in the underlying data structure and how the information is stored and retrieved.
+
+For example: consider a tech support system, where you find an article that is similar to your question, and it says. "If you have trouble with step 4, see this article for **<more information>**". Even if **<more information>** is not similar to your original question, it likely provides more information.
+
+The article's "see **<more information>**" is an example of an edge in a knowledge graph. The edge connects the initial article to additional information, indicating that the two are related. This relationship would not be captured in a similarity search.
+
+These edges also increase the diversity of results. Within the same tech support system, if you retrieve 100 chunks that are highly similar to the question, you have retrieved 100 chunks that are also highly similar to themselves. Following edges to linked information increases diversity.
 
 == The `ragstack-ai-knowledge-graph` library
 
@@ -29,7 +38,10 @@ For more information, see xref:knowledge-graph.adoc[].
 
 == The `ragstack-ai-knowledge-store` library
 
-The `ragstack-ai-knowledge-store` library contains functions for creating a hybrid vector-and-graph knowledge store. This store combines the benefits of vector search with the context and relationships of a knowledge graph by describing the relationships between Document chunks with edges.
+The `ragstack-ai-knowledge-store` library contains functions for creating a hybrid vector-and-graph knowledge store. This store combines the benefits of vector stores with the context and relationships of a related edges.
+
+This library includes a knowledge graph with a general purpose schema to represent the content of unstructured documents.
+The schema is written to be flexible and scalable by extracting nodes like "text passages" and edges with link tags, so you can apply it without writing a specific schema.
 
 To install the package, run:
 
