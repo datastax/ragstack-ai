@@ -1,6 +1,6 @@
-# RAGStack LLamaIndex
+# RAGStack LangFlow
 
-RAGStack Llama Index package, part of [`ragstack-ai`](https://pypi.org/project/ragstack-ai/).
+RAGStack Langflow package.
 
 ## Documentation
 

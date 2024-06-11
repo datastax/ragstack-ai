@@ -90,6 +90,10 @@ jobs:
         if: ${{ needs.preconditions.outputs.libs_llamaindex == 'true' }}
         run: tox -e unit-tests -c libs/llamaindex && rm -rf libs/llamaindex/.tox
 
+      - name: "Unit tests (langflow)"
+        if: ${{ needs.preconditions.outputs.libs_langflow == 'true' && matrix.python-version != '3.9'  }}
+        run: tox -e unit-tests -c libs/langflow && rm -rf libs/langflow/.tox
+
       - name: "Unit tests (knowledge-store)"
         if: ${{ needs.preconditions.outputs.libs_knowledge_store == 'true' }}
         env:
