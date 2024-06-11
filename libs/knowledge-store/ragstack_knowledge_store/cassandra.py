@@ -338,26 +338,35 @@ class CassandraKnowledgeStore(KnowledgeStore):
                 id = metadata[CONTENT_ID]
                 ids.append(id)
 
-                link_to_tags = set() # link to these tags
-                link_from_tags = set() # link from these tags
+                link_to_tags = set()  # link to these tags
+                link_from_tags = set()  # link from these tags
 
                 for tag in get_link_tags(metadata):
                     tag_str = f"{tag.kind}:{tag.tag}"
                     if tag.direction == "incoming" or tag.direction == "bidir":
                         # An incom`ing link should be linked *from* nodes with the given tag.
                         link_from_tags.add(tag_str)
-                        tag_to_new_targets.setdefault(tag_str, dict())[id] = (tag.kind, text_embedding)
+                        tag_to_new_targets.setdefault(tag_str, dict())[id] = (
+                            tag.kind,
+                            text_embedding,
+                        )
                     if tag.direction == "outgoing" or tag.direction == "bidir":
                         link_to_tags.add(tag_str)
-                        tag_to_new_sources.setdefault(tag_str, list()).append((tag.kind, id))
+                        tag_to_new_sources.setdefault(tag_str, list()).append(
+                            (tag.kind, id)
+                        )
 
-                cq.execute(self._insert_passage, (id, text, text_embedding, link_to_tags, link_from_tags))
+                cq.execute(
+                    self._insert_passage,
+                    (id, text, text_embedding, link_to_tags, link_from_tags),
+                )
 
         # Step 2: Query information about those tags to determine the edges to add.
         # Add edges as needed.
         id_set = set(ids)
         with self._concurrent_queries() as cq:
             edges = []
+
             def add_edge(source_id, target_id, kind, target_embedding):
                 nonlocal added_edges
                 if source_id == target_id:
@@ -399,17 +408,20 @@ class CassandraKnowledgeStore(KnowledgeStore):
                         # Don't add here (will be handled later).
                         continue
 
-                    for (kind, source_id) in sources:
-                         add_edge(source_id, target.content_id, kind, target.text_embedding)
+                    for kind, source_id in sources:
+                        add_edge(
+                            source_id, target.content_id, kind, target.text_embedding
+                        )
 
             for tag, new_target_embs in tag_to_new_targets.items():
                 # For each new node with a `link_from_tag`, find the source
                 # nodes with that `link_to_tag`` and create the edges.
                 cq.execute(
                     self._query_ids_by_link_to_tag,
-                    parameters=(tag, ),
+                    parameters=(tag,),
                     callback=lambda sources, targets=new_target_embs: add_edges_for_sources(
-                        sources, targets)
+                        sources, targets
+                    ),
                 )
 
             for tag, new_sources in tag_to_new_sources.items():
@@ -417,9 +429,10 @@ class CassandraKnowledgeStore(KnowledgeStore):
                 # nodes with that `link_from_tag` tag and create the edges.
                 cq.execute(
                     self._query_ids_and_embedding_by_link_from_tag,
-                    parameters=(tag, ),
+                    parameters=(tag,),
                     callback=lambda targets, sources=new_sources: add_edges_for_targets(
-                        sources, targets)
+                        sources, targets
+                    ),
                 )
 
         # Step 3: Add edges.
@@ -429,7 +442,6 @@ class CassandraKnowledgeStore(KnowledgeStore):
         # more than |max concurency| edges.
         added_edges = 0
         with self._concurrent_queries() as cq:
-            print("Adding edges")
             # Add edges from query results (should be one new node and one old node)
             for edge in edges:
                 added_edges += 1
@@ -437,19 +449,22 @@ class CassandraKnowledgeStore(KnowledgeStore):
 
             # Add edges for new nodes
             for tag, new_sources in tag_to_new_sources.items():
-                for (kind, source_id) in new_sources:
+                for kind, source_id in new_sources:
                     new_targets = tag_to_new_targets.get(tag, None)
                     if new_targets is None:
                         continue
 
-                    for (target_id, (target_kind, target_embedding)) in new_targets.items():
+                    for target_id, (
+                        target_kind,
+                        target_embedding,
+                    ) in new_targets.items():
                         # TODO: Improve the structures so this can be a lookup?
                         if target_kind == kind and source_id != target_id:
                             added_edges += 1
-                            cq.execute(self._insert_edge,
-                                       (source_id, target_id, kind, target_embedding))
-
-        print(f"Added {added_edges} edges")
+                            cq.execute(
+                                self._insert_edge,
+                                (source_id, target_id, kind, target_embedding),
+                            )
 
         return ids
 
@@ -530,7 +545,7 @@ class CassandraKnowledgeStore(KnowledgeStore):
         depth: int = 2,
         fetch_k: int = 100,
         lambda_mult: float = 0.5,
-        score_threshold: float = float('-inf'),
+        score_threshold: float = float("-inf"),
     ) -> Iterable[Document]:
         """Retrieve documents from this knowledge store using MMR-traversal.
 
@@ -588,7 +603,7 @@ class CassandraKnowledgeStore(KnowledgeStore):
             selected_embedding = next_selected.embedding
             selected_embeddings.append(selected_embedding)
 
-            best_score = float('-inf')
+            best_score = float("-inf")
             next_id = None
 
             # Update unselected scores.

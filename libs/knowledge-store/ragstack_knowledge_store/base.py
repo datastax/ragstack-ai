@@ -223,7 +223,7 @@ class KnowledgeStore(VectorStore):
         depth: int = 2,
         fetch_k: int = 100,
         lambda_mult: float = 0.5,
-        score_threshold: float = float('-inf'),
+        score_threshold: float = float("-inf"),
         **kwargs: Any,
     ) -> Iterable[Document]:
         """Retrieve documents from this knowledge store using MMR-traversal.
@@ -258,7 +258,7 @@ class KnowledgeStore(VectorStore):
         depth: int = 2,
         fetch_k: int = 100,
         lambda_mult: float = 0.5,
-        score_threshold: float = float('-inf'),
+        score_threshold: float = float("-inf"),
         **kwargs: Any,
     ) -> AsyncIterable[Document]:
         """Retrieve documents from this knowledge store using MMR-traversal.
@@ -297,17 +297,23 @@ class KnowledgeStore(VectorStore):
         ):
             yield doc
 
-    def similarity_search(self, query: str, k: int = 4, **kwargs: Any) -> List[Document]:
+    def similarity_search(
+        self, query: str, k: int = 4, **kwargs: Any
+    ) -> List[Document]:
         return list(self.traversal_search(query, k=k, depth=0))
 
-    async def asimilarity_search(self, query: str, k: int = 4, **kwargs: Any) -> List[Document]:
+    async def asimilarity_search(
+        self, query: str, k: int = 4, **kwargs: Any
+    ) -> List[Document]:
         return [doc async for doc in self.atraversal_search(query, k=k, depth=0)]
 
     def search(self, query: str, search_type: str, **kwargs: Any) -> List[Document]:
         if search_type == "similarity":
             return self.similarity_search(query, **kwargs)
         elif search_type == "similarity_score_threshold":
-            docs_and_similarities = self.similarity_search_with_relevance_scores(query, **kwargs)
+            docs_and_similarities = self.similarity_search_with_relevance_scores(
+                query, **kwargs
+            )
             return [doc for doc, _ in docs_and_similarities]
         elif search_type == "mmr":
             return self.max_marginal_relevance_search(query, **kwargs)
@@ -322,7 +328,9 @@ class KnowledgeStore(VectorStore):
                 "'mmr' or 'traversal'."
             )
 
-    async def asearch(self, query: str, search_type: str, **kwargs: Any) -> List[Document]:
+    async def asearch(
+        self, query: str, search_type: str, **kwargs: Any
+    ) -> List[Document]:
         if search_type == "similarity":
             return await self.asimilarity_search(query, **kwargs)
         elif search_type == "similarity_score_threshold":
@@ -420,7 +428,9 @@ class KnowledgeStoreRetriever(VectorStoreRetriever):
         if self.search_type == "traversal":
             return list(self.vectorstore.traversal_search(query, **self.search_kwargs))
         elif self.search_type == "mmr_traversal":
-            return list(self.vectorstore.mmr_traversal_search(query, **self.search_kwargs))
+            return list(
+                self.vectorstore.mmr_traversal_search(query, **self.search_kwargs)
+            )
         else:
             return super()._get_relevant_documents(query, run_manager=run_manager)
 
@@ -430,12 +440,18 @@ class KnowledgeStoreRetriever(VectorStoreRetriever):
         if self.search_type == "traversal":
             return [
                 doc
-                async for doc in self.vectorstore.atraversal_search(query, **self.search_kwargs)
+                async for doc in self.vectorstore.atraversal_search(
+                    query, **self.search_kwargs
+                )
             ]
         elif self.search_type == "mmr_traversal":
             return [
                 doc
-                async for doc in self.vectorstore.ammr_traversal_search(query, **self.search_kwargs)
+                async for doc in self.vectorstore.ammr_traversal_search(
+                    query, **self.search_kwargs
+                )
             ]
         else:
-            return await super()._aget_relevant_documents(query, run_manager=run_manager)
+            return await super()._aget_relevant_documents(
+                query, run_manager=run_manager
+            )
