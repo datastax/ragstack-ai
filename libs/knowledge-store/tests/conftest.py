@@ -9,7 +9,8 @@ from langchain_core.embeddings import Embeddings
 from testcontainers.core.container import DockerContainer
 from testcontainers.core.waiting_utils import wait_for_logs
 
-from ragstack_knowledge_store.cassandra import CassandraKnowledgeStore
+
+from ragstack_knowledge_store.langchain import CassandraKnowledgeStore
 
 load_dotenv()
 

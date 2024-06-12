@@ -1,4 +1,4 @@
-from .base import KnowledgeStore
-from .cassandra import CassandraKnowledgeStore
+from .embedding_model import EmbeddingModel
+from .knowledge_store import KnowledgeStore, Node, SetupMode, TextNode
 
-__all__ = ["CassandraKnowledgeStore", "KnowledgeStore"]
+__all__ = ["EmbeddingModel", "KnowledgeStore", "Node", "SetupMode", "TextNode"]

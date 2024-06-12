@@ -5,14 +5,18 @@ import pytest
 from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
 
-from ragstack_knowledge_store.base import TextNode, _documents_to_nodes, _texts_to_nodes
-from ragstack_knowledge_store.cassandra import CONTENT_ID
+
 from ragstack_knowledge_store.edge_extractor import (
     IncomingLinkTag,
     OutgoingLinkTag,
     BidirLinkTag,
 )
-
+from ragstack_knowledge_store.knowledge_store import CONTENT_ID
+from ragstack_knowledge_store.langchain.base import (
+    _documents_to_nodes,
+    _texts_to_nodes,
+    TextNode,
+)
 from .conftest import DataFixture
 
 
@@ -88,10 +92,10 @@ def test_link_directed(fresh_fixture: DataFixture):
 
     store = fresh_fixture.store([a, b, c, d])
 
-    assert list(store._linked_ids("a")) == []
-    assert list(store._linked_ids("b")) == ["a"]
-    assert list(store._linked_ids("c")) == ["a"]
-    assert sorted(store._linked_ids("d")) == ["a", "b"]
+    assert list(store.store._linked_ids("a")) == []
+    assert list(store.store._linked_ids("b")) == ["a"]
+    assert list(store.store._linked_ids("c")) == ["a"]
+    assert sorted(store.store._linked_ids("d")) == ["a", "b"]
 
 
 def test_mmr_traversal(fresh_fixture: DataFixture):
@@ -175,7 +179,6 @@ def test_mmr_traversal(fresh_fixture: DataFixture):
 
 
 def test_write_retrieve_keywords(fresh_fixture: DataFixture):
-    _texts_to_nodes(["a", "b"], {"a": "b"}, None)
     greetings = Document(
         page_content="Typical Greetings",
         metadata={
