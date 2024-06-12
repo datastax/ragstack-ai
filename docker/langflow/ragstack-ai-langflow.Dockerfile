@@ -47,7 +47,7 @@ RUN --mount=type=cache,target=/root/.cache \
 
 WORKDIR /app
 COPY libs/ ./libs
-RUN cd libs/langflow && $POETRY_HOME/bin/poetry lock --no-update && $POETRY_HOME/bin/poetry install --no-root
+RUN cd libs/langflow && $POETRY_HOME/bin/poetry lock --no-update && $POETRY_HOME/bin/poetry install --no-root --sync
 
 ################################
 # RUNTIME
