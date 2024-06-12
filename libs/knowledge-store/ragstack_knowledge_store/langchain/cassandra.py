@@ -12,12 +12,10 @@ from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
 
 from .base import KnowledgeStore, Node, TextNode
-from ragstack_knowledge_store import knowledge_store
-from ragstack_knowledge_store.edge_extractor import EdgeExtractor
-from ragstack_knowledge_store.embedding_model import EmbeddingModel
+from ragstack_knowledge_store import EmbeddingModel, knowledge_store
 
 
-class EmbeddingModelAdapter(EmbeddingModel):
+class _EmbeddingModelAdapter(EmbeddingModel):
     def __init__(self, embeddings: Embeddings):
         self.embeddings = embeddings
 
@@ -81,7 +79,7 @@ class CassandraKnowledgeStore(KnowledgeStore):
         _setup_mode = getattr(knowledge_store.SetupMode, setup_mode.name)
 
         self.store = knowledge_store.KnowledgeStore(
-            embedding=EmbeddingModelAdapter(embedding),
+            embedding=_EmbeddingModelAdapter(embedding),
             node_table=node_table,
             edge_table=edge_table,
             session=session,
