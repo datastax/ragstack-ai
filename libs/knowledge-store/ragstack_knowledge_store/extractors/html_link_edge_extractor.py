@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, Set, Union
 from urllib.parse import urldefrag, urljoin, urlparse
-from ragstack_knowledge_store.edge_extractor import (
+from .edge_extractor import (
     EdgeExtractor,
     IncomingLinkTag,
     OutgoingLinkTag,

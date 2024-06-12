@@ -17,7 +17,7 @@ from cassio.config import check_resolve_keyspace, check_resolve_session
 
 from .concurrency import ConcurrentQueries
 from .content import Kind
-from .edge_extractor import get_link_tags
+from .extractors import get_link_tags
 from .embedding_model import EmbeddingModel
 from .math import cosine_similarity
 

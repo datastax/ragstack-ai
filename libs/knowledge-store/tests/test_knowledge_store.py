@@ -6,7 +6,7 @@ from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
 
 
-from ragstack_knowledge_store.edge_extractor import (
+from ragstack_knowledge_store.extractors import (
     IncomingLinkTag,
     OutgoingLinkTag,
     BidirLinkTag,

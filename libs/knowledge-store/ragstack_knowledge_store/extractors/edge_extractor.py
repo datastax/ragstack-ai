@@ -6,7 +6,7 @@ from typing import Any, Dict, Generic, Iterable, Iterator, Literal, Set, TypeVar
 
 from langchain_core.documents import Document
 from pydantic import BaseModel
-from ._utils import strict_zip
+from ragstack_knowledge_store._utils import strict_zip
 
 
 class LinkTag(BaseModel, abc.ABC):
