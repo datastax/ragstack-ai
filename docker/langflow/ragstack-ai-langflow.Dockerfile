@@ -68,7 +68,7 @@ LABEL org.opencontainers.image.url=https://github.com/datastax/ragstack-ai
 LABEL org.opencontainers.image.source=https://github.com/datastax/ragstack-ai
 
 RUN useradd user -u 1000 -g 0 --no-create-home --home-dir /app/data
-COPY --from=builder-base --chown=1000 /app/.venv /app/.venv
+COPY --from=builder-base --chown=1000 /app/libs/langflow/.venv /app/.venv
 ENV PATH="/app/.venv/bin:${PATH}"
 
 USER user
