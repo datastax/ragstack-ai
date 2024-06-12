@@ -46,8 +46,8 @@ def test_extraction(extractor: KnowledgeSchemaExtractor):
     nobel_prize = Node(id="Nobel Prize", type="Award")
     pierre_curie = Node(id="Pierre Curie", type="Person")
 
-    # Annoyingly, the LLM seems to upper-case `of`. We probably need some instructions around
-    # putting things into standard title case, etc.
+    # Annoyingly, the LLM seems to upper-case `of`. We probably need some instructions
+    # around putting things into standard title case, etc.
     university_of_paris = Node(id="University Of Paris", type="Institution")
 
     assert sorted(results[0].nodes, key=lambda x: x.id) == sorted(

@@ -10,7 +10,9 @@ def _node_label(node: Node) -> str:
     return f"{node.id} [{node.type}]"
 
 
-def print_graph_documents(graph_documents: Union[GraphDocument, Iterable[GraphDocument]]):
+def print_graph_documents(
+    graph_documents: Union[GraphDocument, Iterable[GraphDocument]]
+):
     if isinstance(graph_documents, GraphDocument):
         graph_documents = [graph_documents]
 

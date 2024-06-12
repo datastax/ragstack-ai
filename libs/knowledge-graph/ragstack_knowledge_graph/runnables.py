@@ -31,12 +31,12 @@ def extract_entities(
 
     This will expect a dictionary containing the `"question"` to extract keywords from.
 
-    Parameters:
-    - llm: The LLM to use for extracting entities.
-    - node_types: List of node types to extract.
-    - keyword_extraction_prompt: The prompt to use for requesting entities.
-      This should include the `{question}` being asked as well as the `{format_instructions}`
-      which describe how to produce the output.
+    Args:
+        llm: The LLM to use for extracting entities.
+        node_types: List of node types to extract.
+        keyword_extraction_prompt: The prompt to use for requesting entities.
+            This should include the `{question}` being asked as well as the
+            `{format_instructions}` which describe how to produce the output.
     """
     prompt = ChatPromptTemplate.from_messages([keyword_extraction_prompt])
     assert "question" in prompt.input_variables
@@ -46,7 +46,9 @@ def extract_entities(
         """Represents a node in a graph with associated properties."""
 
         id: str = Field(description="Name or human-readable unique identifier.")
-        type: str = optional_enum_field(node_types, description="The type or label of the node.")
+        type: str = optional_enum_field(
+            node_types, description="The type or label of the node."
+        )
 
     class SimpleNodeList(BaseModel):
         """Represents a list of simple nodes."""
@@ -61,5 +63,7 @@ def extract_entities(
         | ChatPromptTemplate.from_messages([keyword_extraction_prompt])
         | llm
         | output_parser
-        | RunnableLambda(lambda node_list: [Node(n["id"], n["type"]) for n in node_list["nodes"]])
+        | RunnableLambda(
+            lambda node_list: [Node(n["id"], n["type"]) for n in node_list["nodes"]]
+        )
     )

@@ -16,7 +16,9 @@ class KnowledgeSchemaInferer:
     def __init__(self, llm: BaseChatModel) -> None:
         prompt = ChatPromptTemplate.from_messages(
             [
-                SystemMessagePromptTemplate(prompt=load_template("schema_inference.md")),
+                SystemMessagePromptTemplate(
+                    prompt=load_template("schema_inference.md")
+                ),
                 HumanMessagePromptTemplate.from_template("Input: {input}"),
             ]
         )
@@ -24,6 +26,10 @@ class KnowledgeSchemaInferer:
         structured_llm = llm.with_structured_output(KnowledgeSchema)
         self._chain = prompt | structured_llm
 
-    def infer_schemas_from(self, documents: Sequence[Document]) -> Sequence[KnowledgeSchema]:
-        responses = self._chain.batch([{"input": doc.page_content} for doc in documents])
+    def infer_schemas_from(
+        self, documents: Sequence[Document]
+    ) -> Sequence[KnowledgeSchema]:
+        responses = self._chain.batch(
+            [{"input": doc.page_content} for doc in documents]
+        )
         return cast(Sequence[KnowledgeSchema], responses)

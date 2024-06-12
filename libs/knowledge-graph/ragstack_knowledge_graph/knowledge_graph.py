@@ -23,7 +23,9 @@ def _parse_node(row) -> Node:
     return Node(
         name=row.name,
         type=row.type,
-        properties=_deserialize_md_dict(row.properties_json) if row.properties_json else dict(),
+        properties=_deserialize_md_dict(row.properties_json)
+        if row.properties_json
+        else dict(),
     )
 
 
@@ -40,15 +42,16 @@ class CassandraKnowledgeGraph:
         """
         Create a Cassandra Knowledge Graph.
 
-        Parameters:
-        - node_table: Name of the table containing nodes. Defaults to `"entities"`.
-        - edge_table: Name of the table containing edges. Defaults to `"relationships"`.
-        _ text_embeddings: Name of the embeddings to use, if any.
-        - session: The Cassandra `Session` to use. If not specified, uses the default `cassio`
-          session, which requires `cassio.init` has been called.
-        - keyspace: The Cassandra keyspace to use. If not specified, uses the default `cassio`
-          keyspace, which requires `cassio.init` has been called.
-        - apply_schema: If true, the node table and edge table are created.
+        Args:
+            node_table: Name of the table containing nodes. Defaults to `"entities"`.
+            edge_table: Name of the table containing edges. Defaults to `
+                "relationships"`.
+            text_embeddings: Name of the embeddings to use, if any.
+            session: The Cassandra `Session` to use. If not specified, uses the default
+                `cassio` session, which requires `cassio.init` has been called.
+            keyspace: The Cassandra keyspace to use. If not specified, uses the default
+                `cassio` keyspace, which requires `cassio.init` has been called.
+            apply_schema: If true, the node table and edge table are created.
         """
 
         session = check_resolve_session(session)
@@ -60,7 +63,9 @@ class CassandraKnowledgeGraph:
             #  > 0 to be created at all.
             #  > 1 to support cosine distance.
             # So we default to 2.
-            len(text_embeddings.embed_query("test string")) if text_embeddings else 2
+            len(text_embeddings.embed_query("test string"))
+            if text_embeddings
+            else 2
         )
 
         self._session = session
@@ -107,7 +112,8 @@ class CassandraKnowledgeGraph:
     def _apply_schema(self):
         # Partition by `name` and cluster by `type`.
         # Each `(name, type)` pair is a unique node.
-        # We can enumerate all `type` values for a given `name` to identify ambiguous terms.
+        # We can enumerate all `type` values for a given `name` to identify ambiguous
+        # terms.
         self._session.execute(
             f"""
             CREATE TABLE IF NOT EXISTS {self._keyspace}.{self._node_table} (
@@ -163,9 +169,9 @@ class CassandraKnowledgeGraph:
         """
         For each node, return the nearest nodes in the table.
 
-        Parameters:
-        - nodes: The strings to search for in the list of nodes.
-        - k: The number of similar nodes to retrieve for each string.
+        Args:
+            nodes: The strings to search for in the list of nodes.
+            k: The number of similar nodes to retrieve for each string.
         """
         if self._text_embeddings is None:
             raise ValueError("Unable to query for nearest nodes without embeddings")
@@ -174,7 +180,9 @@ class CassandraKnowledgeGraph:
             self._send_query_nearest_node(n, k) for n in nodes
         ]
 
-        nodes = {_parse_node(n) for node_future in node_futures for n in node_future.result()}
+        nodes = {
+            _parse_node(n) for node_future in node_futures for n in node_future.result()
+        }
         return list(nodes)
 
     # TODO: Introduce `ainsert` for async insertions.
@@ -184,6 +192,7 @@ class CassandraKnowledgeGraph:
     ) -> None:
         for batch in batched(elements, n=4):
             from yaml import dump
+
             text_embeddings = (
                 iter(
                     self._text_embeddings.embed_documents(
@@ -200,7 +209,12 @@ class CassandraKnowledgeGraph:
                     properties_json = _serialize_md_dict(element.properties)
                     batch_statement.add(
                         self._insert_node,
-                        (element.name, element.type, next(text_embeddings), properties_json),
+                        (
+                            element.name,
+                            element.type,
+                            next(text_embeddings),
+                            properties_json,
+                        ),
                     )
                 elif isinstance(element, Relation):
                     batch_statement.add(
@@ -240,12 +254,13 @@ class CassandraKnowledgeGraph:
         # etc.
 
         node_futures: Iterable[ResponseFuture] = [
-            self._session.execute_async(self._query_relationship, (n.name, n.type)) for n in nodes
+            self._session.execute_async(self._query_relationship, (n.name, n.type))
+            for n in nodes
         ]
 
         nodes = [_parse_node(n) for future in node_futures for n in future.result()]
 
-        return (nodes, edges)
+        return nodes, edges
 
     def traverse(
         self,
@@ -254,15 +269,16 @@ class CassandraKnowledgeGraph:
         steps: int = 3,
     ) -> Iterable[Relation]:
         """
-        Traverse the graph from the given starting nodes and return the resulting sub-graph.
+        Traverse the graph from the given starting nodes and return the resulting
+        sub-graph.
 
-        Parameters:
-        - start: The starting node or nodes.
-        - edge_filters: Filters to apply to the edges being traversed.
-        - steps: The number of steps of edges to follow from a start node.
+        Args:
+            start: The starting node or nodes.
+            edge_filters: Filters to apply to the edges being traversed.
+            steps: The number of steps of edges to follow from a start node.
 
         Returns:
-        An iterable over relations in the traversed sub-graph.
+            An iterable over relations in the traversed sub-graph.
         """
         return traverse(
             start=start,
@@ -285,15 +301,16 @@ class CassandraKnowledgeGraph:
         steps: int = 3,
     ) -> Iterable[Relation]:
         """
-        Traverse the graph from the given starting nodes and return the resulting sub-graph.
+        Traverse the graph from the given starting nodes and return the resulting
+        sub-graph.
 
-        Parameters:
-        - start: The starting node or nodes.
-        - edge_filters: Filters to apply to the edges being traversed.
-        - steps: The number of steps of edges to follow from a start node.
+        Args:
+            start: The starting node or nodes.
+            edge_filters: Filters to apply to the edges being traversed.
+            steps: The number of steps of edges to follow from a start node.
 
         Returns:
-        An iterable over relations in the traversed sub-graph.
+            An iterable over relations in the traversed sub-graph.
         """
         return await atraverse(
             start=start,

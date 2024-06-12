@@ -84,23 +84,23 @@ def traverse(
     """
     Traverse the graph from the given starting nodes and return the resulting sub-graph.
 
-    Parameters:
-    - start: The starting node or nodes.
-    - edge_table: The table containing the edges.
-    - edge_source_name: The name of the column containing edge source names.
-    - edge_source_type: The name of the column containing edge source types.
-    - edge_target_name: The name of the column containing edge target names.
-    - edge_target_type: The name of the column containing edge target types.
-    - edge_type: The name of the column containing edge types.
-    - edge_filters: Filters to apply to the edges being traversed.
-    - steps: The number of steps of edges to follow from a start node.
-    - session: The session to use for executing the query. If not specified,
-      it will use th default cassio session.
-    - keyspace: The keyspace to use for the query. If not specified, it will
-      use the default cassio keyspace.
+    Args:
+        start: The starting node or nodes.
+        edge_table: The table containing the edges.
+        edge_source_name: The name of the column containing edge source names.
+        edge_source_type: The name of the column containing edge source types.
+        edge_target_name: The name of the column containing edge target names.
+        edge_target_type: The name of the column containing edge target types.
+        edge_type: The name of the column containing edge types.
+        edge_filters: Filters to apply to the edges being traversed.
+        steps: The number of steps of edges to follow from a start node.
+        session: The session to use for executing the query. If not specified,
+            it will use th default cassio session.
+        keyspace: The keyspace to use for the query. If not specified, it will
+            use the default cassio keyspace.
 
     Returns:
-    An iterable over relations in the traversed sub-graph.
+        An iterable over relations in the traversed sub-graph.
     """
     if len(start) == 0:
         return []
@@ -166,7 +166,9 @@ def traverse(
 
             distances[source] = distance
 
-            request: ResponseFuture = session.execute_async(query, (source.name, source.type))
+            request: ResponseFuture = session.execute_async(
+                query, (source.name, source.type)
+            )
             pending.add(request._req_id)
             request.add_callbacks(
                 handle_result,
@@ -208,9 +210,9 @@ class AsyncPagedQuery(object):
         if self.response_future.has_more_pages:
             self.current_page_future = asyncio.Future()
             self.response_future.start_fetching_next_page()
-            return (self.depth, page, self)
+            return self.depth, page, self
         else:
-            return (self.depth, page, None)
+            return self.depth, page, None
 
 
 async def atraverse(
@@ -221,34 +223,35 @@ async def atraverse(
     edge_target_name: str = "target_name",
     edge_target_type: str = "target_type",
     edge_type: str = "edge_type",
-    edge_filters: Sequence[str] = [],
+    edge_filters: Sequence[str] = (),
     steps: int = 3,
     session: Optional[Session] = None,
     keyspace: Optional[str] = None,
 ) -> Iterable[Relation]:
     """
-    Async traversal of the graph from the given starting nodes and return the resulting sub-graph.
+    Async traversal of the graph from the given starting nodes and return the resulting
+    sub-graph.
 
     Parameters:
-    - start: The starting node or nodes.
-    - edge_table: The table containing the edges.
-    - edge_source_name: The name of the column containing edge source names.
-    - edge_source_type: The name of the column containing edge source types.
-    - edge_target_name: The name of the column containing edge target names.
-    - edge_target_type: The name of the column containing edge target types.
-    - edge_type: The name of the column containing edge types.
-    - edge_filters: Filters to apply to the edges being traversed.
-      Currently, this is specified as a dictionary containing the name
-      of the edge field to filter on and the CQL predicate to apply.
-      For example `{"foo": "IN ['a', 'b', 'c']"}`.
-    - steps: The number of steps of edges to follow from a start node.
-    - session: The session to use for executing the query. If not specified,
-      it will use th default cassio session.
-    - keyspace: The keyspace to use for the query. If not specified, it will
-      use the default cassio keyspace.
+        start: The starting node or nodes.
+        edge_table: The table containing the edges.
+        edge_source_name: The name of the column containing edge source names.
+        edge_source_type: The name of the column containing edge source types.
+        edge_target_name: The name of the column containing edge target names.
+        edge_target_type: The name of the column containing edge target types.
+        edge_type: The name of the column containing edge types.
+        edge_filters: Filters to apply to the edges being traversed.
+            Currently, this is specified as a dictionary containing the name of the
+            edge field to filter on and the CQL predicate to apply.
+            For example `{"foo": "IN ['a', 'b', 'c']"}`.
+        steps: The number of steps of edges to follow from a start node.
+        session: The session to use for executing the query. If not specified,
+            it will use th default cassio session.
+        keyspace: The keyspace to use for the query. If not specified, it will
+            use the default cassio keyspace.
 
     Returns:
-    An iterable over relations in the traversed sub-graph.
+        An iterable over relations in the traversed sub-graph.
     """
 
     session = check_resolve_session(session)
@@ -272,7 +275,9 @@ async def atraverse(
         keyspace=keyspace,
     )
 
-    def fetch_relation(tg: asyncio.TaskGroup, depth: int, source: Node) -> AsyncPagedQuery:
+    def fetch_relation(
+        tg: asyncio.TaskGroup, depth: int, source: Node
+    ) -> AsyncPagedQuery:
         paged_query = AsyncPagedQuery(
             depth, session.execute_async(query, (source.name, source.type))
         )
@@ -287,7 +292,9 @@ async def atraverse(
         pending = {fetch_relation(tg, 1, source) for source in start}
 
         while pending:
-            done, pending = await asyncio.wait(pending, return_when=asyncio.FIRST_COMPLETED)
+            done, pending = await asyncio.wait(
+                pending, return_when=asyncio.FIRST_COMPLETED
+            )
             for future in done:
                 depth, relations, more = future.result()
                 for relation in relations:
