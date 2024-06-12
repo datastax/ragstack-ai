@@ -48,9 +48,7 @@ RUN --mount=type=cache,target=/root/.cache \
 
 WORKDIR /app
 COPY libs/ ./libs
-RUN cd libs/langflow && $POETRY_HOME/bin/poetry lock --no-update \
-      && $POETRY_HOME/bin/poetry build -f wheel \
-      && $POETRY_HOME/bin/poetry run pip install dist/*.whl --force-reinstall
+RUN cd libs/langflow && $POETRY_HOME/bin/poetry lock --no-update && $POETRY_HOME/bin/poetry install --no-root
 
 ################################
 # RUNTIME
