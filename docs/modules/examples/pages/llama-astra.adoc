@@ -42,8 +42,7 @@ export OPENAI_API_KEY=sk-...
 +
 [source,python]
 ----
-import os
-from llama_index.llama_dataset import download_llama_dataset
+from llama_index.core.llama_dataset import download_llama_dataset
 
 dataset = download_llama_dataset(
   "PaulGrahamEssayDataset", "./data"
@@ -54,14 +53,9 @@ dataset = download_llama_dataset(
 +
 [source,python]
 ----
-from llama_index.vector_stores import AstraDBVectorStore
-from llama_index import (
-    VectorStoreIndex,
-    SimpleDirectoryReader,
-    StorageContext,
-)
+from llama_index.vector_stores.astra_db import AstraDBVectorStore
+from llama_index.core import VectorStoreIndex, SimpleDirectoryReader, StorageContext
 
-# Load the documents from the dataset into memory
 documents = SimpleDirectoryReader("./data/source_files").load_data()
 print(f"Total documents: {len(documents)}")
 print(f"First document, id: {documents[0].doc_id}")
@@ -181,14 +175,16 @@ curl -v -s --location \
 [source,python]
 ----
 import os
-from llama_index.vector_stores import AstraDBVectorStore
-from llama_index import (
+from dotenv import load_dotenv
+from llama_index.core.llama_dataset import download_llama_dataset
+from llama_index.vector_stores.astra_db import AstraDBVectorStore
+from llama_index.core import (
     VectorStoreIndex,
     SimpleDirectoryReader,
     StorageContext,
 )
 
-from llama_index.llama_dataset import download_llama_dataset
+load_dotenv()
 
 dataset = download_llama_dataset(
   "PaulGrahamEssayDataset", "./data"
