@@ -7,8 +7,7 @@
 # Used to build deps + create our virtual environment
 ################################
 
-# force platform to the current architecture to increase build speed time on multi-platform builds
-FROM --platform=$BUILDPLATFORM python:3.12-slim as builder-base
+FROM python:3.12.3-slim as builder-base
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     \
@@ -54,7 +53,7 @@ RUN cd libs/langflow && $POETRY_HOME/bin/poetry lock --no-update && $POETRY_HOME
 # RUNTIME
 # Setup user, utilities and copy the virtual environment only
 ################################
-FROM python:3.12-slim as runtime
+FROM python:3.12.3-slim as runtime
 
 RUN apt-get -y update \
     && apt-get install --no-install-recommends -y \

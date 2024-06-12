@@ -5,7 +5,7 @@
 # BUILDER-BASE
 ################################
 
-FROM --platform=$BUILDPLATFORM python:3.12-slim as builder-base
+FROM python:3.12.3-slim as builder-base
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     \
@@ -47,14 +47,6 @@ WORKDIR /app
 COPY libs/ ./libs
 RUN cd libs/langflow && $POETRY_HOME/bin/poetry lock --no-update && $POETRY_HOME/bin/poetry install --no-root
 RUN pip show langflow | grep Location | cut -d ' ' -f 2 | xargs -I {} cp -r {}/langflow/frontend /tmp/frontend
-
-
-FROM nginxinc/nginx-unprivileged:stable-bookworm-perl
-COPY --from=builder --chown=nginx /tmp/frontend /usr/share/nginx/html
-COPY --chown=nginx /nginx.conf /etc/nginx/conf.d/default.conf
-COPY --chown=nginx start-nginx.sh /start-nginx.sh
-RUN chmod +x /start-nginx.sh
-CMD ["/start-nginx.sh"]
 
 
 ################################
