@@ -1,13 +1,13 @@
-from typing import TYPE_CHECKING, Set, Union
-from urllib.parse import urldefrag, urljoin, urlparse
-from .edge_extractor import (
-    EdgeExtractor,
+from langchain_core.documents import Document
+from ragstack_knowledge_store.link_tag import (
+    get_link_tags,
     IncomingLinkTag,
     OutgoingLinkTag,
-    get_link_tags,
 )
-from langchain_core.documents import Document
+from typing import TYPE_CHECKING, Set, Union
+from urllib.parse import urldefrag, urljoin, urlparse
 
+from .edge_extractor import EdgeExtractor
 
 if TYPE_CHECKING:
     from bs4 import BeautifulSoup
@@ -99,7 +99,7 @@ class HtmlLinkEdgeExtractor(EdgeExtractor[Union[str, "BeautifulSoup"]]):
 
         hrefs = _parse_hrefs(input, url, self.drop_fragments)
 
-        link_tags = get_link_tags(document)
+        link_tags = get_link_tags(document.metadata)
         link_tags.add(IncomingLinkTag(kind=self._kind, tag=url))
         for url in hrefs:
             link_tags.add(OutgoingLinkTag(kind=self._kind, tag=url))

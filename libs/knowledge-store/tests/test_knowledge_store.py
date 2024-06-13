@@ -5,17 +5,16 @@ import pytest
 from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
 
-
-from ragstack_knowledge_store.langchain.extractors import (
-    IncomingLinkTag,
-    OutgoingLinkTag,
-    BidirLinkTag,
-)
 from ragstack_knowledge_store.knowledge_store import CONTENT_ID
 from ragstack_knowledge_store.langchain.base import (
     _documents_to_nodes,
     _texts_to_nodes,
     TextNode,
+)
+from ragstack_knowledge_store.link_tag import (
+    BidirLinkTag,
+    IncomingLinkTag,
+    OutgoingLinkTag,
 )
 from .conftest import DataFixture
 

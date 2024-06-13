@@ -1,56 +1,11 @@
 from __future__ import annotations
 
-import abc
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Generic, Iterable, Iterator, Literal, Set, TypeVar, Union
+from typing import Generic, Iterable, Iterator, Set, TypeVar
 
 from langchain_core.documents import Document
-from pydantic import BaseModel
 from ragstack_knowledge_store._utils import strict_zip
-
-
-class LinkTag(BaseModel, abc.ABC):
-    kind: str
-    direction: Literal["incoming", "outgoing", "bidir"]
-    tag: str
-
-    def __hash__(self):
-        return hash((type(self),) + tuple(self.__dict__.values()))
-
-
-class OutgoingLinkTag(LinkTag):
-    direction: Literal["outgoing"] = "outgoing"
-
-
-class IncomingLinkTag(LinkTag):
-    direction: Literal["incoming"] = "incoming"
-
-
-class BidirLinkTag(LinkTag):
-    direction: Literal["bidir"] = "bidir"
-
-
-LINK_TAGS = "link_tags"
-
-
-def get_link_tags(doc_or_md: Union[Document, Dict[str, Any]]) -> Set[LinkTag]:
-    """Get the link-tag set from a document or metadata.
-
-    Args:
-        doc_or_md: The document or metadata to get the link tags from.
-
-    Returns:
-        The set of link tags from the document or metadata.
-    """
-    if isinstance(doc_or_md, Document):
-        doc_or_md = doc_or_md.metadata
-
-    link_tags = doc_or_md.setdefault(LINK_TAGS, set())
-    if not isinstance(link_tags, Set):
-        link_tags = set(link_tags)
-        doc_or_md[LINK_TAGS] = link_tags
-    return link_tags
-
+from ragstack_knowledge_store.link_tag import LinkTag
 
 InputT = TypeVar("InputT")
 

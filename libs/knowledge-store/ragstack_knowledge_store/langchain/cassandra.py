@@ -70,7 +70,6 @@ class CassandraKnowledgeStore(KnowledgeStore):
         with the same `source` metadata value.
         Args:
             embedding: The embeddings to use for the document content.
-            edge_extractors: Edge extractors to use for linking knowledge chunks.
             concurrency: Maximum number of queries to have concurrently executing.
             setup_mode: Mode used to create the Cassandra table (SYNC,
                 ASYNC or OFF).
@@ -145,7 +144,7 @@ class CassandraKnowledgeStore(KnowledgeStore):
         )
 
     def similarity_search_by_vector(
-        self, embedding: List[float], k: int = 4
+        self, embedding: List[float], k: int = 4, **kwargs: Any
     ) -> List[Document]:
         for node in self.store.similarity_search(embedding, k=k):
             yield Document(
