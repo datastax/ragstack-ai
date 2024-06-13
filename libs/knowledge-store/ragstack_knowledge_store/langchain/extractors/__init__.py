@@ -11,6 +11,7 @@ from .html_link_edge_extractor import HtmlLinkEdgeExtractor
 __all__ = [
     "BidirLinkTag",
     "EdgeExtractor",
+    "HtmlLinkEdgeExtractor",
     "IncomingLinkTag",
     "LinkTag",
     "OutgoingLinkTag",
