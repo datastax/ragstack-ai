@@ -22,7 +22,7 @@ The Knowledge Store makes use of the following metadata fields on each `Document
 To connect nodes based on hyperlinks, you can use the `HtmlLinkEdgeExtractor` as shown below:
 
 ```python
-from ragstack_knowledge_store.html_link_edge_extractor import HtmlLinkEdgeExtractor
+from ragstack_knowledge_store.langchain.extractors import HtmlLinkEdgeExtractor
 
 html_link_extractor = HtmlLinkEdgeExtractor()
 
