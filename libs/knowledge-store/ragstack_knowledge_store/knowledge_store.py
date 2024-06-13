@@ -325,7 +325,7 @@ class KnowledgeStore:
     def add_nodes(
         self,
         nodes: Iterable[Node] = None,
-    ):
+    ) -> Iterable[str]:
         texts = []
         metadatas = []
         for node in nodes:
@@ -483,7 +483,7 @@ class KnowledgeStore:
     def _query_by_ids(
         self,
         ids: Iterable[str],
-    ) -> Iterable[TextNode]:
+    ) -> List[TextNode]:
         results = []
         with self._concurrent_queries() as cq:
 

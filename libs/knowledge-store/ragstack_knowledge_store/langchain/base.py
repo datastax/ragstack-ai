@@ -102,7 +102,7 @@ class KnowledgeStore(VectorStore):
         self,
         nodes: Iterable[Node],
         **kwargs: Any,
-    ) -> List[str]:
+    ) -> Iterable[str]:
         """Add nodes to the knowledge store
 
         Args:
@@ -113,13 +113,19 @@ class KnowledgeStore(VectorStore):
         self,
         nodes: Iterable[Node],
         **kwargs: Any,
-    ) -> List[str]:
+    ) -> AsyncIterable[str]:
         """Add nodes to the knowledge store
 
         Args:
             nodes: the nodes to add.
         """
-        return await run_in_executor(None, self.add_nodes, nodes, **kwargs)
+        iterator = iter(await run_in_executor(None, self.add_nodes, nodes, **kwargs))
+        done = object()
+        while True:
+            doc = await run_in_executor(None, next, iterator, done)
+            if doc is done:
+                break
+            yield doc
 
     def add_texts(
         self,
@@ -130,7 +136,7 @@ class KnowledgeStore(VectorStore):
         **kwargs: Any,
     ) -> List[str]:
         nodes = _texts_to_nodes(texts, metadatas, ids)
-        return self.add_nodes(nodes, **kwargs)
+        return list(self.add_nodes(nodes, **kwargs))
 
     async def aadd_texts(
         self,
@@ -141,7 +147,7 @@ class KnowledgeStore(VectorStore):
         **kwargs: Any,
     ) -> List[str]:
         nodes = _texts_to_nodes(texts, metadatas, ids)
-        return await self.aadd_nodes(nodes, **kwargs)
+        return [_id async for _id in self.aadd_nodes(nodes, **kwargs)]
 
     def add_documents(
         self,
@@ -151,7 +157,7 @@ class KnowledgeStore(VectorStore):
         **kwargs: Any,
     ) -> List[str]:
         nodes = _documents_to_nodes(documents, ids)
-        return self.add_nodes(nodes, **kwargs)
+        return list(self.add_nodes(nodes, **kwargs))
 
     async def aadd_documents(
         self,
@@ -161,7 +167,7 @@ class KnowledgeStore(VectorStore):
         **kwargs: Any,
     ) -> List[str]:
         nodes = _documents_to_nodes(documents, ids)
-        return await self.aadd_nodes(nodes, **kwargs)
+        return [_id async for _id in self.aadd_nodes(nodes, **kwargs)]
 
     @abstractmethod
     def traversal_search(
@@ -209,9 +215,16 @@ class KnowledgeStore(VectorStore):
         Returns:
             Retrieved documents.
         """
-        for doc in await run_in_executor(
-            None, self.traversal_search, query, k=k, depth=depth, **kwargs
-        ):
+        iterator = iter(
+            await run_in_executor(
+                None, self.traversal_search, query, k=k, depth=depth, **kwargs
+            )
+        )
+        done = object()
+        while True:
+            doc = await run_in_executor(None, next, iterator, done)
+            if doc is done:
+                break
             yield doc
 
     @abstractmethod
@@ -284,17 +297,24 @@ class KnowledgeStore(VectorStore):
             score_threshold: Only documents with a score greater than or equal
                 this threshold will be chosen. Defaults to negative infinity.
         """
-        for doc in await run_in_executor(
-            None,
-            self.traversal_search,
-            query,
-            k=k,
-            fetch_k=fetch_k,
-            depth=depth,
-            lambda_mult=lambda_mult,
-            score_threshold=score_threshold,
-            **kwargs,
-        ):
+        iterator = iter(
+            await run_in_executor(
+                None,
+                self.mmr_traversal_search,
+                query,
+                k=k,
+                fetch_k=fetch_k,
+                depth=depth,
+                lambda_mult=lambda_mult,
+                score_threshold=score_threshold,
+                **kwargs,
+            )
+        )
+        done = object()
+        while True:
+            doc = await run_in_executor(None, next, iterator, done)
+            if doc is done:
+                break
             yield doc
 
     def similarity_search(
