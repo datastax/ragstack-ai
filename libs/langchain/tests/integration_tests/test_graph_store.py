@@ -13,7 +13,8 @@ from ragstack_langchain.graph_store.base import (
     _texts_to_nodes,
     TextNode,
 )
-from ragstack_knowledge_store.link_tag import (
+from ragstack_knowledge_store.links import (
+    LINK_SET,
     BidirLinkTag,
     IncomingLinkTag,
     OutgoingLinkTag,
@@ -29,7 +30,7 @@ class GraphStoreFactory:
         self.keyspace = keyspace
         self.uid = secrets.token_hex(8)
         self.node_table = f"nodes_{self.uid}"
-        self.edge_table = f"edges_{self.uid}"
+        self.targets_table = f"targets_{self.uid}"
         self.embedding = embedding
         self._store = None
 
@@ -48,7 +49,7 @@ class GraphStoreFactory:
                 session=self.session,
                 keyspace=self.keyspace,
                 node_table=self.node_table,
-                edge_table=self.edge_table,
+                targets_table=self.targets_table,
                 ids=ids,
             )
 
@@ -56,7 +57,7 @@ class GraphStoreFactory:
 
     def drop(self):
         self.session.execute(f"DROP TABLE IF EXISTS {self.keyspace}.{self.node_table};")
-        self.session.execute(f"DROP TABLE IF EXISTS {self.keyspace}.{self.edge_table};")
+        self.session.execute(f"DROP TABLE IF EXISTS {self.keyspace}.{self.targets_table};")
 
 
 @pytest.fixture(scope="session")
@@ -123,7 +124,7 @@ def test_link_directed(cassandra: GraphStoreFactory) -> None:
         page_content="A",
         metadata={
             "content_id": "a",
-            "link_tags": {
+            LINK_SET: {
                 IncomingLinkTag(kind="hyperlink", tag="http://a"),
             },
         },
@@ -132,7 +133,7 @@ def test_link_directed(cassandra: GraphStoreFactory) -> None:
         page_content="B",
         metadata={
             "content_id": "b",
-            "link_tags": {
+            LINK_SET: {
                 IncomingLinkTag(kind="hyperlink", tag="http://b"),
                 OutgoingLinkTag(kind="hyperlink", tag="http://a"),
             },
@@ -142,7 +143,7 @@ def test_link_directed(cassandra: GraphStoreFactory) -> None:
         page_content="C",
         metadata={
             "content_id": "c",
-            "link_tags": {
+            LINK_SET: {
                 OutgoingLinkTag(kind="hyperlink", tag="http://a"),
             },
         },
@@ -151,7 +152,7 @@ def test_link_directed(cassandra: GraphStoreFactory) -> None:
         page_content="D",
         metadata={
             "content_id": "d",
-            "link_tags": {
+            LINK_SET: {
                 OutgoingLinkTag(kind="hyperlink", tag="http://a"),
                 OutgoingLinkTag(kind="hyperlink", tag="http://b"),
             },
@@ -196,7 +197,7 @@ def test_mmr_traversal(request, gs_factory: str):
         page_content="-0.124",
         metadata={
             "content_id": "v0",
-            "link_tags": {
+            LINK_SET: {
                 OutgoingLinkTag(kind="explicit", tag="link"),
             },
         },
@@ -211,7 +212,7 @@ def test_mmr_traversal(request, gs_factory: str):
         page_content="+0.25",
         metadata={
             "content_id": "v2",
-            "link_tags": {
+            LINK_SET: {
                 IncomingLinkTag(kind="explicit", tag="link"),
             },
         },
@@ -220,7 +221,7 @@ def test_mmr_traversal(request, gs_factory: str):
         page_content="+1.0",
         metadata={
             "content_id": "v3",
-            "link_tags": {
+            LINK_SET: {
                 IncomingLinkTag(kind="explicit", tag="link"),
             },
         },
@@ -255,7 +256,7 @@ def test_write_retrieve_keywords(request, gs_factory: str):
         page_content="Typical Greetings",
         metadata={
             "content_id": "greetings",
-            "link_tags": {
+            LINK_SET: {
                 IncomingLinkTag(kind="parent", tag="parent"),
             },
         },
@@ -264,7 +265,7 @@ def test_write_retrieve_keywords(request, gs_factory: str):
         page_content="Hello World",
         metadata={
             "content_id": "doc1",
-            "link_tags": {
+            LINK_SET: {
                 OutgoingLinkTag(kind="parent", tag="parent"),
                 BidirLinkTag(kind="kw", tag="greeting"),
                 BidirLinkTag(kind="kw", tag="world"),
@@ -275,7 +276,7 @@ def test_write_retrieve_keywords(request, gs_factory: str):
         page_content="Hello Earth",
         metadata={
             "content_id": "doc2",
-            "link_tags": {
+            LINK_SET: {
                 OutgoingLinkTag(kind="parent", tag="parent"),
                 BidirLinkTag(kind="kw", tag="greeting"),
                 BidirLinkTag(kind="kw", tag="earth"),

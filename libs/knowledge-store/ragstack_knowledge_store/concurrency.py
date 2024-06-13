@@ -37,8 +37,9 @@ class ConcurrentQueries(contextlib.AbstractContextManager):
                 if self._pending == 0:
                     self._completion.notify()
 
-    def _handle_error(self, error):
+    def _handle_error(self, error, future: ResponseFuture):
         with self._completion:
+            print(f"Failed to execute {future.query}: {error}")
             self._error = error
             self._completion.notify()
 
@@ -62,6 +63,9 @@ class ConcurrentQueries(contextlib.AbstractContextManager):
                 "future": future,
                 "callback": callback,
             },
+            errback_kwargs={
+                "future": future,
+            }
         )
 
     def __enter__(self) -> "ConcurrentQueries":

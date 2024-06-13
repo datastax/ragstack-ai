@@ -5,7 +5,7 @@ from typing import Generic, Iterable, Iterator, Set, TypeVar
 
 from langchain_core.documents import Document
 from ragstack_knowledge_store._utils import strict_zip
-from ragstack_knowledge_store.link_tag import LinkTag
+from ragstack_knowledge_store.links import LinkTag
 
 InputT = TypeVar("InputT")
 

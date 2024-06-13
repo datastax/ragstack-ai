@@ -3,18 +3,18 @@ from typing import Literal, Dict, Any, Set
 
 
 @dataclass(frozen=True)
-class _LinkTag:
+class Link:
     kind: str
-    tag: str
     direction: Literal["incoming", "outgoing", "bidir"]
+
+    def __post_init__(self):
+        if self.__class__ == LinkTag:
+            raise TypeError("Abstract class Link cannot be instantiated")
 
 
 @dataclass(frozen=True)
-class LinkTag(_LinkTag):
-    def __init__(self, kind: str, tag: str, direction: str) -> None:
-        if self.__class__ == LinkTag:
-            raise TypeError("Abstract class LinkTag cannot be instantiated")
-        super().__init__(kind, tag, direction)
+class LinkTag(Link):
+    tag: str
 
 
 @dataclass(frozen=True)
@@ -35,11 +35,11 @@ class BidirLinkTag(LinkTag):
         super().__init__(kind=kind, tag=tag, direction="bidir")
 
 
-LINK_TAGS = "link_tags"
+LINK_SET = "link_set"
 
 
-def get_link_tags(doc_or_md: Dict[str, Any]) -> Set[LinkTag]:
-    """Get the link-tag set from a document or metadata.
+def get_link_set(doc_or_md: Dict[str, Any]) -> Set[Link]:
+    """Get the link set from a document or metadata.
 
     Args:
         doc_or_md: The document or metadata to get the link tags from.
@@ -47,8 +47,8 @@ def get_link_tags(doc_or_md: Dict[str, Any]) -> Set[LinkTag]:
     Returns:
         The set of link tags from the document or metadata.
     """
-    link_tags = doc_or_md.setdefault(LINK_TAGS, set())
-    if not isinstance(link_tags, Set):
-        link_tags = set(link_tags)
-        doc_or_md[LINK_TAGS] = link_tags
-    return link_tags
+    link_set = doc_or_md.setdefault(LINK_SET, set())
+    if not isinstance(link_set, Set):
+        link_set = set(link_set)
+        doc_or_md[LINK_SET] = link_set
+    return link_set
