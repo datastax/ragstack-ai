@@ -11,8 +11,8 @@ from langchain_community.utilities.cassandra import SetupMode
 from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
 
-from .base import KnowledgeStore, Node, TextNode
-from ragstack_knowledge_store import EmbeddingModel, knowledge_store
+from .base import GraphStore, Node, TextNode
+from ragstack_knowledge_store import EmbeddingModel, graph_store
 
 
 class _EmbeddingModelAdapter(EmbeddingModel):
@@ -36,7 +36,7 @@ def _row_to_document(row) -> Document:
     return Document(
         page_content=row.text_content,
         metadata={
-            knowledge_store.CONTENT_ID: row.content_id,
+            graph_store.CONTENT_ID: row.content_id,
             "kind": row.kind,
         },
     )
@@ -48,20 +48,20 @@ def _results_to_documents(results: Optional[ResponseFuture]) -> Iterable[Documen
             yield _row_to_document(row)
 
 
-class CassandraKnowledgeStore(KnowledgeStore):
+class CassandraGraphStore(GraphStore):
     def __init__(
         self,
         embedding: Embeddings,
         *,
-        node_table: str = "knowledge_nodes",
-        edge_table: str = "knowledge_edges",
+        node_table: str = "graph_nodes",
+        edge_table: str = "graph_edges",
         session: Optional[Session] = None,
         keyspace: Optional[str] = None,
         setup_mode: SetupMode = SetupMode.SYNC,
         concurrency: int = 20,
     ):
         """
-        Create the hybrid knowledge store.
+        Create the hybrid graph store.
         Parameters configure the ways that edges should be added between
         documents. Many take `Union[bool, Set[str]]`, with `False` disabling
         inference, `True` enabling it globally between all documents, and a set
@@ -75,9 +75,9 @@ class CassandraKnowledgeStore(KnowledgeStore):
                 ASYNC or OFF).
         """
         self._embedding = embedding
-        _setup_mode = getattr(knowledge_store.SetupMode, setup_mode.name)
+        _setup_mode = getattr(graph_store.SetupMode, setup_mode.name)
 
-        self.store = knowledge_store.KnowledgeStore(
+        self.store = graph_store.GraphStore(
             embedding=_EmbeddingModelAdapter(embedding),
             node_table=node_table,
             edge_table=edge_table,
@@ -101,35 +101,33 @@ class CassandraKnowledgeStore(KnowledgeStore):
             if not isinstance(node, TextNode):
                 raise ValueError("Only adding TextNode is supported at the moment")
             _nodes.append(
-                knowledge_store.TextNode(
-                    id=node.id, text=node.text, metadata=node.metadata
-                )
+                graph_store.TextNode(id=node.id, text=node.text, metadata=node.metadata)
             )
         return self.store.add_nodes(_nodes)
 
     @classmethod
     def from_texts(
-        cls: Type["CassandraKnowledgeStore"],
+        cls: Type["CassandraGraphStore"],
         texts: Iterable[str],
         embedding: Embeddings,
         metadatas: Optional[List[dict]] = None,
         ids: Optional[Iterable[str]] = None,
         **kwargs: Any,
-    ) -> "CassandraKnowledgeStore":
-        """Return CassandraKnowledgeStore initialized from texts and embeddings."""
+    ) -> "CassandraGraphStore":
+        """Return CassandraGraphStore initialized from texts and embeddings."""
         store = cls(embedding, **kwargs)
         store.add_texts(texts, metadatas, ids=ids)
         return store
 
     @classmethod
     def from_documents(
-        cls: Type["CassandraKnowledgeStore"],
+        cls: Type["CassandraGraphStore"],
         documents: Iterable[Document],
         embedding: Embeddings,
         ids: Optional[Iterable[str]] = None,
         **kwargs: Any,
-    ) -> "CassandraKnowledgeStore":
-        """Return CassandraKnowledgeStore initialized from documents and embeddings."""
+    ) -> "CassandraGraphStore":
+        """Return CassandraGraphStore initialized from documents and embeddings."""
         store = cls(embedding, **kwargs)
         store.add_documents(documents, ids=ids)
         return store
