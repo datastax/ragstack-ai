@@ -1,4 +1,12 @@
 from .embedding_model import EmbeddingModel
-from .knowledge_store import KnowledgeStore, Node, SetupMode, TextNode
+from .graph_store import GraphStore, Node, SetupMode, TextNode
+from .knowledge_store import KnowledgeStore
 
-__all__ = ["EmbeddingModel", "KnowledgeStore", "Node", "SetupMode", "TextNode"]
+__all__ = [
+    "EmbeddingModel",
+    "GraphStore",
+    "KnowledgeStore",
+    "Node",
+    "SetupMode",
+    "TextNode",
+]

@@ -1,16 +1,16 @@
-# RAGStack Knowledge Store
+# RAGStack Graph Store
 
-Hybrid Knowledge Store combining vector similarity and edges between chunks.
+Hybrid Graph Store combining vector similarity and edges between chunks.
 
 ## Usage
 
 1. Pre-process your documents to populate `metadata` information.
-1. Create a Hybrid `KnowledgeStore` and add your LangChain `Document`s.
-1. Retrieve documents from the `KnowledgeStore`.
+1. Create a Hybrid `GraphStore` and add your LangChain `Document`s.
+1. Retrieve documents from the `GraphStore`.
 
 ### Populate Metadata
 
-The Knowledge Store makes use of the following metadata fields on each `Document`:
+The Graph Store makes use of the following metadata fields on each `Document`:
 
 - `content_id`: If assigned, this specifies the unique ID of the `Document`.
   If not assigned, one will be generated.
@@ -39,14 +39,14 @@ for doc in documents:
 ```python
 import cassio
 from langchain_openai import OpenAIEmbeddings
-from ragstack_knowledge_store import KnowledgeStore
+from ragstack_knowledge_store import GraphStore
 
 cassio.init(auto=True)
 
-knowledge_store = KnowledgeStore(embeddings=OpenAIEmbeddings())
+graph_store = GraphStore(embeddings=OpenAIEmbeddings())
 
 # Store the documents
-knowledge_store.add_documents(documents)
+graph_store.add_documents(documents)
 ```
 
 ### Retrieve
@@ -63,7 +63,7 @@ from langchain_core.prompts import ChatPromptTemplate
 
 # Depth 0 - don't traverse edges. equivalent to vector-only.
 # Depth 1 - vector search plus 1 level of edges
-retriever = knowledge_store.as_retriever(k=4, depth=1)
+retriever = graph_store.as_retriever(k=4, depth=1)
 
 template = """You are a helpful technical support bot. You should provide complete answers explaining the options the user has available to address their problem. Answer the question based only on the following context:
 {context}

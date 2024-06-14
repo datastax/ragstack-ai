@@ -1,4 +1,4 @@
-from .base import KnowledgeStore, Node, TextNode
-from .cassandra import CassandraKnowledgeStore
+from .base import GraphStore, Node, TextNode
+from .cassandra import CassandraGraphStore
 
-__all__ = ["CassandraKnowledgeStore", "KnowledgeStore", "Node", "TextNode"]
+__all__ = ["CassandraGraphStore", "GraphStore", "Node", "TextNode"]

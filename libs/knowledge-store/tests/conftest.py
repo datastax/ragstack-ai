@@ -10,7 +10,7 @@ from testcontainers.core.container import DockerContainer
 from testcontainers.core.waiting_utils import wait_for_logs
 
 
-from ragstack_knowledge_store.langchain import CassandraKnowledgeStore
+from ragstack_knowledge_store.langchain import CassandraGraphStore
 
 load_dotenv()
 
@@ -78,11 +78,11 @@ class DataFixture:
         initial_documents: Iterable[Document] = [],
         ids: Optional[Iterable[str]] = None,
         embedding: Optional[Embeddings] = None,
-    ) -> CassandraKnowledgeStore:
+    ) -> CassandraGraphStore:
         if initial_documents and self._store is not None:
             raise ValueError("Store already initialized")
         elif self._store is None:
-            self._store = CassandraKnowledgeStore.from_documents(
+            self._store = CassandraGraphStore.from_documents(
                 initial_documents,
                 embedding=embedding or self.embedding,
                 session=self.session,

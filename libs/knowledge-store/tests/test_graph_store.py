@@ -5,7 +5,7 @@ import pytest
 from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
 
-from ragstack_knowledge_store.knowledge_store import CONTENT_ID
+from ragstack_knowledge_store.graph_store import CONTENT_ID
 from ragstack_knowledge_store.langchain.base import (
     _documents_to_nodes,
     _texts_to_nodes,
