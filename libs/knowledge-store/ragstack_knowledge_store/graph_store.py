@@ -9,7 +9,6 @@ from typing import (
     Optional,
     Sequence,
     Tuple,
-    Union,
 )
 
 import numpy as np
@@ -62,12 +61,6 @@ def _row_to_node(row) -> Node:
 class _Edge:
     target_content_id: str
     target_text_embedding: List[float]
-
-def _results_to_ids(results: Optional[ResponseFuture]) -> Iterable[str]:
-    if results:
-        for row in results:
-            yield row.content_id
-
 
 def emb_to_ndarray(embedding: List[float]) -> np.ndarray:
     embedding = np.array(embedding, dtype=np.float32)
@@ -267,13 +260,13 @@ class GraphStore:
                 target_content_id TEXT,
                 kind TEXT,
                 tag TEXT,
-                -- f"{kind}:{tag}". Allows for indexing.
+                -- String containing "$kind:$tag". Allows for indexing.
                 kind_tag TEXT,
 
                 -- text_embedding of target node. allows MMR to be applied without fetching nodes.
                 target_text_embedding VECTOR<FLOAT, {embedding_dim}>,
 
-                PRIMARY KEY (source_content_id, kind, tag)
+                PRIMARY KEY (kind_tag, target_content_id)
             )
             """
         )
@@ -282,15 +275,6 @@ class GraphStore:
         self._session.execute(
             f"""CREATE CUSTOM INDEX IF NOT EXISTS {self._node_table}_text_embedding_index
             ON {self._keyspace}.{self._node_table}(text_embedding)
-            USING 'StorageAttachedIndex';
-            """
-        )
-
-        # Index on "kind tag" strings.
-        self._session.execute(
-            f"""
-            CREATE CUSTOM INDEX IF NOT EXISTS {self._targets_table}_kind_tag_index
-            ON {self._keyspace}.{self._targets_table} (kind_tag)
             USING 'StorageAttachedIndex';
             """
         )
@@ -347,7 +331,7 @@ class GraphStore:
 
         return ids
 
-    def _nodes_by_ids(
+    def _nodes_with_ids(
         self,
         ids: Iterable[str],
     ) -> List[TextNode]:
@@ -537,11 +521,12 @@ class GraphStore:
 
                 if outgoing_tags:
                     # If there are new tags to visit at the next depth, query for the node IDs.
-                    cq.execute(
-                        self._query_target_embeddings_by_kind_tags,
-                        parameters=(outgoing_tags, ),
-                        callback=lambda rows, d=d: visit_targets(d, rows),
-                    )
+                    for tag_batch in batched(outgoing_tags, 20):
+                        cq.execute(
+                            self._query_target_embeddings_by_kind_tags,
+                            parameters=(tag_batch, ),
+                            callback=lambda rows, d=d: visit_targets(d, rows),
+                        )
 
             def visit_targets(d: int, targets: Sequence[NamedTuple]):
                 nonlocal visited_ids
@@ -592,8 +577,9 @@ class GraphStore:
                     link_to_tags.update(row.link_to_tags)
 
         with self._concurrent_queries() as cq:
-            # Note: It may be meroe efficient to just blast out a separate query for each source ID in parallel.
-            cq.execute(self._query_source_tags_by_ids, (source_ids,), callback=add_sources)
+            # Note: It may be more efficient to just blast out a separate query for each source ID in parallel.
+            for batch in batched(source_ids, 20):
+                cq.execute(self._query_source_tags_by_ids, (batch,), callback=add_sources)
 
         targets = dict()
 
@@ -607,10 +593,11 @@ class GraphStore:
                     targets.setdefault(row.target_content_id, row.target_text_embedding)
 
             with self._concurrent_queries() as cq:
-                kind_tags = { f"{kind}:{tag}" for (kind, tag) in link_to_tags }
-                # This query panics if `kind_tags` is empty, hence we only execute if `len(link_to_tags) > 0``
-                # NOTE: It may be more efficient to blast out a separate query for each source ID in parallel.
-                cq.execute(self._query_target_embeddings_by_kind_tags, (kind_tags,), callback=add_targets)
+                for batch in batched(link_to_tags, 20):
+                    kind_tags = { f"{kind}:{tag}" for (kind, tag) in batch }
+                    # This query panics if `kind_tags` is empty, hence we only execute if `len(link_to_tags) > 0``
+                    # NOTE: It may be more efficient to blast out a separate query for each source ID in parallel.
+                    cq.execute(self._query_target_embeddings_by_kind_tags, (kind_tags,), callback=add_targets)
 
         return [
             _Edge(target_content_id=content_id, target_text_embedding=embedding)
