@@ -177,10 +177,19 @@ jobs:
             rm -rf $dir/.tox
           }
 
-          run_itests libs/colbert
-          run_itests libs/langchain
-          run_itests libs/llamaindex
-          run_itests libs/langflow
+          if [[ "true" == "${{ steps.filter.outputs.libs_langflow }}" ]]; then
+            run_itests libs/langflow
+          fi
+          if [[ "true" == "${{ steps.filter.outputs.libs_colbert }}" ]]; then
+            run_itests libs/colbert
+          fi
+          if [[ "true" == "${{ steps.filter.outputs.libs_langchain }}" ]]; then
+            run_itests libs/langchain
+          fi
+          if [[ "true" == "${{ steps.filter.outputs.libs_llamaindex }}" ]]; then
+            run_itests libs/llamaindex
+          fi
+
 
       - name: Cleanup AstraDB
         uses: nicoloboschi/cleanup-astradb@v1
