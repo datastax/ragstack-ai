@@ -53,8 +53,11 @@ jobs:
 
 
   langflow-test-docker:
-    name: Build LangFlow docker images
+    name: Build LangFlow docker image (${{ matrix.image }})
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        image: ["backend", "frontend"]
     steps:
       - uses: actions/checkout@v4
       - name: Set up QEMU
@@ -64,6 +67,7 @@ jobs:
         uses: docker/setup-buildx-action@v3
       - name: Build main image
         uses: docker/build-push-action@v5
+        if: ${{ matrix.image == 'backend' }}
         with:
           context: .
           push: false
@@ -72,6 +76,7 @@ jobs:
           tags: ghcr.io/datastax/ragstack-ai-langflow:latest-dev
       - name: Build frontend image
         uses: docker/build-push-action@v5
+        if: ${{ matrix.image == 'frontend' }}
         with:
           context: .
           push: false
