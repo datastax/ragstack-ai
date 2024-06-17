@@ -3,7 +3,6 @@ import os
 from abc import ABC, abstractmethod
 
 import cassio
-import pytest
 from cassandra.cluster import Cluster, PlainTextAuthProvider, Session
 
 from .cassandra_container import CassandraContainer

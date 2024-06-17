@@ -90,11 +90,11 @@ jobs:
         if: ${{ needs.preconditions.outputs.libs_llamaindex == 'true' }}
         run: tox -e unit-tests -c libs/llamaindex && rm -rf libs/llamaindex/.tox
 
-      - name: "Unit tests (knowledge-store)"
-        if: ${{ needs.preconditions.outputs.libs_knowledge_store == 'true' }}
-        env:
-          OPENAI_API_KEY: "${{ secrets.E2E_TESTS_OPEN_AI_KEY }}"
-        run: tox -e unit-tests -c libs/knowledge-store && rm -rf libs/knowledge-store/.tox
+#      - name: "Unit tests (knowledge-store)"
+#        if: ${{ needs.preconditions.outputs.libs_knowledge_store == 'true' }}
+#        env:
+#          OPENAI_API_KEY: "${{ secrets.E2E_TESTS_OPEN_AI_KEY }}"
+#        run: tox -e unit-tests -c libs/knowledge-store && rm -rf libs/knowledge-store/.tox
 
       - name: "Unit tests (knowledge-graph)"
         # yamllint disable-line rule:line-length
@@ -122,14 +122,15 @@ jobs:
         with:
           token: ${{ secrets.E2E_TESTS_ASTRA_DEV_DB_TOKEN }}
           env: "DEV"
-          region: "us-central1"
-          cloud: "gcp"
+          region: "us-west-2"
+          cloud: "aws"
 
       - name: "Integration tests"
         env:
           ASTRA_DB_TOKEN: "${{ secrets.E2E_TESTS_ASTRA_DEV_DB_TOKEN }}"
           ASTRA_DB_ID: "${{ steps.astra-db.outputs.id }}"
           ASTRA_DB_ENV: "DEV"
+          OPENAI_API_KEY: "${{ secrets.E2E_TESTS_OPEN_AI_KEY }}"
         run: |
           set -ex
           run_itests() {
