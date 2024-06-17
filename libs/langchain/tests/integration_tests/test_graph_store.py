@@ -1,12 +1,14 @@
 import math
-from typing import Iterable, List
+import secrets
+from typing import Iterable, List, Optional
 
 import pytest
+from cassandra.cluster import Session
 from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
 
 from ragstack_knowledge_store.graph_store import CONTENT_ID
-from ragstack_knowledge_store.langchain.base import (
+from ragstack_langchain.graph_store.base import (
     _documents_to_nodes,
     _texts_to_nodes,
     TextNode,
@@ -16,7 +18,74 @@ from ragstack_knowledge_store.link_tag import (
     IncomingLinkTag,
     OutgoingLinkTag,
 )
-from .conftest import DataFixture
+from ragstack_tests_utils.test_store import KEYSPACE
+from .conftest import get_local_cassandra_test_store, get_astradb_test_store
+from ragstack_langchain.graph_store import CassandraGraphStore
+
+
+class GraphStoreFactory:
+    def __init__(self, session: Session, keyspace: str, embedding: Embeddings) -> None:
+        self.session = session
+        self.keyspace = keyspace
+        self.uid = secrets.token_hex(8)
+        self.node_table = f"nodes_{self.uid}"
+        self.edge_table = f"edges_{self.uid}"
+        self.embedding = embedding
+        self._store = None
+
+    def store(
+        self,
+        initial_documents: Iterable[Document] = [],
+        ids: Optional[Iterable[str]] = None,
+        embedding: Optional[Embeddings] = None,
+    ) -> CassandraGraphStore:
+        if initial_documents and self._store is not None:
+            raise ValueError("Store already initialized")
+        elif self._store is None:
+            self._store = CassandraGraphStore.from_documents(
+                initial_documents,
+                embedding=embedding or self.embedding,
+                session=self.session,
+                keyspace=self.keyspace,
+                node_table=self.node_table,
+                edge_table=self.edge_table,
+                ids=ids,
+            )
+
+        return self._store
+
+    def drop(self):
+        self.session.execute(f"DROP TABLE IF EXISTS {self.keyspace}.{self.node_table};")
+        self.session.execute(f"DROP TABLE IF EXISTS {self.keyspace}.{self.edge_table};")
+
+
+@pytest.fixture(scope="session")
+def openai_embedding() -> Embeddings:
+    from langchain_openai import OpenAIEmbeddings
+
+    return OpenAIEmbeddings()
+
+
+@pytest.fixture
+def cassandra(openai_embedding: Embeddings):
+    vstore = get_local_cassandra_test_store()
+    session = vstore.create_cassandra_session()
+    gs_factory = GraphStoreFactory(
+        session=session, keyspace=KEYSPACE, embedding=openai_embedding
+    )
+    yield gs_factory
+    gs_factory.drop()
+
+
+@pytest.fixture
+def astra_db(openai_embedding: Embeddings):
+    vstore = get_astradb_test_store()
+    session = vstore.create_cassandra_session()
+    gs_factory = GraphStoreFactory(
+        session=session, keyspace=KEYSPACE, embedding=openai_embedding
+    )
+    yield gs_factory
+    gs_factory.drop()
 
 
 class AngularTwoDimensionalEmbeddings(Embeddings):
@@ -49,7 +118,7 @@ def _result_ids(docs: Iterable[Document]) -> List[str]:
     return list(map(lambda d: d.metadata[CONTENT_ID], docs))
 
 
-def test_link_directed(fresh_fixture: DataFixture):
+def test_link_directed(cassandra: GraphStoreFactory) -> None:
     a = Document(
         page_content="A",
         metadata={
@@ -89,7 +158,7 @@ def test_link_directed(fresh_fixture: DataFixture):
         },
     )
 
-    store = fresh_fixture.store([a, b, c, d])
+    store = cassandra.store([a, b, c, d])
 
     assert list(store.store._linked_ids("a")) == []
     assert list(store.store._linked_ids("b")) == ["a"]
@@ -97,7 +166,8 @@ def test_link_directed(fresh_fixture: DataFixture):
     assert sorted(store.store._linked_ids("d")) == ["a", "b"]
 
 
-def test_mmr_traversal(fresh_fixture: DataFixture):
+@pytest.mark.parametrize("gs_factory", ["cassandra", "astra_db"])
+def test_mmr_traversal(request, gs_factory: str):
     """
     Test end to end construction and MMR search.
     The embedding function used here ensures `texts` become
@@ -117,7 +187,8 @@ def test_mmr_traversal(fresh_fixture: DataFixture):
     Both v2 and v3 are reachable via edges from v0, so once it is
     selected, those are both considered.
     """
-    store = fresh_fixture.store(
+    gs_factory = request.getfixturevalue(gs_factory)
+    store = gs_factory.store(
         embedding=AngularTwoDimensionalEmbeddings(),
     )
 
@@ -177,7 +248,9 @@ def test_mmr_traversal(fresh_fixture: DataFixture):
     assert _result_ids(results) == ["v0", "v2", "v1", "v3"]
 
 
-def test_write_retrieve_keywords(fresh_fixture: DataFixture):
+@pytest.mark.parametrize("gs_factory", ["cassandra", "astra_db"])
+def test_write_retrieve_keywords(request, gs_factory: str):
+    gs_factory = request.getfixturevalue(gs_factory)
     greetings = Document(
         page_content="Typical Greetings",
         metadata={
@@ -210,7 +283,7 @@ def test_write_retrieve_keywords(fresh_fixture: DataFixture):
         },
     )
 
-    store = fresh_fixture.store([greetings, doc1, doc2])
+    store = gs_factory.store([greetings, doc1, doc2])
 
     # Doc2 is more similar, but World and Earth are similar enough that doc1 also shows up.
     results = store.similarity_search("Earth", k=2)

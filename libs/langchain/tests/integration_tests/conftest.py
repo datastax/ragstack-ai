@@ -7,13 +7,13 @@ status = {
 }
 
 
-def get_local_cassandra_test_store():
+def get_local_cassandra_test_store() -> LocalCassandraTestStore:
     if not status["local_cassandra_test_store"]:
         status["local_cassandra_test_store"] = LocalCassandraTestStore()
     return status["local_cassandra_test_store"]
 
 
-def get_astradb_test_store():
+def get_astradb_test_store() -> AstraDBTestStore:
     if not status["astradb_test_store"]:
         status["astradb_test_store"] = AstraDBTestStore()
     return status["astradb_test_store"]
