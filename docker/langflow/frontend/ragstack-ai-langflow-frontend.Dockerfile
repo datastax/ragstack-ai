@@ -46,7 +46,7 @@ RUN --mount=type=cache,target=/root/.cache \
 WORKDIR /app
 COPY libs/ ./libs
 RUN cd libs/langflow && $POETRY_HOME/bin/poetry lock --no-update && $POETRY_HOME/bin/poetry install --no-root
-RUN pip show langflow | grep Location | cut -d ' ' -f 2 | xargs -I {} cp -r {}/langflow/frontend /tmp/frontend
+RUN $POETRY_HOME/bin/poetry run pip show langflow | grep Location | cut -d ' ' -f 2 | xargs -I {} cp -r {}/langflow/frontend /tmp/frontend
 
 
 ################################
