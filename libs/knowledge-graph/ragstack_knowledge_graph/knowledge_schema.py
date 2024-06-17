@@ -105,7 +105,8 @@ class KnowledgeSchemaValidator:
                 )
                 if relationship is None:
                     e.add_note(
-                        f"No relationship allows ({r.source_id} -> {r.type} -> {r.target.type})"
+                        "No relationship allows "
+                        f"({r.source_id} -> {r.type} -> {r.target.type})"
                     )
 
         if e.__notes__:

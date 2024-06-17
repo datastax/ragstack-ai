@@ -1,6 +1,9 @@
 = RAG with LlamaIndex and {db-serverless}
-
-image::https://colab.research.google.com/assets/colab-badge.svg[align="left",link="https://colab.research.google.com/github/datastax/ragstack-ai/blob/main/examples/notebooks/llama-astra.ipynb"]
+:navtitle: RAG with LlamaIndex and {db-serverless}
+:page-layout: tutorial
+:page-icon-role: bg-[var(--ds-neutral-900)]
+:page-toclevels: 1
+:page-colab-link: https://colab.research.google.com/github/datastax/ragstack-ai/blob/main/examples/notebooks/llama-astra.ipynb
 
 Build a RAG pipeline with RAGStack, {db-serverless}, and LlamaIndex.
 
@@ -17,31 +20,47 @@ DB Access Token] with Database Administrator permissions.
 Install the following dependencies:
 [source,python]
 ----
-pip install -qU ragstack-ai
+pip install ragstack-ai
 ----
 See the https://docs.datastax.com/en/ragstack/docs/prerequisites.html[Prerequisites] page for more details.
 
-== Export database connection details
+== Set up your local environment
 
-Export these values in the terminal where you're running this application.
-If you're using Google Colab, you'll be prompted for these values in the Colab environment.
+Create a `.env` file in your application directory with the following environment variables:
 [source,bash]
 ----
-export ASTRA_DB_APPLICATION_TOKEN=AstraCS: ...
-export ASTRA_DB_API_ENDPOINT=https://<ASTRA_DB_ID>-<ASTRA_DB_REGION>.apps.astra.datastax.com
-export OPENAI_API_KEY=sk-...
+ASTRA_DB_APPLICATION_TOKEN=AstraCS: ...
+ASTRA_DB_API_ENDPOINT=https://<ASTRA_DB_ID>-<ASTRA_DB_REGION>.apps.astra.datastax.com
+OPENAI_API_KEY=sk-...
 ----
 
-== Create RAG pipeline
+If you're using Google Colab, you'll be prompted for these values in the Colab environment.
 
-. Load a sample dataset from LlamaHub into your {db-serverless} vector store.
-. The dataset will be downloaded to the `data/` directory.
+See the https://docs.datastax.com/en/ragstack/docs/prerequisites.html[Prerequisites] page for more details.
+
+== Create a RAG pipeline with LlamaIndex
+
+. Import dependencies and load environment variables.
 +
 [source,python]
 ----
 import os
-from llama_index.llama_dataset import download_llama_dataset
+from dotenv import load_dotenv
+from llama_index.core.llama_dataset import download_llama_dataset
+from llama_index.vector_stores.astra_db import AstraDBVectorStore
+from llama_index.core import (
+    VectorStoreIndex,
+    SimpleDirectoryReader,
+    StorageContext,
+)
 
+load_dotenv()
+----
++
+. The dataset will be downloaded to the `/data` directory.
++
+[source,python]
+----
 dataset = download_llama_dataset(
   "PaulGrahamEssayDataset", "./data"
 )
@@ -51,14 +70,6 @@ dataset = download_llama_dataset(
 +
 [source,python]
 ----
-from llama_index.vector_stores import AstraDBVectorStore
-from llama_index import (
-    VectorStoreIndex,
-    SimpleDirectoryReader,
-    StorageContext,
-)
-
-# Load the documents from the dataset into memory
 documents = SimpleDirectoryReader("./data/source_files").load_data()
 print(f"Total documents: {len(documents)}")
 print(f"First document, id: {documents[0].doc_id}")
@@ -172,74 +183,5 @@ curl -v -s --location \
 
 == Complete code
 
-.Python
-[%collapsible%open]
-====
-[source,python]
-----
-import os
-from llama_index.vector_stores import AstraDBVectorStore
-from llama_index import (
-    VectorStoreIndex,
-    SimpleDirectoryReader,
-    StorageContext,
-)
-
-from llama_index.llama_dataset import download_llama_dataset
-
-dataset = download_llama_dataset(
-  "PaulGrahamEssayDataset", "./data"
-)
-
-# Load the documents from the dataset into memory
-documents = SimpleDirectoryReader("./data/source_files").load_data()
-print(f"Total documents: {len(documents)}")
-print(f"First document, id: {documents[0].doc_id}")
-print(f"First document, hash: {documents[0].hash}")
-print(
-    "First document, text"
-    f" ({len(documents[0].text)} characters):\n"
-    f"{'=' * 20}\n"
-    f"{documents[0].text[:360]} ..."
-)
-
-# Create a vector store instance
-astra_db_store = AstraDBVectorStore(
-    token=os.getenv("ASTRA_DB_APPLICATION_TOKEN"),
-    api_endpoint=os.getenv("ASTRA_DB_API_ENDPOINT"),
-    collection_name="test",
-    embedding_dimension=1536,
-)
-
-# Create a default storage context for the vector store
-storage_context = StorageContext.from_defaults(vector_store=astra_db_store)
-
-# Create a vector index from your documents
-index = VectorStoreIndex.from_documents(
-    documents, storage_context=storage_context
-)
-
-query_engine = index.as_query_engine()
-query_string_1 = "Why did the author choose to work on AI?"
-response = query_engine.query(query_string_1)
-
-print(query_string_1)
-print(response.response)
-
-retriever = index.as_retriever(
-    vector_store_query_mode="mmr",
-    similarity_top_k=3,
-    vector_store_kwargs={"mmr_prefetch_factor": 4},
-)
-
-nodes_with_scores = retriever.retrieve(query_string_1)
-
-print(query_string_1)
-print(f"Found {len(nodes_with_scores)} nodes.")
-for idx, node_with_score in enumerate(nodes_with_scores):
-    print(f"    [{idx}] score = {node_with_score.score}")
-    print(f"        id    = {node_with_score.node.node_id}")
-    print(f"        text  = {node_with_score.node.text[:90]} ...")
-----
-====
+include::examples:partial$llama-astra.adoc[]
 

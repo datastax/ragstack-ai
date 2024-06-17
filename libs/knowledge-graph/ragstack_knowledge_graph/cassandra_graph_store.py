@@ -20,7 +20,9 @@ def _elements(documents: Iterable[GraphDocument]) -> Iterable[Union[Node, Relati
         for node in document.nodes:
             yield _node(node)
         for edge in document.relationships:
-            yield Relation(source=_node(edge.source), target=_node(edge.target), type=edge.type)
+            yield Relation(
+                source=_node(edge.source), target=_node(edge.target), type=edge.type
+            )
 
 
 class CassandraGraphStore(GraphStore):
@@ -56,7 +58,18 @@ class CassandraGraphStore(GraphStore):
     def query(self, query: str, params: dict = {}) -> List[Dict[str, Any]]:
         raise ValueError("Querying Cassandra should use `as_runnable`.")
 
-    def as_runnable(self, steps: int = 3, edge_filters: Sequence[str] = []) -> Runnable:
+    @property
+    def get_schema(self) -> str:
+        raise NotImplementedError
+
+    @property
+    def get_structured_schema(self) -> Dict[str, Any]:
+        raise NotImplementedError
+
+    def refresh_schema(self) -> None:
+        raise NotImplementedError
+
+    def as_runnable(self, steps: int = 3, edge_filters: Sequence[str] = ()) -> Runnable:
         """
         Return a runnable that retrieves the sub-graph near the input entity or entities.
 
@@ -64,7 +77,9 @@ class CassandraGraphStore(GraphStore):
         - steps: The maximum distance to follow from the starting points.
         - edge_filters: Predicates to use for filtering the edges.
         """
-        return RunnableLambda(func=self.graph.traverse, afunc=self.graph.atraverse).bind(
+        return RunnableLambda(
+            func=self.graph.traverse, afunc=self.graph.atraverse
+        ).bind(
             steps=steps,
-            edge_filters=edge_filters,
+            edge_filters=edge_filters or [],
         )
