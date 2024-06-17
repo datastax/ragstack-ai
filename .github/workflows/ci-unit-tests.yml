@@ -19,6 +19,7 @@ jobs:
       libs_llamaindex: ${{ steps.filter.outputs.libs_llamaindex }}
       libs_knowledge_store: ${{ steps.filter.outputs.libs_knowledge_store }}
       libs_knowledge_graph: ${{ steps.filter.outputs.libs_knowledge_graph }}
+      libs_langflow: ${{ steps.filter.outputs.libs_langflow }}
       integration_tests: ${{ steps.filter.outputs.integration_tests }}
     steps:
       - uses: actions/checkout@v4
@@ -173,7 +174,9 @@ jobs:
           set -ex
           run_itests() {
             local dir=$1
+            echo "::group::Running $dir"
             tox -e integration-tests -c $dir
+            echo "::endgroup::"
             rm -rf $dir/.tox
           }
 
