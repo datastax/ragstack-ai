@@ -1,6 +1,6 @@
 from langchain_core.documents import Document
 from ragstack_knowledge_store.links import (
-    get_link_set,
+    add_links,
     IncomingLinkTag,
     OutgoingLinkTag,
 )
@@ -91,7 +91,6 @@ class HtmlLinkEdgeExtractor(EdgeExtractor[Union[str, "BeautifulSoup"]]):
 
         hrefs = _parse_hrefs(input, url, self.drop_fragments)
 
-        link_set = get_link_set(document.metadata)
-        link_set.add(IncomingLinkTag(kind=self._kind, tag=url))
-        for url in hrefs:
-            link_set.add(OutgoingLinkTag(kind=self._kind, tag=url))
+        add_links(document,
+                  IncomingLinkTag(kind=self._kind, tag=url),
+                  *[OutgoingLinkTag(kind=self._kind, tag=url) for url in hrefs])

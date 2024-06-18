@@ -127,12 +127,9 @@ class CassandraGraphStore(GraphStore):
 
     def similarity_search_by_vector(
         self, embedding: List[float], k: int = 4, **kwargs: Any
-    ) -> Iterable[Document]:
-        for node in self.store.similarity_search(embedding, k=k):
-            yield Document(
-                page_content=node.text,
-                metadata=node.metadata,
-            )
+    ) -> List[Document]:
+        return [Document(page_content=node.text, metadata=node.metadata)
+                for node in self.store.similarity_search(embedding, k=k)]
 
     def traversal_search(
         self,

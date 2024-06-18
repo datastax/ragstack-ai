@@ -18,7 +18,7 @@ from cassio.config import check_resolve_keyspace, check_resolve_session
 from .concurrency import ConcurrentQueries
 from .content import Kind
 from .embedding_model import EmbeddingModel
-from .links import get_link_set
+from .links import get_links
 from .math import cosine_similarity
 from ._utils import batched
 
@@ -314,7 +314,7 @@ class GraphStore:
                 link_to_tags = set()  # link to these tags
                 link_from_tags = set()  # link from these tags
 
-                for link in get_link_set(metadata):
+                for link in get_links(metadata):
                     if link.direction == "incoming" or link.direction == "bidir":
                         # An incoming link should be linked *from* nodes with the given tag.
                         link_from_tags.add((link.kind, link.tag))

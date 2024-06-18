@@ -14,7 +14,7 @@ from ragstack_langchain.graph_store.base import (
     TextNode,
 )
 from ragstack_knowledge_store.links import (
-    LINK_SET,
+    LINKS,
     BidirLinkTag,
     IncomingLinkTag,
     OutgoingLinkTag,
@@ -124,7 +124,7 @@ def test_link_directed(cassandra: GraphStoreFactory) -> None:
         page_content="A",
         metadata={
             "content_id": "a",
-            LINK_SET: {
+            LINKS: {
                 IncomingLinkTag(kind="hyperlink", tag="http://a"),
             },
         },
@@ -133,7 +133,7 @@ def test_link_directed(cassandra: GraphStoreFactory) -> None:
         page_content="B",
         metadata={
             "content_id": "b",
-            LINK_SET: {
+            LINKS: {
                 IncomingLinkTag(kind="hyperlink", tag="http://b"),
                 OutgoingLinkTag(kind="hyperlink", tag="http://a"),
             },
@@ -143,7 +143,7 @@ def test_link_directed(cassandra: GraphStoreFactory) -> None:
         page_content="C",
         metadata={
             "content_id": "c",
-            LINK_SET: {
+            LINKS: {
                 OutgoingLinkTag(kind="hyperlink", tag="http://a"),
             },
         },
@@ -152,7 +152,7 @@ def test_link_directed(cassandra: GraphStoreFactory) -> None:
         page_content="D",
         metadata={
             "content_id": "d",
-            LINK_SET: {
+            LINKS: {
                 OutgoingLinkTag(kind="hyperlink", tag="http://a"),
                 OutgoingLinkTag(kind="hyperlink", tag="http://b"),
             },
@@ -197,7 +197,7 @@ def test_mmr_traversal(request, gs_factory: str):
         page_content="-0.124",
         metadata={
             "content_id": "v0",
-            LINK_SET: {
+            LINKS: {
                 OutgoingLinkTag(kind="explicit", tag="link"),
             },
         },
@@ -212,7 +212,7 @@ def test_mmr_traversal(request, gs_factory: str):
         page_content="+0.25",
         metadata={
             "content_id": "v2",
-            LINK_SET: {
+            LINKS: {
                 IncomingLinkTag(kind="explicit", tag="link"),
             },
         },
@@ -221,7 +221,7 @@ def test_mmr_traversal(request, gs_factory: str):
         page_content="+1.0",
         metadata={
             "content_id": "v3",
-            LINK_SET: {
+            LINKS: {
                 IncomingLinkTag(kind="explicit", tag="link"),
             },
         },
@@ -256,7 +256,7 @@ def test_write_retrieve_keywords(request, gs_factory: str):
         page_content="Typical Greetings",
         metadata={
             "content_id": "greetings",
-            LINK_SET: {
+            LINKS: {
                 IncomingLinkTag(kind="parent", tag="parent"),
             },
         },
@@ -265,7 +265,7 @@ def test_write_retrieve_keywords(request, gs_factory: str):
         page_content="Hello World",
         metadata={
             "content_id": "doc1",
-            LINK_SET: {
+            LINKS: {
                 OutgoingLinkTag(kind="parent", tag="parent"),
                 BidirLinkTag(kind="kw", tag="greeting"),
                 BidirLinkTag(kind="kw", tag="world"),
@@ -276,7 +276,7 @@ def test_write_retrieve_keywords(request, gs_factory: str):
         page_content="Hello Earth",
         metadata={
             "content_id": "doc2",
-            LINK_SET: {
+            LINKS: {
                 OutgoingLinkTag(kind="parent", tag="parent"),
                 BidirLinkTag(kind="kw", tag="greeting"),
                 BidirLinkTag(kind="kw", tag="earth"),

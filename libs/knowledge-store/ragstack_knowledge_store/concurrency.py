@@ -39,7 +39,6 @@ class ConcurrentQueries(contextlib.AbstractContextManager):
 
     def _handle_error(self, error, future: ResponseFuture):
         with self._completion:
-            print(f"Failed to execute {future.query}: {error}")
             self._error = error
             self._completion.notify()
 
