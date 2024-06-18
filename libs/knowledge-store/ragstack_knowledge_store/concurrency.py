@@ -1,4 +1,5 @@
 import contextlib
+import logging
 import threading
 from types import TracebackType
 from typing import Any, Callable, NamedTuple, Optional, Sequence, Tuple, Type
@@ -6,13 +7,14 @@ from typing import Any, Callable, NamedTuple, Optional, Sequence, Tuple, Type
 from cassandra.cluster import ResponseFuture, Session
 from cassandra.query import PreparedStatement
 
+logger = logging.getLogger(__name__)
+
 
 class ConcurrentQueries(contextlib.AbstractContextManager):
     """Context manager for concurrent queries."""
 
-    def __init__(self, session: Session, *, concurrency: int = 20) -> None:
+    def __init__(self, session: Session) -> None:
         self._session = session
-        self._semaphore = threading.Semaphore(concurrency)
         self._completion = threading.Condition()
 
         self._pending = 0
@@ -31,7 +33,6 @@ class ConcurrentQueries(contextlib.AbstractContextManager):
         if future.has_more_pages:
             future.start_fetching_next_page()
         else:
-            self._semaphore.release()
             with self._completion:
                 self._pending -= 1
                 if self._pending == 0:
@@ -39,6 +40,11 @@ class ConcurrentQueries(contextlib.AbstractContextManager):
 
     def _handle_error(self, error, future: ResponseFuture):
         with self._completion:
+            logger.error(
+                "Error executing query: %s",
+                future,
+                exc_info=error,
+            )
             self._error = error
             self._completion.notify()
 
@@ -48,12 +54,26 @@ class ConcurrentQueries(contextlib.AbstractContextManager):
         parameters: Optional[Tuple] = None,
         callback: Optional[Callable[[Sequence[NamedTuple]], Any]] = None,
     ):
+        """
+        Execute a query concurrently.
+
+        Because this is done concurrently, it expects a callback if you need
+        to inspect the results.
+
+        Args:
+            query: The query to execute.
+            parameters: Parameter tuple for the query. Defaults to `None`.
+            callback: Callback to apply to the results. Defaults to `None`.
+        """
+
+        # TODO: We could have some form of throttling, where we track the number
+        # of pending calls and queue things if it exceed some threshold.
+
         with self._completion:
             self._pending += 1
             if self._error is not None:
                 return
 
-        self._semaphore.acquire()
         future: ResponseFuture = self._session.execute_async(query, parameters)
         future.add_callbacks(
             self._handle_result,

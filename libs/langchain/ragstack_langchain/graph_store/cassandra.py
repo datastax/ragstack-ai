@@ -42,7 +42,6 @@ class CassandraGraphStore(GraphStore):
         session: Optional[Session] = None,
         keyspace: Optional[str] = None,
         setup_mode: SetupMode = SetupMode.SYNC,
-        concurrency: int = 20,
     ):
         """
         Create the hybrid graph store.
@@ -54,7 +53,6 @@ class CassandraGraphStore(GraphStore):
         with the same `source` metadata value.
         Args:
             embedding: The embeddings to use for the document content.
-            concurrency: Maximum number of queries to have concurrently executing.
             setup_mode: Mode used to create the Cassandra table (SYNC,
                 ASYNC or OFF).
         """
@@ -68,7 +66,6 @@ class CassandraGraphStore(GraphStore):
             session=session,
             keyspace=keyspace,
             setup_mode=_setup_mode,
-            concurrency=concurrency,
         )
 
     @property

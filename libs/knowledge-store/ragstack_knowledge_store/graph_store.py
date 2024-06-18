@@ -12,7 +12,7 @@ from typing import (
 )
 
 import numpy as np
-from cassandra.cluster import ConsistencyLevel, ResponseFuture, Session
+from cassandra.cluster import ConsistencyLevel, Session
 from cassio.config import check_resolve_keyspace, check_resolve_session
 
 from .concurrency import ConcurrentQueries
@@ -20,7 +20,6 @@ from .content import Kind
 from .embedding_model import EmbeddingModel
 from .links import get_links
 from .math import cosine_similarity
-from ._utils import batched
 
 CONTENT_ID = "content_id"
 
@@ -113,7 +112,6 @@ class GraphStore:
         session: Optional[Session] = None,
         keyspace: Optional[str] = None,
         setup_mode: SetupMode = SetupMode.SYNC,
-        concurrency: int = 20,
     ):
         """A hybrid vector-and-graph store backed by Cassandra.
 
@@ -122,14 +120,12 @@ class GraphStore:
 
         Args:
             embedding: The embeddings to use for the document content.
-            concurrency: Maximum number of queries to have concurrently executing.
             setup_mode: Mode used to create the Cassandra table (SYNC,
                 ASYNC or OFF).
         """
         session = check_resolve_session(session)
         keyspace = check_resolve_keyspace(keyspace)
 
-        self._concurrency = concurrency
         self._embedding = embedding
         self._node_table = node_table
         self._targets_table = targets_table
@@ -162,11 +158,11 @@ class GraphStore:
             """
         )
 
-        self._query_by_ids = session.prepare(
+        self._query_by_id = session.prepare(
             f"""
             SELECT content_id, kind, text_content
             FROM {keyspace}.{node_table}
-            WHERE content_id IN ?
+            WHERE content_id = ?
             """
         )
 
@@ -190,11 +186,11 @@ class GraphStore:
         )
         self._query_ids_and_link_to_tags_by_embedding.consistency_level = ConsistencyLevel.ONE
 
-        self._query_ids_and_link_to_tags_by_ids = session.prepare(
+        self._query_ids_and_link_to_tags_by_id = session.prepare(
             f"""
             SELECT content_id, link_to_tags
             FROM {keyspace}.{node_table}
-            WHERE content_id IN ?
+            WHERE content_id = ?
             """
         )
 
@@ -208,31 +204,29 @@ class GraphStore:
         )
         self._query_ids_and_embedding_by_embedding.consistency_level = ConsistencyLevel.ONE
 
-        self._query_source_tags_by_ids = session.prepare(
+        self._query_source_tags_by_id = session.prepare(
             f"""
             SELECT link_to_tags
             FROM {keyspace}.{node_table}
-            WHERE content_id IN ?
+            WHERE content_id = ?
             """
         )
 
         # TODO: These queries require `ALLOW FILTERING` when run against Cassandra docker images.
         # But *do not* require filtering when run against Astra.
-        self._query_target_embeddings_by_kind_tags = session.prepare(
+        self._query_targets_embeddings_by_kind_tag = session.prepare(
             f"""
             SELECT target_content_id, target_text_embedding, tag
             FROM {keyspace}.{targets_table}
-            WHERE kind_tag IN ?
-            ALLOW FILTERING
+            WHERE kind_tag = ?
             """
         )
 
-        self._query_targets_by_kind_tags = session.prepare(
+        self._query_targets_by_kind_tag = session.prepare(
             f"""
             SELECT target_content_id, tag
             FROM {keyspace}.{targets_table}
-            WHERE kind_tag IN ?
-            ALLOW FILTERING
+            WHERE kind_tag = ?
             """
         )
 
@@ -278,7 +272,7 @@ class GraphStore:
         )
 
     def _concurrent_queries(self) -> ConcurrentQueries:
-        return ConcurrentQueries(self._session, concurrency=self._concurrency)
+        return ConcurrentQueries(self._session)
 
     # TODO: Async (aadd_nodes)
     def add_nodes(
@@ -297,10 +291,6 @@ class GraphStore:
 
         ids = []
 
-        tag_to_new_sources: Dict[str, List[Tuple[str, str]]] = {}
-        tag_to_new_targets: Dict[str, Dict[str, Tuple[str, List[float]]]] = {}
-
-        # Step 1: Add the nodes, collecting the tags and new sources / targets.
         with self._concurrent_queries() as cq:
             tuples = zip(texts, text_embeddings, metadatas)
             for text, text_embedding, metadata in tuples:
@@ -342,9 +332,11 @@ class GraphStore:
                 for row in rows:
                     results[row.content_id] = _row_to_node(row)
 
-            # Astra only allows 20 batches.
-            for batch in batched(ids, 20):
-                cq.execute(self._query_by_ids, parameters=(batch,), callback=add_nodes)
+            for id in ids:
+                if id not in results:
+                    results[id] = None
+                    cq.execute(self._query_by_id, parameters=(id,), callback=add_nodes)
+
         return [results[id] for id in ids]
 
     def _linked_ids(
@@ -523,10 +515,10 @@ class GraphStore:
 
                 if outgoing_tags:
                     # If there are new tags to visit at the next depth, query for the node IDs.
-                    for tag_batch in batched(outgoing_tags, 20):
+                    for tag in outgoing_tags:
                         cq.execute(
-                            self._query_target_embeddings_by_kind_tags,
-                            parameters=(tag_batch,),
+                            self._query_targets_by_kind_tag,
+                            parameters=(tag,),
                             callback=lambda rows, d=d: visit_targets(d, rows),
                         )
 
@@ -541,10 +533,10 @@ class GraphStore:
                         new_nodes_at_next_depth.add(content_id)
 
                 if new_nodes_at_next_depth:
-                    for ids in batched(new_nodes_at_next_depth, 20):
+                    for id in new_nodes_at_next_depth:
                         cq.execute(
-                            self._query_ids_and_link_to_tags_by_ids,
-                            parameters=(ids,),
+                            self._query_ids_and_link_to_tags_by_id,
+                            parameters=(id,),
                             callback=lambda rows, d=d: visit_nodes(d + 1, rows),
                         )
 
@@ -572,39 +564,32 @@ class GraphStore:
         """Return the target nodes adjacent to any of the source nodes."""
 
         link_to_tags = set()
+        targets = dict()
 
         def add_sources(rows):
             for row in rows:
-                if row.link_to_tags:
-                    link_to_tags.update(row.link_to_tags)
+                for new_tag in row.link_to_tags or []:
+                    if new_tag not in link_to_tags:
+                        link_to_tags.add(new_tag)
+                        cq.execute(
+                            self._query_targets_embeddings_by_kind_tag,
+                            (f"{new_tag[0]}:{new_tag[1]}", ),
+                            callback=add_targets
+                        )
+                        link_to_tags.add(new_tag)
+
+        def add_targets(rows):
+            # TODO: Figure out how to use the "kind" on the edge.
+            # This is tricky, since we currently issue one query for anything
+            # adjacent via any kind, and we don't have enough information to
+            # determine which kind(s) a given target was reached from.
+            for row in rows:
+                targets.setdefault(row.target_content_id, row.target_text_embedding)
+
 
         with self._concurrent_queries() as cq:
-            # Note: It may be more efficient to just blast out a separate query for each source ID in parallel.
-            for batch in batched(source_ids, 20):
-                cq.execute(self._query_source_tags_by_ids, (batch,), callback=add_sources)
-
-        targets = dict()
-
-        if len(link_to_tags) > 0:
-
-            def add_targets(rows):
-                # TODO: Figure out how to use the "kind" on the edge.
-                # This is tricky, since we currently issue one query for anything
-                # adjacent via any kind, and we don't have enough information to
-                # determine which kind(s) a given target was reached from.
-                for row in rows:
-                    targets.setdefault(row.target_content_id, row.target_text_embedding)
-
-            with self._concurrent_queries() as cq:
-                for batch in batched(link_to_tags, 20):
-                    kind_tags = {f"{kind}:{tag}" for (kind, tag) in batch}
-                    # This query panics if `kind_tags` is empty, hence we only execute if `len(link_to_tags) > 0``
-                    # NOTE: It may be more efficient to blast out a separate query for each source ID in parallel.
-                    cq.execute(
-                        self._query_target_embeddings_by_kind_tags,
-                        (kind_tags,),
-                        callback=add_targets,
-                    )
+            for source_id in source_ids:
+                cq.execute(self._query_source_tags_by_id, (source_id,), callback=add_sources)
 
         return [
             _Edge(target_content_id=content_id, target_text_embedding=embedding)
