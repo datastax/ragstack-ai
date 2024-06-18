@@ -318,6 +318,13 @@ class GraphStore(VectorStore):
     def similarity_search(self, query: str, k: int = 4, **kwargs: Any) -> List[Document]:
         return list(self.traversal_search(query, k=k, depth=0))
 
+    def max_marginal_relevance_search(self, query: str, k: int = 4, fetch_k: int = 20, lambda_mult: float = 0.5, **kwargs: Any) -> List[Document]:
+        return list(self.mmr_traversal_search(query,
+                                              k=k,
+                                              fetch_k=fetch_k,
+                                              lambda_mult=lambda_mult,
+                                              depth=0))
+
     async def asimilarity_search(self, query: str, k: int = 4, **kwargs: Any) -> List[Document]:
         return [doc async for doc in self.atraversal_search(query, k=k, depth=0)]
 
