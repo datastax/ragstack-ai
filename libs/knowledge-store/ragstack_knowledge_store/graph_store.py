@@ -41,6 +41,17 @@ class TextNode(Node):
     """Text contained by the node."""
 
 
+@dataclass
+class MimeNode(Node):
+    mime_type: str = None
+    """Type of content, e.g. text/plain or image/png."""
+
+    mime_content: str = None
+    """Encoded content"""
+
+    mime_encoding: str = None
+    """Encoding format"""
+
 class SetupMode(Enum):
     SYNC = 1
     ASYNC = 2
@@ -326,52 +337,72 @@ class GraphStore:
         self,
         nodes: Iterable[Node] = None,
     ) -> Iterable[str]:
-        texts = []
-        metadatas = []
-        for node in nodes:
-            if not isinstance(node, TextNode):
-                raise ValueError("Only adding TextNode is supported at the moment")
-            texts.append(node.text)
-            metadatas.append(node.metadata)
-
-        text_embeddings = self._embedding.embed_texts(texts)
-
+        # Organize nodes by MIME type
+        mime_buckets = {}
         ids = []
 
-        tag_to_new_sources: Dict[str, List[Tuple[str, str]]] = {}
-        tag_to_new_targets: Dict[str, Dict[str, Tuple[str, List[float]]]] = {}
+        # Prepare nodes based on their type
+        for node in nodes:
+            if isinstance(node, MimeNode):
+                main_mime_type = node.mime_type.split('/')[0]  # Split and take the first part, e.g., "image" from "image/png"
+                if main_mime_type not in mime_buckets:
+                    mime_buckets[main_mime_type] = []
+                mime_buckets[main_mime_type].append(node)
+            elif isinstance(node, TextNode):
+                if 'text' not in mime_buckets:
+                    mime_buckets['text'] = []
+                mime_buckets['text'].append(node)
+            else:
+                raise ValueError("Unsupported node type")
+
+        # Process each MIME bucket
+        embeddings_dict = {}
+        for mime_type, nodes_list in mime_buckets.items():
+            function_mime_type = 'document' if mime_type == 'text' else mime_type
+            method_name = f"embed_{function_mime_type}s"
+            if hasattr(self._embedding, method_name):
+                texts = [node.mime_content if isinstance(node, MimeNode) else node.text for node in nodes_list]
+                embeddings_dict[mime_type] = getattr(self._embedding, method_name)(texts)
+            else:
+                # If no bulk method, try to call a singular method for each content
+                singular_method_name = f"embed_{function_mime_type}"
+                if hasattr(self._embedding, singular_method_name):
+                    embeddings = []
+                    for node in nodes_list:
+                        embedding = getattr(self._embedding, singular_method_name)(node.mime_content if isinstance(node, MimeNode) else node.text)
+                        embeddings.append(embedding)
+                    embeddings_dict[mime_type] = embeddings
+                else:
+                    raise NotImplementedError(f"No embedding method available for MIME type: {mime_type}")
+
 
         # Step 1: Add the nodes, collecting the tags and new sources / targets.
+        tag_to_new_sources = {}
+        tag_to_new_targets = {}
         with self._concurrent_queries() as cq:
-            tuples = zip(texts, text_embeddings, metadatas)
-            for text, text_embedding, metadata in tuples:
-                if CONTENT_ID not in metadata:
-                    metadata[CONTENT_ID] = secrets.token_hex(8)
-                id = metadata[CONTENT_ID]
-                ids.append(id)
+            for mime_type, embeddings in embeddings_dict.items():
+                for node, embedding in zip(mime_buckets[mime_type], embeddings):
+                    if CONTENT_ID not in node.metadata:
+                        node.metadata[CONTENT_ID] = secrets.token_hex(8)
+                    node_id = node.metadata[CONTENT_ID]
+                    ids.append(node_id)
 
-                link_to_tags = set()  # link to these tags
-                link_from_tags = set()  # link from these tags
+                    link_to_tags = set()
+                    link_from_tags = set()
 
-                for tag in get_link_tags(metadata):
-                    tag_str = f"{tag.kind}:{tag.tag}"
-                    if tag.direction == "incoming" or tag.direction == "bidir":
-                        # An incom`ing link should be linked *from* nodes with the given tag.
-                        link_from_tags.add(tag_str)
-                        tag_to_new_targets.setdefault(tag_str, dict())[id] = (
-                            tag.kind,
-                            text_embedding,
-                        )
-                    if tag.direction == "outgoing" or tag.direction == "bidir":
-                        link_to_tags.add(tag_str)
-                        tag_to_new_sources.setdefault(tag_str, list()).append(
-                            (tag.kind, id)
-                        )
+                    for tag in get_link_tags(node.metadata):
+                        tag_str = f"{tag.kind}:{tag.tag}"
+                        if tag.direction in ["incoming", "bidir"]:
+                            link_from_tags.add(tag_str)
+                            tag_to_new_targets.setdefault(tag_str, {})[node_id] = (tag.kind, embedding)
+                        if tag.direction in ["outgoing", "bidir"]:
+                            link_to_tags.add(tag_str)
+                            tag_to_new_sources.setdefault(tag_str, []).append((tag.kind, node_id))
 
-                cq.execute(
-                    self._insert_passage,
-                    (id, text, text_embedding, link_to_tags, link_from_tags),
-                )
+                    cq.execute(
+                        self._insert_passage,
+                        (node_id, node.mime_content if isinstance(node, MimeNode) else node.text, embedding, link_to_tags, link_from_tags),
+                    )
 
         # Step 2: Query information about those tags to determine the edges to add.
         # Add edges as needed.
