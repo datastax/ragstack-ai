@@ -64,7 +64,7 @@ class ConcurrentQueries(contextlib.AbstractContextManager):
             },
             errback_kwargs={
                 "future": future,
-            }
+            },
         )
 
     def __enter__(self) -> "ConcurrentQueries":

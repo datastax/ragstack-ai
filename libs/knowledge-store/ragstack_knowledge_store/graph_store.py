@@ -57,10 +57,12 @@ def _row_to_node(row) -> Node:
         },
     )
 
+
 @dataclass
 class _Edge:
     target_content_id: str
     target_text_embedding: List[float]
+
 
 def emb_to_ndarray(embedding: List[float]) -> np.ndarray:
     embedding = np.array(embedding, dtype=np.float32)
@@ -81,9 +83,7 @@ class _Candidate:
     redundancy: float
     """(1 - Lambda) * max(Similarity to selected items)."""
 
-    def __init__(
-        self, embedding: List[float], lambda_mult: float, query_embedding: np.ndarray
-    ):
+    def __init__(self, embedding: List[float], lambda_mult: float, query_embedding: np.ndarray):
         self.embedding = emb_to_ndarray(embedding)
 
         # TODO: Refactor to use cosine_similarity_top_k to allow an array of embeddings?
@@ -94,9 +94,7 @@ class _Candidate:
         self.score = self.similarity_to_query - self.redundancy
         self.distance = 0
 
-    def update_for_selection(
-        self, lambda_mult: float, selection_embedding: List[float]
-    ):
+    def update_for_selection(self, lambda_mult: float, selection_embedding: List[float]):
         selected_r_sim = (1 - lambda_mult) * cosine_similarity(
             selection_embedding, self.embedding
         )[0]
@@ -326,8 +324,10 @@ class GraphStore:
                     (id, text, text_embedding, link_to_tags),
                 )
 
-                for (kind, value) in link_from_tags:
-                    cq.execute(self._insert_tag, (id, kind, value, f"{kind}:{value}", text_embedding))
+                for kind, value in link_from_tags:
+                    cq.execute(
+                        self._insert_tag, (id, kind, value, f"{kind}:{value}", text_embedding)
+                    )
 
         return ids
 
@@ -337,14 +337,14 @@ class GraphStore:
     ) -> List[TextNode]:
         results = {}
         with self._concurrent_queries() as cq:
+
             def add_nodes(rows):
                 for row in rows:
                     results[row.content_id] = _row_to_node(row)
+
             # Astra only allows 20 batches.
             for batch in batched(ids, 20):
-                cq.execute(self._query_by_ids,
-                        parameters=(batch,),
-                        callback=add_nodes)
+                cq.execute(self._query_by_ids, parameters=(batch,), callback=add_nodes)
         return [results[id] for id in ids]
 
     def _linked_ids(
@@ -445,7 +445,9 @@ class GraphStore:
                             unselected[target_id].distance = next_depth
                         continue
 
-                    candidate = _Candidate(adjacent.target_text_embedding, lambda_mult, query_embedding)
+                    candidate = _Candidate(
+                        adjacent.target_text_embedding, lambda_mult, query_embedding
+                    )
                     for selected_embedding in selected_embeddings:
                         candidate.update_for_selection(lambda_mult, selected_embedding)
 
@@ -512,7 +514,7 @@ class GraphStore:
                         if d < depth and node.link_to_tags:
                             # Record any new (or newly discovered at a lower depth) tags to the
                             # set to traverse.
-                            for (kind, tag) in node.link_to_tags:
+                            for kind, tag in node.link_to_tags:
                                 if d <= visited_tags.get((kind, tag), depth):
                                     # Record that we'll query this tag at the given depth, so we don't
                                     # fetch it again (unless we find it an earlier depth)
@@ -524,7 +526,7 @@ class GraphStore:
                     for tag_batch in batched(outgoing_tags, 20):
                         cq.execute(
                             self._query_target_embeddings_by_kind_tags,
-                            parameters=(tag_batch, ),
+                            parameters=(tag_batch,),
                             callback=lambda rows, d=d: visit_targets(d, rows),
                         )
 
@@ -542,8 +544,8 @@ class GraphStore:
                     for ids in batched(new_nodes_at_next_depth, 20):
                         cq.execute(
                             self._query_ids_and_link_to_tags_by_ids,
-                            parameters=(ids, ),
-                            callback = lambda rows, d=d: visit_nodes(d + 1, rows)
+                            parameters=(ids,),
+                            callback=lambda rows, d=d: visit_nodes(d + 1, rows),
                         )
 
             query_embedding = self._embedding.embed_query(query)
@@ -584,6 +586,7 @@ class GraphStore:
         targets = dict()
 
         if len(link_to_tags) > 0:
+
             def add_targets(rows):
                 # TODO: Figure out how to use the "kind" on the edge.
                 # This is tricky, since we currently issue one query for anything
@@ -594,10 +597,14 @@ class GraphStore:
 
             with self._concurrent_queries() as cq:
                 for batch in batched(link_to_tags, 20):
-                    kind_tags = { f"{kind}:{tag}" for (kind, tag) in batch }
+                    kind_tags = {f"{kind}:{tag}" for (kind, tag) in batch}
                     # This query panics if `kind_tags` is empty, hence we only execute if `len(link_to_tags) > 0``
                     # NOTE: It may be more efficient to blast out a separate query for each source ID in parallel.
-                    cq.execute(self._query_target_embeddings_by_kind_tags, (kind_tags,), callback=add_targets)
+                    cq.execute(
+                        self._query_target_embeddings_by_kind_tags,
+                        (kind_tags,),
+                        callback=add_targets,
+                    )
 
         return [
             _Edge(target_content_id=content_id, target_text_embedding=embedding)

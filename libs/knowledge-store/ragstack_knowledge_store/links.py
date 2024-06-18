@@ -5,6 +5,7 @@ import typing
 if typing.TYPE_CHECKING:
     from langchain_core.documents import Document
 
+
 @dataclass(frozen=True)
 class Link:
     kind: str
@@ -52,6 +53,7 @@ def get_links(doc_or_md: Union["langchain_core.documents.Document", Dict[str, An
     """
     try:
         from langchain_core.documents import Document
+
         if isinstance(doc_or_md, Document):
             doc_or_md = doc_or_md.metadata
     finally:
@@ -64,7 +66,9 @@ def get_links(doc_or_md: Union["langchain_core.documents.Document", Dict[str, An
     return links
 
 
-def add_links(doc_or_md: Union["langchain_core.documents.Document", Dict[str, Any]], *links: Link) -> None:
+def add_links(
+    doc_or_md: Union["langchain_core.documents.Document", Dict[str, Any]], *links: Link
+) -> None:
     """Add links to the given metadata.
 
     Args:
