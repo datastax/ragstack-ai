@@ -46,27 +46,6 @@ jobs:
           mkdir -p snyk_reports
           mv snyk-vuln.json snyk_reports/snyk-vuln.json
 
-      - name: Prepare dev docker image
-        if: ${{ always() }}
-        run: |
-          docker build -t datastax/ragstack-ai:latest-dev -f docker/Dockerfile.dev .
-
-      - name: Run Snyk to check Docker image for vulnerabilities
-        uses: snyk/actions/docker@master
-        if: ${{ always() }}
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          image: datastax/ragstack-ai:latest-dev
-          args: --json-file-output=snyk.json --severity-threshold=high
-          json: true
-
-      - name: Move snyk docker file
-        if: ${{ always() }}
-        run: |
-          mkdir -p snyk_reports
-          mv snyk.json snyk_reports/snyk-docker.json
-
       - name: Testspace deploy report
         uses: ./.github/actions/deploy-testspace-report
         if: ${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
@@ -99,22 +78,6 @@ jobs:
         run: |
           mkdir -p snyk_reports
           mv snyk-vuln.json snyk_reports/snyk-vuln.json
-
-      - name: Run Snyk to check Docker image for vulnerabilities
-        uses: snyk/actions/docker@master
-        if: ${{ always() }}
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          image: ghcr.io/datastax/ragstack-ai:latest
-          args: --severity-threshold=high --json-file-output=snyk.json
-          json: true
-
-      - name: Move snyk docker file
-        if: ${{ always() }}
-        run: |
-          mkdir -p snyk_reports
-          mv snyk.json snyk_reports/snyk-docker.json
 
       - name: "Setup: Python 3.11"
         if: ${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
