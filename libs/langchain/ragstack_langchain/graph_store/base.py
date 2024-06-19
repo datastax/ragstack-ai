@@ -39,11 +39,14 @@ class Node(Serializable):
     """Metadata for the node. May contain information used to link this node
     with other nodes."""
 
+    content: str = None
+    """Encoded content"""
 
-class TextNode(Node):
-    text: str
-    """Text contained by the node."""
+    mime_type: str = None
+    """Type of content, e.g. text/plain or image/png."""
 
+    mime_encoding: str = None
+    """Encoding format"""
 
 def _texts_to_nodes(
     texts: Iterable[str],
@@ -61,10 +64,11 @@ def _texts_to_nodes(
             _id = next(ids_it) if ids_it else None
         except StopIteration:
             raise ValueError("texts iterable longer than ids")
-        yield TextNode(
+        yield Node(
             id=_id,
             metadata=_metadata,
-            text=text,
+            mime_type="text/plain",
+            content=text,
         )
     if ids and _has_next(ids_it):
         raise ValueError("ids iterable longer than texts")
@@ -81,10 +85,13 @@ def _documents_to_nodes(
             _id = next(ids_it) if ids_it else None
         except StopIteration:
             raise ValueError("documents iterable longer than ids")
-        yield TextNode(
+
+        yield Node(
             id=_id,
             metadata=doc.metadata,
-            text=doc.page_content,
+            mime_type=doc.metadata.get('mime_type', 'text/plain'),
+            mime_encoding=doc.metadata.get('mime_encoding', None),
+            content=doc.page_content,
         )
     if ids and _has_next(ids_it):
         raise ValueError("ids iterable longer than documents")
