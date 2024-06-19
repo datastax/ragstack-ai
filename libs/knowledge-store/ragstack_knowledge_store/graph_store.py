@@ -34,23 +34,21 @@ class Node:
     """Metadata for the node. May contain information used to link this node 
     with other nodes."""
 
+    content: str = None
+    """Encoded content"""
+
+    mime_type: str = None
+    """Type of content, e.g. text/plain or image/png."""
+
+    mime_encoding: str = None
+    """Encoding format"""
 
 @dataclass
 class TextNode(Node):
     text: str = None
     """Text contained by the node."""
 
-
-@dataclass
-class MimeNode(Node):
-    mime_type: str = None
-    """Type of content, e.g. text/plain or image/png."""
-
-    mime_content: str = None
-    """Encoded content"""
-
-    mime_encoding: str = None
-    """Encoding format"""
+    mime_type = "text/plain"
 
 class SetupMode(Enum):
     SYNC = 1
@@ -343,37 +341,36 @@ class GraphStore:
 
         # Prepare nodes based on their type
         for node in nodes:
-            if isinstance(node, MimeNode):
+            if isinstance(node, TextNode):
+                if 'text' not in mime_buckets:
+                    mime_buckets['text'] = []
+                mime_buckets['text'].append(node)
+            if isinstance(node, Node) and node.mime_type:
                 main_mime_type = node.mime_type.split('/')[0]  # Split and take the first part, e.g., "image" from "image/png"
                 if main_mime_type not in mime_buckets:
                     mime_buckets[main_mime_type] = []
                 mime_buckets[main_mime_type].append(node)
-            elif isinstance(node, TextNode):
-                if 'text' not in mime_buckets:
-                    mime_buckets['text'] = []
-                mime_buckets['text'].append(node)
             else:
                 raise ValueError("Unsupported node type")
 
         # Process each MIME bucket
         embeddings_dict = {}
         for mime_type, nodes_list in mime_buckets.items():
-            function_mime_type = 'document' if mime_type == 'text' else mime_type
-            method_name = f"embed_{function_mime_type}s"
+            method_name = f"embed_{mime_type}s"
             if hasattr(self._embedding, method_name):
-                texts = [node.mime_content if isinstance(node, MimeNode) else node.text for node in nodes_list]
+                texts = [node.text if isinstance(node, TextNode) else node.content for node in nodes_list]
                 embeddings_dict[mime_type] = getattr(self._embedding, method_name)(texts)
             else:
                 # If no bulk method, try to call a singular method for each content
-                singular_method_name = f"embed_{function_mime_type}"
+                singular_method_name = f"embed_{mime_type}"
                 if hasattr(self._embedding, singular_method_name):
                     embeddings = []
                     for node in nodes_list:
-                        embedding = getattr(self._embedding, singular_method_name)(node.mime_content if isinstance(node, MimeNode) else node.text)
+                        embedding = getattr(self._embedding, singular_method_name)(node.text if isinstance(node, TextNode) else node.content)
                         embeddings.append(embedding)
                     embeddings_dict[mime_type] = embeddings
                 else:
-                    raise NotImplementedError(f"No embedding method available for MIME type: {mime_type}")
+                    raise NotImplementedError(f"No embedding method available for MIME type: {mime_type}.")
 
 
         # Step 1: Add the nodes, collecting the tags and new sources / targets.
@@ -401,7 +398,7 @@ class GraphStore:
 
                     cq.execute(
                         self._insert_passage,
-                        (node_id, node.mime_content if isinstance(node, MimeNode) else node.text, embedding, link_to_tags, link_from_tags),
+                        (node_id, node.text if isinstance(node, TextNode) else node.content, embedding, link_to_tags, link_from_tags),
                     )
 
         # Step 2: Query information about those tags to determine the edges to add.

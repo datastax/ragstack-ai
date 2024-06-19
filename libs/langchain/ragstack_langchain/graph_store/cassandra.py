@@ -11,7 +11,7 @@ from langchain_community.utilities.cassandra import SetupMode
 from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
 
-from .base import GraphStore, Node, TextNode
+from .base import GraphStore, Node
 from ragstack_knowledge_store import EmbeddingModel, graph_store
 
 
@@ -96,14 +96,10 @@ class CassandraGraphStore(GraphStore):
         nodes: Iterable[Node] = None,
         **kwargs: Any,
     ):
-        _nodes = []
         for node in nodes:
-            if not isinstance(node, TextNode):
-                raise ValueError("Only adding TextNode is supported at the moment")
-            _nodes.append(
-                graph_store.TextNode(id=node.id, text=node.text, metadata=node.metadata)
-            )
-        return self.store.add_nodes(_nodes)
+            if not isinstance(node, Node):
+                raise ValueError("Only adding Node is supported at the moment")
+        return self.store.add_nodes(nodes)
 
     @classmethod
     def from_texts(
