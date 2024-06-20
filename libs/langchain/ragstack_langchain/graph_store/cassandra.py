@@ -12,25 +12,8 @@ from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
 
 from .base import GraphStore, Node
-from ragstack_knowledge_store import EmbeddingModel, graph_store
-
-
-class _EmbeddingModelAdapter(EmbeddingModel):
-    def __init__(self, embeddings: Embeddings):
-        self.embeddings = embeddings
-
-    def embed_texts(self, texts: List[str]) -> List[List[float]]:
-        return self.embeddings.embed_documents(texts)
-
-    def embed_query(self, text: str) -> List[float]:
-        return self.embeddings.embed_query(text)
-
-    async def aembed_texts(self, texts: List[str]) -> List[List[float]]:
-        return await self.embeddings.aembed_documents(texts)
-
-    async def aembed_query(self, text: str) -> List[float]:
-        return await self.embeddings.aembed_query(text)
-
+from .embedding_adapter import EmbeddingAdapter
+from ragstack_knowledge_store import graph_store
 
 def _row_to_document(row) -> Document:
     return Document(
@@ -78,7 +61,7 @@ class CassandraGraphStore(GraphStore):
         _setup_mode = getattr(graph_store.SetupMode, setup_mode.name)
 
         self.store = graph_store.GraphStore(
-            embedding=_EmbeddingModelAdapter(embedding),
+            embedding=EmbeddingAdapter(embedding),
             node_table=node_table,
             edge_table=edge_table,
             session=session,
@@ -96,10 +79,14 @@ class CassandraGraphStore(GraphStore):
         nodes: Iterable[Node] = None,
         **kwargs: Any,
     ):
+        _nodes = []
         for node in nodes:
             if not isinstance(node, Node):
                 raise ValueError("Only adding Node is supported at the moment")
-        return self.store.add_nodes(nodes)
+            _nodes.append(
+                graph_store.Node(id=node.id, content=node.content, mime_type=node.mime_type, mime_encoding=node.mime_encoding, metadata=node.metadata)
+            )            
+        return self.store.add_nodes(_nodes)
 
     @classmethod
     def from_texts(

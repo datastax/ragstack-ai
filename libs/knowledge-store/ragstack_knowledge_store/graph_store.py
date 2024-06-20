@@ -357,20 +357,20 @@ class GraphStore:
         embeddings_dict = {}
         for mime_type, nodes_list in mime_buckets.items():
             method_name = f"embed_{mime_type}s"
-            if hasattr(self._embedding, method_name):
+            if self._embedding.does_implement(method_name):
                 texts = [node.text if isinstance(node, TextNode) else node.content for node in nodes_list]
-                embeddings_dict[mime_type] = getattr(self._embedding, method_name)(texts)
+                embeddings_dict[mime_type] = self._embedding.invoke(method_name, texts)
             else:
                 # If no bulk method, try to call a singular method for each content
                 singular_method_name = f"embed_{mime_type}"
-                if hasattr(self._embedding, singular_method_name):
+                if self._embedding.does_implement(singular_method_name):
                     embeddings = []
                     for node in nodes_list:
-                        embedding = getattr(self._embedding, singular_method_name)(node.text if isinstance(node, TextNode) else node.content)
+                        embedding = self._embedding.invoke(singular_method_name, node.text if isinstance(node, TextNode) else node.content)
                         embeddings.append(embedding)
                     embeddings_dict[mime_type] = embeddings
                 else:
-                    raise NotImplementedError(f"No embedding method available for MIME type: {mime_type}.")
+                    raise NotImplementedError(f"No embedding method available for MIME type: {mime_type}, implemented methods: {self._embedding.implements()}.")
 
 
         # Step 1: Add the nodes, collecting the tags and new sources / targets.
