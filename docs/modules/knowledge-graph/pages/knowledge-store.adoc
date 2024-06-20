@@ -1,0 +1,107 @@
+= {graph-store}
+
+However, extracting this fine-grained knowledge graph from unstructured information is difficult, time-consuming and error-prone. To get the best results, you (and a domain expert) will need to:
+
+process all of your unstructured content with the LLM to extract information,
+guide the LLM on the kinds of nodes and relationships you wish to extract by creating a “knowledge schema” (or ontology),
+inspect the graph of extracted information to make sure the LLM is extracting the correct details, and
+reprocess all the content when you change the knowledge schema.
+Between the need for human experts and the challenge of applying the LLM to all of the content, the cost of building and maintaining this graph is high. Bottom line: There’s a reason that most examples of using knowledge graphs for RAG operate on just a few sentences or paragraphs.
+
+Using entity-centric knowledge graphs is much harder to scale and to get good results from than just chunking the content and dumping it into a vector store. Is there any way we could bring the benefits of vector search to knowledge graphs — specifically, making construction as easy as chunking and embedding the content while also preserving the original content until the LLM knows the question to be answered?
+
+See the xref:examples:knowledge-store.adoc[{graph-store} example code] to get started using {graph-store}.
+
+[IMPORTANT]
+====
+This feature is currently under development and has not been fully tested. It is not supported for use in production environments. Please use this feature in testing and development environments only.
+====
+
+== The `ragstack-ai-knowledge-store` library
+
+The `ragstack-ai-knowledge-store` library contains functions for creating a hybrid vector-and-graph knowledge store. This store combines the benefits of vector stores with the context and relationships of a related edges.
+
+To install the package, run:
+
+[source,bash]
+----
+pip install ragstack-ai-knowledge-store
+----
+
+== How is Knowledge Graph different from RAG?
+
+Short answer: it isn't. Knowledge graphs are a method of doing RAG, but with a different representation of the information.
+
+RAG with similarity search creates a vector representation of information based on chunks of text. The query is compared to the question, and the most similar chunks are returned as the answer.
+
+Knowledge graph RAG extracts a knowledge graph from information, and stores the graph representation in a vector or graph knowledge store.
+
+Instead of a similarity search query, the graph store is **traversed** to extract a sub-graph of the knowledge graph's edges and properties. For example, a query for "Marie Curie" returns a sub-graph of nodes representing her relationships, accomplishments, and other relevant information - the context.
+
+You're telling the graph store to "start with this node, and show me the relationships to a depth of 2 nodes outwards."
+
+[source,python]
+----
+from knowledge_graph.traverse import Node
+
+graph_store.as_runnable(steps=2).invoke(Node("Marie Curie", "Person"))
+----
+
+Result:
+
+[source,plain]
+----
+{Marie Curie(Person) -> Chemist(Profession): HAS_PROFESSION,
+ Marie Curie(Person) -> French(Nationality): HAS_NATIONALITY,
+ Marie Curie(Person) -> Nobel Prize(Award): WON,
+ Marie Curie(Person) -> Physicist(Profession): HAS_PROFESSION,
+ Marie Curie(Person) -> Pierre Curie(Person): MARRIED_TO,
+ Marie Curie(Person) -> Polish(Nationality): HAS_NATIONALITY,
+ Marie Curie(Person) -> Professor(Profession): HAS_PROFESSION,
+ Marie Curie(Person) -> Radioactivity(Scientific concept): RESEARCHED,
+ Marie Curie(Person) -> Radioactivity(Scientific field): RESEARCHED_IN,
+ Marie Curie(Person) -> University Of Paris(Organization): WORKED_AT,
+ Pierre Curie(Person) -> Nobel Prize(Award): WON}
+----
+
+As with RAG, this sub-graph context is then dropped into the prompt to generate answers.
+
+[source,python]
+----
+ANSWER_PROMPT = (
+    "The original question is given below."
+    "This question has been used to retrieve information from a knowledge graph."
+    "The matching triples are shown below."
+    "Use the information in the triples to answer the original question.\n\n"
+    "Original Question: {question}\n\n"
+    "Knowledge Graph Triples:\n{context}\n\n"
+    "Response:"
+)
+
+chain = (
+    { "question": RunnablePassthrough() }
+       # extract_entities is provided by the Cassandra knowledge graph library
+       # and extracts entitise as shown above.
+    | RunnablePassthrough.assign(entities = extract_entities(llm))
+    | RunnablePassthrough.assign(
+        # graph_store.as_runnable() is provided by the CassandraGraphStore
+        # and takes one or more entities and retrieves the relevant sub-graph(s).
+        triples = itemgetter("entities") | graph_store.as_runnable())
+    | RunnablePassthrough.assign(
+        context = itemgetter("triples") | RunnableLambda(_combine_relations))
+    | ChatPromptTemplate.from_messages([ANSWER_PROMPT])
+    | llm
+)
+----
+
+Result:
+
+[source,bash]
+----
+Nodes: [Node(id='Marie Curie', type='Person'), Node(id='Polish', type='Nationality'), Node(id='French', type='Nationality'), Node(id='Physicist', type='Profession'), Node(id='Chemist', type='Profession'), Node(id='Radioactivity', type='Scientific concept'), Node(id='Nobel Prize', type='Award'), Node(id='Pierre Curie', type='Person'), Node(id='University Of Paris', type='Institution'), Node(id='Professor', type='Profession')]
+Relationships: [Relationship(source=Node(id='Marie Curie', type='Person'), target=Node(id='Polish', type='Nationality'), type='HAS_NATIONALITY'), Relationship(source=Node(id='Marie Curie', type='Person'), target=Node(id='French', type='Nationality'), type='HAS_NATIONALITY'), Relationship(source=Node(id='Marie Curie', type='Person'), target=Node(id='Physicist', type='Profession'), type='IS_A'), Relationship(source=Node(id='Marie Curie', type='Person'), target=Node(id='Chemist', type='Profession'), type='IS_A'), Relationship(source=Node(id='Marie Curie', type='Person'), target=Node(id='Radioactivity', type='Scientific concept'), type='RESEARCHED'), Relationship(source=Node(id='Marie Curie', type='Person'), target=Node(id='Nobel Prize', type='Award'), type='WON'), Relationship(source=Node(id='Pierre Curie', type='Person'), target=Node(id='Nobel Prize', type='Award'), type='WON'), Relationship(source=Node(id='Marie Curie', type='Person'), target=Node(id='Pierre Curie', type='Person'), type='MARRIED_TO'), Relationship(source=Node(id='Marie Curie', type='Person'), target=Node(id='University Of Paris', type='Institution'), type='WORKED_AT'), Relationship(source=Node(id='Marie Curie', type='Person'), target=Node(id='Professor', type='Profession'), type='IS_A')]
+Chain Response: content='Marie Curie was a physicist, chemist, and professor. She was of French and Polish nationality. She was married to Pierre Curie and both of them won the Nobel Prize. She worked at the University of Paris and researched radioactivity.' response_metadata={'token_usage': {'completion_tokens': 50, 'prompt_tokens': 308, 'total_tokens': 358}, 'model_name': 'gpt-4', 'system_fingerprint': None, 'finish_reason': 'stop', 'logprobs': None} id='run-79178e44-64a0-4077-8b90-f21fd004f745-0'
+----
+
+== Knowledge Store, RAGStack, and Astra DB
+
