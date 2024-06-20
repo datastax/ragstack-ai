@@ -13,12 +13,14 @@ from ragstack_langchain.graph_store.base import (
     _texts_to_nodes,
     TextNode,
 )
-from ragstack_knowledge_store.link_tag import (
+from ragstack_langchain.graph_store.links import (
+    METADATA_LINKS_KEY,
     BidirLinkTag,
     IncomingLinkTag,
     OutgoingLinkTag,
 )
 from ragstack_tests_utils.test_store import KEYSPACE
+
 from .conftest import get_local_cassandra_test_store, get_astradb_test_store
 from ragstack_langchain.graph_store import CassandraGraphStore
 
@@ -35,7 +37,7 @@ class GraphStoreFactory:
 
     def store(
         self,
-        initial_documents: Iterable[Document] = [],
+        initial_documents: Iterable[Document] = (),
         ids: Optional[Iterable[str]] = None,
         embedding: Optional[Embeddings] = None,
     ) -> CassandraGraphStore:
@@ -123,7 +125,7 @@ def test_link_directed(cassandra: GraphStoreFactory) -> None:
         page_content="A",
         metadata={
             "content_id": "a",
-            "link_tags": {
+            METADATA_LINKS_KEY: {
                 IncomingLinkTag(kind="hyperlink", tag="http://a"),
             },
         },
@@ -132,7 +134,7 @@ def test_link_directed(cassandra: GraphStoreFactory) -> None:
         page_content="B",
         metadata={
             "content_id": "b",
-            "link_tags": {
+            METADATA_LINKS_KEY: {
                 IncomingLinkTag(kind="hyperlink", tag="http://b"),
                 OutgoingLinkTag(kind="hyperlink", tag="http://a"),
             },
@@ -142,7 +144,7 @@ def test_link_directed(cassandra: GraphStoreFactory) -> None:
         page_content="C",
         metadata={
             "content_id": "c",
-            "link_tags": {
+            METADATA_LINKS_KEY: {
                 OutgoingLinkTag(kind="hyperlink", tag="http://a"),
             },
         },
@@ -151,7 +153,7 @@ def test_link_directed(cassandra: GraphStoreFactory) -> None:
         page_content="D",
         metadata={
             "content_id": "d",
-            "link_tags": {
+            METADATA_LINKS_KEY: {
                 OutgoingLinkTag(kind="hyperlink", tag="http://a"),
                 OutgoingLinkTag(kind="hyperlink", tag="http://b"),
             },
@@ -196,7 +198,7 @@ def test_mmr_traversal(request, gs_factory: str):
         page_content="-0.124",
         metadata={
             "content_id": "v0",
-            "link_tags": {
+            METADATA_LINKS_KEY: {
                 OutgoingLinkTag(kind="explicit", tag="link"),
             },
         },
@@ -211,7 +213,7 @@ def test_mmr_traversal(request, gs_factory: str):
         page_content="+0.25",
         metadata={
             "content_id": "v2",
-            "link_tags": {
+            METADATA_LINKS_KEY: {
                 IncomingLinkTag(kind="explicit", tag="link"),
             },
         },
@@ -220,7 +222,7 @@ def test_mmr_traversal(request, gs_factory: str):
         page_content="+1.0",
         metadata={
             "content_id": "v3",
-            "link_tags": {
+            METADATA_LINKS_KEY: {
                 IncomingLinkTag(kind="explicit", tag="link"),
             },
         },
@@ -255,7 +257,7 @@ def test_write_retrieve_keywords(request, gs_factory: str):
         page_content="Typical Greetings",
         metadata={
             "content_id": "greetings",
-            "link_tags": {
+            METADATA_LINKS_KEY: {
                 IncomingLinkTag(kind="parent", tag="parent"),
             },
         },
@@ -264,7 +266,7 @@ def test_write_retrieve_keywords(request, gs_factory: str):
         page_content="Hello World",
         metadata={
             "content_id": "doc1",
-            "link_tags": {
+            METADATA_LINKS_KEY: {
                 OutgoingLinkTag(kind="parent", tag="parent"),
                 BidirLinkTag(kind="kw", tag="greeting"),
                 BidirLinkTag(kind="kw", tag="world"),
@@ -275,7 +277,7 @@ def test_write_retrieve_keywords(request, gs_factory: str):
         page_content="Hello Earth",
         metadata={
             "content_id": "doc2",
-            "link_tags": {
+            METADATA_LINKS_KEY: {
                 OutgoingLinkTag(kind="parent", tag="parent"),
                 BidirLinkTag(kind="kw", tag="greeting"),
                 BidirLinkTag(kind="kw", tag="earth"),
@@ -320,6 +322,13 @@ def test_texts_to_nodes():
         TextNode(metadata={"a": "b"}, text="a"),
         TextNode(metadata={"c": "d"}, text="b"),
     ]
+    assert list(
+        _texts_to_nodes(
+            ["a"],
+            [{"links": {IncomingLinkTag(kind="hyperlink", tag="http://b")}}],
+            None,
+        )
+    ) == [TextNode(links={IncomingLinkTag(kind="hyperlink", tag="http://b")}, text="a")]
     with pytest.raises(ValueError):
         list(_texts_to_nodes(["a", "b"], None, ["a"]))
     with pytest.raises(ValueError):
@@ -332,15 +341,23 @@ def test_texts_to_nodes():
 
 def test_documents_to_nodes():
     documents = [
-        Document(page_content="a", metadata={"a": "b"}),
+        Document(
+            page_content="a",
+            metadata={"links": {IncomingLinkTag(kind="hyperlink", tag="http://b")}},
+        ),
         Document(page_content="b", metadata={"c": "d"}),
     ]
     assert list(_documents_to_nodes(documents, ["a", "b"])) == [
-        TextNode(id="a", metadata={"a": "b"}, text="a"),
+        TextNode(
+            id="a",
+            metadata={},
+            links={IncomingLinkTag(kind="hyperlink", tag="http://b")},
+            text="a",
+        ),
         TextNode(id="b", metadata={"c": "d"}, text="b"),
     ]
     assert list(_documents_to_nodes(documents, None)) == [
-        TextNode(metadata={"a": "b"}, text="a"),
+        TextNode(links={IncomingLinkTag(kind="hyperlink", tag="http://b")}, text="a"),
         TextNode(metadata={"c": "d"}, text="b"),
     ]
     with pytest.raises(ValueError):

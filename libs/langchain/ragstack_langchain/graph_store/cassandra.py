@@ -101,7 +101,9 @@ class CassandraGraphStore(GraphStore):
             if not isinstance(node, TextNode):
                 raise ValueError("Only adding TextNode is supported at the moment")
             _nodes.append(
-                graph_store.TextNode(id=node.id, text=node.text, metadata=node.metadata)
+                graph_store.TextNode(
+                    id=node.id, text=node.text, metadata=node.metadata, links=node.links
+                )
             )
         return self.store.add_nodes(_nodes)
 
