@@ -39,7 +39,7 @@ class BidirLinkTag(LinkTag):
         super().__init__(kind=kind, tag=tag, direction="bidir")
 
 
-LINKS = "links"
+METADATA_LINKS_KEY = "links"
 
 
 def get_links(doc_or_md: Union[Document, Dict[str, Any]]) -> Set[Link]:
@@ -53,10 +53,10 @@ def get_links(doc_or_md: Union[Document, Dict[str, Any]]) -> Set[Link]:
     if isinstance(doc_or_md, Document):
         doc_or_md = doc_or_md.metadata
 
-    links = doc_or_md.setdefault(LINKS, set())
+    links = doc_or_md.setdefault(METADATA_LINKS_KEY, set())
     if not isinstance(links, Set):
         links = set(links)
-        doc_or_md[LINKS] = links
+        doc_or_md[METADATA_LINKS_KEY] = links
     return links
 
 

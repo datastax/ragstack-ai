@@ -1,20 +1,22 @@
 from dataclasses import dataclass
-from typing import Literal, Dict, Any, Set
+from typing import Literal
 
 
 @dataclass(frozen=True)
-class _LinkTag:
+class Link:
     kind: str
-    tag: str
     direction: Literal["incoming", "outgoing", "bidir"]
 
+    def __post_init__(self):
+        if self.__class__ in [Link, LinkTag]:
+            raise TypeError(
+                f"Abstract class {self.__class__.__name__} cannot be instantiated"
+            )
+
 
 @dataclass(frozen=True)
-class LinkTag(_LinkTag):
-    def __init__(self, kind: str, tag: str, direction: str) -> None:
-        if self.__class__ == LinkTag:
-            raise TypeError("Abstract class LinkTag cannot be instantiated")
-        super().__init__(kind, tag, direction)
+class LinkTag(Link):
+    tag: str
 
 
 @dataclass(frozen=True)
