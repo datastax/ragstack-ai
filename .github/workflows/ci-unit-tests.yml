@@ -139,9 +139,15 @@ jobs:
             rm -rf $dir/.tox
           }
 
-          run_itests libs/colbert
-          run_itests libs/langchain
-          run_itests libs/llamaindex
+          if [[ "true" == "${{ needs.preconditions.outputs.libs_colbert }}" ]]; then
+            run_itests libs/colbert
+          fi
+          if [[ "true" == "${{ needs.preconditions.outputs.libs_langchain }}" ]]; then
+            run_itests libs/langchain
+          fi
+          if [[ "true" == "${{ needs.preconditions.outputs.libs_llamaindex }}" ]]; then
+            run_itests libs/llamaindex
+          fi
 
       - name: Cleanup AstraDB
         uses: nicoloboschi/cleanup-astradb@v1

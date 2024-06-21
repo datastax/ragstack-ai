@@ -1,9 +1,7 @@
 from dataclasses import dataclass
 from typing import Literal, Dict, Any, Set, Union
-import typing
 
-if typing.TYPE_CHECKING:
-    from langchain_core.documents import Document
+from langchain_core.documents import Document
 
 
 @dataclass(frozen=True)
@@ -12,8 +10,10 @@ class Link:
     direction: Literal["incoming", "outgoing", "bidir"]
 
     def __post_init__(self):
-        if self.__class__ == LinkTag:
-            raise TypeError("Abstract class Link cannot be instantiated")
+        if self.__class__ in [Link, LinkTag]:
+            raise TypeError(
+                f"Abstract class {self.__class__.__name__} cannot be instantiated"
+            )
 
 
 @dataclass(frozen=True)
@@ -42,22 +42,16 @@ class BidirLinkTag(LinkTag):
 METADATA_LINKS_KEY = "links"
 
 
-def get_links(doc_or_md: Union["langchain_core.documents.Document", Dict[str, Any]]) -> Set[Link]:
+def get_links(doc_or_md: Union[Document, Dict[str, Any]]) -> Set[Link]:
     """Get the links from a document or metadata.
-
     Args:
         doc_or_md: The metadata to get the link tags from.
-
     Returns:
         The set of link tags from the document or metadata.
     """
-    try:
-        from langchain_core.documents import Document
 
-        if isinstance(doc_or_md, Document):
-            doc_or_md = doc_or_md.metadata
-    finally:
-        pass
+    if isinstance(doc_or_md, Document):
+        doc_or_md = doc_or_md.metadata
 
     links = doc_or_md.setdefault(METADATA_LINKS_KEY, set())
     if not isinstance(links, Set):
@@ -66,11 +60,8 @@ def get_links(doc_or_md: Union["langchain_core.documents.Document", Dict[str, An
     return links
 
 
-def add_links(
-    doc_or_md: Union["langchain_core.documents.Document", Dict[str, Any]], *links: Link
-) -> None:
+def add_links(doc_or_md: Union[Document, Dict[str, Any]], *links: Link) -> None:
     """Add links to the given metadata.
-
     Args:
         doc_or_md: The document or metadata to add the links to.
         *links: The links to add to the metadata.
