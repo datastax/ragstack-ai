@@ -187,7 +187,7 @@ class GraphStore:
             f"""
             INSERT INTO {keyspace}.{node_table} (
                 content_id, kind, text_content, text_embedding, link_to_tags,
-                metadata_blob, links_blob,
+                metadata_blob, links_blob
             ) VALUES (?, '{Kind.passage}', ?, ?, ?, ?, ?)
             """
         )
