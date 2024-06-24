@@ -39,12 +39,12 @@ class ConcurrentQueries(contextlib.AbstractContextManager):
                     self._completion.notify()
 
     def _handle_error(self, error, future: ResponseFuture):
+        logger.error(
+            "Error executing query: %s",
+            future.query,
+            exc_info=error,
+        )
         with self._completion:
-            logger.error(
-                "Error executing query: %s",
-                future,
-                exc_info=error,
-            )
             self._error = error
             self._completion.notify()
 

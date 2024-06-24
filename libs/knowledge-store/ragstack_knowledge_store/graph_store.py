@@ -305,21 +305,21 @@ class GraphStore:
                 link_from_tags = set()  # link from these tags
 
                 for tag in links:
-                    tag_str = f"{tag.kind}:{tag.tag}"
-                    if tag.direction == "incoming" or tag.direction == "bidir":
+                    if tag.direction == "in" or tag.direction == "bidir":
                         # An incoming link should be linked *from* nodes with the given tag.
-                        link_from_tags.add(tag_str)
-                    if tag.direction == "outgoing" or tag.direction == "bidir":
-                        link_to_tags.add(tag_str)
+                        link_from_tags.add((tag.kind, tag.tag))
+                    if tag.direction == "out" or tag.direction == "bidir":
+                        link_to_tags.add((tag.kind, tag.tag))
 
                 cq.execute(
                     self._insert_passage,
-                    (id, text, text_embedding, link_to_tags),
+                    parameters=(id, text, text_embedding, link_to_tags),
                 )
 
                 for kind, value in link_from_tags:
                     cq.execute(
-                        self._insert_tag, (id, kind, value, f"{kind}:{value}", text_embedding)
+                        self._insert_tag,
+                        parameters=(id, kind, value, f"{kind}:{value}", text_embedding)
                     )
 
         return ids
