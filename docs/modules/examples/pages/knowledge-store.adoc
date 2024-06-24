@@ -1,17 +1,12 @@
-= Knowledge Store
+= {graph-store} Example
 :navtitle: Knowledge Store
 :page-layout: tutorial
 :page-icon-role: bg-[var(--ds-neutral-900)]
 :page-toclevels: 1
-:keywords: Knowledge Store, Knowledge Graph, Graph Database, Knowledge Graph Triples, GraphViz
+:keywords: Knowledge Graph, Graph Database, Knowledge Graph Triples, GraphViz
 :page-colab-link: https://colab.research.google.com/github/datastax/ragstack-ai/blob/main/libs/knowledge-store/notebooks/astra_support.ipynb
 
-Use RAGStack, https://python.langchain.com/docs/use_cases/graph/constructing/#llm-graph-transformer[`LLMGraphTransformer`], and https://www.datastax.com/products/datastax-astra[DataStax AstraDB] to extract knowledge triples and store them in a vector database.
-
-[IMPORTANT]
-====
-This feature is currently under development and has not been fully tested. It is not supported for use in production environments. Please use this feature in testing and development environments only.
-====
+Create a knowledge store and use it to answer questions with graph RAG chains.
 
 == Prerequisites
 
@@ -25,343 +20,384 @@ This feature is currently under development and has not been fully tested. It is
 +
 [source,bash]
 ----
-pip install ragstack-ai-knowledge-graph python-dotenv
+pip install ragstack-ai-langchain[knowledge-store] beautifulsoup4 markdownify python-dotenv
 ----
 +
-. Create a `.env` file and store the necessary credentials.
+. Create a `.env` file with the following environment variables:
 +
+.env
 [source,bash]
 ----
-OPENAI_API_KEY="sk-..."
-ASTRA_DB_DATABASE_ID="670d40c2-80f9-4cb0-8c74-d524dd6944d1"
-ASTRA_DB_APPLICATION_TOKEN="AstraCS:..."
-ASTRA_DB_KEYSPACE="default_keyspace"
+OPENAI_API_KEY="<your key here>"
+LANGCHAIN_TRACING_V2=true
+LANGCHAIN_API_KEY="<your key here>"
+ASTRA_DB_DATABASE_ID="<your DB ID here>"
+ASTRA_DB_APPLICATION_TOKEN="<your key here>"
+ASTRA_DB_KEYSPACE="<your keyspace here>"
 ----
-
++
 If you're running the notebook in Colab, run the cell using `getpass` to set the necessary environment variables.
 
-== Create a graph store in Astra
 
-. Import the necessary libraries and load the variables from your `.env` files.
+== Create an application to scrape and load content
+
+. Create an application that scrapes sitemaps, loads content, and creates a graph store with the content.
++
+. Import dependencies:
 +
 [source,python]
 ----
-import dotenv
+import asyncio
+
+import requests
+from bs4 import BeautifulSoup
+from dotenv import load_dotenv
+from markdownify import MarkdownConverter
+
 import cassio
-from ragstack_knowledge_graph.cassandra_graph_store import CassandraGraphStore
-from langchain_experimental.graph_transformers import LLMGraphTransformer
-from langchain_openai import ChatOpenAI
+from langchain_community.document_loaders import AsyncHtmlLoader
 from langchain_core.documents import Document
-from ragstack_knowledge_graph.render import render_graph_documents
-from ragstack_knowledge_graph.traverse import Node
-from ragstack_knowledge_graph import extract_entities
-from operator import itemgetter
-from langchain_core.runnables import RunnableLambda, RunnablePassthrough
-from langchain_core.prompts import ChatPromptTemplate
+from langchain_openai import OpenAIEmbeddings
+from ragstack_knowledge_store.graph_store import CONTENT_ID
+from ragstack_langchain.graph_store import CassandraGraphStore
+from ragstack_langchain.graph_store.extractors import HtmlLinkEdgeExtractor
+from typing import AsyncIterator, Iterable
+----
 
-dotenv.load_dotenv()
-----
-+
-. Initialize a connection to AstraDB with the Cass-IO library.
-+
-[source,python]
-----
-import cassio
-cassio.init(auto=True)
-----
-+
-. Create graph store.
+=== Scrape the URLs from sitemaps and process content
+
+. Declare constant values for the sitemaps and extra URLs to load. This example only loads one sitemap from the documentation to limit token usage.
+. Use the BeautifulSoup library to parse the XML content of each sitemap and get a list of URLs.
 +
 [source,python]
 ----
-from knowledge_graph.cassandra_graph_store import CassandraGraphStore
-graph_store = CassandraGraphStore()
-----
+SITEMAPS = [
+    "https://docs.datastax.com/en/sitemap-astra-db-vector.xml",
+]
+EXTRA_URLS = ["https://github.com/jbellis/jvector"]
+SITE_PREFIX = "astra"
 
-== Extract a knowledge graph from your data
-
-. Extract a knowledge graph with LLMGraphTransformer, and render it to Astra with GraphViz.
-+
-[source,python]
-----
-llm = ChatOpenAI(temperature=0, model_name="gpt-4")
-
-llm_transformer = LLMGraphTransformer(llm=llm)
-
-text = """
-Marie Curie, was a Polish and naturalised-French physicist and chemist who conducted pioneering research on radioactivity.
-She was the first woman to win a Nobel Prize, the first person to win a Nobel Prize twice, and the only person to win a Nobel Prize in two scientific fields.
-Her husband, Pierre Curie, was a co-winner of her first Nobel Prize, making them the first-ever married couple to win the Nobel Prize and launching the Curie family legacy of five Nobel Prizes.
-She was, in 1906, the first woman to become a professor at the University of Paris.
-"""
-documents = [Document(page_content=text)]
-graph_documents = llm_transformer.convert_to_graph_documents(documents)
-print(f"Nodes:{graph_documents[0].nodes}")
-print(f"Relationships:{graph_documents[0].relationships}")
-----
-+
-. Render the extracted graph to GraphViz and save the extracted graph documents to the AstraDB graph store.
-+
-[source,python]
-----
-render_graph_documents(graph_documents)
-graph_store.add_graph_documents(graph_documents)
-----
-
-== Query the graph store
-
-. Query the `GraphStore`.
-The `as_runnable` method takes some configuration for how to extract the subgraph and returns a LangChain `Runnable`. This `Runnable` can be invoked on a node or sequence of nodes to traverse from those starting points.
-+
-[source,python]
-----
-graph_store.as_runnable(steps=2).invoke(Node("Marie Curie", "Person"))
-----
-+
-. For getting started, the library also provides a `Runnable` for extracting the starting entities from a question.
-+
-[source,python]
-----
-extract_entities(llm).invoke({ "question": "Who is Marie Curie?"})
-----
-
-== Query Chain
-
-Create a chain which does the following:
-
-. Use the entity extraction `Runnable` from the library to
-determine the starting points.
-. Retrieve the sub-knowledge graphs starting from those nodes.
-. Create a context containing those knowledge triples.
-. Apply the LLM to answer the question given the context.
-+
-[source,python]
-----
-llm = ChatOpenAI(model_name = "gpt-4")
-
-def _combine_relations(relations):
-    return "\n".join(map(repr, relations))
-
-ANSWER_PROMPT = (
-    "The original question is given below."
-    "This question has been used to retrieve information from a knowledge graph."
-    "The matching triples are shown below."
-    "Use the information in the triples to answer the original question.\n\n"
-    "Original Question: {question}\n\n"
-    "Knowledge Graph Triples:\n{context}\n\n"
-    "Response:"
-)
-
-chain = (
-    { "question": RunnablePassthrough() }
-    | RunnablePassthrough.assign(entities = extract_entities(llm))
-    | RunnablePassthrough.assign(triples = itemgetter("entities") | graph_store.as_runnable())
-    | RunnablePassthrough.assign(context = itemgetter("triples") | RunnableLambda(_combine_relations))
-    | ChatPromptTemplate.from_messages([ANSWER_PROMPT])
-    | llm
-)
-
-response=chain.invoke("Who is Marie Curie?")
-print(f"Chain Response: {response}")
-----
-+
-. Run the chain end-to-end to answer a question using the retrieved knowledge.
-+
-[source,bash]
-----
-python3.11 knowledge-graph-marie-curie.py
-----
-+
-Result:
-+
-[source,bash]
-----
-Nodes: [Node(id='Marie Curie', type='Person'), Node(id='Polish', type='Nationality'), Node(id='French', type='Nationality'), Node(id='Physicist', type='Profession'), Node(id='Chemist', type='Profession'), Node(id='Radioactivity', type='Scientific concept'), Node(id='Nobel Prize', type='Award'), Node(id='Pierre Curie', type='Person'), Node(id='University Of Paris', type='Institution'), Node(id='Professor', type='Profession')]
-Relationships: [Relationship(source=Node(id='Marie Curie', type='Person'), target=Node(id='Polish', type='Nationality'), type='HAS_NATIONALITY'), Relationship(source=Node(id='Marie Curie', type='Person'), target=Node(id='French', type='Nationality'), type='HAS_NATIONALITY'), Relationship(source=Node(id='Marie Curie', type='Person'), target=Node(id='Physicist', type='Profession'), type='IS_A'), Relationship(source=Node(id='Marie Curie', type='Person'), target=Node(id='Chemist', type='Profession'), type='IS_A'), Relationship(source=Node(id='Marie Curie', type='Person'), target=Node(id='Radioactivity', type='Scientific concept'), type='RESEARCHED'), Relationship(source=Node(id='Marie Curie', type='Person'), target=Node(id='Nobel Prize', type='Award'), type='WON'), Relationship(source=Node(id='Pierre Curie', type='Person'), target=Node(id='Nobel Prize', type='Award'), type='WON'), Relationship(source=Node(id='Marie Curie', type='Person'), target=Node(id='Pierre Curie', type='Person'), type='MARRIED_TO'), Relationship(source=Node(id='Marie Curie', type='Person'), target=Node(id='University Of Paris', type='Institution'), type='WORKED_AT'), Relationship(source=Node(id='Marie Curie', type='Person'), target=Node(id='Professor', type='Profession'), type='IS_A')]
-Chain Response: content='Marie Curie was a physicist, chemist, and professor. She was of French and Polish nationality. She was married to Pierre Curie and both of them won the Nobel Prize. She worked at the University of Paris and researched radioactivity.' response_metadata={'token_usage': {'completion_tokens': 50, 'prompt_tokens': 308, 'total_tokens': 358}, 'model_name': 'gpt-4', 'system_fingerprint': None, 'finish_reason': 'stop', 'logprobs': None} id='run-79178e44-64a0-4077-8b90-f21fd004f745-0'
-----
-
-== Complete code
-
-.Python
-[%collapsible%open]
-====
-[source,python]
-----
-import dotenv
-import cassio
-from ragstack_knowledge_graph.cassandra_graph_store import CassandraGraphStore
-from langchain_experimental.graph_transformers import LLMGraphTransformer
-from langchain_openai import ChatOpenAI
-from langchain_core.documents import Document
-from ragstack_knowledge_graph.render import render_graph_documents
-from ragstack_knowledge_graph.traverse import Node
-from ragstack_knowledge_graph import extract_entities
-from operator import itemgetter
-from langchain_core.runnables import RunnableLambda, RunnablePassthrough
-from langchain_core.prompts import ChatPromptTemplate
-
-# Load environment variables
-dotenv.load_dotenv()
-
-# Initialize cassio
-cassio.init(auto=True)
-
-# Create graph store
-graph_store = CassandraGraphStore()
-
-# Initialize LLM for graph transformer
-llm = ChatOpenAI(temperature=0, model_name="gpt-4")
-llm_transformer = LLMGraphTransformer(llm=llm)
-
-# Sample text
-text = """
-Marie Curie, was a Polish and naturalised-French physicist and chemist who conducted pioneering research on radioactivity.
-She was the first woman to win a Nobel Prize, the first person to win a Nobel Prize twice, and the only person to win a Nobel Prize in two scientific fields.
-Her husband, Pierre Curie, was a co-winner of her first Nobel Prize, making them the first-ever married couple to win the Nobel Prize and launching the Curie family legacy of five Nobel Prizes.
-She was, in 1906, the first woman to become a professor at the University of Paris.
-"""
-documents = [Document(page_content=text)]
-
-# Convert documents to graph documents
-graph_documents = llm_transformer.convert_to_graph_documents(documents)
-print(f"Nodes: {graph_documents[0].nodes}")
-print(f"Relationships: {graph_documents[0].relationships}")
-
-# Render the extracted graph to GraphViz
-render_graph_documents(graph_documents)
-
-# Save the extracted graph documents to the AstraDB / Cassandra Graph Store
-graph_store.add_graph_documents(graph_documents)
-
-# Query the graph
-graph_store.as_runnable(steps=2).invoke(Node("Marie Curie", "Person"))
-
-# Example showing extracted entities (nodes)
-extract_entities(llm).invoke({"question": "Who is Marie Curie?"})
-
-# Define the answer prompt
-ANSWER_PROMPT = (
-    "The original question is given below."
-    "This question has been used to retrieve information from a knowledge graph."
-    "The matching triples are shown below."
-    "Use the information in the triples to answer the original question.\n\n"
-    "Original Question: {question}\n\n"
-    "Knowledge Graph Triples:\n{context}\n\n"
-    "Response:"
-)
-
-# Combine relations function
-def _combine_relations(relations):
-    return "\n".join(map(repr, relations))
-
-# Create the chain for querying
-chain = (
-    {"question": RunnablePassthrough()}
-    | RunnablePassthrough.assign(entities=extract_entities(llm))
-    | RunnablePassthrough.assign(triples=itemgetter("entities") | graph_store.as_runnable())
-    | RunnablePassthrough.assign(context=itemgetter("triples") | RunnableLambda(_combine_relations))
-    | ChatPromptTemplate.from_messages([ANSWER_PROMPT])
-    | llm
-)
-
-# Invoke the chain
-response=chain.invoke("Who is Marie Curie?")
-print(f"Chain Response: {response}")
-----
-====
-
-== Use KnowledgeSchema instead of LLMGraphTransformer
-
-Instead of using `LLMGraphTransformer` to build your graph, the Knowledge Graph library also includes a unique knowledge extraction system called `KnowledgeSchema` that lets you define your nodes and relationships in a YAML file and load it to guide the graph extraction process.
-
-== Example usage
-
-. Copy the sample `marie_curie_schema.yaml` file https://github.com/datastax/ragstack-ai/blob/main/libs/knowledge-graph/tests/marie_curie_schema.yaml[from the RAGStack repo]. This example assumes you copy it to the same directory as your script.
-
-. Create a new Python script and add the following code. In this example, `KnowledgeSchema` is initialized from a YAML file, the `KnowledgeSchemaExtractor` uses an LLM to extract knowledge from the source according to the YAML-defined schema, and the extracted nodes and relationships are printed.
-+
-.extraction-test.py
-[source,python]
-----
-from os import path
-
-from langchain_community.graphs.graph_document import Node, Relationship
-from langchain_core.documents import Document
-from langchain_core.language_models import BaseChatModel
-from langchain_openai import ChatOpenAI
-
-OPENAI_API_KEY = "sk-..."
-
-from ragstack_knowledge_graph.extraction import (
-    KnowledgeSchema,
-    KnowledgeSchemaExtractor,
-)
-
-def extractor(llm: BaseChatModel) -> KnowledgeSchemaExtractor:
-    schema = KnowledgeSchema.from_file(
-        path.join(path.dirname(__file__), "./marie_curie_schema.yaml")
+def load_pages(sitemap_url):
+    r = requests.get(
+        sitemap_url,
+        headers={
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:58.0) Gecko/20100101 Firefox/58.0",
+        },
     )
-    return KnowledgeSchemaExtractor(
-        llm=llm,
-        schema=schema,
+    xml = r.text
+    soup = BeautifulSoup(xml, features="xml")
+    url_tags = soup.find_all("url")
+    for url in url_tags:
+        yield (url.find("loc").text)
+
+URLS = [url for sitemap_url in SITEMAPS for url in load_pages(sitemap_url)] + EXTRA_URLS
+
+markdown_converter = MarkdownConverter(heading_style="ATX")
+html_link_extractor = HtmlLinkEdgeExtractor()
+
+def select_content(soup: BeautifulSoup, url: str) -> BeautifulSoup:
+    if url.startswith("https://docs.datastax.com/en/"):
+        return soup.select_one("article.doc")
+    elif url.startswith("https://github.com"):
+        return soup.select_one("article.entry-content")
+    else:
+        return soup
+----
++
+. The `load_and_process_pages` function fetches web pages from the URL list, retrieves content from them, and converts the content to Markdown. It also extracts links (`<a href="...">`) from the content to create edges between the documents.
++
+[source,python]
+----
+async def load_and_process_pages(urls: Iterable[str]) -> AsyncIterator[Document]:
+    loader = AsyncHtmlLoader(
+        urls,
+        requests_per_second=4,
+        header_template={"User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:58.0) Gecko/20100101 Firefox/58.0"},
     )
+    async for html in loader.alazy_load():
+        url = html.metadata["source"]
+        html.metadata[CONTENT_ID] = url
+        soup = BeautifulSoup(html.page_content, "html.parser")
+        content = select_content(soup, url)
+        html_link_extractor.extract_one(html, content)
+        html.page_content = markdown_converter.convert_soup(content)
+        yield html
+----
 
-MARIE_CURIE_SOURCE = """
-Marie Curie, was a Polish and naturalised-French physicist and chemist who
-conducted pioneering research on radioactivity. She was the first woman to win a
-Nobel Prize, the first person to win a Nobel Prize twice, and the only person to
-win a Nobel Prize in two scientific fields. Her husband, Pierre Curie, was a
-won first Nobel Prize with her, making them the first-ever married couple to
-win the Nobel Prize and launching the Curie family legacy of five Nobel Prizes.
-She was, in 1906, the first woman to become a professor at the University of
-Paris.
-"""
+=== Initialize environment and graph store
 
-def test_extraction(extractor: KnowledgeSchemaExtractor):
-    results = extractor.extract([Document(page_content=MARIE_CURIE_SOURCE)])
+. Initialize the Cassio library for talking to Cassandra / Astra DB and create the `GraphStore`.
++
+[source,python]
+----
+load_dotenv()
+cassio.init(auto=True)
+embeddings = OpenAIEmbeddings()
+graph_store = CassandraGraphStore(
+    embeddings, node_table=f"{SITE_PREFIX}_nodes", edge_table=f"{SITE_PREFIX}_edges"
+)
+----
++
+. Fetch pages and asynchronously write them to the graph store in batches of 50.
++
+[source,python]
+----
+docs = []
 
-    print("Extracted Nodes:")
-    for node in results[0].nodes:
-        print(f"Node ID: {node.id}, Type: {node.type}")
+async def process_documents():
+    not_found, found = 0, 0
+    docs = []
+    async for doc in load_and_process_pages(URLS):
+        if doc.page_content.startswith("\n# Page Not Found"):
+            not_found += 1
+            continue
 
-    print("\nExtracted Relationships:")
-    for relationship in results[0].relationships:
-        print(f"Relationship: {relationship.source.id} -> {relationship.target.id}, Type: {relationship.type}")
+        docs.append(doc)
+        found += 1
+
+        if len(docs) >= 50:
+            graph_store.add_documents(docs)
+            docs.clear()
+
+    if docs:
+        graph_store.add_documents(docs)
+
+    print(f"{not_found} (of {not_found + found}) URLs were not found")
 
 if __name__ == "__main__":
-    llm = ChatOpenAI(temperature=0, model_name="gpt-4", openai_api_key=OPENAI_API_KEY)
-    extractor_instance = extractor(llm)
-    test_extraction(extractor_instance)
-
+    asyncio.run(process_documents())
 ----
 +
-. Run the script with `python3 extraction-test.py` and view the results.
+You will see output like this until all pages are fetched and edges are created:
++
+[source,bash]
+----
+....
+Fetching pages: 100%|##########| 1368/1368 [04:23<00:00,  5.19it/s]
+....
+
+....
+Added 120 edges
+96 (of 1368) URLs were not found
+....
+----
+
+== Create an application to execute RAG chains
+
+. Create a new application in the same directory as the previous application.
+. Import dependencies:
 +
 [source,python]
 ----
-Extracted Nodes:
-Node ID: Marie Curie, Type: Person
-Node ID: Polish, Type: Nationality
-Node ID: French, Type: Nationality
-Node ID: Physicist, Type: Occupation
-Node ID: Chemist, Type: Occupation
-Node ID: Nobel Prize, Type: Award
-Node ID: Pierre Curie, Type: Person
-Node ID: University Of Paris, Type: Institution
-Node ID: Professor, Type: Occupation
+import cassio
 
-Extracted Relationships:
-Relationship: Marie Curie -> Polish, Type: HAS_NATIONALITY
-Relationship: Marie Curie -> French, Type: HAS_NATIONALITY
-Relationship: Marie Curie -> Physicist, Type: HAS_OCCUPATION
-Relationship: Marie Curie -> Chemist, Type: HAS_OCCUPATION
-Relationship: Marie Curie -> Nobel Prize, Type: RECEIVED
-Relationship: Pierre Curie -> Nobel Prize, Type: RECEIVED
-Relationship: Marie Curie -> Pierre Curie, Type: MARRIED_TO
-Relationship: Pierre Curie -> Marie Curie, Type: MARRIED_TO
-Relationship: Marie Curie -> University Of Paris, Type: WORKED_AT
-Relationship: Marie Curie -> Professor, Type: HAS_OCCUPATION
+from dotenv import load_dotenv
+
+from langchain_openai import OpenAIEmbeddings, ChatOpenAI
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.runnables import RunnablePassthrough
+from langchain_core.output_parsers import StrOutputParser
+from ragstack_langchain.graph_store import CassandraGraphStore
+----
++
+. Load environment variables and declare constants.
+This example uses the following `QUESTION` because the ideal answer should be concise and in-depth, based on how the vector indexing is actually implemented.
++
+[source,python]
+----
+SITE_PREFIX = "astra"
+QUESTION = "What vector indexing algorithms does Astra use?"
+----
++
+. Initialize a session with the embeddings and graph store.
++
+[source,python]
+----
+load_dotenv()
+cassio.init(auto=True)
+embeddings = OpenAIEmbeddings()
+graph_store = CassandraGraphStore(
+    embeddings, node_table=f"{SITE_PREFIX}_nodes", edge_table=f"{SITE_PREFIX}_edges"
+)
+----
++
+. Define the LLM and prompt template.
++
+[source,python]
+----
+llm = ChatOpenAI(model="gpt-3.5-turbo")
+template = """You are a helpful technical support bot. You should provide complete answers explaining the options the user has available to address their problem. Answer the question based only on the following context:
+{context}
+
+Question: {question}
+"""
+prompt = ChatPromptTemplate.from_template(template)
+----
++
+. Create a function to format the documents.
+This function can also limit the number of documents and the length of the content to limit token usage.
++
+[source,python]
+----
+def format_docs(docs, max_length=200, max_docs=50):
+    docs = docs[:max_docs]
+
+    formatted = "\n\n".join(
+        f"From {doc.metadata['content_id']}: {doc.page_content[:max_length]}..."
+        if len(doc.page_content) > max_length else
+        f"From {doc.metadata['content_id']}: {doc.page_content}"
+        for doc in docs
+    )
+    return formatted
 ----
 
+=== Create and execute the RAG chains
 
+Create a chain for each retrieval method.
+
+. The notebook uses the `IPython` library to display the results in Markdown format, but this example just uses `print` to display the results, with some added text so you can see which retrieval method is being used.
++
+[source,python]
+----
+def run_and_render(chain, question, description):
+    print(f"\nRunning chain: {description}")
+    result = chain.invoke(question)
+    print("Output:")
+    print(result)
+----
++
+. Create a vector retriever chain that only uses vector similarity.
++
+[source,python]
+----
+# Depth 0 doesn't traverses edges and is equivalent to vector similarity only.
+vector_retriever = graph_store.as_retriever(search_kwargs={"depth": 0})
+
+vector_rag_chain = (
+    {"context": vector_retriever | format_docs, "question": RunnablePassthrough()}
+    | prompt
+    | llm
+    | StrOutputParser()
+)
+
+run_and_render(vector_rag_chain, QUESTION, "Vector-Only Retrieval")
+----
++
+. Create a graph traversal retriever chain that uses vector similarity and traverses one level of edges.
++
+[source,python]
+----
+# Depth 1 does vector similarity and then traverses 1 level of edges.
+graph_retriever = graph_store.as_retriever(search_kwargs={"depth": 1})
+
+graph_rag_chain = (
+    {"context": graph_retriever | format_docs, "question": RunnablePassthrough()}
+    | prompt
+    | llm
+    | StrOutputParser()
+)
+
+run_and_render(graph_rag_chain, QUESTION, "Graph Traversal")
+----
++
+. Create an MMR graph traversal retriever chain that uses vector similarity and traverses two levels of edges.
++
+[source,python]
+----
+mmr_graph_retriever = graph_store.as_retriever(
+    search_type="mmr_traversal",
+    search_kwargs={
+        "k": 4,
+        "fetch_k": 10,
+        "depth": 2,
+        # "score_threshold": 0.2,
+    },
+)
+
+mmr_graph_rag_chain = (
+    {"context": mmr_graph_retriever | format_docs, "question": RunnablePassthrough()}
+    | prompt
+    | llm
+    | StrOutputParser()
+)
+run_and_render(mmr_graph_rag_chain, QUESTION, "MMR Graph Traversal")
+----
++
+. Finally, run the chains and display the results.
++
+[source,python]
+----
+print("\nDocument retrieval results:")
+for i, doc in enumerate(vector_retriever.invoke(QUESTION)):
+    print(f"Vector [{i}]:    {doc.metadata['content_id']}")
+
+for i, doc in enumerate(graph_retriever.invoke(QUESTION)):
+    print(f"Graph [{i}]:     {doc.metadata['content_id']}")
+
+for i, doc in enumerate(mmr_graph_retriever.invoke(QUESTION)):
+    print(f"MMR Graph [{i}]: {doc.metadata['content_id']}")
+----
++
+You will see output like this:
++
+.Results
+[%collapsible%open]
+====
+[source,bash]
+----
+Running chain: Vector-Only Retrieval
+Output:
+Astra DB Serverless uses the Vector Search feature, which allows for vector indexing algorithms to be utilized for similarity searches within the database. The specific vector indexing algorithms used by Astra DB Serverless are not explicitly mentioned in the provided context. However, the Vector Search feature enables data to be compared by similarity within the database, even if it is not explicitly defined by a connection. This feature is particularly useful for machine learning models and AI applications that require similarity searches based on vectors.
+
+Running chain: Depth 1 Retrieval
+Output:
+Astra DB Serverless uses the following vector indexing algorithms:
+
+1. Locality Sensitive Hashing (LSH)
+2. Product Quantization (PQ)
+3. Hierarchical Navigable Small World Graphs (HNSW)
+
+Running chain: MMR Based Retrieval
+Output:
+Astra DB Serverless offers both Serverless (Vector) and Serverless (Non-Vector) databases. The vector databases in Astra use vector indexing algorithms for efficient search operations. The specific vector indexing algorithms used by Astra are not explicitly mentioned in the provided context. However, vector databases typically utilize approximate nearest neighbor search algorithms for efficient searching in high-dimensional data spaces. These algorithms are designed to overcome the limitations of exact nearest neighbor search in higher dimensions. For more specific information on the vector indexing algorithms used by Astra, you may refer to the official Astra documentation or contact DataStax support for further assistance.
+
+Document retrieval results:
+Vector [0]:    https://docs.datastax.com/en/astra-db-serverless/get-started/concepts.html
+Vector [1]:    https://docs.datastax.com/en/cql/astra/getting-started/vector-search-quickstart.html
+Vector [2]:    https://docs.datastax.com/en/astra-db-serverless/databases/database-overview.html
+Vector [3]:    https://docs.datastax.com/en/astra-db-serverless/get-started/astra-db-introduction.html
+Graph [0]:     https://docs.datastax.com/en/astra-db-serverless/get-started/concepts.html
+Graph [1]:     https://docs.datastax.com/en/cql/astra/getting-started/vector-search-quickstart.html
+Graph [2]:     https://docs.datastax.com/en/cql/astra/developing/indexing/indexing-concepts.html
+Graph [3]:     https://docs.datastax.com/en/astra-db-serverless/databases/database-overview.html
+Graph [4]:     https://docs.datastax.com/en/astra-db-serverless/databases/embedding-generation.html
+Graph [5]:     https://docs.datastax.com/en/astra-db-serverless/integrations/semantic-kernel.html
+Graph [6]:     https://docs.datastax.com/en/astra-db-serverless/tutorials/chatbot.html
+Graph [7]:     https://docs.datastax.com/en/astra-db-serverless/tutorials/recommendations.html
+Graph [8]:     https://docs.datastax.com/en/cql/astra/developing/indexing/sai/sai-overview.html
+Graph [9]:     https://docs.datastax.com/en/glossary/index.html
+Graph [10]:     https://github.com/jbellis/jvector
+Graph [11]:     https://docs.datastax.com/en/astra-db-serverless/administration/maintenance-schedule.html
+Graph [12]:     https://docs.datastax.com/en/astra-db-serverless/administration/support.html
+Graph [13]:     https://docs.datastax.com/en/astra-db-serverless/databases/backup-restore.html
+Graph [14]:     https://docs.datastax.com/en/astra-db-serverless/databases/database-limits.html
+MMR Graph [0]: https://docs.datastax.com/en/astra-db-serverless/get-started/concepts.html
+MMR Graph [1]: https://docs.datastax.com/en/astra-db-serverless/cli-reference/astra-cli.html
+MMR Graph [2]: https://github.com/jbellis/jvector
+MMR Graph [3]: https://docs.datastax.com/en/cql/astra/developing/indexing/indexing-concepts.html
+----
+====
+
+== Conclusion
+
+With vector-only retrieval, you retrieved chunks from the Astra documentation explaining that it used JVector. Since it didn't follow the link to https://github.com/jbellis/jvector[JVector on GitHub] it didn't actually answer the question.
+
+The graph retrieval started with the same set of chunks, but it followed the edge to the documents we loaded from GitHub. This allowed the LLM to read in more depth how JVector is implemented, which allowed it to answer the question more clearly and with more detail.
+
+The MMR graph retrieval went even further, following two levels of edges. This allowed the LLM to read even more about JVector and provide an even more detailed answer.
+
+== Complete code examples
+
+include::examples:partial$knowledge-store-load.adoc[]
+
+include::examples:partial$knowledge-store-retrieve.adoc[]
