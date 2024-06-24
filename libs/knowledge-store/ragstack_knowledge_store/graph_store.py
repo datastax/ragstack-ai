@@ -380,7 +380,7 @@ class GraphStore:
             for mime_type, embeddings in embeddings_dict.items():
                 for node, embedding in zip(mime_buckets[mime_type], embeddings):
                     if CONTENT_ID not in node.metadata:
-                        node.metadata[CONTENT_ID] = secrets.token_hex(8)
+                        node.metadata[CONTENT_ID] = node.id if node.id else secrets.token_hex(8)
                     node_id = node.metadata[CONTENT_ID]
                     ids.append(node_id)
 
