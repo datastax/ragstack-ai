@@ -362,3 +362,26 @@ def test_documents_to_nodes():
         list(_documents_to_nodes(documents, ["a"]))
     with pytest.raises(ValueError):
         list(_documents_to_nodes(documents[1:], ["a", "b"]))
+
+def test_metadata(cassandra: GraphStoreFactory) -> None:
+    store = cassandra.store()
+    store.add_documents([
+        Document(
+            page_content="A",
+            metadata={
+                "content_id": "a",
+                METADATA_LINKS_KEY: {
+                    Link.incoming(kind="hyperlink", tag="http://a"),
+                    Link.bidir(kind="other", tag="foo"),
+                },
+                "other": "some other field"
+            },
+        )
+    ])
+    results = store.similarity_search("A")
+    assert len(results) == 1
+    assert results[0].metadata.get("other") == "some other field"
+    assert set(results[0].metadata.get(METADATA_LINKS_KEY)) == {
+        Link.incoming(kind="hyperlink", tag="http://a"),
+        Link.bidir(kind="other", tag="foo"),
+    }
