@@ -15,7 +15,7 @@ The Graph Store makes use of the following metadata fields on each `Document`:
 - `content_id`: If assigned, this specifies the unique ID of the `Document`.
   If not assigned, one will be generated.
   This should be set if you may re-ingest the same document so that it is overwritten rather than being duplicated.
-- `link_tags`: A set of `LinkTag`s indicating how this node should be linked to other nodes.
+- `links`: A set of `Link`s indicating how this node should be linked to other nodes.
 
 #### Hyperlinks
 

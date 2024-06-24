@@ -2,18 +2,16 @@ import secrets
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import (
-    Dict,
     Iterable,
     List,
     NamedTuple,
     Optional,
     Sequence,
     Set,
-    Tuple,
 )
 
 import numpy as np
-from cassandra.cluster import ConsistencyLevel, ResponseFuture, Session
+from cassandra.cluster import ConsistencyLevel, Session
 from cassio.config import check_resolve_keyspace, check_resolve_session
 
 from .concurrency import ConcurrentQueries
@@ -59,16 +57,10 @@ def _row_to_node(row) -> Node:
     )
 
 
-def _results_to_nodes(results: Optional[ResponseFuture]) -> Iterable[TextNode]:
-    if results:
-        for row in results:
-            yield _row_to_node(row)
-
-
-def _results_to_ids(results: Optional[ResponseFuture]) -> Iterable[str]:
-    if results:
-        for row in results:
-            yield row.content_id
+@dataclass
+class _Edge:
+    target_content_id: str
+    target_text_embedding: List[float]
 
 
 def emb_to_ndarray(embedding: List[float]) -> np.ndarray:
@@ -90,9 +82,7 @@ class _Candidate:
     redundancy: float
     """(1 - Lambda) * max(Similarity to selected items)."""
 
-    def __init__(
-        self, embedding: List[float], lambda_mult: float, query_embedding: np.ndarray
-    ):
+    def __init__(self, embedding: List[float], lambda_mult: float, query_embedding: np.ndarray):
         self.embedding = emb_to_ndarray(embedding)
 
         # TODO: Refactor to use cosine_similarity_top_k to allow an array of embeddings?
@@ -103,9 +93,7 @@ class _Candidate:
         self.score = self.similarity_to_query - self.redundancy
         self.distance = 0
 
-    def update_for_selection(
-        self, lambda_mult: float, selection_embedding: List[float]
-    ):
+    def update_for_selection(self, lambda_mult: float, selection_embedding: List[float]):
         selected_r_sim = (1 - lambda_mult) * cosine_similarity(
             selection_embedding, self.embedding
         )[0]
@@ -120,11 +108,10 @@ class GraphStore:
         embedding: EmbeddingModel,
         *,
         node_table: str = "graph_nodes",
-        edge_table: str = "graph_edges",
+        targets_table: str = "graph_targets",
         session: Optional[Session] = None,
         keyspace: Optional[str] = None,
         setup_mode: SetupMode = SetupMode.SYNC,
-        concurrency: int = 20,
     ):
         """A hybrid vector-and-graph store backed by Cassandra.
 
@@ -133,17 +120,15 @@ class GraphStore:
 
         Args:
             embedding: The embeddings to use for the document content.
-            concurrency: Maximum number of queries to have concurrently executing.
             setup_mode: Mode used to create the Cassandra table (SYNC,
                 ASYNC or OFF).
         """
         session = check_resolve_session(session)
         keyspace = check_resolve_keyspace(keyspace)
 
-        self._concurrency = concurrency
         self._embedding = embedding
         self._node_table = node_table
-        self._edge_table = edge_table
+        self._targets_table = targets_table
         self._session = session
         self._keyspace = keyspace
 
@@ -160,15 +145,15 @@ class GraphStore:
         self._insert_passage = session.prepare(
             f"""
             INSERT INTO {keyspace}.{node_table} (
-                content_id, kind, text_content, text_embedding, link_to_tags, link_from_tags
-            ) VALUES (?, '{Kind.passage}', ?, ?, ?, ?)
+                content_id, kind, text_content, text_embedding, link_to_tags
+            ) VALUES (?, '{Kind.passage}', ?, ?, ?)
             """
         )
 
-        self._insert_edge = session.prepare(
+        self._insert_tag = session.prepare(
             f"""
-            INSERT INTO {keyspace}.{edge_table} (
-                source_content_id, target_content_id, kind, target_text_embedding
+            INSERT INTO {keyspace}.{targets_table} (
+                target_content_id, kind, tag, target_text_embedding
             ) VALUES (?, ?, ?, ?)
             """
         )
@@ -176,14 +161,6 @@ class GraphStore:
         self._query_by_id = session.prepare(
             f"""
             SELECT content_id, kind, text_content
-            FROM {keyspace}.{node_table}
-            WHERE content_id = ?
-            """
-        )
-
-        self._query_embedding_by_id = session.prepare(
-            f"""
-            SELECT content_id, text_embedding
             FROM {keyspace}.{node_table}
             WHERE content_id = ?
             """
@@ -197,17 +174,25 @@ class GraphStore:
             LIMIT ?
             """
         )
-        self._query_by_embedding.consistency_level = ConsistencyLevel.QUORUM
+        self._query_by_embedding.consistency_level = ConsistencyLevel.ONE
 
-        self._query_ids_by_embedding = session.prepare(
+        self._query_ids_and_link_to_tags_by_embedding = session.prepare(
             f"""
-            SELECT content_id
+            SELECT content_id, link_to_tags
             FROM {keyspace}.{node_table}
             ORDER BY text_embedding ANN OF ?
             LIMIT ?
             """
         )
-        self._query_ids_by_embedding.consistency_level = ConsistencyLevel.QUORUM
+        self._query_ids_and_link_to_tags_by_embedding.consistency_level = ConsistencyLevel.ONE
+
+        self._query_ids_and_link_to_tags_by_id = session.prepare(
+            f"""
+            SELECT content_id, link_to_tags
+            FROM {keyspace}.{node_table}
+            WHERE content_id = ?
+            """
+        )
 
         self._query_ids_and_embedding_by_embedding = session.prepare(
             f"""
@@ -217,47 +202,29 @@ class GraphStore:
             LIMIT ?
             """
         )
-        self._query_ids_and_embedding_by_embedding.consistency_level = (
-            ConsistencyLevel.QUORUM
-        )
+        self._query_ids_and_embedding_by_embedding.consistency_level = ConsistencyLevel.ONE
 
-        self._query_linked_ids = session.prepare(
+        self._query_source_tags_by_id = session.prepare(
             f"""
-            SELECT target_content_id AS content_id
-            FROM {keyspace}.{edge_table}
-            WHERE source_content_id = ?
-            """
-        )
-
-        self._query_edges_by_source = session.prepare(
-            f"""
-            SELECT target_content_id, target_text_embedding
-            FROM {keyspace}.{edge_table}
-            WHERE source_content_id = ?
-            """
-        )
-
-        self._query_ids_by_link_to_tag = session.prepare(
-            f"""
-            SELECT content_id
+            SELECT link_to_tags
             FROM {keyspace}.{node_table}
-            WHERE link_to_tags CONTAINS ?
+            WHERE content_id = ?
             """
         )
 
-        self._query_ids_and_embedding_by_link_to_tag = session.prepare(
+        self._query_targets_embeddings_by_kind_and_tag = session.prepare(
             f"""
-            SELECT content_id, text_embedding
-            FROM {keyspace}.{node_table}
-            WHERE link_to_tags CONTAINS ?
+            SELECT target_content_id, target_text_embedding, tag
+            FROM {keyspace}.{targets_table}
+            WHERE kind = ? AND tag = ?
             """
         )
 
-        self._query_ids_and_embedding_by_link_from_tag = session.prepare(
+        self._query_targets_by_kind_and_value = session.prepare(
             f"""
-            SELECT content_id, text_embedding
-            FROM {keyspace}.{node_table}
-            WHERE link_from_tags CONTAINS ?
+            SELECT target_content_id, kind, tag
+            FROM {keyspace}.{targets_table}
+            WHERE kind = ? AND tag = ?
             """
         )
 
@@ -271,8 +238,7 @@ class GraphStore:
                 text_content TEXT,
                 text_embedding VECTOR<FLOAT, {embedding_dim}>,
 
-                link_to_tags SET<TEXT>,
-                link_from_tags SET<TEXT>,
+                link_to_tags SET<TUPLE<TEXT, TEXT>>,
 
                 PRIMARY KEY (content_id)
             )
@@ -280,17 +246,15 @@ class GraphStore:
         )
 
         self._session.execute(
-            f"""CREATE TABLE IF NOT EXISTS {self._keyspace}.{self._edge_table} (
-                source_content_id TEXT,
+            f"""CREATE TABLE IF NOT EXISTS {self._keyspace}.{self._targets_table} (
                 target_content_id TEXT,
-
-                -- Kind of edge.
                 kind TEXT,
+                tag TEXT,
 
                 -- text_embedding of target node. allows MMR to be applied without fetching nodes.
                 target_text_embedding VECTOR<FLOAT, {embedding_dim}>,
 
-                PRIMARY KEY (source_content_id, target_content_id)
+                PRIMARY KEY ((kind, tag), target_content_id)
             )
             """
         )
@@ -303,25 +267,8 @@ class GraphStore:
             """
         )
 
-        # Index on tags
-        self._session.execute(
-            f"""
-            CREATE CUSTOM INDEX IF NOT EXISTS {self._node_table}_link_from_tags_index
-            ON {self._keyspace}.{self._node_table} (link_from_tags)
-            USING 'StorageAttachedIndex';
-            """
-        )
-
-        self._session.execute(
-            f"""
-            CREATE CUSTOM INDEX IF NOT EXISTS {self._node_table}_link_to_tags_index
-            ON {self._keyspace}.{self._node_table} (link_to_tags)
-            USING 'StorageAttachedIndex';
-            """
-        )
-
     def _concurrent_queries(self) -> ConcurrentQueries:
-        return ConcurrentQueries(self._session, concurrency=self._concurrency)
+        return ConcurrentQueries(self._session)
 
     # TODO: Async (aadd_nodes)
     def add_nodes(
@@ -342,10 +289,6 @@ class GraphStore:
 
         ids = []
 
-        tag_to_new_sources: Dict[str, List[Tuple[str, str]]] = {}
-        tag_to_new_targets: Dict[str, Dict[str, Tuple[str, List[float]]]] = {}
-
-        # Step 1: Add the nodes, collecting the tags and new sources / targets.
         with self._concurrent_queries() as cq:
             tuples = zip(texts, text_embeddings, metadatas, nodes_links)
             for text, text_embedding, metadata, links in tuples:
@@ -358,160 +301,49 @@ class GraphStore:
                 link_from_tags = set()  # link from these tags
 
                 for tag in links:
-                    if hasattr(tag, "tag"):
-                        tag_str = f"{tag.kind}:{tag.tag}"
-                        if tag.direction == "incoming" or tag.direction == "bidir":
-                            # An incoming link should be linked *from* nodes with the
-                            # given tag.
-                            link_from_tags.add(tag_str)
-                            tag_to_new_targets.setdefault(tag_str, dict())[id] = (
-                                tag.kind,
-                                text_embedding,
-                            )
-                        if tag.direction == "outgoing" or tag.direction == "bidir":
-                            link_to_tags.add(tag_str)
-                            tag_to_new_sources.setdefault(tag_str, list()).append(
-                                (tag.kind, id)
-                            )
+                    if tag.direction == "in" or tag.direction == "bidir":
+                        # An incoming link should be linked *from* nodes with the given tag.
+                        link_from_tags.add((tag.kind, tag.tag))
+                    if tag.direction == "out" or tag.direction == "bidir":
+                        link_to_tags.add((tag.kind, tag.tag))
 
                 cq.execute(
                     self._insert_passage,
-                    (id, text, text_embedding, link_to_tags, link_from_tags),
+                    parameters=(id, text, text_embedding, link_to_tags),
                 )
 
-        # Step 2: Query information about those tags to determine the edges to add.
-        # Add edges as needed.
-        id_set = set(ids)
-        with self._concurrent_queries() as cq:
-            edges = []
-
-            def add_edge(source_id, target_id, kind, target_embedding):
-                nonlocal added_edges
-                if source_id == target_id:
-                    # Don't add self-cycles (could happen with bidirectional tags).
-                    return
-
-                edges.append((source_id, target_id, kind, target_embedding))
-
-                # TODO: Would be good to be able to execute these... but
-                # may cause problems if we can't execute it right away
-                # (because of a pending query) and we can't complete
-                # the pending queries (because we can't finish the callback).
-
-                # cq.execute(
-                #     self._insert_edge,
-                #     (source_id, target_id, kind, target_embedding),
-                # )
-
-            def add_edges_for_sources(
-                source_rows,
-                target_embeddings: Dict[(str, List[float])],
-            ):
-                for source_id in source_rows:
-                    if source_id in id_set:
-                        # Source ID is new, and anything in `target_embeddings` is too.
-                        # Don't add here.
-                        continue
-
-                    for target_id, (kind, target_emb) in target_embeddings.items():
-                        add_edge(source_id.content_id, target_id, kind, target_emb)
-
-            def add_edges_for_targets(
-                sources: Iterable[Tuple[str, str]],
-                target_rows,
-            ):
-                for target in target_rows:
-                    if target.content_id in id_set:
-                        # Target ID is new, and anything in `sources` is too.
-                        # Don't add here (will be handled later).
-                        continue
-
-                    for kind, source_id in sources:
-                        add_edge(
-                            source_id, target.content_id, kind, target.text_embedding
-                        )
-
-            for tag, new_target_embs in tag_to_new_targets.items():
-                # For each new node with a `link_from_tag`, find the source
-                # nodes with that `link_to_tag`` and create the edges.
-                cq.execute(
-                    self._query_ids_by_link_to_tag,
-                    parameters=(tag,),
-                    callback=lambda sources, targets=new_target_embs: add_edges_for_sources(
-                        sources, targets
-                    ),
-                )
-
-            for tag, new_sources in tag_to_new_sources.items():
-                # For each new node with a `link_to_tag`, find the target
-                # nodes with that `link_from_tag` tag and create the edges.
-                cq.execute(
-                    self._query_ids_and_embedding_by_link_from_tag,
-                    parameters=(tag,),
-                    callback=lambda targets, sources=new_sources: add_edges_for_targets(
-                        sources, targets
-                    ),
-                )
-
-        # Step 3: Add edges.
-        # TODO: Combine steps, ideally to a single set of concurrent queries.
-        # This should be possible, but will require some form of queueing, since
-        # we need to be able to handle a result set, and that may require us to queue
-        # more than |max concurency| edges.
-        added_edges = 0
-        with self._concurrent_queries() as cq:
-            # Add edges from query results (should be one new node and one old node)
-            for edge in edges:
-                added_edges += 1
-                cq.execute(self._insert_edge, edge)
-
-            # Add edges for new nodes
-            for tag, new_sources in tag_to_new_sources.items():
-                for kind, source_id in new_sources:
-                    new_targets = tag_to_new_targets.get(tag, None)
-                    if new_targets is None:
-                        continue
-
-                    for target_id, (
-                        target_kind,
-                        target_embedding,
-                    ) in new_targets.items():
-                        # TODO: Improve the structures so this can be a lookup?
-                        if target_kind == kind and source_id != target_id:
-                            added_edges += 1
-                            cq.execute(
-                                self._insert_edge,
-                                (source_id, target_id, kind, target_embedding),
-                            )
+                for kind, value in link_from_tags:
+                    cq.execute(
+                        self._insert_tag,
+                        parameters=(id, kind, value, text_embedding)
+                    )
 
         return ids
 
-    def _query_by_ids(
+    def _nodes_with_ids(
         self,
         ids: Iterable[str],
     ) -> List[TextNode]:
-        results = []
+        results = {}
         with self._concurrent_queries() as cq:
 
-            def add_documents(rows, index):
-                results.extend([(index, _row_to_node(row)) for row in rows])
+            def add_nodes(rows):
+                for row in rows:
+                    results[row.content_id] = _row_to_node(row)
 
-            for idx, id in enumerate(ids):
-                cq.execute(
-                    self._query_by_id,
-                    parameters=(id,),
-                    callback=lambda rows, index=idx: add_documents(rows, index),
-                )
+            for id in ids:
+                if id not in results:
+                    results[id] = None
+                    cq.execute(self._query_by_id, parameters=(id,), callback=add_nodes)
 
-        results.sort(key=lambda tuple: tuple[0])
-        return [doc for _, doc in results]
+        return [results[id] for id in ids]
 
     def _linked_ids(
         self,
         source_id: str,
     ) -> Iterable[str]:
-        results = self._session.execute(self._query_linked_ids, (source_id,))
-        return _results_to_ids(results)
+        adjacent = self._get_adjacent([source_id])
+        return [edge.target_content_id for edge in adjacent]
 
     def mmr_traversal_search(
         self,
@@ -549,9 +381,7 @@ class GraphStore:
         selected_ids = []
         selected_set = set()
 
-        selected_embeddings = (
-            []
-        )  # selected embeddings. saved to compute redundancy of new nodes.
+        selected_embeddings = []  # selected embeddings. saved to compute redundancy of new nodes.
 
         query_embedding = self._embedding.embed_query(query)
         fetched = self._session.execute(
@@ -592,11 +422,9 @@ class GraphStore:
             # Add unselected edges if reached nodes are within `depth`:
             next_depth = next_selected.distance + 1
             if next_depth < depth:
-                adjacents = self._session.execute(
-                    self._query_edges_by_source, (selected_id,)
-                )
-                for row in adjacents:
-                    target_id = row.target_content_id
+                adjacents = self._get_adjacent([selected_id])
+                for adjacent in adjacents:
+                    target_id = adjacent.target_content_id
                     if target_id in selected_set:
                         # The adjacent node is already included.
                         continue
@@ -608,23 +436,21 @@ class GraphStore:
                             unselected[target_id].distance = next_depth
                         continue
 
-                    adjacent = _Candidate(
-                        row.target_text_embedding, lambda_mult, query_embedding
+                    candidate = _Candidate(
+                        adjacent.target_text_embedding, lambda_mult, query_embedding
                     )
                     for selected_embedding in selected_embeddings:
-                        adjacent.update_for_selection(lambda_mult, selected_embedding)
+                        candidate.update_for_selection(lambda_mult, selected_embedding)
 
-                    unselected[target_id] = adjacent
-                    if adjacent.score > best_score:
-                        best_score = adjacent.score
-                        next_id = row.target_content_id
+                    unselected[target_id] = candidate
+                    if candidate.score > best_score:
+                        best_score = candidate.score
+                        next_id = adjacent.target_content_id
 
-        return self._query_by_ids(selected_ids)
+        return self._nodes_with_ids(selected_ids)
 
-    def traversal_search(
-        self, query: str, *, k: int = 4, depth: int = 1
-    ) -> Iterable[TextNode]:
-        """Retrieve documents from this graph store.
+    def traversal_search(self, query: str, *, k: int = 4, depth: int = 1) -> Iterable[TextNode]:
+        """Retrieve documents from this knowledge store.
 
         First, `k` nodes are retrieved using a vector search for the `query` string.
         Then, additional nodes are discovered up to the given `depth` from those starting
@@ -638,31 +464,89 @@ class GraphStore:
         Returns:
             Collection of retrieved documents.
         """
-        with self._concurrent_queries() as cq:
-            visited = {}
 
-            def visit(d: int, nodes: Sequence[NamedTuple]):
-                nonlocal visited
+        # Depth 0:
+        #   Query for `k` nodes similar to the question.
+        #   Retrieve `content_id` and `link_to_tags`.
+        #
+        # Depth 1:
+        #   Query for nodes that have an incoming tag in the `link_to_tags` set.
+        #   Combine node IDs.
+        #   Query for `link_to_tags` of those "new" node IDs.
+        #
+        # ...
+
+        with self._concurrent_queries() as cq:
+            # Map from visited ID to depth
+            visited_ids = {}
+
+            # Map from visited tag `(kind, tag)` to depth. Allows skipping queries
+            # for tags that we've already traversed.
+            visited_tags = {}
+
+            def visit_nodes(d: int, nodes: Sequence[NamedTuple]):
+                nonlocal visited_ids
+                nonlocal visited_tags
+
+                # Visit nodes at the given depth.
+                # Each node has `content_id` and `link_to_tags`.
+
+                # Iterate over nodes, tracking the *new* outgoing kind tags for this depth.
+                # This is tags that are either new, or newly discovered at a lower depth.
+                outgoing_tags = set()
                 for node in nodes:
                     content_id = node.content_id
-                    if d <= visited.get(content_id, depth):
-                        visited[content_id] = d
-                        # We discovered this for the first time, or at a shorter depth.
-                        if d + 1 <= depth:
-                            cq.execute(
-                                self._query_linked_ids,
-                                parameters=(content_id,),
-                                callback=lambda n, _d=d: visit(_d + 1, n),
-                            )
+
+                    # Add visited ID. If it is closer it is a new node at this depth:
+                    if d <= visited_ids.get(content_id, depth):
+                        visited_ids[content_id] = d
+
+                        # If we can continue traversing from this node,
+                        if d < depth and node.link_to_tags:
+                            # Record any new (or newly discovered at a lower depth) tags to the
+                            # set to traverse.
+                            for kind, value in node.link_to_tags:
+                                if d <= visited_tags.get((kind, value), depth):
+                                    # Record that we'll query this tag at the given depth, so we don't
+                                    # fetch it again (unless we find it an earlier depth)
+                                    visited_tags[(kind, value)] = d
+                                    outgoing_tags.add((kind, value))
+
+                if outgoing_tags:
+                    # If there are new tags to visit at the next depth, query for the node IDs.
+                    for kind, value in outgoing_tags:
+                        cq.execute(
+                            self._query_targets_by_kind_and_value,
+                            parameters=(kind, value,),
+                            callback=lambda rows, d=d: visit_targets(d, rows),
+                        )
+
+            def visit_targets(d: int, targets: Sequence[NamedTuple]):
+                nonlocal visited_ids
+
+                # target_content_id, tag=(kind,value)
+                new_nodes_at_next_depth = set()
+                for target in targets:
+                    content_id = target.target_content_id
+                    if d < visited_ids.get(content_id, depth):
+                        new_nodes_at_next_depth.add(content_id)
+
+                if new_nodes_at_next_depth:
+                    for id in new_nodes_at_next_depth:
+                        cq.execute(
+                            self._query_ids_and_link_to_tags_by_id,
+                            parameters=(id,),
+                            callback=lambda rows, d=d: visit_nodes(d + 1, rows),
+                        )
 
             query_embedding = self._embedding.embed_query(query)
             cq.execute(
-                self._query_ids_by_embedding,
+                self._query_ids_and_link_to_tags_by_embedding,
                 parameters=(query_embedding, k),
-                callback=lambda nodes: visit(0, nodes),
+                callback=lambda nodes: visit_nodes(0, nodes),
             )
 
-        return self._query_by_ids(visited.keys())
+        return self._nodes_with_ids(visited_ids.keys())
 
     def similarity_search(
         self,
@@ -671,3 +555,42 @@ class GraphStore:
     ) -> Iterable[TextNode]:
         for row in self._session.execute(self._query_by_embedding, (embedding, k)):
             yield _row_to_node(row)
+
+    def _get_adjacent(
+        self,
+        source_ids: Iterable[str],
+    ) -> Iterable[_Edge]:
+        """Return the target nodes adjacent to any of the source nodes."""
+
+        link_to_tags = set()
+        targets = dict()
+
+        def add_sources(rows):
+            for row in rows:
+                for new_tag in row.link_to_tags or []:
+                    if new_tag not in link_to_tags:
+                        link_to_tags.add(new_tag)
+                        cq.execute(
+                            self._query_targets_embeddings_by_kind_and_tag,
+                            new_tag,
+                            callback=add_targets
+                        )
+                        link_to_tags.add(new_tag)
+
+        def add_targets(rows):
+            # TODO: Figure out how to use the "kind" on the edge.
+            # This is tricky, since we currently issue one query for anything
+            # adjacent via any kind, and we don't have enough information to
+            # determine which kind(s) a given target was reached from.
+            for row in rows:
+                targets.setdefault(row.target_content_id, row.target_text_embedding)
+
+
+        with self._concurrent_queries() as cq:
+            for source_id in source_ids:
+                cq.execute(self._query_source_tags_by_id, (source_id,), callback=add_sources)
+
+        return [
+            _Edge(target_content_id=content_id, target_text_embedding=embedding)
+            for (content_id, embedding) in targets.items()
+        ]
