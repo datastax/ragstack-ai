@@ -1,12 +1,17 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Generic, Iterable, TypeVar
+from typing import Generic, Iterable, Set, TypeVar
 
 from langchain_core.documents import Document
 from ragstack_knowledge_store._utils import strict_zip
 
+from ragstack_langchain.graph_store.links import Link
+
 InputT = TypeVar("InputT")
+
+METADATA_LINKS_KEY = "links"
+
 
 
 class EdgeExtractor(ABC, Generic[InputT]):

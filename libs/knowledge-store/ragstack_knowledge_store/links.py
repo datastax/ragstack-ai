@@ -1,78 +1,21 @@
 from dataclasses import dataclass
-from typing import Literal, Dict, Any, Set, Union
-import typing
-
-if typing.TYPE_CHECKING:
-    from langchain_core.documents import Document
+from typing import Literal
 
 
 @dataclass(frozen=True)
 class Link:
     kind: str
     direction: Literal["incoming", "outgoing", "bidir"]
-
-    def __post_init__(self):
-        if self.__class__ == LinkTag:
-            raise TypeError("Abstract class Link cannot be instantiated")
-
-
-@dataclass(frozen=True)
-class LinkTag(Link):
     tag: str
 
+    @staticmethod
+    def incoming(kind: str, tag: str) -> "Link":
+        return Link(kind=kind, direction="incoming", tag=tag)
 
-@dataclass(frozen=True)
-class OutgoingLinkTag(LinkTag):
-    def __init__(self, kind: str, tag: str) -> None:
-        super().__init__(kind=kind, tag=tag, direction="outgoing")
+    @staticmethod
+    def outgoing(kind: str, tag: str) -> "Link":
+        return Link(kind=kind, direction="outgoing", tag=tag)
 
-
-@dataclass(frozen=True)
-class IncomingLinkTag(LinkTag):
-    def __init__(self, kind: str, tag: str) -> None:
-        super().__init__(kind=kind, tag=tag, direction="incoming")
-
-
-@dataclass(frozen=True)
-class BidirLinkTag(LinkTag):
-    def __init__(self, kind: str, tag: str) -> None:
-        super().__init__(kind=kind, tag=tag, direction="bidir")
-
-
-METADATA_LINKS_KEY = "links"
-
-
-def get_links(doc_or_md: Union["langchain_core.documents.Document", Dict[str, Any]]) -> Set[Link]:
-    """Get the links from a document or metadata.
-
-    Args:
-        doc_or_md: The metadata to get the link tags from.
-
-    Returns:
-        The set of link tags from the document or metadata.
-    """
-    try:
-        from langchain_core.documents import Document
-
-        if isinstance(doc_or_md, Document):
-            doc_or_md = doc_or_md.metadata
-    finally:
-        pass
-
-    links = doc_or_md.setdefault(METADATA_LINKS_KEY, set())
-    if not isinstance(links, Set):
-        links = set(links)
-        doc_or_md[METADATA_LINKS_KEY] = links
-    return links
-
-
-def add_links(
-    doc_or_md: Union["langchain_core.documents.Document", Dict[str, Any]], *links: Link
-) -> None:
-    """Add links to the given metadata.
-
-    Args:
-        doc_or_md: The document or metadata to add the links to.
-        *links: The links to add to the metadata.
-    """
-    get_links(doc_or_md).update(links)
+    @staticmethod
+    def bidir(kind: str, tag: str) -> "Link":
+        return Link(kind=kind, direction="bidir", tag=tag)

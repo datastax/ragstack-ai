@@ -1,12 +1,11 @@
 from langchain_core.documents import Document
-from ragstack_knowledge_store.links import (
-    add_links,
-    IncomingLinkTag,
-    OutgoingLinkTag,
-)
 from typing import TYPE_CHECKING, Set, Union
 from urllib.parse import urldefrag, urljoin, urlparse
 
+from ragstack_langchain.graph_store.links import (
+    add_links,
+    Link
+)
 from .edge_extractor import EdgeExtractor
 
 if TYPE_CHECKING:
@@ -92,5 +91,5 @@ class HtmlLinkEdgeExtractor(EdgeExtractor[Union[str, "BeautifulSoup"]]):
         hrefs = _parse_hrefs(input, url, self.drop_fragments)
 
         add_links(document,
-                  IncomingLinkTag(kind=self._kind, tag=url),
-                  *[OutgoingLinkTag(kind=self._kind, tag=url) for url in hrefs])
+                  Link.incoming(kind=self._kind, tag=url),
+                  *[Link.outgoing(kind=self._kind, tag=url) for url in hrefs])
