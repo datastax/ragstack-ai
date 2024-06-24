@@ -153,8 +153,8 @@ class GraphStore:
         self._insert_tag = session.prepare(
             f"""
             INSERT INTO {keyspace}.{targets_table} (
-                target_content_id, kind, tag, kind_tag, target_text_embedding
-            ) VALUES (?, ?, ?, ?, ?)
+                target_content_id, kind, tag, target_text_embedding
+            ) VALUES (?, ?, ?, ?)
             """
         )
 
@@ -212,21 +212,19 @@ class GraphStore:
             """
         )
 
-        # TODO: These queries require `ALLOW FILTERING` when run against Cassandra docker images.
-        # But *do not* require filtering when run against Astra.
-        self._query_targets_embeddings_by_kind_tag = session.prepare(
+        self._query_targets_embeddings_by_kind_and_tag = session.prepare(
             f"""
             SELECT target_content_id, target_text_embedding, tag
             FROM {keyspace}.{targets_table}
-            WHERE kind_tag = ?
+            WHERE kind = ? AND tag = ?
             """
         )
 
-        self._query_targets_by_kind_tag = session.prepare(
+        self._query_targets_by_kind_and_value = session.prepare(
             f"""
-            SELECT target_content_id, tag
+            SELECT target_content_id, kind, tag
             FROM {keyspace}.{targets_table}
-            WHERE kind_tag = ?
+            WHERE kind = ? AND tag = ?
             """
         )
 
@@ -252,13 +250,11 @@ class GraphStore:
                 target_content_id TEXT,
                 kind TEXT,
                 tag TEXT,
-                -- String containing "$kind:$tag". Allows for indexing.
-                kind_tag TEXT,
 
                 -- text_embedding of target node. allows MMR to be applied without fetching nodes.
                 target_text_embedding VECTOR<FLOAT, {embedding_dim}>,
 
-                PRIMARY KEY (kind_tag, target_content_id)
+                PRIMARY KEY ((kind, tag), target_content_id)
             )
             """
         )
@@ -319,7 +315,7 @@ class GraphStore:
                 for kind, value in link_from_tags:
                     cq.execute(
                         self._insert_tag,
-                        parameters=(id, kind, value, f"{kind}:{value}", text_embedding)
+                        parameters=(id, kind, value, text_embedding)
                     )
 
         return ids
@@ -509,19 +505,19 @@ class GraphStore:
                         if d < depth and node.link_to_tags:
                             # Record any new (or newly discovered at a lower depth) tags to the
                             # set to traverse.
-                            for kind, tag in node.link_to_tags:
-                                if d <= visited_tags.get((kind, tag), depth):
+                            for kind, value in node.link_to_tags:
+                                if d <= visited_tags.get((kind, value), depth):
                                     # Record that we'll query this tag at the given depth, so we don't
                                     # fetch it again (unless we find it an earlier depth)
-                                    visited_tags[(kind, tag)] = d
-                                    outgoing_tags.add(f"{kind}:{tag}")
+                                    visited_tags[(kind, value)] = d
+                                    outgoing_tags.add((kind, value))
 
                 if outgoing_tags:
                     # If there are new tags to visit at the next depth, query for the node IDs.
-                    for tag in outgoing_tags:
+                    for kind, value in outgoing_tags:
                         cq.execute(
-                            self._query_targets_by_kind_tag,
-                            parameters=(tag,),
+                            self._query_targets_by_kind_and_value,
+                            parameters=(kind, value,),
                             callback=lambda rows, d=d: visit_targets(d, rows),
                         )
 
@@ -575,8 +571,8 @@ class GraphStore:
                     if new_tag not in link_to_tags:
                         link_to_tags.add(new_tag)
                         cq.execute(
-                            self._query_targets_embeddings_by_kind_tag,
-                            (f"{new_tag[0]}:{new_tag[1]}", ),
+                            self._query_targets_embeddings_by_kind_and_tag,
+                            new_tag,
                             callback=add_targets
                         )
                         link_to_tags.add(new_tag)

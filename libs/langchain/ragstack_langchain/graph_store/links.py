@@ -1,4 +1,5 @@
-from typing import Set
+from dataclasses import dataclass
+from typing import Set, Literal
 
 from langchain_core.documents import Document
 
