@@ -220,6 +220,16 @@ class GraphStore:
             """
         )
 
+        self._query_targets_embeddings_by_kind_and_tag_and_embedding = session.prepare(
+            f"""
+            SELECT target_content_id, target_text_embedding, tag
+            FROM {keyspace}.{targets_table}
+            WHERE kind = ? AND tag = ?
+            ORDER BY target_text_embedding ANN of ?
+            LIMIT ?
+            """
+        )
+
         self._query_targets_by_kind_and_value = session.prepare(
             f"""
             SELECT target_content_id, kind, tag
@@ -263,6 +273,14 @@ class GraphStore:
         self._session.execute(
             f"""CREATE CUSTOM INDEX IF NOT EXISTS {self._node_table}_text_embedding_index
             ON {self._keyspace}.{self._node_table}(text_embedding)
+            USING 'StorageAttachedIndex';
+            """
+        )
+
+        # Index on target_text_embedding (for similarity search)
+        self._session.execute(
+            f"""CREATE CUSTOM INDEX IF NOT EXISTS {self._targets_table}_target_text_embedding_index
+            ON {self._keyspace}.{self._targets_table}(target_text_embedding)
             USING 'StorageAttachedIndex';
             """
         )
@@ -352,6 +370,7 @@ class GraphStore:
         k: int = 4,
         depth: int = 2,
         fetch_k: int = 100,
+        adjacent_k: int = 10,
         lambda_mult: float = 0.5,
         score_threshold: float = float("-inf"),
     ) -> Iterable[TextNode]:
@@ -368,7 +387,9 @@ class GraphStore:
         Args:
             query: The query string to search for.
             k: Number of Documents to return. Defaults to 4.
-            fetch_k: Number of Documents to fetch via similarity.
+            fetch_k: Number of initial Documents to fetch via similarity.
+                Defaults to 100.
+            adjacent_k: Number of adjacent Documents to fetch.
                 Defaults to 10.
             depth: Maximum depth of a node (number of edges) from a node
                 retrieved via similarity. Defaults to 2.
@@ -389,9 +410,9 @@ class GraphStore:
             (query_embedding, fetch_k),
         )
 
-        query_embedding = emb_to_ndarray(query_embedding)
+        query_embedding_ndarray = emb_to_ndarray(query_embedding)
         unselected = {
-            row.content_id: _Candidate(row.text_embedding, lambda_mult, query_embedding)
+            row.content_id: _Candidate(row.text_embedding, lambda_mult, query_embedding_ndarray)
             for row in fetched
         }
         best_score, next_id = max(
@@ -422,7 +443,9 @@ class GraphStore:
             # Add unselected edges if reached nodes are within `depth`:
             next_depth = next_selected.distance + 1
             if next_depth < depth:
-                adjacents = self._get_adjacent([selected_id])
+                adjacents = self._get_adjacent([selected_id],
+                                               embedding=query_embedding,
+                                               k_per_tag=adjacent_k)
                 for adjacent in adjacents:
                     target_id = adjacent.target_content_id
                     if target_id in selected_set:
@@ -437,7 +460,7 @@ class GraphStore:
                         continue
 
                     candidate = _Candidate(
-                        adjacent.target_text_embedding, lambda_mult, query_embedding
+                        adjacent.target_text_embedding, lambda_mult, query_embedding_ndarray
                     )
                     for selected_embedding in selected_embeddings:
                         candidate.update_for_selection(lambda_mult, selected_embedding)
@@ -559,6 +582,8 @@ class GraphStore:
     def _get_adjacent(
         self,
         source_ids: Iterable[str],
+        embedding: Optional[List[float]] = None,
+        k_per_tag: Optional[int] = None,
     ) -> Iterable[_Edge]:
         """Return the target nodes adjacent to any of the source nodes."""
 
@@ -570,11 +595,19 @@ class GraphStore:
                 for new_tag in row.link_to_tags or []:
                     if new_tag not in link_to_tags:
                         link_to_tags.add(new_tag)
-                        cq.execute(
-                            self._query_targets_embeddings_by_kind_and_tag,
-                            new_tag,
-                            callback=add_targets
-                        )
+
+                        if embedding is not None:
+                            cq.execute(
+                                self._query_targets_embeddings_by_kind_and_tag_and_embedding,
+                                parameters = (new_tag[0], new_tag[1], embedding, k_per_tag or 10),
+                                callback=add_targets
+                            )
+                        else:
+                            cq.execute(
+                                self._query_targets_embeddings_by_kind_and_tag,
+                                parameters = (new_tag[0], new_tag[1]),
+                                callback=add_targets
+                            )
                         link_to_tags.add(new_tag)
 
         def add_targets(rows):
@@ -590,6 +623,7 @@ class GraphStore:
             for source_id in source_ids:
                 cq.execute(self._query_source_tags_by_id, (source_id,), callback=add_sources)
 
+        # TODO: Consider a combined limit based on the similarity and/or predicated MMR score?
         return [
             _Edge(target_content_id=content_id, target_text_embedding=embedding)
             for (content_id, embedding) in targets.items()
