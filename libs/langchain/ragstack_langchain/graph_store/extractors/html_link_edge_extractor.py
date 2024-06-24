@@ -1,6 +1,6 @@
 from langchain_core.documents import Document
-from ragstack_knowledge_store.link_tag import (
-    get_link_tags,
+from ragstack_langchain.graph_store.links import (
+    get_links,
     IncomingLinkTag,
     OutgoingLinkTag,
 )
@@ -68,7 +68,7 @@ class HtmlLinkEdgeExtractor(EdgeExtractor[Union[str, "BeautifulSoup"]]):
             url_field: Name of the metadata field containing the URL
                 of the content. Defaults to "source".
             kind: The kind of edge to extract. Defaults to "hyperlink".
-            drop_fragmets: Whether fragments in URLs and links shoud be
+            drop_fragments: Whether fragments in URLs and links shoud be
                 dropped. Defaults to `True`.
         """
         try:
@@ -99,7 +99,7 @@ class HtmlLinkEdgeExtractor(EdgeExtractor[Union[str, "BeautifulSoup"]]):
 
         hrefs = _parse_hrefs(input, url, self.drop_fragments)
 
-        link_tags = get_link_tags(document.metadata)
+        link_tags = get_links(document)
         link_tags.add(IncomingLinkTag(kind=self._kind, tag=url))
         for url in hrefs:
             link_tags.add(OutgoingLinkTag(kind=self._kind, tag=url))
