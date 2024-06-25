@@ -19,12 +19,12 @@ The Graph Store makes use of the following metadata fields on each `Document`:
 
 #### Hyperlinks
 
-To connect nodes based on hyperlinks, you can use the `HtmlLinkEdgeExtractor` as shown below:
+To connect nodes based on hyperlinks, you can use the `HtmlLinkExtractor` as shown below:
 
 ```python
-from ragstack_knowledge_store.langchain.extractors import HtmlLinkEdgeExtractor
+from ragstack_knowledge_store.langchain.extractors import HtmlLinkExtractor
 
-html_link_extractor = HtmlLinkEdgeExtractor()
+html_link_extractor = HtmlLinkExtractor()
 
 for doc in documents:
     doc.metadata["content_id"] = doc.metadata["source"]
