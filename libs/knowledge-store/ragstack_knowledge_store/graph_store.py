@@ -250,14 +250,6 @@ class GraphStore:
             """
         )
 
-        self._query_targets_embeddings_by_kind_and_tag = session.prepare(
-            f"""
-            SELECT target_content_id, target_text_embedding, tag
-            FROM {keyspace}.{targets_table}
-            WHERE kind = ? AND tag = ?
-            """
-        )
-
         self._query_targets_embeddings_by_kind_and_tag_and_embedding = session.prepare(
             f"""
             SELECT target_content_id, target_text_embedding, tag
@@ -640,18 +632,11 @@ class GraphStore:
                     if new_tag not in link_to_tags:
                         link_to_tags.add(new_tag)
 
-                        if query_embedding is not None:
-                            cq.execute(
-                                self._query_targets_embeddings_by_kind_and_tag_and_embedding,
-                                parameters = (new_tag[0], new_tag[1], query_embedding, k_per_tag or 10),
-                                callback=add_targets
-                            )
-                        else:
-                            cq.execute(
-                                self._query_targets_embeddings_by_kind_and_tag,
-                                parameters = (new_tag[0], new_tag[1]),
-                                callback=add_targets
-                            )
+                        cq.execute(
+                            self._query_targets_embeddings_by_kind_and_tag_and_embedding,
+                            parameters = (new_tag[0], new_tag[1], query_embedding, k_per_tag or 10),
+                            callback=add_targets
+                        )
                         link_to_tags.add(new_tag)
 
         def add_targets(rows):
