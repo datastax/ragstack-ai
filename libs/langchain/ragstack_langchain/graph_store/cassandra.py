@@ -6,12 +6,12 @@ from typing import (
     Type,
 )
 
-from cassandra.cluster import ResponseFuture, Session
+from cassandra.cluster import Session
 from langchain_community.utilities.cassandra import SetupMode
 from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
 
-from .base import GraphStore, Node, TextNode
+from .base import GraphStore, Node, TextNode, nodes_to_documents
 from ragstack_knowledge_store import EmbeddingModel, graph_store
 
 
@@ -32,33 +32,16 @@ class _EmbeddingModelAdapter(EmbeddingModel):
         return await self.embeddings.aembed_query(text)
 
 
-def _row_to_document(row) -> Document:
-    return Document(
-        page_content=row.text_content,
-        metadata={
-            graph_store.CONTENT_ID: row.content_id,
-            "kind": row.kind,
-        },
-    )
-
-
-def _results_to_documents(results: Optional[ResponseFuture]) -> Iterable[Document]:
-    if results:
-        for row in results:
-            yield _row_to_document(row)
-
-
 class CassandraGraphStore(GraphStore):
     def __init__(
         self,
         embedding: Embeddings,
         *,
         node_table: str = "graph_nodes",
-        edge_table: str = "graph_edges",
+        targets_table: str = "graph_targets",
         session: Optional[Session] = None,
         keyspace: Optional[str] = None,
         setup_mode: SetupMode = SetupMode.SYNC,
-        concurrency: int = 20,
     ):
         """
         Create the hybrid graph store.
@@ -70,7 +53,6 @@ class CassandraGraphStore(GraphStore):
         with the same `source` metadata value.
         Args:
             embedding: The embeddings to use for the document content.
-            concurrency: Maximum number of queries to have concurrently executing.
             setup_mode: Mode used to create the Cassandra table (SYNC,
                 ASYNC or OFF).
         """
@@ -80,11 +62,10 @@ class CassandraGraphStore(GraphStore):
         self.store = graph_store.GraphStore(
             embedding=_EmbeddingModelAdapter(embedding),
             node_table=node_table,
-            edge_table=edge_table,
+            targets_table=targets_table,
             session=session,
             keyspace=keyspace,
             setup_mode=_setup_mode,
-            concurrency=concurrency,
         )
 
     @property
@@ -134,9 +115,7 @@ class CassandraGraphStore(GraphStore):
         store.add_documents(documents, ids=ids)
         return store
 
-    def similarity_search(
-        self, query: str, k: int = 4, **kwargs: Any
-    ) -> List[Document]:
+    def similarity_search(self, query: str, k: int = 4, **kwargs: Any) -> List[Document]:
         embedding_vector = self._embedding.embed_query(query)
         return self.similarity_search_by_vector(
             embedding_vector,
@@ -146,11 +125,8 @@ class CassandraGraphStore(GraphStore):
     def similarity_search_by_vector(
         self, embedding: List[float], k: int = 4, **kwargs: Any
     ) -> List[Document]:
-        for node in self.store.similarity_search(embedding, k=k):
-            yield Document(
-                page_content=node.text,
-                metadata=node.metadata,
-            )
+        nodes = self.store.similarity_search(embedding, k=k)
+        return list(nodes_to_documents(nodes))
 
     def traversal_search(
         self,
@@ -160,11 +136,8 @@ class CassandraGraphStore(GraphStore):
         depth: int = 1,
         **kwargs: Any,
     ) -> Iterable[Document]:
-        for node in self.store.traversal_search(query, k=k, depth=depth):
-            yield Document(
-                page_content=node.text,
-                metadata=node.metadata,
-            )
+        nodes = self.store.traversal_search(query, k=k, depth=depth)
+        return nodes_to_documents(nodes)
 
     def mmr_traversal_search(
         self,
@@ -177,15 +150,12 @@ class CassandraGraphStore(GraphStore):
         score_threshold: float = float("-inf"),
         **kwargs: Any,
     ) -> Iterable[Document]:
-        for node in self.store.mmr_traversal_search(
+        nodes = self.store.mmr_traversal_search(
             query,
             k=k,
             depth=depth,
             fetch_k=fetch_k,
             lambda_mult=lambda_mult,
             score_threshold=score_threshold,
-        ):
-            yield Document(
-                page_content=node.text,
-                metadata=node.metadata,
-            )
+        )
+        return nodes_to_documents(nodes)

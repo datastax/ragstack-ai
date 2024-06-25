@@ -67,6 +67,8 @@ def _texts_to_nodes(
             raise ValueError("texts iterable longer than ids")
 
         links = _metadata.pop(METADATA_LINKS_KEY, set())
+        if not isinstance(links, Set):
+            links = set(links)
         yield TextNode(
             id=_id,
             metadata=_metadata,
@@ -90,6 +92,8 @@ def _documents_to_nodes(
             raise ValueError("documents iterable longer than ids")
         metadata = doc.metadata.copy()
         links = metadata.pop(METADATA_LINKS_KEY, set())
+        if not isinstance(links, Set):
+            links = set(links)
         yield TextNode(
             id=_id,
             metadata=metadata,
@@ -99,6 +103,21 @@ def _documents_to_nodes(
     if ids and _has_next(ids_it):
         raise ValueError("ids iterable longer than documents")
 
+def nodes_to_documents(
+    nodes: Iterable[Node]
+) -> Iterator[Document]:
+    for node in nodes:
+        metadata = node.metadata.copy()
+        metadata[METADATA_LINKS_KEY] = {
+            # Convert the core `Link` (from the node) back to the local `Link`.
+            Link(kind=link.kind, direction=link.direction, tag=link.tag)
+            for link in node.links
+        }
+
+        yield Document(
+            page_content=node.text,
+            metadata=metadata,
+        )
 
 class GraphStore(VectorStore):
     """A hybrid vector-and-graph graph store.
@@ -226,9 +245,7 @@ class GraphStore(VectorStore):
             Retrieved documents.
         """
         iterator = iter(
-            await run_in_executor(
-                None, self.traversal_search, query, k=k, depth=depth, **kwargs
-            )
+            await run_in_executor(None, self.traversal_search, query, k=k, depth=depth, **kwargs)
         )
         done = object()
         while True:
@@ -327,23 +344,24 @@ class GraphStore(VectorStore):
                 break
             yield doc
 
-    def similarity_search(
-        self, query: str, k: int = 4, **kwargs: Any
-    ) -> List[Document]:
+    def similarity_search(self, query: str, k: int = 4, **kwargs: Any) -> List[Document]:
         return list(self.traversal_search(query, k=k, depth=0))
 
-    async def asimilarity_search(
-        self, query: str, k: int = 4, **kwargs: Any
-    ) -> List[Document]:
+    def max_marginal_relevance_search(self, query: str, k: int = 4, fetch_k: int = 20, lambda_mult: float = 0.5, **kwargs: Any) -> List[Document]:
+        return list(self.mmr_traversal_search(query,
+                                              k=k,
+                                              fetch_k=fetch_k,
+                                              lambda_mult=lambda_mult,
+                                              depth=0))
+
+    async def asimilarity_search(self, query: str, k: int = 4, **kwargs: Any) -> List[Document]:
         return [doc async for doc in self.atraversal_search(query, k=k, depth=0)]
 
     def search(self, query: str, search_type: str, **kwargs: Any) -> List[Document]:
         if search_type == "similarity":
             return self.similarity_search(query, **kwargs)
         elif search_type == "similarity_score_threshold":
-            docs_and_similarities = self.similarity_search_with_relevance_scores(
-                query, **kwargs
-            )
+            docs_and_similarities = self.similarity_search_with_relevance_scores(query, **kwargs)
             return [doc for doc, _ in docs_and_similarities]
         elif search_type == "mmr":
             return self.max_marginal_relevance_search(query, **kwargs)
@@ -358,9 +376,7 @@ class GraphStore(VectorStore):
                 "'mmr' or 'traversal'."
             )
 
-    async def asearch(
-        self, query: str, search_type: str, **kwargs: Any
-    ) -> List[Document]:
+    async def asearch(self, query: str, search_type: str, **kwargs: Any) -> List[Document]:
         if search_type == "similarity":
             return await self.asimilarity_search(query, **kwargs)
         elif search_type == "similarity_score_threshold":
@@ -458,9 +474,7 @@ class GraphStoreRetriever(VectorStoreRetriever):
         if self.search_type == "traversal":
             return list(self.vectorstore.traversal_search(query, **self.search_kwargs))
         elif self.search_type == "mmr_traversal":
-            return list(
-                self.vectorstore.mmr_traversal_search(query, **self.search_kwargs)
-            )
+            return list(self.vectorstore.mmr_traversal_search(query, **self.search_kwargs))
         else:
             return super()._get_relevant_documents(query, run_manager=run_manager)
 
@@ -470,9 +484,7 @@ class GraphStoreRetriever(VectorStoreRetriever):
         if self.search_type == "traversal":
             return [
                 doc
-                async for doc in self.vectorstore.atraversal_search(
-                    query, **self.search_kwargs
-                )
+                async for doc in self.vectorstore.atraversal_search(query, **self.search_kwargs)
             ]
         elif self.search_type == "mmr_traversal":
             return [
@@ -482,6 +494,4 @@ class GraphStoreRetriever(VectorStoreRetriever):
                 )
             ]
         else:
-            return await super()._aget_relevant_documents(
-                query, run_manager=run_manager
-            )
+            return await super()._aget_relevant_documents(query, run_manager=run_manager)
