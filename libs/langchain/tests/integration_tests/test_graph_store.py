@@ -363,9 +363,10 @@ def test_documents_to_nodes():
     with pytest.raises(ValueError):
         list(_documents_to_nodes(documents[1:], ["a", "b"]))
 
-def test_metadata(cassandra: GraphStoreFactory) -> None:
-    store = cassandra.store()
-    store.add_documents([
+@pytest.mark.parametrize("gs_factory", ["cassandra", "astra_db"])
+def test_metadata(request, gs_factory: str):
+    gs_factory: GraphStoreFactory = request.getfixturevalue(gs_factory)
+    store = gs_factory.store([
         Document(
             page_content="A",
             metadata={
@@ -378,6 +379,7 @@ def test_metadata(cassandra: GraphStoreFactory) -> None:
             },
         )
     ])
+
     results = store.similarity_search("A")
     assert len(results) == 1
     assert results[0].metadata.get("other") == "some other field"
