@@ -51,15 +51,10 @@ class SetupMode(Enum):
     OFF = 3
 
 def _serialize_metadata(md: Dict[str, Any]) -> str:
-    print("Serializing MD")
     if isinstance(md.get("links"), Set):
-        print("Copying")
         md = md.copy()
-        print("Making list")
         md["links"] = list(md["links"])
-    print("Dumping")
     s = json.dumps(md)
-    print("Done")
     return s
 
 def _serialize_links(links: Set[Link]) -> str:

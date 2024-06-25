@@ -18,7 +18,6 @@ def test_metadata_serialization():
 def test_links_serialization():
     def assert_roundtrip(links: Set[Link]):
         serialized = _serialize_links(links)
-        print(serialized)
         deserialized = _deserialize_links(serialized)
         assert links == deserialized
 
