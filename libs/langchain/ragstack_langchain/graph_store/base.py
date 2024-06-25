@@ -67,6 +67,8 @@ def _texts_to_nodes(
             raise ValueError("texts iterable longer than ids")
 
         links = _metadata.pop(METADATA_LINKS_KEY, set())
+        if not isinstance(links, Set):
+            links = set(links)
         yield TextNode(
             id=_id,
             metadata=_metadata,
@@ -90,6 +92,8 @@ def _documents_to_nodes(
             raise ValueError("documents iterable longer than ids")
         metadata = doc.metadata.copy()
         links = metadata.pop(METADATA_LINKS_KEY, set())
+        if not isinstance(links, Set):
+            links = set(links)
         yield TextNode(
             id=_id,
             metadata=metadata,
@@ -99,6 +103,21 @@ def _documents_to_nodes(
     if ids and _has_next(ids_it):
         raise ValueError("ids iterable longer than documents")
 
+def nodes_to_documents(
+    nodes: Iterable[Node]
+) -> Iterator[Document]:
+    for node in nodes:
+        metadata = node.metadata.copy()
+        metadata[METADATA_LINKS_KEY] = {
+            # Convert the core `Link` (from the node) back to the local `Link`.
+            Link(kind=link.kind, direction=link.direction, tag=link.tag)
+            for link in node.links
+        }
+
+        yield Document(
+            page_content=node.text,
+            metadata=metadata,
+        )
 
 class GraphStore(VectorStore):
     """A hybrid vector-and-graph graph store.
