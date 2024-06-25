@@ -108,7 +108,11 @@ def nodes_to_documents(
 ) -> Iterator[Document]:
     for node in nodes:
         metadata = node.metadata.copy()
-        metadata[METADATA_LINKS_KEY] = node.links
+        metadata[METADATA_LINKS_KEY] = {
+            # Convert the core `Link` (from the node) back to the local `Link`.
+            Link(kind=link.kind, direction=link.direction, tag=link.tag)
+            for link in node.links
+        }
 
         yield Document(
             page_content=node.text,

@@ -58,10 +58,11 @@ def _serialize_metadata(md: Dict[str, Any]) -> str:
     return s
 
 def _serialize_links(links: Set[Link]) -> str:
+    import dataclasses
     class SetAndLinkEncoder(json.JSONEncoder):
         def default(self, obj):
-            if isinstance(obj, Link):
-                return { "direction": obj.direction, "kind": obj.kind, "tag": obj.tag }
+            if dataclasses.is_dataclass(obj):
+                return dataclasses.asdict(obj)
 
             try:
                 iterable = iter(obj)
