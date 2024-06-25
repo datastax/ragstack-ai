@@ -398,13 +398,6 @@ class GraphStore:
 
         return [results[id] for id in ids]
 
-    def _linked_ids(
-        self,
-        source_id: str,
-    ) -> Iterable[str]:
-        adjacent = self._get_adjacent([source_id])
-        return [edge.target_content_id for edge in adjacent]
-
     def mmr_traversal_search(
         self,
         query: str,
@@ -486,7 +479,7 @@ class GraphStore:
             next_depth = next_selected.distance + 1
             if next_depth < depth:
                 adjacents = self._get_adjacent([selected_id],
-                                               embedding=query_embedding,
+                                               query_embedding=query_embedding,
                                                k_per_tag=adjacent_k)
                 for adjacent in adjacents:
                     target_id = adjacent.target_content_id
@@ -624,10 +617,19 @@ class GraphStore:
     def _get_adjacent(
         self,
         source_ids: Iterable[str],
-        embedding: Optional[List[float]] = None,
+        query_embedding: List[float],
         k_per_tag: Optional[int] = None,
     ) -> Iterable[_Edge]:
-        """Return the target nodes adjacent to any of the source nodes."""
+        """Return the target nodes adjacent to any of the source nodes.
+
+        Args:
+            source_ids: The source IDs to start from when retrieving adjacent nodes.
+            query_embedding: The query embedding. Used to rank target nodes.
+            k_per_tag: The number of target nodes to fetch for each outgoing tag.
+
+        Returns:
+            List of adjacent edges.
+        """
 
         link_to_tags = set()
         targets = dict()
@@ -638,10 +640,10 @@ class GraphStore:
                     if new_tag not in link_to_tags:
                         link_to_tags.add(new_tag)
 
-                        if embedding is not None:
+                        if query_embedding is not None:
                             cq.execute(
                                 self._query_targets_embeddings_by_kind_and_tag_and_embedding,
-                                parameters = (new_tag[0], new_tag[1], embedding, k_per_tag or 10),
+                                parameters = (new_tag[0], new_tag[1], query_embedding, k_per_tag or 10),
                                 callback=add_targets
                             )
                         else:
