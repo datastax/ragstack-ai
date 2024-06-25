@@ -1,13 +1,17 @@
+import json
 import secrets
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import (
+    Any,
+    Dict,
     Iterable,
     List,
     NamedTuple,
     Optional,
     Sequence,
     Set,
+    cast,
 )
 
 import numpy as np
@@ -46,14 +50,48 @@ class SetupMode(Enum):
     ASYNC = 2
     OFF = 3
 
+def _serialize_metadata(md: Dict[str, Any]) -> str:
+    if isinstance(md.get("links"), Set):
+        md = md.copy()
+        md["links"] = list(md["links"])
+    s = json.dumps(md)
+    return s
+
+def _serialize_links(links: Set[Link]) -> str:
+    import dataclasses
+    class SetAndLinkEncoder(json.JSONEncoder):
+        def default(self, obj):
+            if dataclasses.is_dataclass(obj):
+                return dataclasses.asdict(obj)
+
+            try:
+                iterable = iter(obj)
+            except TypeError:
+                pass
+            else:
+                return list(iterable)
+            # Let the base class default method raise the TypeError
+            return super().default(obj)
+    return json.dumps(list(links), cls=SetAndLinkEncoder)
+
+def _deserialize_metadata(json_blob: Optional[str]) -> Dict[str, Any]:
+    # We don't need to convert the links list back to a set -- it will be
+    # converted when accessed, if needed.
+    return cast(Dict[str, Any], json.loads(json_blob or ""))
+
+def _deserialize_links(json_blob: Optional[str]) -> Set[Link]:
+    return {
+        Link(kind=link["kind"], direction=link["direction"], tag=link["tag"])
+        for link in cast(List[Dict], json.loads(json_blob))
+    }
 
 def _row_to_node(row) -> Node:
+    metadata = _deserialize_metadata(row.metadata_blob)
+    links = _deserialize_links(row.links_blob)
     return TextNode(
         text=row.text_content,
-        metadata={
-            CONTENT_ID: row.content_id,
-            "kind": row.kind,
-        },
+        metadata=metadata,
+        links=links,
     )
 
 
@@ -140,13 +178,13 @@ class GraphStore:
                 "Only SYNC and OFF are supported at the moment"
             )
 
-        # TODO: Metadata
         # TODO: Parent ID / source ID / etc.
         self._insert_passage = session.prepare(
             f"""
             INSERT INTO {keyspace}.{node_table} (
-                content_id, kind, text_content, text_embedding, link_to_tags
-            ) VALUES (?, '{Kind.passage}', ?, ?, ?)
+                content_id, kind, text_content, text_embedding, link_to_tags,
+                metadata_blob, links_blob
+            ) VALUES (?, '{Kind.passage}', ?, ?, ?, ?, ?)
             """
         )
 
@@ -160,7 +198,7 @@ class GraphStore:
 
         self._query_by_id = session.prepare(
             f"""
-            SELECT content_id, kind, text_content
+            SELECT content_id, kind, text_content, metadata_blob, links_blob
             FROM {keyspace}.{node_table}
             WHERE content_id = ?
             """
@@ -168,7 +206,7 @@ class GraphStore:
 
         self._query_by_embedding = session.prepare(
             f"""
-            SELECT content_id, kind, text_content
+            SELECT content_id, kind, text_content, metadata_blob, links_blob
             FROM {keyspace}.{node_table}
             ORDER BY text_embedding ANN OF ?
             LIMIT ?
@@ -239,6 +277,8 @@ class GraphStore:
                 text_embedding VECTOR<FLOAT, {embedding_dim}>,
 
                 link_to_tags SET<TUPLE<TEXT, TEXT>>,
+                metadata_blob TEXT,
+                links_blob TEXT,
 
                 PRIMARY KEY (content_id)
             )
@@ -307,9 +347,11 @@ class GraphStore:
                     if tag.direction == "out" or tag.direction == "bidir":
                         link_to_tags.add((tag.kind, tag.tag))
 
+                metadata_blob = _serialize_metadata(metadata)
+                links_blob = _serialize_links(links)
                 cq.execute(
                     self._insert_passage,
-                    parameters=(id, text, text_embedding, link_to_tags),
+                    parameters=(id, text, text_embedding, link_to_tags, metadata_blob, links_blob),
                 )
 
                 for kind, value in link_from_tags:
