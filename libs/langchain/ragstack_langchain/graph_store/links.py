@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Set, Literal
+from typing import Iterable, Literal, Set, Union
 
 from langchain_core.documents import Document
 
@@ -42,10 +42,15 @@ def get_links(doc: Document) -> Set[Link]:
     return links
 
 
-def add_links(doc: Document, *links: Link) -> None:
+def add_links(doc: Document, *links: Union[Link, Iterable[Link]]) -> None:
     """Add links to the given metadata.
     Args:
         doc: The document to add the links to.
         *links: The links to add to the document.
     """
-    get_links(doc).update(links)
+    doc_links = get_links(doc)
+    for link in links:
+        if isinstance(link, Link):
+            doc_links.add(link)
+        else:
+            doc_links.update(link)
