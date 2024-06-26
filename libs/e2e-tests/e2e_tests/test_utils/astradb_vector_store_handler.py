@@ -319,6 +319,16 @@ class AstraDBVectorStoreHandler(VectorStoreHandler):
                     token=self.astra_ref.token,
                     database_id=self.astra_ref.id,
                     bundle_url_template=bundle_url_template,
+                    cloud_kwargs={
+                        # connect timeout for the /metadata endpoint to download secure bundle
+                        "connect_timeout": 30
+                    },
+                    cluster_kwargs={
+                        # connect timeout for actual connections
+                        "connect_timeout": 30,
+                        # remove beta protocol (5) usage leading to tons of warnings
+                        "protocol_version": 4
+                    },
                 )
             else:
                 cassio.init(token=self.astra_ref.token, database_id=self.astra_ref.id)

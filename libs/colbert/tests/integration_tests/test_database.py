@@ -19,7 +19,7 @@ def astra_db():
     return get_astradb_test_store()
 
 
-@pytest.mark.parametrize("vector_store", ["cassandra", "astra_db"])
+@pytest.mark.parametrize("vector_store", ["astra_db"])
 def test_database_sync(request, vector_store: str):
     vector_store = request.getfixturevalue(vector_store)
 

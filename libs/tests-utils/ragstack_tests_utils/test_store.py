@@ -61,7 +61,17 @@ class AstraDBTestStore(TestStore):
     def create_cassandra_session(self) -> Session:
         if self.env == "prod":
             cassio.init(
-                token=self.token, database_id=self.database_id, keyspace=KEYSPACE
+                token=self.token, database_id=self.database_id, keyspace=KEYSPACE,
+                cloud_kwargs={
+                    # connect timeout for the /metadata endpoint to download secure bundle
+                    "connect_timeout": 30
+                },
+                cluster_kwargs={
+                    # connect timeout for actual connections
+                    "connect_timeout": 30,
+                    # remove beta protocol (5) usage leading to tons of warnings
+                    "protocol_version": 4
+                },
             )
         else:
             bundle_url_template = "https://api.dev.cloud.datastax.com/v2/databases/{database_id}/secureBundleURL"
@@ -70,6 +80,16 @@ class AstraDBTestStore(TestStore):
                 database_id=self.database_id,
                 keyspace=KEYSPACE,
                 bundle_url_template=bundle_url_template,
+                cloud_kwargs={
+                    # connect timeout for the /metadata endpoint to download secure bundle
+                    "connect_timeout": 30
+                },
+                cluster_kwargs={
+                    # connect timeout for actual connections
+                    "connect_timeout": 30,
+                    # remove beta protocol (5) usage leading to tons of warnings
+                    "protocol_version": 4
+                },
             )
         session = cassio.config.resolve_session()
         tables = session.execute(
