@@ -24,7 +24,7 @@ class LinkExtractor(ABC, Generic[InputT]):
             Set of links extracted from the input.
         """
 
-    def extract_many(self, inputs: Iterable[InputT]):
+    def extract_many(self, inputs: Iterable[InputT]) -> Iterable[Set[Link]]:
         """Add edges from each `input` to the corresponding documents.
 
         Args:
