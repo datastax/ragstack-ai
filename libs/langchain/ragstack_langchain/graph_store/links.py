@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Set, Literal
+from typing import Set, Literal, Union, Iterable
 
 from langchain_core.documents import Document
 
