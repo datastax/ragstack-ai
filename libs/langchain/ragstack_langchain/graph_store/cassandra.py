@@ -11,7 +11,7 @@ from langchain_community.utilities.cassandra import SetupMode
 from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
 
-from .base import GraphStore, Node, TextNode
+from .base import GraphStore, Node, nodes_to_documents
 from ragstack_knowledge_store import EmbeddingModel, graph_store
 
 
@@ -74,15 +74,13 @@ class CassandraGraphStore(GraphStore):
 
     def add_nodes(
         self,
-        nodes: Iterable[Node] = None,
+        nodes: Iterable[Node],
         **kwargs: Any,
-    ):
+    ) -> Iterable[str]:
         _nodes = []
         for node in nodes:
-            if not isinstance(node, TextNode):
-                raise ValueError("Only adding TextNode is supported at the moment")
             _nodes.append(
-                graph_store.TextNode(
+                graph_store.Node(
                     id=node.id, text=node.text, metadata=node.metadata, links=node.links
                 )
             )
@@ -115,7 +113,9 @@ class CassandraGraphStore(GraphStore):
         store.add_documents(documents, ids=ids)
         return store
 
-    def similarity_search(self, query: str, k: int = 4, **kwargs: Any) -> List[Document]:
+    def similarity_search(
+        self, query: str, k: int = 4, **kwargs: Any
+    ) -> List[Document]:
         embedding_vector = self._embedding.embed_query(query)
         return self.similarity_search_by_vector(
             embedding_vector,
@@ -125,8 +125,8 @@ class CassandraGraphStore(GraphStore):
     def similarity_search_by_vector(
         self, embedding: List[float], k: int = 4, **kwargs: Any
     ) -> List[Document]:
-        return [Document(page_content=node.text, metadata=node.metadata)
-                for node in self.store.similarity_search(embedding, k=k)]
+        nodes = self.store.similarity_search(embedding, k=k)
+        return list(nodes_to_documents(nodes))
 
     def traversal_search(
         self,
@@ -136,11 +136,8 @@ class CassandraGraphStore(GraphStore):
         depth: int = 1,
         **kwargs: Any,
     ) -> Iterable[Document]:
-        for node in self.store.traversal_search(query, k=k, depth=depth):
-            yield Document(
-                page_content=node.text,
-                metadata=node.metadata,
-            )
+        nodes = self.store.traversal_search(query, k=k, depth=depth)
+        return nodes_to_documents(nodes)
 
     def mmr_traversal_search(
         self,
@@ -153,15 +150,12 @@ class CassandraGraphStore(GraphStore):
         score_threshold: float = float("-inf"),
         **kwargs: Any,
     ) -> Iterable[Document]:
-        for node in self.store.mmr_traversal_search(
+        nodes = self.store.mmr_traversal_search(
             query,
             k=k,
             depth=depth,
             fetch_k=fetch_k,
             lambda_mult=lambda_mult,
             score_threshold=score_threshold,
-        ):
-            yield Document(
-                page_content=node.text,
-                metadata=node.metadata,
-            )
+        )
+        return nodes_to_documents(nodes)

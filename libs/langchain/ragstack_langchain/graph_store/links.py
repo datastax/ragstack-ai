@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Set, Literal, Union, Iterable
+from typing import Iterable, Literal, Set, Union
 
 from langchain_core.documents import Document
 
@@ -21,6 +21,7 @@ class Link:
     @staticmethod
     def bidir(kind: str, tag: str) -> "Link":
         return Link(kind=kind, direction="bidir", tag=tag)
+
 
 METADATA_LINKS_KEY = "links"
 
@@ -47,9 +48,9 @@ def add_links(doc: Document, *links: Union[Link, Iterable[Link]]) -> None:
         doc: The document to add the links to.
         *links: The links to add to the document.
     """
-    link_set = get_links(doc)
+    doc_links = get_links(doc)
     for link in links:
         if isinstance(link, Link):
-            link_set.add(link)
+            doc_links.add(link)
         else:
-            link_set.update(link)
+            doc_links.update(link)

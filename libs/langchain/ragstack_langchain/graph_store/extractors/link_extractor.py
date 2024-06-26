@@ -1,17 +1,13 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from itertools import repeat
-from typing import Any, Dict, Generic, Iterable, Optional, Set, TypeVar
-
-from ragstack_knowledge_store._utils import strict_zip
+from typing import Generic, Iterable, Set, TypeVar
 
 from ragstack_langchain.graph_store.links import Link
 
 InputT = TypeVar("InputT")
 
 METADATA_LINKS_KEY = "links"
-
 
 
 class LinkExtractor(ABC, Generic[InputT]):

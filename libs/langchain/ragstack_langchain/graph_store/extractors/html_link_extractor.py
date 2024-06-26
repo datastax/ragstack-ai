@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Set, Union
 from urllib.parse import urldefrag, urljoin, urlparse
 
 from ragstack_langchain.graph_store.links import (
-    Link
+    add_links, Link
 )
 from .link_extractor import LinkExtractor
 
@@ -32,9 +32,13 @@ def _parse_url(link, page_url, drop_fragments: bool = True):
         return url
 
 
-def _parse_hrefs(soup: "BeautifulSoup", url: str, drop_fragments: bool = True) -> Set[str]:
+def _parse_hrefs(
+    soup: "BeautifulSoup", url: str, drop_fragments: bool = True
+) -> Set[str]:
     links = soup.find_all("a")
-    links = {_parse_url(link, page_url=url, drop_fragments=drop_fragments) for link in links}
+    links = {
+        _parse_url(link, page_url=url, drop_fragments=drop_fragments) for link in links
+    }
 
     # Remove entries for any 'a' tag that failed to parse (didn't have href,
     # or invalid domain, etc.)
@@ -52,7 +56,10 @@ class HtmlInput:
 
 class HtmlLinkExtractor(LinkExtractor[HtmlInput]):
     def __init__(
-        self, *, kind: str = "hyperlink", drop_fragments: bool = True
+        self,
+        *,
+        kind: str = "hyperlink",
+        drop_fragments: bool = True
     ):
         """Extract hyperlinks from HTML content.
 
