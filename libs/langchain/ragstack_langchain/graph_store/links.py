@@ -22,6 +22,7 @@ class Link:
     def bidir(kind: str, tag: str) -> "Link":
         return Link(kind=kind, direction="bidir", tag=tag)
 
+
 METADATA_LINKS_KEY = "links"
 
 

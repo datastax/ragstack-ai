@@ -7,16 +7,8 @@ from cassandra.cluster import Session
 from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
 
-from ragstack_knowledge_store.graph_store import CONTENT_ID
-from ragstack_langchain.graph_store.base import (
-    _documents_to_nodes,
-    _texts_to_nodes,
-    TextNode,
-)
-from ragstack_langchain.graph_store.links import (
-    METADATA_LINKS_KEY,
-    Link
-)
+from ragstack_langchain.graph_store.base import METADATA_CONTENT_ID_KEY
+from ragstack_langchain.graph_store.links import METADATA_LINKS_KEY, Link
 from ragstack_tests_utils.test_store import KEYSPACE
 
 from .conftest import get_local_cassandra_test_store, get_astradb_test_store
@@ -56,7 +48,9 @@ class GraphStoreFactory:
 
     def drop(self):
         self.session.execute(f"DROP TABLE IF EXISTS {self.keyspace}.{self.node_table};")
-        self.session.execute(f"DROP TABLE IF EXISTS {self.keyspace}.{self.targets_table};")
+        self.session.execute(
+            f"DROP TABLE IF EXISTS {self.keyspace}.{self.targets_table};"
+        )
 
 
 @pytest.fixture(scope="session")
@@ -115,14 +109,14 @@ class AngularTwoDimensionalEmbeddings(Embeddings):
 
 
 def _result_ids(docs: Iterable[Document]) -> List[str]:
-    return list(map(lambda d: d.metadata[CONTENT_ID], docs))
+    return list(map(lambda d: d.metadata[METADATA_CONTENT_ID_KEY], docs))
 
 
 def test_link_directed(cassandra: GraphStoreFactory) -> None:
     a = Document(
         page_content="A",
         metadata={
-            "content_id": "a",
+            METADATA_CONTENT_ID_KEY: "a",
             METADATA_LINKS_KEY: {
                 Link.incoming(kind="hyperlink", tag="http://a"),
             },
@@ -131,7 +125,7 @@ def test_link_directed(cassandra: GraphStoreFactory) -> None:
     b = Document(
         page_content="B",
         metadata={
-            "content_id": "b",
+            METADATA_CONTENT_ID_KEY: "b",
             METADATA_LINKS_KEY: {
                 Link.incoming(kind="hyperlink", tag="http://b"),
                 Link.outgoing(kind="hyperlink", tag="http://a"),
@@ -141,7 +135,7 @@ def test_link_directed(cassandra: GraphStoreFactory) -> None:
     c = Document(
         page_content="C",
         metadata={
-            "content_id": "c",
+            METADATA_CONTENT_ID_KEY: "c",
             METADATA_LINKS_KEY: {
                 Link.outgoing(kind="hyperlink", tag="http://a"),
             },
@@ -150,7 +144,7 @@ def test_link_directed(cassandra: GraphStoreFactory) -> None:
     d = Document(
         page_content="D",
         metadata={
-            "content_id": "d",
+            METADATA_CONTENT_ID_KEY: "d",
             METADATA_LINKS_KEY: {
                 Link.outgoing(kind="hyperlink", tag="http://a"),
                 Link.outgoing(kind="hyperlink", tag="http://b"),
@@ -195,7 +189,7 @@ def test_mmr_traversal(request, gs_factory: str):
     v0 = Document(
         page_content="-0.124",
         metadata={
-            "content_id": "v0",
+            METADATA_CONTENT_ID_KEY: "v0",
             METADATA_LINKS_KEY: {
                 Link.outgoing(kind="explicit", tag="link"),
             },
@@ -204,13 +198,13 @@ def test_mmr_traversal(request, gs_factory: str):
     v1 = Document(
         page_content="+0.127",
         metadata={
-            "content_id": "v1",
+            METADATA_CONTENT_ID_KEY: "v1",
         },
     )
     v2 = Document(
         page_content="+0.25",
         metadata={
-            "content_id": "v2",
+            METADATA_CONTENT_ID_KEY: "v2",
             METADATA_LINKS_KEY: {
                 Link.incoming(kind="explicit", tag="link"),
             },
@@ -219,7 +213,7 @@ def test_mmr_traversal(request, gs_factory: str):
     v3 = Document(
         page_content="+1.0",
         metadata={
-            "content_id": "v3",
+            METADATA_CONTENT_ID_KEY: "v3",
             METADATA_LINKS_KEY: {
                 Link.incoming(kind="explicit", tag="link"),
             },
@@ -254,7 +248,7 @@ def test_write_retrieve_keywords(request, gs_factory: str):
     greetings = Document(
         page_content="Typical Greetings",
         metadata={
-            "content_id": "greetings",
+            METADATA_CONTENT_ID_KEY: "greetings",
             METADATA_LINKS_KEY: {
                 Link.incoming(kind="parent", tag="parent"),
             },
@@ -263,7 +257,7 @@ def test_write_retrieve_keywords(request, gs_factory: str):
     doc1 = Document(
         page_content="Hello World",
         metadata={
-            "content_id": "doc1",
+            METADATA_CONTENT_ID_KEY: "doc1",
             METADATA_LINKS_KEY: {
                 Link.outgoing(kind="parent", tag="parent"),
                 Link.bidir(kind="kw", tag="greeting"),
@@ -274,7 +268,7 @@ def test_write_retrieve_keywords(request, gs_factory: str):
     doc2 = Document(
         page_content="Hello Earth",
         metadata={
-            "content_id": "doc2",
+            METADATA_CONTENT_ID_KEY: "doc2",
             METADATA_LINKS_KEY: {
                 Link.outgoing(kind="parent", tag="parent"),
                 Link.bidir(kind="kw", tag="greeting"),
@@ -307,81 +301,29 @@ def test_write_retrieve_keywords(request, gs_factory: str):
     assert set(_result_ids(results)) == {"doc2", "doc1", "greetings"}
 
 
-def test_texts_to_nodes():
-    assert list(_texts_to_nodes(["a", "b"], [{"a": "b"}, {"c": "d"}], ["a", "b"])) == [
-        TextNode(id="a", metadata={"a": "b"}, text="a"),
-        TextNode(id="b", metadata={"c": "d"}, text="b"),
-    ]
-    assert list(_texts_to_nodes(["a", "b"], None, ["a", "b"])) == [
-        TextNode(id="a", metadata={}, text="a"),
-        TextNode(id="b", metadata={}, text="b"),
-    ]
-    assert list(_texts_to_nodes(["a", "b"], [{"a": "b"}, {"c": "d"}], None)) == [
-        TextNode(metadata={"a": "b"}, text="a"),
-        TextNode(metadata={"c": "d"}, text="b"),
-    ]
-    assert list(
-        _texts_to_nodes(
-            ["a"],
-            [{"links": {Link.incoming(kind="hyperlink", tag="http://b")}}],
-            None,
-        )
-    ) == [TextNode(links={Link.incoming(kind="hyperlink", tag="http://b")}, text="a")]
-    with pytest.raises(ValueError):
-        list(_texts_to_nodes(["a", "b"], None, ["a"]))
-    with pytest.raises(ValueError):
-        list(_texts_to_nodes(["a", "b"], [{"a": "b"}], None))
-    with pytest.raises(ValueError):
-        list(_texts_to_nodes(["a"], [{"a": "b"}, {"c": "d"}], None))
-    with pytest.raises(ValueError):
-        list(_texts_to_nodes(["a"], None, ["a", "b"]))
-
-
-def test_documents_to_nodes():
-    documents = [
-        Document(
-            page_content="a",
-            metadata={"links": {Link.incoming(kind="hyperlink", tag="http://b")}},
-        ),
-        Document(page_content="b", metadata={"c": "d"}),
-    ]
-    assert list(_documents_to_nodes(documents, ["a", "b"])) == [
-        TextNode(
-            id="a",
-            metadata={},
-            links={Link.incoming(kind="hyperlink", tag="http://b")},
-            text="a",
-        ),
-        TextNode(id="b", metadata={"c": "d"}, text="b"),
-    ]
-    assert list(_documents_to_nodes(documents, None)) == [
-        TextNode(links={Link.incoming(kind="hyperlink", tag="http://b")}, text="a"),
-        TextNode(metadata={"c": "d"}, text="b"),
-    ]
-    with pytest.raises(ValueError):
-        list(_documents_to_nodes(documents, ["a"]))
-    with pytest.raises(ValueError):
-        list(_documents_to_nodes(documents[1:], ["a", "b"]))
-
 def test_metadata(cassandra: GraphStoreFactory) -> None:
     store = cassandra.store()
-    store.add_documents([
-        Document(
-            page_content="A",
-            metadata={
-                "content_id": "a",
-                METADATA_LINKS_KEY: {
-                    Link.incoming(kind="hyperlink", tag="http://a"),
-                    Link.bidir(kind="other", tag="foo"),
+    store.add_documents(
+        [
+            Document(
+                page_content="A",
+                metadata={
+                    METADATA_CONTENT_ID_KEY: "a",
+                    METADATA_LINKS_KEY: {
+                        Link.incoming(kind="hyperlink", tag="http://a"),
+                        Link.bidir(kind="other", tag="foo"),
+                    },
+                    "other": "some other field",
                 },
-                "other": "some other field"
-            },
-        )
-    ])
+            )
+        ]
+    )
     results = store.similarity_search("A")
     assert len(results) == 1
-    assert results[0].metadata.get("other") == "some other field"
-    assert set(results[0].metadata.get(METADATA_LINKS_KEY)) == {
+    metadata = results[0].metadata
+    assert metadata["other"] == "some other field"
+    assert metadata[METADATA_CONTENT_ID_KEY] == "a"
+    assert set(metadata[METADATA_LINKS_KEY]) == {
         Link.incoming(kind="hyperlink", tag="http://a"),
         Link.bidir(kind="other", tag="foo"),
     }
