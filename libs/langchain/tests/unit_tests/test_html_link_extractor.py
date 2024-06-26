@@ -77,7 +77,7 @@ def test_include_fragments():
 
 def test_batch_from_str():
     extractor = HtmlLinkExtractor()
-    results = list(extractor.extract_batch(
+    results = list(extractor.extract_many(
         [PAGE_1, PAGE_2],
         batch_kwargs=[
             { "base_url": "https://foo.com/bar/", },

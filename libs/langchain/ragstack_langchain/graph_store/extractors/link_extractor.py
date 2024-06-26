@@ -29,7 +29,7 @@ class LinkExtractor(ABC, Generic[InputT]):
             Set of links extracted from the input.
         """
 
-    def extract_batch(self,
+    def extract_many(self,
                       inputs: Iterable[InputT],
                       batch_kwargs: Optional[Iterable[Dict[str, Any]]] = None,
                       **kwargs: Any):
