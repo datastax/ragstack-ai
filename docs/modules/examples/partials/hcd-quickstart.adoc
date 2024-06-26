@@ -1,0 +1,69 @@
+.Python
+[%collapsible%open]
+====
+[source,python]
+----
+import os
+from dotenv import load_dotenv
+import bs4
+from langchain import hub
+from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+from langchain_community.document_loaders import WebBaseLoader
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.runnables import RunnablePassthrough
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+import cassio
+from cassio.table import MetadataVectorCassandraTable
+from langchain_community.vectorstores import Cassandra
+
+# Load environment variables
+load_dotenv()
+openai_api_key = os.getenv("OPENAI_API_KEY")
+
+# Initialize Cassandra
+cassio.init(contact_points=['localhost'], username='cassandra', password='cassandra')
+cassio.config.resolve_session().execute(
+    "create keyspace if not exists my_vector_keyspace with replication = {'class': 'SimpleStrategy', 'replication_factor': '1'};"
+)
+
+# Create metadata Vector Cassandra Table
+mvct = MetadataVectorCassandraTable(table='my_vector_table', vector_dimension=1536, keyspace='my_vector_keyspace')
+
+# Web loader configuration
+loader = WebBaseLoader(
+    web_paths=("https://lilianweng.github.io/posts/2023-06-23-agent/",),
+    bs_kwargs=dict(
+        parse_only=bs4.SoupStrainer(
+            class_=("post-content", "post-title", "post-header")
+        )
+    ),
+)
+docs = loader.load()
+
+# Document splitting
+text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+splits = text_splitter.split_documents(docs)
+
+# Vector store setup
+vectorstore = Cassandra.from_documents(documents=splits, embedding=OpenAIEmbeddings(), table_name='my_vector_table', keyspace='my_vector_keyspace', vector_dimension=1024)
+retriever = vectorstore.as_retriever()
+
+# Language model setup
+llm = ChatOpenAI()
+
+# Chain components
+def format_docs(docs):
+    return "\n\n".join(doc.page_content for doc in docs)
+
+rag_chain = (
+    {"context": retriever | format_docs, "question": RunnablePassthrough()}
+    | hub.pull("rlm/rag-prompt")
+    | llm
+    | StrOutputParser()
+)
+
+# Invocation
+result = rag_chain.invoke("What is Task Decomposition?")
+print(result)
+----
+====
