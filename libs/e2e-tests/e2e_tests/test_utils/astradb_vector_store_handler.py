@@ -327,7 +327,7 @@ class AstraDBVectorStoreHandler(VectorStoreHandler):
                         # connect timeout for actual connections
                         "connect_timeout": 30,
                         # remove beta protocol (5) usage leading to tons of warnings
-                        "protocol_version": 4
+                        "protocol_version": 4,
                     },
                 )
             else:
