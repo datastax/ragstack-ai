@@ -104,7 +104,7 @@ class ColbertVectorStore(VectorStore):
         self,
         ids: Optional[List[str]] = None,
         concurrent_deletes: Optional[int] = 100,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> Optional[bool]:
         """Delete by vector ID or other criteria.
 
@@ -117,7 +117,13 @@ class ColbertVectorStore(VectorStore):
             Optional[bool]: True if deletion is successful,
             False otherwise, None if not implemented.
         """
-        return None if ids is None else await self._vector_store.adelete(ids=ids, concurrent_deletes=concurrent_deletes)
+        return (
+            None
+            if ids is None
+            else await self._vector_store.adelete(
+                ids=ids, concurrent_deletes=concurrent_deletes
+            )
+        )
 
     def similarity_search(
         self,
@@ -256,7 +262,9 @@ class ColbertVectorStore(VectorStore):
         """Return VectorStore initialized from texts and embeddings."""
         instance = super().__new__(cls)
         instance._initialize(database=database, embedding_model=embedding_model)
-        await instance.aadd_texts(texts=texts, metadatas=metadatas, concurrent_inserts=concurrent_inserts)
+        await instance.aadd_texts(
+            texts=texts, metadatas=metadatas, concurrent_inserts=concurrent_inserts
+        )
         return instance
 
     def as_retriever(self, k: Optional[int] = 5, **kwargs: Any) -> BaseRetriever:

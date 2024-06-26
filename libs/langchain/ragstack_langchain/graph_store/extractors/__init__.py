@@ -1,7 +1,8 @@
-from .edge_extractor import EdgeExtractor
-from .html_link_edge_extractor import HtmlLinkEdgeExtractor
+from .link_extractor import LinkExtractor
+from .html_link_extractor import HtmlInput, HtmlLinkExtractor
 
 __all__ = [
-    "EdgeExtractor",
-    "HtmlLinkEdgeExtractor",
+    "LinkExtractor",
+    "HtmlInput",
+    "HtmlLinkExtractor",
 ]

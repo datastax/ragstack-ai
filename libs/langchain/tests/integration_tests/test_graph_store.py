@@ -256,19 +256,21 @@ def test_write_retrieve_keywords(request, gs_factory: str):
 @pytest.mark.parametrize("gs_factory", ["cassandra", "astra_db"])
 def test_metadata(request, gs_factory: str):
     gs_factory: GraphStoreFactory = request.getfixturevalue(gs_factory)
-    store = gs_factory.store([
-        Document(
-            page_content="A",
-            metadata={
-                METADATA_CONTENT_ID_KEY: "a",
-                METADATA_LINKS_KEY: {
-                    Link.incoming(kind="hyperlink", tag="http://a"),
-                    Link.bidir(kind="other", tag="foo"),
+    store = gs_factory.store(
+        [
+            Document(
+                page_content="A",
+                metadata={
+                    METADATA_CONTENT_ID_KEY: "a",
+                    METADATA_LINKS_KEY: {
+                        Link.incoming(kind="hyperlink", tag="http://a"),
+                        Link.bidir(kind="other", tag="foo"),
+                    },
+                    "other": "some other field",
                 },
-                "other": "some other field",
-            },
-        )
-    ])
+            )
+        ]
+    )
     results = store.similarity_search("A")
     assert len(results) == 1
     metadata = results[0].metadata
