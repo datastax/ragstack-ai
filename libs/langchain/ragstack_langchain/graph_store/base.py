@@ -267,6 +267,7 @@ class GraphStore(VectorStore):
         k: int = 4,
         depth: int = 2,
         fetch_k: int = 100,
+        adjacent_k: int = 10,
         lambda_mult: float = 0.5,
         score_threshold: float = float("-inf"),
         **kwargs: Any,
@@ -285,6 +286,8 @@ class GraphStore(VectorStore):
             query: The query string to search for.
             k: Number of Documents to return. Defaults to 4.
             fetch_k: Number of Documents to fetch via similarity.
+                Defaults to 100.
+            adjacent_k: Number of adjacent Documents to fetch.
                 Defaults to 10.
             depth: Maximum depth of a node (number of edges) from a node
                 retrieved via similarity. Defaults to 2.
@@ -302,6 +305,7 @@ class GraphStore(VectorStore):
         k: int = 4,
         depth: int = 2,
         fetch_k: int = 100,
+        adjacent_k: int = 10,
         lambda_mult: float = 0.5,
         score_threshold: float = float("-inf"),
         **kwargs: Any,
@@ -320,6 +324,8 @@ class GraphStore(VectorStore):
             query: The query string to search for.
             k: Number of Documents to return. Defaults to 4.
             fetch_k: Number of Documents to fetch via similarity.
+                Defaults to 100.
+            adjacent_k: Number of adjacent Documents to fetch.
                 Defaults to 10.
             depth: Maximum depth of a node (number of edges) from a node
                 retrieved via similarity. Defaults to 2.
@@ -336,6 +342,7 @@ class GraphStore(VectorStore):
                 query,
                 k=k,
                 fetch_k=fetch_k,
+                adjacent_k=adjacent_k,
                 depth=depth,
                 lambda_mult=lambda_mult,
                 score_threshold=score_threshold,
