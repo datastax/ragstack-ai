@@ -1,5 +1,5 @@
 from .embedding_model import EmbeddingModel
-from .graph_store import GraphStore, Node, SetupMode, TextNode
+from .graph_store import GraphStore, Node, SetupMode
 from .knowledge_store import KnowledgeStore
 
 __all__ = [
@@ -8,5 +8,4 @@ __all__ = [
     "KnowledgeStore",
     "Node",
     "SetupMode",
-    "TextNode",
 ]

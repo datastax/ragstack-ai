@@ -13,7 +13,6 @@ InputT = TypeVar("InputT")
 METADATA_LINKS_KEY = "links"
 
 
-
 class EdgeExtractor(ABC, Generic[InputT]):
     @abstractmethod
     def extract_one(self, document: Document, input: InputT) -> None:
