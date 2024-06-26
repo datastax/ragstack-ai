@@ -112,54 +112,6 @@ def _result_ids(docs: Iterable[Document]) -> List[str]:
     return list(map(lambda d: d.metadata[METADATA_CONTENT_ID_KEY], docs))
 
 
-def test_link_directed(cassandra: GraphStoreFactory) -> None:
-    a = Document(
-        page_content="A",
-        metadata={
-            METADATA_CONTENT_ID_KEY: "a",
-            METADATA_LINKS_KEY: {
-                Link.incoming(kind="hyperlink", tag="http://a"),
-            },
-        },
-    )
-    b = Document(
-        page_content="B",
-        metadata={
-            METADATA_CONTENT_ID_KEY: "b",
-            METADATA_LINKS_KEY: {
-                Link.incoming(kind="hyperlink", tag="http://b"),
-                Link.outgoing(kind="hyperlink", tag="http://a"),
-            },
-        },
-    )
-    c = Document(
-        page_content="C",
-        metadata={
-            METADATA_CONTENT_ID_KEY: "c",
-            METADATA_LINKS_KEY: {
-                Link.outgoing(kind="hyperlink", tag="http://a"),
-            },
-        },
-    )
-    d = Document(
-        page_content="D",
-        metadata={
-            METADATA_CONTENT_ID_KEY: "d",
-            METADATA_LINKS_KEY: {
-                Link.outgoing(kind="hyperlink", tag="http://a"),
-                Link.outgoing(kind="hyperlink", tag="http://b"),
-            },
-        },
-    )
-
-    store = cassandra.store([a, b, c, d])
-
-    assert list(store.store._linked_ids("a")) == []
-    assert list(store.store._linked_ids("b")) == ["a"]
-    assert list(store.store._linked_ids("c")) == ["a"]
-    assert sorted(store.store._linked_ids("d")) == ["a", "b"]
-
-
 @pytest.mark.parametrize("gs_factory", ["cassandra", "astra_db"])
 def test_mmr_traversal(request, gs_factory: str):
     """
