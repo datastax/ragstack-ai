@@ -1,5 +1,5 @@
 from bs4 import BeautifulSoup
-from ragstack_langchain.graph_store.extractors.html_link_extractor import HtmlLinkExtractor
+from ragstack_langchain.graph_store.extractors import HtmlInput, HtmlLinkExtractor
 from ragstack_langchain.graph_store.links import Link
 
 
@@ -26,7 +26,7 @@ Hello.
 def test_one_from_str():
     extractor = HtmlLinkExtractor()
 
-    results = extractor.extract_one(PAGE_1, base_url="https://foo.com/bar/")
+    results = extractor.extract_one(HtmlInput(PAGE_1, base_url="https://foo.com/bar/"))
     assert results == {
         Link.incoming(kind="hyperlink", tag="https://foo.com/bar/"),
         Link.outgoing(kind="hyperlink", tag="https://foo.com/bar/relative"),
@@ -35,7 +35,7 @@ def test_one_from_str():
         Link.outgoing(kind="hyperlink", tag="https://same.foo"),
     }
 
-    results = extractor.extract_one(PAGE_1, base_url="http://foo.com/bar/")
+    results = extractor.extract_one(HtmlInput(PAGE_1, base_url="http://foo.com/bar/"))
     assert results == {
         Link.incoming(kind="hyperlink", tag="http://foo.com/bar/"),
         Link.outgoing(kind="hyperlink", tag="http://foo.com/bar/relative"),
@@ -47,7 +47,7 @@ def test_one_from_str():
 def test_one_from_beautiful_soup():
     extractor = HtmlLinkExtractor()
     input = BeautifulSoup(PAGE_1, "html.parser")
-    results = extractor.extract_one(input, base_url="https://foo.com/bar/")
+    results = extractor.extract_one(HtmlInput(input, base_url="https://foo.com/bar/"))
     assert results == {
         Link.incoming(kind="hyperlink", tag="https://foo.com/bar/"),
         Link.outgoing(kind="hyperlink", tag="https://foo.com/bar/relative"),
@@ -58,7 +58,7 @@ def test_one_from_beautiful_soup():
 
 def test_drop_fragmetns():
     extractor = HtmlLinkExtractor(drop_fragments = True)
-    results = extractor.extract_one(PAGE_2, base_url="https://foo.com/baz/#fragment")
+    results = extractor.extract_one(HtmlInput(PAGE_2, base_url="https://foo.com/baz/#fragment"))
 
     assert results == {
         Link.incoming(kind="hyperlink", tag="https://foo.com/baz/"),
@@ -67,7 +67,7 @@ def test_drop_fragmetns():
 
 def test_include_fragments():
     extractor = HtmlLinkExtractor(drop_fragments = False)
-    results = extractor.extract_one(PAGE_2, base_url="https://foo.com/baz/#fragment")
+    results = extractor.extract_one(HtmlInput(PAGE_2, base_url="https://foo.com/baz/#fragment"))
 
     assert results == {
         Link.incoming(kind="hyperlink", tag="https://foo.com/baz/#fragment"),
@@ -77,13 +77,10 @@ def test_include_fragments():
 
 def test_batch_from_str():
     extractor = HtmlLinkExtractor()
-    results = list(extractor.extract_many(
-        [PAGE_1, PAGE_2],
-        batch_kwargs=[
-            { "base_url": "https://foo.com/bar/", },
-            { "base_url": "https://foo.com/baz/", }
-        ],
-    ))
+    results = list(extractor.extract_many([
+        HtmlInput(PAGE_1, base_url = "https://foo.com/bar/"),
+        HtmlInput(PAGE_2, base_url = "https://foo.com/baz/"),
+    ]))
 
     assert results[0] == {
         Link.incoming(kind="hyperlink", tag="https://foo.com/bar/"),
