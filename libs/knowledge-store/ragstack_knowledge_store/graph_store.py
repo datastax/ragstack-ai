@@ -105,6 +105,7 @@ class _Edge:
     target_content_id: str
     target_text_embedding: List[float]
 
+
 class GraphStore:
     def __init__(
         self,
@@ -399,22 +400,22 @@ class GraphStore:
                 this threshold will be chosen. Defaults to -infinity.
         """
         query_embedding = self._embedding.embed_query(query)
-        helper = MmrHelper(k=k,
-                           query_embedding=query_embedding,
-                           lambda_mult=lambda_mult,
-                           score_threshold=score_threshold)
+        helper = MmrHelper(
+            k=k,
+            query_embedding=query_embedding,
+            lambda_mult=lambda_mult,
+            score_threshold=score_threshold,
+        )
 
         # Fetch the initial candidates and add them to the helper.
         fetched = self._session.execute(
             self._query_ids_and_embedding_by_embedding,
             (query_embedding, fetch_k),
         )
-        helper.add_candidates({
-            row.content_id: row.text_embedding for row in fetched
-        })
+        helper.add_candidates({row.content_id: row.text_embedding for row in fetched})
 
         # Select the best item, K times.
-        depths = { id: 0 for id in helper.candidate_ids() }
+        depths = {id: 0 for id in helper.candidate_ids()}
         visited_tags = set()
         for _ in range(0, k):
             selected_id = helper.pop_best()
@@ -429,14 +430,18 @@ class GraphStore:
                 #
                 # TODO: For a big performance win, we should track which tags we've already
                 # incorporated. We don't need to issue adjacent queries for those.
-                adjacents = self._get_adjacent([selected_id],
-                                               visited_tags=visited_tags,
-                                               query_embedding=query_embedding,
-                                               k_per_tag=adjacent_k)
+                adjacents = self._get_adjacent(
+                    [selected_id],
+                    visited_tags=visited_tags,
+                    query_embedding=query_embedding,
+                    k_per_tag=adjacent_k,
+                )
 
                 new_candidates = {}
                 for adjacent in adjacents:
-                    new_candidates[adjacent.target_content_id] = adjacent.target_text_embedding
+                    new_candidates[adjacent.target_content_id] = (
+                        adjacent.target_text_embedding
+                    )
                     if next_depth < depths.get(adjacent.target_content_id, depth + 1):
                         # If this is a new shortest depth, or there was no
                         # previous depth, update the depths. This ensures that
@@ -594,7 +599,12 @@ class GraphStore:
 
                         cq.execute(
                             self._query_targets_embeddings_by_kind_and_tag_and_embedding,
-                            parameters = (new_tag[0], new_tag[1], query_embedding, k_per_tag or 10),
+                            parameters=(
+                                new_tag[0],
+                                new_tag[1],
+                                query_embedding,
+                                k_per_tag or 10,
+                            ),
                             callback=add_targets,
                         )
 

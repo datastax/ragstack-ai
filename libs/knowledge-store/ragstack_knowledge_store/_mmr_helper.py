@@ -5,16 +5,19 @@ import numpy as np
 
 from ragstack_knowledge_store.math import cosine_similarity
 
+
 def _emb_to_ndarray(embedding: List[float]) -> np.ndarray:
     embedding = np.array(embedding, dtype=np.float32)
     if embedding.ndim == 1:
         embedding = np.expand_dims(embedding, axis=0)
     return embedding
 
+
 NEG_INF = float("-inf")
 
+
 @dataclasses.dataclass
-class _Candidate():
+class _Candidate:
     id: str
     weighted_similarity: float
     weighted_redundancy: float
@@ -27,6 +30,7 @@ class _Candidate():
         if new_weighted_redundancy > self.weighted_redundancy:
             self.weighted_redundancy = new_weighted_redundancy
             self.score = self.weighted_similarity - self.weighted_redundancy
+
 
 class MmrHelper(object):
     dimensions: int
@@ -47,7 +51,6 @@ class MmrHelper(object):
     score_threshold: float
     """Only documents with a score greater than or equal to this will be chosen."""
 
-
     selected_ids: List[str]
     """List of selected IDs (in selection order)."""
     selected_embeddings: np.ndarray
@@ -66,12 +69,13 @@ class MmrHelper(object):
     best_score: float
     best_id: Optional[str]
 
-    def __init__(self,
-                 k: int,
-                 query_embedding: List[float],
-                 lambda_mult: float = 0.5,
-                 score_threshold: float = NEG_INF,
-                 ) -> None:
+    def __init__(
+        self,
+        k: int,
+        query_embedding: List[float],
+        lambda_mult: float = 0.5,
+        score_threshold: float = NEG_INF,
+    ) -> None:
         """Create a helper for executing an MMR traversal query.
 
         Args:
@@ -136,7 +140,9 @@ class MmrHelper(object):
             self.candidates[index] = old_last
             self.candidate_id_to_index[old_last.id] = index
 
-        self.candidate_embeddings = np.vsplit(self.candidate_embeddings, [last_index])[0]
+        self.candidate_embeddings = np.vsplit(self.candidate_embeddings, [last_index])[
+            0
+        ]
 
         return embedding
 
@@ -166,8 +172,9 @@ class MmrHelper(object):
 
         # Update the candidates redundancy, tracking the best node.
         if self.candidate_embeddings.shape[0] > 0:
-            similarity = cosine_similarity(self.candidate_embeddings,
-                                           np.expand_dims(selected_embedding, axis=0))
+            similarity = cosine_similarity(
+                self.candidate_embeddings, np.expand_dims(selected_embedding, axis=0)
+            )
             for index, candidate in enumerate(self.candidates):
                 candidate.update_redundancy(similarity[index][0])
                 if candidate.score > self.best_score:
@@ -176,8 +183,7 @@ class MmrHelper(object):
 
         return selected_id
 
-    def add_candidates(self,
-                       candidates: Dict[str, List[float]]):
+    def add_candidates(self, candidates: Dict[str, List[float]]):
         """Add candidates to the consideration set."""
 
         # Determine the keys to actually include.
@@ -202,15 +208,17 @@ class MmrHelper(object):
         similarity = cosine_similarity(new_embeddings, self.query_embedding)
 
         # Compute the distance metrics of all of pairs in the selected set with the new candidates.
-        redundancy = cosine_similarity(new_embeddings, self._already_selected_embeddings())
+        redundancy = cosine_similarity(
+            new_embeddings, self._already_selected_embeddings()
+        )
         for index, id in enumerate(include_ids):
             max_redundancy = 0.0
             if redundancy.shape[0] > 0:
                 max_redundancy = redundancy[index].max()
             candidate = _Candidate(
-                id = id,
-                weighted_similarity = self.lambda_mult * similarity[index][0],
-                weighted_redundancy = self.lambda_mult_complement * max_redundancy,
+                id=id,
+                weighted_similarity=self.lambda_mult * similarity[index][0],
+                weighted_redundancy=self.lambda_mult_complement * max_redundancy,
             )
             self.candidates.append(candidate)
 
@@ -219,4 +227,6 @@ class MmrHelper(object):
                 self.best_id = candidate.id
 
         # Add the new embeddings to the candidate set.
-        self.candidate_embeddings = np.vstack((self.candidate_embeddings, new_embeddings))
+        self.candidate_embeddings = np.vstack(
+            (self.candidate_embeddings, new_embeddings)
+        )
