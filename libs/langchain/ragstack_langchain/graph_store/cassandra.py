@@ -146,6 +146,7 @@ class CassandraGraphStore(GraphStore):
         k: int = 4,
         depth: int = 2,
         fetch_k: int = 100,
+        adjacent_k: int = 10,
         lambda_mult: float = 0.5,
         score_threshold: float = float("-inf"),
         **kwargs: Any,
@@ -155,6 +156,7 @@ class CassandraGraphStore(GraphStore):
             k=k,
             depth=depth,
             fetch_k=fetch_k,
+            adjacent_k=adjacent_k,
             lambda_mult=lambda_mult,
             score_threshold=score_threshold,
         )
