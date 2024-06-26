@@ -31,7 +31,8 @@ for doc in documents:
 
     # Add link tags from the page_content to the metadata.
     # Should be passed the HTML content as a string or BeautifulSoup.
-    html_link_extractor.extract_one(doc, doc.page_content)
+    add_links(doc,
+        html_link_extractor.extract_one(HtmlInput(doc.page_content, doc.metadata["source_url"])))
 ```
 
 ### Store

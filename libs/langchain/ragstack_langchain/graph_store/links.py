@@ -41,10 +41,15 @@ def get_links(doc: Document) -> Set[Link]:
     return links
 
 
-def add_links(doc: Document, *links: Link) -> None:
+def add_links(doc: Document, *links: Union[Link, Iterable[Link]]) -> None:
     """Add links to the given metadata.
     Args:
         doc: The document to add the links to.
         *links: The links to add to the document.
     """
-    get_links(doc).update(links)
+    link_set = get_links(doc)
+    for link in links:
+        if isinstance(link, Link):
+            link_set.add(link)
+        else:
+            link_set.update(link)

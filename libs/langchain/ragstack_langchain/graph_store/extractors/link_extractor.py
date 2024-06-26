@@ -18,31 +18,24 @@ class LinkExtractor(ABC, Generic[InputT]):
     """Interface for extracting links (incoming, outgoing, bidirectional)."""
 
     @abstractmethod
-    def extract_one(self, input: InputT, **kwargs: Any) -> Set[Link]:
+    def extract_one(self, input: InputT) -> Set[Link]:
         """Add edges from each `input` to the corresponding documents.
 
         Args:
             input: The input content to extract edges from.
-            **kwargs: Additional keyword arguments for the extractor.
 
         Returns:
             Set of links extracted from the input.
         """
 
-    def extract_many(self,
-                      inputs: Iterable[InputT],
-                      batch_kwargs: Optional[Iterable[Dict[str, Any]]] = None,
-                      **kwargs: Any):
+    def extract_many(self, inputs: Iterable[InputT]):
         """Add edges from each `input` to the corresponding documents.
 
         Args:
             inputs: The input content to extract edges from.
-            batch_kwargs: Iterable of keyword arguments for each input.
-                Defaults to empty dictionaries.
-            **kwargs: Additional arguments to the extractor.
 
         Returns:
             Iterable over the set of links extracted from the input.
         """
-        for (input, kwargs) in zip(inputs, batch_kwargs or repeat({})):
-            yield self.extract_one(input, **kwargs)
+        for input in inputs:
+            yield self.extract_one(input)

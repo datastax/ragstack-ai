@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Set, Union
 from urllib.parse import urldefrag, urljoin, urlparse
 
@@ -44,8 +45,12 @@ def _parse_hrefs(soup: "BeautifulSoup", url: str, drop_fragments: bool = True) -
 
     return links
 
+@dataclass
+class HtmlInput:
+    content: Union[str, "BeautifulSoup"]
+    base_url: str
 
-class HtmlLinkExtractor(LinkExtractor[Union[str, "BeautifulSoup"]]):
+class HtmlLinkExtractor(LinkExtractor[HtmlInput]):
     def __init__(
         self, *, kind: str = "hyperlink", drop_fragments: bool = True
     ):
@@ -71,19 +76,19 @@ class HtmlLinkExtractor(LinkExtractor[Union[str, "BeautifulSoup"]]):
 
     def extract_one(
         self,
-        input: Union[str, "BeautifulSoup"],
-        *,
-        base_url: str,
+        input: HtmlInput,
     ) -> Set[Link]:
-        if isinstance(input, str):
+        content = input.content
+        if isinstance(content, str):
             from bs4 import BeautifulSoup
 
-            input = BeautifulSoup(input, "html.parser")
+            content = BeautifulSoup(content, "html.parser")
 
+        base_url = input.base_url
         if self.drop_fragments:
             base_url = urldefrag(base_url).url
 
-        hrefs = _parse_hrefs(input, base_url, self.drop_fragments)
+        hrefs = _parse_hrefs(content, base_url, self.drop_fragments)
 
         links = { Link.outgoing(kind=self._kind, tag=url) for url in hrefs }
         links.add(Link.incoming(kind=self._kind, tag=base_url))
