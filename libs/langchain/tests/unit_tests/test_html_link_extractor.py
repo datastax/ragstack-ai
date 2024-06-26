@@ -23,6 +23,7 @@ Hello.
 </html>
 """
 
+
 def test_one_from_str():
     extractor = HtmlLinkExtractor()
 
@@ -44,6 +45,7 @@ def test_one_from_str():
         Link.outgoing(kind="hyperlink", tag="http://same.foo"),
     }
 
+
 def test_one_from_beautiful_soup():
     extractor = HtmlLinkExtractor()
     input = BeautifulSoup(PAGE_1, "html.parser")
@@ -56,18 +58,24 @@ def test_one_from_beautiful_soup():
         Link.outgoing(kind="hyperlink", tag="https://same.foo"),
     }
 
+
 def test_drop_fragmetns():
-    extractor = HtmlLinkExtractor(drop_fragments = True)
-    results = extractor.extract_one(HtmlInput(PAGE_2, base_url="https://foo.com/baz/#fragment"))
+    extractor = HtmlLinkExtractor(drop_fragments=True)
+    results = extractor.extract_one(
+        HtmlInput(PAGE_2, base_url="https://foo.com/baz/#fragment")
+    )
 
     assert results == {
         Link.incoming(kind="hyperlink", tag="https://foo.com/baz/"),
         Link.outgoing(kind="hyperlink", tag="https://foo.com/bar/"),
     }
 
+
 def test_include_fragments():
-    extractor = HtmlLinkExtractor(drop_fragments = False)
-    results = extractor.extract_one(HtmlInput(PAGE_2, base_url="https://foo.com/baz/#fragment"))
+    extractor = HtmlLinkExtractor(drop_fragments=False)
+    results = extractor.extract_one(
+        HtmlInput(PAGE_2, base_url="https://foo.com/baz/#fragment")
+    )
 
     assert results == {
         Link.incoming(kind="hyperlink", tag="https://foo.com/baz/#fragment"),
@@ -77,10 +85,14 @@ def test_include_fragments():
 
 def test_batch_from_str():
     extractor = HtmlLinkExtractor()
-    results = list(extractor.extract_many([
-        HtmlInput(PAGE_1, base_url = "https://foo.com/bar/"),
-        HtmlInput(PAGE_2, base_url = "https://foo.com/baz/"),
-    ]))
+    results = list(
+        extractor.extract_many(
+            [
+                HtmlInput(PAGE_1, base_url="https://foo.com/bar/"),
+                HtmlInput(PAGE_2, base_url="https://foo.com/baz/"),
+            ]
+        )
+    )
 
     assert results[0] == {
         Link.incoming(kind="hyperlink", tag="https://foo.com/bar/"),

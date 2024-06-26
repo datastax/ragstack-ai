@@ -2,9 +2,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Set, Union
 from urllib.parse import urldefrag, urljoin, urlparse
 
-from ragstack_langchain.graph_store.links import (
-    add_links, Link
-)
+from ragstack_langchain.graph_store.links import add_links, Link
 from .link_extractor import LinkExtractor
 
 if TYPE_CHECKING:
@@ -49,18 +47,15 @@ def _parse_hrefs(
 
     return links
 
+
 @dataclass
 class HtmlInput:
     content: Union[str, "BeautifulSoup"]
     base_url: str
 
+
 class HtmlLinkExtractor(LinkExtractor[HtmlInput]):
-    def __init__(
-        self,
-        *,
-        kind: str = "hyperlink",
-        drop_fragments: bool = True
-    ):
+    def __init__(self, *, kind: str = "hyperlink", drop_fragments: bool = True):
         """Extract hyperlinks from HTML content.
 
         Expects the input to be an HTML string or a `BeautifulSoup` object.
@@ -97,6 +92,6 @@ class HtmlLinkExtractor(LinkExtractor[HtmlInput]):
 
         hrefs = _parse_hrefs(content, base_url, self.drop_fragments)
 
-        links = { Link.outgoing(kind=self._kind, tag=url) for url in hrefs }
+        links = {Link.outgoing(kind=self._kind, tag=url) for url in hrefs}
         links.add(Link.incoming(kind=self._kind, tag=base_url))
         return links

@@ -454,7 +454,9 @@ class GraphStore:
 
         query_embedding_ndarray = emb_to_ndarray(query_embedding)
         unselected = {
-            row.content_id: _Candidate(row.text_embedding, lambda_mult, query_embedding_ndarray)
+            row.content_id: _Candidate(
+                row.text_embedding, lambda_mult, query_embedding_ndarray
+            )
             for row in fetched
         }
         best_score, next_id = max(
@@ -485,9 +487,9 @@ class GraphStore:
             # Add unselected edges if reached nodes are within `depth`:
             next_depth = next_selected.distance + 1
             if next_depth < depth:
-                adjacents = self._get_adjacent([selected_id],
-                                               query_embedding=query_embedding,
-                                               k_per_tag=adjacent_k)
+                adjacents = self._get_adjacent(
+                    [selected_id], query_embedding=query_embedding, k_per_tag=adjacent_k
+                )
                 for adjacent in adjacents:
                     target_id = adjacent.target_content_id
                     if target_id in selected_set:
@@ -502,7 +504,9 @@ class GraphStore:
                         continue
 
                     candidate = _Candidate(
-                        adjacent.target_text_embedding, lambda_mult, query_embedding_ndarray
+                        adjacent.target_text_embedding,
+                        lambda_mult,
+                        query_embedding_ndarray,
                     )
                     for selected_embedding in selected_embeddings:
                         candidate.update_for_selection(lambda_mult, selected_embedding)
@@ -654,7 +658,12 @@ class GraphStore:
 
                         cq.execute(
                             self._query_targets_embeddings_by_kind_and_tag_and_embedding,
-                            parameters = (new_tag[0], new_tag[1], query_embedding, k_per_tag or 10),
+                            parameters=(
+                                new_tag[0],
+                                new_tag[1],
+                                query_embedding,
+                                k_per_tag or 10,
+                            ),
                             callback=add_targets,
                         )
                         link_to_tags.add(new_tag)
