@@ -2,9 +2,13 @@
 
 RAGStack offers two libraries supporting knowledge graph extraction and traversal, `ragstack-ai-knowledge-graph` and `ragstack-ai-knowledge-store`.
 
-A knowledge graph represents distinct entities (real world objects, like "Marie Curie" or "maize") as **nodes**. Nodes are connected by **edges** indicating relationships between them. Each edge includes the source (for example, "Marie Curie" the person), the target ("Nobel Prize" the award) and a type, indicating how the source relates to the target (for example, “won”).
+A knowledge graph represents information as **nodes**. Nodes are connected by **edges** indicating relationships between them. Each edge includes the source (for example, "Marie Curie" the person), the target ("Nobel Prize" the award) and a type, indicating how the source relates to the target (for example, “won”).
 
 A graph database isn't required to use the knowledge graph libraries - RAGStack uses Astra DB or Apache Cassandra to store and retrieve graphs.
+
+The `ragstack-ai-knowledge-graph` library offers **entity-centric** knowledge graph extraction and traversal. It extracts a knowledge graph from unstructured information and creates nodes from **entities**, or concepts (for example, "Seattle").
+
+The `ragstack-ai-knowledge-store` library offers **content-centric** knowledge graph extraction and traversal. It extracts a knowledge graph from unstructured information and creates nodes from **content** (for example, a specific document about Seattle).
 
 [IMPORTANT]
 ====
@@ -22,15 +26,15 @@ Knowledge graphs address these shortcomings. For example, if multiple sources ha
 
 From a developer's perspective, a knowledge graph is built into a RAG pipeline similarly to a vector search. The difference is in the underlying data structure and how the information is stored and retrieved.
 
-For example: consider a tech support system, where you find an article that is similar to your question, and it says. "If you have trouble with step 4, see this article for **<more information>**". Even if **<more information>** is not similar to your original question, it likely provides more information.
+For example: consider a tech support system, where you find an article that is similar to your question, and it says. "If you have trouble with step 4, see this article for **more information**". Even if **more information** is not similar to your original question, it likely provides more information.
 
-The article's "see **<more information>**" is an example of an edge in a knowledge graph. The edge connects the initial article to additional information, indicating that the two are related. This relationship would not be captured in a similarity search.
+The article's "see **more information**" is an example of an edge in a knowledge graph. The edge connects the initial article to additional information, indicating that the two are related. This relationship would not be captured in a similarity search.
 
 These edges also increase the diversity of results. Within the same tech support system, if you retrieve 100 chunks that are highly similar to the question, you have retrieved 100 chunks that are also highly similar to themselves. Following edges to linked information increases diversity.
 
 == The `ragstack-ai-knowledge-graph` library
 
-The `ragstack-ai-knowledge-graph` library contains functions for the extraction and traversal of knowledge graphs.
+The `ragstack-ai-knowledge-graph` library contains functions for the extraction and traversal of **entity-centric** knowledge graphs.
 
 To install the package, run:
 
@@ -50,10 +54,7 @@ For more information, see xref:knowledge-graph.adoc[].
 
 == The `ragstack-ai-knowledge-store` library
 
-The `ragstack-ai-knowledge-store` library contains functions for creating a hybrid vector-and-graph store. This store combines the benefits of vector stores with the context and relationships of a related edges.
-
-This library includes a knowledge graph with a general purpose schema to represent the content of unstructured documents.
-The schema is written to be flexible and scalable by extracting nodes like "text passages" and edges with link tags, so you can apply it without writing a specific schema.
+The `ragstack-ai-knowledge-store` library contains functions for creating a **content-centric** vector-and-graph store. This store combines the benefits of vector stores with the context and relationships of a related edges.
 
 To install the package, run:
 

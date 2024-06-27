@@ -27,23 +27,23 @@ To install the library as an extra with the RAGStack Langchain package, run:
 pip install "ragstack-ai-langchain[knowledge-store]"
 ----
 
-== What's the difference between fine-grained and coarse-grained knowledge graphs?
+== What's the difference between entity-centric and content-centric knowledge graphs?
 
-**Fine-grained knowledge graphs** (like xref:knowledge-graph.adoc[]) capture edge relationships between entities.
+**Entity-centric knowledge graphs** (like xref:knowledge-graph.adoc[]) capture edge relationships between entities.
 A knowledge graph is extracted with an LLM from unstructured information, and its entities and their edge relationships are stored in a vector or graph store.
 
-However, extracting this fine-grained knowledge graph from unstructured information is difficult, time-consuming, and error-prone. A user has to guide the LLM on the kinds of nodes and relationships to be extracted with a schema, and if the knowledge schema changes, the graph has to be processed again. The context advantages of fine-grained knowledge graphs are great, but the cost to build and maintain them is much higher than just chunking and embedding content to a vector store.
+However, extracting this entity-centric knowledge graph from unstructured information is difficult, time-consuming, and error-prone. A user has to guide the LLM on the kinds of nodes and relationships to be extracted with a schema, and if the knowledge schema changes, the graph has to be processed again. The context advantages of entity-centric knowledge graphs are great, but the cost to build and maintain them is much higher than just chunking and embedding content to a vector store.
 
-**Coarse-grained knowledge graphs** (like xref:knowledge-store.adoc[]) offer a compromise between the ease and scalability of vector similarity search, and the context and relationships of fine-grained knowledge graphs.
+**Content-centric knowledge graphs** (like xref:knowledge-store.adoc[]) offer a compromise between the ease and scalability of vector similarity search, and the context and relationships of entity-centric knowledge graphs.
 
-The coarse-grained approach starts with nodes that represent content (a specific document about Seattle), instead of fine-grained concepts or entities (a node representing Seattle). A node may represent a table, an image, or a section of a document. Since the node represents the original content, the nodes are exactly what is stored when using vector search.
+The content-centric approach starts with nodes that represent content (a specific document about Seattle), instead of concepts or entities (a node representing Seattle). A node may represent a table, an image, or a section of a document. Since the node represents the original content, the nodes are exactly what is stored when using vector search.
 
 Unstructured content is loaded, chunked, and written to a vector store.
 Each chunk can be run through a variety of analyses to identify links. For example, links in the content may turn into `links_to edges`, and keywords may be extracted from the chunk to link up with other chunks on the same topic.
 
 To add edges, each chunk may be annotated with URLs that its content represents, or each chunk may be associated with keywords.
 
-Retrieval is where the benefits of vector search and knowledge graph traversal come together.
+Retrieval is where the benefits of vector search and content-centric traversal come together.
 The query's initial starting points in the knowledge graph are identified based on vector similarity to the question, and then additional chunks are selected by following edges from that node. Including nodes that are related both by embedding distance (similarity) and graph distance (related) leads to a more diverse set of chunks with deeper context and less hallucinations.
 
 For a step-by-step example, see the xref:examples:knowledge-store.adoc[{graph-store} example code].
