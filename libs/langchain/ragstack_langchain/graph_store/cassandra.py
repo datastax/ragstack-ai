@@ -11,7 +11,7 @@ from langchain_community.utilities.cassandra import SetupMode
 from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
 
-from .base import GraphStore, Node, TextNode, nodes_to_documents
+from .base import GraphStore, Node, nodes_to_documents
 from ragstack_knowledge_store import EmbeddingModel, graph_store
 
 
@@ -74,15 +74,13 @@ class CassandraGraphStore(GraphStore):
 
     def add_nodes(
         self,
-        nodes: Iterable[Node] = None,
+        nodes: Iterable[Node],
         **kwargs: Any,
-    ):
+    ) -> Iterable[str]:
         _nodes = []
         for node in nodes:
-            if not isinstance(node, TextNode):
-                raise ValueError("Only adding TextNode is supported at the moment")
             _nodes.append(
-                graph_store.TextNode(
+                graph_store.Node(
                     id=node.id, text=node.text, metadata=node.metadata, links=node.links
                 )
             )
@@ -115,7 +113,9 @@ class CassandraGraphStore(GraphStore):
         store.add_documents(documents, ids=ids)
         return store
 
-    def similarity_search(self, query: str, k: int = 4, **kwargs: Any) -> List[Document]:
+    def similarity_search(
+        self, query: str, k: int = 4, **kwargs: Any
+    ) -> List[Document]:
         embedding_vector = self._embedding.embed_query(query)
         return self.similarity_search_by_vector(
             embedding_vector,
@@ -146,6 +146,7 @@ class CassandraGraphStore(GraphStore):
         k: int = 4,
         depth: int = 2,
         fetch_k: int = 100,
+        adjacent_k: int = 10,
         lambda_mult: float = 0.5,
         score_threshold: float = float("-inf"),
         **kwargs: Any,
@@ -155,6 +156,7 @@ class CassandraGraphStore(GraphStore):
             k=k,
             depth=depth,
             fetch_k=fetch_k,
+            adjacent_k=adjacent_k,
             lambda_mult=lambda_mult,
             score_threshold=score_threshold,
         )
