@@ -7,18 +7,10 @@ from cassandra.cluster import Session
 from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
 
-from ragstack_knowledge_store.graph_store import CONTENT_ID
-from ragstack_langchain.graph_store.base import (
-    _documents_to_nodes,
-    _texts_to_nodes,
-    TextNode,
-)
-from ragstack_knowledge_store.link_tag import (
-    BidirLinkTag,
-    IncomingLinkTag,
-    OutgoingLinkTag,
-)
+from ragstack_langchain.graph_store.base import METADATA_CONTENT_ID_KEY
+from ragstack_langchain.graph_store.links import METADATA_LINKS_KEY, Link
 from ragstack_tests_utils.test_store import KEYSPACE
+
 from .conftest import get_local_cassandra_test_store, get_astradb_test_store
 from ragstack_langchain.graph_store import CassandraGraphStore
 
@@ -29,13 +21,13 @@ class GraphStoreFactory:
         self.keyspace = keyspace
         self.uid = secrets.token_hex(8)
         self.node_table = f"nodes_{self.uid}"
-        self.edge_table = f"edges_{self.uid}"
+        self.targets_table = f"targets_{self.uid}"
         self.embedding = embedding
         self._store = None
 
     def store(
         self,
-        initial_documents: Iterable[Document] = [],
+        initial_documents: Iterable[Document] = (),
         ids: Optional[Iterable[str]] = None,
         embedding: Optional[Embeddings] = None,
     ) -> CassandraGraphStore:
@@ -48,7 +40,7 @@ class GraphStoreFactory:
                 session=self.session,
                 keyspace=self.keyspace,
                 node_table=self.node_table,
-                edge_table=self.edge_table,
+                targets_table=self.targets_table,
                 ids=ids,
             )
 
@@ -56,7 +48,9 @@ class GraphStoreFactory:
 
     def drop(self):
         self.session.execute(f"DROP TABLE IF EXISTS {self.keyspace}.{self.node_table};")
-        self.session.execute(f"DROP TABLE IF EXISTS {self.keyspace}.{self.edge_table};")
+        self.session.execute(
+            f"DROP TABLE IF EXISTS {self.keyspace}.{self.targets_table};"
+        )
 
 
 @pytest.fixture(scope="session")
@@ -115,55 +109,7 @@ class AngularTwoDimensionalEmbeddings(Embeddings):
 
 
 def _result_ids(docs: Iterable[Document]) -> List[str]:
-    return list(map(lambda d: d.metadata[CONTENT_ID], docs))
-
-
-def test_link_directed(cassandra: GraphStoreFactory) -> None:
-    a = Document(
-        page_content="A",
-        metadata={
-            "content_id": "a",
-            "link_tags": {
-                IncomingLinkTag(kind="hyperlink", tag="http://a"),
-            },
-        },
-    )
-    b = Document(
-        page_content="B",
-        metadata={
-            "content_id": "b",
-            "link_tags": {
-                IncomingLinkTag(kind="hyperlink", tag="http://b"),
-                OutgoingLinkTag(kind="hyperlink", tag="http://a"),
-            },
-        },
-    )
-    c = Document(
-        page_content="C",
-        metadata={
-            "content_id": "c",
-            "link_tags": {
-                OutgoingLinkTag(kind="hyperlink", tag="http://a"),
-            },
-        },
-    )
-    d = Document(
-        page_content="D",
-        metadata={
-            "content_id": "d",
-            "link_tags": {
-                OutgoingLinkTag(kind="hyperlink", tag="http://a"),
-                OutgoingLinkTag(kind="hyperlink", tag="http://b"),
-            },
-        },
-    )
-
-    store = cassandra.store([a, b, c, d])
-
-    assert list(store.store._linked_ids("a")) == []
-    assert list(store.store._linked_ids("b")) == ["a"]
-    assert list(store.store._linked_ids("c")) == ["a"]
-    assert sorted(store.store._linked_ids("d")) == ["a", "b"]
+    return list(map(lambda d: d.metadata[METADATA_CONTENT_ID_KEY], docs))
 
 
 @pytest.mark.parametrize("gs_factory", ["cassandra", "astra_db"])
@@ -195,33 +141,33 @@ def test_mmr_traversal(request, gs_factory: str):
     v0 = Document(
         page_content="-0.124",
         metadata={
-            "content_id": "v0",
-            "link_tags": {
-                OutgoingLinkTag(kind="explicit", tag="link"),
+            METADATA_CONTENT_ID_KEY: "v0",
+            METADATA_LINKS_KEY: {
+                Link.outgoing(kind="explicit", tag="link"),
             },
         },
     )
     v1 = Document(
         page_content="+0.127",
         metadata={
-            "content_id": "v1",
+            METADATA_CONTENT_ID_KEY: "v1",
         },
     )
     v2 = Document(
         page_content="+0.25",
         metadata={
-            "content_id": "v2",
-            "link_tags": {
-                IncomingLinkTag(kind="explicit", tag="link"),
+            METADATA_CONTENT_ID_KEY: "v2",
+            METADATA_LINKS_KEY: {
+                Link.incoming(kind="explicit", tag="link"),
             },
         },
     )
     v3 = Document(
         page_content="+1.0",
         metadata={
-            "content_id": "v3",
-            "link_tags": {
-                IncomingLinkTag(kind="explicit", tag="link"),
+            METADATA_CONTENT_ID_KEY: "v3",
+            METADATA_LINKS_KEY: {
+                Link.incoming(kind="explicit", tag="link"),
             },
         },
     )
@@ -254,31 +200,31 @@ def test_write_retrieve_keywords(request, gs_factory: str):
     greetings = Document(
         page_content="Typical Greetings",
         metadata={
-            "content_id": "greetings",
-            "link_tags": {
-                IncomingLinkTag(kind="parent", tag="parent"),
+            METADATA_CONTENT_ID_KEY: "greetings",
+            METADATA_LINKS_KEY: {
+                Link.incoming(kind="parent", tag="parent"),
             },
         },
     )
     doc1 = Document(
         page_content="Hello World",
         metadata={
-            "content_id": "doc1",
-            "link_tags": {
-                OutgoingLinkTag(kind="parent", tag="parent"),
-                BidirLinkTag(kind="kw", tag="greeting"),
-                BidirLinkTag(kind="kw", tag="world"),
+            METADATA_CONTENT_ID_KEY: "doc1",
+            METADATA_LINKS_KEY: {
+                Link.outgoing(kind="parent", tag="parent"),
+                Link.bidir(kind="kw", tag="greeting"),
+                Link.bidir(kind="kw", tag="world"),
             },
         },
     )
     doc2 = Document(
         page_content="Hello Earth",
         metadata={
-            "content_id": "doc2",
-            "link_tags": {
-                OutgoingLinkTag(kind="parent", tag="parent"),
-                BidirLinkTag(kind="kw", tag="greeting"),
-                BidirLinkTag(kind="kw", tag="earth"),
+            METADATA_CONTENT_ID_KEY: "doc2",
+            METADATA_LINKS_KEY: {
+                Link.outgoing(kind="parent", tag="parent"),
+                Link.bidir(kind="kw", tag="greeting"),
+                Link.bidir(kind="kw", tag="earth"),
             },
         },
     )
@@ -307,43 +253,30 @@ def test_write_retrieve_keywords(request, gs_factory: str):
     assert set(_result_ids(results)) == {"doc2", "doc1", "greetings"}
 
 
-def test_texts_to_nodes():
-    assert list(_texts_to_nodes(["a", "b"], [{"a": "b"}, {"c": "d"}], ["a", "b"])) == [
-        TextNode(id="a", metadata={"a": "b"}, text="a"),
-        TextNode(id="b", metadata={"c": "d"}, text="b"),
-    ]
-    assert list(_texts_to_nodes(["a", "b"], None, ["a", "b"])) == [
-        TextNode(id="a", metadata={}, text="a"),
-        TextNode(id="b", metadata={}, text="b"),
-    ]
-    assert list(_texts_to_nodes(["a", "b"], [{"a": "b"}, {"c": "d"}], None)) == [
-        TextNode(metadata={"a": "b"}, text="a"),
-        TextNode(metadata={"c": "d"}, text="b"),
-    ]
-    with pytest.raises(ValueError):
-        list(_texts_to_nodes(["a", "b"], None, ["a"]))
-    with pytest.raises(ValueError):
-        list(_texts_to_nodes(["a", "b"], [{"a": "b"}], None))
-    with pytest.raises(ValueError):
-        list(_texts_to_nodes(["a"], [{"a": "b"}, {"c": "d"}], None))
-    with pytest.raises(ValueError):
-        list(_texts_to_nodes(["a"], None, ["a", "b"]))
-
-
-def test_documents_to_nodes():
-    documents = [
-        Document(page_content="a", metadata={"a": "b"}),
-        Document(page_content="b", metadata={"c": "d"}),
-    ]
-    assert list(_documents_to_nodes(documents, ["a", "b"])) == [
-        TextNode(id="a", metadata={"a": "b"}, text="a"),
-        TextNode(id="b", metadata={"c": "d"}, text="b"),
-    ]
-    assert list(_documents_to_nodes(documents, None)) == [
-        TextNode(metadata={"a": "b"}, text="a"),
-        TextNode(metadata={"c": "d"}, text="b"),
-    ]
-    with pytest.raises(ValueError):
-        list(_documents_to_nodes(documents, ["a"]))
-    with pytest.raises(ValueError):
-        list(_documents_to_nodes(documents[1:], ["a", "b"]))
+@pytest.mark.parametrize("gs_factory", ["cassandra", "astra_db"])
+def test_metadata(request, gs_factory: str):
+    gs_factory: GraphStoreFactory = request.getfixturevalue(gs_factory)
+    store = gs_factory.store(
+        [
+            Document(
+                page_content="A",
+                metadata={
+                    METADATA_CONTENT_ID_KEY: "a",
+                    METADATA_LINKS_KEY: {
+                        Link.incoming(kind="hyperlink", tag="http://a"),
+                        Link.bidir(kind="other", tag="foo"),
+                    },
+                    "other": "some other field",
+                },
+            )
+        ]
+    )
+    results = store.similarity_search("A")
+    assert len(results) == 1
+    metadata = results[0].metadata
+    assert metadata["other"] == "some other field"
+    assert metadata[METADATA_CONTENT_ID_KEY] == "a"
+    assert set(metadata[METADATA_LINKS_KEY]) == {
+        Link.incoming(kind="hyperlink", tag="http://a"),
+        Link.bidir(kind="other", tag="foo"),
+    }

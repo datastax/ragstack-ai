@@ -15,23 +15,24 @@ The Graph Store makes use of the following metadata fields on each `Document`:
 - `content_id`: If assigned, this specifies the unique ID of the `Document`.
   If not assigned, one will be generated.
   This should be set if you may re-ingest the same document so that it is overwritten rather than being duplicated.
-- `link_tags`: A set of `LinkTag`s indicating how this node should be linked to other nodes.
+- `links`: A set of `Link`s indicating how this node should be linked to other nodes.
 
 #### Hyperlinks
 
-To connect nodes based on hyperlinks, you can use the `HtmlLinkEdgeExtractor` as shown below:
+To connect nodes based on hyperlinks, you can use the `HtmlLinkExtractor` as shown below:
 
 ```python
-from ragstack_knowledge_store.langchain.extractors import HtmlLinkEdgeExtractor
+from ragstack_knowledge_store.langchain.extractors import HtmlLinkExtractor
 
-html_link_extractor = HtmlLinkEdgeExtractor()
+html_link_extractor = HtmlLinkExtractor()
 
 for doc in documents:
     doc.metadata["content_id"] = doc.metadata["source"]
 
     # Add link tags from the page_content to the metadata.
     # Should be passed the HTML content as a string or BeautifulSoup.
-    html_link_extractor.extract_one(doc, doc.page_content)
+    add_links(doc,
+        html_link_extractor.extract_one(HtmlInput(doc.page_content, doc.metadata["source_url"])))
 ```
 
 ### Store

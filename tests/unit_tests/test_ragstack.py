@@ -24,5 +24,3 @@ def test_meta():
     check_meta("ragstack-ai-langchain")
     check_meta("ragstack-ai-llamaindex")
     check_meta("ragstack-ai-colbert")
-
-

@@ -1,5 +1,9 @@
 import pytest
+from dotenv import load_dotenv
 from ragstack_tests_utils import AstraDBTestStore, LocalCassandraTestStore
+
+load_dotenv()
+
 
 status = {
     "local_cassandra_test_store": None,
