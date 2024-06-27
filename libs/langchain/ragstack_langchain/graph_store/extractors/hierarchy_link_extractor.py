@@ -1,8 +1,9 @@
-from typing import List, Set
+from typing import Callable, List, Set
 
-from ragstack_langchain.graph_store.extractors.link_extractor import LinkExtractor
+from langchain_core.documents import Document
 from ragstack_langchain.graph_store.links import Link
-
+from .link_extractor import LinkExtractor
+from .link_extractor_adapter import LinkExtractorAdapter
 
 try:
     # TypeAlias is not available in Python 2.9, so see if we can get it.
@@ -29,6 +30,12 @@ class HierarchyLinkExtractor(LinkExtractor[HierarchyInput]):
         self._up_links = up_links
         self._down_links = down_links
         self._sibling_links = sibling_links
+
+    def as_document_extractor(self, hierarchy: Callable[[Document], HierarchyInput]) -> LinkExtractor[Document]:
+        return LinkExtractorAdapter(
+            underlying = self,
+            transform = hierarchy
+        )
 
     def extract_one(
             self,

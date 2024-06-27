@@ -1,9 +1,11 @@
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Set, Union
 from urllib.parse import urldefrag, urljoin, urlparse
+from langchain_core.documents import Document
 
 from ragstack_langchain.graph_store.links import Link
 from .link_extractor import LinkExtractor
+from .link_extractor_adapter import LinkExtractorAdapter
 
 if TYPE_CHECKING:
     from bs4 import BeautifulSoup
@@ -53,7 +55,6 @@ class HtmlInput:
     content: Union[str, "BeautifulSoup"]
     base_url: str
 
-
 class HtmlLinkExtractor(LinkExtractor[HtmlInput]):
     def __init__(self, *, kind: str = "hyperlink", drop_fragments: bool = True):
         """Extract hyperlinks from HTML content.
@@ -75,6 +76,22 @@ class HtmlLinkExtractor(LinkExtractor[HtmlInput]):
 
         self._kind = kind
         self.drop_fragments = drop_fragments
+
+    def as_document_extractor(self, url_metadata_key: str = "source") -> LinkExtractor[Document]:
+        """Return a LinkExtractor that applies to documents.
+
+        NOTE: Since the HtmlLinkExtractor parses HTML, if you use with other similar
+        link extractors it may be more efficient to call the link extractors directly
+        on the parsed BeautifulSoup object.
+
+        Args:
+            url_metadata_key: The name of the filed in document metadata with the URL of
+                the document.
+        """
+        return LinkExtractorAdapter(
+            underlying = self,
+            transform = lambda doc: HtmlInput(doc.page_content, doc.metadata[url_metadata_key])
+        )
 
     def extract_one(
         self,
