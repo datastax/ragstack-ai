@@ -1,10 +1,15 @@
-from typing import List, Set, TypeAlias
+from typing import List, Set
 
 from ragstack_langchain.graph_store.extractors.link_extractor import LinkExtractor
 from ragstack_langchain.graph_store.links import Link
 
 
-HierarchyInput: TypeAlias = List[str]
+try:
+    # TypeAlias is not available in Python 2.9, so see if we can get it.
+    from typing import TypeAlias
+    HierarchyInput: TypeAlias = List[str]
+except ImportError:
+    HierarchyInput = List[str]
 
 class HierarchyLinkExtractor(LinkExtractor[HierarchyInput]):
     def __init__(self,
