@@ -7,10 +7,13 @@ from ragstack_langchain.graph_store.links import Link
 InputT = TypeVar("InputT")
 UnderlyingInputT = TypeVar("UnderlyingInputT")
 
+
 class LinkExtractorAdapter(LinkExtractor[InputT]):
-    def __init__(self,
-                 underlying: LinkExtractor[UnderlyingInputT],
-                 transform: Callable[[InputT], UnderlyingInputT]) -> None:
+    def __init__(
+        self,
+        underlying: LinkExtractor[UnderlyingInputT],
+        transform: Callable[[InputT], UnderlyingInputT],
+    ) -> None:
         self._underlying = underlying
         self._transform = transform
 

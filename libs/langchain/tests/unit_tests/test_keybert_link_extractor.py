@@ -20,6 +20,7 @@ BERT embeddings to create keywords and keyphrases that are most similar to a
 document.
 """
 
+
 def test_one_from_keywords():
     extractor = KeybertLinkExtractor()
 
@@ -32,10 +33,13 @@ def test_one_from_keywords():
         Link.bidir(kind="kw", tag="training"),
     }
 
+
 def test_many_from_keyphrases():
-    extractor = KeybertLinkExtractor(extract_keywords_kwargs={
-        "keyphrase_ngram_range": (1, 2),
-    })
+    extractor = KeybertLinkExtractor(
+        extract_keywords_kwargs={
+            "keyphrase_ngram_range": (1, 2),
+        }
+    )
 
     results = list(extractor.extract_many([PAGE_1, PAGE_2]))
     assert results[0] == {

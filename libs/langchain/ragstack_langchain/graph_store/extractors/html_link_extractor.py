@@ -55,6 +55,7 @@ class HtmlInput:
     content: Union[str, "BeautifulSoup"]
     base_url: str
 
+
 class HtmlLinkExtractor(LinkExtractor[HtmlInput]):
     def __init__(self, *, kind: str = "hyperlink", drop_fragments: bool = True):
         """Extract hyperlinks from HTML content.
@@ -77,7 +78,9 @@ class HtmlLinkExtractor(LinkExtractor[HtmlInput]):
         self._kind = kind
         self.drop_fragments = drop_fragments
 
-    def as_document_extractor(self, url_metadata_key: str = "source") -> LinkExtractor[Document]:
+    def as_document_extractor(
+        self, url_metadata_key: str = "source"
+    ) -> LinkExtractor[Document]:
         """Return a LinkExtractor that applies to documents.
 
         NOTE: Since the HtmlLinkExtractor parses HTML, if you use with other similar
@@ -89,8 +92,10 @@ class HtmlLinkExtractor(LinkExtractor[HtmlInput]):
                 the document.
         """
         return LinkExtractorAdapter(
-            underlying = self,
-            transform = lambda doc: HtmlInput(doc.page_content, doc.metadata[url_metadata_key])
+            underlying=self,
+            transform=lambda doc: HtmlInput(
+                doc.page_content, doc.metadata[url_metadata_key]
+            ),
         )
 
     def extract_one(

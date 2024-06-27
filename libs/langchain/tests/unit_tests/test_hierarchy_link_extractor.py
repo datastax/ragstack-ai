@@ -2,20 +2,12 @@ from ragstack_langchain.graph_store.extractors import HierarchyLinkExtractor
 from ragstack_langchain.graph_store.links import Link
 
 
-PATH_1 = [
-    "Root",
-    "H1",
-    "h2"
-]
+PATH_1 = ["Root", "H1", "h2"]
 
-PATH_2 = [
-    "Root",
-    "H1"
-]
+PATH_2 = ["Root", "H1"]
 
-PATH_3 = [
-    "Root"
-]
+PATH_3 = ["Root"]
+
 
 def test_up_only():
     extractor = HierarchyLinkExtractor()
@@ -39,6 +31,7 @@ def test_up_only():
         Link.incoming(kind="hierarchy", tag="up:Root"),
     }
 
+
 def test_up_and_down():
     extractor = HierarchyLinkExtractor(down_links=True)
 
@@ -50,7 +43,7 @@ def test_up_and_down():
         # Path1 links down to things under Root/H1/h2.
         Link.outgoing(kind="hierarchy", tag="down:Root/H1/h2"),
         # Path1 is linked down to by Root/H1
-        Link.incoming(kind="hierarchy", tag="down:Root/H1")
+        Link.incoming(kind="hierarchy", tag="down:Root/H1"),
     }
 
     assert extractor.extract_one(PATH_2) == {
@@ -61,7 +54,7 @@ def test_up_and_down():
         # Path2 links down to things under Root/H1.
         Link.outgoing(kind="hierarchy", tag="down:Root/H1"),
         # Path2 is linked down to by Root
-        Link.incoming(kind="hierarchy", tag="down:Root")
+        Link.incoming(kind="hierarchy", tag="down:Root"),
     }
 
     assert extractor.extract_one(PATH_3) == {
@@ -70,6 +63,7 @@ def test_up_and_down():
         # Path3 links down to things under Root/H1.
         Link.outgoing(kind="hierarchy", tag="down:Root"),
     }
+
 
 def test_sibling():
     extractor = HierarchyLinkExtractor(sibling_links=True, up_links=False)

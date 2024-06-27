@@ -1,19 +1,20 @@
-from typing import Any, Dict, Iterable, Set, TypeAlias, Union
+from typing import Any, Dict, Iterable, Set, Union
 from langchain_core.documents import Document
 
 from ragstack_langchain.graph_store.extractors.link_extractor import LinkExtractor
 from ragstack_langchain.graph_store.links import Link
 
+# TypeAlias is not available in Python 2.9, we can't use that or the newer `type`.
+KeybertInput = Union[str, Document]
 
-KeybertInput: TypeAlias = Union[str, Document]
 
 class KeybertLinkExtractor(LinkExtractor[KeybertInput]):
     def __init__(
-            self,
-            *,
-            kind: str = "kw",
-            embedding_model: str = "all-MiniLM-L6-v2",
-            extract_keywords_kwargs: Dict[str, Any] = {}
+        self,
+        *,
+        kind: str = "kw",
+        embedding_model: str = "all-MiniLM-L6-v2",
+        extract_keywords_kwargs: Dict[str, Any] = {}
     ):
         """Extract keywords using Keybert.
 
@@ -25,6 +26,7 @@ class KeybertLinkExtractor(LinkExtractor[KeybertInput]):
         """
         try:
             import keybert
+
             self._kw_model = keybert.KeyBERT(model=embedding_model)
         except ImportError:
             raise ImportError(
@@ -35,17 +37,12 @@ class KeybertLinkExtractor(LinkExtractor[KeybertInput]):
         self._kind = kind
         self._extract_keywords_kwargs = extract_keywords_kwargs
 
-    def extract_one(
-            self,
-            input: KeybertInput
-    ) -> Set[Link]:
+    def extract_one(self, input: KeybertInput) -> Set[Link]:
         keywords = self._kw_model.extract_keywords(
             input if isinstance(input, str) else input.page_content,
             **self._extract_keywords_kwargs
         )
-        return {
-            Link.bidir(kind=self._kind, tag=kw[0]) for kw in keywords
-        }
+        return {Link.bidir(kind=self._kind, tag=kw[0]) for kw in keywords}
 
     def extract_many(
         self,
@@ -57,8 +54,8 @@ class KeybertLinkExtractor(LinkExtractor[KeybertInput]):
             yield self.extract_one(inputs[0])
         elif len(inputs) > 1:
             strs = [i if isinstance(i, str) else i.page_content for i in inputs]
-            extracted = self._kw_model.extract_keywords(strs, **self._extract_keywords_kwargs)
+            extracted = self._kw_model.extract_keywords(
+                strs, **self._extract_keywords_kwargs
+            )
             for keywords in extracted:
-                yield {
-                    Link.bidir(kind=self._kind, tag=kw[0]) for kw in keywords
-                }
+                yield {Link.bidir(kind=self._kind, tag=kw[0]) for kw in keywords}

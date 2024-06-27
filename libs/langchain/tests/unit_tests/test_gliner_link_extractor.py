@@ -20,20 +20,22 @@ time.
 """
 
 
-
 def test_one_from_keywords():
-    extractor = GLiNERLinkExtractor(labels=["Person", "Award", "Date", "Competitions", "Teams"])
+    extractor = GLiNERLinkExtractor(
+        labels=["Person", "Award", "Date", "Competitions", "Teams"]
+    )
 
     results = extractor.extract_one(PAGE_1)
     print(results)
     assert results == {
-        Link.bidir(kind='entity:Person', tag='Cristiano Ronaldo dos Santos Aveiro'),
-        Link.bidir(kind='entity:Award', tag='European Golden Shoes'),
-        Link.bidir(kind='entity:Competitions', tag='European\nChampionship'),
-        Link.bidir(kind='entity:Award', tag="UEFA Men's\nPlayer of the Year Awards"),
-        Link.bidir(kind='entity:Date', tag='5 February 1985'),
-        Link.bidir(kind='entity:Competitions', tag='UEFA Champions Leagues'),
-        Link.bidir(kind='entity:Teams', tag='Portugal national team'),
-        Link.bidir(kind='entity:Competitions', tag='UEFA European Championship'),
-        Link.bidir(kind='entity:Competitions', tag='UEFA\nNations League'),
-        Link.bidir(kind='entity:Award', tag="Ballon d'Or")}
+        Link.bidir(kind="entity:Person", tag="Cristiano Ronaldo dos Santos Aveiro"),
+        Link.bidir(kind="entity:Award", tag="European Golden Shoes"),
+        Link.bidir(kind="entity:Competitions", tag="European\nChampionship"),
+        Link.bidir(kind="entity:Award", tag="UEFA Men's\nPlayer of the Year Awards"),
+        Link.bidir(kind="entity:Date", tag="5 February 1985"),
+        Link.bidir(kind="entity:Competitions", tag="UEFA Champions Leagues"),
+        Link.bidir(kind="entity:Teams", tag="Portugal national team"),
+        Link.bidir(kind="entity:Competitions", tag="UEFA European Championship"),
+        Link.bidir(kind="entity:Competitions", tag="UEFA\nNations League"),
+        Link.bidir(kind="entity:Award", tag="Ballon d'Or"),
+    }

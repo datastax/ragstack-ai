@@ -5,19 +5,18 @@ from ragstack_langchain.graph_store.links import Link
 from .link_extractor import LinkExtractor
 from .link_extractor_adapter import LinkExtractorAdapter
 
-try:
-    # TypeAlias is not available in Python 2.9, so see if we can get it.
-    from typing import TypeAlias
-    HierarchyInput: TypeAlias = List[str]
-except ImportError:
-    HierarchyInput = List[str]
+# TypeAlias is not available in Python 2.9, we can't use that or the newer `type`.
+HierarchyInput = List[str]
+
 
 class HierarchyLinkExtractor(LinkExtractor[HierarchyInput]):
-    def __init__(self,
-                 kind: str = "hierarchy",
-                 up_links: bool = True,
-                 down_links: bool = False,
-                 sibling_links: bool = False):
+    def __init__(
+        self,
+        kind: str = "hierarchy",
+        up_links: bool = True,
+        down_links: bool = False,
+        sibling_links: bool = False,
+    ):
         """Extract links from a document hierarchy.
 
         Args:
@@ -31,15 +30,14 @@ class HierarchyLinkExtractor(LinkExtractor[HierarchyInput]):
         self._down_links = down_links
         self._sibling_links = sibling_links
 
-    def as_document_extractor(self, hierarchy: Callable[[Document], HierarchyInput]) -> LinkExtractor[Document]:
-        return LinkExtractorAdapter(
-            underlying = self,
-            transform = hierarchy
-        )
+    def as_document_extractor(
+        self, hierarchy: Callable[[Document], HierarchyInput]
+    ) -> LinkExtractor[Document]:
+        return LinkExtractorAdapter(underlying=self, transform=hierarchy)
 
     def extract_one(
-            self,
-            input: HierarchyInput,
+        self,
+        input: HierarchyInput,
     ) -> Set[Link]:
         this_path = "/".join(input)
         parent_path = None
