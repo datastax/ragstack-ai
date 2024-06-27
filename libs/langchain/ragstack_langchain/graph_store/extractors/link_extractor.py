@@ -3,9 +3,6 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import Generic, Iterable, Set, TypeVar
 
-from langchain_core.documents import Document
-from ragstack_knowledge_store._utils import strict_zip
-
 from ragstack_langchain.graph_store.links import Link
 
 InputT = TypeVar("InputT")
@@ -13,22 +10,28 @@ InputT = TypeVar("InputT")
 METADATA_LINKS_KEY = "links"
 
 
-class EdgeExtractor(ABC, Generic[InputT]):
+class LinkExtractor(ABC, Generic[InputT]):
+    """Interface for extracting links (incoming, outgoing, bidirectional)."""
+
     @abstractmethod
-    def extract_one(self, document: Document, input: InputT) -> None:
+    def extract_one(self, input: InputT) -> Set[Link]:
         """Add edges from each `input` to the corresponding documents.
 
         Args:
-            document: Document to add the link tags to.
             input: The input content to extract edges from.
+
+        Returns:
+            Set of links extracted from the input.
         """
 
-    def extract(self, documents: Iterable[Document], inputs: Iterable[InputT]) -> None:
+    def extract_many(self, inputs: Iterable[InputT]):
         """Add edges from each `input` to the corresponding documents.
 
         Args:
-            documents: The documents to add the link tags to.
             inputs: The input content to extract edges from.
+
+        Returns:
+            Iterable over the set of links extracted from the input.
         """
-        for document, input in strict_zip(documents, inputs):
-            self.extract_one(document, input)
+        for input in inputs:
+            yield self.extract_one(input)

@@ -1,9 +1,9 @@
-from langchain_core.documents import Document
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Set, Union
 from urllib.parse import urldefrag, urljoin, urlparse
 
 from ragstack_langchain.graph_store.links import add_links, Link
-from .edge_extractor import EdgeExtractor
+from .link_extractor import LinkExtractor
 
 if TYPE_CHECKING:
     from bs4 import BeautifulSoup
@@ -48,21 +48,19 @@ def _parse_hrefs(
     return links
 
 
-class HtmlLinkEdgeExtractor(EdgeExtractor[Union[str, "BeautifulSoup"]]):
-    def __init__(
-        self,
-        url_field: str = "source",
-        *,
-        kind: str = "hyperlink",
-        drop_fragments: bool = True
-    ):
+@dataclass
+class HtmlInput:
+    content: Union[str, "BeautifulSoup"]
+    base_url: str
+
+
+class HtmlLinkExtractor(LinkExtractor[HtmlInput]):
+    def __init__(self, *, kind: str = "hyperlink", drop_fragments: bool = True):
         """Extract hyperlinks from HTML content.
 
-        Expects the `page_content` to be HTML.
+        Expects the input to be an HTML string or a `BeautifulSoup` object.
 
         Args:
-            url_field: Name of the metadata field containing the URL
-                of the content. Defaults to "source".
             kind: The kind of edge to extract. Defaults to "hyperlink".
             drop_fragments: Whether fragments in URLs and links shoud be
                 dropped. Defaults to `True`.
@@ -71,32 +69,29 @@ class HtmlLinkEdgeExtractor(EdgeExtractor[Union[str, "BeautifulSoup"]]):
             import bs4  # noqa:F401
         except ImportError:
             raise ImportError(
-                "BeautifulSoup4 is required for HtmlLinkEdgeExtractor. "
+                "BeautifulSoup4 is required for HtmlLinkExtractor. "
                 "Please install it with `pip install beautifulsoup4`."
             )
 
-        self.url_field = url_field
         self._kind = kind
         self.drop_fragments = drop_fragments
 
     def extract_one(
         self,
-        document: Document,
-        input: Union[str, "BeautifulSoup"],
-    ):
-        if isinstance(input, str):
+        input: HtmlInput,
+    ) -> Set[Link]:
+        content = input.content
+        if isinstance(content, str):
             from bs4 import BeautifulSoup
 
-            input = BeautifulSoup(input, "html.parser")
+            content = BeautifulSoup(content, "html.parser")
 
-        url = document.metadata[self.url_field]
+        base_url = input.base_url
         if self.drop_fragments:
-            url = urldefrag(url).url
+            base_url = urldefrag(base_url).url
 
-        hrefs = _parse_hrefs(input, url, self.drop_fragments)
+        hrefs = _parse_hrefs(content, base_url, self.drop_fragments)
 
-        add_links(
-            document,
-            Link.incoming(kind=self._kind, tag=url),
-            *[Link.outgoing(kind=self._kind, tag=url) for url in hrefs]
-        )
+        links = {Link.outgoing(kind=self._kind, tag=url) for url in hrefs}
+        links.add(Link.incoming(kind=self._kind, tag=base_url))
+        return links
