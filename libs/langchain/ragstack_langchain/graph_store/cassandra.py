@@ -12,25 +12,8 @@ from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
 
 from .base import GraphStore, Node, nodes_to_documents
-from ragstack_knowledge_store import EmbeddingModel, graph_store
-
-
-class _EmbeddingModelAdapter(EmbeddingModel):
-    def __init__(self, embeddings: Embeddings):
-        self.embeddings = embeddings
-
-    def embed_texts(self, texts: List[str]) -> List[List[float]]:
-        return self.embeddings.embed_documents(texts)
-
-    def embed_query(self, text: str) -> List[float]:
-        return self.embeddings.embed_query(text)
-
-    async def aembed_texts(self, texts: List[str]) -> List[List[float]]:
-        return await self.embeddings.aembed_documents(texts)
-
-    async def aembed_query(self, text: str) -> List[float]:
-        return await self.embeddings.aembed_query(text)
-
+from .embedding_adapter import EmbeddingAdapter
+from ragstack_knowledge_store import graph_store
 
 class CassandraGraphStore(GraphStore):
     def __init__(
@@ -60,7 +43,7 @@ class CassandraGraphStore(GraphStore):
         _setup_mode = getattr(graph_store.SetupMode, setup_mode.name)
 
         self.store = graph_store.GraphStore(
-            embedding=_EmbeddingModelAdapter(embedding),
+            embedding=EmbeddingAdapter(embedding),
             node_table=node_table,
             targets_table=targets_table,
             session=session,
@@ -80,10 +63,8 @@ class CassandraGraphStore(GraphStore):
         _nodes = []
         for node in nodes:
             _nodes.append(
-                graph_store.Node(
-                    id=node.id, text=node.text, metadata=node.metadata, links=node.links
-                )
-            )
+                graph_store.Node(id=node.id, text=node.text, mime_type=node.mime_type, mime_encoding=node.mime_encoding, metadata=node.metadata)
+            )            
         return self.store.add_nodes(_nodes)
 
     @classmethod
