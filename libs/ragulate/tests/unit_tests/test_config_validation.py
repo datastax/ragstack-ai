@@ -1,5 +1,5 @@
-import unittest
 import os
+import unittest
 
 from ragstack_ragulate.config.config_parser import ConfigParser
 from ragstack_ragulate.config.config_schema_0_1 import ConfigSchema_0_1

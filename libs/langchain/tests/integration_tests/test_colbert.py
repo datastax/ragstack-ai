@@ -8,6 +8,7 @@ from ragstack_colbert import CassandraDatabase, ColbertEmbeddingModel
 from ragstack_langchain.colbert import ColbertVectorStore
 from ragstack_tests_utils import TestData
 from transformers import BertTokenizer
+
 from tests.integration_tests.conftest import (
     get_astradb_test_store,
     get_local_cassandra_test_store,
