@@ -1,4 +1,5 @@
 from typing import Any, Dict, Iterable, Set, Union
+
 from langchain_core.documents import Document
 
 from ragstack_langchain.graph_store.extractors.link_extractor import LinkExtractor

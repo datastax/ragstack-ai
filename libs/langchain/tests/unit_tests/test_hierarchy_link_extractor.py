@@ -1,7 +1,6 @@
 from ragstack_langchain.graph_store.extractors import HierarchyLinkExtractor
 from ragstack_langchain.graph_store.links import Link
 
-
 PATH_1 = ["Root", "H1", "h2"]
 
 PATH_2 = ["Root", "H1"]

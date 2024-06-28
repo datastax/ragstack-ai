@@ -1,6 +1,7 @@
 from typing import Iterable, Sequence
-from langchain_core.documents.transformers import BaseDocumentTransformer
+
 from langchain_core.documents import Document
+from langchain_core.documents.transformers import BaseDocumentTransformer
 
 from ragstack_langchain.graph_store.extractors.link_extractor import LinkExtractor
 from ragstack_langchain.graph_store.links import add_links

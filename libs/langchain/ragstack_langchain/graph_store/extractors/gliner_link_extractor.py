@@ -3,7 +3,6 @@ from typing import Any, Dict, Iterable, List, Set
 from ragstack_langchain.graph_store.extractors.link_extractor import LinkExtractor
 from ragstack_langchain.graph_store.links import Link
 
-
 # TypeAlias is not available in Python 2.9, we can't use that or the newer `type`.
 GLiNERInput = str
 

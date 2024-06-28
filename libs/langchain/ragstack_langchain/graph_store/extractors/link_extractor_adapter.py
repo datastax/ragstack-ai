@@ -3,7 +3,6 @@ from typing import Callable, Iterable, Set, TypeVar
 from ragstack_langchain.graph_store.extractors.link_extractor import LinkExtractor
 from ragstack_langchain.graph_store.links import Link
 
-
 InputT = TypeVar("InputT")
 UnderlyingInputT = TypeVar("UnderlyingInputT")
 

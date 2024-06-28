@@ -1,5 +1,4 @@
 from langchain_core.documents import Document
-
 from ragstack_langchain.graph_store.extractors import (
     HtmlLinkExtractor,
     LinkExtractorTransformer,
@@ -10,10 +9,11 @@ from ragstack_langchain.graph_store.extractors.gliner_link_extractor import (
 from ragstack_langchain.graph_store.extractors.keybert_link_extractor import (
     KeybertLinkExtractor,
 )
-from ragstack_langchain.graph_store.links import get_links, Link
+from ragstack_langchain.graph_store.links import Link, get_links
+
 from . import (
-    test_html_link_extractor,
     test_gliner_link_extractor,
+    test_html_link_extractor,
     test_keybert_link_extractor,
 )
 
