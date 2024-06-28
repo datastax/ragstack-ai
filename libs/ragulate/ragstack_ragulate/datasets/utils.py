@@ -1,5 +1,4 @@
 import os
-from os.path import dirname, abspath
 
 import inflection
 
@@ -7,13 +6,15 @@ from .base_dataset import BaseDataset
 from .crag_dataset import CragDataset
 from .llama_dataset import LlamaDataset
 
-DATASET_ROOT_PATH = dirname(abspath(__file__))
-
 
 def find_dataset(name: str) -> BaseDataset:
+    root_path = "datasets"
+    if not os.path.exists(root_path):
+        raise ValueError("please download a dataset before using ingest or query")
+
     name = inflection.underscore(name)
-    for kind in os.listdir(DATASET_ROOT_PATH):
-        kind_path = os.path.join(DATASET_ROOT_PATH, kind)
+    for kind in os.listdir(root_path):
+        kind_path = os.path.join(root_path, kind)
         if os.path.isdir(kind_path):
             for dataset in os.listdir(kind_path):
                 dataset_path = os.path.join(kind_path, dataset)
