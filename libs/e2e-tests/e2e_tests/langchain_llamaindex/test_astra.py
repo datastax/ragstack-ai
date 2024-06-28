@@ -2,23 +2,20 @@ from uuid import uuid4
 
 import langchain_core.documents
 import pytest
-from langchain_openai import OpenAIEmbeddings, ChatOpenAI
-
-from e2e_tests.conftest import get_required_env, is_astra
 from langchain.chains import ConversationalRetrievalChain
 from langchain_astradb import AstraDBVectorStore as LangChainAstraDBVectorStore
-
+from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from llama_index.core import ServiceContext, StorageContext, VectorStoreIndex
 from llama_index.core.schema import Document
 from llama_index.core.vector_stores import (
-    MetadataFilters,
     ExactMatchFilter,
+    MetadataFilters,
 )
-from llama_index.vector_stores.astra_db import AstraDBVectorStore
 from llama_index.embeddings.openai import OpenAIEmbedding
 from llama_index.llms.openai import OpenAI
+from llama_index.vector_stores.astra_db import AstraDBVectorStore
 
-
+from e2e_tests.conftest import get_required_env, is_astra
 from e2e_tests.test_utils import skip_test_due_to_implementation_not_supported
 from e2e_tests.test_utils.astradb_vector_store_handler import (
     AstraDBVectorStoreHandler,

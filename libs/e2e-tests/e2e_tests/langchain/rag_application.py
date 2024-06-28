@@ -1,10 +1,14 @@
 import logging
 import time
 from operator import itemgetter
-from typing import Dict, List, Optional, Sequence, Callable
+from typing import Callable, Dict, List, Optional, Sequence
 
-from langchain.schema.vectorstore import VectorStore
-from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain import callbacks
+from langchain.chains import ConversationalRetrievalChain
+from langchain.memory import (
+    ConversationSummaryMemory,
+)
+from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder, PromptTemplate
 from langchain.schema import Document
 from langchain.schema.language_model import BaseLanguageModel
 from langchain.schema.messages import AIMessage, HumanMessage
@@ -16,19 +20,12 @@ from langchain.schema.runnable import (
     RunnableLambda,
     RunnableMap,
 )
+from langchain.schema.vectorstore import VectorStore
 from langchain_core.chat_history import BaseChatMessageHistory
 from langchain_core.tracers import ConsoleCallbackHandler
-from langchain import callbacks
 from pydantic import BaseModel
 
-from langchain.prompts import PromptTemplate
-from langchain.chains import ConversationalRetrievalChain
-from langchain.memory import (
-    ConversationSummaryMemory,
-)
-
 from e2e_tests.test_utils.tracing import record_langsmith_sharelink
-
 
 BASIC_QA_PROMPT = """
 Answer the question based only on the supplied context. If you don't know the answer, say the following: "I don't know the answer".

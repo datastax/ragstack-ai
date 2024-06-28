@@ -7,13 +7,12 @@ except ImportError:
 
 
 from llama_index.core import ServiceContext, StorageContext, VectorStoreIndex
-from llama_index.llms.openai import OpenAI
 from llama_index.embeddings.openai import OpenAIEmbedding
-
+from llama_index.llms.openai import OpenAI
 
 from e2e_tests.conftest import (
-    set_current_test_info,
     get_required_env,
+    set_current_test_info,
 )
 from e2e_tests.test_utils import get_local_resource_path
 from e2e_tests.test_utils.vector_store_handler import (

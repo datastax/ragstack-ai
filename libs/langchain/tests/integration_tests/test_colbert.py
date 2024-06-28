@@ -9,12 +9,12 @@ from ragstack_langchain.colbert import ColbertVectorStore
 from ragstack_tests_utils import TestData
 from transformers import BertTokenizer
 
-logging.getLogger("cassandra").setLevel(logging.ERROR)
-
 from tests.integration_tests.conftest import (
     get_astradb_test_store,
     get_local_cassandra_test_store,
 )
+
+logging.getLogger("cassandra").setLevel(logging.ERROR)
 
 test_data = {
     "chunks": None,

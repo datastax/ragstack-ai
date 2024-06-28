@@ -11,25 +11,23 @@ from langchain_community.chat_message_histories import (
 )
 from langchain_community.vectorstores.cassandra import Cassandra
 from langchain_core.chat_history import BaseChatMessageHistory
-
 from llama_index.core.schema import TextNode
-from llama_index.vector_stores.cassandra import CassandraVectorStore
 from llama_index.core.vector_stores.types import (
     VectorStoreQuery,
 )
-from e2e_tests.test_utils import skip_test_due_to_implementation_not_supported
-
+from llama_index.vector_stores.cassandra import CassandraVectorStore
+from ragstack_tests_utils import CassandraContainer
 
 from e2e_tests.test_utils import (
     random_string,
+    skip_test_due_to_implementation_not_supported,
 )
-from ragstack_tests_utils import CassandraContainer
 from e2e_tests.test_utils.vector_store_handler import (
+    EnhancedLangChainVectorStore,
+    EnhancedLlamaIndexVectorStore,
     VectorStoreHandler,
     VectorStoreImplementation,
     VectorStoreTestContext,
-    EnhancedLangChainVectorStore,
-    EnhancedLlamaIndexVectorStore,
 )
 
 

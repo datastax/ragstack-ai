@@ -61,7 +61,9 @@ class AstraDBTestStore(TestStore):
     def create_cassandra_session(self) -> Session:
         if self.env == "prod":
             cassio.init(
-                token=self.token, database_id=self.database_id, keyspace=KEYSPACE,
+                token=self.token,
+                database_id=self.database_id,
+                keyspace=KEYSPACE,
                 cloud_kwargs={
                     # connect timeout for the /metadata endpoint to download secure bundle
                     "connect_timeout": 30

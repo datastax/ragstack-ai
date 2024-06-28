@@ -1,6 +1,7 @@
+import json
 import os.path
 import sys
-import json
+import xml
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from typing import List
@@ -69,8 +70,6 @@ def cdata(text: str) -> str:
     return f"<![CDATA[{text}]]>"
 
 
-import xml
-
 xml.etree.ElementTree._escape_cdata = unsafe_escape_data
 
 
@@ -124,7 +123,12 @@ def generate_new_report(test_suites):
         reporter.append(test_suite_el)
     github_url = os.environ.get("TESTSPACE_REPORT_GITHUB_URL")
     if github_url:
-        link = Link(name="See logs on Github Actions", url=github_url, description="", level="info")
+        link = Link(
+            name="See logs on Github Actions",
+            url=github_url,
+            description="",
+            level="info",
+        )
         link_el = generate_link_annotation(link)
         reporter.append(link_el)
     return reporter
@@ -143,6 +147,8 @@ def generate_link_annotation(link):
 
 
 SNYK_REPORT_SUITE_NAME = "Security scans"
+
+
 def parse_snyk_report(input_file: str):
     test_cases = []
     vulnerabilities = {}
@@ -188,9 +194,16 @@ def parse_snyk_report(input_file: str):
             local_links = []
             if "docker-image" in project:
                 test_case_name = "Docker image"
-                docker_image_digest = os.environ.get("TESTSPACE_REPORT_DOCKER_IMAGE_DIGEST", "")
+                docker_image_digest = os.environ.get(
+                    "TESTSPACE_REPORT_DOCKER_IMAGE_DIGEST", ""
+                )
                 if docker_image_digest:
-                    link = Link(name="Docker image", description=docker_image_digest, url="", level="info")
+                    link = Link(
+                        name="Docker image",
+                        description=docker_image_digest,
+                        url="",
+                        level="info",
+                    )
                     local_links.append(link)
                     all_links.append(link)
             else:
@@ -201,10 +214,20 @@ def parse_snyk_report(input_file: str):
                 link = Link(name=v[0], description=v[1], url=v[2], level="error")
                 all_links.append(link)
                 local_links.append(link)
-            test_case = TestCase(name=test_case_name, passed=passed, time="0.0", failures=[], links=local_links)
+            test_case = TestCase(
+                name=test_case_name,
+                passed=passed,
+                time="0.0",
+                failures=[],
+                links=local_links,
+            )
             test_cases.append(test_case)
 
-    return {SNYK_REPORT_SUITE_NAME: TestSuite(name=SNYK_REPORT_SUITE_NAME, test_cases=test_cases, links=all_links)}
+    return {
+        SNYK_REPORT_SUITE_NAME: TestSuite(
+            name=SNYK_REPORT_SUITE_NAME, test_cases=test_cases, links=all_links
+        )
+    }
 
 
 def parse_test_report(input_file: str):
@@ -217,16 +240,22 @@ def parse_test_report(input_file: str):
             for test_case in test_suite.iter("testcase"):
                 print("processing test case: " + str(test_case.attrib))
                 classname = test_case.get("classname")
-                if test_case.find("skipped") is not None or not test_case.get("name") or not classname:
+                if (
+                    test_case.find("skipped") is not None
+                    or not test_case.get("name")
+                    or not classname
+                ):
                     continue
 
                 failure = test_case.find("failure")
                 failures = []
                 if failure is not None:
-                    #err_desc = failure.text
+                    # err_desc = failure.text
                     # while it could be informative, it's better to not risk to expose sensitive data
                     err_desc = ""
-                    failures.append(Failure(title=failure.get("message"), description=err_desc))
+                    failures.append(
+                        Failure(title=failure.get("message"), description=err_desc)
+                    )
 
                 properties = test_case.find("properties")
                 links = []
@@ -234,7 +263,13 @@ def parse_test_report(input_file: str):
                     for prop in properties.iter("property"):
                         if prop.get("name") == "langsmith_url":
                             links.append(
-                                Link(name="LangSmith trace", url=prop.get("value"), level="info", description=""))
+                                Link(
+                                    name="LangSmith trace",
+                                    url=prop.get("value"),
+                                    level="info",
+                                    description="",
+                                )
+                            )
 
                 report_test_case = TestCase(
                     name=rewrite_name(test_case.get("name")),
@@ -253,7 +288,9 @@ def parse_test_report(input_file: str):
 
 if __name__ == "__main__":
     if len(sys.argv) < 4:
-        print("Usage: generate-testspace-report.py [tests|snyk] {junit-file.xml|snyk.json} {output-file.xml}")
+        print(
+            "Usage: generate-testspace-report.py [tests|snyk] {junit-file.xml|snyk.json} {output-file.xml}"
+        )
         sys.exit(1)
 
     main(sys.argv[1], sys.argv[2], sys.argv[3])

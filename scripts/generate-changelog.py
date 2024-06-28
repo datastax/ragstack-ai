@@ -19,7 +19,7 @@ IMPORTANT_DEPENDENCIES = [
     "unstructured",
     "colbert-ai",
     "torch",
-    "pyarrow"
+    "pyarrow",
 ]
 
 
@@ -32,14 +32,14 @@ def main():
     url = f"https://pypi.org/pypi/{root_package_name}/{package_version}/json"
     deps_str = ""
     json_response = requests.get(url).json()
-    requires = json_response['info']['requires_dist']
+    requires = json_response["info"]["requires_dist"]
     for require in requires:
         version_range = ""
         extra = ""
         require = require.replace(" ", "")
         if ";extra" in require:
-            extra = require[require.index(";extra") + 8:]
-            require = require[:require.index(";extra")]
+            extra = require[require.index(";extra") + 8 :]
+            require = require[: require.index(";extra")]
 
         for i in range(len(require)):
             if require[i] == "=":

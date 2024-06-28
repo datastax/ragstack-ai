@@ -279,7 +279,7 @@ class GraphStore:
             CREATE CUSTOM INDEX IF NOT EXISTS {self._targets_table}_target_text_embedding_index
             ON {self._keyspace}.{self._targets_table}(target_text_embedding)
             USING 'StorageAttachedIndex';
-            """
+            """  # noqa
         )
 
     def _concurrent_queries(self) -> ConcurrentQueries:
