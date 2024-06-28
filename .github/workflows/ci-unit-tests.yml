@@ -77,6 +77,7 @@ jobs:
         uses: ./.github/actions/lint
 
       - name: "Unit tests (root)"
+        # yamllint disable-line rule:line-length
         if: ${{ needs.preconditions.outputs.libs_langchain == 'true' || needs.preconditions.outputs.libs_colbert == 'true' || needs.preconditions.outputs.libs_llamaindex == 'true' }}
         run: tox -e unit-tests && rm -rf .tox
 
