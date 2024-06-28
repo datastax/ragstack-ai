@@ -35,7 +35,7 @@ These images show distribution box plots of the metrics for different test runs.
 ## Installation
 
 ```sh
-pip install ragulate
+pip install ragstack-ai-ragulate
 ```
 
 ## Initial Setup
@@ -169,7 +169,5 @@ There are two ways to run Ragulate to run an experiment. Either define an experi
 
 ## Current Limitations
 
-* The evaluation model is locked to OpenAI gpt3.5
 * Only LangChain query pipelines are supported
-* Only LlamaIndex datasets are supported
 * There is no way to specify which metrics to evaluate.
