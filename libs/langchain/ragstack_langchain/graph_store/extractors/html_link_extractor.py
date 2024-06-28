@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Set, Union
 from urllib.parse import urldefrag, urljoin, urlparse
 
-from ragstack_langchain.graph_store.links import add_links, Link
+from ragstack_langchain.graph_store.links import Link
 from .link_extractor import LinkExtractor
 
 if TYPE_CHECKING:

@@ -15,15 +15,14 @@ from typing import (
     cast,
 )
 
-import numpy as np
 from cassandra.cluster import ConsistencyLevel, Session
 from cassio.config import check_resolve_keyspace, check_resolve_session
 
+from ._mmr_helper import MmrHelper
 from .concurrency import ConcurrentQueries
 from .content import Kind
 from .embedding_model import EmbeddingModel
 from .links import Link
-from ._mmr_helper import MmrHelper
 
 CONTENT_ID = "content_id"
 
@@ -188,9 +187,7 @@ class GraphStore:
             LIMIT ?
             """
         )
-        self._query_ids_and_link_to_tags_by_embedding.consistency_level = (
-            ConsistencyLevel.ONE
-        )
+        self._query_ids_and_link_to_tags_by_embedding.consistency_level = ConsistencyLevel.ONE
 
         self._query_ids_and_link_to_tags_by_id = session.prepare(
             f"""
@@ -208,9 +205,7 @@ class GraphStore:
             LIMIT ?
             """
         )
-        self._query_ids_and_embedding_by_embedding.consistency_level = (
-            ConsistencyLevel.ONE
-        )
+        self._query_ids_and_embedding_by_embedding.consistency_level = ConsistencyLevel.ONE
 
         self._query_source_tags_by_id = session.prepare(
             f"""
@@ -280,8 +275,8 @@ class GraphStore:
         )
 
         # Index on target_text_embedding (for similarity search)
-        self._session.execute(
-            f"""CREATE CUSTOM INDEX IF NOT EXISTS {self._targets_table}_target_text_embedding_index
+        self._session.execute(f"""
+            CREATE CUSTOM INDEX IF NOT EXISTS {self._targets_table}_target_text_embedding_index
             ON {self._keyspace}.{self._targets_table}(target_text_embedding)
             USING 'StorageAttachedIndex';
             """
@@ -439,9 +434,7 @@ class GraphStore:
 
                 new_candidates = {}
                 for adjacent in adjacents:
-                    new_candidates[adjacent.target_content_id] = (
-                        adjacent.target_text_embedding
-                    )
+                    new_candidates[adjacent.target_content_id] = adjacent.target_text_embedding
                     if next_depth < depths.get(adjacent.target_content_id, depth + 1):
                         # If this is a new shortest depth, or there was no
                         # previous depth, update the depths. This ensures that
@@ -458,9 +451,7 @@ class GraphStore:
 
         return self._nodes_with_ids(helper.selected_ids)
 
-    def traversal_search(
-        self, query: str, *, k: int = 4, depth: int = 1
-    ) -> Iterable[Node]:
+    def traversal_search(self, query: str, *, k: int = 4, depth: int = 1) -> Iterable[Node]:
         """Retrieve documents from this knowledge store.
 
         First, `k` nodes are retrieved using a vector search for the `query` string.
@@ -518,8 +509,9 @@ class GraphStore:
                             # set to traverse.
                             for kind, value in node.link_to_tags:
                                 if d <= visited_tags.get((kind, value), depth):
-                                    # Record that we'll query this tag at the given depth, so we don't
-                                    # fetch it again (unless we find it an earlier depth)
+                                    # Record that we'll query this tag at the
+                                    # given depth, so we don't fetch it again
+                                    # (unless we find it an earlier depth)
                                     visited_tags[(kind, value)] = d
                                     outgoing_tags.add((kind, value))
 
@@ -620,9 +612,7 @@ class GraphStore:
             # TODO: We could eliminate this query by storing the source tags of the target
             # node in the targets table.
             for source_id in source_ids:
-                cq.execute(
-                    self._query_source_tags_by_id, (source_id,), callback=add_sources
-                )
+                cq.execute(self._query_source_tags_by_id, (source_id,), callback=add_sources)
 
         # TODO: Consider a combined limit based on the similarity and/or predicated MMR score?
         return [

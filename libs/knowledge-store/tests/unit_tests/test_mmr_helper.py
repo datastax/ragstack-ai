@@ -1,5 +1,6 @@
 import math
 from typing import List
+
 from ragstack_knowledge_store._mmr_helper import MmrHelper
 
 
@@ -25,7 +26,7 @@ def test_mmr_helper_pop_best():
     )
     assert helper.pop_best() == "a"
     assert helper.pop_best() == "b"
-    assert helper.pop_best() == None
+    assert helper.pop_best() is None
 
 
 def angular_embedding(angle: float) -> List[float]:
