@@ -1,4 +1,5 @@
 import unittest
+import os
 
 from ragstack_ragulate.config.config_parser import ConfigParser
 from ragstack_ragulate.config.config_schema_0_1 import ConfigSchema_0_1
@@ -66,6 +67,8 @@ class TestConfigValidation(unittest.TestCase):
                 "answer_correctness": {"enabled": True, "eval_llm": "llama3"},
             },
         }
+        os.makedirs(os.path.join("datasets", "llama", "blockchain_solana"), exist_ok=True)
+        os.makedirs(os.path.join("datasets", "llama", "braintrust_coda_help_desk"), exist_ok=True)
         parser = ConfigParser(config_schema=ConfigSchema_0_1(), config=config)
 
         for field, errors in parser.errors.items():
@@ -110,6 +113,8 @@ class TestConfigValidation(unittest.TestCase):
                 "answer_correctness",
             ],
         }
+        os.makedirs(os.path.join("datasets", "llama", "blockchain_solana"), exist_ok=True)
+        os.makedirs(os.path.join("datasets", "llama", "other_dataset"), exist_ok=True)
         parser = ConfigParser(config_schema=ConfigSchema_0_1(), config=config)
 
         for field, errors in parser.errors.items():

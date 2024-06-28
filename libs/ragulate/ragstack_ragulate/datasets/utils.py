@@ -9,6 +9,9 @@ from .llama_dataset import LlamaDataset
 
 def find_dataset(name: str) -> BaseDataset:
     root_path = "datasets"
+    if not os.path.exists(root_path):
+        raise ValueError("please download a dataset before using ingest or query")
+
     name = inflection.underscore(name)
     for kind in os.listdir(root_path):
         kind_path = os.path.join(root_path, kind)
