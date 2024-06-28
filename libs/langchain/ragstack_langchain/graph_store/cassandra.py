@@ -10,9 +10,9 @@ from cassandra.cluster import Session
 from langchain_community.utilities.cassandra import SetupMode
 from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
+from ragstack_knowledge_store import EmbeddingModel, graph_store
 
 from .base import GraphStore, Node, nodes_to_documents
-from ragstack_knowledge_store import EmbeddingModel, graph_store
 
 
 class _EmbeddingModelAdapter(EmbeddingModel):

@@ -11,7 +11,7 @@ def _node_label(node: Node) -> str:
 
 
 def print_graph_documents(
-    graph_documents: Union[GraphDocument, Iterable[GraphDocument]]
+    graph_documents: Union[GraphDocument, Iterable[GraphDocument]],
 ):
     if isinstance(graph_documents, GraphDocument):
         graph_documents = [graph_documents]

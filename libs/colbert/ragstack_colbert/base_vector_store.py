@@ -81,7 +81,9 @@ class BaseVectorStore(ABC):
 
     # handles LlamaIndex add
     @abstractmethod
-    async def aadd_chunks(self, chunks: List[Chunk], concurrent_inserts: Optional[int] = 100) -> List[Tuple[str, int]]:
+    async def aadd_chunks(
+        self, chunks: List[Chunk], concurrent_inserts: Optional[int] = 100
+    ) -> List[Tuple[str, int]]:
         """
         Stores a list of embedded text chunks in the vector store
 
@@ -119,7 +121,9 @@ class BaseVectorStore(ABC):
 
     # handles LangChain and LlamaIndex delete
     @abstractmethod
-    async def adelete_chunks(self, doc_ids: List[str], concurrent_deletes: Optional[int] = 100) -> bool:
+    async def adelete_chunks(
+        self, doc_ids: List[str], concurrent_deletes: Optional[int] = 100
+    ) -> bool:
         """
         Deletes chunks from the vector store based on their document id.
 

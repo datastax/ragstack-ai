@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-ALL_PACKAGES="ragstack-ai, ragstack-ai-langchain, ragstack-ai-llamaindex, ragstack-ai-colbert, ragstack-ai-knowledge-graph, ragstack-ai-knowledge-store"
+ALL_PACKAGES="ragstack-ai, ragstack-ai-langchain, ragstack-ai-llamaindex, ragstack-ai-colbert, ragstack-ai-knowledge-graph, ragstack-ai-knowledge-store, ragstack-ai-ragulate"
 version=$1
 package=$2
 if [[ -z "$version" || -z "$package" ]]; then
@@ -28,6 +28,8 @@ elif [ "$package" == "ragstack-ai-knowledge-graph" ]; then
     directory="libs/knowledge-graph"
 elif [ "$package" == "ragstack-ai-knowledge-store" ]; then
     directory="libs/knowledge-store"
+elif [ "$package" == "ragstack-ai-ragulate" ]; then
+    directory="libs/ragulate"
 else
     echo "Invalid package. Please choose from: $ALL_PACKAGES."
     exit 1

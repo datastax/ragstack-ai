@@ -16,12 +16,12 @@ from ragstack_colbert import (
 from ragstack_llamaindex.colbert import ColbertRetriever
 from ragstack_tests_utils import TestData
 
-logging.getLogger("cassandra").setLevel(logging.ERROR)
-
 from tests.integration_tests.conftest import (
     get_astradb_test_store,
     get_local_cassandra_test_store,
 )
+
+logging.getLogger("cassandra").setLevel(logging.ERROR)
 
 
 def validate_retrieval(results: List[NodeWithScore], key_value: str):

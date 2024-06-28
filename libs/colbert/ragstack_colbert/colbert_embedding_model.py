@@ -7,7 +7,6 @@ The core component, ColbertEmbeddingModel, leverages pre-trained ColBERT models 
 for high-relevancy retrieval tasks, with support for both CPU and GPU computing environments.
 """
 
-import logging
 from typing import List, Optional
 
 from colbert.infra import ColBERTConfig

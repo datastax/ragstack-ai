@@ -6,7 +6,6 @@ Embedding = List[List[float]]
 
 
 class TestData:
-
     @staticmethod
     def _get_test_data_path(file_name: str) -> str:
         script_directory = os.path.dirname(os.path.abspath(__file__))

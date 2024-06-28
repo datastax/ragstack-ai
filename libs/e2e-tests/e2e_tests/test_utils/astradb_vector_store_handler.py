@@ -4,11 +4,11 @@ import os
 import threading
 import time
 from dataclasses import dataclass, field
-from typing import List, Callable
+from typing import Callable, List
 
 import cassio
-from langchain_community.chat_message_histories import AstraDBChatMessageHistory
 from langchain_astradb import AstraDBVectorStore as LangChainVectorStore
+from langchain_community.chat_message_histories import AstraDBChatMessageHistory
 from langchain_core.chat_history import BaseChatMessageHistory
 
 try:
@@ -16,25 +16,25 @@ try:
 except ImportError:
     from llama_index.vector_stores.astra_db import AstraDBVectorStore
 
+from astrapy.db import AstraDB
+
 from e2e_tests.test_utils import (
     get_required_env,
     random_string,
     skip_test_due_to_implementation_not_supported,
 )
+from e2e_tests.test_utils.cassandra_vector_store_handler import (
+    CassandraChatMessageHistory,
+    EnhancedCassandraLangChainVectorStore,
+    EnhancedCassandraLlamaIndexVectorStore,
+)
 from e2e_tests.test_utils.vector_store_handler import (
+    EnhancedLangChainVectorStore,
+    EnhancedLlamaIndexVectorStore,
     VectorStoreHandler,
     VectorStoreImplementation,
     VectorStoreTestContext,
-    EnhancedLangChainVectorStore,
-    EnhancedLlamaIndexVectorStore,
 )
-from e2e_tests.test_utils.cassandra_vector_store_handler import (
-    EnhancedCassandraLlamaIndexVectorStore,
-    EnhancedCassandraLangChainVectorStore,
-    CassandraChatMessageHistory,
-)
-
-from astrapy.db import AstraDB
 
 
 @dataclass
