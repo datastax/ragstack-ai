@@ -3,7 +3,12 @@ import os
 
 
 def main():
-    nb_make_final_object = {"post_cell_execute": ["from conftest import before_notebook", "before_notebook()"]}
+    nb_make_final_object = {
+        "post_cell_execute": [
+            "from conftest import before_notebook",
+            "before_notebook()",
+        ]
+    }
 
     nb_path = os.path.join("examples", "notebooks")
     for root, dirs, files in os.walk(nb_path):

@@ -1,5 +1,5 @@
 # this must be imported first for dynamic module loading to function properly
-import setuptools  # isort: skip
+import setuptools  # noqa
 import argparse
 
 from dotenv import load_dotenv
@@ -14,7 +14,6 @@ else:
 
 
 def main() -> None:
-
     parser = argparse.ArgumentParser(description="RAGu-late CLI tool.")
 
     # Subparsers for the main commands

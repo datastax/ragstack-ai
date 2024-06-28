@@ -70,7 +70,8 @@ class CassandraGraphStore(GraphStore):
 
     def as_runnable(self, steps: int = 3, edge_filters: Sequence[str] = ()) -> Runnable:
         """
-        Return a runnable that retrieves the sub-graph near the input entity or entities.
+        Return a runnable that retrieves the sub-graph near the
+        input entity or entities.
 
         Parameters:
         - steps: The maximum distance to follow from the starting points.

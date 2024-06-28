@@ -1,7 +1,6 @@
 from typing import List
 
 from ragstack_ragulate.config import ConfigParser
-from ragstack_ragulate.datasets import BaseDataset, LlamaDataset
 from ragstack_ragulate.pipelines import IngestPipeline, QueryPipeline
 
 from ..analysis import Analysis
@@ -28,7 +27,6 @@ def call_run(config_file: str, **kwargs):
 
     ingest_pipelines: List[IngestPipeline] = []
     query_pipelines: List[QueryPipeline] = []
-    cleanup_pipelines = []
 
     for dataset in config.datasets.values():
         dataset.download_dataset()

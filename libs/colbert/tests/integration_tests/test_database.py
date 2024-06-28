@@ -1,5 +1,3 @@
-import logging
-
 import pytest
 from ragstack_colbert import CassandraDatabase, Chunk
 from ragstack_tests_utils import TestData
@@ -60,7 +58,7 @@ def test_database_sync(request, vector_store: str):
     # TODO: verify other db methods.
 
     result = database.delete_chunks(doc_ids=[doc_id])
-    assert result == True
+    assert result
 
 
 @pytest.mark.parametrize("vector_store", ["cassandra", "astra_db"])
@@ -136,4 +134,4 @@ async def test_database_async(request, vector_store: str):
     assert chunk.embedding == chunk_0.embedding
 
     result = await database.adelete_chunks(doc_ids=[doc_id])
-    assert result == True
+    assert result

@@ -22,7 +22,7 @@ class BaseRetriever(ABC):
         query_embedding: Embedding,
         k: Optional[int] = None,
         include_embedding: Optional[bool] = False,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> List[Tuple[Chunk, float]]:
         """
         Retrieves a list of text chunks relevant to a given query from the vector store, ranked by
@@ -48,7 +48,7 @@ class BaseRetriever(ABC):
         query_embedding: Embedding,
         k: Optional[int] = None,
         include_embedding: Optional[bool] = False,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> List[Tuple[Chunk, float]]:
         """
         Retrieves a list of text chunks relevant to a given query from the vector store, ranked by
@@ -75,7 +75,7 @@ class BaseRetriever(ABC):
         k: Optional[int] = None,
         query_maxlen: Optional[int] = None,
         include_embedding: Optional[bool] = False,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> List[Tuple[Chunk, float]]:
         """
         Retrieves a list of text chunks relevant to a given query from the vector store, ranked by
@@ -104,7 +104,7 @@ class BaseRetriever(ABC):
         k: Optional[int] = None,
         query_maxlen: Optional[int] = None,
         include_embedding: Optional[bool] = False,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> List[Tuple[Chunk, float]]:
         """
         Retrieves a list of text chunks relevant to a given query from the vector store, ranked by

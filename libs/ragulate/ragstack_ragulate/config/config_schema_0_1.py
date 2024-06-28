@@ -180,7 +180,7 @@ class ConfigSchema_0_1(BaseConfigSchema):
             if doc_name is None:
                 if len(doc_ingredients) == 0:
                     raise ValueError(
-                        f"recipe must either have a `name` defined or contain at least one ingredient."
+                        "recipe must either have a `name` defined or contain at least one ingredient."
                     )
                 else:
                     recipe_name = dict_to_string(ingredients)

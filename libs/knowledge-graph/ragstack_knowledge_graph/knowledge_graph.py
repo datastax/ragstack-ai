@@ -63,9 +63,7 @@ class CassandraKnowledgeGraph:
             #  > 0 to be created at all.
             #  > 1 to support cosine distance.
             # So we default to 2.
-            len(text_embeddings.embed_query("test string"))
-            if text_embeddings
-            else 2
+            len(text_embeddings.embed_query("test string")) if text_embeddings else 2
         )
 
         self._session = session
@@ -136,7 +134,7 @@ class CassandraKnowledgeGraph:
                 edge_type TEXT,
                 PRIMARY KEY ((source_name, source_type), target_name, target_type, edge_type)
             );
-            """
+            """  # noqa
         )
 
         self._session.execute(
