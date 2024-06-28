@@ -19,6 +19,7 @@ jobs:
       libs_llamaindex: ${{ steps.filter.outputs.libs_llamaindex }}
       libs_knowledge_store: ${{ steps.filter.outputs.libs_knowledge_store }}
       libs_knowledge_graph: ${{ steps.filter.outputs.libs_knowledge_graph }}
+      libs_ragulate: ${{ steps.filter.outputs.libs_ragulate }}
       integration_tests: ${{ steps.filter.outputs.integration_tests }}
     steps:
       - uses: actions/checkout@v4
@@ -76,7 +77,12 @@ jobs:
         uses: ./.github/actions/lint
 
       - name: "Unit tests (root)"
+        if: ${{ needs.preconditions.outputs.libs_langchain == 'true' || needs.preconditions.outputs.libs_colbert == 'true' || needs.preconditions.outputs.libs_llamaindex == 'true' }}
         run: tox -e unit-tests && rm -rf .tox
+
+      - name: "Unit tests (ragulate)"
+        if: ${{ needs.preconditions.outputs.libs_ragulate == 'true' }}
+        run: tox -e unit-tests -c libs/ragulate && rm -rf libs/ragulate/.tox
 
       - name: "Unit tests (colbert)"
         if: ${{ needs.preconditions.outputs.libs_colbert == 'true' }}
