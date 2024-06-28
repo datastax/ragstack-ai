@@ -1,5 +1,5 @@
-import tru_shared
 import pandas as pd
+import tru_shared
 
 tru = tru_shared.init_tru()
 

@@ -1,23 +1,20 @@
 import json
 import os
 import uuid
-import numpy as np
-
-from dotenv import load_dotenv
 from enum import Enum
 
-from trulens_eval import Tru, Feedback, TruChain, TruLlama
-from trulens_eval.app import App
-from trulens_eval.feedback.provider import AzureOpenAI
-from trulens_eval.feedback import Groundedness, GroundTruthAgreement
-
+import numpy as np
+from dotenv import load_dotenv
+from langchain_astradb import AstraDBVectorStore as LangChainAstraDBVectorStore
+from langchain_community.chat_models import AzureChatOpenAI
+from langchain_community.embeddings import AzureOpenAIEmbeddings
 from llama_index.embeddings import AzureOpenAIEmbedding
 from llama_index.llms import AzureOpenAI as LlamaAzureChatOpenAI
 from llama_index.vector_stores import AstraDBVectorStore
-
-from langchain_community.chat_models import AzureChatOpenAI
-from langchain_community.embeddings import AzureOpenAIEmbeddings
-from langchain_astradb import AstraDBVectorStore as LangChainAstraDBVectorStore
+from trulens_eval import Feedback, Tru, TruChain, TruLlama
+from trulens_eval.app import App
+from trulens_eval.feedback import Groundedness, GroundTruthAgreement
+from trulens_eval.feedback.provider import AzureOpenAI
 
 # this code assumes the following env vars exist in a .env file:
 #

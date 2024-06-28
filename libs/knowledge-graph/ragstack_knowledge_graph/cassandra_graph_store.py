@@ -8,7 +8,6 @@ from langchain_core.embeddings import Embeddings
 from langchain_core.runnables import Runnable, RunnableLambda
 
 from .knowledge_graph import CassandraKnowledgeGraph
-
 from .traverse import Node, Relation
 
 

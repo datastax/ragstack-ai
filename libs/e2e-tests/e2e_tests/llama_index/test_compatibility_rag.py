@@ -3,31 +3,29 @@ import logging
 import pytest
 from langchain.embeddings import HuggingFaceInferenceAPIEmbeddings
 from langchain_google_vertexai import VertexAIEmbeddings
-
 from llama_index.core import (
+    Document,
     ServiceContext,
     StorageContext,
     VectorStoreIndex,
-    Document,
 )
 from llama_index.core.base.llms.types import ChatMessage
 from llama_index.core.schema import ImageNode
-from llama_index.llms.openai import OpenAI
-from llama_index.llms.azure_openai import AzureOpenAI
-from llama_index.embeddings.openai import OpenAIEmbedding
 from llama_index.embeddings.azure_openai import AzureOpenAIEmbedding
 from llama_index.embeddings.bedrock import BedrockEmbedding
-from llama_index.llms.vertex import Vertex
+from llama_index.embeddings.openai import OpenAIEmbedding
+from llama_index.llms.azure_openai import AzureOpenAI
 from llama_index.llms.bedrock import Bedrock
 from llama_index.llms.gemini import Gemini
+from llama_index.llms.openai import OpenAI
+from llama_index.llms.vertex import Vertex
 from llama_index.multi_modal_llms.gemini import GeminiMultiModal
+from vertexai.vision_models import Image, MultiModalEmbeddingModel
 
 from e2e_tests.conftest import (
-    set_current_test_info,
     get_required_env,
+    set_current_test_info,
 )
-from vertexai.vision_models import MultiModalEmbeddingModel, Image
-
 from e2e_tests.test_utils import get_local_resource_path
 from e2e_tests.test_utils.vector_store_handler import (
     VectorStoreTestContext,

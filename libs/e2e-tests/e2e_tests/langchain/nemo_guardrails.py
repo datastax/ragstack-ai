@@ -1,17 +1,15 @@
+from langchain.llms.base import BaseLLM
+from langchain.prompts import PromptTemplate
+from langchain.schema.output_parser import StrOutputParser
+from langchain.schema.retriever import BaseRetriever
+from langchain.schema.vectorstore import VectorStore
+from nemoguardrails import LLMRails, RailsConfig
+from nemoguardrails.actions.actions import ActionResult
+
 from e2e_tests.langchain.rag_application import (
     BASIC_QA_PROMPT,
     SAMPLE_DATA,
 )
-
-from langchain.schema.vectorstore import VectorStore
-from langchain.schema.output_parser import StrOutputParser
-from langchain.schema.retriever import BaseRetriever
-from langchain.prompts import PromptTemplate
-from langchain.llms.base import BaseLLM
-
-
-from nemoguardrails import RailsConfig, LLMRails
-from nemoguardrails.actions.actions import ActionResult
 
 
 def _config(engine, model) -> str:

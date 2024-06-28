@@ -5,7 +5,12 @@ import time
 
 import pytest
 
-
+from e2e_tests.test_utils import (
+    get_required_env as root_get_required_env,
+)
+from e2e_tests.test_utils import (
+    is_skipped_due_to_implementation_not_supported,
+)
 from e2e_tests.test_utils.astradb_vector_store_handler import AstraDBVectorStoreHandler
 from e2e_tests.test_utils.cassandra_vector_store_handler import (
     CassandraVectorStoreHandler,
@@ -13,10 +18,6 @@ from e2e_tests.test_utils.cassandra_vector_store_handler import (
 from e2e_tests.test_utils.vector_store_handler import (
     VectorStoreHandler,
     VectorStoreImplementation,
-)
-from e2e_tests.test_utils import (
-    get_required_env as root_get_required_env,
-    is_skipped_due_to_implementation_not_supported,
 )
 
 LOGGER = logging.getLogger(__name__)
