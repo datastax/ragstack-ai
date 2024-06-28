@@ -14,7 +14,7 @@ class KeybertLinkExtractor(LinkExtractor[KeybertInput]):
         *,
         kind: str = "kw",
         embedding_model: str = "all-MiniLM-L6-v2",
-        extract_keywords_kwargs: Dict[str, Any] = {}
+        extract_keywords_kwargs: Dict[str, Any] = {},
     ):
         """Extract keywords using Keybert.
 
@@ -40,7 +40,7 @@ class KeybertLinkExtractor(LinkExtractor[KeybertInput]):
     def extract_one(self, input: KeybertInput) -> Set[Link]:
         keywords = self._kw_model.extract_keywords(
             input if isinstance(input, str) else input.page_content,
-            **self._extract_keywords_kwargs
+            **self._extract_keywords_kwargs,
         )
         return {Link.bidir(kind=self._kind, tag=kw[0]) for kw in keywords}
 
