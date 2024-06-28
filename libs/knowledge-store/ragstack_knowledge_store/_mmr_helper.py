@@ -140,7 +140,9 @@ class MmrHelper(object):
             self.candidates[index] = old_last
             self.candidate_id_to_index[old_last.id] = index
 
-        self.candidate_embeddings = np.vsplit(self.candidate_embeddings, [last_index])[0]
+        self.candidate_embeddings = np.vsplit(self.candidate_embeddings, [last_index])[
+            0
+        ]
 
         return embedding
 
@@ -207,7 +209,9 @@ class MmrHelper(object):
 
         # Compute the distance metrics of all of pairs in the selected set with
         # the new candidates.
-        redundancy = cosine_similarity(new_embeddings, self._already_selected_embeddings())
+        redundancy = cosine_similarity(
+            new_embeddings, self._already_selected_embeddings()
+        )
         for index, id in enumerate(include_ids):
             max_redundancy = 0.0
             if redundancy.shape[0] > 0:
@@ -224,4 +228,6 @@ class MmrHelper(object):
                 self.best_id = candidate.id
 
         # Add the new embeddings to the candidate set.
-        self.candidate_embeddings = np.vstack((self.candidate_embeddings, new_embeddings))
+        self.candidate_embeddings = np.vstack(
+            (self.candidate_embeddings, new_embeddings)
+        )
