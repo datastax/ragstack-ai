@@ -2,9 +2,11 @@
 
 from .graph_store import (
     EmbeddingModel,
-    GraphStore as KnowledgeStore,
     Node,
     SetupMode,
+)
+from .graph_store import (
+    GraphStore as KnowledgeStore,
 )
 
 __all__ = [

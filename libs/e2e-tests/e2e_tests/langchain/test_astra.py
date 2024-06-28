@@ -2,19 +2,18 @@ import json
 import logging
 from typing import List
 
-from astrapy.api import APIRequestError
 import pytest
+from astrapy.api import APIRequestError
 from httpx import ConnectError, HTTPStatusError
-
 from langchain.schema.embeddings import Embeddings
 from langchain_astradb import AstraDBVectorStore
-from e2e_tests.conftest import (
-    is_astra,
-)
 from langchain_core.documents import Document
 from langchain_core.runnables import RunnableConfig
 from langchain_core.vectorstores import VectorStore
 
+from e2e_tests.conftest import (
+    is_astra,
+)
 from e2e_tests.test_utils import skip_test_due_to_implementation_not_supported
 from e2e_tests.test_utils.astradb_vector_store_handler import AstraDBVectorStoreHandler
 from e2e_tests.test_utils.vector_store_handler import VectorStoreImplementation

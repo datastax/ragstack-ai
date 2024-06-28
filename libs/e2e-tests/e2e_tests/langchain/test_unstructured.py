@@ -1,24 +1,20 @@
 import pytest
-
 from langchain.text_splitter import TokenTextSplitter
 from langchain_community.document_loaders import UnstructuredAPIFileLoader
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import PromptTemplate
 from langchain_core.runnables import RunnablePassthrough
-
 from langchain_openai import (
     ChatOpenAI,
     OpenAIEmbeddings,
 )
 
+from e2e_tests.conftest import (
+    get_required_env,
+    set_current_test_info,
+)
 from e2e_tests.langchain.rag_application import BASIC_QA_PROMPT
 from e2e_tests.test_utils import get_local_resource_path
-
-from e2e_tests.conftest import (
-    set_current_test_info,
-    get_required_env,
-)
-
 from e2e_tests.test_utils.vector_store_handler import (
     VectorStoreTestContext,
 )

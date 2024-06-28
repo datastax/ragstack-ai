@@ -1,7 +1,8 @@
 import secrets
-import pytest
 
+import pytest
 from cassandra.cluster import Session
+
 from ragstack_knowledge_graph.knowledge_graph import CassandraKnowledgeGraph
 from ragstack_knowledge_graph.traverse import Node, Relation
 

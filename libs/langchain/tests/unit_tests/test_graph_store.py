@@ -1,10 +1,9 @@
 import pytest
 from langchain_core.documents import Document
-
 from ragstack_langchain.graph_store.base import (
+    Node,
     _documents_to_nodes,
     _texts_to_nodes,
-    Node,
 )
 from ragstack_langchain.graph_store.links import Link
 

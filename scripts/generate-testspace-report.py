@@ -1,6 +1,6 @@
+import json
 import os.path
 import sys
-import json
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from typing import List

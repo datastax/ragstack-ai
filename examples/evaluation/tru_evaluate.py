@@ -1,9 +1,9 @@
 
-import tru_shared
-
-import time
 import logging
 import sys
+import time
+
+import tru_shared
 
 root = logging.getLogger()
 root.setLevel(logging.INFO)

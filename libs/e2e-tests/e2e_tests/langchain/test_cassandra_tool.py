@@ -1,9 +1,8 @@
 import uuid
 
 import cassio
-
-from langchain.agents import AgentExecutor, create_openai_tools_agent
 from langchain import hub
+from langchain.agents import AgentExecutor, create_openai_tools_agent
 from langchain_community.tools.cassandra_database.tool import (
     GetSchemaCassandraDatabaseTool,
     GetTableDataCassandraDatabaseTool,

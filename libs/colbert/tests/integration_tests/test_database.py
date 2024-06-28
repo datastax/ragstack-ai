@@ -3,6 +3,7 @@ import logging
 import pytest
 from ragstack_colbert import CassandraDatabase, Chunk
 from ragstack_tests_utils import TestData
+
 from tests.integration_tests.conftest import (
     get_astradb_test_store,
     get_local_cassandra_test_store,

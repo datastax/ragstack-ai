@@ -1,7 +1,7 @@
 import os
 
-from flask import Flask
 import openai
+from flask import Flask
 from langchain.llms import OpenAI
 from langchain.prompts import PromptTemplate
 

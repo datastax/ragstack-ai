@@ -1,8 +1,12 @@
 import tru_shared
-
-from llama_index import get_response_synthesizer, VectorStoreIndex, StorageContext, ServiceContext
-from llama_index.retrievers import VectorIndexRetriever
+from llama_index import (
+    ServiceContext,
+    StorageContext,
+    VectorStoreIndex,
+    get_response_synthesizer,
+)
 from llama_index.query_engine import RetrieverQueryEngine
+from llama_index.retrievers import VectorIndexRetriever
 
 framework = tru_shared.Framework.LLAMA_INDEX
 
