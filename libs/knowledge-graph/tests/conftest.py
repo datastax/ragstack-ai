@@ -7,10 +7,9 @@ from dotenv import load_dotenv
 from langchain.graphs.graph_document import GraphDocument, Node, Relationship
 from langchain_core.documents import Document
 from langchain_core.language_models import BaseChatModel
+from ragstack_knowledge_graph.cassandra_graph_store import CassandraGraphStore
 from testcontainers.core.container import DockerContainer
 from testcontainers.core.waiting_utils import wait_for_logs
-
-from ragstack_knowledge_graph.cassandra_graph_store import CassandraGraphStore
 
 load_dotenv()
 
