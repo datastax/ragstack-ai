@@ -122,7 +122,9 @@ class _Candidate:
     redundancy: float
     """(1 - Lambda) * max(Similarity to selected items)."""
 
-    def __init__(self, embedding: List[float], lambda_mult: float, query_embedding: np.ndarray):
+    def __init__(
+        self, embedding: List[float], lambda_mult: float, query_embedding: np.ndarray
+    ):
         self.embedding = emb_to_ndarray(embedding)
 
         # TODO: Refactor to use cosine_similarity_top_k to allow an array of embeddings?
@@ -133,7 +135,9 @@ class _Candidate:
         self.score = self.similarity_to_query - self.redundancy
         self.distance = 0
 
-    def update_for_selection(self, lambda_mult: float, selection_embedding: List[float]):
+    def update_for_selection(
+        self, lambda_mult: float, selection_embedding: List[float]
+    ):
         selected_r_sim = (1 - lambda_mult) * cosine_similarity(
             selection_embedding, self.embedding
         )[0]
@@ -224,7 +228,9 @@ class GraphStore:
             LIMIT ?
             """
         )
-        self._query_ids_and_link_to_tags_by_embedding.consistency_level = ConsistencyLevel.ONE
+        self._query_ids_and_link_to_tags_by_embedding.consistency_level = (
+            ConsistencyLevel.ONE
+        )
 
         self._query_ids_and_link_to_tags_by_id = session.prepare(
             f"""
@@ -242,7 +248,9 @@ class GraphStore:
             LIMIT ?
             """
         )
-        self._query_ids_and_embedding_by_embedding.consistency_level = ConsistencyLevel.ONE
+        self._query_ids_and_embedding_by_embedding.consistency_level = (
+            ConsistencyLevel.ONE
+        )
 
         self._query_source_tags_by_id = session.prepare(
             f"""
@@ -443,7 +451,9 @@ class GraphStore:
 
         query_embedding_ndarray = emb_to_ndarray(query_embedding)
         unselected = {
-            row.content_id: _Candidate(row.text_embedding, lambda_mult, query_embedding_ndarray)
+            row.content_id: _Candidate(
+                row.text_embedding, lambda_mult, query_embedding_ndarray
+            )
             for row in fetched
         }
         best_score, next_id = max(
@@ -505,7 +515,9 @@ class GraphStore:
 
         return self._nodes_with_ids(selected_ids)
 
-    def traversal_search(self, query: str, *, k: int = 4, depth: int = 1) -> Iterable[Node]:
+    def traversal_search(
+        self, query: str, *, k: int = 4, depth: int = 1
+    ) -> Iterable[Node]:
         """Retrieve documents from this knowledge store.
 
         First, `k` nodes are retrieved using a vector search for the `query` string.
@@ -664,7 +676,9 @@ class GraphStore:
 
         with self._concurrent_queries() as cq:
             for source_id in source_ids:
-                cq.execute(self._query_source_tags_by_id, (source_id,), callback=add_sources)
+                cq.execute(
+                    self._query_source_tags_by_id, (source_id,), callback=add_sources
+                )
 
         # TODO: Consider a combined limit based on the similarity and/or predicated MMR score?
         return [
