@@ -1,15 +1,16 @@
 import secrets
 from typing import Iterator
-from langchain_openai import OpenAIEmbeddings
+
 import pytest
 from dotenv import load_dotenv
-
+from langchain_openai import OpenAIEmbeddings
 from ragstack_knowledge_store.graph_store import GraphStore
 from ragstack_tests_utils import LocalCassandraTestStore
 
 load_dotenv()
 
 KEYSPACE = "default_keyspace"
+
 
 @pytest.fixture(scope="session")
 def cassandra() -> Iterator[LocalCassandraTestStore]:
@@ -18,6 +19,7 @@ def cassandra() -> Iterator[LocalCassandraTestStore]:
 
     if store.docker_container:
         store.docker_container.stop()
+
 
 @pytest.fixture
 def graph_store_factory(cassandra: LocalCassandraTestStore):
@@ -33,15 +35,16 @@ def graph_store_factory(cassandra: LocalCassandraTestStore):
         targets_table = f"targets_{name}"
         return GraphStore(
             embedding,
-            session = session,
-            keyspace = KEYSPACE,
-            node_table = node_table,
-            targets_table = targets_table,
+            session=session,
+            keyspace=KEYSPACE,
+            node_table=node_table,
+            targets_table=targets_table,
         )
 
     yield _make_graph_store
 
     session.shutdown()
+
 
 def test_graph_store_creation(graph_store_factory):
     """Test that a graph store can be created.
