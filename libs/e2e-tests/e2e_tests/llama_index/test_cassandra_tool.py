@@ -1,10 +1,8 @@
 import uuid
 
 import cassio
-
 from llama_index.agent.openai import OpenAIAgent
 from llama_index.llms.openai import OpenAI
-
 from llama_index.tools.cassandra.base import CassandraDatabaseToolSpec
 from llama_index.tools.cassandra.cassandra_database_wrapper import (
     CassandraDatabase,

@@ -7,6 +7,7 @@ from ragstack_colbert import (
     ColbertVectorStore,
 )
 from ragstack_tests_utils import TestData
+
 from tests.integration_tests.conftest import (
     get_astradb_test_store,
     get_local_cassandra_test_store,

@@ -1,9 +1,7 @@
 import logging
 import os
 import time
-import uuid
 
-import pytest
 from astrapy.db import AstraDB
 
 

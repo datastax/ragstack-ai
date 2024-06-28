@@ -1,8 +1,7 @@
 import tru_shared
-
-from langchain_core.runnables import RunnablePassthrough
 from langchain.prompts import ChatPromptTemplate
 from langchain.schema import StrOutputParser
+from langchain_core.runnables import RunnablePassthrough
 
 framework = tru_shared.Framework.LANG_CHAIN
 

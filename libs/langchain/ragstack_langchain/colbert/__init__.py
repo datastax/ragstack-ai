@@ -1,5 +1,5 @@
 try:
-    from ragstack_colbert.base_retriever import BaseRetriever
+    from ragstack_colbert.base_retriever import BaseRetriever  # noqa
 except (ImportError, ModuleNotFoundError):
     raise ImportError(
         "Could not import ragstack-ai-colbert. "

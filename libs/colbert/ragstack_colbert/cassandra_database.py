@@ -81,7 +81,7 @@ class CassandraDatabase(BaseDatabase):
 
         try:
             is_astra = session.cluster.cloud
-        except:
+        except Exception:
             is_astra = False
 
         logging.info(
@@ -98,7 +98,9 @@ class CassandraDatabase(BaseDatabase):
             vector_similarity_function=None if is_astra else "DOT_PRODUCT",
         )
 
-    def _log_insert_error(self, doc_id: str, chunk_id: int, embedding_id: int, exp: Exception):
+    def _log_insert_error(
+        self, doc_id: str, chunk_id: int, embedding_id: int, exp: Exception
+    ):
         if embedding_id == -1:
             logging.error(
                 f"issue inserting document data: {doc_id} chunk: {chunk_id}: {exp}"
@@ -134,10 +136,11 @@ class CassandraDatabase(BaseDatabase):
                     metadata=chunk.metadata,
                 )
             except Exception as exp:
-                self._log_insert_error(doc_id=doc_id, chunk_id=chunk_id, embedding_id=-1, exp=exp)
+                self._log_insert_error(
+                    doc_id=doc_id, chunk_id=chunk_id, embedding_id=-1, exp=exp
+                )
                 failed_chunks.append((doc_id, chunk_id))
                 continue
-
 
             for embedding_id, vector in enumerate(chunk.embedding):
                 try:
@@ -147,26 +150,30 @@ class CassandraDatabase(BaseDatabase):
                         vector=vector,
                     )
                 except Exception as exp:
-                    self._log_insert_error(doc_id=doc_id, chunk_id=chunk_id, embedding_id=-1, exp=exp)
+                    self._log_insert_error(
+                        doc_id=doc_id, chunk_id=chunk_id, embedding_id=-1, exp=exp
+                    )
                     failed_chunks.append((doc_id, chunk_id))
                     continue
 
             success_chunks.append((doc_id, chunk_id))
 
         if len(failed_chunks) > 0:
-            raise Exception(f"add failed for these chunks: {failed_chunks}. See error logs for more info.")
+            raise Exception(
+                f"add failed for these chunks: {failed_chunks}. See error logs for more info."
+            )
 
         return success_chunks
 
     async def _limited_put(
-            self,
-            sem: asyncio.Semaphore,
-            doc_id: str,
-            chunk_id: int,
-            embedding_id: Optional[int] = -1,
-            text: Optional[str] = None,
-            metadata: Optional[Dict[str, Any]] = None,
-            vector: Optional[Vector] = None,
+        self,
+        sem: asyncio.Semaphore,
+        doc_id: str,
+        chunk_id: int,
+        embedding_id: Optional[int] = -1,
+        text: Optional[str] = None,
+        metadata: Optional[Dict[str, Any]] = None,
+        vector: Optional[Vector] = None,
     ) -> Tuple[str, int, int, Exception]:
         row_id = (chunk_id, embedding_id)
         exp = None
@@ -188,7 +195,9 @@ class CassandraDatabase(BaseDatabase):
             finally:
                 return doc_id, chunk_id, embedding_id, exp
 
-    async def aadd_chunks(self, chunks: List[Chunk], concurrent_inserts: Optional[int] = 100) -> List[Tuple[str, int]]:
+    async def aadd_chunks(
+        self, chunks: List[Chunk], concurrent_inserts: Optional[int] = 100
+    ) -> List[Tuple[str, int]]:
         """
         Stores a list of embedded text chunks in the vector store
 
@@ -209,45 +218,52 @@ class CassandraDatabase(BaseDatabase):
             text = chunk.text
             metadata = chunk.metadata
 
-            all_tasks.append(self._limited_put(
-                sem=semaphore,
-                doc_id=doc_id,
-                chunk_id=chunk_id,
-                text=text,
-                metadata=metadata,
-            ))
-            tasks_per_chunk[(doc_id, chunk_id)] += 1
-
-
-            for index, vector in enumerate(chunk.embedding):
-                all_tasks.append(self._limited_put(
+            all_tasks.append(
+                self._limited_put(
                     sem=semaphore,
                     doc_id=doc_id,
                     chunk_id=chunk_id,
-                    embedding_id=index,
-                    vector=vector,
-                ))
+                    text=text,
+                    metadata=metadata,
+                )
+            )
+            tasks_per_chunk[(doc_id, chunk_id)] += 1
+
+            for index, vector in enumerate(chunk.embedding):
+                all_tasks.append(
+                    self._limited_put(
+                        sem=semaphore,
+                        doc_id=doc_id,
+                        chunk_id=chunk_id,
+                        embedding_id=index,
+                        vector=vector,
+                    )
+                )
                 tasks_per_chunk[(doc_id, chunk_id)] += 1
 
         results = await asyncio.gather(*all_tasks, return_exceptions=True)
 
-        for (doc_id, chunk_id, embedding_id, exp) in results:
+        for doc_id, chunk_id, embedding_id, exp in results:
             if exp is None:
                 tasks_per_chunk[(doc_id, chunk_id)] -= 1
             else:
-                self._log_insert_error(doc_id=doc_id, chunk_id=chunk_id, embedding_id=embedding_id, exp=exp)
+                self._log_insert_error(
+                    doc_id=doc_id, chunk_id=chunk_id, embedding_id=embedding_id, exp=exp
+                )
 
         outputs: List[Tuple[str, int]] = []
         failed_chunks: List[Tuple[str, int]] = []
 
-        for (doc_id, chunk_id) in tasks_per_chunk:
+        for doc_id, chunk_id in tasks_per_chunk:
             if tasks_per_chunk[(doc_id, chunk_id)] == 0:
                 outputs.append((doc_id, chunk_id))
             else:
                 failed_chunks.append((doc_id, chunk_id))
 
         if len(failed_chunks) > 0:
-            raise Exception(f"add failed for these chunks: {failed_chunks}. See error logs for more info.")
+            raise Exception(
+                f"add failed for these chunks: {failed_chunks}. See error logs for more info."
+            )
 
         return outputs
 
@@ -272,14 +288,16 @@ class CassandraDatabase(BaseDatabase):
                 failed_docs.append(doc_id)
 
         if len(failed_docs) > 0:
-            raise Exception(f"delete failed for these docs: {failed_docs}. See error logs for more info.")
+            raise Exception(
+                f"delete failed for these docs: {failed_docs}. See error logs for more info."
+            )
 
         return True
 
     async def _limited_delete(
-            self,
-            sem: asyncio.Semaphore,
-            doc_id: str,
+        self,
+        sem: asyncio.Semaphore,
+        doc_id: str,
     ) -> Tuple[str, Exception]:
         exp = None
         async with sem:
@@ -290,7 +308,9 @@ class CassandraDatabase(BaseDatabase):
             finally:
                 return doc_id, exp
 
-    async def adelete_chunks(self, doc_ids: List[str], concurrent_deletes: Optional[int] = 100) -> bool:
+    async def adelete_chunks(
+        self, doc_ids: List[str], concurrent_deletes: Optional[int] = 100
+    ) -> bool:
         """
         Deletes chunks from the vector store based on their document id.
 
@@ -306,26 +326,28 @@ class CassandraDatabase(BaseDatabase):
         all_tasks = []
 
         for doc_id in doc_ids:
-            all_tasks.append(self._limited_delete(
+            all_tasks.append(
+                self._limited_delete(
                     sem=semaphore,
                     doc_id=doc_id,
-                ))
+                )
+            )
 
         results = await asyncio.gather(*all_tasks, return_exceptions=True)
 
         success = True
         failed_docs: List[str] = []
 
-        for (doc_id, exp) in results:
+        for doc_id, exp in results:
             if exp is not None:
-                logging.error(
-                    f"issue deleting document: {doc_id}: {exp}"
-                )
+                logging.error(f"issue deleting document: {doc_id}: {exp}")
                 success = False
                 failed_docs.append(doc_id)
 
         if len(failed_docs) > 0:
-            raise Exception(f"delete failed for these docs: {failed_docs}. See error logs for more info.")
+            raise Exception(
+                f"delete failed for these docs: {failed_docs}. See error logs for more info."
+            )
 
         return success
 

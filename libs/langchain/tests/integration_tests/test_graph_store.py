@@ -6,13 +6,12 @@ import pytest
 from cassandra.cluster import Session
 from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
-
+from ragstack_langchain.graph_store import CassandraGraphStore
 from ragstack_langchain.graph_store.base import METADATA_CONTENT_ID_KEY
 from ragstack_langchain.graph_store.links import METADATA_LINKS_KEY, Link
 from ragstack_tests_utils.test_store import KEYSPACE
 
-from .conftest import get_local_cassandra_test_store, get_astradb_test_store
-from ragstack_langchain.graph_store import CassandraGraphStore
+from .conftest import get_astradb_test_store, get_local_cassandra_test_store
 
 
 class GraphStoreFactory:
