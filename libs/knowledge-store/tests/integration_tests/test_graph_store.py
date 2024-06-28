@@ -41,8 +41,6 @@ def cassandra_port() -> Iterator[int]:
 
 @pytest.fixture
 def graph_store_factory(cassandra_port: int):
-    tables = []
-
     cluster = Cluster(
         port=cassandra_port,
     )
@@ -65,9 +63,6 @@ def graph_store_factory(cassandra_port: int):
         )
 
     yield _make_graph_store
-
-    for table in tables:
-        session.execute(f"DROP TABLE IF EXISTS {table}")
 
     session.shutdown()
 
