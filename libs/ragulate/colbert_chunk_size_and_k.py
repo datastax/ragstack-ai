@@ -1,3 +1,4 @@
+import logging
 import os
 import time
 from pathlib import Path
@@ -26,7 +27,6 @@ astra_token = os.getenv("ASTRA_DB_TOKEN")
 database_id = os.getenv("ASTRA_DB_ID")
 keyspace = "colbert"
 
-import logging
 
 logging.basicConfig(level=logging.INFO)
 logging.getLogger("unstructured").setLevel(logging.ERROR)

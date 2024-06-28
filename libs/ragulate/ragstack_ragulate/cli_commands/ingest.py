@@ -58,7 +58,6 @@ def setup_ingest(subparsers):
         dataset: List[str],
         **kwargs,
     ):
-
         datasets = [find_dataset(name=name) for name in dataset]
 
         ingredients = convert_vars_to_ingredients(

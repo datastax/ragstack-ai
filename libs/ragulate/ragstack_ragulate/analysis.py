@@ -12,7 +12,6 @@ from .utils import get_tru
 
 
 class Analysis:
-
     def get_all_data(self, recipes: List[str]) -> DataFrame:
         df_all = pd.DataFrame()
 

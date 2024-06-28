@@ -5,7 +5,6 @@ from .objects import Config
 
 
 class BaseConfigSchema(ABC):
-
     @abstractmethod
     def version() -> float:
         """returns the config file version"""

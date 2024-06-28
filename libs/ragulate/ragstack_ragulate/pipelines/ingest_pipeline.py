@@ -8,7 +8,6 @@ from .base_pipeline import BasePipeline
 
 
 class IngestPipeline(BasePipeline):
-
     @property
     def PIPELINE_TYPE(self):
         return "ingest"
@@ -18,7 +17,6 @@ class IngestPipeline(BasePipeline):
         return ["file_path"]
 
     def ingest(self):
-
         logger.info(
             f"Starting ingest {self.recipe_name} on {self.script_path}/{self.method_name} with ingredients: {self.ingredients}  on datasets: {self.dataset_names()}"
         )

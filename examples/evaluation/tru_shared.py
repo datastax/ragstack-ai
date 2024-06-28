@@ -206,7 +206,7 @@ def execute_query(framework: Framework, pipeline, query):
 
 # runs the pipeline across all queries in all known datasets
 def execute_experiment(framework: Framework, pipeline, experiment_name: str):
-    tru = init_tru()
+    init_tru()
 
     # use a short uuid to ensure that multiple experiments with the same name don't collide in the DB
     shortUuid = str(uuid.uuid4())[9:13]
@@ -217,7 +217,7 @@ def execute_experiment(framework: Framework, pipeline, experiment_name: str):
         tru_recorder = get_recorder(framework, pipeline, app_id, golden_set)
         for query in datasets[dataset_name]:
             try:
-                with tru_recorder as recording:
+                with tru_recorder:
                     execute_query(framework, pipeline, query)
-            except:
+            except Exception:
                 print(f"Query: '{query}' caused exception, skipping.")
