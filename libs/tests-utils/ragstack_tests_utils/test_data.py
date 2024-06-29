@@ -22,6 +22,7 @@ class TestData:
             reader = csv.reader(f)
             return [[float(value) for value in row] for row in reader]
 
+    @staticmethod
     def save_csv_embedding(csv_file_name: str, embedding: Embedding):
         with open(TestData._get_test_data_path(csv_file_name), "w", newline="") as f:
             writer = csv.writer(f)

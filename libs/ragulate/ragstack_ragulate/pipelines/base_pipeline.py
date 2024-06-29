@@ -57,7 +57,7 @@ class BasePipeline(ABC):
 
     @property
     @abstractmethod
-    def PIPELINE_TYPE(self):
+    def pipeline_type(self):
         """type of pipeline (ingest, query, cleanup)"""
         pass
 
@@ -84,7 +84,7 @@ class BasePipeline(ABC):
         try:
             self._method = get_method(
                 script_path=self.script_path,
-                pipeline_type=self.PIPELINE_TYPE,
+                pipeline_type=self.pipeline_type,
                 method_name=self.method_name,
             )
             self._method_params = get_method_params(method=self._method)
@@ -110,7 +110,7 @@ class BasePipeline(ABC):
 
     def _key(self) -> str:
         key_parts = [
-            self.PIPELINE_TYPE,
+            self.pipeline_type,
             self.script_path,
             self.method_name,
         ]

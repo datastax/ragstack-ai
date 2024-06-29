@@ -113,7 +113,7 @@ for filename in SAMPLEDATA:
 +
 [source,python]
 ----
-cassVStore = Cassandra.from_documents(
+cass_vstore = Cassandra.from_documents(
     documents=documents,
     embedding=OpenAIEmbeddings(),
     session=session,
@@ -137,7 +137,7 @@ print(f"\nProcessing done.")
 ----
 prompt = "Who is Luchesi?"
 
-matched_docs = cassVStore.similarity_search(query=prompt, k=1)
+matched_docs = cass_vstore.similarity_search(query=prompt, k=1)
 
 for i, d in enumerate(matched_docs):
     print(f"\n## Document {i}\n")
@@ -149,7 +149,7 @@ Create an Index on top of the vector store.
 +
 [source,python]
 ----
-index = VectorStoreIndexWrapper(vectorstore=cassVStore)
+index = VectorStoreIndexWrapper(vectorstore=cass_vstore)
 ----
 +
 . Create a retriever from the Index.
@@ -182,7 +182,7 @@ Your answer:
 """
 prompt = ChatPromptTemplate.from_template(prompt)
 
-qa = RetrievalQA.from_chain_type(llm=OpenAI(), retriever=cassVStore.as_retriever(), chain_type_kwargs={"prompt": prompt})
+qa = RetrievalQA.from_chain_type(llm=OpenAI(), retriever=cass_vstore.as_retriever(), chain_type_kwargs={"prompt": prompt})
 
 result = qa.run("{question: Who is Luchesi?")
 result
