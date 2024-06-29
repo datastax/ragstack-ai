@@ -2,9 +2,9 @@ import json
 import os.path
 import sys
 import xml
-import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from typing import List
+from xml.etree.ElementTree import Element, ElementTree, SubElement, parse
 
 
 def rewrite_name(name):
@@ -84,34 +84,34 @@ def main(type: str, input_file: str, output_file: str):
 
     reporter = generate_new_report(test_suites)
     print(f"Writing report file to {output_file}")
-    root = ET.ElementTree(reporter)
+    root = ElementTree(reporter)
     root.write(output_file, encoding="utf-8")
 
 
 def generate_new_report(test_suites):
-    reporter = ET.Element("reporter")
+    reporter = Element("reporter")
     for test_suite in test_suites.values():
-        test_suite_el = ET.Element("test_suite")
+        test_suite_el = Element("test_suite")
         test_suite_el.set("name", test_suite.name)
         for link in test_suite.links:
             link_el = generate_link_annotation(link)
             test_suite_el.append(link_el)
         for test_case in test_suite.test_cases:
             print(test_case)
-            test_case_el = ET.Element("test_case")
+            test_case_el = Element("test_case")
             test_case_el.set("name", test_case.name)
             test_case_el.set("status", "passed" if test_case.passed else "failed")
             test_case_el.set("duration", test_case.time)
             if not test_case.passed:
-                failure_el = ET.Element("annotation")
+                failure_el = Element("annotation")
                 failure_el.set("name", "Failure")
                 failure_el.set("level", "error")
                 for failure in test_case.failures:
-                    title = ET.SubElement(failure_el, "comment")
+                    title = SubElement(failure_el, "comment")
                     title.set("label", "Error")
                     title.text = cdata(failure.title)
                     if failure.description:
-                        stack = ET.SubElement(failure_el, "comment")
+                        stack = SubElement(failure_el, "comment")
                         stack.set("label", "Stacktrace")
                         stack.text = cdata(failure.description)
 
@@ -135,7 +135,7 @@ def generate_new_report(test_suites):
 
 
 def generate_link_annotation(link):
-    link_el = ET.Element("annotation")
+    link_el = Element("annotation")
     link_el.set("name", link.name)
     if link.description:
         link_el.set("description", link.description)
@@ -170,7 +170,7 @@ def parse_snyk_report(input_file: str):
             data = json.load(file)
             for vulnerability in data.get("vulnerabilities", []):
                 title = vulnerability.get("title", "?")
-                cvssScore = vulnerability.get("cvssScore", "")
+                cvss_score = vulnerability.get("cvssScore", "")
                 severity = vulnerability.get("severity", "")
                 from_packages = " -> ".join(vulnerability.get("from", []))
                 version = vulnerability.get("version", "?")
@@ -188,7 +188,7 @@ def parse_snyk_report(input_file: str):
                     link = ""
 
                 ann_title = f"{title}@{version}"
-                cvss_str = f" [CVSS: {cvssScore}]" if cvssScore else ""
+                cvss_str = f" [CVSS: {cvss_score}]" if cvss_score else ""
                 ann_description = (
                     f"{title} [{id}] [{severity.capitalize()} severity] "
                     f"{cvss_str} from {from_packages}"
@@ -237,7 +237,7 @@ def parse_snyk_report(input_file: str):
 
 
 def parse_test_report(input_file: str):
-    tree = ET.parse(input_file)
+    tree = parse(input_file)
     root = tree.getroot()
     report_test_suites = {}
     for test_suites in root.iter("testsuites"):

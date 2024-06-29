@@ -122,21 +122,21 @@ def test_colbert_embedding_against_vanilla_impl():
 
     embeddings_flat, _ = encoder.encode_passages(arctic_botany_chunks)
 
-    colbertSvc = ColbertEmbeddingModel(
+    colbert_svc = ColbertEmbeddingModel(
         checkpoint=DEFAULT_COLBERT_MODEL,
     )
-    embedded_chunks = colbertSvc.embed_texts(arctic_botany_chunks)
+    embedded_chunks = colbert_svc.embed_texts(arctic_botany_chunks)
 
     are_they_similar(embedded_chunks, embeddings_flat)
 
 
 def model_embedding(model: str):
     logging.info(f"test model compatibility {model}")
-    colbertSvc = ColbertEmbeddingModel(
+    colbert_svc = ColbertEmbeddingModel(
         checkpoint=model,
         query_maxlen=32,
     )
-    embeddings = colbertSvc.embed_texts(arctic_botany_chunks)
+    embeddings = colbert_svc.embed_texts(arctic_botany_chunks)
 
     assert len(embeddings) == 8
     n = 0
@@ -148,7 +148,7 @@ def model_embedding(model: str):
     assert n == 645
 
     # recall embeddings test
-    embedding = colbertSvc.embed_query(
+    embedding = colbert_svc.embed_query(
         query="What adaptations enable Arctic plants to survive and thrive "
         "in extremely cold temperatures and minimal sunlight?",
         query_maxlen=32,

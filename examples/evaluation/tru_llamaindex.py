@@ -13,10 +13,10 @@ framework = tru_shared.Framework.LLAMA_INDEX
 collection_name = "llama_512"
 
 vstore = tru_shared.get_astra_vector_store(framework, collection_name)
-chatModel = tru_shared.get_azure_chat_model(framework, "gpt-35-turbo", "0613")
+chat_model = tru_shared.get_azure_chat_model(framework, "gpt-35-turbo", "0613")
 embeddings = tru_shared.get_azure_embeddings_model(framework)
 
-service_context = ServiceContext.from_defaults(llm=chatModel, embed_model=embeddings)
+service_context = ServiceContext.from_defaults(llm=chat_model, embed_model=embeddings)
 storage_context = StorageContext.from_defaults(vector_store=vstore)
 vector_store_index = VectorStoreIndex.from_vector_store(
     vector_store=vstore, service_context=service_context

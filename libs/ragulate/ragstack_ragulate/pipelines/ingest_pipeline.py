@@ -9,7 +9,7 @@ from .base_pipeline import BasePipeline
 
 class IngestPipeline(BasePipeline):
     @property
-    def PIPELINE_TYPE(self):
+    def pipeline_type(self):
         return "ingest"
 
     @property

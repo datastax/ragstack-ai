@@ -67,12 +67,12 @@ def init_tru():
 
 def get_feedback_functions(pipeline, golden_set):
     # Initialize provider class
-    azureOpenAI = AzureOpenAI(deployment_name="gpt-35-turbo")
+    azure_open_ai = AzureOpenAI(deployment_name="gpt-35-turbo")
 
     context = App.select_context(pipeline)
 
     # Define a groundedness feedback function
-    grounded = Groundedness(groundedness_provider=azureOpenAI)
+    grounded = Groundedness(groundedness_provider=azure_open_ai)
     f_groundedness = (
         Feedback(grounded.groundedness_measure_with_cot_reasons, name="groundedness")
         .on(context.collect())
@@ -82,19 +82,19 @@ def get_feedback_functions(pipeline, golden_set):
 
     # Question/answer relevance between overall question and answer.
     f_answer_relevance = Feedback(
-        azureOpenAI.relevance_with_cot_reasons, name="answer_relevance"
+        azure_open_ai.relevance_with_cot_reasons, name="answer_relevance"
     ).on_input_output()
 
     # Question/statement relevance between question and each context chunk.
     f_context_relevance = (
-        Feedback(azureOpenAI.qs_relevance_with_cot_reasons, name="context_relevance")
+        Feedback(azure_open_ai.qs_relevance_with_cot_reasons, name="context_relevance")
         .on_input()
         .on(context)
         .aggregate(np.mean)
     )
 
     # GroundTruth for comparing the Answer to the Ground-Truth Answer
-    ground_truth_collection = GroundTruthAgreement(golden_set, provider=azureOpenAI)
+    ground_truth_collection = GroundTruthAgreement(golden_set, provider=azure_open_ai)
     f_answer_correctness = Feedback(
         ground_truth_collection.agreement_measure, name="answer_correctness"
     ).on_input_output()
@@ -210,11 +210,11 @@ def execute_experiment(framework: Framework, pipeline, experiment_name: str):
 
     # use a short uuid to ensure that multiple experiments with the same name don't
     # collide in the DB
-    shortUuid = str(uuid.uuid4())[9:13]
+    short_uuid = str(uuid.uuid4())[9:13]
     datasets, golden_set = get_test_data()
 
     for dataset_name in datasets:
-        app_id = f"{experiment_name}#{shortUuid}#{dataset_name}"
+        app_id = f"{experiment_name}#{short_uuid}#{dataset_name}"
         tru_recorder = get_recorder(framework, pipeline, app_id, golden_set)
         for query in datasets[dataset_name]:
             try:

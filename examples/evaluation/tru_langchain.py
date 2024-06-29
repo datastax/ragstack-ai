@@ -8,7 +8,7 @@ framework = tru_shared.Framework.LANG_CHAIN
 collection_name = "open_ai_512"
 
 vstore = tru_shared.get_astra_vector_store(framework, collection_name)
-chatModel = tru_shared.get_azure_chat_model(framework, "gpt-35-turbo", "0613")
+chat_model = tru_shared.get_azure_chat_model(framework, "gpt-35-turbo", "0613")
 embeddings = tru_shared.get_azure_embeddings_model(framework)
 
 prompt_template = """
@@ -22,7 +22,7 @@ prompt = ChatPromptTemplate.from_template(prompt_template)
 pipeline = (
     {"context": vstore.as_retriever(), "question": RunnablePassthrough()}
     | prompt
-    | chatModel
+    | chat_model
     | StrOutputParser()
 )
 

@@ -7,7 +7,7 @@ from .objects import Config, Recipe, Step
 from .utils import dict_to_string
 
 
-class ConfigSchema_0_1(BaseConfigSchema):
+class ConfigSchema0Dot1(BaseConfigSchema):
     def version(self):
         return 0.1
 
