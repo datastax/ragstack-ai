@@ -77,13 +77,12 @@ class CassandraGraphStore(GraphStore):
         nodes: Iterable[Node],
         **kwargs: Any,
     ) -> Iterable[str]:
-        _nodes = []
-        for node in nodes:
-            _nodes.append(
-                graph_store.Node(
-                    id=node.id, text=node.text, metadata=node.metadata, links=node.links
-                )
+        _nodes = [
+            graph_store.Node(
+                id=node.id, text=node.text, metadata=node.metadata, links=node.links
             )
+            for node in nodes
+        ]
         return self.store.add_nodes(_nodes)
 
     @classmethod

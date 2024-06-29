@@ -116,14 +116,13 @@ class EnhancedAstraDBLangChainVectorStore(
         )
 
     def search_documents(self, vector: List[float], limit: int) -> List[str]:
-        results = self.collection.vector_find(
-            vector,
-            limit=limit,
-        )
-        docs = []
-        for result in results:
-            docs.append(result["document"])
-        return docs
+        return [
+            result["document"]
+            for result in self.collection.vector_find(
+                vector,
+                limit=limit,
+            )
+        ]
 
 
 class EnhancedAstraDBLlamaIndexVectorStore(
@@ -142,14 +141,13 @@ class EnhancedAstraDBLlamaIndexVectorStore(
         )
 
     def search_documents(self, vector: List[float], limit: int) -> List[str]:
-        results = self.client.vector_find(
-            vector,
-            limit=limit,
-        )
-        docs = []
-        for result in results:
-            docs.append(result["document"])
-        return docs
+        return [
+            result["document"]
+            for result in self.client.vector_find(
+                vector,
+                limit=limit,
+            )
+        ]
 
 
 class AstraDBVectorStoreTestContext(VectorStoreTestContext):

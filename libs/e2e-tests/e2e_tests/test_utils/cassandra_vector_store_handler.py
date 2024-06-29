@@ -95,17 +95,15 @@ class EnhancedCassandraLangChainVectorStore(EnhancedLangChainVectorStore, Cassan
 
     def search_documents(self, vector: List[float], limit: int) -> List[str]:
         if isinstance(self.table, MetadataVectorCassandraTable):
-            results = self.table.ann_search(vector=vector, n=limit)
-            docs = []
-            for result in results:
-                docs.append(result["body_blob"])
-            return docs
+            return [
+                result["body_blob"]
+                for result in self.table.ann_search(vector=vector, n=limit)
+            ]
         else:
-            results = self.table.search(embedding_vector=vector, top_k=limit)
-            docs = []
-            for result in results:
-                docs.append(result["document"])
-            return docs
+            return [
+                result["document"]
+                for result in self.table.search(embedding_vector=vector, top_k=limit)
+            ]
 
 
 class EnhancedCassandraLlamaIndexVectorStore(
