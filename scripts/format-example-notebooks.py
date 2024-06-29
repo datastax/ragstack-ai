@@ -11,12 +11,12 @@ def main():
     }
 
     nb_path = os.path.join("examples", "notebooks")
-    for root, dirs, files in os.walk(nb_path):
+    for root, _, files in os.walk(nb_path):
         for file in files:
             file = os.path.join(root, file)
             if ".ipynb_checkpoints" not in file and file.endswith(".ipynb"):
                 print("Formatting file: ", file)
-                with open(file, "r") as f:
+                with open(file) as f:
                     contents = f.read()
                     as_json = json.loads(contents)
                     cells = as_json["cells"]

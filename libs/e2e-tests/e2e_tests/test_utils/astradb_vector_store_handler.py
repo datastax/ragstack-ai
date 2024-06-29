@@ -65,14 +65,16 @@ class DeleteCollectionHandler:
         """
         while self.semaphore._value != self.max_workers:
             logging.debug(
-                f"{self.max_workers - self.semaphore._value} deletions still running, waiting to complete"
+                f"{self.max_workers - self.semaphore._value} deletions still running, "
+                f"waiting to complete"
             )
             time.sleep(1)
         return
 
     def run_delete(self, collection: str):
         """
-        Runs a delete_collection in the background, blocking if max_workers are already running.
+        Runs a delete_collection in the background, blocking if max_workers are already
+        running.
         """
         self.semaphore.acquire()  # Wait for a free thread
         future = self.executor.submit(
@@ -114,14 +116,13 @@ class EnhancedAstraDBLangChainVectorStore(
         )
 
     def search_documents(self, vector: List[float], limit: int) -> List[str]:
-        results = self.collection.vector_find(
-            vector,
-            limit=limit,
-        )
-        docs = []
-        for result in results:
-            docs.append(result["document"])
-        return docs
+        return [
+            result["document"]
+            for result in self.collection.vector_find(
+                vector,
+                limit=limit,
+            )
+        ]
 
 
 class EnhancedAstraDBLlamaIndexVectorStore(
@@ -140,14 +141,13 @@ class EnhancedAstraDBLlamaIndexVectorStore(
         )
 
     def search_documents(self, vector: List[float], limit: int) -> List[str]:
-        results = self.client.vector_find(
-            vector,
-            limit=limit,
-        )
-        docs = []
-        for result in results:
-            docs.append(result["document"])
-        return docs
+        return [
+            result["document"]
+            for result in self.client.vector_find(
+                vector,
+                limit=limit,
+            )
+        ]
 
 
 class AstraDBVectorStoreTestContext(VectorStoreTestContext):
@@ -158,7 +158,9 @@ class AstraDBVectorStoreTestContext(VectorStoreTestContext):
 
     def new_langchain_vector_store(self, **kwargs) -> EnhancedLangChainVectorStore:
         logging.info(
-            f"Creating langchain vector store, implementation {self.handler.implementation}, collection {self.handler.collection_name}"
+            f"Creating langchain vector store, "
+            f"implementation {self.handler.implementation}, "
+            f"collection {self.handler.collection_name}"
         )
 
         if self.handler.implementation == VectorStoreImplementation.CASSANDRA:
@@ -200,7 +202,9 @@ class AstraDBVectorStoreTestContext(VectorStoreTestContext):
 
     def new_llamaindex_vector_store(self, **kwargs) -> EnhancedLlamaIndexVectorStore:
         logging.info(
-            f"Creating llama index vector store, implementation {self.handler.implementation}, collection {self.handler.collection_name}"
+            f"Creating llama index vector store, "
+            f"implementation {self.handler.implementation}, "
+            f"collection {self.handler.collection_name}"
         )
         if self.handler.implementation == VectorStoreImplementation.CASSANDRA:
             vector_store = EnhancedCassandraLlamaIndexVectorStore(
@@ -278,7 +282,8 @@ class AstraDBVectorStoreHandler(VectorStoreHandler):
 
     def ensure_astra_env_clean(self, blocking=False):
         logging.info(
-            f"Ensuring astra env is clean (current deletions in progress: {self.__class__.delete_collection_handler.get_current_deletions()})"
+            f"Ensuring astra env is clean (current deletions in progress: "
+            f"{self.__class__.delete_collection_handler.get_current_deletions()})"
         )
         collections = (
             self.__class__.default_astra_client.get_collections()
@@ -288,7 +293,8 @@ class AstraDBVectorStoreHandler(VectorStoreHandler):
         logging.info(f"Existing collections: {collections}")
         if self.collection_name:
             logging.info(
-                f"Deleting collection configured in the vector store: {self.collection_name}"
+                f"Deleting collection configured in the vector store: "
+                f"{self.collection_name}"
             )
             self.__class__.delete_collection_handler.run_delete(
                 self.collection_name
@@ -301,7 +307,9 @@ class AstraDBVectorStoreHandler(VectorStoreHandler):
             logging.info("Astra env cleanup completed")
         else:
             logging.info(
-                f"Astra env cleanup started in background, proceeding (current deletions in progress: {self.__class__.delete_collection_handler.get_current_deletions()})"
+                f"Astra env cleanup started in background, proceeding "
+                f"(current deletions in progress: "
+                f"{self.__class__.delete_collection_handler.get_current_deletions()})"
             )
 
     def before_test(self) -> AstraDBVectorStoreTestContext:
@@ -313,14 +321,18 @@ class AstraDBVectorStoreHandler(VectorStoreHandler):
         if self.implementation == VectorStoreImplementation.CASSANDRA:
             # to run cassandra implementation over astra
             if self.astra_ref.env == "dev":
-                bundle_url_template = "https://api.dev.cloud.datastax.com/v2/databases/{database_id}/secureBundleURL"
+                bundle_url_template = (
+                    "https://api.dev.cloud.datastax.com/v2/databases/"
+                    "{database_id}/secureBundleURL"
+                )
 
                 cassio.init(
                     token=self.astra_ref.token,
                     database_id=self.astra_ref.id,
                     bundle_url_template=bundle_url_template,
                     cloud_kwargs={
-                        # connect timeout for the /metadata endpoint to download secure bundle
+                        # connect timeout for the /metadata endpoint to download secure
+                        # bundle
                         "connect_timeout": 30
                     },
                     cluster_kwargs={

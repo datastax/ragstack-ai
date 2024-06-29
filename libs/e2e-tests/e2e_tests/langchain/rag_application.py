@@ -32,7 +32,7 @@ Answer the question based only on the supplied context. If you don't know the an
 Context: {context}
 Question: {question}
 Your answer:
-"""
+"""  # noqa: E501
 
 RESPONSE_TEMPLATE = """\
 You are an expert programmer and problem-solver, tasked with answering any question \
@@ -55,10 +55,10 @@ If there is nothing in the context relevant to the question at hand, just say "H
 I'm not sure." Don't try to make up an answer.
 
 Anything between the following `context`  html blocks is retrieved from a knowledge \
-bank, not part of the conversation with the user. 
+bank, not part of the conversation with the user.
 
 <context>
-    {context} 
+    {context}
 <context/>
 
 REMEMBER: If there is no relevant information within the context, just say "Hmm, I'm \
@@ -187,7 +187,8 @@ def run_rag_custom_chain(
     with callbacks.collect_runs() as cb:
         response = answer_chain.invoke(
             {
-                "question": "When was released MyFakeProductForTesting for the first time ?",
+                "question": "When was released MyFakeProductForTesting "
+                "for the first time ?",
                 "chat_history": [],
             }
         )

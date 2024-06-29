@@ -59,13 +59,13 @@ def _texts_to_nodes(
     for text in texts:
         try:
             _metadata = next(metadatas_it).copy() if metadatas_it else {}
-        except StopIteration:
-            raise ValueError("texts iterable longer than metadatas")
+        except StopIteration as e:
+            raise ValueError("texts iterable longer than metadatas") from e
         try:
             _id = next(ids_it) if ids_it else None
             _id = _id or _metadata.pop(METADATA_CONTENT_ID_KEY, None)
-        except StopIteration:
-            raise ValueError("texts iterable longer than ids")
+        except StopIteration as e:
+            raise ValueError("texts iterable longer than ids") from e
 
         links = _metadata.pop(METADATA_LINKS_KEY, set())
         if not isinstance(links, Set):
@@ -90,8 +90,8 @@ def _documents_to_nodes(
         try:
             _id = next(ids_it) if ids_it else None
             _id = _id or doc.metadata.pop(METADATA_CONTENT_ID_KEY, None)
-        except StopIteration:
-            raise ValueError("documents iterable longer than ids")
+        except StopIteration as e:
+            raise ValueError("documents iterable longer than ids") from e
         metadata = doc.metadata.copy()
         links = metadata.pop(METADATA_LINKS_KEY, set())
         if not isinstance(links, Set):
@@ -422,7 +422,7 @@ class GraphStore(VectorStore):
                 "'mmr' or 'traversal'."
             )
 
-    def as_retriever(self, **kwargs: Any) -> "GraphStoreRetriever":
+    def as_retriever(self, **kwargs: Any) -> GraphStoreRetriever:
         """Return GraphStoreRetriever initialized from this GraphStore.
 
         Args:

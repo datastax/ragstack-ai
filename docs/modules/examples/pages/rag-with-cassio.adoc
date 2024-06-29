@@ -142,7 +142,7 @@ for filename in SAMPLEDATA:
   if len(new_docs) > 0:
     documents.extend(new_docs)
 
-cassVStore = Cassandra.from_documents(
+cass_vstore = Cassandra.from_documents(
   documents=documents,
   embedding=OpenAIEmbeddings(),
   session=session,
@@ -158,7 +158,7 @@ print(f"\nProcessing done.")
 Use `VectorStoreIndexWrapper` from `langchain.indexes.vectorstore` for querying.
 [source,python]
 ----
-index = VectorStoreIndexWrapper(vectorstore=cassVStore)
+index = VectorStoreIndexWrapper(vectorstore=cass_vstore)
 query = "Who is Luchesi?"
 index.query(query,llm=llm)
 query = "What motivates Montresor to seek revenge against Fortunato?"

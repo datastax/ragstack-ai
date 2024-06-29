@@ -57,7 +57,7 @@ class BasePipeline(ABC):
 
     @property
     @abstractmethod
-    def PIPELINE_TYPE(self):
+    def pipeline_type(self):
         """type of pipeline (ingest, query, cleanup)"""
         pass
 
@@ -84,7 +84,7 @@ class BasePipeline(ABC):
         try:
             self._method = get_method(
                 script_path=self.script_path,
-                pipeline_type=self.PIPELINE_TYPE,
+                pipeline_type=self.pipeline_type,
                 method_name=self.method_name,
             )
             self._method_params = get_method_params(method=self._method)
@@ -95,7 +95,9 @@ class BasePipeline(ABC):
             )
         except BaseException as e:
             logger.fatal(
-                f"Issue loading recipe {self.recipe_name} on {self.script_path}/{self.method_name} with passed ingredients: {self._passed_ingredients}: {e}"
+                f"Issue loading recipe {self.recipe_name} "
+                f"on {self.script_path}/{self.method_name} "
+                f"with passed ingredients: {self._passed_ingredients}: {e}"
             )
             traceback.print_exc()
             exit(1)
@@ -108,7 +110,7 @@ class BasePipeline(ABC):
 
     def _key(self) -> str:
         key_parts = [
-            self.PIPELINE_TYPE,
+            self.pipeline_type,
             self.script_path,
             self.method_name,
         ]

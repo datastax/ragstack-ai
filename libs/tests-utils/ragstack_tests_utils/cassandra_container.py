@@ -9,7 +9,7 @@ class CassandraContainer(DockerContainer):
         port: int = 9042,
         **kwargs,
     ) -> None:
-        super(CassandraContainer, self).__init__(image=image, **kwargs)
+        super().__init__(image=image, **kwargs)
         self.port = port
 
         self.with_exposed_ports(self.port)

@@ -2,7 +2,7 @@ import os
 import unittest
 
 from ragstack_ragulate.config.config_parser import ConfigParser
-from ragstack_ragulate.config.config_schema_0_1 import ConfigSchema_0_1
+from ragstack_ragulate.config.config_schema_0_1 import ConfigSchema0Dot1
 
 
 class TestConfigValidation(unittest.TestCase):
@@ -73,7 +73,7 @@ class TestConfigValidation(unittest.TestCase):
             os.path.join("datasets", "llama", "braintrust_coda_help_desk"),
             exist_ok=True,
         )
-        parser = ConfigParser(config_schema=ConfigSchema_0_1(), config=config)
+        parser = ConfigParser(config_schema=ConfigSchema0Dot1(), config=config)
 
         for field, errors in parser.errors.items():
             print(f"{field}: {errors}")
@@ -121,7 +121,7 @@ class TestConfigValidation(unittest.TestCase):
             os.path.join("datasets", "llama", "blockchain_solana"), exist_ok=True
         )
         os.makedirs(os.path.join("datasets", "llama", "other_dataset"), exist_ok=True)
-        parser = ConfigParser(config_schema=ConfigSchema_0_1(), config=config)
+        parser = ConfigParser(config_schema=ConfigSchema0Dot1(), config=config)
 
         for field, errors in parser.errors.items():
             print(f"{field}: {errors}")

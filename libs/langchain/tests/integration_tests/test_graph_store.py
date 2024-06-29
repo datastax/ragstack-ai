@@ -108,7 +108,7 @@ class AngularTwoDimensionalEmbeddings(Embeddings):
 
 
 def _result_ids(docs: Iterable[Document]) -> List[str]:
-    return list(map(lambda d: d.metadata[METADATA_CONTENT_ID_KEY], docs))
+    return [d.metadata[METADATA_CONTENT_ID_KEY] for d in docs]
 
 
 @pytest.mark.parametrize("gs_factory", ["cassandra", "astra_db"])
@@ -230,7 +230,8 @@ def test_write_retrieve_keywords(request, gs_factory: str):
 
     store = gs_factory.store([greetings, doc1, doc2])
 
-    # Doc2 is more similar, but World and Earth are similar enough that doc1 also shows up.
+    # Doc2 is more similar, but World and Earth are similar enough that doc1 also shows
+    # up.
     results = store.similarity_search("Earth", k=2)
     assert _result_ids(results) == ["doc2", "doc1"]
 
@@ -247,7 +248,8 @@ def test_write_retrieve_keywords(request, gs_factory: str):
     results = store.traversal_search("Earth", k=1, depth=0)
     assert _result_ids(results) == ["doc2"]
 
-    # K=1 only pulls in doc2 (Hello Earth). Depth=1 traverses to parent and via keyword edge.
+    # K=1 only pulls in doc2 (Hello Earth). Depth=1 traverses to parent and via keyword
+    # edge.
     results = store.traversal_search("Earth", k=1, depth=1)
     assert set(_result_ids(results)) == {"doc2", "doc1", "greetings"}
 

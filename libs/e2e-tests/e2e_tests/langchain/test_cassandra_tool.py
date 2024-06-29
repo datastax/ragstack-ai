@@ -35,7 +35,7 @@ def test_tool_with_openai_tool(cassandra):
     user_id = uuid.uuid4()
     session.execute(
         f"""
-        INSERT INTO default_keyspace.tool_table_users (user_id, user_name) 
+        INSERT INTO default_keyspace.tool_table_users (user_id, user_name)
         VALUES ({user_id}, 'my_user');
     """
     )
@@ -55,7 +55,8 @@ def test_tool_with_openai_tool(cassandra):
     agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
     response = agent_executor.invoke(
         {
-            "input": "What is the user_id of the user named 'my_user' in table default_keyspace.tool_table_users?"
+            "input": "What is the user_id of the user named 'my_user' "
+            "in table default_keyspace.tool_table_users?"
         }
     )
     print(response)

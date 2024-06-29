@@ -39,7 +39,7 @@ class QueryPipeline(BasePipeline):
     _evaluation_running = False
 
     @property
-    def PIPELINE_TYPE(self):
+    def pipeline_type(self):
         return "query"
 
     @property
@@ -181,10 +181,14 @@ class QueryPipeline(BasePipeline):
 
         time.sleep(0.1)
         logger.info(
-            f"Starting query {self.recipe_name} on {self.script_path}/{self.method_name} with ingredients: {self.ingredients} on datasets: {self.dataset_names()}"
+            f"Starting query {self.recipe_name} "
+            f"on {self.script_path}/{self.method_name} "
+            f"with ingredients: {self.ingredients} "
+            f"on datasets: {self.dataset_names()}"
         )
         logger.info(
-            "Progress postfix legend: (q)ueries completed; Evaluations (d)one, (r)unning, (w)aiting, (f)ailed, (s)kipped"
+            "Progress postfix legend: (q)ueries completed; Evaluations (d)one, "
+            "(r)unning, (w)aiting, (f)ailed, (s)kipped"
         )
 
         self._progress = tqdm(total=(self._total_queries + self._total_feedbacks))
@@ -213,9 +217,10 @@ class QueryPipeline(BasePipeline):
                     with recorder:
                         pipeline.invoke(query)
                 except Exception as e:
-                    # TODO: figure out why the logger isn't working after tru-lens starts. For now use print()
+                    # TODO: figure out why the logger isn't working after tru-lens starts. For now use print().  # noqa: E501
                     print(
-                        f"ERROR: Query: '{query}' caused exception, skipping. Exception {e}"
+                        f"ERROR: Query: '{query}' caused exception, skipping. "
+                        f"Exception {e}"
                     )
                     logger.error(f"Query: '{query}' caused exception: {e}, skipping.")
                 finally:

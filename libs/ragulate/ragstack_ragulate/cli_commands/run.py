@@ -15,7 +15,8 @@ def setup_run(subparsers):
         "config_file",
         type=str,
         help=(
-            "The name of the yaml config_file that contains the recipes for your experiment "
+            "The name of the yaml config_file that contains the recipes for your "
+            "experiment."
         ),
     )
     run_parser.set_defaults(func=lambda args: call_run(**vars(args)))
@@ -79,7 +80,7 @@ def call_run(config_file: str, **kwargs):
     for query_pipeline in query_pipelines:
         query_pipeline.query()
 
-    recipe_names = [n for n in config.recipes.keys()]
+    recipe_names = config.recipes.keys()
 
     analysis = Analysis()
     analysis.compare(recipes=recipe_names)

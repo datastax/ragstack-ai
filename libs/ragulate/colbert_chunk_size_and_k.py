@@ -98,7 +98,8 @@ async def ingest(file_path: str, chunk_size: int, **kwargs):
     chunked_docs = text_splitter.split_documents(docs)
     duration = time.time() - start
     print(
-        f"It took {duration} seconds to split the document into {len(chunked_docs)} chunks"
+        f"It took {duration} seconds to split the document "
+        f"into {len(chunked_docs)} chunks"
     )
 
     texts = [doc.page_content for doc in chunked_docs]
@@ -141,7 +142,7 @@ def query_pipeline(k: int, chunk_size: int, **kwargs):
     Context: {context}
     Question: {question}
     Your answer:
-    """
+    """  # noqa: E501
     prompt = ChatPromptTemplate.from_template(prompt_template)
 
     rag_chain = (
