@@ -55,10 +55,10 @@ If there is nothing in the context relevant to the question at hand, just say "H
 I'm not sure." Don't try to make up an answer.
 
 Anything between the following `context`  html blocks is retrieved from a knowledge \
-bank, not part of the conversation with the user. 
+bank, not part of the conversation with the user.
 
 <context>
-    {context} 
+    {context}
 <context/>
 
 REMEMBER: If there is no relevant information within the context, just say "Hmm, I'm \
