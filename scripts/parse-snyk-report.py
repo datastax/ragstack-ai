@@ -8,7 +8,7 @@ if len(sys.argv) < 3:
 input_file = sys.argv[1]
 output_file = sys.argv[2]
 
-with open(input_file, "r") as file:
+with open(input_file) as file:
     data = json.load(file)
     vulnerabilities = data.get("vulnerabilities", [])
 

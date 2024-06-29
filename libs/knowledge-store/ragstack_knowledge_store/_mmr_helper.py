@@ -32,7 +32,7 @@ class _Candidate:
             self.score = self.weighted_similarity - self.weighted_redundancy
 
 
-class MmrHelper(object):
+class MmrHelper:
     dimensions: int
     """Dimensions of the embedding."""
 

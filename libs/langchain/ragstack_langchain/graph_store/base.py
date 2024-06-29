@@ -422,7 +422,7 @@ class GraphStore(VectorStore):
                 "'mmr' or 'traversal'."
             )
 
-    def as_retriever(self, **kwargs: Any) -> "GraphStoreRetriever":
+    def as_retriever(self, **kwargs: Any) -> GraphStoreRetriever:
         """Return GraphStoreRetriever initialized from this GraphStore.
 
         Args:

@@ -16,7 +16,7 @@ def main():
             file = os.path.join(root, file)
             if ".ipynb_checkpoints" not in file and file.endswith(".ipynb"):
                 print("Formatting file: ", file)
-                with open(file, "r") as f:
+                with open(file) as f:
                     contents = f.read()
                     as_json = json.loads(contents)
                     cells = as_json["cells"]
