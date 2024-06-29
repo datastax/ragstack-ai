@@ -166,7 +166,7 @@ def parse_snyk_report(input_file: str):
         snykfile = os.path.join(input_file, snykfile)
         print("Reading file: " + snykfile)
 
-        with open(snykfile, "r") as file:
+        with open(snykfile) as file:
             data = json.load(file)
             for vulnerability in data.get("vulnerabilities", []):
                 title = vulnerability.get("title", "?")

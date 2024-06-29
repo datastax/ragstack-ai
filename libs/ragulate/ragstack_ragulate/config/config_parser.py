@@ -28,7 +28,7 @@ class ConfigParser:
 
     @classmethod
     def from_file(cls, file_path: str) -> "ConfigParser":
-        with open(file_path, "r") as file:
+        with open(file_path) as file:
             config = yaml.safe_load(file)
 
             version = config.get("version", 0.1)

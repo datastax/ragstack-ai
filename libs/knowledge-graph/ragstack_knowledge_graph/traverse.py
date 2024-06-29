@@ -190,7 +190,7 @@ def traverse(
             return results
 
 
-class AsyncPagedQuery(object):
+class AsyncPagedQuery:
     def __init__(self, depth: int, response_future: ResponseFuture):
         self.loop = asyncio.get_running_loop()
         self.depth = depth
