@@ -133,14 +133,22 @@ class Analysis:
                 boxmode="group",
                 height=height,
                 width=900,
-                title=dict(
-                    text=dataset, x=0.03, y=0.03, xanchor="left", yanchor="bottom"
-                ),
+                title={
+                    "text": dataset,
+                    "x": 0.03,
+                    "y": 0.03,
+                    "xanchor": "left",
+                    "yanchor": "bottom",
+                },
                 yaxis_title="metric",
                 xaxis_title="score",
-                legend=dict(
-                    orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1
-                ),
+                legend={
+                    "orientation": "h",
+                    "yanchor": "bottom",
+                    "y": 1.02,
+                    "xanchor": "right",
+                    "x": 1,
+                },
             )
 
             write_image(fig, f"./{dataset}_box_plot.png")

@@ -34,7 +34,7 @@ arctic_botany_dict = {
     "Future Directions in Arctic Botanical Studies": "The future of Arctic botany lies in interdisciplinary research, combining traditional knowledge with modern scientific techniques. As the Arctic undergoes rapid changes, understanding the ecological, cultural, and climatic dimensions of Arctic flora becomes increasingly important. Future research will need to address the challenges of climate change, explore the potential for Arctic plants in biotechnology, and continue to conserve this unique biome. The resilience of Arctic flora offers lessons in adaptation and survival relevant to global challenges.",  # noqa: E501
 }
 
-arctic_botany_chunks = [text for text in arctic_botany_dict.values()]
+arctic_botany_chunks = list(arctic_botany_dict.values())
 
 
 # a uility function to evaluate similarity of two embeddings at per token level
