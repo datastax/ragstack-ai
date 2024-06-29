@@ -84,7 +84,8 @@ def test_ingest_errors(environment: Environment):
 
     very_long_text = "RAGStack is a framework to run LangChain in production. " * 5000
 
-    # if we disable text splitting, this write still pass since the document is not used in the index by default
+    # if we disable text splitting, this write still pass
+    # since the document is not used in the index by default.
     documents = [Document(text=very_long_text)]
     VectorStoreIndex.from_documents(
         documents,
@@ -107,7 +108,8 @@ def test_wrong_connection_parameters(environment: Environment):
         print("Error:", e)
         pass
 
-    # This is expected to be a valid endpoint, because we want to test an AUTHENTICATION error
+    # This is expected to be a valid endpoint,
+    # because we want to test an AUTHENTICATION error
     api_endpoint = environment.vectorstore._astra_db.base_url
     try:
         print("api_endpoint:", api_endpoint)
@@ -122,7 +124,8 @@ def test_wrong_connection_parameters(environment: Environment):
         print("Error:", e)
         if "401 Unauthorized" not in str(e):
             pytest.fail(
-                f"Should have thrown HTTPStatusError with '401 Unauthorized' but it was {e}"
+                f"Should have thrown HTTPStatusError with '401 Unauthorized' "
+                f"but it was {e}"
             )
 
 
@@ -193,7 +196,8 @@ def test_vector_search_with_metadata(environment: Environment):
     for doc_id in document_ids:
         environment.vectorstore.delete(doc_id)
 
-    # commenting this part, as the delete is not working, maybe it is a problem with document ids ?
+    # commenting this part, as the delete is not working,
+    # maybe it is a problem with document ids ?
     # documents = index.as_retriever().retrieve("RAGStack")
     # assert len(documents) == 0
 

@@ -55,7 +55,8 @@ def test_tool_with_openai_tool(cassandra):
     agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
     response = agent_executor.invoke(
         {
-            "input": "What is the user_id of the user named 'my_user' in table default_keyspace.tool_table_users?"
+            "input": "What is the user_id of the user named 'my_user' "
+            "in table default_keyspace.tool_table_users?"
         }
     )
     print(response)

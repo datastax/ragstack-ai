@@ -15,7 +15,8 @@ def setup_run(subparsers):
         "config_file",
         type=str,
         help=(
-            "The name of the yaml config_file that contains the recipes for your experiment "
+            "The name of the yaml config_file that contains the recipes for your "
+            "experiment."
         ),
     )
     run_parser.set_defaults(func=lambda args: call_run(**vars(args)))

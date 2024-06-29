@@ -32,13 +32,15 @@ def setup_query(subparsers):
     query_parser.add_argument(
         "--var-name",
         type=str,
-        help="The name of a variable in the query script. This should be paired with a `--var-value` argument and can be passed multiple times.",
+        help="The name of a variable in the query script. This should be paired with a "
+        "`--var-value` argument and can be passed multiple times.",
         action="append",
     )
     query_parser.add_argument(
         "--var-value",
         type=str,
-        help="The value of a variable in the query script. This should be paired with a `--var-name` argument and can be passed multiple times.",
+        help="The value of a variable in the query script. This should be paired with "
+        "a `--var-name` argument and can be passed multiple times.",
         action="append",
     )
     query_parser.add_argument(
@@ -50,13 +52,15 @@ def setup_query(subparsers):
     query_parser.add_argument(
         "--subset",
         type=str,
-        help="The subset of the dataset to query. Only valid when a single dataset is passed.",
+        help="The subset of the dataset to query. "
+        "Only valid when a single dataset is passed.",
         action="append",
     )
     query_parser.add_argument(
         "--sample",
         type=float,
-        help="A decimal percentage of the queries to sample for the test. Default is 1.0.",
+        help="A decimal percentage of the queries to sample for the test. "
+        "Default is 1.0.",
         default=1.0,
     )
     query_parser.add_argument(
@@ -66,7 +70,9 @@ def setup_query(subparsers):
     )
     query_parser.add_argument(
         "--restart",
-        help="Flag to restart the query process instead of resuming. WARNING: this will delete all existing data for this query name, not just the data for the tagged datasets.",
+        help="Flag to restart the query process instead of resuming. "
+        "WARNING: this will delete all existing data for this query name, "
+        "not just the data for the tagged datasets.",
         action="store_true",
     )
     query_parser.add_argument(
@@ -86,7 +92,8 @@ def setup_query(subparsers):
     query_parser.add_argument(
         "--model",
         type=str,
-        help="The name or id of the LLM model or deployment to use for Evaluation. Generally used in combination with the `--provider` param.",
+        help="The name or id of the LLM model or deployment to use for Evaluation. "
+        "Generally used in combination with the `--provider` param.",
     )
     query_parser.set_defaults(func=lambda args: call_query(**vars(args)))
 

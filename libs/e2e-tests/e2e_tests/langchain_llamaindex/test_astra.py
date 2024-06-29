@@ -130,7 +130,8 @@ def test_ingest_langchain_retrieve_llama_index(astra_ref: AstraRef):
     llm_model = "gpt-3.5-turbo"
 
     document = langchain_core.documents.Document(
-        page_content="RAGStack is a framework to run LangChain and LlamaIndex in production",
+        page_content="RAGStack is a framework to run "
+        "LangChain and LlamaIndex in production",
         metadata={"source": "llama-index-ingest"},
     )
     documents = [document]

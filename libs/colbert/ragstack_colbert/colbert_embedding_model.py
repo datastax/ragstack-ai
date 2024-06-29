@@ -1,10 +1,12 @@
 """
-This module integrates the ColBERT model with token embedding functionalities, offering tools for efficiently
-encoding queries and text chunks into dense vector representations. It facilitates semantic search and
-retrieval by providing optimized methods for embedding generation and manipulation.
+This module integrates the ColBERT model with token embedding functionalities,
+offering tools for efficiently encoding queries and text chunks into dense vector
+representations. It facilitates semantic search and retrieval by providing optimized
+methods for embedding generation and manipulation.
 
-The core component, ColbertEmbeddingModel, leverages pre-trained ColBERT models to produce embeddings suitable
-for high-relevancy retrieval tasks, with support for both CPU and GPU computing environments.
+The core component, ColbertEmbeddingModel, leverages pre-trained ColBERT models to
+produce embeddings suitable for high-relevancy retrieval tasks,
+with support for both CPU and GPU computing environments.
 """
 
 from typing import List, Optional
@@ -19,11 +21,13 @@ from .text_encoder import TextEncoder
 
 class ColbertEmbeddingModel(BaseEmbeddingModel):
     """
-    A class for generating token embeddings using a ColBERT model. This class provides functionalities for
-    encoding queries and document chunks into dense vector representations, facilitating semantic search and
-    retrieval tasks. It leverages a pre-trained ColBERT model and supports distributed computing environments.
+    A class for generating token embeddings using a ColBERT model. This class provides
+    functionalities for encoding queries and document chunks into dense vector
+    representations, facilitating semantic search and retrieval tasks. It leverages a
+    pre-trained ColBERT model and supports distributed computing environments.
 
-    The class supports both GPU and CPU operations, with GPU usage recommended for performance efficiency.
+    The class supports both GPU and CPU operations, with GPU usage recommended for
+    performance efficiency.
     """
 
     _query_maxlen: int
@@ -42,18 +46,24 @@ class ColbertEmbeddingModel(BaseEmbeddingModel):
         **kwargs,
     ):
         """
-        Initializes a new instance of the ColbertEmbeddingModel class, setting up the model configuration,
-        loading the necessary checkpoints, and preparing the tokenizer and encoder.
+        Initializes a new instance of the ColbertEmbeddingModel class, setting up the
+        model configuration, loading the necessary checkpoints, and preparing the
+        tokenizer and encoder.
 
         Parameters:
-            checkpoint (Optional[str]): Path or URL to the Colbert model checkpoint. Default is a pre-defined model.
-            doc_maxlen (Optional[int]): Maximum number of tokens for document chunks. Should equal the chunk_size.
+            checkpoint (Optional[str]): Path or URL to the Colbert model checkpoint.
+                Default is a pre-defined model.
+            doc_maxlen (Optional[int]): Maximum number of tokens for document chunks.
+                Should equal the chunk_size.
             nbits (Optional[int]): The number bits that each dimension encodes to.
-            kmeans_niters (Optional[int]): Number of iterations for k-means clustering during quantization.
-            nranks (Optional[int]): Number of ranks (processors) to use for distributed computing; -1 uses all available CPUs/GPUs.
+            kmeans_niters (Optional[int]): Number of iterations for k-means clustering
+                during quantization.
+            nranks (Optional[int]): Number of ranks (processors) to use for distributed
+                computing; -1 uses all available CPUs/GPUs.
             query_maxlen (Optional[int]): Maximum length of query tokens for embedding.
             verbose (Optional[int]): Verbosity level for logging.
-            chunk_batch_size (Optional[int]): The number of chunks to batch during embedding. Defaults to 640.
+            chunk_batch_size (Optional[int]): The number of chunks to batch during
+                embedding. Defaults to 640.
             **kwargs: Additional keyword arguments for future extensions.
         """
 
@@ -75,7 +85,8 @@ class ColbertEmbeddingModel(BaseEmbeddingModel):
     # implements the Abstract Class Method
     def embed_texts(self, texts: List[str]) -> List[Embedding]:
         """
-        Embeds a list of texts into their corresponding vector embedding representations.
+        Embeds a list of texts into their corresponding vector embedding
+        representations.
 
         Parameters:
             texts (List[str]): A list of string texts.
@@ -108,13 +119,15 @@ class ColbertEmbeddingModel(BaseEmbeddingModel):
         """
         Embeds a single query text into its vector representation.
 
-        If the query has fewer than query_maxlen tokens it will be padded with BERT special [mast] tokens.
+        If the query has fewer than query_maxlen tokens it will be padded with BERT
+        special [mast] tokens.
 
         Parameters:
             query (str): The query string to encode.
-            full_length_search (Optional[bool]): Indicates whether to encode the query for a full-length search.
-                                                  Defaults to False.
-            query_maxlen (int): The fixed length for the query token embedding. If None, uses a dynamically calculated value.
+            full_length_search (Optional[bool]): Indicates whether to encode the query
+                for a full-length search. Defaults to False.
+            query_maxlen (int): The fixed length for the query token embedding.
+                If None, uses a dynamically calculated value.
 
         Returns:
             Embedding: A vector embedding representation of the query text

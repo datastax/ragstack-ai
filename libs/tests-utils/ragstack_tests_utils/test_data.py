@@ -67,10 +67,13 @@ class TestData:
         Potential queries on the text:
             - Who developed the Astroflux Navigator?
             - Describe the phenomena known as "Chrono-spatial Echoes"?
-            - What challenges does the Quantum Opacity phenomenon present to the crew of the Nebula Voyager?
-            - How does the Bioquantum Array aid Dr. Nyx Moreau in studying the Nebuloforms within Orion’s Whisper?
+            - What challenges does the Quantum Opacity phenomenon present to the crew of
+              the Nebula Voyager?
+            - How does the Bioquantum Array aid Dr. Nyx Moreau in studying the
+              Nebuloforms within Orion’s Whisper?
             - What are Xenospheric Particulates?
-            - What is the significance of the Cryptolingual Synthesizer used by Jiro Takashi, and how does it function?
+            - What is the significance of the Cryptolingual Synthesizer used by Jiro
+              Takashi, and how does it function?
         """
         return TestData._get_text_file("nebula_voyager.txt")
 

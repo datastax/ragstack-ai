@@ -217,16 +217,13 @@ def test_rag(vector_store, embedding, llm, request):
 
     documents = [
         Document(
-            text="MyFakeProductForTesting is a versatile testing tool designed to streamline the testing process for software developers, quality assurance professionals, and product testers. It provides a comprehensive solution for testing various aspects of applications and systems, ensuring robust performance and functionality."
-            # noqa: E501
+            text="MyFakeProductForTesting is a versatile testing tool designed to streamline the testing process for software developers, quality assurance professionals, and product testers. It provides a comprehensive solution for testing various aspects of applications and systems, ensuring robust performance and functionality."  # noqa: E501
         ),
         Document(
-            text="MyFakeProductForTesting comes equipped with an advanced dynamic test scenario generator. This feature allows users to create realistic test scenarios by simulating various user interactions, system inputs, and environmental conditions. The dynamic nature of the generator ensures that tests are not only diverse but also adaptive to changes in the application under test."
-            # noqa: E501
+            text="MyFakeProductForTesting comes equipped with an advanced dynamic test scenario generator. This feature allows users to create realistic test scenarios by simulating various user interactions, system inputs, and environmental conditions. The dynamic nature of the generator ensures that tests are not only diverse but also adaptive to changes in the application under test."  # noqa: E501
         ),
         Document(
-            text="The product includes an intelligent bug detection and analysis module. It not only identifies bugs and issues but also provides in-depth analysis and insights into the root causes. The system utilizes machine learning algorithms to categorize and prioritize bugs, making it easier for developers and testers to address critical issues first."
-            # noqa: E501
+            text="The product includes an intelligent bug detection and analysis module. It not only identifies bugs and issues but also provides in-depth analysis and insights into the root causes. The system utilizes machine learning algorithms to categorize and prioritize bugs, making it easier for developers and testers to address critical issues first."  # noqa: E501
         ),
         Document(text="MyFakeProductForTesting first release happened in June 2020."),
     ]
@@ -305,7 +302,8 @@ def gemini_pro_vision_llm():
 @pytest.mark.parametrize(
     "embedding,llm",
     [
-        # disable due to this bug: https://github.com/googleapis/python-aiplatform/issues/3227
+        # disable due to this bug:
+        # https://github.com/googleapis/python-aiplatform/issues/3227
         # ("vertex_gemini_multimodal_embedding", "vertex_gemini_pro_vision_llm"),
         ("vertex_gemini_multimodal_embedding", "gemini_pro_vision_llm"),
     ],
@@ -355,7 +353,10 @@ def test_multimodal(vector_store, embedding, llm, request):
 
     documents = enhanced_vector_store.search_documents(embeddings.image_embedding, 3)
     docs_str = ", ".join([f"'{p}'" for p in documents])
-    prompt = f"Tell me which one of these products it is part of. Only include product from the ones below: {docs_str}."
+    prompt = (
+        f"Tell me which one of these products it is part of. "
+        f"Only include product from the ones below: {docs_str}."
+    )
     logging.info(f"Prompt: {prompt}")
     response = llm_complete_fn(resolved_llm, prompt, query_image_path)
     assert (
