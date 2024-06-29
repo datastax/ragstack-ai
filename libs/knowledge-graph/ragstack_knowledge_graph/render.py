@@ -36,7 +36,7 @@ def render_graph_documents(
 
     def _node_id(node: Node) -> int:
         node_key = (node.id, node.type)
-        if node_id := nodes.get(node_key, None):
+        if node_id := nodes.get(node_key):
             return node_id
         else:
             node_id = f"{len(nodes)}"

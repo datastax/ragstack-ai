@@ -89,8 +89,7 @@ class Analysis:
 
         for dataset in datasets:
             fig = go.Figure()
-            test_index = 0
-            for recipe in recipes:
+            for test_index, recipe in enumerate(recipes):
                 y = []
                 x = []
                 q1 = []
@@ -124,7 +123,6 @@ class Analysis:
                         boxpoints=False,  # Do not show individual points
                     )
                 )
-                test_index += 1
 
             fig.update_traces(
                 orientation="h",

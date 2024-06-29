@@ -80,7 +80,7 @@ def call_run(config_file: str, **kwargs):
     for query_pipeline in query_pipelines:
         query_pipeline.query()
 
-    recipe_names = [n for n in config.recipes.keys()]
+    recipe_names = config.recipes.keys()
 
     analysis = Analysis()
     analysis.compare(recipes=recipe_names)
