@@ -595,7 +595,7 @@ class GraphStore:
             List of adjacent edges.
         """
 
-        targets = dict()
+        targets = {}
 
         def add_sources(rows):
             for row in rows:

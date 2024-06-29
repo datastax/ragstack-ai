@@ -108,7 +108,7 @@ class AngularTwoDimensionalEmbeddings(Embeddings):
 
 
 def _result_ids(docs: Iterable[Document]) -> List[str]:
-    return list(map(lambda d: d.metadata[METADATA_CONTENT_ID_KEY], docs))
+    return [d.metadata[METADATA_CONTENT_ID_KEY] for d in docs]
 
 
 @pytest.mark.parametrize("gs_factory", ["cassandra", "astra_db"])
