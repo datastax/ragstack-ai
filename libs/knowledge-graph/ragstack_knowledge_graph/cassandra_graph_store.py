@@ -54,7 +54,7 @@ class CassandraGraphStore(GraphStore):
         self.graph.insert(_elements(graph_documents))
 
     # TODO: should this include the types of each node?
-    def query(self, query: str, params: dict = {}) -> List[Dict[str, Any]]:
+    def query(self, query: str, params: dict = {}) -> List[Dict[str, Any]]:  # noqa: B006
         raise ValueError("Querying Cassandra should use `as_runnable`.")
 
     @property
