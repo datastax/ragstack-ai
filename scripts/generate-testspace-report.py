@@ -152,14 +152,12 @@ SNYK_REPORT_SUITE_NAME = "Security scans"
 def parse_snyk_report(input_file: str):
     test_cases = []
     vulnerabilities = {}
-    files = []
 
     if os.path.isdir(input_file):
-        for f in os.listdir(input_file):
-            if f.endswith(".json"):
-                files.append(f)
+        files = [f for f in os.listdir(input_file) if f.endswith(".json")]
     else:
-        files.append(input_file)
+        files = [input_file]
+
     all_links = []
 
     for snykfile in files:
@@ -265,18 +263,19 @@ def parse_test_report(input_file: str):
                     )
 
                 properties = test_case.find("properties")
-                links = []
                 if properties:
-                    for prop in properties.iter("property"):
-                        if prop.get("name") == "langsmith_url":
-                            links.append(
-                                Link(
-                                    name="LangSmith trace",
-                                    url=prop.get("value"),
-                                    level="info",
-                                    description="",
-                                )
-                            )
+                    links = [
+                        Link(
+                            name="LangSmith trace",
+                            url=prop.get("value"),
+                            level="info",
+                            description="",
+                        )
+                        for prop in properties.iter("property")
+                        if prop.get("name") == "langsmith_url"
+                    ]
+                else:
+                    links = []
 
                 report_test_case = TestCase(
                     name=rewrite_name(test_case.get("name")),

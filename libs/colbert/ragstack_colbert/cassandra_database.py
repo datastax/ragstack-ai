@@ -338,15 +338,13 @@ class CassandraDatabase(BaseDatabase):
         """
 
         semaphore = asyncio.Semaphore(concurrent_deletes)
-        all_tasks = []
-
-        for doc_id in doc_ids:
-            all_tasks.append(
-                self._limited_delete(
-                    sem=semaphore,
-                    doc_id=doc_id,
-                )
+        all_tasks = [
+            self._limited_delete(
+                sem=semaphore,
+                doc_id=doc_id,
             )
+            for doc_id in doc_ids
+        ]
 
         results = await asyncio.gather(*all_tasks, return_exceptions=True)
 
