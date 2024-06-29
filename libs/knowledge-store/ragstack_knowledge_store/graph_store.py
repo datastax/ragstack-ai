@@ -262,7 +262,7 @@ class GraphStore:
                 kind TEXT,
                 tag TEXT,
 
-                -- text_embedding of target node. allows MMR to be applied without 
+                -- text_embedding of target node. allows MMR to be applied without
                 -- fetching nodes.
                 target_text_embedding VECTOR<FLOAT, {embedding_dim}>,
 
