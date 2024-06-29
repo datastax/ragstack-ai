@@ -35,10 +35,8 @@ def cassandra_port(db_keyspace: str) -> Iterator[int]:
     cassandra.start()
     wait_for_logs(cassandra, "Startup complete")
     cassandra.get_wrapped_container().exec_run(
-        (
-            f"""cqlsh -e "CREATE KEYSPACE {db_keyspace} WITH replication = """
-            '''{'class': 'SimpleStrategy', 'replication_factor': '1'};"'''
-        )
+        f"""cqlsh -e "CREATE KEYSPACE {db_keyspace} WITH replication = """
+        '''{'class': 'SimpleStrategy', 'replication_factor': '1'};"'''
     )
     port = cassandra.get_exposed_port(9042)
     print(f"Cassandra started. Port is {port}")

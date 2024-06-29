@@ -103,7 +103,8 @@ def test_sync_from_docs(request, vector_store: str):
     )
 
     results: List[Document] = vector_store.similarity_search(
-        "What challenges does the Quantum Opacity phenomenon present to the crew of the Nebula Voyager"
+        "What challenges does the Quantum Opacity phenomenon present to the crew of "
+        "the Nebula Voyager"
     )
     assert validate_retrieval(results, key_value="Quantum Opacity")
 
@@ -159,7 +160,8 @@ async def test_async_from_docs(request, vector_store: str):
     )
 
     results: List[Document] = await vector_store.asimilarity_search(
-        "What challenges does the Quantum Opacity phenomenon present to the crew of the Nebula Voyager"
+        "What challenges does the Quantum Opacity phenomenon present to the crew of "
+        "the Nebula Voyager"
     )
     assert validate_retrieval(results, key_value="Quantum Opacity")
 

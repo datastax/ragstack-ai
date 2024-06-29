@@ -35,6 +35,7 @@ else:
             return
 
         iterators = tuple(iter(iterable) for iterable in iterables)
+        items = []
         try:
             while True:
                 items = []

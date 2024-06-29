@@ -36,13 +36,14 @@ def test_ingest_errors(vectorstore: AstraDBVectorStore):
         vectorstore.add_texts([empty_text])
     except ValueError as e:
         print("Error:", e)
-        # API Exception while running bulk insertion: [{'message': "Failed to insert document with _id 'b388435404254c17b720816ee9e0ddc4': Zero vectors cannot be indexed or queried with cosine similarity"}]
+        # API Exception while running bulk insertion: [{'message': "Failed to insert document with _id 'b388435404254c17b720816ee9e0ddc4': Zero vectors cannot be indexed or queried with cosine similarity"}]  # noqa: E501
         if (
-            "Zero and near-zero vectors cannot be indexed or queried with cosine similarity"
-            not in e.args[0]
+            "Zero and near-zero vectors cannot be indexed "
+            "or queried with cosine similarity" not in e.args[0]
         ):
             pytest.fail(
-                f"Should have thrown ValueError with Zero vectors cannot be indexed or queried with cosine similarity but it was {e}"
+                f"Should have thrown ValueError with Zero vectors cannot be indexed "
+                f"or queried with cosine similarity but it was {e}"
             )
     very_long_text = "RAGStack is a framework to run LangChain in production. " * 10_000
     # body is not indexed by default, but metadata is
@@ -60,10 +61,11 @@ def test_ingest_errors(vectorstore: AstraDBVectorStore):
         pytest.fail("Should have thrown ValueError")
     except ValueError as e:
         print("Error:", e)
-        # API Exception while running bulk insertion: {'errors': [{'message': 'Document size limitation violated: String value length (56000) exceeds maximum allowed (16000)', 'errorCode': 'SHRED_DOC_LIMIT_VIOLATION'}]}
+        # API Exception while running bulk insertion: {'errors': [{'message': 'Document size limitation violated: String value length (56000) exceeds maximum allowed (16000)', 'errorCode': 'SHRED_DOC_LIMIT_VIOLATION'}]}  # noqa: E501
         if "SHRED_DOC_LIMIT_VIOLATION" not in e.args[0]:
             pytest.fail(
-                f"Should have thrown ValueError with SHRED_DOC_LIMIT_VIOLATION but it was {e}"
+                f"Should have thrown ValueError with SHRED_DOC_LIMIT_VIOLATION "
+                f"but it was {e}"
             )
 
 
@@ -81,7 +83,8 @@ def test_wrong_connection_parameters(vectorstore: AstraDBVectorStore):
         print("Error:", e)
         pass
 
-    # This is expected to be a valid endpoint, because we want to test an AUTHENTICATION error
+    # This is expected to be a valid endpoint,
+    # because we want to test an AUTHENTICATION error
     api_endpoint = vectorstore.api_endpoint
     try:
         print("api_endpoint:", api_endpoint)
@@ -96,7 +99,8 @@ def test_wrong_connection_parameters(vectorstore: AstraDBVectorStore):
         print("Error:", e)
         if "401 Unauthorized" not in str(e):
             pytest.fail(
-                f"Should have thrown HTTPStatusError with '401 Unauthorized' but it was {e}"
+                f"Should have thrown HTTPStatusError with '401 Unauthorized' "
+                f"but it was {e}"
             )
 
 
@@ -188,7 +192,8 @@ def test_basic_metadata_filtering_no_vector(vectorstore: AstraDBVectorStore):
             )
         else:
             pytest.fail(
-                f"Should have thrown ValueError with UNSUPPORTED_FILTER_OPERATION but it was {e}"  # noqa: E501
+                f"Should have thrown ValueError with UNSUPPORTED_FILTER_OPERATION "
+                f"but it was {e}"  # noqa: E501
             )
 
 

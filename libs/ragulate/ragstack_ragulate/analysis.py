@@ -78,8 +78,8 @@ class Analysis:
         metrics = sorted(metrics)
         metrics.reverse()
 
-        # generate an array of rainbow colors by fixing the saturation and lightness of the HSL
-        # representation of color and marching around the hue.
+        # generate an array of rainbow colors by fixing the saturation and lightness of
+        # the HSL representation of color and marching around the hue.
         c = [
             "hsl(" + str(h) + ",50%" + ",50%)"
             for h in np.linspace(0, 360, len(recipes) + 1)
@@ -89,8 +89,7 @@ class Analysis:
 
         for dataset in datasets:
             fig = go.Figure()
-            test_index = 0
-            for recipe in recipes:
+            for test_index, recipe in enumerate(recipes):
                 y = []
                 x = []
                 q1 = []
@@ -124,7 +123,6 @@ class Analysis:
                         boxpoints=False,  # Do not show individual points
                     )
                 )
-                test_index += 1
 
             fig.update_traces(
                 orientation="h",
@@ -135,14 +133,22 @@ class Analysis:
                 boxmode="group",
                 height=height,
                 width=900,
-                title=dict(
-                    text=dataset, x=0.03, y=0.03, xanchor="left", yanchor="bottom"
-                ),
+                title={
+                    "text": dataset,
+                    "x": 0.03,
+                    "y": 0.03,
+                    "xanchor": "left",
+                    "yanchor": "bottom",
+                },
                 yaxis_title="metric",
                 xaxis_title="score",
-                legend=dict(
-                    orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1
-                ),
+                legend={
+                    "orientation": "h",
+                    "yanchor": "bottom",
+                    "y": 1.02,
+                    "xanchor": "right",
+                    "x": 1,
+                },
             )
 
             write_image(fig, f"./{dataset}_box_plot.png")

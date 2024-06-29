@@ -13,15 +13,16 @@ class TestData:
 
     @staticmethod
     def _get_text_file(file_name: str) -> str:
-        with open(TestData._get_test_data_path(file_name), "r") as f:
+        with open(TestData._get_test_data_path(file_name)) as f:
             return f.read()
 
     @staticmethod
     def _get_csv_embedding(csv_file_name: str) -> Embedding:
-        with open(TestData._get_test_data_path(csv_file_name), "r") as f:
+        with open(TestData._get_test_data_path(csv_file_name)) as f:
             reader = csv.reader(f)
             return [[float(value) for value in row] for row in reader]
 
+    @staticmethod
     def save_csv_embedding(csv_file_name: str, embedding: Embedding):
         with open(TestData._get_test_data_path(csv_file_name), "w", newline="") as f:
             writer = csv.writer(f)
@@ -67,10 +68,13 @@ class TestData:
         Potential queries on the text:
             - Who developed the Astroflux Navigator?
             - Describe the phenomena known as "Chrono-spatial Echoes"?
-            - What challenges does the Quantum Opacity phenomenon present to the crew of the Nebula Voyager?
-            - How does the Bioquantum Array aid Dr. Nyx Moreau in studying the Nebuloforms within Orion’s Whisper?
+            - What challenges does the Quantum Opacity phenomenon present to the crew of
+              the Nebula Voyager?
+            - How does the Bioquantum Array aid Dr. Nyx Moreau in studying the
+              Nebuloforms within Orion’s Whisper?
             - What are Xenospheric Particulates?
-            - What is the significance of the Cryptolingual Synthesizer used by Jiro Takashi, and how does it function?
+            - What is the significance of the Cryptolingual Synthesizer used by Jiro
+              Takashi, and how does it function?
         """
         return TestData._get_text_file("nebula_voyager.txt")
 

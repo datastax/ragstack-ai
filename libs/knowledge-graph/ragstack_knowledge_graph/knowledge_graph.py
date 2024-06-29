@@ -25,7 +25,7 @@ def _parse_node(row) -> Node:
         type=row.type,
         properties=_deserialize_md_dict(row.properties_json)
         if row.properties_json
-        else dict(),
+        else {},
     )
 
 

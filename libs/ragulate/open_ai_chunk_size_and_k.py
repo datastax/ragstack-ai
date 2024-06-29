@@ -49,7 +49,7 @@ def query_pipeline(k: int, chunk_size: int, **kwargs):
     Context: {context}
     Question: {question}
     Your answer:
-    """
+    """  # noqa: E501
     prompt = ChatPromptTemplate.from_template(prompt_template)
 
     rag_chain = (

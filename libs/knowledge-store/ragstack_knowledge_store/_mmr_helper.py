@@ -32,7 +32,7 @@ class _Candidate:
             self.score = self.weighted_similarity - self.weighted_redundancy
 
 
-class MmrHelper(object):
+class MmrHelper:
     dimensions: int
     """Dimensions of the embedding."""
 
@@ -127,7 +127,8 @@ class MmrHelper(object):
         assert self.candidates[index].id == id
         embedding = self.candidate_embeddings[index].copy()
 
-        # Swap that index with the last index in the candidates and candidate_embeddings.
+        # Swap that index with the last index in the candidates and
+        # candidate_embeddings.
         last_index = self.candidate_embeddings.shape[0] - 1
 
         if index == last_index:
