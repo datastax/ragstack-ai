@@ -67,4 +67,4 @@ class VectorStoreHandler(ABC):
         pass
 
     def after_test(self):
-        pass
+        return

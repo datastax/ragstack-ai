@@ -183,9 +183,8 @@ class CassandraDatabase(BaseDatabase):
         text: Optional[str] = None,
         metadata: Optional[Dict[str, Any]] = None,
         vector: Optional[Vector] = None,
-    ) -> Tuple[str, int, int, Exception]:
+    ) -> Tuple[str, int, int, Optional[Exception]]:
         row_id = (chunk_id, embedding_id)
-        exp = None
         async with sem:
             try:
                 if vector is None:
@@ -199,10 +198,9 @@ class CassandraDatabase(BaseDatabase):
                     await self._table.aput(
                         partition_id=doc_id, row_id=row_id, vector=vector
                     )
+                return doc_id, chunk_id, embedding_id, None
             except Exception as e:
-                exp = e
-            finally:
-                return doc_id, chunk_id, embedding_id, exp
+                return doc_id, chunk_id, embedding_id, e
 
     async def aadd_chunks(
         self, chunks: List[Chunk], concurrent_inserts: Optional[int] = 100
@@ -311,15 +309,13 @@ class CassandraDatabase(BaseDatabase):
         self,
         sem: asyncio.Semaphore,
         doc_id: str,
-    ) -> Tuple[str, Exception]:
-        exp = None
+    ) -> Tuple[str, Optional[Exception]]:
         async with sem:
             try:
                 await self._table.adelete_partition(partition_id=doc_id)
+                return doc_id, None
             except Exception as e:
-                exp = e
-            finally:
-                return doc_id, exp
+                return doc_id, e
 
     async def adelete_chunks(
         self, doc_ids: List[str], concurrent_deletes: Optional[int] = 100

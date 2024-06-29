@@ -68,11 +68,11 @@ class HtmlLinkExtractor(LinkExtractor[HtmlInput]):
         """
         try:
             import bs4  # noqa:F401
-        except ImportError:
+        except ImportError as e:
             raise ImportError(
                 "BeautifulSoup4 is required for HtmlLinkExtractor. "
                 "Please install it with `pip install beautifulsoup4`."
-            )
+            ) from e
 
         self._kind = kind
         self.drop_fragments = drop_fragments

@@ -11,7 +11,7 @@ def main():
     }
 
     nb_path = os.path.join("examples", "notebooks")
-    for root, dirs, files in os.walk(nb_path):
+    for root, _, files in os.walk(nb_path):
         for file in files:
             file = os.path.join(root, file)
             if ".ipynb_checkpoints" not in file and file.endswith(".ipynb"):
