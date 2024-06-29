@@ -67,7 +67,8 @@ class CassandraVectorStoreHandler(VectorStoreHandler):
         keyspace = "default_keyspace"
         self.cassandra_session.execute(f"DROP KEYSPACE IF EXISTS {keyspace}")
         self.cassandra_session.execute(
-            f"CREATE KEYSPACE IF NOT EXISTS {keyspace} WITH replication = {{'class': 'SimpleStrategy', 'replication_factor': '1'}}"
+            f"CREATE KEYSPACE IF NOT EXISTS {keyspace} WITH "
+            f"replication = {{'class': 'SimpleStrategy', 'replication_factor': '1'}}"
         )
         cassio.init(session=self.cassandra_session)
         return CassandraVectorStoreTestContext(self)

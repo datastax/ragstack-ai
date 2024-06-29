@@ -262,7 +262,8 @@ class GraphStore:
                 kind TEXT,
                 tag TEXT,
 
-                -- text_embedding of target node. allows MMR to be applied without fetching nodes.
+                -- text_embedding of target node. allows MMR to be applied without 
+                -- fetching nodes.
                 target_text_embedding VECTOR<FLOAT, {embedding_dim}>,
 
                 PRIMARY KEY ((kind, tag), target_content_id)
@@ -275,7 +276,7 @@ class GraphStore:
             f"""CREATE CUSTOM INDEX IF NOT EXISTS {self._node_table}_text_embedding_index
             ON {self._keyspace}.{self._node_table}(text_embedding)
             USING 'StorageAttachedIndex';
-            """
+            """  # noqa: E501
         )
 
         # Index on target_text_embedding (for similarity search)
@@ -284,7 +285,7 @@ class GraphStore:
             CREATE CUSTOM INDEX IF NOT EXISTS {self._targets_table}_target_text_embedding_index
             ON {self._keyspace}.{self._targets_table}(target_text_embedding)
             USING 'StorageAttachedIndex';
-            """  # noqa
+            """  # noqa: E501
         )
 
     def _concurrent_queries(self) -> ConcurrentQueries:
@@ -318,7 +319,8 @@ class GraphStore:
 
                 for tag in links:
                     if tag.direction == "in" or tag.direction == "bidir":
-                        # An incoming link should be linked *from* nodes with the given tag.
+                        # An incoming link should be linked *from* nodes with the given
+                        # tag.
                         link_from_tags.add((tag.kind, tag.tag))
                     if tag.direction == "out" or tag.direction == "bidir":
                         link_to_tags.add((tag.kind, tag.tag))
@@ -428,8 +430,9 @@ class GraphStore:
                 # If the next nodes would not exceed the depth limit, find the
                 # adjacent nodes.
                 #
-                # TODO: For a big performance win, we should track which tags we've already
-                # incorporated. We don't need to issue adjacent queries for those.
+                # TODO: For a big performance win, we should track which tags we've
+                # already incorporated. We don't need to issue adjacent queries for
+                # those.
                 adjacents = self._get_adjacent(
                     [selected_id],
                     visited_tags=visited_tags,
@@ -464,8 +467,8 @@ class GraphStore:
         """Retrieve documents from this knowledge store.
 
         First, `k` nodes are retrieved using a vector search for the `query` string.
-        Then, additional nodes are discovered up to the given `depth` from those starting
-        nodes.
+        Then, additional nodes are discovered up to the given `depth` from those
+        starting nodes.
 
         Args:
             query: The query string.
@@ -502,8 +505,9 @@ class GraphStore:
                 # Visit nodes at the given depth.
                 # Each node has `content_id` and `link_to_tags`.
 
-                # Iterate over nodes, tracking the *new* outgoing kind tags for this depth.
-                # This is tags that are either new, or newly discovered at a lower depth.
+                # Iterate over nodes, tracking the *new* outgoing kind tags for this
+                # depth. This is tags that are either new, or newly discovered at a
+                # lower depth.
                 outgoing_tags = set()
                 for node in nodes:
                     content_id = node.content_id
@@ -514,8 +518,8 @@ class GraphStore:
 
                         # If we can continue traversing from this node,
                         if d < depth and node.link_to_tags:
-                            # Record any new (or newly discovered at a lower depth) tags to the
-                            # set to traverse.
+                            # Record any new (or newly discovered at a lower depth)
+                            # tags to the set to traverse.
                             for kind, value in node.link_to_tags:
                                 if d <= visited_tags.get((kind, value), depth):
                                     # Record that we'll query this tag at the
@@ -525,7 +529,8 @@ class GraphStore:
                                     outgoing_tags.add((kind, value))
 
                 if outgoing_tags:
-                    # If there are new tags to visit at the next depth, query for the node IDs.
+                    # If there are new tags to visit at the next depth, query for the
+                    # node IDs.
                     for kind, value in outgoing_tags:
                         cq.execute(
                             self._query_targets_by_kind_and_value,
@@ -618,14 +623,14 @@ class GraphStore:
                 targets.setdefault(row.target_content_id, row.target_text_embedding)
 
         with self._concurrent_queries() as cq:
-            # TODO: We could eliminate this query by storing the source tags of the target
-            # node in the targets table.
+            # TODO: We could eliminate this query by storing the source tags of the
+            # target node in the targets table.
             for source_id in source_ids:
                 cq.execute(
                     self._query_source_tags_by_id, (source_id,), callback=add_sources
                 )
 
-        # TODO: Consider a combined limit based on the similarity and/or predicated MMR score?
+        # TODO: Consider a combined limit based on the similarity and/or predicated MMR score?  # noqa: E501
         return [
             _Edge(target_content_id=content_id, target_text_embedding=embedding)
             for (content_id, embedding) in targets.items()

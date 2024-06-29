@@ -16,7 +16,7 @@ Answer the question based only on the supplied context. If you don't know the an
 Context: {context}
 Question: {question}
 Your answer:
-"""
+"""  # noqa: E501
 prompt = ChatPromptTemplate.from_template(prompt_template)
 
 pipeline = (

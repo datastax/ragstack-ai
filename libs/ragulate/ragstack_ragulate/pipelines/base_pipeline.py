@@ -95,7 +95,9 @@ class BasePipeline(ABC):
             )
         except BaseException as e:
             logger.fatal(
-                f"Issue loading recipe {self.recipe_name} on {self.script_path}/{self.method_name} with passed ingredients: {self._passed_ingredients}: {e}"
+                f"Issue loading recipe {self.recipe_name} "
+                f"on {self.script_path}/{self.method_name} "
+                f"with passed ingredients: {self._passed_ingredients}: {e}"
             )
             traceback.print_exc()
             exit(1)

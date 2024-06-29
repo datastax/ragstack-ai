@@ -208,7 +208,8 @@ def execute_query(framework: Framework, pipeline, query):
 def execute_experiment(framework: Framework, pipeline, experiment_name: str):
     init_tru()
 
-    # use a short uuid to ensure that multiple experiments with the same name don't collide in the DB
+    # use a short uuid to ensure that multiple experiments with the same name don't
+    # collide in the DB
     shortUuid = str(uuid.uuid4())[9:13]
     datasets, golden_set = get_test_data()
 

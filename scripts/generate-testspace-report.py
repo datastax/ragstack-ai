@@ -180,13 +180,19 @@ def parse_snyk_report(input_file: str):
                 if "GHSA" in identifiers:
                     link = f"https://github.com/advisories/{identifiers['GHSA'][0]}"
                 elif "CVE" in identifiers:
-                    link = f"https://cve.mitre.org/cgi-bin/cvename.cgi?name={identifiers['CVE'][0]}"
+                    link = (
+                        f"https://cve.mitre.org/cgi-bin/cvename.cgi"
+                        f"?name={identifiers['CVE'][0]}"
+                    )
                 else:
                     link = ""
 
                 ann_title = f"{title}@{version}"
                 cvss_str = f" [CVSS: {cvssScore}]" if cvssScore else ""
-                ann_description = f"{title} [{id}] [{severity.capitalize()} severity] {cvss_str} from {from_packages}"
+                ann_description = (
+                    f"{title} [{id}] [{severity.capitalize()} severity] "
+                    f"{cvss_str} from {from_packages}"
+                )
                 if id not in vulnerabilities:
                     vulnerabilities[id] = [ann_title, ann_description, link]
 
@@ -251,7 +257,8 @@ def parse_test_report(input_file: str):
                 failures = []
                 if failure is not None:
                     # err_desc = failure.text
-                    # while it could be informative, it's better to not risk to expose sensitive data
+                    # while it could be informative, it's better to not risk to expose
+                    # sensitive data.
                     err_desc = ""
                     failures.append(
                         Failure(title=failure.get("message"), description=err_desc)
@@ -289,7 +296,8 @@ def parse_test_report(input_file: str):
 if __name__ == "__main__":
     if len(sys.argv) < 4:
         print(
-            "Usage: generate-testspace-report.py [tests|snyk] {junit-file.xml|snyk.json} {output-file.xml}"
+            "Usage: generate-testspace-report.py [tests|snyk] "
+            "{junit-file.xml|snyk.json} {output-file.xml}"
         )
         sys.exit(1)
 

@@ -154,7 +154,8 @@ class ConfigSchema_0_1(BaseConfigSchema):
                 doc_method = doc_step.get("method", None)
                 if doc_name in steps:
                     raise ValueError(
-                        f"{step_kind} step names must be unique. Found {doc_name} more than once."
+                        f"{step_kind} step names must be unique. Found {doc_name} more "
+                        f"than once."
                     )
                 steps[doc_name] = Step(
                     name=doc_name, script=doc_script, method=doc_method
@@ -180,7 +181,8 @@ class ConfigSchema_0_1(BaseConfigSchema):
             if doc_name is None:
                 if len(doc_ingredients) == 0:
                     raise ValueError(
-                        "recipe must either have a `name` defined or contain at least one ingredient."
+                        "recipe must either have a `name` defined or contain at least "
+                        "one ingredient."
                     )
                 else:
                     recipe_name = dict_to_string(ingredients)
@@ -194,7 +196,8 @@ class ConfigSchema_0_1(BaseConfigSchema):
                 step = step_map[step_kind].get(doc_recipe_step, None)
                 if doc_recipe_step is not None and step is None:
                     raise ValueError(
-                        f"{step_kind} step {doc_recipe_step} for recipe {recipe_name} is not defined in the `steps` section"
+                        f"{step_kind} step {doc_recipe_step} for recipe {recipe_name} "
+                        f"is not defined in the `steps` section"
                     )
                 else:
                     recipe_steps[step_kind] = step

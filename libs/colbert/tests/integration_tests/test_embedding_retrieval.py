@@ -39,7 +39,8 @@ def test_embedding_cassandra_retriever(request, vector_store: str):
         start = 0
         end = chunk_size
         while start < len(text):
-            # If this is not the first chunk, move back 'overlap_size' characters to create the overlap
+            # If this is not the first chunk, move back 'overlap_size' characters
+            # to create the overlap
             if start != 0:
                 start -= overlap_size
             texts.append(text[start:end])

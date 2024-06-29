@@ -78,8 +78,8 @@ class Analysis:
         metrics = sorted(metrics)
         metrics.reverse()
 
-        # generate an array of rainbow colors by fixing the saturation and lightness of the HSL
-        # representation of color and marching around the hue.
+        # generate an array of rainbow colors by fixing the saturation and lightness of
+        # the HSL representation of color and marching around the hue.
         c = [
             "hsl(" + str(h) + ",50%" + ",50%)"
             for h in np.linspace(0, 360, len(recipes) + 1)

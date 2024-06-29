@@ -32,7 +32,7 @@ Answer the question based only on the supplied context. If you don't know the an
 Context: {context}
 Question: {question}
 Your answer:
-"""
+"""  # noqa: E501
 
 RESPONSE_TEMPLATE = """\
 You are an expert programmer and problem-solver, tasked with answering any question \
@@ -187,7 +187,8 @@ def run_rag_custom_chain(
     with callbacks.collect_runs() as cb:
         response = answer_chain.invoke(
             {
-                "question": "When was released MyFakeProductForTesting for the first time ?",
+                "question": "When was released MyFakeProductForTesting "
+                "for the first time ?",
                 "chat_history": [],
             }
         )

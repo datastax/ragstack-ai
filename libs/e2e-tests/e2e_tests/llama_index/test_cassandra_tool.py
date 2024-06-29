@@ -48,7 +48,8 @@ def test_tool_with_openai_tool(cassandra):
     agent = OpenAIAgent.from_tools(tools, llm=llm, verbose=True)
 
     response = agent.chat(
-        "What is the user_id of the user named 'my_user' in table default_keyspace.tool_table_users?"
+        "What is the user_id of the user named 'my_user' "
+        "in table default_keyspace.tool_table_users?"
     )
     print(response)
     assert response is not None
