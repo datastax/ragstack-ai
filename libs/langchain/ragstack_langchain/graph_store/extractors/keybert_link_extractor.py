@@ -1,4 +1,4 @@
-from typing import Any, Dict, Iterable, Set, Union
+from typing import Any, Dict, Iterable, Optional, Set, Union
 
 from langchain_core.documents import Document
 
@@ -15,7 +15,7 @@ class KeybertLinkExtractor(LinkExtractor[KeybertInput]):
         *,
         kind: str = "kw",
         embedding_model: str = "all-MiniLM-L6-v2",
-        extract_keywords_kwargs: Dict[str, Any] = {},
+        extract_keywords_kwargs: Optional[Dict[str, Any]] = None,
     ):
         """Extract keywords using Keybert.
 
@@ -33,10 +33,10 @@ class KeybertLinkExtractor(LinkExtractor[KeybertInput]):
             raise ImportError(
                 "keybert is required for KeybertLinkExtractor. "
                 "Please install it with `pip install keybert`."
-            )
+            ) from None
 
         self._kind = kind
-        self._extract_keywords_kwargs = extract_keywords_kwargs
+        self._extract_keywords_kwargs = extract_keywords_kwargs or {}
 
     def extract_one(self, input: KeybertInput) -> Set[Link]:
         keywords = self._kw_model.extract_keywords(
@@ -50,8 +50,9 @@ class KeybertLinkExtractor(LinkExtractor[KeybertInput]):
         inputs: Iterable[KeybertInput],
     ) -> Iterable[Set[Link]]:
         if len(inputs) == 1:
-            # Even though we pass a list, if it contains one item, keybert will flatten it.
-            # This means it's easier to just call the special case for one item.
+            # Even though we pass a list, if it contains one item, keybert will
+            # flatten it. This means it's easier to just call the special case
+            # for one item.
             yield self.extract_one(inputs[0])
         elif len(inputs) > 1:
             strs = [i if isinstance(i, str) else i.page_content for i in inputs]

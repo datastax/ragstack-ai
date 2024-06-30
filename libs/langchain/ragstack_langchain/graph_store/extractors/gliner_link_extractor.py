@@ -1,4 +1,4 @@
-from typing import Any, Dict, Iterable, List, Set
+from typing import Any, Dict, Iterable, List, Optional, Set
 
 from ragstack_langchain.graph_store.extractors.link_extractor import LinkExtractor
 from ragstack_langchain.graph_store.links import Link
@@ -14,7 +14,7 @@ class GLiNERLinkExtractor(LinkExtractor[GLiNERInput]):
         *,
         kind: str = "entity",
         model: str = "urchade/gliner_mediumv2.1",
-        extract_kwargs: Dict[str, Any] = {},
+        extract_kwargs: Optional[Dict[str, Any]] = None,
     ):
         """Extract keywords using GLiNER.
 
@@ -33,11 +33,11 @@ class GLiNERLinkExtractor(LinkExtractor[GLiNERInput]):
             raise ImportError(
                 "gliner is required for GLiNERLinkExtractor. "
                 "Please install it with `pip install gliner`."
-            )
+            ) from None
 
         self._labels = labels
         self._kind = kind
-        self._extract_kwargs = extract_kwargs
+        self._extract_kwargs = extract_kwargs or {}
 
     def extract_one(self, input: GLiNERInput) -> Set[Link]:
         return next(self.extract_many([input]))

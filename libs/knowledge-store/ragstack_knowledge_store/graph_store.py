@@ -272,19 +272,18 @@ class GraphStore:
         )
 
         # Index on text_embedding (for similarity search)
-        self._session.execute(
-            f"""CREATE CUSTOM INDEX IF NOT EXISTS {self._node_table}_text_embedding_index
+        self._session.execute(f"""
+            CREATE CUSTOM INDEX IF NOT EXISTS {self._node_table}_text_embedding_index
             ON {self._keyspace}.{self._node_table}(text_embedding)
             USING 'StorageAttachedIndex';
-            """  # noqa: E501
-        )
+        """)  # noqa: E501
 
         # Index on target_text_embedding (for similarity search)
         self._session.execute(f"""
             CREATE CUSTOM INDEX IF NOT EXISTS {self._targets_table}_target_text_embedding_index
             ON {self._keyspace}.{self._targets_table}(target_text_embedding)
             USING 'StorageAttachedIndex';
-        """)
+        """)  # noqa: E501
 
     def _concurrent_queries(self) -> ConcurrentQueries:
         return ConcurrentQueries(self._session)

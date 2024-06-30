@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Generic, Iterable, TypeVar
+from typing import Generic, Iterable, Set, TypeVar
 
 from ragstack_langchain.graph_store.links import Link
 
