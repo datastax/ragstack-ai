@@ -39,7 +39,7 @@ class QueryPipeline(BasePipeline):
     _evaluation_running = False
 
     @property
-    def PIPELINE_TYPE(self):
+    def pipeline_type(self):
         return "query"
 
     @property
