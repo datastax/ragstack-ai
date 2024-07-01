@@ -12,6 +12,14 @@ class CassandraContainer(DockerContainer):
         super().__init__(image=image, **kwargs)
         self.port = port
 
+        self.with_env(
+            "JVM_OPTS",
+            "-Dcassandra.skip_wait_for_gossip_to_settle=0 -Dcassandra.initial_token=0",
+        )
+        self.with_env("HEAP_NEWSIZE", "128M")
+        self.with_env("MAX_HEAP_SIZE", "1024M")
+        self.with_env("CASSANDRA_ENDPOINT_SNITCH", "GossipingPropertyFileSnitch")
+        self.with_env("CASSANDRA_DC", "datacenter1")
         self.with_exposed_ports(self.port)
 
     def _configure(self):
