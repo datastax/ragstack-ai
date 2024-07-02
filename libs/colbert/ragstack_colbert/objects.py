@@ -1,6 +1,6 @@
 """
-This module defines a set of data classes for handling chunks of text in various stages of
-processing within the ColBERT retrieval system.
+This module defines a set of data classes for handling chunks of text in various stages
+of processing within the ColBERT retrieval system.
 """
 
 from typing import Any, Dict, List, Optional
@@ -8,14 +8,14 @@ from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, Field
 
 # LlamaIndex Node (chunk) has ids, text, embedding, metadata
-#            VectorStore.add(nodes: List[Node]) -> List[str](ids): embeds texts OUTside add
+#            VectorStore.add(nodes: List[Node]) -> List[str](ids): embeds texts OUTside add  # noqa: E501
 #                       .delete(id)
 #                       .query(embedding) -> Nodes, Scores, Ids
 
 # LangChain Document (doc or chunk) has page_content, metadata
-#           VectorStore.add(texts: List[str], metadatas: Optional[List[dict]]) -> List[str](ids): embeds texts INside add
+#           VectorStore.add(texts: List[str], metadatas: Optional[List[dict]]) -> List[str](ids): embeds texts INside add  # noqa: E501
 #                      .delete(ids: List[str]): deletes by id
-#                      .search(query: str) -> List[Document]: uses retriever to search in store
+#                      .search(query: str) -> List[Document]: uses retriever to search in store  # noqa: E501
 #                      .as_retriever() -> Retriever
 
 # Define Vector and Embedding types
@@ -50,6 +50,7 @@ class Chunk(BaseModel):
             return NotImplemented
         return (self.doc_id, self.chunk_id) < (other.doc_id, other.chunk_id)
 
-    # Allow objects to be hashable - only necessary if you need to use them in sets or as dict keys
+    # Allow objects to be hashable - only necessary if you need to use them in sets or
+    # as dict keys.
     def __hash__(self):
         return hash((self.doc_id, self.chunk_id))

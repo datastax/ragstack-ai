@@ -2,7 +2,6 @@ from typing import Any, Iterable, List, Optional, Tuple, Type, TypeVar
 
 from langchain_core.documents import Document
 from langchain_core.retrievers import BaseRetriever
-from langchain_core.runnables.config import run_in_executor
 from langchain_core.vectorstores import VectorStore
 from ragstack_colbert import Chunk
 from ragstack_colbert import ColbertVectorStore as RagstackColbertVectorStore
@@ -19,7 +18,6 @@ CVS = TypeVar("CVS", bound="ColbertVectorStore")
 
 
 class ColbertVectorStore(VectorStore):
-
     _vector_store: ColbertBaseVectorStore
     _retriever: ColbertBaseRetriever
 
@@ -74,7 +72,8 @@ class ColbertVectorStore(VectorStore):
         Args:
             texts: Iterable of strings to add to the vectorstore.
             metadatas: Optional list of metadatas associated with the texts.
-            concurrent_inserts (Optional[int]): How many concurrent inserts to make to the database. Defaults to 100.
+            concurrent_inserts: How many concurrent inserts to make to the database.
+                Defaults to 100.
             kwargs: vectorstore specific parameters
 
         Returns:
@@ -104,20 +103,27 @@ class ColbertVectorStore(VectorStore):
         self,
         ids: Optional[List[str]] = None,
         concurrent_deletes: Optional[int] = 100,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> Optional[bool]:
         """Delete by vector ID or other criteria.
 
         Args:
             ids: List of ids to delete.
-            concurrent_deletes (Optional[int]): How many concurrent deletes to make to the database. Defaults to 100.
+            concurrent_deletes: How many concurrent deletes to make to the database.
+                Defaults to 100.
             **kwargs: Other keyword arguments that subclasses might use.
 
         Returns:
             Optional[bool]: True if deletion is successful,
             False otherwise, None if not implemented.
         """
-        return None if ids is None else await self._vector_store.adelete(ids=ids, concurrent_deletes=concurrent_deletes)
+        return (
+            None
+            if ids is None
+            else await self._vector_store.adelete(
+                ids=ids, concurrent_deletes=concurrent_deletes
+            )
+        )
 
     def similarity_search(
         self,
@@ -256,7 +262,9 @@ class ColbertVectorStore(VectorStore):
         """Return VectorStore initialized from texts and embeddings."""
         instance = super().__new__(cls)
         instance._initialize(database=database, embedding_model=embedding_model)
-        await instance.aadd_texts(texts=texts, metadatas=metadatas, concurrent_inserts=concurrent_inserts)
+        await instance.aadd_texts(
+            texts=texts, metadatas=metadatas, concurrent_inserts=concurrent_inserts
+        )
         return instance
 
     def as_retriever(self, k: Optional[int] = 5, **kwargs: Any) -> BaseRetriever:

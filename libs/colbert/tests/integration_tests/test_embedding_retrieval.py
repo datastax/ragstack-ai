@@ -7,6 +7,7 @@ from ragstack_colbert import (
     ColbertVectorStore,
 )
 from ragstack_tests_utils import TestData
+
 from tests.integration_tests.conftest import (
     get_astradb_test_store,
     get_local_cassandra_test_store,
@@ -38,7 +39,8 @@ def test_embedding_cassandra_retriever(request, vector_store: str):
         start = 0
         end = chunk_size
         while start < len(text):
-            # If this is not the first chunk, move back 'overlap_size' characters to create the overlap
+            # If this is not the first chunk, move back 'overlap_size' characters
+            # to create the overlap
             if start != 0:
                 start -= overlap_size
             texts.append(text[start:end])

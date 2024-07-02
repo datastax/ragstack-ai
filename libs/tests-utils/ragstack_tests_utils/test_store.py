@@ -37,7 +37,8 @@ class LocalCassandraTestStore(TestStore):
         cassandra_session = cluster.connect()
         cassandra_session.execute(f"DROP KEYSPACE IF EXISTS {KEYSPACE}")
         cassandra_session.execute(
-            f"CREATE KEYSPACE IF NOT EXISTS {KEYSPACE} WITH replication = {{'class': 'SimpleStrategy', 'replication_factor': '1'}}"
+            f"CREATE KEYSPACE IF NOT EXISTS {KEYSPACE} WITH "
+            f"replication = {{'class': 'SimpleStrategy', 'replication_factor': '1'}}"
         )
         cassio.init(session=cassandra_session)
         return cassandra_session
@@ -61,19 +62,47 @@ class AstraDBTestStore(TestStore):
     def create_cassandra_session(self) -> Session:
         if self.env == "prod":
             cassio.init(
-                token=self.token, database_id=self.database_id, keyspace=KEYSPACE
+                token=self.token,
+                database_id=self.database_id,
+                keyspace=KEYSPACE,
+                cloud_kwargs={
+                    # connect timeout for the /metadata endpoint to download secure
+                    # bundle
+                    "connect_timeout": 30
+                },
+                cluster_kwargs={
+                    # connect timeout for actual connections
+                    "connect_timeout": 30,
+                    # remove beta protocol (5) usage leading to tons of warnings
+                    "protocol_version": 4,
+                },
             )
         else:
-            bundle_url_template = "https://api.dev.cloud.datastax.com/v2/databases/{database_id}/secureBundleURL"
+            bundle_url_template = (
+                "https://api.dev.cloud.datastax.com/v2/databases/"
+                "{database_id}/secureBundleURL"
+            )
             cassio.init(
                 token=self.token,
                 database_id=self.database_id,
                 keyspace=KEYSPACE,
                 bundle_url_template=bundle_url_template,
+                cloud_kwargs={
+                    # connect timeout for the /metadata endpoint to download secure
+                    # bundle
+                    "connect_timeout": 30
+                },
+                cluster_kwargs={
+                    # connect timeout for actual connections
+                    "connect_timeout": 30,
+                    # remove beta protocol (5) usage leading to tons of warnings
+                    "protocol_version": 4,
+                },
             )
         session = cassio.config.resolve_session()
         tables = session.execute(
-            f"select table_name FROM system_schema.tables where keyspace_name ='{KEYSPACE}'"
+            f"select table_name FROM system_schema.tables "
+            f"where keyspace_name ='{KEYSPACE}'"
         ).all()
         logging.info(f"dropping {len(tables)} tables in keyspace {KEYSPACE}")
         for table in tables:

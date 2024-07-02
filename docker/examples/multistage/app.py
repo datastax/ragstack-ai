@@ -1,7 +1,7 @@
 import os
 
-from flask import Flask
 import openai
+from flask import Flask
 from langchain.llms import OpenAI
 from langchain.prompts import PromptTemplate
 
@@ -11,19 +11,24 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 
 
 @app.route("/")
-@app.route("/<city>")
-def hello(place="city"):
+@app.route("/{city}")
+def hello():
     llm = OpenAI(temperature=0.9)
     prompt = PromptTemplate(
-        input_variables=['city'],
+        input_variables=["city"],
         template="Plan one day tour in {city}?",
     )
-    question = prompt.format(city=city)
+    question = prompt.format(city="New York")
     result = llm(question)
-    response = make_response(result.content, requests.codes.ok)
+    response = app.response_class(
+        response=result,
+        status=200,
+        mimetype="text/plain",
+    )
     response.mimetype = "text/plain"
 
     return response
+
 
 # Execute the application
 if __name__ == "__main__":

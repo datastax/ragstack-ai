@@ -1,10 +1,14 @@
 import logging
 import time
 from operator import itemgetter
-from typing import Dict, List, Optional, Sequence, Callable
+from typing import Callable, Dict, List, Optional, Sequence
 
-from langchain.schema.vectorstore import VectorStore
-from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain import callbacks
+from langchain.chains import ConversationalRetrievalChain
+from langchain.memory import (
+    ConversationSummaryMemory,
+)
+from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder, PromptTemplate
 from langchain.schema import Document
 from langchain.schema.language_model import BaseLanguageModel
 from langchain.schema.messages import AIMessage, HumanMessage
@@ -16,26 +20,19 @@ from langchain.schema.runnable import (
     RunnableLambda,
     RunnableMap,
 )
+from langchain.schema.vectorstore import VectorStore
 from langchain_core.chat_history import BaseChatMessageHistory
 from langchain_core.tracers import ConsoleCallbackHandler
-from langchain import callbacks
 from pydantic import BaseModel
 
-from langchain.prompts import PromptTemplate
-from langchain.chains import ConversationalRetrievalChain
-from langchain.memory import (
-    ConversationSummaryMemory,
-)
-
 from e2e_tests.test_utils.tracing import record_langsmith_sharelink
-
 
 BASIC_QA_PROMPT = """
 Answer the question based only on the supplied context. If you don't know the answer, say the following: "I don't know the answer".
 Context: {context}
 Question: {question}
 Your answer:
-"""
+"""  # noqa: E501
 
 RESPONSE_TEMPLATE = """\
 You are an expert programmer and problem-solver, tasked with answering any question \
@@ -58,10 +55,10 @@ If there is nothing in the context relevant to the question at hand, just say "H
 I'm not sure." Don't try to make up an answer.
 
 Anything between the following `context`  html blocks is retrieved from a knowledge \
-bank, not part of the conversation with the user. 
+bank, not part of the conversation with the user.
 
 <context>
-    {context} 
+    {context}
 <context/>
 
 REMEMBER: If there is no relevant information within the context, just say "Hmm, I'm \
@@ -190,7 +187,8 @@ def run_rag_custom_chain(
     with callbacks.collect_runs() as cb:
         response = answer_chain.invoke(
             {
-                "question": "When was released MyFakeProductForTesting for the first time ?",
+                "question": "When was released MyFakeProductForTesting "
+                "for the first time ?",
                 "chat_history": [],
             }
         )

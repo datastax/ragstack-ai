@@ -1,9 +1,8 @@
 import uuid
 
 import cassio
-
-from langchain.agents import AgentExecutor, create_openai_tools_agent
 from langchain import hub
+from langchain.agents import AgentExecutor, create_openai_tools_agent
 from langchain_community.tools.cassandra_database.tool import (
     GetSchemaCassandraDatabaseTool,
     GetTableDataCassandraDatabaseTool,
@@ -36,7 +35,7 @@ def test_tool_with_openai_tool(cassandra):
     user_id = uuid.uuid4()
     session.execute(
         f"""
-        INSERT INTO default_keyspace.tool_table_users (user_id, user_name) 
+        INSERT INTO default_keyspace.tool_table_users (user_id, user_name)
         VALUES ({user_id}, 'my_user');
     """
     )
@@ -56,7 +55,8 @@ def test_tool_with_openai_tool(cassandra):
     agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
     response = agent_executor.invoke(
         {
-            "input": "What is the user_id of the user named 'my_user' in table default_keyspace.tool_table_users?"
+            "input": "What is the user_id of the user named 'my_user' "
+            "in table default_keyspace.tool_table_users?"
         }
     )
     print(response)

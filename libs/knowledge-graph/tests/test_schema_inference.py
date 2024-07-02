@@ -3,7 +3,6 @@ from typing import List
 import pytest
 from langchain_core.documents import Document
 from langchain_core.language_models import BaseChatModel
-
 from ragstack_knowledge_graph.schema_inference import KnowledgeSchemaInferer
 
 MARIE_CURIE_SOURCE = """

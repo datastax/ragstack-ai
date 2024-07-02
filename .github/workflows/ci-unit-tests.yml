@@ -19,6 +19,7 @@ jobs:
       libs_llamaindex: ${{ steps.filter.outputs.libs_llamaindex }}
       libs_knowledge_store: ${{ steps.filter.outputs.libs_knowledge_store }}
       libs_knowledge_graph: ${{ steps.filter.outputs.libs_knowledge_graph }}
+      libs_ragulate: ${{ steps.filter.outputs.libs_ragulate }}
       integration_tests: ${{ steps.filter.outputs.integration_tests }}
     steps:
       - uses: actions/checkout@v4
@@ -76,7 +77,13 @@ jobs:
         uses: ./.github/actions/lint
 
       - name: "Unit tests (root)"
+        # yamllint disable-line rule:line-length
+        if: ${{ needs.preconditions.outputs.libs_langchain == 'true' || needs.preconditions.outputs.libs_colbert == 'true' || needs.preconditions.outputs.libs_llamaindex == 'true' }}
         run: tox -e unit-tests && rm -rf .tox
+
+      - name: "Unit tests (ragulate)"
+        if: ${{ needs.preconditions.outputs.libs_ragulate == 'true' && matrix.python-version != '3.9' }}
+        run: tox -e unit-tests -c libs/ragulate && rm -rf libs/ragulate/.tox
 
       - name: "Unit tests (colbert)"
         if: ${{ needs.preconditions.outputs.libs_colbert == 'true' }}
@@ -96,7 +103,7 @@ jobs:
 
       - name: "Unit tests (knowledge-graph)"
         # yamllint disable-line rule:line-length
-        if: ${{ needs.preconditions.outputs.libs_knowledge_graph == 'true' }}
+        if: ${{ needs.preconditions.outputs.libs_knowledge_graph == 'true' && matrix.python-version != '3.9' && matrix.python-version != '3.10' }}
         env:
           OPENAI_API_KEY: "${{ secrets.E2E_TESTS_OPEN_AI_KEY }}"
         run: tox -e unit-tests -c libs/knowledge-graph && rm -rf libs/knowledge-graph/.tox
@@ -139,6 +146,9 @@ jobs:
 
           if [[ "true" == "${{ needs.preconditions.outputs.libs_colbert }}" ]]; then
             run_itests libs/colbert
+          fi
+          if [[ "true" == "${{ needs.preconditions.outputs.libs_knowledge_store }}" ]]; then
+            run_itests libs/knowledge-store
           fi
           if [[ "true" == "${{ needs.preconditions.outputs.libs_langchain }}" ]]; then
             run_itests libs/langchain
