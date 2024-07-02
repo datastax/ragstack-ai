@@ -83,7 +83,7 @@ class QueryPipeline(BasePipeline):
             # so we can just delete a single "app" instead of the whole
             # database.
             self._tru.reset_database()
-        
+
         total_existing_queries = 0
         for dataset in datasets:
             queries, golden_set = dataset.get_queries_and_golden_set()
@@ -187,13 +187,19 @@ class QueryPipeline(BasePipeline):
 
         time.sleep(0.1)
         logger.info(
-            f"Starting query {self.recipe_name} on {self.script_path}/{self.method_name} with ingredients: {self.ingredients} on datasets: {self.dataset_names()}"
+            f"Starting query {self.recipe_name} on {self.script_path}/"
+            f"{self.method_name} with ingredients: {self.ingredients} on"
+            f"datasets: {self.dataset_names()}"
         )
         logger.info(
-            "Progress postfix legend: (q)ueries completed; Evaluations (d)one, (r)unning, (w)aiting, (f)ailed, (s)kipped"
+            "Progress postfix legend: (q)ueries completed;"
+            "Evaluations (d)one, (r)unning, (w)aiting, (f)ailed, (s)kipped"
         )
 
-        self._progress = tqdm(total=(self._total_queries + self._total_feedbacks), initial=self._finished_queries)
+        self._progress = tqdm(
+            total=(self._total_queries + self._total_feedbacks),
+            initial=self._finished_queries
+        )
 
 
         for dataset_name in self._queries:
@@ -220,9 +226,11 @@ class QueryPipeline(BasePipeline):
                     with recorder:
                         pipeline.invoke(query)
                 except Exception as e:
-                    # TODO: figure out why the logger isn't working after tru-lens starts. For now use print()
+                    # TODO: figure out why the logger isn't working after tru-lens
+                    # starts. For now use print()
                     print(
-                        f"ERROR: Query: '{query}' caused exception, skipping. Exception {e}"
+                        f"ERROR: Query: '{query}' caused exception, skipping."
+                        f"Exception {e}"
                     )
                     logger.error(f"Query: '{query}' caused exception: {e}, skipping.")
                 finally:

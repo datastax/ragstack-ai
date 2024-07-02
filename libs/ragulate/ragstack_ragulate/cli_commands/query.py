@@ -107,9 +107,9 @@ def setup_query(subparsers):
         subset: List[str],
         sample: float,
         seed: int,
-        restart: bool,
         provider: str,
         model: str,
+        restart: bool,
         **kwargs,
     ):
         if sample <= 0.0 or sample > 1.0:
