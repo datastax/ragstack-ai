@@ -39,7 +39,7 @@ def test_tool_with_openai_tool():
         f"""
         INSERT INTO default_keyspace.tool_table_users (user_id, user_name)
         VALUES ({user_id}, 'my_user');
-    """
+    """  # noqa: S608
     )
     db = CassandraDatabase()
 

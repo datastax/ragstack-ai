@@ -1,5 +1,6 @@
 import logging
 import os
+import tempfile
 import time
 
 from astrapy.db import AstraDB
@@ -16,9 +17,9 @@ def get_required_env(name) -> str:
 
 # vertex-ai
 if "GOOGLE_APPLICATION_CREDENTIALS" not in os.environ:
-    with open("/tmp/gcloud-account-key.json", "w") as f:
+    with tempfile.NamedTemporaryFile(mode="w", delete=False) as f:
         f.write(os.getenv("GCLOUD_ACCOUNT_KEY_JSON", ""))
-    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/tmp/gcloud-account-key.json"
+        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = f.name
 
 client = AstraDB(
     token=get_required_env("ASTRA_DB_APPLICATION_TOKEN"),

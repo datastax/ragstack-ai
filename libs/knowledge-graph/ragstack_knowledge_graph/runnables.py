@@ -39,8 +39,14 @@ def extract_entities(
             `{format_instructions}` which describe how to produce the output.
     """
     prompt = ChatPromptTemplate.from_messages([keyword_extraction_prompt])
-    assert "question" in prompt.input_variables
-    assert "format_instructions" in prompt.input_variables
+    if "question" not in prompt.input_variables:
+        raise ValueError(
+            "Missing 'question' placeholder in extraction prompt template."
+        )
+    if "format_instructions" not in prompt.input_variables:
+        raise ValueError(
+            "Missing 'format_instructions' placeholder in extraction prompt template."
+        )
 
     class SimpleNode(BaseModel):
         """Represents a node in a graph with associated properties."""

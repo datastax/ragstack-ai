@@ -127,7 +127,11 @@ class MmrHelper:
         """
         # Get the embedding for the id.
         index = self.candidate_id_to_index.pop(candidate_id)
-        assert self.candidates[index].id == candidate_id
+        if not self.candidates[index].id == candidate_id:
+            raise ValueError(
+                "ID in self.candidate_id_to_index doesn't match the ID of the "
+                "corresponding index in self.candidates"
+            )
         embedding: NDArray[np.float32] = self.candidate_embeddings[index].copy()
 
         # Swap that index with the last index in the candidates and

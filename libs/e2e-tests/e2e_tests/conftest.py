@@ -1,6 +1,7 @@
 import logging
 import os
 import pathlib
+import tempfile
 import time
 
 import pytest
@@ -197,6 +198,6 @@ os.environ["AZURE_OPEN_AI_EMBEDDINGS_MODEL_DEPLOYMENT"] = "text-embedding-ada-00
 
 # vertex-ai
 if "GOOGLE_APPLICATION_CREDENTIALS" not in os.environ:
-    with open("/tmp/gcloud-account-key.json", "w") as f:
+    with tempfile.NamedTemporaryFile(mode="w", delete=False) as f:
         f.write(os.getenv("GCLOUD_ACCOUNT_KEY_JSON", ""))
-    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/tmp/gcloud-account-key.json"
+        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = f.name
