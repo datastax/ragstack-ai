@@ -1,0 +1,36 @@
+= RAGStack and DataStax Enterprise (DSE) 6.9 example
+
+. Pull the latest dse-server the Docker image and confirm the containers are in a running state.
++
+[source,bash]
+----
+docker pull datastax/dse-server:6.9.0-rc.2
+docker run -e DS_LICENSE=accept -p 9042:9042 -d datastax/dse-server:6.9.0-rc.2
+----
++
+. Install dependencies.
++
+[source,bash]
+----
+pip install ragstack-ai-langchain python-dotenv langchainhub
+----
++
+. Create a `.env` file in the root directory of the project and add the following environment variables.
++
+[source,bash]
+----
+OPENAI_API_KEY="sk-..."
+----
++
+. Create a Python script to embed and generate the results of a query.
++
+include::examples:partial$hcd-quickstart.adoc[]
++
+You should see output like this:
++
+[source,plain]
+----
+Task decomposition involves breaking down a complex task into smaller and simpler steps to make it more manageable. Techniques like Chain of Thought and Tree of Thoughts help models decompose hard tasks and enhance performance by thinking step by step. This process allows for a better interpretation of the model's thinking process and can involve various methods such as simple prompting, task-specific instructions, or human inputs.
+----
+
+
