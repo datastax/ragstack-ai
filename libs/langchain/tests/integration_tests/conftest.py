@@ -26,6 +26,7 @@ def get_astradb_test_store() -> AstraDBTestStore:
 @pytest.fixture(scope="session", autouse=True)
 def before_after_tests():
     yield
+
     if (
         status["local_cassandra_test_store"]
         and status["local_cassandra_test_store"].docker_container
