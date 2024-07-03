@@ -233,7 +233,7 @@ def try_delete_with_backoff(collection: str, sleep=1, max_tries=5):
     except Exception as e:
         max_tries -= 1
         if max_tries < 0:
-            raise e
+            raise
 
         logging.warning(f"An exception occurred deleting collection {collection}: {e}")
         time.sleep(sleep)

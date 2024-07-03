@@ -14,7 +14,7 @@ def test_import():
 def check_no_import(fn: callable):
     try:
         fn()
-        raise Exception("Should have failed to import")
+        raise RuntimeError("Should have failed to import")
     except ImportError:
         pass
 

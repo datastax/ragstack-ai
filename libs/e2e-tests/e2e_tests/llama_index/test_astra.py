@@ -136,7 +136,7 @@ def verify_document(document, expected_content, expected_metadata):
         # metadata is not returned by LlamaIndex
         # assert document.metadata == expected_metadata
     else:
-        raise Exception(
+        raise TypeError(
             "document is not of type NodeWithScore but of type " + str(type(document))
         )
 
