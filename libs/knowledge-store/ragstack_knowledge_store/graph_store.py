@@ -416,7 +416,7 @@ class GraphStore:
         # Select the best item, K times.
         depths = {id: 0 for id in helper.candidate_ids()}
         visited_tags = set()
-        for _ in range(0, k):
+        for _ in range(k):
             selected_id = helper.pop_best()
 
             if selected_id is None:

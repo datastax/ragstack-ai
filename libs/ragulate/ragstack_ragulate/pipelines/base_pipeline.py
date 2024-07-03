@@ -59,7 +59,6 @@ class BasePipeline(ABC):
     @abstractmethod
     def pipeline_type(self):
         """type of pipeline (ingest, query, cleanup)"""
-        pass
 
     @property
     @abstractmethod

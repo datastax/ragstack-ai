@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 try:
     import requests
 except ImportError:

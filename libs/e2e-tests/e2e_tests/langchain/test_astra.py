@@ -81,7 +81,6 @@ def test_wrong_connection_parameters(vectorstore: AstraDBVectorStore):
         pytest.fail("Should have thrown exception")
     except ConnectError as e:
         print("Error:", e)
-        pass
 
     # This is expected to be a valid endpoint,
     # because we want to test an AUTHENTICATION error

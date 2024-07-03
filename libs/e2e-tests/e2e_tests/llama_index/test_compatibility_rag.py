@@ -1,4 +1,5 @@
 import logging
+from typing import TYPE_CHECKING
 
 import pytest
 from langchain.embeddings import HuggingFaceInferenceAPIEmbeddings
@@ -27,9 +28,9 @@ from e2e_tests.conftest import (
     set_current_test_info,
 )
 from e2e_tests.test_utils import get_local_resource_path
-from e2e_tests.test_utils.vector_store_handler import (
-    VectorStoreTestContext,
-)
+
+if TYPE_CHECKING:
+    from e2e_tests.test_utils.vector_store_handler import VectorStoreTestContext
 
 
 def _openai_llm(**kwargs) -> OpenAI:

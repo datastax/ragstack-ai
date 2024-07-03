@@ -435,4 +435,3 @@ class CassandraDatabase(BaseDatabase):
         """
         Cleans up any open resources.
         """
-        pass
