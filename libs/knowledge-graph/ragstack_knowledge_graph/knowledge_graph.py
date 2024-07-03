@@ -134,7 +134,7 @@ class CassandraKnowledgeGraph:
                 edge_type TEXT,
                 PRIMARY KEY ((source_name, source_type), target_name, target_type, edge_type)
             );
-            """  # noqa
+            """  # noqa: E501
         )
 
         self._session.execute(
