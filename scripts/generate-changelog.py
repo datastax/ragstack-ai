@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 try:
     import requests
 except ImportError:
@@ -19,7 +21,7 @@ IMPORTANT_DEPENDENCIES = [
     "unstructured",
     "colbert-ai",
     "torch",
-    "pyarrow"
+    "pyarrow",
 ]
 
 
@@ -32,14 +34,14 @@ def main():
     url = f"https://pypi.org/pypi/{root_package_name}/{package_version}/json"
     deps_str = ""
     json_response = requests.get(url).json()
-    requires = json_response['info']['requires_dist']
+    requires = json_response["info"]["requires_dist"]
     for require in requires:
         version_range = ""
         extra = ""
         require = require.replace(" ", "")
         if ";extra" in require:
-            extra = require[require.index(";extra") + 8:]
-            require = require[:require.index(";extra")]
+            extra = require[require.index(";extra") + 8 :]
+            require = require[: require.index(";extra")]
 
         for i in range(len(require)):
             if require[i] == "=":
@@ -58,7 +60,11 @@ def main():
                 break
         if package_name in IMPORTANT_DEPENDENCIES:
             if package_name == "langchain":
-                version_range = f"https://datastax.github.io/ragstack-ai/api_reference/{package_version}/langchain[{version_range}]{{external-link-icon}}"  # noqa
+                version_range = (
+                    "https://datastax.github.io/ragstack-ai/api_reference/"
+                    f"{package_version}/langchain[{version_range}]"
+                    "{external-link-icon}"
+                )
             extra_str = f" (via extra `{extra}`)" if extra else ""
             deps_str += f"\n| {package_name}{extra_str}\n| {version_range}\n"
 

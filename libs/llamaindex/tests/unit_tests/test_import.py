@@ -2,19 +2,19 @@ import importlib
 
 
 def test_import():
-    import astrapy  # noqa
-    import cassio  # noqa
-    import openai  # noqa
-    import tiktoken  # noqa
-    import unstructured  # noqa
-    from llama_index.vector_stores.astra_db import AstraDBVectorStore  # noqa
-    from llama_index.vector_stores.cassandra import CassandraVectorStore  # noqa
+    import astrapy  # noqa: F401
+    import cassio  # noqa: F401
+    import openai  # noqa: F401
+    import tiktoken  # noqa: F401
+    import unstructured  # noqa: F401
+    from llama_index.vector_stores.astra_db import AstraDBVectorStore  # noqa: F401
+    from llama_index.vector_stores.cassandra import CassandraVectorStore  # noqa: F401
 
 
 def check_no_import(fn: callable):
     try:
         fn()
-        raise Exception("Should have failed to import")
+        raise RuntimeError("Should have failed to import")
     except ImportError:
         pass
 

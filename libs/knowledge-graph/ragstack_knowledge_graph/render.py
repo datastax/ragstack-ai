@@ -11,7 +11,7 @@ def _node_label(node: Node) -> str:
 
 
 def print_graph_documents(
-    graph_documents: Union[GraphDocument, Iterable[GraphDocument]]
+    graph_documents: Union[GraphDocument, Iterable[GraphDocument]],
 ):
     if isinstance(graph_documents, GraphDocument):
         graph_documents = [graph_documents]
@@ -36,7 +36,7 @@ def render_graph_documents(
 
     def _node_id(node: Node) -> int:
         node_key = (node.id, node.type)
-        if node_id := nodes.get(node_key, None):
+        if node_id := nodes.get(node_key):
             return node_id
         else:
             node_id = f"{len(nodes)}"

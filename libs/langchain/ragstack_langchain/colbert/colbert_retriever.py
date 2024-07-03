@@ -1,4 +1,4 @@
-from typing import Any, List, Optional, Tuple
+from typing import TYPE_CHECKING, Any, List, Optional, Tuple
 
 from langchain_core.callbacks.manager import (
     AsyncCallbackManagerForRetrieverRun,
@@ -6,8 +6,10 @@ from langchain_core.callbacks.manager import (
 )
 from langchain_core.documents import Document
 from langchain_core.retrievers import BaseRetriever
-from ragstack_colbert import Chunk
 from ragstack_colbert.base_retriever import BaseRetriever as ColbertBaseRetriever
+
+if TYPE_CHECKING:
+    from ragstack_colbert import Chunk
 
 
 class ColbertRetriever(BaseRetriever):
@@ -21,7 +23,11 @@ class ColbertRetriever(BaseRetriever):
 
         llm = AzureChatOpenAI()
         retriever = ColbertLCRetriever(colbert_retriever, k=5)
-        qa = RetrievalQA.from_chain_type(llm=llm, chain_type="stuff", retriever=retriever)
+        qa = RetrievalQA.from_chain_type(
+            llm=llm,
+            chain_type="stuff",
+            retriever=retriever
+        )
         qa.run("what happened on June 4th?")
     """
 
@@ -45,7 +51,7 @@ class ColbertRetriever(BaseRetriever):
         self,
         query: str,
         *,
-        run_manager: CallbackManagerForRetrieverRun,  # noqa
+        run_manager: CallbackManagerForRetrieverRun,
     ) -> List[Document]:
         """Get documents relevant to a query.
         Args:
@@ -67,7 +73,7 @@ class ColbertRetriever(BaseRetriever):
         self,
         query: str,
         *,
-        run_manager: AsyncCallbackManagerForRetrieverRun,  # noqa
+        run_manager: AsyncCallbackManagerForRetrieverRun,
     ) -> List[Document]:
         """Asynchronously get documents relevant to a query.
         Args:

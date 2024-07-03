@@ -7,10 +7,9 @@ from dotenv import load_dotenv
 from langchain.graphs.graph_document import GraphDocument, Node, Relationship
 from langchain_core.documents import Document
 from langchain_core.language_models import BaseChatModel
+from ragstack_knowledge_graph.cassandra_graph_store import CassandraGraphStore
 from testcontainers.core.container import DockerContainer
 from testcontainers.core.waiting_utils import wait_for_logs
-
-from ragstack_knowledge_graph.cassandra_graph_store import CassandraGraphStore
 
 load_dotenv()
 
@@ -36,10 +35,8 @@ def cassandra_port(db_keyspace: str) -> Iterator[int]:
     cassandra.start()
     wait_for_logs(cassandra, "Startup complete")
     cassandra.get_wrapped_container().exec_run(
-        (
-            f"""cqlsh -e "CREATE KEYSPACE {db_keyspace} WITH replication = """
-            '''{'class': 'SimpleStrategy', 'replication_factor': '1'};"'''
-        )
+        f"""cqlsh -e "CREATE KEYSPACE {db_keyspace} WITH replication = """
+        '''{'class': 'SimpleStrategy', 'replication_factor': '1'};"'''
     )
     port = cassandra.get_exposed_port(9042)
     print(f"Cassandra started. Port is {port}")
@@ -60,11 +57,11 @@ def db_session(cassandra_port: int) -> Session:
 def llm() -> BaseChatModel:
     try:
         from langchain_openai import ChatOpenAI
-
-        model = ChatOpenAI(model_name="gpt-4o", temperature=0.0)
-        return model
     except ValueError:
         pytest.skip("Unable to create OpenAI model")
+    else:
+        model = ChatOpenAI(model_name="gpt-4o", temperature=0.0)
+        return model
 
 
 class DataFixture:

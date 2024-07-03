@@ -2,7 +2,6 @@ from typing import Any, Iterable, List, Optional, Tuple, Type, TypeVar
 
 from langchain_core.documents import Document
 from langchain_core.retrievers import BaseRetriever
-from langchain_core.runnables.config import run_in_executor
 from langchain_core.vectorstores import VectorStore
 from ragstack_colbert import Chunk
 from ragstack_colbert import ColbertVectorStore as RagstackColbertVectorStore
@@ -19,7 +18,6 @@ CVS = TypeVar("CVS", bound="ColbertVectorStore")
 
 
 class ColbertVectorStore(VectorStore):
-
     _vector_store: ColbertBaseVectorStore
     _retriever: ColbertBaseRetriever
 
@@ -74,7 +72,8 @@ class ColbertVectorStore(VectorStore):
         Args:
             texts: Iterable of strings to add to the vectorstore.
             metadatas: Optional list of metadatas associated with the texts.
-            concurrent_inserts (Optional[int]): How many concurrent inserts to make to the database. Defaults to 100.
+            concurrent_inserts: How many concurrent inserts to make to the database.
+                Defaults to 100.
             kwargs: vectorstore specific parameters
 
         Returns:
@@ -110,7 +109,8 @@ class ColbertVectorStore(VectorStore):
 
         Args:
             ids: List of ids to delete.
-            concurrent_deletes (Optional[int]): How many concurrent deletes to make to the database. Defaults to 100.
+            concurrent_deletes: How many concurrent deletes to make to the database.
+                Defaults to 100.
             **kwargs: Other keyword arguments that subclasses might use.
 
         Returns:

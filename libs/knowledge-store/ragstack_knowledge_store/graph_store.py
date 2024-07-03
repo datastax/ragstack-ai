@@ -11,18 +11,20 @@ from typing import (
     Optional,
     Sequence,
     Set,
+    Tuple,
     cast,
 )
 
-import numpy as np
 from cassandra.cluster import ConsistencyLevel, Session
 from cassio.config import check_resolve_keyspace, check_resolve_session
 
+from ._mmr_helper import MmrHelper
 from .concurrency import ConcurrentQueries
 from .content import Kind
 from .embedding_model import EmbeddingModel
 from .links import Link
-from .math import cosine_similarity
+
+CONTENT_ID = "content_id"
 
 
 @dataclass
@@ -101,49 +103,6 @@ def _row_to_node(row) -> Node:
 class _Edge:
     target_content_id: str
     target_text_embedding: List[float]
-
-
-def emb_to_ndarray(embedding: List[float]) -> np.ndarray:
-    embedding = np.array(embedding, dtype=np.float32)
-    if embedding.ndim == 1:
-        embedding = np.expand_dims(embedding, axis=0)
-    return embedding
-
-
-@dataclass
-class _Candidate:
-    score: float
-    similarity_to_query: float
-    """Lambda * Similarity to the question."""
-
-    embedding: np.ndarray
-    """Embedding used for updating similarity to selections."""
-
-    redundancy: float
-    """(1 - Lambda) * max(Similarity to selected items)."""
-
-    def __init__(
-        self, embedding: List[float], lambda_mult: float, query_embedding: np.ndarray
-    ):
-        self.embedding = emb_to_ndarray(embedding)
-
-        # TODO: Refactor to use cosine_similarity_top_k to allow an array of embeddings?
-        self.similarity_to_query = (
-            lambda_mult * cosine_similarity(query_embedding, self.embedding)[0]
-        )
-        self.redundancy = 0.0
-        self.score = self.similarity_to_query - self.redundancy
-        self.distance = 0
-
-    def update_for_selection(
-        self, lambda_mult: float, selection_embedding: List[float]
-    ):
-        selected_r_sim = (1 - lambda_mult) * cosine_similarity(
-            selection_embedding, self.embedding
-        )[0]
-        if selected_r_sim > self.redundancy:
-            self.redundancy = selected_r_sim
-            self.score = self.similarity_to_query - selected_r_sim
 
 
 class GraphStore:
@@ -303,7 +262,8 @@ class GraphStore:
                 kind TEXT,
                 tag TEXT,
 
-                -- text_embedding of target node. allows MMR to be applied without fetching nodes.
+                -- text_embedding of target node. allows MMR to be applied without
+                -- fetching nodes.
                 target_text_embedding VECTOR<FLOAT, {embedding_dim}>,
 
                 PRIMARY KEY ((kind, tag), target_content_id)
@@ -312,20 +272,18 @@ class GraphStore:
         )
 
         # Index on text_embedding (for similarity search)
-        self._session.execute(
-            f"""CREATE CUSTOM INDEX IF NOT EXISTS {self._node_table}_text_embedding_index
+        self._session.execute(f"""
+            CREATE CUSTOM INDEX IF NOT EXISTS {self._node_table}_text_embedding_index
             ON {self._keyspace}.{self._node_table}(text_embedding)
             USING 'StorageAttachedIndex';
-            """
-        )
+        """)
 
         # Index on target_text_embedding (for similarity search)
-        self._session.execute(
-            f"""CREATE CUSTOM INDEX IF NOT EXISTS {self._targets_table}_target_text_embedding_index
+        self._session.execute(f"""
+            CREATE CUSTOM INDEX IF NOT EXISTS {self._targets_table}_target_text_embedding_index
             ON {self._keyspace}.{self._targets_table}(target_text_embedding)
             USING 'StorageAttachedIndex';
-            """
-        )
+        """)  # noqa: E501
 
     def _concurrent_queries(self) -> ConcurrentQueries:
         return ConcurrentQueries(self._session)
@@ -333,7 +291,7 @@ class GraphStore:
     # TODO: Async (aadd_nodes)
     def add_nodes(
         self,
-        nodes: Iterable[Node] = None,
+        nodes: Iterable[Node],
     ) -> Iterable[str]:
         node_ids = []
         texts = []
@@ -358,7 +316,8 @@ class GraphStore:
 
                 for tag in links:
                     if tag.direction == "in" or tag.direction == "bidir":
-                        # An incoming link should be linked *from* nodes with the given tag.
+                        # An incoming link should be linked *from* nodes with the given
+                        # tag.
                         link_from_tags.add((tag.kind, tag.tag))
                     if tag.direction == "out" or tag.direction == "bidir":
                         link_to_tags.add((tag.kind, tag.tag))
@@ -439,84 +398,65 @@ class GraphStore:
             score_threshold: Only documents with a score greater than or equal
                 this threshold will be chosen. Defaults to -infinity.
         """
-        selected_ids = []
-        selected_set = set()
-
-        selected_embeddings = (
-            []
-        )  # selected embeddings. saved to compute redundancy of new nodes.
-
         query_embedding = self._embedding.embed_query(query)
+        helper = MmrHelper(
+            k=k,
+            query_embedding=query_embedding,
+            lambda_mult=lambda_mult,
+            score_threshold=score_threshold,
+        )
+
+        # Fetch the initial candidates and add them to the helper.
         fetched = self._session.execute(
             self._query_ids_and_embedding_by_embedding,
             (query_embedding, fetch_k),
         )
+        helper.add_candidates({row.content_id: row.text_embedding for row in fetched})
 
-        query_embedding_ndarray = emb_to_ndarray(query_embedding)
-        unselected = {
-            row.content_id: _Candidate(
-                row.text_embedding, lambda_mult, query_embedding_ndarray
-            )
-            for row in fetched
-        }
-        best_score, next_id = max(
-            [(u.score, content_id) for (content_id, u) in unselected.items()]
-        )
+        # Select the best item, K times.
+        depths = {id: 0 for id in helper.candidate_ids()}
+        visited_tags = set()
+        for _ in range(k):
+            selected_id = helper.pop_best()
 
-        while len(selected_ids) < k and next_id is not None:
-            if best_score < score_threshold:
+            if selected_id is None:
                 break
-            selected_id = next_id
-            selected_set.add(next_id)
-            selected_ids.append(next_id)
 
-            next_selected = unselected.pop(selected_id)
-            selected_embedding = next_selected.embedding
-            selected_embeddings.append(selected_embedding)
-
-            best_score = float("-inf")
-            next_id = None
-
-            # Update unselected scores.
-            for content_id, candidate in unselected.items():
-                candidate.update_for_selection(lambda_mult, selected_embedding)
-                if candidate.score > best_score:
-                    best_score = candidate.score
-                    next_id = content_id
-
-            # Add unselected edges if reached nodes are within `depth`:
-            next_depth = next_selected.distance + 1
+            next_depth = depths[selected_id] + 1
             if next_depth < depth:
+                # If the next nodes would not exceed the depth limit, find the
+                # adjacent nodes.
+                #
+                # TODO: For a big performance win, we should track which tags we've
+                # already incorporated. We don't need to issue adjacent queries for
+                # those.
                 adjacents = self._get_adjacent(
-                    [selected_id], query_embedding=query_embedding, k_per_tag=adjacent_k
+                    [selected_id],
+                    visited_tags=visited_tags,
+                    query_embedding=query_embedding,
+                    k_per_tag=adjacent_k,
                 )
+
+                new_candidates = {}
                 for adjacent in adjacents:
-                    target_id = adjacent.target_content_id
-                    if target_id in selected_set:
-                        # The adjacent node is already included.
-                        continue
-
-                    if target_id in unselected:
-                        # The adjancent node is already in the pending set.
-                        # Update the distance if we found a shorter path to it.
-                        if next_depth < unselected[target_id].distance:
-                            unselected[target_id].distance = next_depth
-                        continue
-
-                    candidate = _Candidate(
-                        adjacent.target_text_embedding,
-                        lambda_mult,
-                        query_embedding_ndarray,
+                    new_candidates[adjacent.target_content_id] = (
+                        adjacent.target_text_embedding
                     )
-                    for selected_embedding in selected_embeddings:
-                        candidate.update_for_selection(lambda_mult, selected_embedding)
+                    if next_depth < depths.get(adjacent.target_content_id, depth + 1):
+                        # If this is a new shortest depth, or there was no
+                        # previous depth, update the depths. This ensures that
+                        # when we discover a node we will have the shortest
+                        # depth available.
+                        #
+                        # NOTE: No effort is made to traverse from nodes that
+                        # were previously selected if they become reachable via
+                        # a shorter path via nodes selected later. This is
+                        # currently "intended", but may be worth experimenting
+                        # with.
+                        depths[adjacent.target_content_id] = next_depth
+                helper.add_candidates(new_candidates)
 
-                    unselected[target_id] = candidate
-                    if candidate.score > best_score:
-                        best_score = candidate.score
-                        next_id = adjacent.target_content_id
-
-        return self._nodes_with_ids(selected_ids)
+        return self._nodes_with_ids(helper.selected_ids)
 
     def traversal_search(
         self, query: str, *, k: int = 4, depth: int = 1
@@ -524,8 +464,8 @@ class GraphStore:
         """Retrieve documents from this knowledge store.
 
         First, `k` nodes are retrieved using a vector search for the `query` string.
-        Then, additional nodes are discovered up to the given `depth` from those starting
-        nodes.
+        Then, additional nodes are discovered up to the given `depth` from those
+        starting nodes.
 
         Args:
             query: The query string.
@@ -562,8 +502,9 @@ class GraphStore:
                 # Visit nodes at the given depth.
                 # Each node has `content_id` and `link_to_tags`.
 
-                # Iterate over nodes, tracking the *new* outgoing kind tags for this depth.
-                # This is tags that are either new, or newly discovered at a lower depth.
+                # Iterate over nodes, tracking the *new* outgoing kind tags for this
+                # depth. This is tags that are either new, or newly discovered at a
+                # lower depth.
                 outgoing_tags = set()
                 for node in nodes:
                     content_id = node.content_id
@@ -574,17 +515,19 @@ class GraphStore:
 
                         # If we can continue traversing from this node,
                         if d < depth and node.link_to_tags:
-                            # Record any new (or newly discovered at a lower depth) tags to the
-                            # set to traverse.
+                            # Record any new (or newly discovered at a lower depth)
+                            # tags to the set to traverse.
                             for kind, value in node.link_to_tags:
                                 if d <= visited_tags.get((kind, value), depth):
-                                    # Record that we'll query this tag at the given depth, so we don't
-                                    # fetch it again (unless we find it an earlier depth)
+                                    # Record that we'll query this tag at the
+                                    # given depth, so we don't fetch it again
+                                    # (unless we find it an earlier depth)
                                     visited_tags[(kind, value)] = d
                                     outgoing_tags.add((kind, value))
 
                 if outgoing_tags:
-                    # If there are new tags to visit at the next depth, query for the node IDs.
+                    # If there are new tags to visit at the next depth, query for the
+                    # node IDs.
                     for kind, value in outgoing_tags:
                         cq.execute(
                             self._query_targets_by_kind_and_value,
@@ -633,6 +576,7 @@ class GraphStore:
     def _get_adjacent(
         self,
         source_ids: Iterable[str],
+        visited_tags: Set[Tuple[str, str]],
         query_embedding: List[float],
         k_per_tag: Optional[int] = None,
     ) -> Iterable[_Edge]:
@@ -640,6 +584,7 @@ class GraphStore:
 
         Args:
             source_ids: The source IDs to start from when retrieving adjacent nodes.
+            visited_tags: Tags we've already visited.
             query_embedding: The query embedding. Used to rank target nodes.
             k_per_tag: The number of target nodes to fetch for each outgoing tag.
 
@@ -647,14 +592,13 @@ class GraphStore:
             List of adjacent edges.
         """
 
-        link_to_tags = set()
-        targets = dict()
+        targets = {}
 
         def add_sources(rows):
             for row in rows:
                 for new_tag in row.link_to_tags or []:
-                    if new_tag not in link_to_tags:
-                        link_to_tags.add(new_tag)
+                    if new_tag not in visited_tags:
+                        visited_tags.add(new_tag)
 
                         cq.execute(
                             self._query_targets_embeddings_by_kind_and_tag_and_embedding,
@@ -666,7 +610,6 @@ class GraphStore:
                             ),
                             callback=add_targets,
                         )
-                        link_to_tags.add(new_tag)
 
         def add_targets(rows):
             # TODO: Figure out how to use the "kind" on the edge.
@@ -677,12 +620,14 @@ class GraphStore:
                 targets.setdefault(row.target_content_id, row.target_text_embedding)
 
         with self._concurrent_queries() as cq:
+            # TODO: We could eliminate this query by storing the source tags of the
+            # target node in the targets table.
             for source_id in source_ids:
                 cq.execute(
                     self._query_source_tags_by_id, (source_id,), callback=add_sources
                 )
 
-        # TODO: Consider a combined limit based on the similarity and/or predicated MMR score?
+        # TODO: Consider a combined limit based on the similarity and/or predicated MMR score?  # noqa: E501
         return [
             _Edge(target_content_id=content_id, target_text_embedding=embedding)
             for (content_id, embedding) in targets.items()

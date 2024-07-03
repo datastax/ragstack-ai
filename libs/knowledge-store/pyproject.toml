@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ragstack-ai-knowledge-store"
-version = "0.0.6"
+version = "0.1.0"
 description = "DataStax RAGStack Graph Store"
 license = "BUSL-1.1"
 authors = ["DataStax"]
@@ -10,7 +10,7 @@ documentation = "https://docs.datastax.com/en/ragstack"
 packages = [{ include = "ragstack_knowledge_store" }]
 
 [tool.poetry.dependencies]
-python = ">=3.8.1,<4.0"
+python = ">=3.9,<3.13"
 cassio = "^0.1.7"
 
 [tool.poetry.group.dev.dependencies]
@@ -29,33 +29,13 @@ numpy = [
     {version = ">1.26.0,<2", python = ">=3.12"}
 ]
 
+[tool.poetry.group.test.dependencies]
+ragstack-ai-langchain = { path = "../langchain", develop = true }
+ragstack-ai-tests-utils = { path = "../tests-utils", develop = true }
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
-
-
-[tool.ruff]
-line-length = 98
-
-[tool.ruff.lint]
-# Enable Pyflakes `E` and `F` codes by default.
-select = [
-    # Pyflakes
-    "F",
-    # Pycodestyle
-    "E",
-    "W",
-    # isort
-    "I001",
-]
-ignore = []
-
-# Allow unused variables when underscore-prefixed.
-dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
-
-[tool.ruff.lint.mccabe]
-# Unlike Flake8, default to a complexity level of 10.
-max-complexity = 10
 
 [tool.mypy]
 strict = true

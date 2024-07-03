@@ -6,19 +6,20 @@ except ImportError:
     pytest.skip("llama_parse is not supported, skipping tests", allow_module_level=True)
 
 
-from llama_index.core import ServiceContext, StorageContext, VectorStoreIndex
-from llama_index.llms.openai import OpenAI
-from llama_index.embeddings.openai import OpenAIEmbedding
+from typing import TYPE_CHECKING
 
+from llama_index.core import ServiceContext, StorageContext, VectorStoreIndex
+from llama_index.embeddings.openai import OpenAIEmbedding
+from llama_index.llms.openai import OpenAI
 
 from e2e_tests.conftest import (
-    set_current_test_info,
     get_required_env,
+    set_current_test_info,
 )
 from e2e_tests.test_utils import get_local_resource_path
-from e2e_tests.test_utils.vector_store_handler import (
-    VectorStoreTestContext,
-)
+
+if TYPE_CHECKING:
+    from e2e_tests.test_utils.vector_store_handler import VectorStoreTestContext
 
 
 @pytest.fixture

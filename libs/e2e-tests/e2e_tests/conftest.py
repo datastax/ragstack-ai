@@ -5,7 +5,12 @@ import time
 
 import pytest
 
-
+from e2e_tests.test_utils import (
+    get_required_env as root_get_required_env,
+)
+from e2e_tests.test_utils import (
+    is_skipped_due_to_implementation_not_supported,
+)
 from e2e_tests.test_utils.astradb_vector_store_handler import AstraDBVectorStoreHandler
 from e2e_tests.test_utils.cassandra_vector_store_handler import (
     CassandraVectorStoreHandler,
@@ -13,10 +18,6 @@ from e2e_tests.test_utils.cassandra_vector_store_handler import (
 from e2e_tests.test_utils.vector_store_handler import (
     VectorStoreHandler,
     VectorStoreImplementation,
-)
-from e2e_tests.test_utils import (
-    get_required_env as root_get_required_env,
-    is_skipped_due_to_implementation_not_supported,
 )
 
 LOGGER = logging.getLogger(__name__)
@@ -132,7 +133,7 @@ def pytest_runtest_makereport(item, call):
                 failed_report_lines.append(report_line)
                 if call.excinfo:
                     try:
-                        logging.warn("Full stacktrace:")
+                        logging.warning("Full stacktrace:")
                         import traceback
 
                         traceback.print_exception(
@@ -140,8 +141,8 @@ def pytest_runtest_makereport(item, call):
                             call.excinfo._excinfo[1],
                             call.excinfo._excinfo[2],
                         )
-                    except Exception as e:
-                        logging.warn(f"Failed to print stacktrace: {e}")
+                    except Exception:  # noqa: BLE001
+                        logging.warning("Failed to print stacktrace", exc_info=True)
             all_report_lines.append(report_line)
             if is_langchain:
                 langchain_report_lines.append(report_line)

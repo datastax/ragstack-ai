@@ -3,7 +3,6 @@ import pytest
 from e2e_tests.conftest import (
     get_vector_store_handler,
 )
-
 from e2e_tests.test_utils.vector_store_handler import (
     VectorStoreImplementation,
 )

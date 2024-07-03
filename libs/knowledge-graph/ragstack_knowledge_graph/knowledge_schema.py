@@ -96,12 +96,10 @@ class KnowledgeSchemaValidator:
                 e.add_note(f"No edge type '{r.edge_type}")
             else:
                 relationship = next(
-                    (
-                        candidate
-                        for candidate in relationships
-                        if r.source_type in candidate.source_types
-                        if r.target_type in candidate.target_types
-                    )
+                    candidate
+                    for candidate in relationships
+                    if r.source_type in candidate.source_types
+                    if r.target_type in candidate.target_types
                 )
                 if relationship is None:
                     e.add_note(

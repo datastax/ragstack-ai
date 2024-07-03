@@ -11,7 +11,7 @@ packages = [{ include = "ragstack" }]
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.13"
-ragstack-ai-langchain = { version = "1.2.0", extras = ["colbert", "google", "nvidia"] }
+ragstack-ai-langchain = { version = "1.3.0", extras = ["colbert", "google", "nvidia"] }
 ragstack-ai-llamaindex = { version = "1.0.7", extras = ["colbert", "google", "azure", "bedrock"] }
 ragstack-ai-colbert = "1.0.5"
 
@@ -21,11 +21,9 @@ ragstack-ai-llamaindex = { path = "libs/llamaindex", develop = true, extras = ["
 ragstack-ai-colbert = { path = "libs/colbert", develop = true }
 
 pytest = "^7.3.0"
-black = "*"
-ruff = "*"
 
-[tool.poetry.group.dev.dependencies]
-setuptools = "^70.0.0"
+[tool.poetry.group.lint.dependencies]
+ruff = "^0.5.0"
 yamllint = "^1.34.0"
 
 [tool.poetry.group.notebooks.dependencies]
@@ -55,6 +53,60 @@ strict_optional = true
 warn_redundant_casts = true
 warn_return_any = true
 warn_unused_ignores = true
+
+[tool.ruff]
+extend-include = ["*.ipynb"]
+
+[tool.ruff.lint]
+ignore = [
+    "COM812", # Messes with the formatter
+    "ERA", # Do we want to activate (no commented code) ?
+    "ISC001", # Messes with the formatter
+    "PERF203", # Incorrect detection
+    "TRY003", # A bit too strict ?
+]
+
+select = [
+    "ASYNC",
+    "B",
+    "BLE",
+    "C4",
+    "COM",
+    "DTZ",
+    "E",
+    "EXE",
+    "F",
+    "FLY",
+    "FURB",
+    "I",
+    "ICN",
+    "INT",
+    "ISC",
+    "LOG",
+    "N",
+    "NPY",
+    "PD",
+    "PERF",
+    "PIE",
+    "PGH",
+    "Q",
+    "RSE",
+    "RUF",
+    "SIM",
+    "SLOT",
+    "T10",
+    "TCH",
+    "TRY",
+    "UP",
+    "W",
+    "YTT",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"**/libs/langchain/*" = [
+    "UP006", # Incompatible with Pydantic v1
+    "UP007", # Incompatible with Pydantic v1
+]
 
 [build-system]
 requires = ["poetry-core"]

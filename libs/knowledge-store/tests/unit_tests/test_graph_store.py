@@ -1,9 +1,10 @@
 from typing import Any, Dict, Set
+
 from ragstack_knowledge_store.graph_store import (
-    _serialize_metadata,
+    _deserialize_links,
     _deserialize_metadata,
     _serialize_links,
-    _deserialize_links,
+    _serialize_metadata,
 )
 from ragstack_knowledge_store.links import Link
 

@@ -10,9 +10,9 @@ from cassandra.cluster import Session
 from langchain_community.utilities.cassandra import SetupMode
 from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
+from ragstack_knowledge_store import EmbeddingModel, graph_store
 
 from .base import GraphStore, Node, nodes_to_documents
-from ragstack_knowledge_store import EmbeddingModel, graph_store
 
 
 class _EmbeddingModelAdapter(EmbeddingModel):
@@ -77,13 +77,12 @@ class CassandraGraphStore(GraphStore):
         nodes: Iterable[Node],
         **kwargs: Any,
     ) -> Iterable[str]:
-        _nodes = []
-        for node in nodes:
-            _nodes.append(
-                graph_store.Node(
-                    id=node.id, text=node.text, metadata=node.metadata, links=node.links
-                )
+        _nodes = [
+            graph_store.Node(
+                id=node.id, text=node.text, metadata=node.metadata, links=node.links
             )
+            for node in nodes
+        ]
         return self.store.add_nodes(_nodes)
 
     @classmethod

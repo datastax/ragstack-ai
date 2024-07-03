@@ -9,12 +9,12 @@ from ragstack_langchain.colbert import ColbertVectorStore
 from ragstack_tests_utils import TestData
 from transformers import BertTokenizer
 
-logging.getLogger("cassandra").setLevel(logging.ERROR)
-
 from tests.integration_tests.conftest import (
     get_astradb_test_store,
     get_local_cassandra_test_store,
 )
+
+logging.getLogger("cassandra").setLevel(logging.ERROR)
 
 test_data = {
     "chunks": None,
@@ -83,7 +83,7 @@ def test_sync_from_docs(request, vector_store: str):
     session = vector_store.create_cassandra_session()
     session.default_timeout = 180
 
-    table_name = f"LangChain_test_sync_from_docs"
+    table_name = "LangChain_test_sync_from_docs"
 
     database = CassandraDatabase.from_session(session=session, table_name=table_name)
 
@@ -103,7 +103,8 @@ def test_sync_from_docs(request, vector_store: str):
     )
 
     results: List[Document] = vector_store.similarity_search(
-        "What challenges does the Quantum Opacity phenomenon present to the crew of the Nebula Voyager"
+        "What challenges does the Quantum Opacity phenomenon present to the crew of "
+        "the Nebula Voyager"
     )
     assert validate_retrieval(results, key_value="Quantum Opacity")
 
@@ -139,7 +140,7 @@ async def test_async_from_docs(request, vector_store: str):
     session = vector_store.create_cassandra_session()
     session.default_timeout = 180
 
-    table_name = f"LangChain_test_async_from_docs"
+    table_name = "LangChain_test_async_from_docs"
 
     database = CassandraDatabase.from_session(session=session, table_name=table_name)
 
@@ -159,14 +160,15 @@ async def test_async_from_docs(request, vector_store: str):
     )
 
     results: List[Document] = await vector_store.asimilarity_search(
-        "What challenges does the Quantum Opacity phenomenon present to the crew of the Nebula Voyager"
+        "What challenges does the Quantum Opacity phenomenon present to the crew of "
+        "the Nebula Voyager"
     )
     assert validate_retrieval(results, key_value="Quantum Opacity")
 
-    results: List[Tuple[Document, float]] = (
-        await vector_store.asimilarity_search_with_score(
-            "What are Xenospheric Particulates?"
-        )
+    results: List[
+        Tuple[Document, float]
+    ] = await vector_store.asimilarity_search_with_score(
+        "What are Xenospheric Particulates?"
     )
 
     assert len(results) > 3

@@ -2,7 +2,6 @@ from bs4 import BeautifulSoup
 from ragstack_langchain.graph_store.extractors import HtmlInput, HtmlLinkExtractor
 from ragstack_langchain.graph_store.links import Link
 
-
 PAGE_1 = """
 <html>
 <body>
@@ -59,7 +58,7 @@ def test_one_from_beautiful_soup():
     }
 
 
-def test_drop_fragmetns():
+def test_drop_fragments():
     extractor = HtmlLinkExtractor(drop_fragments=True)
     results = extractor.extract_one(
         HtmlInput(PAGE_2, base_url="https://foo.com/baz/#fragment")

@@ -9,36 +9,34 @@ from langchain_community.embeddings import (
     HuggingFaceInferenceAPIEmbeddings,
 )
 from langchain_community.llms.huggingface_hub import HuggingFaceHub
+from langchain_core.embeddings import Embeddings
+from langchain_core.messages import HumanMessage
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_google_vertexai import ChatVertexAI, VertexAIEmbeddings
 from langchain_openai import (
-    OpenAIEmbeddings,
-    ChatOpenAI,
     AzureChatOpenAI,
     AzureOpenAIEmbeddings,
+    ChatOpenAI,
+    OpenAIEmbeddings,
 )
+from vertexai.vision_models import Image, MultiModalEmbeddingModel
 
 from e2e_tests.conftest import (
-    set_current_test_info,
     get_required_env,
     get_vector_store_handler,
+    set_current_test_info,
 )
+from e2e_tests.langchain.nemo_guardrails import run_nemo_guardrails
 from e2e_tests.langchain.rag_application import (
-    run_rag_custom_chain,
     run_conversational_rag,
+    run_rag_custom_chain,
 )
 from e2e_tests.langchain.trulens import run_trulens_evaluation
 from e2e_tests.test_utils import (
     get_local_resource_path,
     skip_test_due_to_implementation_not_supported,
 )
-from e2e_tests.langchain.nemo_guardrails import run_nemo_guardrails
-
-from langchain_core.embeddings import Embeddings
-from langchain_core.messages import HumanMessage
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_google_genai import ChatGoogleGenerativeAI
-from vertexai.vision_models import MultiModalEmbeddingModel, Image
-
 from e2e_tests.test_utils.tracing import record_langsmith_sharelink
 from e2e_tests.test_utils.vector_store_handler import VectorStoreImplementation
 
@@ -402,7 +400,8 @@ def gemini_pro_llm():
 @pytest.mark.parametrize(
     "embedding,llm",
     [
-        # disable due to this bug: https://github.com/googleapis/python-aiplatform/issues/3227
+        # disable due to this bug:
+        # https://github.com/googleapis/python-aiplatform/issues/3227
         # ("vertex_gemini_multimodal_embedding", "vertex_gemini_pro_vision_llm"),
         ("vertex_gemini_multimodal_embedding", "gemini_pro_vision_llm"),
     ],
@@ -462,7 +461,10 @@ def test_multimodal(vector_store, embedding, llm, request, record_property):
         "image_url": {"url": query_image_path},
     }
     docs_str = ", ".join([f"'{p}'" for p in documents])
-    prompt = f"Tell me which one of these products it is part of. Only include product from the ones below: {docs_str}."
+    prompt = (
+        f"Tell me which one of these products it is part of. "
+        f"Only include product from the ones below: {docs_str}."
+    )
     logging.info(f"Prompt: {prompt}")
 
     text_message = {
@@ -497,4 +499,4 @@ def test_chat(chat, request, record_property):
         record_langsmith_sharelink(run_id, record_property)
         assert "Syracuse" in str(
             response.content
-        ), f"Expected Syracuse in the answer but got: {str(response.content)}"
+        ), f"Expected Syracuse in the answer but got: {response.content!s}"

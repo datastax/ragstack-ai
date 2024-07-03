@@ -11,25 +11,23 @@ from langchain_community.chat_message_histories import (
 )
 from langchain_community.vectorstores.cassandra import Cassandra
 from langchain_core.chat_history import BaseChatMessageHistory
-
 from llama_index.core.schema import TextNode
-from llama_index.vector_stores.cassandra import CassandraVectorStore
 from llama_index.core.vector_stores.types import (
     VectorStoreQuery,
 )
-from e2e_tests.test_utils import skip_test_due_to_implementation_not_supported
-
+from llama_index.vector_stores.cassandra import CassandraVectorStore
+from ragstack_tests_utils import CassandraContainer
 
 from e2e_tests.test_utils import (
     random_string,
+    skip_test_due_to_implementation_not_supported,
 )
-from ragstack_tests_utils import CassandraContainer
 from e2e_tests.test_utils.vector_store_handler import (
+    EnhancedLangChainVectorStore,
+    EnhancedLlamaIndexVectorStore,
     VectorStoreHandler,
     VectorStoreImplementation,
     VectorStoreTestContext,
-    EnhancedLangChainVectorStore,
-    EnhancedLlamaIndexVectorStore,
 )
 
 
@@ -69,7 +67,8 @@ class CassandraVectorStoreHandler(VectorStoreHandler):
         keyspace = "default_keyspace"
         self.cassandra_session.execute(f"DROP KEYSPACE IF EXISTS {keyspace}")
         self.cassandra_session.execute(
-            f"CREATE KEYSPACE IF NOT EXISTS {keyspace} WITH replication = {{'class': 'SimpleStrategy', 'replication_factor': '1'}}"
+            f"CREATE KEYSPACE IF NOT EXISTS {keyspace} WITH "
+            f"replication = {{'class': 'SimpleStrategy', 'replication_factor': '1'}}"
         )
         cassio.init(session=self.cassandra_session)
         return CassandraVectorStoreTestContext(self)
@@ -96,17 +95,15 @@ class EnhancedCassandraLangChainVectorStore(EnhancedLangChainVectorStore, Cassan
 
     def search_documents(self, vector: List[float], limit: int) -> List[str]:
         if isinstance(self.table, MetadataVectorCassandraTable):
-            results = self.table.ann_search(vector=vector, n=limit)
-            docs = []
-            for result in results:
-                docs.append(result["body_blob"])
-            return docs
+            return [
+                result["body_blob"]
+                for result in self.table.ann_search(vector=vector, n=limit)
+            ]
         else:
-            results = self.table.search(embedding_vector=vector, top_k=limit)
-            docs = []
-            for result in results:
-                docs.append(result["document"])
-            return docs
+            return [
+                result["document"]
+                for result in self.table.search(embedding_vector=vector, top_k=limit)
+            ]
 
 
 class EnhancedCassandraLlamaIndexVectorStore(

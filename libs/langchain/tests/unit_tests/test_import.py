@@ -1,13 +1,13 @@
 def test_import():
-    import astrapy  # noqa
-    import cassio  # noqa
-    import langchain_core  # noqa
-    import langsmith  # noqa
-    import openai  # noqa
-    import tiktoken  # noqa
-    import unstructured  # noqa
-    from langchain.vectorstores import AstraDB  # noqa
-    from langchain_astradb import AstraDBVectorStore  # noqa
+    import astrapy  # noqa: F401
+    import cassio  # noqa: F401
+    import langchain_core  # noqa: F401
+    import langsmith  # noqa: F401
+    import openai  # noqa: F401
+    import tiktoken  # noqa: F401
+    import unstructured  # noqa: F401
+    from langchain.vectorstores import AstraDB  # noqa: F401
+    from langchain_astradb import AstraDBVectorStore  # noqa: F401
 
 
 def test_meta():

@@ -1,23 +1,21 @@
 import json
+import logging
 import os
 import uuid
-import numpy as np
-
-from dotenv import load_dotenv
 from enum import Enum
 
-from trulens_eval import Tru, Feedback, TruChain, TruLlama
-from trulens_eval.app import App
-from trulens_eval.feedback.provider import AzureOpenAI
-from trulens_eval.feedback import Groundedness, GroundTruthAgreement
-
+import numpy as np
+from dotenv import load_dotenv
+from langchain_astradb import AstraDBVectorStore as LangChainAstraDBVectorStore
+from langchain_community.chat_models import AzureChatOpenAI
+from langchain_community.embeddings import AzureOpenAIEmbeddings
 from llama_index.embeddings import AzureOpenAIEmbedding
 from llama_index.llms import AzureOpenAI as LlamaAzureChatOpenAI
 from llama_index.vector_stores import AstraDBVectorStore
-
-from langchain_community.chat_models import AzureChatOpenAI
-from langchain_community.embeddings import AzureOpenAIEmbeddings
-from langchain_astradb import AstraDBVectorStore as LangChainAstraDBVectorStore
+from trulens_eval import Feedback, Tru, TruChain, TruLlama
+from trulens_eval.app import App
+from trulens_eval.feedback import Groundedness, GroundTruthAgreement
+from trulens_eval.feedback.provider import AzureOpenAI
 
 # this code assumes the following env vars exist in a .env file:
 #
@@ -31,6 +29,7 @@ from langchain_astradb import AstraDBVectorStore as LangChainAstraDBVectorStore
 load_dotenv()
 
 temperature = 0
+logger = logging.getLogger(__name__)
 
 
 class Framework(Enum):
@@ -70,12 +69,12 @@ def init_tru():
 
 def get_feedback_functions(pipeline, golden_set):
     # Initialize provider class
-    azureOpenAI = AzureOpenAI(deployment_name="gpt-35-turbo")
+    azure_open_ai = AzureOpenAI(deployment_name="gpt-35-turbo")
 
     context = App.select_context(pipeline)
 
     # Define a groundedness feedback function
-    grounded = Groundedness(groundedness_provider=azureOpenAI)
+    grounded = Groundedness(groundedness_provider=azure_open_ai)
     f_groundedness = (
         Feedback(grounded.groundedness_measure_with_cot_reasons, name="groundedness")
         .on(context.collect())
@@ -85,19 +84,19 @@ def get_feedback_functions(pipeline, golden_set):
 
     # Question/answer relevance between overall question and answer.
     f_answer_relevance = Feedback(
-        azureOpenAI.relevance_with_cot_reasons, name="answer_relevance"
+        azure_open_ai.relevance_with_cot_reasons, name="answer_relevance"
     ).on_input_output()
 
     # Question/statement relevance between question and each context chunk.
     f_context_relevance = (
-        Feedback(azureOpenAI.qs_relevance_with_cot_reasons, name="context_relevance")
+        Feedback(azure_open_ai.qs_relevance_with_cot_reasons, name="context_relevance")
         .on_input()
         .on(context)
         .aggregate(np.mean)
     )
 
     # GroundTruth for comparing the Answer to the Ground-Truth Answer
-    ground_truth_collection = GroundTruthAgreement(golden_set, provider=azureOpenAI)
+    ground_truth_collection = GroundTruthAgreement(golden_set, provider=azure_open_ai)
     f_answer_correctness = Feedback(
         ground_truth_collection.agreement_measure, name="answer_correctness"
     ).on_input_output()
@@ -132,7 +131,7 @@ def get_recorder(
             feedback_mode=feedback_mode,
         )
     else:
-        raise Exception(f"Unknown framework: {framework} specified for get_recorder()")
+        raise ValueError(f"Unknown framework: {framework} specified for get_recorder()")
 
 
 def get_azure_chat_model(
@@ -155,7 +154,7 @@ def get_azure_chat_model(
             temperature=temperature,
         )
     else:
-        raise Exception(f"Unknown framework: {framework} specified for getChatModel()")
+        raise ValueError(f"Unknown framework: {framework} specified for getChatModel()")
 
 
 def get_azure_embeddings_model(framework: Framework):
@@ -172,7 +171,7 @@ def get_azure_embeddings_model(framework: Framework):
             temperature=temperature,
         )
     else:
-        raise Exception(
+        raise ValueError(
             f"Unknown framework: {framework} specified for getEmbeddingsModel()"
         )
 
@@ -193,7 +192,7 @@ def get_astra_vector_store(framework: Framework, collection_name: str):
             embedding_dimension=1536,
         )
     else:
-        raise Exception(
+        raise ValueError(
             f"Unknown framework: {framework} specified for get_astra_vector_store()"
         )
 
@@ -204,23 +203,28 @@ def execute_query(framework: Framework, pipeline, query):
     elif framework == Framework.LLAMA_INDEX:
         pipeline.query(query)
     else:
-        raise Exception(f"Unknown framework: {framework} specified for execute_query()")
+        raise ValueError(
+            f"Unknown framework: {framework} specified for execute_query()"
+        )
 
 
 # runs the pipeline across all queries in all known datasets
 def execute_experiment(framework: Framework, pipeline, experiment_name: str):
-    tru = init_tru()
+    init_tru()
 
-    # use a short uuid to ensure that multiple experiments with the same name don't collide in the DB
-    shortUuid = str(uuid.uuid4())[9:13]
+    # use a short uuid to ensure that multiple experiments with the same name don't
+    # collide in the DB
+    short_uuid = str(uuid.uuid4())[9:13]
     datasets, golden_set = get_test_data()
 
     for dataset_name in datasets:
-        app_id = f"{experiment_name}#{shortUuid}#{dataset_name}"
+        app_id = f"{experiment_name}#{short_uuid}#{dataset_name}"
         tru_recorder = get_recorder(framework, pipeline, app_id, golden_set)
         for query in datasets[dataset_name]:
             try:
-                with tru_recorder as recording:
+                with tru_recorder:
                     execute_query(framework, pipeline, query)
-            except:
-                print(f"Query: '{query}' caused exception, skipping.")
+            except Exception:
+                err = f"Query: '{query}' caused exception, skipping."
+                logger.exception(err)
+                print(err)

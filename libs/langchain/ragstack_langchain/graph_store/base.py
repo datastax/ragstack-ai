@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from abc import abstractmethod
 from typing import (
+    TYPE_CHECKING,
     Any,
     AsyncIterable,
     ClassVar,
@@ -13,17 +14,19 @@ from typing import (
     Set,
 )
 
-from langchain_core.callbacks import (
-    AsyncCallbackManagerForRetrieverRun,
-    CallbackManagerForRetrieverRun,
-)
 from langchain_core.documents import Document
 from langchain_core.load import Serializable
+from langchain_core.pydantic_v1 import Field
 from langchain_core.runnables import run_in_executor
 from langchain_core.vectorstores import VectorStore, VectorStoreRetriever
-from langchain_core.pydantic_v1 import Field
 
 from ragstack_langchain.graph_store.links import METADATA_LINKS_KEY, Link
+
+if TYPE_CHECKING:
+    from langchain_core.callbacks import (
+        AsyncCallbackManagerForRetrieverRun,
+        CallbackManagerForRetrieverRun,
+    )
 
 
 def _has_next(iterator: Iterator) -> bool:
@@ -59,13 +62,13 @@ def _texts_to_nodes(
     for text in texts:
         try:
             _metadata = next(metadatas_it).copy() if metadatas_it else {}
-        except StopIteration:
-            raise ValueError("texts iterable longer than metadatas")
+        except StopIteration as e:
+            raise ValueError("texts iterable longer than metadatas") from e
         try:
             _id = next(ids_it) if ids_it else None
             _id = _id or _metadata.pop(METADATA_CONTENT_ID_KEY, None)
-        except StopIteration:
-            raise ValueError("texts iterable longer than ids")
+        except StopIteration as e:
+            raise ValueError("texts iterable longer than ids") from e
 
         links = _metadata.pop(METADATA_LINKS_KEY, set())
         if not isinstance(links, Set):
@@ -90,8 +93,8 @@ def _documents_to_nodes(
         try:
             _id = next(ids_it) if ids_it else None
             _id = _id or doc.metadata.pop(METADATA_CONTENT_ID_KEY, None)
-        except StopIteration:
-            raise ValueError("documents iterable longer than ids")
+        except StopIteration as e:
+            raise ValueError("documents iterable longer than ids") from e
         metadata = doc.metadata.copy()
         links = metadata.pop(METADATA_LINKS_KEY, set())
         if not isinstance(links, Set):
@@ -422,7 +425,7 @@ class GraphStore(VectorStore):
                 "'mmr' or 'traversal'."
             )
 
-    def as_retriever(self, **kwargs: Any) -> "GraphStoreRetriever":
+    def as_retriever(self, **kwargs: Any) -> GraphStoreRetriever:
         """Return GraphStoreRetriever initialized from this GraphStore.
 
         Args:
