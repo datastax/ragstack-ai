@@ -125,8 +125,8 @@ class QueryPipeline(BasePipeline):
                 self._tru.stop_evaluator()
                 self._evaluation_running = False
                 self._tru.delete_singleton()
-            except Exception as e:
-                logger.error(f"issue stopping evaluator: {e}")
+            except Exception:  # noqa: BLE001
+                logger.exception("issue stopping evaluator")
             finally:
                 self._progress.close()
 
@@ -218,13 +218,11 @@ class QueryPipeline(BasePipeline):
                 try:
                     with recorder:
                         pipeline.invoke(query)
-                except Exception as e:
+                except Exception as e:  # noqa: BLE001
+                    err = f"Query: '{query}' caused exception, skipping."
+                    logger.exception(err)
                     # TODO: figure out why the logger isn't working after tru-lens starts. For now use print().  # noqa: E501
-                    print(
-                        f"ERROR: Query: '{query}' caused exception, skipping. "
-                        f"Exception {e}"
-                    )
-                    logger.error(f"Query: '{query}' caused exception: {e}, skipping.")
+                    print(f"{err} Exception {e}")
                 finally:
                     self.update_progress(query_change=1)
 

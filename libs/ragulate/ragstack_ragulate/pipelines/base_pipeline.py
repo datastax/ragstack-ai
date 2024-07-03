@@ -1,12 +1,10 @@
 import importlib.util
 import inspect
-import traceback
+import logging
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List
 
 from ragstack_ragulate.datasets import BaseDataset
-
-from ..logging_config import logger
 
 
 # Function to dynamically load a module
@@ -92,13 +90,13 @@ class BasePipeline(ABC):
                 reserved_params=self.get_reserved_params,
                 passed_ingredients=self._passed_ingredients,
             )
-        except BaseException as e:
-            logger.fatal(
+        except BaseException:  # noqa: BLE001
+            logging.critical(
                 f"Issue loading recipe {self.recipe_name} "
                 f"on {self.script_path}/{self.method_name} "
-                f"with passed ingredients: {self._passed_ingredients}: {e}"
+                f"with passed ingredients: {self._passed_ingredients}",
+                exc_info=True,
             )
-            traceback.print_exc()
             exit(1)
 
     def get_method(self):

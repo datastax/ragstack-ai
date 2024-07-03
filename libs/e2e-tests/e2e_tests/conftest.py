@@ -133,7 +133,7 @@ def pytest_runtest_makereport(item, call):
                 failed_report_lines.append(report_line)
                 if call.excinfo:
                     try:
-                        logging.warn("Full stacktrace:")
+                        logging.warning("Full stacktrace:")
                         import traceback
 
                         traceback.print_exception(
@@ -141,8 +141,8 @@ def pytest_runtest_makereport(item, call):
                             call.excinfo._excinfo[1],
                             call.excinfo._excinfo[2],
                         )
-                    except Exception as e:
-                        logging.warn(f"Failed to print stacktrace: {e}")
+                    except Exception:  # noqa: BLE001
+                        logging.warning("Failed to print stacktrace", exc_info=True)
             all_report_lines.append(report_line)
             if is_langchain:
                 langchain_report_lines.append(report_line)
