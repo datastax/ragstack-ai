@@ -91,7 +91,7 @@ class CassandraDatabase(BaseDatabase):
 
         try:
             is_astra = session.cluster.cloud
-        except Exception:
+        except AttributeError:
             is_astra = False
 
         logging.info(
@@ -147,7 +147,7 @@ class CassandraDatabase(BaseDatabase):
                     body_blob=chunk.text,
                     metadata=chunk.metadata,
                 )
-            except Exception as exp:
+            except Exception as exp:  # noqa: BLE001
                 self._log_insert_error(
                     doc_id=doc_id, chunk_id=chunk_id, embedding_id=-1, exp=exp
                 )
@@ -161,7 +161,7 @@ class CassandraDatabase(BaseDatabase):
                         row_id=(chunk_id, embedding_id),
                         vector=vector,
                     )
-                except Exception as exp:
+                except Exception as exp:  # noqa: BLE001
                     self._log_insert_error(
                         doc_id=doc_id, chunk_id=chunk_id, embedding_id=-1, exp=exp
                     )
@@ -202,7 +202,7 @@ class CassandraDatabase(BaseDatabase):
                     await self._table.aput(
                         partition_id=doc_id, row_id=row_id, vector=vector
                     )
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 return doc_id, chunk_id, embedding_id, e
             return doc_id, chunk_id, embedding_id, None
 
@@ -317,7 +317,7 @@ class CassandraDatabase(BaseDatabase):
         async with sem:
             try:
                 await self._table.adelete_partition(partition_id=doc_id)
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 return doc_id, e
             return doc_id, None
 

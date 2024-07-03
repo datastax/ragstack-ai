@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import uuid
 from enum import Enum
@@ -28,6 +29,7 @@ from trulens_eval.feedback.provider import AzureOpenAI
 load_dotenv()
 
 temperature = 0
+logger = logging.getLogger(__name__)
 
 
 class Framework(Enum):
@@ -223,4 +225,6 @@ def execute_experiment(framework: Framework, pipeline, experiment_name: str):
                 with tru_recorder:
                     execute_query(framework, pipeline, query)
             except Exception:
-                print(f"Query: '{query}' caused exception, skipping.")
+                err = f"Query: '{query}' caused exception, skipping."
+                logger.exception(err)
+                print(err)
