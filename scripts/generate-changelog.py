@@ -58,7 +58,11 @@ def main():
                 break
         if package_name in IMPORTANT_DEPENDENCIES:
             if package_name == "langchain":
-                version_range = f"https://datastax.github.io/ragstack-ai/api_reference/{package_version}/langchain[{version_range}]{{external-link-icon}}"
+                version_range = (
+                    "https://datastax.github.io/ragstack-ai/api_reference/"
+                    f"{package_version}/langchain[{version_range}]"
+                    "{external-link-icon}"
+                )
             extra_str = f" (via extra `{extra}`)" if extra else ""
             deps_str += f"\n| {package_name}{extra_str}\n| {version_range}\n"
 
