@@ -129,7 +129,7 @@ def get_recorder(
             feedback_mode=feedback_mode,
         )
     else:
-        raise Exception(f"Unknown framework: {framework} specified for get_recorder()")
+        raise ValueError(f"Unknown framework: {framework} specified for get_recorder()")
 
 
 def get_azure_chat_model(
@@ -152,7 +152,7 @@ def get_azure_chat_model(
             temperature=temperature,
         )
     else:
-        raise Exception(f"Unknown framework: {framework} specified for getChatModel()")
+        raise ValueError(f"Unknown framework: {framework} specified for getChatModel()")
 
 
 def get_azure_embeddings_model(framework: Framework):
@@ -169,7 +169,7 @@ def get_azure_embeddings_model(framework: Framework):
             temperature=temperature,
         )
     else:
-        raise Exception(
+        raise ValueError(
             f"Unknown framework: {framework} specified for getEmbeddingsModel()"
         )
 
@@ -190,7 +190,7 @@ def get_astra_vector_store(framework: Framework, collection_name: str):
             embedding_dimension=1536,
         )
     else:
-        raise Exception(
+        raise ValueError(
             f"Unknown framework: {framework} specified for get_astra_vector_store()"
         )
 
@@ -201,7 +201,9 @@ def execute_query(framework: Framework, pipeline, query):
     elif framework == Framework.LLAMA_INDEX:
         pipeline.query(query)
     else:
-        raise Exception(f"Unknown framework: {framework} specified for execute_query()")
+        raise ValueError(
+            f"Unknown framework: {framework} specified for execute_query()"
+        )
 
 
 # runs the pipeline across all queries in all known datasets

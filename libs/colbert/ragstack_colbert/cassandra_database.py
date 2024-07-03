@@ -20,6 +20,10 @@ from .constant import DEFAULT_COLBERT_DIM
 from .objects import Chunk, Vector
 
 
+class CassandraDatabaseError(Exception):
+    pass
+
+
 class CassandraDatabase(BaseDatabase):
     """
     An implementation of the BaseDatabase abstract base class using Cassandra as the
@@ -167,7 +171,7 @@ class CassandraDatabase(BaseDatabase):
             success_chunks.append((doc_id, chunk_id))
 
         if len(failed_chunks) > 0:
-            raise Exception(
+            raise CassandraDatabaseError(
                 f"add failed for these chunks: {failed_chunks}. "
                 f"See error logs for more info."
             )
@@ -198,9 +202,9 @@ class CassandraDatabase(BaseDatabase):
                     await self._table.aput(
                         partition_id=doc_id, row_id=row_id, vector=vector
                     )
-                return doc_id, chunk_id, embedding_id, None
             except Exception as e:
                 return doc_id, chunk_id, embedding_id, e
+            return doc_id, chunk_id, embedding_id, None
 
     async def aadd_chunks(
         self, chunks: List[Chunk], concurrent_inserts: Optional[int] = 100
@@ -269,7 +273,7 @@ class CassandraDatabase(BaseDatabase):
                 failed_chunks.append((doc_id, chunk_id))
 
         if len(failed_chunks) > 0:
-            raise Exception(
+            raise CassandraDatabaseError(
                 f"add failed for these chunks: {failed_chunks}. "
                 f"See error logs for more info."
             )
@@ -293,12 +297,12 @@ class CassandraDatabase(BaseDatabase):
         for doc_id in doc_ids:
             try:
                 self._table.delete_partition(partition_id=doc_id)
-            except Exception as exp:
-                logging.error(f"issue on delete of document: {doc_id}: {exp}")
+            except Exception:
+                logging.exception(f"issue on delete of document: {doc_id}")
                 failed_docs.append(doc_id)
 
         if len(failed_docs) > 0:
-            raise Exception(
+            raise CassandraDatabaseError(
                 f"delete failed for these docs: {failed_docs}. "
                 f"See error logs for more info."
             )
@@ -313,9 +317,9 @@ class CassandraDatabase(BaseDatabase):
         async with sem:
             try:
                 await self._table.adelete_partition(partition_id=doc_id)
-                return doc_id, None
             except Exception as e:
                 return doc_id, e
+            return doc_id, None
 
     async def adelete_chunks(
         self, doc_ids: List[str], concurrent_deletes: Optional[int] = 100
@@ -354,7 +358,7 @@ class CassandraDatabase(BaseDatabase):
                 failed_docs.append(doc_id)
 
         if len(failed_docs) > 0:
-            raise Exception(
+            raise CassandraDatabaseError(
                 f"delete failed for these docs: {failed_docs}. "
                 f"See error logs for more info."
             )

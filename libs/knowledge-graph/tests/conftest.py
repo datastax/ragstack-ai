@@ -57,11 +57,11 @@ def db_session(cassandra_port: int) -> Session:
 def llm() -> BaseChatModel:
     try:
         from langchain_openai import ChatOpenAI
-
-        model = ChatOpenAI(model_name="gpt-4o", temperature=0.0)
-        return model
     except ValueError:
         pytest.skip("Unable to create OpenAI model")
+    else:
+        model = ChatOpenAI(model_name="gpt-4o", temperature=0.0)
+        return model
 
 
 class DataFixture:

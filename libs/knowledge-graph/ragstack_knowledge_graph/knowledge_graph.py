@@ -226,7 +226,7 @@ class CassandraKnowledgeGraph:
                         ),
                     )
                 else:
-                    raise ValueError(f"Unsupported element type: {element}")
+                    raise TypeError(f"Unsupported element type: {element}")
 
             # TODO: Support concurrent execution of these statements.
             self._session.execute(batch_statement)
