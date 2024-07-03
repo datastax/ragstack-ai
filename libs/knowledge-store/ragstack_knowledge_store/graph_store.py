@@ -355,12 +355,14 @@ class GraphStore:
                 for row in rows:
                     results[row.content_id] = _row_to_node(row)
 
-            for id in ids:
-                if id not in results:
-                    results[id] = None
-                    cq.execute(self._query_by_id, parameters=(id,), callback=add_nodes)
+            for node_id in ids:
+                if node_id not in results:
+                    results[node_id] = None
+                    cq.execute(
+                        self._query_by_id, parameters=(node_id,), callback=add_nodes
+                    )
 
-        return [results[id] for id in ids]
+        return [results[node_id] for node_id in ids]
 
     def mmr_traversal_search(
         self,
@@ -414,7 +416,7 @@ class GraphStore:
         helper.add_candidates({row.content_id: row.text_embedding for row in fetched})
 
         # Select the best item, K times.
-        depths = {id: 0 for id in helper.candidate_ids()}
+        depths = {candidate_id: 0 for candidate_id in helper.candidate_ids()}
         visited_tags = set()
         for _ in range(k):
             selected_id = helper.pop_best()
@@ -549,10 +551,10 @@ class GraphStore:
                         new_nodes_at_next_depth.add(content_id)
 
                 if new_nodes_at_next_depth:
-                    for id in new_nodes_at_next_depth:
+                    for node_id in new_nodes_at_next_depth:
                         cq.execute(
                             self._query_ids_and_link_to_tags_by_id,
-                            parameters=(id,),
+                            parameters=(node_id,),
                             callback=lambda rows, d=d: visit_nodes(d + 1, rows),
                         )
 

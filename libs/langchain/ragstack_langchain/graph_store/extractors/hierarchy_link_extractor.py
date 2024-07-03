@@ -39,7 +39,7 @@ class HierarchyLinkExtractor(LinkExtractor[HierarchyInput]):
 
     def extract_one(
         self,
-        input: HierarchyInput,
+        input: HierarchyInput,  # noqa: A002
     ) -> Set[Link]:
         this_path = "/".join(input)
         parent_path = None

@@ -116,15 +116,15 @@ class MmrHelper:
         selected = len(self.selected_ids)
         return np.vsplit(self.selected_embeddings, [selected])[0]
 
-    def _pop_candidate(self, id: str) -> np.ndarray:
+    def _pop_candidate(self, candidate_id: str) -> np.ndarray:
         """Pop the candidate with the given ID.
 
         Returns:
             The embedding of the candidate.
         """
         # Get the embedding for the id.
-        index = self.candidate_id_to_index.pop(id)
-        assert self.candidates[index].id == id
+        index = self.candidate_id_to_index.pop(candidate_id)
+        assert self.candidates[index].id == candidate_id
         embedding = self.candidate_embeddings[index].copy()
 
         # Swap that index with the last index in the candidates and
@@ -199,10 +199,10 @@ class MmrHelper:
         # And add them to the
         new_embeddings = np.ndarray((len(include_ids), self.dimensions))
         offset = self.candidate_embeddings.shape[0]
-        for index, id in enumerate(include_ids):
-            if id in include_ids:
-                self.candidate_id_to_index[id] = offset + index
-                embedding = candidates[id]
+        for index, candidate_id in enumerate(include_ids):
+            if candidate_id in include_ids:
+                self.candidate_id_to_index[candidate_id] = offset + index
+                embedding = candidates[candidate_id]
                 new_embeddings[index] = embedding
 
         # Compute the similarity to the query.
@@ -213,12 +213,12 @@ class MmrHelper:
         redundancy = cosine_similarity(
             new_embeddings, self._already_selected_embeddings()
         )
-        for index, id in enumerate(include_ids):
+        for index, candidate_id in enumerate(include_ids):
             max_redundancy = 0.0
             if redundancy.shape[0] > 0:
                 max_redundancy = redundancy[index].max()
             candidate = _Candidate(
-                id=id,
+                id=candidate_id,
                 weighted_similarity=self.lambda_mult * similarity[index][0],
                 weighted_redundancy=self.lambda_mult_complement * max_redundancy,
             )
