@@ -1,0 +1,102 @@
+.Load
+[%collapsible%open]
+====
+[source,python]
+----
+import asyncio
+
+import requests
+from bs4 import BeautifulSoup
+from dotenv import load_dotenv
+from markdownify import MarkdownConverter
+
+import cassio
+from langchain_community.document_loaders import AsyncHtmlLoader
+from langchain_core.documents import Document
+from langchain_openai import OpenAIEmbeddings
+from ragstack_knowledge_store.graph_store import CONTENT_ID
+from ragstack_langchain.graph_store import CassandraGraphStore
+from ragstack_langchain.graph_store.extractors import HtmlLinkEdgeExtractor
+from typing import AsyncIterator, Iterable
+
+SITEMAPS = [
+    "https://docs.datastax.com/en/sitemap-astra-db-vector.xml",
+]
+EXTRA_URLS = ["https://github.com/jbellis/jvector"]
+SITE_PREFIX = "astra"
+
+def load_pages(sitemap_url):
+    r = requests.get(
+        sitemap_url,
+        headers={
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:58.0) Gecko/20100101 Firefox/58.0",
+        },
+    )
+    xml = r.text
+    soup = BeautifulSoup(xml, features="xml")
+    url_tags = soup.find_all("url")
+    for url in url_tags:
+        yield (url.find("loc").text)
+
+URLS = [url for sitemap_url in SITEMAPS for url in load_pages(sitemap_url)] + EXTRA_URLS
+
+markdown_converter = MarkdownConverter(heading_style="ATX")
+html_link_extractor = HtmlLinkEdgeExtractor()
+
+def select_content(soup: BeautifulSoup, url: str) -> BeautifulSoup:
+    if url.startswith("https://docs.datastax.com/en/"):
+        return soup.select_one("article.doc")
+    elif url.startswith("https://github.com"):
+        return soup.select_one("article.entry-content")
+    else:
+        return soup
+
+async def load_and_process_pages(urls: Iterable[str]) -> AsyncIterator[Document]:
+    loader = AsyncHtmlLoader(
+        urls,
+        requests_per_second=4,
+        header_template={"User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:58.0) Gecko/20100101 Firefox/58.0"},
+    )
+    async for html in loader.alazy_load():
+        url = html.metadata["source"]
+        html.metadata[CONTENT_ID] = url
+        soup = BeautifulSoup(html.page_content, "html.parser")
+        content = select_content(soup, url)
+        html_link_extractor.extract_one(html, content)
+        html.page_content = markdown_converter.convert_soup(content)
+        yield html
+
+# Setup environment and database
+load_dotenv()
+cassio.init(auto=True)
+embeddings = OpenAIEmbeddings()
+graph_store = CassandraGraphStore(
+    embeddings, node_table=f"{SITE_PREFIX}_nodes", edge_table=f"{SITE_PREFIX}_edges"
+)
+
+docs = []
+
+async def process_documents():
+    not_found, found = 0, 0
+    docs = []
+    async for doc in load_and_process_pages(URLS):
+        if doc.page_content.startswith("\n# Page Not Found"):
+            not_found += 1
+            continue
+
+        docs.append(doc)
+        found += 1
+
+        if len(docs) >= 50:
+            graph_store.add_documents(docs)
+            docs.clear()
+
+    if docs:
+        graph_store.add_documents(docs)
+
+    print(f"{not_found} (of {not_found + found}) URLs were not found")
+
+if __name__ == "__main__":
+    asyncio.run(process_documents())
+----
+====
