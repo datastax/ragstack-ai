@@ -1,4 +1,4 @@
-from typing import Any, List, Optional, Tuple
+from typing import TYPE_CHECKING, Any, List, Optional, Tuple
 
 from langchain_core.callbacks.manager import (
     AsyncCallbackManagerForRetrieverRun,
@@ -6,8 +6,10 @@ from langchain_core.callbacks.manager import (
 )
 from langchain_core.documents import Document
 from langchain_core.retrievers import BaseRetriever
-from ragstack_colbert import Chunk
 from ragstack_colbert.base_retriever import BaseRetriever as ColbertBaseRetriever
+
+if TYPE_CHECKING:
+    from ragstack_colbert import Chunk
 
 
 class ColbertRetriever(BaseRetriever):

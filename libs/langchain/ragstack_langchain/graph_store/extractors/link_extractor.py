@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Generic, Iterable, Set, TypeVar
+from typing import TYPE_CHECKING, Generic, Iterable, Set, TypeVar
 
-from ragstack_langchain.graph_store.links import Link
+if TYPE_CHECKING:
+    from ragstack_langchain.graph_store.links import Link
 
 InputT = TypeVar("InputT")
 

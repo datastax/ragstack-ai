@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from abc import abstractmethod
 from typing import (
+    TYPE_CHECKING,
     Any,
     AsyncIterable,
     ClassVar,
@@ -13,10 +14,6 @@ from typing import (
     Set,
 )
 
-from langchain_core.callbacks import (
-    AsyncCallbackManagerForRetrieverRun,
-    CallbackManagerForRetrieverRun,
-)
 from langchain_core.documents import Document
 from langchain_core.load import Serializable
 from langchain_core.pydantic_v1 import Field
@@ -24,6 +21,12 @@ from langchain_core.runnables import run_in_executor
 from langchain_core.vectorstores import VectorStore, VectorStoreRetriever
 
 from ragstack_langchain.graph_store.links import METADATA_LINKS_KEY, Link
+
+if TYPE_CHECKING:
+    from langchain_core.callbacks import (
+        AsyncCallbackManagerForRetrieverRun,
+        CallbackManagerForRetrieverRun,
+    )
 
 
 def _has_next(iterator: Iterator) -> bool:

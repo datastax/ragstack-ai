@@ -166,7 +166,6 @@ class ColbertRetriever(BaseRetriever):
         """
         Closes any open resources held by the retriever.
         """
-        pass
 
     async def _query_relevant_chunks(
         self, query_embedding: Embedding, top_k: int

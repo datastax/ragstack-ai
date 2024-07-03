@@ -252,4 +252,4 @@ class Analysis:
         elif output == "histogram-grid":
             self.output_histograms_by_dataset(df=df, metrics=metrics)
         else:
-            raise ValueError()
+            raise ValueError
