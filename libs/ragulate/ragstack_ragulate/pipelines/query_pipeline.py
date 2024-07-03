@@ -30,8 +30,8 @@ class QueryPipeline(BasePipeline):
     _tru: Tru
     _name: str
     _progress: tqdm
-    _queries: Dict[str, List[str]] = {}
-    _golden_sets: Dict[str, List[Dict[str, str]]] = {}
+    _queries: Dict[str, List[str]]
+    _golden_sets: Dict[str, List[Dict[str, str]]]
     _total_queries: int = 0
     _total_feedbacks: int = 0
     _finished_feedbacks: int = 0
@@ -60,6 +60,8 @@ class QueryPipeline(BasePipeline):
         model_name: Optional[str] = None,
         **kwargs,
     ):
+        self._queries = {}
+        self._golden_sets = {}
         super().__init__(
             recipe_name=recipe_name,
             script_path=script_path,

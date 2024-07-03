@@ -276,7 +276,7 @@ class GraphStore:
             CREATE CUSTOM INDEX IF NOT EXISTS {self._node_table}_text_embedding_index
             ON {self._keyspace}.{self._node_table}(text_embedding)
             USING 'StorageAttachedIndex';
-        """)  # noqa: E501
+        """)
 
         # Index on target_text_embedding (for similarity search)
         self._session.execute(f"""
@@ -291,7 +291,7 @@ class GraphStore:
     # TODO: Async (aadd_nodes)
     def add_nodes(
         self,
-        nodes: Iterable[Node] = None,
+        nodes: Iterable[Node],
     ) -> Iterable[str]:
         node_ids = []
         texts = []

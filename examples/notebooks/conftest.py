@@ -30,7 +30,7 @@ def try_delete_with_backoff(collection: str, sleep=1, max_tries=2):
     try:
         logging.info(f"deleting collection {collection}")
         response = client.delete_collection(collection)
-        logging.info(f"delete collection {collection} response: {str(response)}")
+        logging.info(f"delete collection {collection} response: {response!s}")
     except Exception as e:
         max_tries -= 1
         if max_tries < 0:

@@ -6,10 +6,19 @@ from cassandra.cluster import PreparedStatement, ResponseFuture, Session
 from cassio.config import check_resolve_keyspace, check_resolve_session
 
 
-class Node(NamedTuple):
+class _Node(NamedTuple):
     name: str
     type: str
-    properties: Dict[str, Any] = {}
+    properties: Dict[str, Any]
+
+
+class Node(_Node):
+    __slots__ = ()
+
+    def __new__(cls, name, type, properties=None):
+        if properties is None:
+            properties = {}
+        return super().__new__(cls, name, type, properties)
 
     def __repr__(self):
         return f"{self.name} ({self.type})"
@@ -64,7 +73,7 @@ def _prepare_edge_query(
         WHERE {edge_source_name} = ?
         AND {edge_source_type} = ?"""
     if edge_filters:
-        query = "\n        AND ".join([query] + edge_filters)
+        query = "\n        AND ".join([query, *edge_filters])
     return session.prepare(query)
 
 
