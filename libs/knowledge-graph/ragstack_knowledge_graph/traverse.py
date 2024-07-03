@@ -15,7 +15,7 @@ class _Node(NamedTuple):
 class Node(_Node):
     __slots__ = ()
 
-    def __new__(cls, name, type, properties=None):
+    def __new__(cls, name, type, properties=None):  # noqa: A002
         if properties is None:
             properties = {}
         return super().__new__(cls, name, type, properties)

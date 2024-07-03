@@ -102,7 +102,7 @@ class HtmlLinkExtractor(LinkExtractor[HtmlInput]):
 
     def extract_one(
         self,
-        input: HtmlInput,
+        input: HtmlInput,  # noqa: A002
     ) -> Set[Link]:
         content = input.content
         if isinstance(content, str):

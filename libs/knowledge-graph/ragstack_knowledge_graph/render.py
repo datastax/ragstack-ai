@@ -20,8 +20,7 @@ def print_graph_documents(
         for relation in doc.relationships:
             source = relation.source
             target = relation.target
-            type = relation.type
-            print(f"{_node_label(source)} -> {_node_label(target)}: {type}")
+            print(f"{_node_label(source)} -> {_node_label(target)}: {relation.type}")
 
 
 def render_graph_documents(
