@@ -15,18 +15,32 @@ Use ColBERT, Astra DB, and RAGStack to:
 
 For more information, see xref:colbert:index.adoc[].
 
-== Prerequisites
-
 [NOTE]
 ====
 To run ragstack-ai-colbert in a Windows environment, use https://learn.microsoft.com/en-us/windows/wsl/install[Windows Subsystem for Linux].
 ====
 
-Import the ragstack-ai-colbert package:
+== Prerequisites
+
+. Install dependencies:
++
 [source,python]
 ----
-pip install ragstack-ai-colbert
+pip install ragstack-ai-colbert python-dotenv
 ----
++
+. Create a `.env` file in your application directory with the following environment variables:
++
+[source,bash]
+----
+ASTRA_DB_APPLICATION_TOKEN=AstraCS: ...
+ASTRA_DB_ID=2eab82dc-9032-45ba-aeb0-a481b6f9458d
+----
++
+[NOTE]
+====
+In an Astra API endpoint like `https://2eab82dc-9032-45ba-aeb0-a481b6f9458d-us-east-1.apps.astra.datastax.com`, the `ASTRA_DB_ID` is `2eab82dc-9032-45ba-aeb0-a481b6f9458d`.
+====
 
 == Prepare data and create embeddings
 
@@ -51,12 +65,14 @@ arctic_botany_texts = list(arctic_botany_dict.values())
 +
 [source,python]
 ----
-from getpass import getpass
+from dotenv import load_dotenv
 from ragstack_colbert import CassandraDatabase, ColbertEmbeddingModel, ColbertVectorStore
 
+load_dotenv()
+
 keyspace="default_keyspace"
-database_id=getpass("Enter your Astra Database Id:")
-astra_token=getpass("Enter your Astra Token:")
+database_id=os.getenv("ASTRA_DB_ID")
+astra_token=os.getenv("ASTRA_DB_APPLICATION_TOKEN")
 
 database = CassandraDatabase.from_astra(
     astra_token=astra_token,
@@ -105,8 +121,8 @@ retriever = ColbertRetriever(
 )
 
 answers = retriever.text_search("What's arctic botany", k=2)
-for answer in answers:
-  print(f"Rank: {answer.rank} Score: {answer.score} Text: {answer.data.text}\n")
+for rank, (answer, score) in enumerate(answers):
+    print(f"Rank: {rank} Score: {score} Text: {answer.text}\n")
 ----
 
 Result::
