@@ -22,7 +22,7 @@ for app in tru.get_apps():
     ]
     columns_to_drop = [col for col in df_records.columns if col not in columns_to_keep]
 
-    df_records.drop(columns=columns_to_drop, inplace=True)
+    df_records = df_records.drop(columns=columns_to_drop)
 
     df_records["test"] = app_id.split("#")[0]
     df_records["test_uuid"] = app_id.split("#")[1]

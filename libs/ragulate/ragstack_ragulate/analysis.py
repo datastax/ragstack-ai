@@ -22,7 +22,7 @@ class Analysis:
 
             for app in tru.get_apps():
                 dataset = app["app_id"]
-                df, metrics = tru.get_records_and_feedback([dataset])
+                df_records, metrics = tru.get_records_and_feedback([dataset])
                 all_metrics.extend(metrics)
 
                 columns_to_keep = [
@@ -33,24 +33,24 @@ class Analysis:
                     "total_cost",
                 ]
                 columns_to_drop = [
-                    col for col in df.columns if col not in columns_to_keep
+                    col for col in df_records.columns if col not in columns_to_keep
                 ]
 
-                df.drop(columns=columns_to_drop, inplace=True)
-                df["recipe"] = recipe
-                df["dataset"] = dataset
+                df_records = df_records.drop(columns=columns_to_drop)
+                df_records["recipe"] = recipe
+                df_records["dataset"] = dataset
 
                 # set negative values to None
                 for metric in metrics:
-                    df.loc[df[metric] < 0, metric] = None
+                    df_records.loc[df_records[metric] < 0, metric] = None
 
-                df_all = pd.concat([df_all, df], axis=0, ignore_index=True)
+                df_all = pd.concat([df_all, df_records], axis=0, ignore_index=True)
 
             tru.delete_singleton()
 
-        df_all.reset_index(drop=True, inplace=True)
+        reset_df = df_all.reset_index(drop=True)
 
-        return df_all, list(set(all_metrics))
+        return reset_df, list(set(all_metrics))
 
     def calculate_statistics(self, df: pd.DataFrame, metrics: list):
         stats = {}
