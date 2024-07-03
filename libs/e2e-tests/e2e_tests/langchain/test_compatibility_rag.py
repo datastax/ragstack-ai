@@ -499,4 +499,4 @@ def test_chat(chat, request, record_property):
         record_langsmith_sharelink(run_id, record_property)
         assert "Syracuse" in str(
             response.content
-        ), f"Expected Syracuse in the answer but got: {str(response.content)}"
+        ), f"Expected Syracuse in the answer but got: {response.content!s}"

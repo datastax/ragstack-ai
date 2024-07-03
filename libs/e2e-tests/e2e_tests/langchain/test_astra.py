@@ -193,7 +193,7 @@ def test_basic_metadata_filtering_no_vector(vectorstore: AstraDBVectorStore):
         else:
             pytest.fail(
                 f"Should have thrown ValueError with UNSUPPORTED_FILTER_OPERATION "
-                f"but it was {e}"  # noqa: E501
+                f"but it was {e}"
             )
 
 

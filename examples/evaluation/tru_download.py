@@ -10,7 +10,8 @@ for app in tru.get_apps():
     print(f"Downloading data for {app_id}...")
     df_records, feedback_columns = tru.get_records_and_feedback([app_id])
 
-    columns_to_keep = feedback_columns + [
+    columns_to_keep = [
+        *feedback_columns,
         "record_id",
         "input",
         "output",

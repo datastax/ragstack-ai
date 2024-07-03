@@ -25,7 +25,8 @@ class Analysis:
                 df, metrics = tru.get_records_and_feedback([dataset])
                 all_metrics.extend(metrics)
 
-                columns_to_keep = metrics + [
+                columns_to_keep = [
+                    *metrics,
                     "record_id",
                     "latency",
                     "total_tokens",
