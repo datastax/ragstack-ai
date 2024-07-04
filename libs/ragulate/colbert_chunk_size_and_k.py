@@ -1,4 +1,4 @@
-# ruff: noqa: T201
+# ruff: noqa: INP001, T201
 import logging
 import os
 import time
