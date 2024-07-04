@@ -201,7 +201,7 @@ def test_vector_search_with_metadata(environment: Environment):
     # assert len(documents) == 0
 
 
-@pytest.fixture
+@pytest.fixture()
 def environment() -> Environment:
     if not is_astra:
         skip_test_due_to_implementation_not_supported("astradb")

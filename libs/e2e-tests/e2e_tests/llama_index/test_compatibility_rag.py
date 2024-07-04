@@ -37,12 +37,12 @@ def _openai_llm(**kwargs) -> OpenAI:
     return OpenAI(api_key=get_required_env("OPENAI_API_KEY"), **kwargs)
 
 
-@pytest.fixture
+@pytest.fixture()
 def openai_gpt35turbo_llm():
     return _openai_llm(model="gpt-3.5-turbo")
 
 
-@pytest.fixture
+@pytest.fixture()
 def openai_gpt4_llm():
     return _openai_llm(model="gpt-4")
 
@@ -51,22 +51,22 @@ def _openai_embeddings(**kwargs) -> OpenAIEmbedding:
     return OpenAIEmbedding(api_key=get_required_env("OPENAI_API_KEY"), **kwargs)
 
 
-@pytest.fixture
+@pytest.fixture()
 def openai_ada002_embedding():
     return 1536, _openai_embeddings(model="text-embedding-ada-002")
 
 
-@pytest.fixture
+@pytest.fixture()
 def openai_3small_embedding():
     return 1536, _openai_embeddings(model="text-embedding-3-small")
 
 
-@pytest.fixture
+@pytest.fixture()
 def openai_3large_embedding():
     return 3072, _openai_embeddings(model="text-embedding-3-large")
 
 
-@pytest.fixture
+@pytest.fixture()
 def azure_openai_gpt35turbo_llm():
     # model is configurable because it can be different from the deployment
     # but the targeting model must be gpt-35-turbo
@@ -78,7 +78,7 @@ def azure_openai_gpt35turbo_llm():
     )
 
 
-@pytest.fixture
+@pytest.fixture()
 def azure_openai_ada002_embedding():
     # model is configurable because it can be different from the deployment
     # but the targeting model must be ada-002
@@ -97,12 +97,12 @@ def azure_openai_ada002_embedding():
     )
 
 
-@pytest.fixture
+@pytest.fixture()
 def vertex_bison_llm():
     return Vertex(model="chat-bison")
 
 
-@pytest.fixture
+@pytest.fixture()
 def vertex_gecko_langchain_embedding():
     # Llama-Index doesn't have Vertex AI embedding
     # so we use LangChain's wrapped one
@@ -118,26 +118,26 @@ def _bedrock_llm(**kwargs):
     )
 
 
-@pytest.fixture
+@pytest.fixture()
 def bedrock_anthropic_claudev2_llm():
     return _bedrock_llm(
         model="anthropic.claude-v2",
     )
 
 
-@pytest.fixture
+@pytest.fixture()
 def bedrock_ai21_jurassic2mid_llm():
     return _bedrock_llm(
         model="ai21.j2-mid-v1",
     )
 
 
-@pytest.fixture
+@pytest.fixture()
 def bedrock_meta_llama2_llm():
     return _bedrock_llm(model="meta.llama2-13b-chat-v1")
 
 
-@pytest.fixture
+@pytest.fixture()
 def bedrock_titan_embedding():
     return (
         1536,
@@ -148,7 +148,7 @@ def bedrock_titan_embedding():
     )
 
 
-@pytest.fixture
+@pytest.fixture()
 def bedrock_cohere_embedding():
     import boto3
 
@@ -163,7 +163,7 @@ def bedrock_cohere_embedding():
     )
 
 
-@pytest.fixture
+@pytest.fixture()
 def huggingface_hub_flant5xxl_llm():
     # lazy import to supported disabling test
     from llama_index.llms.huggingface import HuggingFaceInferenceAPI
@@ -174,7 +174,7 @@ def huggingface_hub_flant5xxl_llm():
     )
 
 
-@pytest.fixture
+@pytest.fixture()
 def huggingface_hub_minilml6v2_embedding():
     # There's a bug in Llama-Index HuggingFace Hub embedding
     # so we use LangChain's wrapped one for now
@@ -189,7 +189,7 @@ def huggingface_hub_minilml6v2_embedding():
 
 @pytest.mark.parametrize("vector_store", ["cassandra", "astra_db"])
 @pytest.mark.parametrize(
-    "embedding,llm",
+    ("embedding", "llm"),
     [
         ("openai_ada002_embedding", "openai_gpt35turbo_llm"),
         ("openai_3large_embedding", "openai_gpt35turbo_llm"),
@@ -241,13 +241,13 @@ def test_rag(vector_store, embedding, llm, request):
     assert "2020" in response, f"Expected 2020 in response, got {response}"
 
 
-@pytest.fixture
+@pytest.fixture()
 def vertex_gemini_multimodal_embedding():
     # this is from LangChain, LLamaIndex does not have Vertex Embeddings support yet
     return MultiModalEmbeddingModel.from_pretrained("multimodalembedding@001"), 1408
 
 
-@pytest.fixture
+@pytest.fixture()
 def vertex_gemini_pro_llm():
     return Vertex(model="gemini-pro")
 
@@ -271,19 +271,19 @@ def _complete_multimodal_vertex(llm, prompt, image_path):
     return llm.chat(history).message.content
 
 
-@pytest.fixture
+@pytest.fixture()
 def vertex_gemini_pro_vision_llm():
     return Vertex(model="gemini-pro-vision"), _complete_multimodal_vertex
 
 
-@pytest.fixture
+@pytest.fixture()
 def gemini_pro_llm():
     return Gemini(
         api_key=get_required_env("GOOGLE_API_KEY"), model_name="models/gemini-pro"
     )
 
 
-@pytest.fixture
+@pytest.fixture()
 def gemini_pro_vision_llm():
     return (
         GeminiMultiModal(
@@ -301,7 +301,7 @@ def gemini_pro_vision_llm():
     ["astra_db", "cassandra"],
 )
 @pytest.mark.parametrize(
-    "embedding,llm",
+    ("embedding", "llm"),
     [
         # disable due to this bug:
         # https://github.com/googleapis/python-aiplatform/issues/3227

@@ -67,12 +67,12 @@ def validate_retrieval(results: List[Document], key_value: str):
     return passed
 
 
-@pytest.fixture
+@pytest.fixture()
 def cassandra():
     return get_local_cassandra_test_store()
 
 
-@pytest.fixture
+@pytest.fixture()
 def astra_db():
     return get_astradb_test_store()
 
@@ -134,7 +134,7 @@ def test_sync_from_docs(request, vector_store: str):
 
 
 @pytest.mark.parametrize("vector_store", ["cassandra", "astra_db"])
-@pytest.mark.asyncio
+@pytest.mark.asyncio()
 async def test_async_from_docs(request, vector_store: str):
     vector_store = request.getfixturevalue(vector_store)
     session = vector_store.create_cassandra_session()

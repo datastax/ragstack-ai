@@ -41,7 +41,7 @@ from e2e_tests.test_utils.tracing import record_langsmith_sharelink
 from e2e_tests.test_utils.vector_store_handler import VectorStoreImplementation
 
 
-@pytest.fixture
+@pytest.fixture()
 def astra_db():
     handler = get_vector_store_handler(VectorStoreImplementation.ASTRADB)
     context = handler.before_test()
@@ -49,7 +49,7 @@ def astra_db():
     handler.after_test()
 
 
-@pytest.fixture
+@pytest.fixture()
 def cassandra():
     handler = get_vector_store_handler(VectorStoreImplementation.CASSANDRA)
     context = handler.before_test()
@@ -63,19 +63,19 @@ def _chat_openai(**kwargs) -> callable:
     )
 
 
-@pytest.fixture
+@pytest.fixture()
 def openai_gpt35turbo_llm():
     model = "gpt-3.5-turbo"
     return {"llm": _chat_openai(model=model, streaming=False), "nemo_config": None}
 
 
-@pytest.fixture
+@pytest.fixture()
 def openai_gpt35turbo_llm_streaming():
     model = "gpt-3.5-turbo"
     return {"llm": _chat_openai(model=model, streaming=True), "nemo_config": None}
 
 
-@pytest.fixture
+@pytest.fixture()
 def openai_gpt4_llm():
     model = "gpt-4"
 
@@ -85,7 +85,7 @@ def openai_gpt4_llm():
     }
 
 
-@pytest.fixture
+@pytest.fixture()
 def openai_gpt4o_llm():
     model = "gpt-4o"
 
@@ -101,22 +101,22 @@ def _openai_embeddings(**kwargs) -> callable:
     )
 
 
-@pytest.fixture
+@pytest.fixture()
 def openai_ada002_embedding():
     return _openai_embeddings(model="text-embedding-ada-002")
 
 
-@pytest.fixture
+@pytest.fixture()
 def openai_3small_embedding():
     return _openai_embeddings(model="text-embedding-3-small")
 
 
-@pytest.fixture
+@pytest.fixture()
 def openai_3large_embedding():
     return _openai_embeddings(model="text-embedding-3-large")
 
 
-@pytest.fixture
+@pytest.fixture()
 def astra_vectorize_openai_small():
     def call():
         from astrapy.info import CollectionVectorServiceOptions
@@ -132,7 +132,7 @@ def astra_vectorize_openai_small():
     return call
 
 
-@pytest.fixture
+@pytest.fixture()
 def azure_openai_gpt35turbo_llm():
     # model is configurable because it can be different from the deployment
     # but the targeting model must be gpt-35-turbo
@@ -150,7 +150,7 @@ def azure_openai_gpt35turbo_llm():
     }
 
 
-@pytest.fixture
+@pytest.fixture()
 def azure_openai_ada002_embedding():
     def embedding():
         # model is configurable because it can be different from the deployment
@@ -170,7 +170,7 @@ def azure_openai_ada002_embedding():
     return embedding
 
 
-@pytest.fixture
+@pytest.fixture()
 def vertex_geminipro_llm():
     def llm():
         return ChatVertexAI(model_name="gemini-pro")
@@ -178,7 +178,7 @@ def vertex_geminipro_llm():
     return {"llm": llm, "nemo_config": None}
 
 
-@pytest.fixture
+@pytest.fixture()
 def vertex_gecko_embedding() -> callable:
     return lambda: VertexAIEmbeddings(model_name="textembedding-gecko")
 
@@ -189,7 +189,7 @@ def _bedrock_chat(**kwargs) -> callable:
     )
 
 
-@pytest.fixture
+@pytest.fixture()
 def bedrock_anthropic_claudev2_llm():
     return {
         "llm": _bedrock_chat(
@@ -199,7 +199,7 @@ def bedrock_anthropic_claudev2_llm():
     }
 
 
-@pytest.fixture
+@pytest.fixture()
 def bedrock_mistral_mistral7b_llm():
     return {
         "llm": _bedrock_chat(model_id="mistral.mistral-7b-instruct-v0:2"),
@@ -207,7 +207,7 @@ def bedrock_mistral_mistral7b_llm():
     }
 
 
-@pytest.fixture
+@pytest.fixture()
 def bedrock_meta_llama2_llm():
     return {
         "llm": _bedrock_chat(model_id="meta.llama2-13b-chat-v1"),
@@ -215,7 +215,7 @@ def bedrock_meta_llama2_llm():
     }
 
 
-@pytest.fixture
+@pytest.fixture()
 def bedrock_titan_embedding() -> callable:
     return lambda: BedrockEmbeddings(
         model_id="amazon.titan-embed-text-v1",
@@ -223,7 +223,7 @@ def bedrock_titan_embedding() -> callable:
     )
 
 
-@pytest.fixture
+@pytest.fixture()
 def bedrock_cohere_embedding() -> callable:
     return lambda: BedrockEmbeddings(
         model_id="cohere.embed-english-v3",
@@ -231,7 +231,7 @@ def bedrock_cohere_embedding() -> callable:
     )
 
 
-@pytest.fixture
+@pytest.fixture()
 def huggingface_hub_flant5xxl_llm():
     return {
         "llm": lambda: HuggingFaceHub(
@@ -243,7 +243,7 @@ def huggingface_hub_flant5xxl_llm():
     }
 
 
-@pytest.fixture
+@pytest.fixture()
 def huggingface_hub_minilml6v2_embedding():
     return lambda: HuggingFaceInferenceAPIEmbeddings(
         api_key=get_required_env("HUGGINGFACE_HUB_KEY"),
@@ -251,7 +251,7 @@ def huggingface_hub_minilml6v2_embedding():
     )
 
 
-@pytest.fixture
+@pytest.fixture()
 def nvidia_aifoundation_embedqa4_embedding():
     def embedding():
         get_required_env("NVIDIA_API_KEY")
@@ -262,7 +262,7 @@ def nvidia_aifoundation_embedqa4_embedding():
     return embedding
 
 
-@pytest.fixture
+@pytest.fixture()
 def nvidia_aifoundation_mixtral8x7b_llm():
     def llm():
         get_required_env("NVIDIA_API_KEY")
@@ -284,7 +284,7 @@ def nvidia_aifoundation_mixtral8x7b_llm():
     ["astra_db", "cassandra"],
 )
 @pytest.mark.parametrize(
-    "embedding,llm",
+    ("embedding", "llm"),
     [
         ("openai_ada002_embedding", "openai_gpt35turbo_llm"),
         ("openai_3large_embedding", "openai_gpt35turbo_llm_streaming"),
@@ -364,29 +364,29 @@ def _run_test(
         raise ValueError(f"Unknown test case: {test_case}")
 
 
-@pytest.fixture
+@pytest.fixture()
 def vertex_gemini_multimodal_embedding():
     return MultiModalEmbeddingModel.from_pretrained("multimodalembedding@001"), 1408
 
 
-@pytest.fixture
+@pytest.fixture()
 def vertex_gemini_pro_vision_llm():
     return ChatVertexAI(model_name="gemini-pro-vision")
 
 
-@pytest.fixture
+@pytest.fixture()
 def vertex_gemini_pro_llm():
     return ChatVertexAI(model_name="gemini-pro")
 
 
-@pytest.fixture
+@pytest.fixture()
 def gemini_pro_vision_llm():
     return ChatGoogleGenerativeAI(
         model="gemini-pro-vision", google_api_key=get_required_env("GOOGLE_API_KEY")
     )
 
 
-@pytest.fixture
+@pytest.fixture()
 def gemini_pro_llm():
     return ChatGoogleGenerativeAI(
         model="gemini-pro", google_api_key=get_required_env("GOOGLE_API_KEY")
@@ -398,7 +398,7 @@ def gemini_pro_llm():
     ["astra_db", "cassandra"],
 )
 @pytest.mark.parametrize(
-    "embedding,llm",
+    ("embedding", "llm"),
     [
         # disable due to this bug:
         # https://github.com/googleapis/python-aiplatform/issues/3227

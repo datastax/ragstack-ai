@@ -32,12 +32,12 @@ def validate_retrieval(results: List[NodeWithScore], key_value: str):
     return passed
 
 
-@pytest.fixture
+@pytest.fixture()
 def cassandra():
     return get_local_cassandra_test_store()
 
 
-@pytest.fixture
+@pytest.fixture()
 def astra_db():
     return get_astradb_test_store()
 
