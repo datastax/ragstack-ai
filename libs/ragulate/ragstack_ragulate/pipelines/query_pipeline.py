@@ -17,9 +17,9 @@ from trulens_eval.feedback.provider.base import LLMProvider
 from trulens_eval.schema.feedback import FeedbackMode, FeedbackResultStatus
 
 from ragstack_ragulate.datasets import BaseDataset
+from ragstack_ragulate.logging_config import logger
+from ragstack_ragulate.utils import get_tru
 
-from ..logging_config import logger
-from ..utils import get_tru
 from .base_pipeline import BasePipeline
 from .feedbacks import Feedbacks
 

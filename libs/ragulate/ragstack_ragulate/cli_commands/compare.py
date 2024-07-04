@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from ..analysis import Analysis
+from ragstack_ragulate.analysis import Analysis
 
 
 def setup_compare(subparsers):
