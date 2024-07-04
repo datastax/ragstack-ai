@@ -28,21 +28,23 @@ client = AstraDB(
 
 def try_delete_with_backoff(collection: str, sleep=1, max_tries=2):
     try:
-        logging.info(f"deleting collection {collection}")
+        logging.info("deleting collection %s", collection)
         response = client.delete_collection(collection)
-        logging.info(f"delete collection {collection} response: {response!s}")
-    except Exception as e:
+        logging.info("delete collection %s response: %s", collection, response)
+    except Exception:
         max_tries -= 1
         if max_tries < 0:
             raise
 
-        logging.warning(f"An exception occurred deleting collection {collection}: {e}")
+        logging.warning(
+            "An exception occurred deleting collection %s: ", collection, exc_info=True
+        )
         time.sleep(sleep)
         try_delete_with_backoff(collection, sleep * 2, max_tries)
 
 
 def before_notebook():
     collections = client.get_collections().get("status").get("collections")
-    logging.info(f"Existing collections: {collections}")
+    logging.info("Existing collections: %s", collections)
     for collection in collections:
         try_delete_with_backoff(collection)

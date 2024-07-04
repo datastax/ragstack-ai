@@ -92,9 +92,11 @@ class BasePipeline(ABC):
             )
         except BaseException:  # noqa: BLE001
             logging.critical(
-                f"Issue loading recipe {self.recipe_name} "
-                f"on {self.script_path}/{self.method_name} "
-                f"with passed ingredients: {self._passed_ingredients}",
+                "Issue loading recipe %s on %s/%s with passed ingredients: %s",
+                self.recipe_name,
+                self.script_path,
+                self.method_name,
+                self._passed_ingredients,
                 exc_info=True,
             )
             exit(1)

@@ -40,9 +40,10 @@ def all_gpus_support_fp16(is_cuda: Optional[bool] = False):
             compute_capability[0] == 5 and compute_capability[1] < 3
         ):
             logging.info(
-                f"Device {device_id} with compute capability {compute_capability} "
-                f"does not support FP16 (half-precision) operations. "
-                f"Using FP32 (full-precision) operations."
+                "Device %s with compute capability %s does not support FP16 "
+                "(half-precision) operations. Using FP32 (full-precision) operations.",
+                device_id,
+                compute_capability,
             )
             return False
 
@@ -186,8 +187,9 @@ class ColbertRetriever(BaseRetriever):
         for result in results:
             if isinstance(result, Exception):
                 logging.error(
-                    f"Issue on database.get_relevant_chunks(): "
-                    f"{result} at {get_trace(result)}"
+                    "Issue on database.get_relevant_chunks(): %s at %s",
+                    result,
+                    get_trace(result),
                 )
             else:
                 chunks.update(result)
@@ -209,8 +211,9 @@ class ColbertRetriever(BaseRetriever):
         for result in results:
             if isinstance(result, Exception):
                 logging.error(
-                    f"Issue on database.get_chunk_embeddings(): "
-                    f"{result} at {get_trace(result)}"
+                    "Issue on database.get_chunk_embeddings():  %s at %s",
+                    result,
+                    get_trace(result),
                 )
 
         return results
@@ -261,8 +264,9 @@ class ColbertRetriever(BaseRetriever):
         for result in results:
             if isinstance(result, Exception):
                 logging.error(
-                    f"Issue on database.get_chunk_data(): "
-                    f"{result} at {get_trace(result)}"
+                    "Issue on database.get_chunk_data(): %s at %s",
+                    result,
+                    get_trace(result),
                 )
 
         return results
@@ -335,8 +339,10 @@ class ColbertRetriever(BaseRetriever):
 
         top_k = max(math.floor(len(query_embedding) / 2), 16)
         logging.debug(
-            f"based on query length of {len(query_embedding)} tokens, "
-            f"retrieving {top_k} results per token-embedding"
+            "based on query length of %s tokens, retrieving %s results per "
+            "token-embedding",
+            len(query_embedding),
+            top_k,
         )
 
         # search for relevant chunks (only with `doc_id` and `chunk_id` set)

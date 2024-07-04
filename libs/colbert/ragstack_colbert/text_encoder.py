@@ -57,7 +57,7 @@ class TextEncoder:
             verbose (int): The level of logging to use
         """
 
-        logging.info(f"Cuda enabled GPU available: {torch.cuda.is_available()}")
+        logging.info("Cuda enabled GPU available: %s", torch.cuda.is_available())
 
         self._checkpoint = Checkpoint(
             config.checkpoint, colbert_config=config, verbose=verbose
@@ -79,7 +79,7 @@ class TextEncoder:
                 document lengths.
         """
 
-        logging.debug(f"#> Encoding {len(chunks)} chunks..")
+        logging.debug("#> Encoding %s chunks..", len(chunks))
 
         embedded_chunks: List[Chunk] = []
 
@@ -115,7 +115,7 @@ class TextEncoder:
         if query_maxlen < 0:
             tokens = self._checkpoint.query_tokenizer.tokenize([text])
             query_maxlen = calculate_query_maxlen(tokens)
-            logging.debug(f"Calculated dynamic query_maxlen of {query_maxlen}")
+            logging.debug("Calculated dynamic query_maxlen of %s", query_maxlen)
 
         prev_query_maxlen = self._checkpoint.query_tokenizer.query_maxlen
         self._checkpoint.query_tokenizer.query_maxlen = query_maxlen
