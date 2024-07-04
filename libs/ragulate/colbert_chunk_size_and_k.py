@@ -1,3 +1,4 @@
+# ruff: noqa: T201
 import logging
 import os
 import time

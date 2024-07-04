@@ -1,3 +1,4 @@
+# ruff: noqa: T201
 import os
 
 from langchain_astradb import AstraDBVectorStore
