@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, List, Optional, Tuple
+from typing import TYPE_CHECKING, List, Optional, Tuple
 
 from llama_index.core.callbacks.base import CallbackManager
 from llama_index.core.constants import DEFAULT_SIMILARITY_TOP_K
@@ -30,7 +30,6 @@ class ColbertRetriever(BaseRetriever):
         object_map: Optional[dict] = None,
         verbose: bool = False,
         query_maxlen: int = -1,
-        **kwargs: Any,
     ) -> None:
         """Initialize params."""
         self._retriever = retriever

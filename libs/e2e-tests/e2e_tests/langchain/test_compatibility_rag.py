@@ -20,6 +20,7 @@ from langchain_openai import (
     ChatOpenAI,
     OpenAIEmbeddings,
 )
+from typing_extensions import override
 from vertexai.vision_models import Image, MultiModalEmbeddingModel
 
 from e2e_tests.conftest import (
@@ -415,9 +416,11 @@ def test_multimodal(vector_store, embedding, llm, request, record_property):
     resolved_embedding, embedding_size = request.getfixturevalue(embedding)
 
     class FakeEmbeddings(Embeddings):
+        @override
         def embed_documents(self, texts: List[str]) -> List[List[float]]:
             return [[0.0] * embedding_size] * len(texts)
 
+        @override
         def embed_query(self, text: str) -> List[float]:
             return [0.0] * embedding_size
 

@@ -16,6 +16,7 @@ import math
 from typing import Any, Dict, List, Optional, Set, Tuple
 
 import torch
+from typing_extensions import override
 
 from .base_database import BaseDatabase
 from .base_embedding_model import BaseEmbeddingModel
@@ -271,6 +272,7 @@ class ColbertRetriever(BaseRetriever):
 
         return results
 
+    @override
     async def atext_search(
         self,
         query_text: str,
@@ -310,6 +312,7 @@ class ColbertRetriever(BaseRetriever):
             **kwargs,
         )
 
+    @override
     async def aembedding_search(
         self,
         query_embedding: Embedding,
@@ -322,10 +325,9 @@ class ColbertRetriever(BaseRetriever):
         using semantic similarity as the criteria.
 
         Parameters:
-            query_text (str): The query text to search for relevant text chunks.
-            k (Optional[int]): The number of top results to retrieve. Default 5.
-            query_maxlen (Optional[int]): The maximum length of the query to consider.
-                If None, the maxlen will be dynamically generated.
+            query_embedding (Embedding): The query embedding to search for relevant
+                text chunks.
+            k (Optional[int]): The number of top results to retrieve.
             include_embedding (Optional[bool]): Optional (default False) flag to include
                 the embedding vectors in the returned chunks
             **kwargs (Any): Additional parameters that implementations might require
@@ -373,6 +375,7 @@ class ColbertRetriever(BaseRetriever):
 
         return [(chunk, chunk_scores[chunk]) for chunk in chunks]
 
+    @override
     def text_search(
         self,
         query_text: str,
@@ -407,9 +410,11 @@ class ColbertRetriever(BaseRetriever):
                 k=k,
                 query_maxlen=query_maxlen,
                 include_embedding=include_embedding,
+                **kwargs,
             )
         )
 
+    @override
     def embedding_search(
         self,
         query_embedding: Embedding,

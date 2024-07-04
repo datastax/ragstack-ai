@@ -362,7 +362,8 @@ class GraphStore(VectorStore):
     def similarity_search(
         self, query: str, k: int = 4, **kwargs: Any
     ) -> List[Document]:
-        return list(self.traversal_search(query, k=k, depth=0))
+        kwargs.pop("depth")
+        return list(self.traversal_search(query, k=k, depth=0, **kwargs))
 
     def max_marginal_relevance_search(
         self,
@@ -372,16 +373,19 @@ class GraphStore(VectorStore):
         lambda_mult: float = 0.5,
         **kwargs: Any,
     ) -> List[Document]:
+        kwargs.pop("depth")
         return list(
             self.mmr_traversal_search(
-                query, k=k, fetch_k=fetch_k, lambda_mult=lambda_mult, depth=0
+                query, k=k, fetch_k=fetch_k, lambda_mult=lambda_mult, depth=0, **kwargs
             )
         )
 
     async def asimilarity_search(
         self, query: str, k: int = 4, **kwargs: Any
     ) -> List[Document]:
-        return [doc async for doc in self.atraversal_search(query, k=k, depth=0)]
+        return [
+            doc async for doc in self.atraversal_search(query, k=k, depth=0, **kwargs)
+        ]
 
     def search(self, query: str, search_type: str, **kwargs: Any) -> List[Document]:
         if search_type == "similarity":

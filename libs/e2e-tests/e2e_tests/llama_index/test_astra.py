@@ -128,12 +128,10 @@ def test_wrong_connection_parameters(environment: Environment):
             )
 
 
-def verify_document(document, expected_content, expected_metadata):
+def verify_document(document, expected_content):
     if isinstance(document, NodeWithScore):
         document = document.node
         assert document.text == expected_content
-        # metadata is not returned by LlamaIndex
-        # assert document.metadata == expected_metadata
     else:
         raise TypeError(
             "document is not of type NodeWithScore but of type " + str(type(document))
@@ -185,7 +183,6 @@ def test_vector_search_with_metadata(environment: Environment):
     verify_document(
         documents[0],
         "RAGStack is a framework to run LangChain in production",
-        {"id": "http://mywebsite/intro", "source": "website", "context": "homepage"},
     )
 
     documents = index.as_retriever().retrieve("RAGStack")

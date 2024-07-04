@@ -7,6 +7,7 @@ from langchain_core.callbacks.manager import (
 from langchain_core.documents import Document
 from langchain_core.retrievers import BaseRetriever
 from ragstack_colbert.base_retriever import BaseRetriever as ColbertBaseRetriever
+from typing_extensions import override
 
 if TYPE_CHECKING:
     from ragstack_colbert import Chunk
@@ -47,6 +48,7 @@ class ColbertRetriever(BaseRetriever):
         self.k = k
         self.query_maxlen = query_maxlen
 
+    @override
     def _get_relevant_documents(
         self,
         query: str,
@@ -69,6 +71,7 @@ class ColbertRetriever(BaseRetriever):
             for (c, _) in chunk_scores
         ]
 
+    @override
     async def _aget_relevant_documents(
         self,
         query: str,

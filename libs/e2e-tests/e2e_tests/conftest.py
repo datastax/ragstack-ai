@@ -161,7 +161,7 @@ def set_current_test_info(test_name: str, test_info: str):
 
 
 @pytest.hookimpl()
-def pytest_sessionfinish(session, exitstatus):
+def pytest_sessionfinish():
     logging.info("All tests report:")
     logging.info("\n".join(all_report_lines))
     logging.info("Failed tests report:")

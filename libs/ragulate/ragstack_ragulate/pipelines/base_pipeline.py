@@ -70,7 +70,6 @@ class BasePipeline(ABC):
         method_name: str,
         ingredients: Dict[str, Any],
         datasets: List[BaseDataset],
-        **kwargs,
     ):
         self.recipe_name = recipe_name
         self.script_path = script_path

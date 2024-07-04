@@ -109,7 +109,7 @@ def setup_query(subparsers):
         restart: bool,
         provider: str,
         model: str,
-        **kwargs,
+        **_,
     ):
         if sample <= 0.0 or sample > 1.0:
             raise ValueError("Sample percent must be between 0 and 1")
