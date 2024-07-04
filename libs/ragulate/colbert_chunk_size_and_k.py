@@ -146,7 +146,7 @@ def query_pipeline(k: int, chunk_size: int, **kwargs):
     """  # noqa: E501
     prompt = ChatPromptTemplate.from_template(prompt_template)
 
-    rag_chain = (
+    return (
         {
             "context": vector_store.as_retriever(search_kwargs={"k": k}),
             "question": RunnablePassthrough(),
@@ -155,5 +155,3 @@ def query_pipeline(k: int, chunk_size: int, **kwargs):
         | llm
         | StrOutputParser()
     )
-
-    return rag_chain

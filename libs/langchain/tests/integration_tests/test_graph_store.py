@@ -32,7 +32,7 @@ class GraphStoreFactory:
     ) -> CassandraGraphStore:
         if initial_documents and self._store is not None:
             raise ValueError("Store already initialized")
-        elif self._store is None:
+        if self._store is None:
             self._store = CassandraGraphStore.from_documents(
                 initial_documents,
                 embedding=embedding or self.embedding,

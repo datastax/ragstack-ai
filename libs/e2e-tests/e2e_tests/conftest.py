@@ -64,8 +64,9 @@ def get_vector_store_handler(
 ) -> VectorStoreHandler:
     if vector_database_type == "astradb":
         return AstraDBVectorStoreHandler(implementation)
-    elif vector_database_type == "local-cassandra":
+    if vector_database_type == "local-cassandra":
         return CassandraVectorStoreHandler(implementation)
+    raise ValueError("Invalid vector store implementation")
 
 
 failed_report_lines = []

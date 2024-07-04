@@ -37,11 +37,10 @@ def render_graph_documents(
         node_key = (node.id, node.type)
         if node_id := nodes.get(node_key):
             return node_id
-        else:
-            node_id = f"{len(nodes)}"
-            nodes[node_key] = node_id
-            dot.node(node_id, label=_node_label(node))
-            return node_id
+        node_id = f"{len(nodes)}"
+        nodes[node_key] = node_id
+        dot.node(node_id, label=_node_label(node))
+        return node_id
 
     for graph_document in graph_documents:
         for node in graph_document.nodes:

@@ -122,8 +122,7 @@ def setup_query(subparsers):
                 raise ValueError(
                     "Only can set `subset` param when there is one dataset"
                 )
-            else:
-                datasets[0].subsets = subset
+            datasets[0].subsets = subset
 
         ingredients = convert_vars_to_ingredients(
             var_names=var_name, var_values=var_value

@@ -25,7 +25,6 @@ def convert_string(s):
     s = s.strip()
     if re.match(r"^\d+$", s):
         return int(s)
-    elif re.match(r"^\d*\.\d+$", s):
+    if re.match(r"^\d*\.\d+$", s):
         return float(s)
-    else:
-        return s
+    return s

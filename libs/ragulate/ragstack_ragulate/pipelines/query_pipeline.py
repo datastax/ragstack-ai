@@ -158,18 +158,17 @@ class QueryPipeline(BasePipeline):
 
         if llm_provider == "openai":
             return OpenAI(model_engine=model_name)
-        elif llm_provider == "azureopenai":
+        if llm_provider == "azureopenai":
             return AzureOpenAI(deployment_name=model_name)
-        elif llm_provider == "bedrock":
+        if llm_provider == "bedrock":
             return Bedrock(model_id=model_name)
-        elif llm_provider == "litellm":
+        if llm_provider == "litellm":
             return LiteLLM(model_engine=model_name)
-        elif llm_provider == "Langchain":
+        if llm_provider == "Langchain":
             return Langchain(model_engine=model_name)
-        elif llm_provider == "huggingface":
+        if llm_provider == "huggingface":
             return Huggingface(name=model_name)
-        else:
-            raise ValueError(f"Unsupported provider: {llm_provider}")
+        raise ValueError(f"Unsupported provider: {llm_provider}")
 
     def query(self):
         query_method = self.get_method()

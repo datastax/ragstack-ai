@@ -77,10 +77,9 @@ class DeleteCollectionHandler:
         running.
         """
         self.semaphore.acquire()  # Wait for a free thread
-        future = self.executor.submit(
+        return self.executor.submit(
             lambda: self._run_and_release(collection),
         )
-        return future
 
     def _run_and_release(self, collection: str):
         """
@@ -191,14 +190,13 @@ class AstraDBVectorStoreTestContext(VectorStoreTestContext):
                 table_name=self.handler.collection_name + "_chat_memory",
                 **kwargs,
             )
-        else:
-            return AstraDBChatMessageHistory(
-                session_id=self.test_id,
-                token=self.handler.token,
-                api_endpoint=self.handler.api_endpoint,
-                collection_name=self.handler.collection_name + "_chat_memory",
-                **kwargs,
-            )
+        return AstraDBChatMessageHistory(
+            session_id=self.test_id,
+            token=self.handler.token,
+            api_endpoint=self.handler.api_endpoint,
+            collection_name=self.handler.collection_name + "_chat_memory",
+            **kwargs,
+        )
 
     def new_llamaindex_vector_store(self, **kwargs) -> EnhancedLlamaIndexVectorStore:
         logging.info(
