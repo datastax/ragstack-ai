@@ -31,6 +31,8 @@ def _format_example(idx: int, example: Example) -> str:
 
 
 class KnowledgeSchemaExtractor:
+    """Extracts knowledge graphs from documents."""
+
     def __init__(
         self,
         llm: BaseChatModel,
@@ -89,6 +91,7 @@ class KnowledgeSchemaExtractor:
         return document
 
     def extract(self, documents: List[Document]) -> List[GraphDocument]:
+        """Extract knowledge graphs from a list of documents."""
         # TODO: Define an async version of extraction?
         responses = self._chain.batch_as_completed(
             [{"input": doc.page_content} for doc in documents]

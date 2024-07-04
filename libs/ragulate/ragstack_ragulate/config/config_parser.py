@@ -9,6 +9,8 @@ from .objects import Config
 
 
 class ConfigParser:
+    """Config parser."""
+
     _config_schema: BaseConfigSchema
     _valid: bool
     _errors: Any
@@ -22,12 +24,14 @@ class ConfigParser:
         self._document = validator.document
 
     def get_config(self) -> Config:
+        """Return the config."""
         if not self.is_valid:
             return None
         return self._config_schema.parse_document(self._document)
 
     @classmethod
     def from_file(cls, file_path: str) -> "ConfigParser":
+        """Create a ConfigParser from a file."""
         with open(file_path) as file:
             config = yaml.safe_load(file)
 

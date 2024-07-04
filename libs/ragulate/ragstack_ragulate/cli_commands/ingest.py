@@ -6,6 +6,7 @@ from ragstack_ragulate.utils import convert_vars_to_ingredients
 
 
 def setup_ingest(subparsers):
+    """Setup the ingest command."""
     ingest_parser = subparsers.add_parser("ingest", help="Run an ingest pipeline")
     ingest_parser.add_argument(
         "-n",
@@ -59,6 +60,7 @@ def setup_ingest(subparsers):
         dataset: List[str],
         **_,
     ):
+        """Run an ingest pipeline."""
         datasets = [find_dataset(name=name) for name in dataset]
 
         ingredients = convert_vars_to_ingredients(

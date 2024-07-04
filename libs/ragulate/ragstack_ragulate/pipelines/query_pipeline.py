@@ -15,6 +15,7 @@ from trulens_eval.feedback.provider import (
 )
 from trulens_eval.feedback.provider.base import LLMProvider
 from trulens_eval.schema.feedback import FeedbackMode, FeedbackResultStatus
+from typing_extensions import override
 
 from ragstack_ragulate.datasets import BaseDataset
 from ragstack_ragulate.logging_config import logger
@@ -25,6 +26,8 @@ from .feedbacks import Feedbacks
 
 
 class QueryPipeline(BasePipeline):
+    """Query pipeline."""
+
     _sigint_received = False
 
     _tru: Tru
@@ -39,10 +42,12 @@ class QueryPipeline(BasePipeline):
     _evaluation_running = False
 
     @property
+    @override
     def pipeline_type(self):
         return "query"
 
     @property
+    @override
     def get_reserved_params(self) -> List[str]:
         return []
 
@@ -110,14 +115,17 @@ class QueryPipeline(BasePipeline):
         self._total_feedbacks = self._total_queries * metric_count
 
     def signal_handler(self, _, __):
+        """Handle SIGINT signal."""
         self._sigint_received = True
         self.stop_evaluation("sigint")
 
     def start_evaluation(self):
+        """Start evaluation."""
         self._tru.start_evaluator(disable_tqdm=True)
         self._evaluation_running = True
 
     def stop_evaluation(self, loc: str):
+        """Stop evaluation."""
         if self._evaluation_running:
             try:
                 logger.debug(f"Stopping evaluation from: {loc}")
@@ -130,6 +138,7 @@ class QueryPipeline(BasePipeline):
                 self._progress.close()
 
     def update_progress(self, query_change: int = 0):
+        """Update progress bar."""
         self._finished_queries += query_change
 
         status = self._tru.db.get_feedback_count_by_status()
@@ -152,6 +161,7 @@ class QueryPipeline(BasePipeline):
         self._finished_feedbacks = done
 
     def get_provider(self) -> LLMProvider:
+        """Get the LLM provider."""
         llm_provider = self.llm_provider.lower()
         model_name = self.model_name
 
@@ -170,6 +180,7 @@ class QueryPipeline(BasePipeline):
         raise ValueError(f"Unsupported provider: {llm_provider}")
 
     def query(self):
+        """Run the query pipeline."""
         query_method = self.get_method()
 
         pipeline = query_method(**self.ingredients)

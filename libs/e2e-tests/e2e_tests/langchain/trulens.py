@@ -54,9 +54,7 @@ def _create_chain(retriever: VectorStoreRetriever, llm: BaseLanguageModel) -> Ru
 
 
 def run_trulens_evaluation(vector_store: VectorStore, llm: BaseLanguageModel):
-    """
-    Executes the TruLens evaluation process.
-    """
+    """Executes the TruLens evaluation process."""
     vector_store.add_texts(SAMPLE_DATA)
     _initialize_tru()
     retriever = vector_store.as_retriever()

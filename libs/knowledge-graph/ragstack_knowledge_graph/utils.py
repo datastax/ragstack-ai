@@ -11,6 +11,7 @@ except ImportError:
 
     # This is equivalent to `itertools.batched`, but that is only available in 3.12
     def batched(iterable: Iterable[T], n: int) -> Iterator[Iterator[T]]:
+        """Emulate itertools.batched."""
         if n < 1:
             raise ValueError("n must be at least one")
         it = iter(iterable)

@@ -7,8 +7,8 @@ from typing import Any, Dict, List
 from ragstack_ragulate.datasets import BaseDataset
 
 
-# Function to dynamically load a module
 def load_module(file_path, name):
+    """Load a module from a file path dynamically."""
     spec = importlib.util.spec_from_file_location(name, file_path)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -16,11 +16,13 @@ def load_module(file_path, name):
 
 
 def get_method(script_path: str, pipeline_type: str, method_name: str):
+    """Return the method from the script."""
     module = load_module(script_path, name=pipeline_type)
     return getattr(module, method_name)
 
 
 def get_method_params(method: Any) -> List[str]:
+    """Return the parameters of a method."""
     signature = inspect.signature(method)
     return signature.parameters.keys()
 
@@ -30,6 +32,7 @@ def get_ingredients(
     reserved_params: List[str],
     passed_ingredients: Dict[str, Any],
 ) -> Dict[str, Any]:
+    """Return ingredients for the given method params."""
     ingredients = {}
     for method_param in method_params:
         if method_param in reserved_params or method_param in ["kwargs"]:
@@ -44,6 +47,8 @@ def get_ingredients(
 
 
 class BasePipeline(ABC):
+    """Base class for all pipelines."""
+
     recipe_name: str
     script_path: str
     method_name: str
@@ -56,12 +61,12 @@ class BasePipeline(ABC):
     @property
     @abstractmethod
     def pipeline_type(self):
-        """type of pipeline (ingest, query, cleanup)"""
+        """Type of pipeline (ingest, query, cleanup)."""
 
     @property
     @abstractmethod
     def get_reserved_params(self) -> List[str]:
-        """get the list of reserved parameter names for this pipeline type"""
+        """Get the list of reserved parameter names for this pipeline type."""
 
     def __init__(
         self,
@@ -101,12 +106,15 @@ class BasePipeline(ABC):
             exit(1)
 
     def get_method(self):
+        """Return the pipeline method."""
         return self._method
 
     def dataset_names(self) -> List[str]:
+        """Return the names of the datasets."""
         return [d.name for d in self.datasets]
 
     def key(self) -> str:
+        """Return the pipeline key."""
         key_parts = [
             self.pipeline_type,
             self.script_path,

@@ -1,6 +1,7 @@
-"""Copied from langchain_community.utils.math
-See https://github.com/langchain-ai/langchain/blob/langchain-community%3D%3D0.0.38/libs/community/langchain_community/utils/math.py
-"""
+"""Copied from langchain_community.utils.math.
+
+See https://github.com/langchain-ai/langchain/blob/langchain-community%3D%3D0.0.38/libs/community/langchain_community/utils/math.py .
+"""  # noqa: E501
 
 import logging
 from typing import List, Union

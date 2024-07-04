@@ -58,8 +58,13 @@ warn_unused_ignores = true
 extend-include = ["*.ipynb"]
 
 [tool.ruff.lint]
+pydocstyle.convention = "google"
 ignore = [
     "COM812", # Messes with the formatter
+    "D100", # Do we want to activate (docstring in module) ?
+    "D104", # Do we want to activate (docstring in package) ?
+    "D105", # Do we want to activate (docstring in magic method) ?
+    "D107", # Do we want to activate (docstring in __init__) ?
     "ERA", # Do we want to activate (no commented code) ?
     "ISC001", # Messes with the formatter
     "PERF203", # Incorrect detection
@@ -76,6 +81,7 @@ select = [
     "BLE",
     "C4",
     "COM",
+    "D",
     "DTZ",
     "E",
     "EXE",
@@ -120,14 +126,19 @@ select = [
     "UP006", # Incompatible with Pydantic v1
     "UP007", # Incompatible with Pydantic v1
 ]
-"**/{examples,notebooks,tests,e2e-tests}/*" = [
+"**/{examples,notebooks,tests,e2e-tests,tests-utils}/*" = [
+    "D",
     "T20",
 ]
 "scripts/*" = [
+    "D",
     "T20",
 ]
 "docker/examples/*" = [
     "INP001",
+]
+"libs/langchain/ragstack_langchain/graph_store/*" = [
+    "D",
 ]
 
 [build-system]
