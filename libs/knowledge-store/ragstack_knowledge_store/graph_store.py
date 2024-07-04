@@ -51,8 +51,7 @@ def _serialize_metadata(md: Dict[str, Any]) -> str:
     if isinstance(md.get("links"), Set):
         md = md.copy()
         md["links"] = list(md["links"])
-    s = json.dumps(md)
-    return s
+    return json.dumps(md)
 
 
 def _serialize_links(links: Set[Link]) -> str:

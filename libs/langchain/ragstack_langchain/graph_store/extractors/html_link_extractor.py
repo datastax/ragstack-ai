@@ -30,8 +30,7 @@ def _parse_url(link, page_url, drop_fragments: bool = True):
     # the fragment.
     if drop_fragments:
         return urldefrag(url).url
-    else:
-        return url
+    return url
 
 
 def _parse_hrefs(

@@ -195,8 +195,7 @@ def traverse(
 
         if error is not None:
             raise error
-        else:
-            return results
+        return results
 
 
 class AsyncPagedQuery:
@@ -220,8 +219,7 @@ class AsyncPagedQuery:
             self.current_page_future = asyncio.Future()
             self.response_future.start_fetching_next_page()
             return self.depth, page, self
-        else:
-            return self.depth, page, None
+        return self.depth, page, None
 
 
 async def atraverse(

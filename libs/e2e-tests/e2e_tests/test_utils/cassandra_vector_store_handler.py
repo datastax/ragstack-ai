@@ -99,11 +99,10 @@ class EnhancedCassandraLangChainVectorStore(EnhancedLangChainVectorStore, Cassan
                 result["body_blob"]
                 for result in self.table.ann_search(vector=vector, n=limit)
             ]
-        else:
-            return [
-                result["document"]
-                for result in self.table.search(embedding_vector=vector, top_k=limit)
-            ]
+        return [
+            result["document"]
+            for result in self.table.search(embedding_vector=vector, top_k=limit)
+        ]
 
 
 class EnhancedCassandraLlamaIndexVectorStore(

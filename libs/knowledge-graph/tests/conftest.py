@@ -60,8 +60,7 @@ def llm() -> BaseChatModel:
     except ValueError:
         pytest.skip("Unable to create OpenAI model")
     else:
-        model = ChatOpenAI(model_name="gpt-4o", temperature=0.0)
-        return model
+        return ChatOpenAI(model_name="gpt-4o", temperature=0.0)
 
 
 class DataFixture:

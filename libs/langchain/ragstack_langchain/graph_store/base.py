@@ -386,44 +386,42 @@ class GraphStore(VectorStore):
     def search(self, query: str, search_type: str, **kwargs: Any) -> List[Document]:
         if search_type == "similarity":
             return self.similarity_search(query, **kwargs)
-        elif search_type == "similarity_score_threshold":
+        if search_type == "similarity_score_threshold":
             docs_and_similarities = self.similarity_search_with_relevance_scores(
                 query, **kwargs
             )
             return [doc for doc, _ in docs_and_similarities]
-        elif search_type == "mmr":
+        if search_type == "mmr":
             return self.max_marginal_relevance_search(query, **kwargs)
-        elif search_type == "traversal":
+        if search_type == "traversal":
             return list(self.traversal_search(query, **kwargs))
-        elif search_type == "mmr_traversal":
+        if search_type == "mmr_traversal":
             return list(self.mmr_traversal_search(query, **kwargs))
-        else:
-            raise ValueError(
-                f"search_type of {search_type} not allowed. Expected "
-                "search_type to be 'similarity', 'similarity_score_threshold', "
-                "'mmr' or 'traversal'."
-            )
+        raise ValueError(
+            f"search_type of {search_type} not allowed. Expected "
+            "search_type to be 'similarity', 'similarity_score_threshold', "
+            "'mmr' or 'traversal'."
+        )
 
     async def asearch(
         self, query: str, search_type: str, **kwargs: Any
     ) -> List[Document]:
         if search_type == "similarity":
             return await self.asimilarity_search(query, **kwargs)
-        elif search_type == "similarity_score_threshold":
+        if search_type == "similarity_score_threshold":
             docs_and_similarities = await self.asimilarity_search_with_relevance_scores(
                 query, **kwargs
             )
             return [doc for doc, _ in docs_and_similarities]
-        elif search_type == "mmr":
+        if search_type == "mmr":
             return await self.amax_marginal_relevance_search(query, **kwargs)
-        elif search_type == "traversal":
+        if search_type == "traversal":
             return [doc async for doc in self.atraversal_search(query, **kwargs)]
-        else:
-            raise ValueError(
-                f"search_type of {search_type} not allowed. Expected "
-                "search_type to be 'similarity', 'similarity_score_threshold', "
-                "'mmr' or 'traversal'."
-            )
+        raise ValueError(
+            f"search_type of {search_type} not allowed. Expected "
+            "search_type to be 'similarity', 'similarity_score_threshold', "
+            "'mmr' or 'traversal'."
+        )
 
     def as_retriever(self, **kwargs: Any) -> GraphStoreRetriever:
         """Return GraphStoreRetriever initialized from this GraphStore.
@@ -503,12 +501,11 @@ class GraphStoreRetriever(VectorStoreRetriever):
     ) -> List[Document]:
         if self.search_type == "traversal":
             return list(self.vectorstore.traversal_search(query, **self.search_kwargs))
-        elif self.search_type == "mmr_traversal":
+        if self.search_type == "mmr_traversal":
             return list(
                 self.vectorstore.mmr_traversal_search(query, **self.search_kwargs)
             )
-        else:
-            return super()._get_relevant_documents(query, run_manager=run_manager)
+        return super()._get_relevant_documents(query, run_manager=run_manager)
 
     async def _aget_relevant_documents(
         self, query: str, *, run_manager: AsyncCallbackManagerForRetrieverRun
@@ -520,14 +517,11 @@ class GraphStoreRetriever(VectorStoreRetriever):
                     query, **self.search_kwargs
                 )
             ]
-        elif self.search_type == "mmr_traversal":
+        if self.search_type == "mmr_traversal":
             return [
                 doc
                 async for doc in self.vectorstore.ammr_traversal_search(
                     query, **self.search_kwargs
                 )
             ]
-        else:
-            return await super()._aget_relevant_documents(
-                query, run_manager=run_manager
-            )
+        return await super()._aget_relevant_documents(query, run_manager=run_manager)

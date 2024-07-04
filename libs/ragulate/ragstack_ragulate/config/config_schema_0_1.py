@@ -124,7 +124,7 @@ class ConfigSchema0Dot1(BaseConfigSchema):
             ]
         }
 
-        schema = {
+        return {
             "version": {"type": "float", "allowed": [0.1]},
             "steps": steps,
             "recipes": recipe_list,
@@ -132,8 +132,6 @@ class ConfigSchema0Dot1(BaseConfigSchema):
             "eval_llms": llm_list,
             "metrics": metrics,
         }
-
-        return schema
 
     def parse_document(self, document: Dict[str, Any]) -> Config:
         ingest_steps: Dict[str, Step] = {}
@@ -184,8 +182,7 @@ class ConfigSchema0Dot1(BaseConfigSchema):
                         "recipe must either have a `name` defined or contain at least "
                         "one ingredient."
                     )
-                else:
-                    recipe_name = dict_to_string(ingredients)
+                recipe_name = dict_to_string(ingredients)
             else:
                 recipe_name = doc_name
 
@@ -199,8 +196,7 @@ class ConfigSchema0Dot1(BaseConfigSchema):
                         f"{step_kind} step {doc_recipe_step} for recipe {recipe_name} "
                         f"is not defined in the `steps` section"
                     )
-                else:
-                    recipe_steps[step_kind] = step
+                recipe_steps[step_kind] = step
 
             if "query" not in recipe_steps:
                 raise ValueError(f"query step is missing for recipe {recipe_name}")
