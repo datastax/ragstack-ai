@@ -1,4 +1,4 @@
-# ruff: noqa: T201
+# ruff: noqa: INP001, T201
 import os
 
 from langchain_astradb import AstraDBVectorStore
