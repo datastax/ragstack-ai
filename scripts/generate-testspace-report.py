@@ -72,7 +72,7 @@ def cdata(text: str) -> str:
     return f"<![CDATA[{text}]]>"
 
 
-xml.etree.ElementTree._escape_cdata = unsafe_escape_data
+xml.etree.ElementTree._escape_cdata = unsafe_escape_data  # noqa: SLF001
 
 
 def main(report_type: str, input_file: str, output_file: str):

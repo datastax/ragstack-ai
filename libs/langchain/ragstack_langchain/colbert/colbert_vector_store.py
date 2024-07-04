@@ -244,8 +244,7 @@ class ColbertVectorStore(VectorStore):
     ) -> CVS:
         """Return VectorStore initialized from texts and embeddings."""
 
-        instance = super().__new__(cls)
-        instance._initialize(database=database, embedding_model=embedding_model)
+        instance = cls(database=database, embedding_model=embedding_model, **kwargs)
         instance.add_texts(texts=texts, metadatas=metadatas)
         return instance
 
@@ -260,8 +259,7 @@ class ColbertVectorStore(VectorStore):
         **kwargs: Any,
     ) -> CVS:
         """Return VectorStore initialized from texts and embeddings."""
-        instance = super().__new__(cls)
-        instance._initialize(database=database, embedding_model=embedding_model)
+        instance = cls(database=database, embedding_model=embedding_model, **kwargs)
         await instance.aadd_texts(
             texts=texts, metadatas=metadatas, concurrent_inserts=concurrent_inserts
         )

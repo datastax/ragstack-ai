@@ -149,8 +149,9 @@ def traverse(
             request.start_fetching_next_page()
         else:
             with condition:
-                if request._req_id in pending:
-                    pending.remove(request._req_id)
+                req_id = request._req_id  # noqa: SLF001
+                if req_id in pending:
+                    pending.remove(req_id)
                 if len(pending) == 0:
                     condition.notify()
 
@@ -178,7 +179,7 @@ def traverse(
             request: ResponseFuture = session.execute_async(
                 query, (source.name, source.type)
             )
-            pending.add(request._req_id)
+            pending.add(request._req_id)  # noqa: SLF001
             request.add_callbacks(
                 handle_result,
                 handle_error,

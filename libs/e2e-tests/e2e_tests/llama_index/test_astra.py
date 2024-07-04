@@ -109,7 +109,7 @@ def test_wrong_connection_parameters(environment: Environment):
 
     # This is expected to be a valid endpoint,
     # because we want to test an AUTHENTICATION error
-    api_endpoint = environment.vectorstore._astra_db.base_url
+    api_endpoint = environment.vectorstore._astra_db.base_url  # noqa: SLF001
     try:
         print("api_endpoint:", api_endpoint)
         AstraDBVectorStore(

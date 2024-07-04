@@ -57,16 +57,16 @@ class DeleteCollectionHandler:
         """
         Returns the number of ongoing deletions.
         """
-        return self.max_workers - self.semaphore._value
+        return self.max_workers - self.semaphore._value  # noqa: SLF001
 
     def await_ongoing_deletions_completed(self):
         """
         Blocks until all ongoing deletions are completed.
         """
-        while self.semaphore._value != self.max_workers:
+        pending_deletions = self.max_workers - self.semaphore._value  # noqa: SLF001
+        while pending_deletions >= 0:
             logging.debug(
-                "%s deletions still running, waiting to complete",
-                self.max_workers - self.semaphore._value,
+                "%s deletions still running, waiting to complete", pending_deletions
             )
             time.sleep(1)
         return
