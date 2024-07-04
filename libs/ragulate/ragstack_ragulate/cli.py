@@ -14,6 +14,7 @@ else:
 
 
 def main() -> None:
+    """Main function for the CLI."""
     parser = argparse.ArgumentParser(description="RAGu-late CLI tool.")
 
     # Subparsers for the main commands

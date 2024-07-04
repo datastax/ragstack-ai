@@ -1,4 +1,5 @@
-"""
+"""Constants for configuring and operating the ColBERT model.
+
 Defines constants used across the system for configuring and operating the ColBERT
 model for semantic search and retrieval tasks.
 

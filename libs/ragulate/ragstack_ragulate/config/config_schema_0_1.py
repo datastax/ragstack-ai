@@ -1,5 +1,7 @@
 from typing import Any, Dict
 
+from typing_extensions import override
+
 from ragstack_ragulate.datasets import BaseDataset, find_dataset, get_dataset
 
 from .base_config_schema import BaseConfigSchema
@@ -8,9 +10,13 @@ from .utils import dict_to_string
 
 
 class ConfigSchema0Dot1(BaseConfigSchema):
+    """Config schema for version 0.1."""
+
+    @override
     def version(self):
         return 0.1
 
+    @override
     def schema(self) -> Dict[str, Any]:
         step_list = {
             "type": "list",
@@ -133,6 +139,7 @@ class ConfigSchema0Dot1(BaseConfigSchema):
             "metrics": metrics,
         }
 
+    @override
     def parse_document(self, document: Dict[str, Any]) -> Config:
         ingest_steps: Dict[str, Step] = {}
         query_steps: Dict[str, Step] = {}

@@ -26,6 +26,8 @@ def _elements(documents: Iterable[GraphDocument]) -> Iterable[Union[Node, Relati
 
 
 class CassandraGraphStore(GraphStore):
+    """A Cassandra-based graph store."""
+
     def __init__(
         self,
         node_table: str = "entities",
@@ -34,8 +36,7 @@ class CassandraGraphStore(GraphStore):
         session: Optional[Session] = None,
         keyspace: Optional[str] = None,
     ) -> None:
-        """
-        Create a Cassandra Graph Store.
+        """Create a Cassandra Graph Store.
 
         Before calling this, you must initialize cassio with `cassio.init`, or
         provide valid session and keyspace values.
@@ -62,6 +63,7 @@ class CassandraGraphStore(GraphStore):
 
     @override
     @property
+    @override
     def get_schema(self) -> str:
         raise NotImplementedError
 
@@ -75,13 +77,14 @@ class CassandraGraphStore(GraphStore):
         raise NotImplementedError
 
     def as_runnable(self, steps: int = 3, edge_filters: Sequence[str] = ()) -> Runnable:
-        """
-        Return a runnable that retrieves the sub-graph near the
-        input entity or entities.
+        """Convert to a runnable.
 
-        Parameters:
-        - steps: The maximum distance to follow from the starting points.
-        - edge_filters: Predicates to use for filtering the edges.
+        Returns a runnable that retrieves the sub-graph near the input entity or
+        entities.
+
+        Args:
+            steps: The maximum distance to follow from the starting points.
+            edge_filters: Predicates to use for filtering the edges.
         """
         return RunnableLambda(
             func=self.graph.traverse, afunc=self.graph.atraverse

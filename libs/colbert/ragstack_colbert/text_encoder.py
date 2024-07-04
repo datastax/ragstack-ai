@@ -1,4 +1,5 @@
-"""
+"""Text encoder for ColBERT.
+
 This module provides functionalities to encode text chunks into dense vector
 representations using a ColBERT model. It supports encoding chunks in batches to
 efficiently manage memory usage and prevent out-of-memory errors when processing large
@@ -18,11 +19,12 @@ from .objects import Chunk, Embedding
 
 
 def calculate_query_maxlen(tokens: List[List[str]]) -> int:
-    """
+    """Calculates maximum query length.
+
     Calculates an appropriate maximum query length for token embeddings,
     based on the length of the tokenized input.
 
-    Parameters:
+    Args:
         tokens (List[List[str]]): A nested list where each sublist contains tokens
             from a single query or chunk.
 
@@ -30,7 +32,6 @@ def calculate_query_maxlen(tokens: List[List[str]]) -> int:
         int: The calculated maximum length for query tokens, adhering to the specified
             minimum and maximum bounds, and adjusted to the nearest power of two.
     """
-
     max_token_length = max(len(inner_list) for inner_list in tokens)
 
     # tokens from the query tokenizer does not include the SEP, CLS
@@ -41,22 +42,18 @@ def calculate_query_maxlen(tokens: List[List[str]]) -> int:
 
 
 class TextEncoder:
-    """
+    """Text encoder for ColBERT.
+
     Encapsulates the logic for encoding text chunks and queries into dense vector
     representations using a specified ColBERT model configuration and checkpoint.
     This class is optimized for batch processing to manage GPU memory usage efficiently.
+
+    Args:
+        config (ColBERTConfig): The configuration for the Colbert model.
+        verbose (int): The level of logging to use
     """
 
     def __init__(self, config: ColBERTConfig, verbose: Optional[int] = 3) -> None:
-        """
-        Initializes the ChunkEncoder with a given ColBERT model configuration and
-        checkpoint.
-
-        Parameters:
-            config (ColBERTConfig): The configuration for the Colbert model.
-            verbose (int): The level of logging to use
-        """
-
         logging.info("Cuda enabled GPU available: %s", torch.cuda.is_available())
 
         self._checkpoint = Checkpoint(
@@ -65,12 +62,13 @@ class TextEncoder:
         self._use_cpu = config.total_visible_gpus == 0
 
     def encode_chunks(self, chunks: List[Chunk], batch_size: int = 640) -> List[Chunk]:
-        """
-        Encodes a list of chunks into embeddings, processing in batches to efficiently
-        manage memory.
+        """Encodes a list of chunks into embeddings.
 
-        Parameters:
-            texts (List[str]): The text chunks to encode.
+        Encodes a list of chunks into embeddings, processing in batches to
+        efficiently manage memory.
+
+        Args:
+            chunks (List[str]): The text chunks to encode.
             batch_size (int): The size of batches for processing to avoid memory
                 overflow. Defaults to 64.
 
@@ -78,7 +76,6 @@ class TextEncoder:
             A tuple containing the concatenated tensor of embeddings and a list of
                 document lengths.
         """
-
         logging.debug("#> Encoding %s chunks..", len(chunks))
 
         embedded_chunks: List[Chunk] = []
@@ -112,6 +109,7 @@ class TextEncoder:
     def encode_query(
         self, text: str, query_maxlen: int, full_length_search: Optional[bool] = False
     ) -> Embedding:
+        """Encodes a query into an embedding."""
         if query_maxlen < 0:
             tokens = self._checkpoint.query_tokenizer.tokenize([text])
             query_maxlen = calculate_query_maxlen(tokens)

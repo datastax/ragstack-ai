@@ -7,6 +7,7 @@ from ragstack_ragulate.pipelines import IngestPipeline, QueryPipeline
 
 
 def setup_run(subparsers):
+    """Setup the run command."""
     run_parser = subparsers.add_parser(
         "run", help="Run an experiment from a config file"
     )
@@ -22,6 +23,7 @@ def setup_run(subparsers):
 
 
 def call_run(config_file: str, **_):
+    """Run an experiment from a config file."""
     config_parser = ConfigParser.from_file(file_path=config_file)
     config = config_parser.get_config()
 

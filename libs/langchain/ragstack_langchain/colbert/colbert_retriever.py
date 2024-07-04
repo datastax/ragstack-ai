@@ -56,6 +56,7 @@ class ColbertRetriever(BaseRetriever):
         run_manager: CallbackManagerForRetrieverRun,
     ) -> List[Document]:
         """Get documents relevant to a query.
+
         Args:
             query: String to find relevant documents for
             run_manager: The callbacks handler to use
@@ -79,6 +80,7 @@ class ColbertRetriever(BaseRetriever):
         run_manager: AsyncCallbackManagerForRetrieverRun,
     ) -> List[Document]:
         """Asynchronously get documents relevant to a query.
+
         Args:
             query: String to find relevant documents for
             run_manager: The callbacks handler to use

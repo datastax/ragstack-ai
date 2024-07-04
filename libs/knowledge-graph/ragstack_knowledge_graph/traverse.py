@@ -13,9 +13,11 @@ class _Node(NamedTuple):
 
 
 class Node(_Node):
+    """A node in the graph."""
+
     __slots__ = ()
 
-    def __new__(cls, name, type, properties=None):  # noqa: A002
+    def __new__(cls, name, type, properties=None):  # noqa: A002, D102
         if properties is None:
             properties = {}
         return super().__new__(cls, name, type, properties)
@@ -34,6 +36,8 @@ class Node(_Node):
 
 
 class Relation(NamedTuple):
+    """A relation between two nodes."""
+
     source: Node
     target: Node
     type: str
@@ -90,8 +94,9 @@ def traverse(
     session: Optional[Session] = None,
     keyspace: Optional[str] = None,
 ) -> Iterable[Relation]:
-    """
-    Traverse the graph from the given starting nodes and return the resulting sub-graph.
+    """Traverse the graph from the given starting nodes.
+
+    Returns the resulting sub-graph.
 
     Args:
         start: The starting node or nodes.
@@ -162,8 +167,7 @@ def traverse(
             condition.notify()
 
     def fetch_relationships(distance: int, source: Node) -> None:
-        """
-        Fetch relationships from node `source` is found at `distance`.
+        """Fetch relationships from node `source` is found at `distance`.
 
         This will retrieve the edges from `source`, and visit the resulting
         nodes at distance `distance + 1`.
@@ -200,6 +204,8 @@ def traverse(
 
 
 class AsyncPagedQuery:
+    """An async iterator over the results of a paged query."""
+
     def __init__(self, depth: int, response_future: ResponseFuture):
         self.loop = asyncio.get_running_loop()
         self.depth = depth
@@ -214,6 +220,7 @@ class AsyncPagedQuery:
         self.loop.call_soon_threadsafe(self.current_page_future.set_exception, error)
 
     async def next(self):
+        """Fetch the next page of results."""
         page = [_parse_relation(r) for r in await self.current_page_future]
 
         if self.response_future.has_more_pages:
@@ -236,11 +243,11 @@ async def atraverse(
     session: Optional[Session] = None,
     keyspace: Optional[str] = None,
 ) -> Iterable[Relation]:
-    """
-    Async traversal of the graph from the given starting nodes and return the resulting
-    sub-graph.
+    """Async traversal of the graph from the given starting nodes.
 
-    Parameters:
+    Returns the resulting sub-graph.
+
+    Args:
         start: The starting node or nodes.
         edge_table: The table containing the edges.
         edge_source_name: The name of the column containing edge source names.
@@ -261,7 +268,6 @@ async def atraverse(
     Returns:
         An iterable over relations in the traversed sub-graph.
     """
-
     session = check_resolve_session(session)
     keyspace = check_resolve_keyspace(keyspace)
 

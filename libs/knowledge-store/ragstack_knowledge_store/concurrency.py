@@ -54,8 +54,7 @@ class ConcurrentQueries(contextlib.AbstractContextManager):
         parameters: Optional[Tuple] = None,
         callback: Optional[Callable[[Sequence[NamedTuple]], Any]] = None,
     ):
-        """
-        Execute a query concurrently.
+        """Execute a query concurrently.
 
         Because this is done concurrently, it expects a callback if you need
         to inspect the results.
@@ -65,7 +64,6 @@ class ConcurrentQueries(contextlib.AbstractContextManager):
             parameters: Parameter tuple for the query. Defaults to `None`.
             callback: Callback to apply to the results. Defaults to `None`.
         """
-
         # TODO: We could have some form of throttling, where we track the number
         # of pending calls and queue things if it exceed some threshold.
 

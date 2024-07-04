@@ -54,15 +54,11 @@ class DeleteCollectionHandler:
         self.semaphore = threading.Semaphore(max_workers)
 
     def get_current_deletions(self):
-        """
-        Returns the number of ongoing deletions.
-        """
+        """Returns the number of ongoing deletions."""
         return self.max_workers - self.semaphore._value  # noqa: SLF001
 
     def await_ongoing_deletions_completed(self):
-        """
-        Blocks until all ongoing deletions are completed.
-        """
+        """Blocks until all ongoing deletions are completed."""
         pending_deletions = self.max_workers - self.semaphore._value  # noqa: SLF001
         while pending_deletions >= 0:
             logging.debug(
@@ -72,9 +68,8 @@ class DeleteCollectionHandler:
         return
 
     def run_delete(self, collection: str):
-        """
-        Runs a delete_collection in the background, blocking if max_workers are already
-        running.
+        """Runs a delete_collection in the background, blocking if max_workers are
+        already running.
         """
         self.semaphore.acquire()  # Wait for a free thread
         return self.executor.submit(
@@ -82,9 +77,8 @@ class DeleteCollectionHandler:
         )
 
     def _run_and_release(self, collection: str):
-        """
-        Internal wrapper to run the delete function and release the semaphore once done.
-        """
+        """Internal wrapper to run the delete function and release the semaphore once
+        done."""
         try:
             logging.info("deleting collection %s", collection)
             self.delete_function(collection)
@@ -93,9 +87,7 @@ class DeleteCollectionHandler:
             self.semaphore.release()
 
     def shutdown(self, wait=True):
-        """
-        Shuts down the executor, waiting for tasks to complete if specified.
-        """
+        """Shuts down the executor, waiting for tasks to complete if specified."""
         self.executor.shutdown(wait=wait)
 
 

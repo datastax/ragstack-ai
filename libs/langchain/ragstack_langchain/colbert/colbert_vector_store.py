@@ -19,6 +19,8 @@ CVS = TypeVar("CVS", bound="ColbertVectorStore")
 
 
 class ColbertVectorStore(VectorStore):
+    """VectorStore for ColBERT."""
+
     _vector_store: ColbertBaseVectorStore
     _retriever: ColbertBaseRetriever
 
@@ -52,6 +54,7 @@ class ColbertVectorStore(VectorStore):
         Args:
             texts: Iterable of strings to add to the vectorstore.
             metadatas: Optional list of metadatas associated with the texts.
+            doc_id: Optional document ID to associate with the texts.
             kwargs: vectorstore specific parameters
 
         Returns:
@@ -75,6 +78,7 @@ class ColbertVectorStore(VectorStore):
         Args:
             texts: Iterable of strings to add to the vectorstore.
             metadatas: Optional list of metadatas associated with the texts.
+            doc_id: Optional document ID to associate with the texts.
             concurrent_inserts: How many concurrent inserts to make to the database.
                 Defaults to 100.
             kwargs: vectorstore specific parameters
@@ -255,7 +259,6 @@ class ColbertVectorStore(VectorStore):
         **kwargs: Any,
     ) -> CVS:
         """Return VectorStore initialized from texts and embeddings."""
-
         instance = cls(database=database, embedding_model=embedding_model, **kwargs)
         instance.add_texts(texts=texts, metadatas=metadatas)
         return instance

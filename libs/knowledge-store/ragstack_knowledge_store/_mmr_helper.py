@@ -33,6 +33,17 @@ class _Candidate:
 
 
 class MmrHelper:
+    """Helper for executing an MMR traversal query.
+
+    Args:
+        query_embedding: The embedding of the query to use for scoring.
+        lambda_mult: Number between 0 and 1 that determines the degree
+            of diversity among the results with 0 corresponding to maximum
+            diversity and 1 to minimum diversity. Defaults to 0.5.
+        score_threshold: Only documents with a score greater than or equal
+            this threshold will be chosen. Defaults to -infinity.
+    """
+
     dimensions: int
     """Dimensions of the embedding."""
 
@@ -76,16 +87,6 @@ class MmrHelper:
         lambda_mult: float = 0.5,
         score_threshold: float = NEG_INF,
     ) -> None:
-        """Create a helper for executing an MMR traversal query.
-
-        Args:
-            query_embedding: The embedding of the query to use for scoring.
-            lambda_mult: Number between 0 and 1 that determines the degree
-                of diversity among the results with 0 corresponding to maximum
-                diversity and 1 to minimum diversity. Defaults to 0.5.
-            score_threshold: Only documents with a score greater than or equal
-                this threshold will be chosen. Defaults to -infinity.
-        """
         self.query_embedding = _emb_to_ndarray(query_embedding)
         self.dimensions = self.query_embedding.shape[1]
 
@@ -109,6 +110,7 @@ class MmrHelper:
         self.best_id = None
 
     def candidate_ids(self) -> Iterable[str]:
+        """Return the IDs of the candidates."""
         return self.candidate_id_to_index.keys()
 
     def _already_selected_embeddings(self) -> np.ndarray:
@@ -186,7 +188,6 @@ class MmrHelper:
 
     def add_candidates(self, candidates: Dict[str, List[float]]):
         """Add candidates to the consideration set."""
-
         # Determine the keys to actually include.
         # These are the candidates that aren't already selected
         # or under consideration.

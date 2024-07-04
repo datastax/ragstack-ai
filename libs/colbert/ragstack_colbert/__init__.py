@@ -1,4 +1,5 @@
-"""
+"""Ragstack Colbert: A ColBERT-based text retrieval system.
+
 This package provides a suite of tools for encoding and retrieving text using the
 ColBERT model, integrated with a Cassandra database for scalable storage and retrieval
 operations. It includes classes for token embeddings, managing the vector store, and

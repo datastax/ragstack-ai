@@ -5,6 +5,7 @@ import pytest
 
 
 def main():
+    """Run the integration tests."""
     sys.exit(pytest.main(["tests/integration_tests"]))
 
 

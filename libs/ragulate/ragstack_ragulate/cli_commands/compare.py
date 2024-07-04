@@ -4,6 +4,7 @@ from ragstack_ragulate.analysis import Analysis
 
 
 def setup_compare(subparsers):
+    """Setup the compare command."""
     compare_parser = subparsers.add_parser(
         "compare", help="Compare results from 2 (or more) recipes"
     )
@@ -26,6 +27,7 @@ def setup_compare(subparsers):
 
 
 def remove_sqlite_extension(s):
+    """Remove the .sqlite extension from a string."""
     if s.endswith(".sqlite"):
         return s[:-7]
     return s
@@ -36,6 +38,7 @@ def call_compare(
     output: Optional[str] = "box-plots",
     **_,
 ):
+    """Compare results from 2 (or more) recipes."""
     analysis = Analysis()
 
     recipes = [remove_sqlite_extension(r) for r in recipe]
