@@ -6,6 +6,7 @@ from langchain_community.graphs.graph_document import Node as LangChainNode
 from langchain_community.graphs.graph_store import GraphStore
 from langchain_core.embeddings import Embeddings
 from langchain_core.runnables import Runnable, RunnableLambda
+from typing_extensions import override
 
 from .knowledge_graph import CassandraKnowledgeGraph
 from .traverse import Node, Relation
@@ -47,6 +48,7 @@ class CassandraGraphStore(GraphStore):
             keyspace=keyspace,
         )
 
+    @override
     def add_graph_documents(
         self, graph_documents: List[GraphDocument], include_source: bool = False
     ) -> None:
@@ -54,17 +56,21 @@ class CassandraGraphStore(GraphStore):
         self.graph.insert(_elements(graph_documents))
 
     # TODO: should this include the types of each node?
+    @override
     def query(self, query: str, params: dict = {}) -> List[Dict[str, Any]]:  # noqa: B006
         raise ValueError("Querying Cassandra should use `as_runnable`.")
 
+    @override
     @property
     def get_schema(self) -> str:
         raise NotImplementedError
 
     @property
+    @override
     def get_structured_schema(self) -> Dict[str, Any]:
         raise NotImplementedError
 
+    @override
     def refresh_schema(self) -> None:
         raise NotImplementedError
 

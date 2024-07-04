@@ -58,7 +58,7 @@ def setup_ingest(subparsers):
         var_name: List[str],
         var_value: List[str],
         dataset: List[str],
-        **kwargs,
+        **_,
     ):
         datasets = [find_dataset(name=name) for name in dataset]
 

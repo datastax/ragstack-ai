@@ -11,6 +11,7 @@ from ragstack_colbert.base_embedding_model import (
 )
 from ragstack_colbert.base_retriever import BaseRetriever as ColbertBaseRetriever
 from ragstack_colbert.base_vector_store import BaseVectorStore as ColbertBaseVectorStore
+from typing_extensions import override
 
 from .colbert_retriever import ColbertRetriever
 
@@ -38,6 +39,7 @@ class ColbertVectorStore(VectorStore):
         )
         self._retriever = self._vector_store.as_retriever()
 
+    @override
     def add_texts(
         self,
         texts: Iterable[str],
@@ -59,6 +61,7 @@ class ColbertVectorStore(VectorStore):
             texts=list(texts), metadatas=metadatas, doc_id=doc_id
         )
 
+    @override
     async def aadd_texts(
         self,
         texts: Iterable[str],
@@ -86,6 +89,7 @@ class ColbertVectorStore(VectorStore):
             concurrent_inserts=concurrent_inserts,
         )
 
+    @override
     def delete(self, ids: Optional[List[str]] = None, **kwargs: Any) -> Optional[bool]:
         """Delete by vector ID or other criteria.
 
@@ -99,6 +103,7 @@ class ColbertVectorStore(VectorStore):
         """
         return None if ids is None else self._vector_store.delete(ids=ids)
 
+    @override
     async def adelete(
         self,
         ids: Optional[List[str]] = None,
@@ -125,6 +130,7 @@ class ColbertVectorStore(VectorStore):
             )
         )
 
+    @override
     def similarity_search(
         self,
         query: str,
@@ -134,7 +140,7 @@ class ColbertVectorStore(VectorStore):
     ) -> List[Document]:
         """Return docs most similar to query."""
         chunk_scores: List[Tuple[Chunk, float]] = self._retriever.text_search(
-            query_text=query, k=k, query_maxlen=query_maxlen
+            query_text=query, k=k, query_maxlen=query_maxlen, **kwargs
         )
 
         return [
@@ -142,6 +148,7 @@ class ColbertVectorStore(VectorStore):
             for (c, _) in chunk_scores
         ]
 
+    @override
     def similarity_search_with_score(
         self,
         query: str,
@@ -151,7 +158,7 @@ class ColbertVectorStore(VectorStore):
     ) -> List[Tuple[Document, float]]:
         """Run similarity search with distance."""
         chunk_scores: List[Tuple[Chunk, float]] = self._retriever.text_search(
-            query_text=query, k=k, query_maxlen=query_maxlen
+            query_text=query, k=k, query_maxlen=query_maxlen, **kwargs
         )
 
         return [
@@ -159,6 +166,7 @@ class ColbertVectorStore(VectorStore):
             for (c, s) in chunk_scores
         ]
 
+    @override
     async def asimilarity_search(
         self,
         query: str,
@@ -168,7 +176,7 @@ class ColbertVectorStore(VectorStore):
     ) -> List[Document]:
         """Return docs most similar to query."""
         chunk_scores: List[Tuple[Chunk, float]] = await self._retriever.atext_search(
-            query_text=query, k=k, query_maxlen=query_maxlen
+            query_text=query, k=k, query_maxlen=query_maxlen, **kwargs
         )
 
         return [
@@ -176,6 +184,7 @@ class ColbertVectorStore(VectorStore):
             for (c, _) in chunk_scores
         ]
 
+    @override
     async def asimilarity_search_with_score(
         self,
         query: str,
@@ -185,7 +194,7 @@ class ColbertVectorStore(VectorStore):
     ) -> List[Tuple[Document, float]]:
         """Run similarity search with distance."""
         chunk_scores: List[Tuple[Chunk, float]] = await self._retriever.atext_search(
-            query_text=query, k=k, query_maxlen=query_maxlen
+            query_text=query, k=k, query_maxlen=query_maxlen, **kwargs
         )
 
         return [
@@ -194,6 +203,7 @@ class ColbertVectorStore(VectorStore):
         ]
 
     @classmethod
+    @override
     def from_documents(
         cls,
         documents: List[Document],
@@ -213,6 +223,7 @@ class ColbertVectorStore(VectorStore):
         )
 
     @classmethod
+    @override
     async def afrom_documents(
         cls: Type[CVS],
         documents: List[Document],
@@ -234,6 +245,7 @@ class ColbertVectorStore(VectorStore):
         )
 
     @classmethod
+    @override
     def from_texts(
         cls: Type[CVS],
         texts: List[str],
@@ -244,12 +256,12 @@ class ColbertVectorStore(VectorStore):
     ) -> CVS:
         """Return VectorStore initialized from texts and embeddings."""
 
-        instance = super().__new__(cls)
-        instance._initialize(database=database, embedding_model=embedding_model)
+        instance = cls(database=database, embedding_model=embedding_model, **kwargs)
         instance.add_texts(texts=texts, metadatas=metadatas)
         return instance
 
     @classmethod
+    @override
     async def afrom_texts(
         cls: Type[CVS],
         texts: List[str],
@@ -260,13 +272,13 @@ class ColbertVectorStore(VectorStore):
         **kwargs: Any,
     ) -> CVS:
         """Return VectorStore initialized from texts and embeddings."""
-        instance = super().__new__(cls)
-        instance._initialize(database=database, embedding_model=embedding_model)
+        instance = cls(database=database, embedding_model=embedding_model, **kwargs)
         await instance.aadd_texts(
             texts=texts, metadatas=metadatas, concurrent_inserts=concurrent_inserts
         )
         return instance
 
+    @override
     def as_retriever(self, k: Optional[int] = 5, **kwargs: Any) -> BaseRetriever:
         """Return a VectorStoreRetriever initialized from this VectorStore."""
         return ColbertRetriever(

@@ -34,7 +34,7 @@ def remove_sqlite_extension(s):
 def call_compare(
     recipe: List[str],
     output: Optional[str] = "box-plots",
-    **kwargs,
+    **_,
 ):
     analysis = Analysis()
 

@@ -58,7 +58,6 @@ class QueryPipeline(BasePipeline):
         restart_pipeline: Optional[bool] = False,
         llm_provider: Optional[str] = "OpenAI",
         model_name: Optional[str] = None,
-        **kwargs,
     ):
         self._queries = {}
         self._golden_sets = {}
@@ -110,7 +109,7 @@ class QueryPipeline(BasePipeline):
         metric_count = 4
         self._total_feedbacks = self._total_queries * metric_count
 
-    def signal_handler(self, sig, frame):
+    def signal_handler(self, _, __):
         self._sigint_received = True
         self.stop_evaluation("sigint")
 

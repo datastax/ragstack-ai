@@ -43,7 +43,6 @@ class ColbertEmbeddingModel(BaseEmbeddingModel):
         query_maxlen: Optional[int] = None,
         verbose: Optional[int] = 3,  # 3 is the default on ColBERT checkpoint
         chunk_batch_size: Optional[int] = 640,
-        **kwargs,
     ):
         """
         Initializes a new instance of the ColbertEmbeddingModel class, setting up the

@@ -74,7 +74,7 @@ def len_function(text: str) -> int:
     return len(tokenizer.tokenize(text))
 
 
-async def ingest(file_path: str, chunk_size: int, **kwargs):
+async def ingest(file_path: str, chunk_size: int, **_):
     doc_id = Path(file_path).name
 
     chunk_overlap = min(chunk_size / 4, min(chunk_size / 2, 64))
@@ -133,7 +133,7 @@ async def ingest(file_path: str, chunk_size: int, **kwargs):
     )
 
 
-def query_pipeline(k: int, chunk_size: int, **kwargs):
+def query_pipeline(k: int, chunk_size: int, **_):
     vector_store = get_lc_vector_store(chunk_size=chunk_size)
     llm = ChatOpenAI(model_name=LLM_MODEL)
 

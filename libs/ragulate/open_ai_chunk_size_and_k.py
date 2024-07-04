@@ -22,7 +22,7 @@ def get_vector_store(chunk_size: int):
     )
 
 
-def ingest(file_path: str, chunk_size: int, **kwargs):
+def ingest(file_path: str, chunk_size: int, **_):
     vector_store = get_vector_store(chunk_size=chunk_size)
 
     chunk_overlap = min(chunk_size / 4, min(chunk_size / 2, 64))
@@ -40,7 +40,7 @@ def ingest(file_path: str, chunk_size: int, **kwargs):
     vector_store.add_documents(split_docs)
 
 
-def query_pipeline(k: int, chunk_size: int, **kwargs):
+def query_pipeline(k: int, chunk_size: int, **_):
     vector_store = get_vector_store(chunk_size=chunk_size)
     llm = ChatOpenAI(model_name=LLM_MODEL)
 

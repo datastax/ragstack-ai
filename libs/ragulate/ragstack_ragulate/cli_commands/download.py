@@ -21,6 +21,6 @@ def setup_download(subparsers):
     download_parser.set_defaults(func=lambda args: call_download(**vars(args)))
 
 
-def call_download(dataset_name: str, kind: str, **kwargs):
+def call_download(dataset_name: str, kind: str, **_):
     dataset = get_dataset(name=dataset_name, kind=kind)
     dataset.download_dataset()

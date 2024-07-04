@@ -22,7 +22,7 @@ def setup_run(subparsers):
     run_parser.set_defaults(func=lambda args: call_run(**vars(args)))
 
 
-def call_run(config_file: str, **kwargs):
+def call_run(config_file: str, **_):
     config_parser = ConfigParser.from_file(file_path=config_file)
     config = config_parser.get_config()
 
