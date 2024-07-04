@@ -68,7 +68,7 @@ class CassandraDatabase(BaseDatabase):
         table_name: Optional[str] = "colbert",
     ):
         instance = super().__new__(cls)
-        instance._initialize(session=session, keyspace=keyspace, table_name=table_name)
+        instance._initialize(session=session, keyspace=keyspace, table_name=table_name)  # noqa: SLF001
         return instance
 
     def _initialize(

@@ -138,9 +138,7 @@ def pytest_runtest_makereport(item, call):
                         import traceback
 
                         traceback.print_exception(
-                            call.excinfo._excinfo[0],
-                            call.excinfo._excinfo[1],
-                            call.excinfo._excinfo[2],
+                            call.excinfo.type, call.excinfo.value, call.excinfo.tb
                         )
                     except Exception:  # noqa: BLE001
                         logging.warning("Failed to print stacktrace", exc_info=True)

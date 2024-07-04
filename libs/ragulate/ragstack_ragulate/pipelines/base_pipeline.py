@@ -107,7 +107,7 @@ class BasePipeline(ABC):
     def dataset_names(self) -> List[str]:
         return [d.name for d in self.datasets]
 
-    def _key(self) -> str:
+    def key(self) -> str:
         key_parts = [
             self.pipeline_type,
             self.script_path,
@@ -119,8 +119,8 @@ class BasePipeline(ABC):
 
     def __eq__(self, other):
         if isinstance(other, BasePipeline):
-            return self._key() == other._key()
+            return self.key() == other.key()
         return False
 
     def __hash__(self):
-        return hash(self._key())
+        return hash(self.key())

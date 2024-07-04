@@ -55,23 +55,23 @@ def call_run(config_file: str, **kwargs):
 
     logger.debug("Found these ingest pipelines:")
     for ingest_pipeline in ingest_pipelines:
-        logger.debug(f"\t{ingest_pipeline._key()}")
+        logger.debug(f"\t{ingest_pipeline.key()}")
 
     ingest_pipelines = list(set(ingest_pipelines))
 
     logger.debug("Narrowed down to these ingest pipelines:")
     for ingest_pipeline in ingest_pipelines:
-        logger.debug(f"\t{ingest_pipeline._key()}")
+        logger.debug(f"\t{ingest_pipeline.key()}")
 
     logger.debug("Found these query pipelines:")
     for query_pipeline in query_pipelines:
-        logger.debug(f"\t{query_pipeline._key()}")
+        logger.debug(f"\t{query_pipeline.key()}")
 
     query_pipelines = list(set(query_pipelines))
 
     logger.debug("Narrowed down to these query pipelines:")
     for query_pipeline in query_pipelines:
-        logger.debug(f"\t{query_pipeline._key()}")
+        logger.debug(f"\t{query_pipeline.key()}")
 
     for ingest_pipeline in ingest_pipelines:
         ingest_pipeline.ingest()
