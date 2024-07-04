@@ -65,8 +65,8 @@ class DeleteCollectionHandler:
         """
         while self.semaphore._value != self.max_workers:
             logging.debug(
-                f"{self.max_workers - self.semaphore._value} deletions still running, "
-                f"waiting to complete"
+                "%s deletions still running, waiting to complete",
+                self.max_workers - self.semaphore._value,
             )
             time.sleep(1)
         return
@@ -87,9 +87,9 @@ class DeleteCollectionHandler:
         Internal wrapper to run the delete function and release the semaphore once done.
         """
         try:
-            logging.info(f"deleting collection {collection}")
+            logging.info("deleting collection %s", collection)
             self.delete_function(collection)
-            logging.info(f"deleted collection {collection}")
+            logging.info("deleted collection %s", collection)
         finally:
             self.semaphore.release()
 
@@ -158,9 +158,9 @@ class AstraDBVectorStoreTestContext(VectorStoreTestContext):
 
     def new_langchain_vector_store(self, **kwargs) -> EnhancedLangChainVectorStore:
         logging.info(
-            f"Creating langchain vector store, "
-            f"implementation {self.handler.implementation}, "
-            f"collection {self.handler.collection_name}"
+            "Creating langchain vector store, implementation %s, collection %s",
+            self.handler.implementation,
+            self.handler.collection_name,
         )
 
         if self.handler.implementation == VectorStoreImplementation.CASSANDRA:
@@ -202,9 +202,9 @@ class AstraDBVectorStoreTestContext(VectorStoreTestContext):
 
     def new_llamaindex_vector_store(self, **kwargs) -> EnhancedLlamaIndexVectorStore:
         logging.info(
-            f"Creating llama index vector store, "
-            f"implementation {self.handler.implementation}, "
-            f"collection {self.handler.collection_name}"
+            "Creating llama index vector store, implementation %s, collection %s",
+            self.handler.implementation,
+            self.handler.collection_name,
         )
         if self.handler.implementation == VectorStoreImplementation.CASSANDRA:
             vector_store = EnhancedCassandraLlamaIndexVectorStore(
@@ -229,13 +229,15 @@ def try_delete_with_backoff(collection: str, sleep=1, max_tries=5):
         response = AstraDBVectorStoreHandler.default_astra_client.delete_collection(
             collection
         )
-        logging.info(f"delete collection {collection} response: {response!s}")
-    except Exception as e:
+        logging.info("delete collection %s response: %s", collection, str(response))
+    except Exception:
         max_tries -= 1
         if max_tries < 0:
             raise
 
-        logging.warning(f"An exception occurred deleting collection {collection}: {e}")
+        logging.warning(
+            "An exception occurred deleting collection %s", collection, exc_info=True
+        )
         time.sleep(sleep)
         try_delete_with_backoff(collection, sleep * 2, max_tries)
 
@@ -282,19 +284,19 @@ class AstraDBVectorStoreHandler(VectorStoreHandler):
 
     def ensure_astra_env_clean(self, blocking=False):
         logging.info(
-            f"Ensuring astra env is clean (current deletions in progress: "
-            f"{self.__class__.delete_collection_handler.get_current_deletions()})"
+            "Ensuring astra env is clean (current deletions in progress: %s)",
+            self.__class__.delete_collection_handler.get_current_deletions(),
         )
         collections = (
             self.__class__.default_astra_client.get_collections()
             .get("status")
             .get("collections")
         )
-        logging.info(f"Existing collections: {collections}")
+        logging.info("Existing collections: %s", collections)
         if self.collection_name:
             logging.info(
-                f"Deleting collection configured in the vector store: "
-                f"{self.collection_name}"
+                "Deleting collection configured in the vector store: %s",
+                self.collection_name,
             )
             self.__class__.delete_collection_handler.run_delete(
                 self.collection_name
@@ -307,16 +309,16 @@ class AstraDBVectorStoreHandler(VectorStoreHandler):
             logging.info("Astra env cleanup completed")
         else:
             logging.info(
-                f"Astra env cleanup started in background, proceeding "
-                f"(current deletions in progress: "
-                f"{self.__class__.delete_collection_handler.get_current_deletions()})"
+                "Astra env cleanup started in background, "
+                "proceeding (current deletions in progress: %s)",
+                self.__class__.delete_collection_handler.get_current_deletions(),
             )
 
     def before_test(self) -> AstraDBVectorStoreTestContext:
         super().check_implementation()
         self.ensure_astra_env_clean(blocking=True)
         self.collection_name = "documents_" + random_string()
-        logging.info("Start using collection: " + self.collection_name)
+        logging.info("Start using collection: %s", self.collection_name)
 
         if self.implementation == VectorStoreImplementation.CASSANDRA:
             # to run cassandra implementation over astra

@@ -358,7 +358,7 @@ def test_multimodal(vector_store, embedding, llm, request):
         f"Tell me which one of these products it is part of. "
         f"Only include product from the ones below: {docs_str}."
     )
-    logging.info(f"Prompt: {prompt}")
+    logging.info("Prompt: %s", prompt)
     response = llm_complete_fn(resolved_llm, prompt, query_image_path)
     assert (
         "Coffee Machine Ultra Cool" in response

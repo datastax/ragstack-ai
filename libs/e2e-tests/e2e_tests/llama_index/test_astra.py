@@ -231,5 +231,5 @@ class MockEmbeddings(BaseEmbedding):
     @staticmethod
     def mock_embedding(text: str):
         res = [len(text) / 2, len(text) / 5, len(text) / 10]
-        logging.debug("mock_embedding for " + text + " : " + str(res))
+        logging.debug("mock_embedding for %s : %s", text, res)
         return res

@@ -100,7 +100,7 @@ def pytest_runtest_makereport(item, call):
         if not info:
             test_path = pathlib.PurePath(item.path)
             info = test_path.parent.name + "::" + test_path.name + "::" + item.name
-        logging.info(f"Test {info} took: {total_time} seconds")
+        logging.info("Test %s took: %s seconds", info, total_time)
         paths = str(item.path).split(os.sep)
         is_langchain = False
         is_llamaindex = False
@@ -127,7 +127,7 @@ def pytest_runtest_makereport(item, call):
             or "unconditional skip" in result
         )
         if not skip_report_line:
-            logging.info("Test report line: " + report_line)
+            logging.info("Test report line: %s", report_line)
             if rep.outcome != "passed":
                 # also keep skipped tests in the report
                 failed_report_lines.append(report_line)
@@ -149,7 +149,7 @@ def pytest_runtest_makereport(item, call):
             elif is_llamaindex:
                 llamaindex_report_lines.append(report_line)
         else:
-            logging.info("Skipping test report line: " + result)
+            logging.info("Skipping test report line: %s", result)
         os.environ["RAGSTACK_E2E_TESTS_TEST_INFO"] = ""
 
     if rep.when == "call":

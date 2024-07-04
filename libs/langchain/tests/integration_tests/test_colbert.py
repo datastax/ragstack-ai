@@ -53,7 +53,7 @@ def get_test_chunks() -> List[Document]:
 
         test_data["chunks"] = text_splitter.split_documents(docs)
         logging.info(
-            f"split {len(docs)} documents into {len(test_data['chunks'])} chunks"
+            "split %s documents into %s chunks", len(docs), len(test_data["chunks"])
         )
 
     return test_data["chunks"]

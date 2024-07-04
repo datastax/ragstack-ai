@@ -465,7 +465,7 @@ def test_multimodal(vector_store, embedding, llm, request, record_property):
         f"Tell me which one of these products it is part of. "
         f"Only include product from the ones below: {docs_str}."
     )
-    logging.info(f"Prompt: {prompt}")
+    logging.info("Prompt: %s", prompt)
 
     text_message = {
         "type": "text",

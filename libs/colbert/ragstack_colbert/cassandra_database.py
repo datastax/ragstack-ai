@@ -95,8 +95,8 @@ class CassandraDatabase(BaseDatabase):
             is_astra = False
 
         logging.info(
-            f"Cassandra store is running on "
-            f"{'AstraDB' if is_astra else 'Apache Cassandra'}."
+            "Cassandra store is running on %s",
+            "AstraDB" if is_astra else "Apache Cassandra",
         )
 
         self._table = ClusteredMetadataVectorCassandraTable(
@@ -114,12 +114,15 @@ class CassandraDatabase(BaseDatabase):
     ):
         if embedding_id == -1:
             logging.error(
-                f"issue inserting document data: {doc_id} chunk: {chunk_id}: {exp}"
+                "issue inserting document data: %s chunk: %s: %s", doc_id, chunk_id, exp
             )
         else:
             logging.error(
-                f"issue inserting document embedding: {doc_id} chunk: {chunk_id} "
-                f"embedding: {embedding_id}: {exp}"
+                "issue inserting document embedding: %s chunk: %s embedding: %s: %s",
+                doc_id,
+                chunk_id,
+                embedding_id,
+                exp,
             )
 
     def add_chunks(self, chunks: List[Chunk]) -> List[Tuple[str, int]]:
@@ -298,13 +301,13 @@ class CassandraDatabase(BaseDatabase):
             try:
                 self._table.delete_partition(partition_id=doc_id)
             except Exception:
-                logging.exception(f"issue on delete of document: {doc_id}")
+                logging.exception("issue on delete of document: %s", doc_id)
                 failed_docs.append(doc_id)
 
         if len(failed_docs) > 0:
             raise CassandraDatabaseError(
-                f"delete failed for these docs: {failed_docs}. "
-                f"See error logs for more info."
+                "delete failed for these docs: %s. See error logs for more info.",
+                failed_docs,
             )
 
         return True
@@ -353,7 +356,7 @@ class CassandraDatabase(BaseDatabase):
 
         for doc_id, exp in results:
             if exp is not None:
-                logging.error(f"issue deleting document: {doc_id}: {exp}")
+                logging.error("issue deleting document: %s: %s", doc_id, exp)
                 success = False
                 failed_docs.append(doc_id)
 
