@@ -1,10 +1,9 @@
 from typing import List
 
+from ragstack_ragulate.analysis import Analysis
 from ragstack_ragulate.config import ConfigParser
+from ragstack_ragulate.logging_config import logger
 from ragstack_ragulate.pipelines import IngestPipeline, QueryPipeline
-
-from ..analysis import Analysis
-from ..logging_config import logger
 
 
 def setup_run(subparsers):

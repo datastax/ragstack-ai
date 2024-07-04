@@ -3,7 +3,8 @@ from typing import List
 
 from tqdm import tqdm
 
-from ..logging_config import logger
+from ragstack_ragulate.logging_config import logger
+
 from .base_pipeline import BasePipeline
 
 

@@ -2,8 +2,7 @@ from typing import List
 
 from ragstack_ragulate.datasets import find_dataset
 from ragstack_ragulate.pipelines import QueryPipeline
-
-from ..utils import convert_vars_to_ingredients
+from ragstack_ragulate.utils import convert_vars_to_ingredients
 
 
 def setup_query(subparsers):
