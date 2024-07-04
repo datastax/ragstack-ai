@@ -28,13 +28,13 @@ def test_texts_to_nodes() -> None:
             None,
         )
     ) == [Node(links={Link.incoming(kind="hyperlink", tag="http://b")}, text="a")]
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="texts iterable longer than ids"):
         list(_texts_to_nodes(["a", "b"], None, ["a"]))
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="texts iterable longer than metadatas"):
         list(_texts_to_nodes(["a", "b"], [{"a": "b"}], None))
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="metadatas iterable longer than texts"):
         list(_texts_to_nodes(["a"], [{"a": "b"}, {"c": "d"}], None))
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="ids iterable longer than texts"):
         list(_texts_to_nodes(["a"], None, ["a", "b"]))
 
 
@@ -59,7 +59,7 @@ def test_documents_to_nodes() -> None:
         Node(links={Link.incoming(kind="hyperlink", tag="http://b")}, text="a"),
         Node(metadata={"c": "d"}, text="b"),
     ]
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="documents iterable longer than ids"):
         list(_documents_to_nodes(documents, ["a"]))
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="ids iterable longer than documents"):
         list(_documents_to_nodes(documents[1:], ["a", "b"]))

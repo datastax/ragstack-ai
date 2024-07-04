@@ -161,9 +161,8 @@ def set_current_test_info(test_name: str, test_info: str):
     os.environ["RAGSTACK_E2E_TESTS_TEST_INFO"] = f"{test_name}::{test_info}"
 
 
-@pytest.fixture(scope="session", autouse=True)
-def dump_report():
-    yield
+@pytest.hookimpl()
+def pytest_sessionfinish(session, exitstatus):
     logging.info("All tests report:")
     logging.info("\n".join(all_report_lines))
     logging.info("Failed tests report:")

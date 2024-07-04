@@ -8,7 +8,7 @@ from e2e_tests.test_utils.vector_store_handler import (
 )
 
 
-@pytest.fixture
+@pytest.fixture()
 def astra_db():
     handler = get_vector_store_handler(VectorStoreImplementation.ASTRADB)
     context = handler.before_test()
@@ -16,7 +16,7 @@ def astra_db():
     handler.after_test()
 
 
-@pytest.fixture
+@pytest.fixture()
 def cassandra():
     handler = get_vector_store_handler(VectorStoreImplementation.CASSANDRA)
     context = handler.before_test()

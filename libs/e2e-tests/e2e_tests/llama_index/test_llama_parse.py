@@ -22,12 +22,12 @@ if TYPE_CHECKING:
     from e2e_tests.test_utils.vector_store_handler import VectorStoreTestContext
 
 
-@pytest.fixture
+@pytest.fixture()
 def llama_parse_text():
     return "text", LlamaParse(result_type="text")
 
 
-@pytest.fixture
+@pytest.fixture()
 def llama_parse_markdown():
     return "markdown", LlamaParse(result_type="markdown")
 
