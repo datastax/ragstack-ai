@@ -1,9 +1,9 @@
 import secrets
-from typing import Iterator
+from typing import Callable, Iterator, List
 
 import pytest
 from dotenv import load_dotenv
-from langchain_openai import OpenAIEmbeddings
+from ragstack_knowledge_store import EmbeddingModel
 from ragstack_knowledge_store.graph_store import GraphStore
 from ragstack_tests_utils import LocalCassandraTestStore
 
@@ -21,14 +21,30 @@ def cassandra() -> Iterator[LocalCassandraTestStore]:
         store.docker_container.stop()
 
 
+class DummyEmbeddingModel(EmbeddingModel):
+    def embed_texts(self, _: List[str]) -> List[List[float]]:
+        return []
+
+    def embed_query(self, _: str) -> List[float]:
+        return []
+
+    async def aembed_texts(self, _: List[str]) -> List[List[float]]:
+        return []
+
+    async def aembed_query(self, _: str) -> List[float]:
+        return []
+
+
 @pytest.fixture()
-def graph_store_factory(cassandra: LocalCassandraTestStore):
+def graph_store_factory(
+    cassandra: LocalCassandraTestStore,
+) -> Iterator[Callable[[], GraphStore]]:
     session = cassandra.create_cassandra_session()
     session.set_keyspace(KEYSPACE)
 
-    embedding = OpenAIEmbeddings()
+    embedding = DummyEmbeddingModel()
 
-    def _make_graph_store():
+    def _make_graph_store() -> GraphStore:
         name = secrets.token_hex(8)
 
         node_table = f"nodes_{name}"
@@ -46,7 +62,7 @@ def graph_store_factory(cassandra: LocalCassandraTestStore):
     session.shutdown()
 
 
-def test_graph_store_creation(graph_store_factory):
+def test_graph_store_creation(graph_store_factory: Callable[[], GraphStore]) -> None:
     """Test that a graph store can be created.
 
     This verifies the schema can be applied and the queries prepared.
