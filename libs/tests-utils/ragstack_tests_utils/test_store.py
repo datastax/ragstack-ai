@@ -99,7 +99,7 @@ class AstraDBTestStore(TestStore):
                     "protocol_version": 4,
                 },
             )
-        session = cassio.config.resolve_session()
+        session = cassio.config.check_resolve_session()
         tables = session.execute(
             f"select table_name FROM system_schema.tables "
             f"where keyspace_name ='{KEYSPACE}'"

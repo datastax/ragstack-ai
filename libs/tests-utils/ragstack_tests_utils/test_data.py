@@ -76,6 +76,7 @@ class TestData:
         """Returns: A short, highly-technical text on renewable energy"""
         return TestData._get_text_file("renewable_energy.txt")
 
+    @staticmethod
     def renewable_energy_embedding() -> Embedding:
         """Returns: An embedding for the `renewable_energy_text()` text"""
         return TestData._get_csv_embedding("renewable_energy.csv")

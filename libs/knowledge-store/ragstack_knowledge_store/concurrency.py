@@ -2,7 +2,7 @@ import contextlib
 import logging
 import threading
 from types import TracebackType
-from typing import Any, Callable, NamedTuple, Optional, Sequence, Tuple, Type
+from typing import Any, Callable, Literal, NamedTuple, Optional, Sequence, Tuple, Type
 
 from cassandra.cluster import ResponseFuture, Session
 from cassandra.query import PreparedStatement
@@ -10,23 +10,21 @@ from cassandra.query import PreparedStatement
 logger = logging.getLogger(__name__)
 
 
-class ConcurrentQueries(contextlib.AbstractContextManager):
+class ConcurrentQueries(contextlib.AbstractContextManager["ConcurrentQueries"]):
     """Context manager for concurrent queries."""
 
     def __init__(self, session: Session) -> None:
         self._session = session
         self._completion = threading.Condition()
-
         self._pending = 0
-
-        self._error = None
+        self._error: Optional[BaseException] = None
 
     def _handle_result(
         self,
         result: Sequence[NamedTuple],
         future: ResponseFuture,
         callback: Optional[Callable[[Sequence[NamedTuple]], Any]],
-    ):
+    ) -> None:
         if callback is not None:
             callback(result)
 
@@ -38,7 +36,7 @@ class ConcurrentQueries(contextlib.AbstractContextManager):
                 if self._pending == 0:
                     self._completion.notify()
 
-    def _handle_error(self, error, future: ResponseFuture):
+    def _handle_error(self, error: BaseException, future: ResponseFuture) -> None:
         logger.error(
             "Error executing query: %s",
             future.query,
@@ -51,9 +49,9 @@ class ConcurrentQueries(contextlib.AbstractContextManager):
     def execute(
         self,
         query: PreparedStatement,
-        parameters: Optional[Tuple] = None,
-        callback: Optional[Callable[[Sequence[NamedTuple]], Any]] = None,
-    ):
+        parameters: Optional[Tuple[Any, ...]] = None,
+        callback: Optional[Callable[[Sequence[Any]], None]] = None,
+    ) -> None:
         """Execute a query concurrently.
 
         Because this is done concurrently, it expects a callback if you need
@@ -93,7 +91,7 @@ class ConcurrentQueries(contextlib.AbstractContextManager):
         _exc_type: Optional[Type[BaseException]],
         _exc_inst: Optional[BaseException],
         _exc_traceback: Optional[TracebackType],
-    ) -> bool:
+    ) -> Literal[False]:
         with self._completion:
             while self._error is None and self._pending > 0:
                 self._completion.wait()
