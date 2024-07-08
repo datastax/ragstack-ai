@@ -350,20 +350,32 @@ class GraphStore:
         self,
         ids: Iterable[str],
     ) -> List[Node]:
-        results: Dict[str, Node] = {}
+        results: Dict[str, Optional[Node]] = {}
         with self._concurrent_queries() as cq:
 
             def add_nodes(rows: Iterable[Any]) -> None:
+                # Should always be exactly one row here. We don't need to check
+                #   1. The query is for a `ID == ?` query on the primary key.
+                #   2. If it doesn't exist, the `get_result` method below will
+                #      raise an exception indicating the ID doesn't exist.
                 for row in rows:
                     results[row.content_id] = _row_to_node(row)
 
             for node_id in ids:
                 if node_id not in results:
+                    # Mark this node ID as being fetched.
+                    results[node_id] = None
                     cq.execute(
                         self._query_by_id, parameters=(node_id,), callback=add_nodes
                     )
 
-        return [results[node_id] for node_id in ids]
+        def get_result(node_id: str) -> Node:
+            if (result := results[node_id]) is not None:
+                return result
+            else:
+                raise ValueError(f"No node with ID '{node_id}'")
+
+        return [get_result(node_id) for node_id in ids]
 
     def mmr_traversal_search(
         self,
