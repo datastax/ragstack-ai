@@ -60,7 +60,7 @@ def llm() -> BaseChatModel:
     except ValueError:
         pytest.skip("Unable to create OpenAI model")
     else:
-        return ChatOpenAI(model_name="gpt-4o", temperature=0.0)
+        return ChatOpenAI(model="gpt-4o", temperature=0.0)
 
 
 class DataFixture:
@@ -92,7 +92,7 @@ class DataFixture:
 
         self.graph_store.add_graph_documents(documents)
 
-    def drop(self):
+    def drop(self) -> None:
         self.session.execute(f"DROP TABLE IF EXISTS {self.keyspace}.{self.node_table};")
         self.session.execute(f"DROP TABLE IF EXISTS {self.keyspace}.{self.edge_table};")
 

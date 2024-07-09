@@ -19,7 +19,7 @@ def _deserialize_md_dict(md_string: str) -> Dict[str, Any]:
     return cast(Dict[str, Any], json.loads(md_string))
 
 
-def _parse_node(row) -> Node:
+def _parse_node(row: Any) -> Node:
     return Node(
         name=row.name,
         type=row.type,
@@ -106,7 +106,7 @@ class CassandraKnowledgeGraph:
             """
         )
 
-    def _apply_schema(self):
+    def _apply_schema(self) -> None:
         # Partition by `name` and cluster by `type`.
         # Each `(name, type)` pair is a unique node.
         # We can enumerate all `type` values for a given `name` to identify ambiguous
@@ -152,11 +152,13 @@ class CassandraKnowledgeGraph:
             """
         )
 
-    def _send_query_nearest_node(self, node: str, k: int = 1) -> ResponseFuture:
+    def _send_query_nearest_node(
+        self, embeddings: Embeddings, node: str, k: int = 1
+    ) -> ResponseFuture:
         return self._session.execute_async(
             self._query_nodes_by_embedding,
             (
-                self._text_embeddings.embed_query(node),
+                embeddings.embed_query(node),
                 k,
             ),
         )
@@ -173,13 +175,11 @@ class CassandraKnowledgeGraph:
             raise ValueError("Unable to query for nearest nodes without embeddings")
 
         node_futures: Iterable[ResponseFuture] = [
-            self._send_query_nearest_node(n, k) for n in nodes
+            self._send_query_nearest_node(self._text_embeddings, n, k) for n in nodes
         ]
-
-        nodes = {
+        return {
             _parse_node(n) for node_future in node_futures for n in node_future.result()
         }
-        return list(nodes)
 
     # TODO: Introduce `ainsert` for async insertions.
     def insert(
@@ -253,9 +253,11 @@ class CassandraKnowledgeGraph:
             for n in nodes
         ]
 
-        nodes = [_parse_node(n) for future in node_futures for n in future.result()]
+        graph_nodes = [
+            _parse_node(n) for future in node_futures for n in future.result()
+        ]
 
-        return nodes, edges
+        return graph_nodes, edges
 
     def traverse(
         self,

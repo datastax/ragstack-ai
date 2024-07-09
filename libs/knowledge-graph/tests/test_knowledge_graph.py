@@ -24,7 +24,7 @@ def test_no_embeddings(db_session: Session, db_keyspace: str) -> None:
 
 
 def test_traverse_marie_curie(marie_curie: DataFixture) -> None:
-    (result_nodes, result_edges) = marie_curie.graph_store.graph.subgraph(
+    result_nodes, result_edges = marie_curie.graph_store.graph.subgraph(
         start=Node("Marie Curie", "Person"),
         steps=1,
     )
