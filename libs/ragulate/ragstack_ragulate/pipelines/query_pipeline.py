@@ -199,9 +199,8 @@ class QueryPipeline(BasePipeline):
 
         self._progress = tqdm(
             total=(self._total_queries + self._total_feedbacks),
-            initial=self._finished_queries
+            initial=self._finished_queries,
         )
-
 
         for dataset_name in self._queries:
             feedback_functions = [
