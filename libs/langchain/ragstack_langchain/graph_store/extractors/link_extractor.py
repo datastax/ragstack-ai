@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Generic, Iterable, TypeVar
+from typing import Generic, Iterable, Set, TypeVar
 
 from ragstack_langchain.graph_store.links import Link
 
@@ -24,7 +24,7 @@ class LinkExtractor(ABC, Generic[InputT]):
             Set of links extracted from the input.
         """
 
-    def extract_many(self, inputs: Iterable[InputT]):
+    def extract_many(self, inputs: Iterable[InputT]) -> Iterable[Set[Link]]:
         """Add edges from each `input` to the corresponding documents.
 
         Args:
