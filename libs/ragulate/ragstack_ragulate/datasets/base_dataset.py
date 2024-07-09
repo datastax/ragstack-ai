@@ -3,11 +3,20 @@ import tempfile
 from abc import ABC, abstractmethod
 from os import makedirs, path
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 import aiofiles
 import aiohttp
 from tqdm.asyncio import tqdm
+
+
+class QueryItem():
+    query: str
+    metadata: Dict[str, Any]
+
+    def __init__(self, query:str, metadata: Dict[str, Any]):
+        self.query = query
+        self.metadata = metadata
 
 
 class BaseDataset(ABC):
@@ -15,12 +24,16 @@ class BaseDataset(ABC):
     root_storage_path: str
     name: str
     _subsets: List[str] = []
+    _query_items: List[QueryItem]
+    _golden_set: List[Dict[str, str]]
 
     def __init__(
         self, dataset_name: str, root_storage_path: str = "datasets"
     ):
         self.name = dataset_name
         self.root_storage_path = root_storage_path
+        self._query_items = []
+        self._golden_set = []
 
     def storage_path(self) -> str:
         """returns the path where dataset files should be stored"""
@@ -55,8 +68,20 @@ class BaseDataset(ABC):
         """gets a list of source file paths for for a dataset"""
 
     @abstractmethod
-    def get_queries_and_golden_set(self) -> Tuple[List[str], List[Dict[str, str]]]:
-        """gets a list of queries and golden_truth answers for a dataset"""
+    def _load_query_items_and_golden_set(self):
+        """loads query_items and golden_set"""
+
+    def get_query_items(self) -> List[QueryItem]:
+        """gets a list of query items for a dataset"""
+        if len(self._query_items) == 0:
+            self._load_query_items_and_golden_set()
+        return self._query_items
+
+    def get_golden_set(self) -> List[Dict[str, str]]:
+        """gets the set of ground_truth answers for a dataset"""
+        if len(self._golden_set) == 0:
+            self._load_query_items_and_golden_set()
+        return self._golden_set
 
     async def _download_file(
         self, session: aiohttp.ClientSession, url: str, temp_file_path: str
