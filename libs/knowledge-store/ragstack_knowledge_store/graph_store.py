@@ -350,7 +350,7 @@ class GraphStore:
         self,
         ids: Iterable[str],
     ) -> List[Node]:
-        results: Dict[str, Node] = {}
+        results: Dict[str, Optional[Node]] = {}
         with self._concurrent_queries() as cq:
 
             def add_nodes(rows: Iterable[Any]) -> None:
@@ -359,11 +359,12 @@ class GraphStore:
 
             for node_id in ids:
                 if node_id not in results:
+                    results[node_id] = None
                     cq.execute(
                         self._query_by_id, parameters=(node_id,), callback=add_nodes
                     )
 
-        return [results[node_id] for node_id in ids]
+        return [results[node_id] for node_id in ids if results[node_id] is not None]
 
     def mmr_traversal_search(
         self,

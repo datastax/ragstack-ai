@@ -21,18 +21,21 @@ def cassandra() -> Iterator[LocalCassandraTestStore]:
         store.docker_container.stop()
 
 
+DUMMY_VECTOR = [0.1, 0.2]
+
+
 class DummyEmbeddingModel(EmbeddingModel):
-    def embed_texts(self, _: List[str]) -> List[List[float]]:
-        return []
+    def embed_texts(self, texts: List[str]) -> List[List[float]]:
+        return [DUMMY_VECTOR] * len(texts)
 
     def embed_query(self, _: str) -> List[float]:
-        return []
+        return DUMMY_VECTOR
 
-    async def aembed_texts(self, _: List[str]) -> List[List[float]]:
-        return []
+    async def aembed_texts(self, texts: List[str]) -> List[List[float]]:
+        return [DUMMY_VECTOR] * len(texts)
 
     async def aembed_query(self, _: str) -> List[float]:
-        return []
+        return DUMMY_VECTOR
 
 
 @pytest.fixture()
