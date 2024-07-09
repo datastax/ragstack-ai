@@ -90,6 +90,7 @@ class QueryPipeline(BasePipeline):
             # database.
             self._tru.reset_database()
 
+        total_existing_queries = 0
         for dataset in datasets:
             queries, golden_set = dataset.get_queries_and_golden_set()
             if self.sample_percent < 1.0:
@@ -105,6 +106,8 @@ class QueryPipeline(BasePipeline):
                 app_ids=[dataset.name]
             )
             existing_queries = existing_records["input"].dropna().tolist()
+            total_existing_queries += len(existing_queries)
+
             queries = [query for query in queries if query not in existing_queries]
 
             self._queries[dataset.name] = queries
@@ -113,6 +116,9 @@ class QueryPipeline(BasePipeline):
 
         metric_count = 4
         self._total_feedbacks = self._total_queries * metric_count
+
+        # Set finished queries count to total existing queries
+        self._finished_queries = total_existing_queries
 
     def signal_handler(self, _, __):
         """Handle SIGINT signal."""
@@ -202,7 +208,10 @@ class QueryPipeline(BasePipeline):
             "(r)unning, (w)aiting, (f)ailed, (s)kipped"
         )
 
-        self._progress = tqdm(total=(self._total_queries + self._total_feedbacks))
+        self._progress = tqdm(
+            total=(self._total_queries + self._total_feedbacks),
+            initial=self._finished_queries,
+        )
 
         for dataset_name in self._queries:
             feedback_functions = [
