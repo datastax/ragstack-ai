@@ -1,4 +1,5 @@
-"""
+"""Base retriever module.
+
 This module defines abstract base classes for implementing retrieval mechanisms for
 text chunk embeddings, specifically designed to work with ColBERT or similar embedding
 models.
@@ -11,9 +12,10 @@ from .objects import Chunk, Embedding
 
 
 class BaseRetriever(ABC):
-    """
-    Abstract base class (ABC) for a retrieval system that operates on a ColBERT vector
-    store, facilitating the search and retrieval of text chunks based on query
+    """Base Retriever abstract class for ColBERT.
+
+    Abstract base class (ABC) for a retrieval system that operates on a ColBERT
+    vector store, facilitating the search and retrieval of text chunks based on query
     embeddings.
     """
 
@@ -26,11 +28,12 @@ class BaseRetriever(ABC):
         include_embedding: Optional[bool] = False,
         **kwargs: Any,
     ) -> List[Tuple[Chunk, float]]:
-        """
+        """Search for relevant text chunks based on a query embedding.
+
         Retrieves a list of text chunks relevant to a given query from the vector
         store, ranked by relevance or other metrics.
 
-        Parameters:
+        Args:
             query_embedding (Embedding): The query embedding to search for relevant
                 text chunks.
             k (Optional[int]): The number of top results to retrieve.
@@ -54,11 +57,12 @@ class BaseRetriever(ABC):
         include_embedding: Optional[bool] = False,
         **kwargs: Any,
     ) -> List[Tuple[Chunk, float]]:
-        """
+        """Search for relevant text chunks based on a query embedding.
+
         Retrieves a list of text chunks relevant to a given query from the vector
         store, ranked by relevance or other metrics.
 
-        Parameters:
+        Args:
             query_embedding (Embedding): The query embedding to search for relevant
                 text chunks.
             k (Optional[int]): The number of top results to retrieve.
@@ -83,11 +87,12 @@ class BaseRetriever(ABC):
         include_embedding: Optional[bool] = False,
         **kwargs: Any,
     ) -> List[Tuple[Chunk, float]]:
-        """
+        """Search for relevant text chunks based on a query text.
+
         Retrieves a list of text chunks relevant to a given query from the vector
         store, ranked by relevance or other metrics.
 
-        Parameters:
+        Args:
             query_text (str): The query text to search for relevant text chunks.
             k (Optional[int]): The number of top results to retrieve.
             query_maxlen (Optional[int]): The maximum length of the query to consider.
@@ -113,11 +118,12 @@ class BaseRetriever(ABC):
         include_embedding: Optional[bool] = False,
         **kwargs: Any,
     ) -> List[Tuple[Chunk, float]]:
-        """
+        """Search for relevant text chunks based on a query text.
+
         Retrieves a list of text chunks relevant to a given query from the vector
         store, ranked by relevance or other metrics.
 
-        Parameters:
+        Args:
             query_text (str): The query text to search for relevant text chunks.
             k (Optional[int]): The number of top results to retrieve.
             query_maxlen (Optional[int]): The maximum length of the query to consider.

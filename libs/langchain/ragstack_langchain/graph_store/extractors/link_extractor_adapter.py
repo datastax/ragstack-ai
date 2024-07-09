@@ -16,9 +16,9 @@ class LinkExtractorAdapter(LinkExtractor[InputT]):
         self._underlying = underlying
         self._transform = transform
 
-    def extract_one(self, input: InputT) -> Set[Link]:
+    def extract_one(self, input: InputT) -> Set[Link]:  # noqa: A002
         return self.extract_one(self._transform(input))
 
     def extract_many(self, inputs: Iterable[InputT]) -> Iterable[Set[Link]]:
-        underlying_inputs = [self._transform(input) for input in inputs]
+        underlying_inputs = map(self._transform, inputs)
         return self._underlying.extract_many(underlying_inputs)

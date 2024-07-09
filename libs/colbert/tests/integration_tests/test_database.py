@@ -8,12 +8,12 @@ from tests.integration_tests.conftest import (
 )
 
 
-@pytest.fixture
+@pytest.fixture()
 def cassandra():
     return get_local_cassandra_test_store()
 
 
-@pytest.fixture
+@pytest.fixture()
 def astra_db():
     return get_astradb_test_store()
 
@@ -62,7 +62,7 @@ def test_database_sync(request, vector_store: str):
 
 
 @pytest.mark.parametrize("vector_store", ["cassandra", "astra_db"])
-@pytest.mark.asyncio
+@pytest.mark.asyncio()
 async def test_database_async(request, vector_store: str):
     vector_store = request.getfixturevalue(vector_store)
 

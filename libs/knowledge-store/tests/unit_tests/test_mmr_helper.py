@@ -34,8 +34,7 @@ def angular_embedding(angle: float) -> List[float]:
 
 
 def test_mmr_helper_added_documetns():
-    """
-    Test end to end construction and MMR search.
+    """Test end to end construction and MMR search.
     The embedding function used here ensures `texts` become
     the following vectors on a circle (numbered v0 through v3):
 
@@ -53,7 +52,6 @@ def test_mmr_helper_added_documetns():
 
     Both v2 and v3 are discovered after v0.
     """
-
     helper = MmrHelper(5, angular_embedding(0.0))
 
     # Fetching the 2 nearest neighbors to 0.0

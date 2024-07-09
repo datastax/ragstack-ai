@@ -30,22 +30,17 @@ class TestData:
 
     @staticmethod
     def climate_change_text() -> str:
-        """
-        Returns: A short, highly-technical text on climate change.
-        """
+        """Returns: A short, highly-technical text on climate change."""
         return TestData._get_text_file("climate_change.txt")
 
     @staticmethod
     def climate_change_embedding() -> Embedding:
-        """
-        Returns: An embedding for the `climate_change_text()` text
-        """
+        """Returns: An embedding for the `climate_change_text()` text"""
         return TestData._get_csv_embedding("climate_change.csv")
 
     @staticmethod
     def marine_animals_text() -> str:
-        """
-        Returns:
+        """Returns:
             A story of approx 350 words about marine animals.
 
         Potential queries on the text:
@@ -54,13 +49,11 @@ class TestData:
             - How do anglerfish adapt to the deep ocean's darkness?
             - What role do coral reefs play in marine ecosystems?
         """
-
         return TestData._get_text_file("marine_animals.txt")
 
     @staticmethod
     def nebula_voyager_text() -> str:
-        """
-        Returns:
+        """Returns:
             A story of approx 2500 words about a theoretical spaceship.
             Includes very technical names and terms that can be
             difficult for standard retrieval systems.
@@ -71,7 +64,7 @@ class TestData:
             - What challenges does the Quantum Opacity phenomenon present to the crew of
               the Nebula Voyager?
             - How does the Bioquantum Array aid Dr. Nyx Moreau in studying the
-              Nebuloforms within Orion’s Whisper?
+              Nebuloforms within Orion's Whisper?
             - What are Xenospheric Particulates?
             - What is the significance of the Cryptolingual Synthesizer used by Jiro
               Takashi, and how does it function?
@@ -80,13 +73,9 @@ class TestData:
 
     @staticmethod
     def renewable_energy_text() -> str:
-        """
-        Returns: A short, highly-technical text on renewable energy
-        """
+        """Returns: A short, highly-technical text on renewable energy"""
         return TestData._get_text_file("renewable_energy.txt")
 
     def renewable_energy_embedding() -> Embedding:
-        """
-        Returns: An embedding for the `renewable_energy_text()` text
-        """
+        """Returns: An embedding for the `renewable_energy_text()` text"""
         return TestData._get_csv_embedding("renewable_energy.csv")

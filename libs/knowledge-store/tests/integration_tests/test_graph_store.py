@@ -21,7 +21,7 @@ def cassandra() -> Iterator[LocalCassandraTestStore]:
         store.docker_container.stop()
 
 
-@pytest.fixture
+@pytest.fixture()
 def graph_store_factory(cassandra: LocalCassandraTestStore):
     session = cassandra.create_cassandra_session()
     session.set_keyspace(KEYSPACE)

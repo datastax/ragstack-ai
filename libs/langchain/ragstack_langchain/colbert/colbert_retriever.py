@@ -1,4 +1,4 @@
-from typing import Any, List, Optional, Tuple
+from typing import TYPE_CHECKING, Any, List, Optional, Tuple
 
 from langchain_core.callbacks.manager import (
     AsyncCallbackManagerForRetrieverRun,
@@ -6,8 +6,11 @@ from langchain_core.callbacks.manager import (
 )
 from langchain_core.documents import Document
 from langchain_core.retrievers import BaseRetriever
-from ragstack_colbert import Chunk
 from ragstack_colbert.base_retriever import BaseRetriever as ColbertBaseRetriever
+from typing_extensions import override
+
+if TYPE_CHECKING:
+    from ragstack_colbert import Chunk
 
 
 class ColbertRetriever(BaseRetriever):
@@ -45,13 +48,15 @@ class ColbertRetriever(BaseRetriever):
         self.k = k
         self.query_maxlen = query_maxlen
 
+    @override
     def _get_relevant_documents(
         self,
         query: str,
         *,
-        run_manager: CallbackManagerForRetrieverRun,  # noqa
+        run_manager: CallbackManagerForRetrieverRun,
     ) -> List[Document]:
         """Get documents relevant to a query.
+
         Args:
             query: String to find relevant documents for
             run_manager: The callbacks handler to use
@@ -67,13 +72,15 @@ class ColbertRetriever(BaseRetriever):
             for (c, _) in chunk_scores
         ]
 
+    @override
     async def _aget_relevant_documents(
         self,
         query: str,
         *,
-        run_manager: AsyncCallbackManagerForRetrieverRun,  # noqa
+        run_manager: AsyncCallbackManagerForRetrieverRun,
     ) -> List[Document]:
         """Asynchronously get documents relevant to a query.
+
         Args:
             query: String to find relevant documents for
             run_manager: The callbacks handler to use

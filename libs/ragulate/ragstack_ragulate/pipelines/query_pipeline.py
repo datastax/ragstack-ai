@@ -15,23 +15,26 @@ from trulens_eval.feedback.provider import (
 )
 from trulens_eval.feedback.provider.base import LLMProvider
 from trulens_eval.schema.feedback import FeedbackMode, FeedbackResultStatus
+from typing_extensions import override
 
 from ragstack_ragulate.datasets import BaseDataset
+from ragstack_ragulate.logging_config import logger
+from ragstack_ragulate.utils import get_tru
 
-from ..logging_config import logger
-from ..utils import get_tru
 from .base_pipeline import BasePipeline
 from .feedbacks import Feedbacks
 
 
 class QueryPipeline(BasePipeline):
+    """Query pipeline."""
+
     _sigint_received = False
 
     _tru: Tru
     _name: str
     _progress: tqdm
-    _queries: Dict[str, List[str]] = {}
-    _golden_sets: Dict[str, List[Dict[str, str]]] = {}
+    _queries: Dict[str, List[str]]
+    _golden_sets: Dict[str, List[Dict[str, str]]]
     _total_queries: int = 0
     _total_feedbacks: int = 0
     _finished_feedbacks: int = 0
@@ -39,10 +42,12 @@ class QueryPipeline(BasePipeline):
     _evaluation_running = False
 
     @property
+    @override
     def pipeline_type(self):
         return "query"
 
     @property
+    @override
     def get_reserved_params(self) -> List[str]:
         return []
 
@@ -58,8 +63,9 @@ class QueryPipeline(BasePipeline):
         restart_pipeline: Optional[bool] = False,
         llm_provider: Optional[str] = "OpenAI",
         model_name: Optional[str] = None,
-        **kwargs,
     ):
+        self._queries = {}
+        self._golden_sets = {}
         super().__init__(
             recipe_name=recipe_name,
             script_path=script_path,
@@ -84,6 +90,7 @@ class QueryPipeline(BasePipeline):
             # database.
             self._tru.reset_database()
 
+        total_existing_queries = 0
         for dataset in datasets:
             queries, golden_set = dataset.get_queries_and_golden_set()
             if self.sample_percent < 1.0:
@@ -99,6 +106,8 @@ class QueryPipeline(BasePipeline):
                 app_ids=[dataset.name]
             )
             existing_queries = existing_records["input"].dropna().tolist()
+            total_existing_queries += len(existing_queries)
+
             queries = [query for query in queries if query not in existing_queries]
 
             self._queries[dataset.name] = queries
@@ -108,27 +117,34 @@ class QueryPipeline(BasePipeline):
         metric_count = 4
         self._total_feedbacks = self._total_queries * metric_count
 
-    def signal_handler(self, sig, frame):
+        # Set finished queries count to total existing queries
+        self._finished_queries = total_existing_queries
+
+    def signal_handler(self, _, __):
+        """Handle SIGINT signal."""
         self._sigint_received = True
         self.stop_evaluation("sigint")
 
     def start_evaluation(self):
+        """Start evaluation."""
         self._tru.start_evaluator(disable_tqdm=True)
         self._evaluation_running = True
 
     def stop_evaluation(self, loc: str):
+        """Stop evaluation."""
         if self._evaluation_running:
             try:
                 logger.debug(f"Stopping evaluation from: {loc}")
                 self._tru.stop_evaluator()
                 self._evaluation_running = False
                 self._tru.delete_singleton()
-            except Exception as e:
-                logger.error(f"issue stopping evaluator: {e}")
+            except Exception:  # noqa: BLE001
+                logger.exception("issue stopping evaluator")
             finally:
                 self._progress.close()
 
     def update_progress(self, query_change: int = 0):
+        """Update progress bar."""
         self._finished_queries += query_change
 
         status = self._tru.db.get_feedback_count_by_status()
@@ -151,25 +167,26 @@ class QueryPipeline(BasePipeline):
         self._finished_feedbacks = done
 
     def get_provider(self) -> LLMProvider:
+        """Get the LLM provider."""
         llm_provider = self.llm_provider.lower()
         model_name = self.model_name
 
         if llm_provider == "openai":
             return OpenAI(model_engine=model_name)
-        elif llm_provider == "azureopenai":
+        if llm_provider == "azureopenai":
             return AzureOpenAI(deployment_name=model_name)
-        elif llm_provider == "bedrock":
+        if llm_provider == "bedrock":
             return Bedrock(model_id=model_name)
-        elif llm_provider == "litellm":
+        if llm_provider == "litellm":
             return LiteLLM(model_engine=model_name)
-        elif llm_provider == "Langchain":
+        if llm_provider == "Langchain":
             return Langchain(model_engine=model_name)
-        elif llm_provider == "huggingface":
+        if llm_provider == "huggingface":
             return Huggingface(name=model_name)
-        else:
-            raise ValueError(f"Unsupported provider: {llm_provider}")
+        raise ValueError(f"Unsupported provider: {llm_provider}")
 
     def query(self):
+        """Run the query pipeline."""
         query_method = self.get_method()
 
         pipeline = query_method(**self.ingredients)
@@ -191,7 +208,10 @@ class QueryPipeline(BasePipeline):
             "(r)unning, (w)aiting, (f)ailed, (s)kipped"
         )
 
-        self._progress = tqdm(total=(self._total_queries + self._total_feedbacks))
+        self._progress = tqdm(
+            total=(self._total_queries + self._total_feedbacks),
+            initial=self._finished_queries,
+        )
 
         for dataset_name in self._queries:
             feedback_functions = [
@@ -216,13 +236,11 @@ class QueryPipeline(BasePipeline):
                 try:
                     with recorder:
                         pipeline.invoke(query)
-                except Exception as e:
+                except Exception as e:  # noqa: BLE001
+                    err = f"Query: '{query}' caused exception, skipping."
+                    logger.exception(err)
                     # TODO: figure out why the logger isn't working after tru-lens starts. For now use print().  # noqa: E501
-                    print(
-                        f"ERROR: Query: '{query}' caused exception, skipping. "
-                        f"Exception {e}"
-                    )
-                    logger.error(f"Query: '{query}' caused exception: {e}, skipping.")
+                    print(f"{err} Exception {e}")  # noqa: T201
                 finally:
                     self.update_progress(query_change=1)
 

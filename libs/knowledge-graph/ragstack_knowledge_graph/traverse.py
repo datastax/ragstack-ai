@@ -6,10 +6,21 @@ from cassandra.cluster import PreparedStatement, ResponseFuture, Session
 from cassio.config import check_resolve_keyspace, check_resolve_session
 
 
-class Node(NamedTuple):
+class _Node(NamedTuple):
     name: str
     type: str
-    properties: Dict[str, Any] = {}
+    properties: Dict[str, Any]
+
+
+class Node(_Node):
+    """A node in the graph."""
+
+    __slots__ = ()
+
+    def __new__(cls, name, type, properties=None):  # noqa: A002, D102
+        if properties is None:
+            properties = {}
+        return super().__new__(cls, name, type, properties)
 
     def __repr__(self):
         return f"{self.name} ({self.type})"
@@ -25,6 +36,8 @@ class Node(NamedTuple):
 
 
 class Relation(NamedTuple):
+    """A relation between two nodes."""
+
     source: Node
     target: Node
     type: str
@@ -64,7 +77,7 @@ def _prepare_edge_query(
         WHERE {edge_source_name} = ?
         AND {edge_source_type} = ?"""
     if edge_filters:
-        query = "\n        AND ".join([query] + edge_filters)
+        query = "\n        AND ".join([query, *edge_filters])
     return session.prepare(query)
 
 
@@ -81,8 +94,9 @@ def traverse(
     session: Optional[Session] = None,
     keyspace: Optional[str] = None,
 ) -> Iterable[Relation]:
-    """
-    Traverse the graph from the given starting nodes and return the resulting sub-graph.
+    """Traverse the graph from the given starting nodes.
+
+    Returns the resulting sub-graph.
 
     Args:
         start: The starting node or nodes.
@@ -140,8 +154,9 @@ def traverse(
             request.start_fetching_next_page()
         else:
             with condition:
-                if request._req_id in pending:
-                    pending.remove(request._req_id)
+                req_id = request._req_id  # noqa: SLF001
+                if req_id in pending:
+                    pending.remove(req_id)
                 if len(pending) == 0:
                     condition.notify()
 
@@ -152,8 +167,7 @@ def traverse(
             condition.notify()
 
     def fetch_relationships(distance: int, source: Node) -> None:
-        """
-        Fetch relationships from node `source` is found at `distance`.
+        """Fetch relationships from node `source` is found at `distance`.
 
         This will retrieve the edges from `source`, and visit the resulting
         nodes at distance `distance + 1`.
@@ -169,7 +183,7 @@ def traverse(
             request: ResponseFuture = session.execute_async(
                 query, (source.name, source.type)
             )
-            pending.add(request._req_id)
+            pending.add(request._req_id)  # noqa: SLF001
             request.add_callbacks(
                 handle_result,
                 handle_error,
@@ -186,11 +200,12 @@ def traverse(
 
         if error is not None:
             raise error
-        else:
-            return results
+        return results
 
 
 class AsyncPagedQuery:
+    """An async iterator over the results of a paged query."""
+
     def __init__(self, depth: int, response_future: ResponseFuture):
         self.loop = asyncio.get_running_loop()
         self.depth = depth
@@ -205,14 +220,14 @@ class AsyncPagedQuery:
         self.loop.call_soon_threadsafe(self.current_page_future.set_exception, error)
 
     async def next(self):
+        """Fetch the next page of results."""
         page = [_parse_relation(r) for r in await self.current_page_future]
 
         if self.response_future.has_more_pages:
             self.current_page_future = asyncio.Future()
             self.response_future.start_fetching_next_page()
             return self.depth, page, self
-        else:
-            return self.depth, page, None
+        return self.depth, page, None
 
 
 async def atraverse(
@@ -228,11 +243,11 @@ async def atraverse(
     session: Optional[Session] = None,
     keyspace: Optional[str] = None,
 ) -> Iterable[Relation]:
-    """
-    Async traversal of the graph from the given starting nodes and return the resulting
-    sub-graph.
+    """Async traversal of the graph from the given starting nodes.
 
-    Parameters:
+    Returns the resulting sub-graph.
+
+    Args:
         start: The starting node or nodes.
         edge_table: The table containing the edges.
         edge_source_name: The name of the column containing edge source names.
@@ -253,7 +268,6 @@ async def atraverse(
     Returns:
         An iterable over relations in the traversed sub-graph.
     """
-
     session = check_resolve_session(session)
     keyspace = check_resolve_keyspace(keyspace)
 

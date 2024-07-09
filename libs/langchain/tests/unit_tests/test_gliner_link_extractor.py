@@ -2,8 +2,8 @@ from ragstack_langchain.graph_store.extractors import GLiNERLinkExtractor
 from ragstack_langchain.graph_store.links import Link
 
 PAGE_1 = """
-Cristiano Ronaldo dos Santos Aveiro (Portuguese pronunciation: [kɾiʃˈtjɐnu
-ʁɔˈnaldu]; born 5 February 1985) is a Portuguese professional footballer who
+Cristiano Ronaldo dos Santos Aveiro (Portuguese pronunciation: [kɾiʃ'tjɐnu
+ʁɔ'naldu]; born 5 February 1985) is a Portuguese professional footballer who
 plays as a forward for and captains both Saudi Pro League club Al Nassr and the
 Portugal national team. Widely regarded as one of the greatest players of all
 time, Ronaldo has won five Ballon d'Or awards,[note 3] a record three UEFA Men's

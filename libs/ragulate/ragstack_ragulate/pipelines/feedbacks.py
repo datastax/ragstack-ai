@@ -9,6 +9,8 @@ from trulens_eval.utils.serial import Lens
 
 
 class Feedbacks:
+    """Pipeline feedbacks."""
+
     _context: Lens
     _llm_provider: LLMProvider
 
@@ -17,6 +19,7 @@ class Feedbacks:
         self._llm_provider = llm_provider
 
     def groundedness(self) -> Feedback:
+        """Return groundedness feedback."""
         return (
             Feedback(
                 self._llm_provider.groundedness_measure_with_cot_reasons,
@@ -27,11 +30,13 @@ class Feedbacks:
         )
 
     def answer_relevance(self) -> Feedback:
+        """Return answer relevance feedback."""
         return Feedback(
             self._llm_provider.relevance_with_cot_reasons, name="answer_relevance"
         ).on_input_output()
 
     def context_relevance(self) -> Feedback:
+        """Return context relevance feedback."""
         return (
             Feedback(
                 self._llm_provider.qs_relevance_with_cot_reasons,
@@ -43,6 +48,7 @@ class Feedbacks:
         )
 
     def answer_correctness(self, golden_set: List[Dict[str, str]]) -> Feedback:
+        """Return answer correctness feedback."""
         # GroundTruth for comparing the Answer to the Ground-Truth Answer
         ground_truth_collection = GroundTruthAgreement(
             ground_truth=golden_set, provider=self._llm_provider

@@ -219,7 +219,7 @@ def test_ingest_langchain_retrieve_llama_index(astra_ref: AstraRef):
     assert "framework" in response.response
 
 
-@pytest.fixture
+@pytest.fixture()
 def astra_ref() -> AstraRef:
     if not is_astra:
         skip_test_due_to_implementation_not_supported("astradb")

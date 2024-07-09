@@ -32,7 +32,7 @@ class GraphStoreFactory:
     ) -> CassandraGraphStore:
         if initial_documents and self._store is not None:
             raise ValueError("Store already initialized")
-        elif self._store is None:
+        if self._store is None:
             self._store = CassandraGraphStore.from_documents(
                 initial_documents,
                 embedding=embedding or self.embedding,
@@ -59,7 +59,7 @@ def openai_embedding() -> Embeddings:
     return OpenAIEmbeddings()
 
 
-@pytest.fixture
+@pytest.fixture()
 def cassandra(openai_embedding: Embeddings):
     vstore = get_local_cassandra_test_store()
     session = vstore.create_cassandra_session()
@@ -70,7 +70,7 @@ def cassandra(openai_embedding: Embeddings):
     gs_factory.drop()
 
 
-@pytest.fixture
+@pytest.fixture()
 def astra_db(openai_embedding: Embeddings):
     vstore = get_astradb_test_store()
     session = vstore.create_cassandra_session()

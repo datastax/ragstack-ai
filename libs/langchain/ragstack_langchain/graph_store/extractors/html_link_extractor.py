@@ -30,8 +30,7 @@ def _parse_url(link, page_url, drop_fragments: bool = True):
     # the fragment.
     if drop_fragments:
         return urldefrag(url).url
-    else:
-        return url
+    return url
 
 
 def _parse_hrefs(
@@ -102,7 +101,7 @@ class HtmlLinkExtractor(LinkExtractor[HtmlInput]):
 
     def extract_one(
         self,
-        input: HtmlInput,
+        input: HtmlInput,  # noqa: A002
     ) -> Set[Link]:
         content = input.content
         if isinstance(content, str):

@@ -1,6 +1,7 @@
-"""
-This module defines a set of data classes for handling chunks of text in various stages
-of processing within the ColBERT retrieval system.
+"""Objects for handling chunks of text in the ColBERT retrieval system.
+
+This module defines a set of data classes for handling chunks of text in various
+stages of processing within the ColBERT retrieval system.
 """
 
 from typing import Any, Dict, List, Optional
@@ -25,6 +26,8 @@ Metadata = Dict[str, Any]
 
 
 class Chunk(BaseModel):
+    """A chunk of text with associated metadata and embedding."""
+
     doc_id: str = Field(..., description="id of the parent document", frozen=True)
     chunk_id: int = Field(..., description="id of the chunk", frozen=True, ge=0)
     text: str = Field(default=None, description="text of the chunk")
@@ -36,6 +39,8 @@ class Chunk(BaseModel):
     )
 
     class Config:
+        """Pydantic configuration for the Chunk class."""
+
         validate_assignment = True
 
     # Define equality based on doc_id and chunk_id only

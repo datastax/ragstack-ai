@@ -30,6 +30,20 @@ def _parse_node(row) -> Node:
 
 
 class CassandraKnowledgeGraph:
+    """Cassandra Knowledge Graph.
+
+    Args:
+        node_table: Name of the table containing nodes. Defaults to `"entities"`.
+        edge_table: Name of the table containing edges. Defaults to `
+            "relationships"`.
+        text_embeddings: Name of the embeddings to use, if any.
+        session: The Cassandra `Session` to use. If not specified, uses the default
+            `cassio` session, which requires `cassio.init` has been called.
+        keyspace: The Cassandra keyspace to use. If not specified, uses the default
+            `cassio` keyspace, which requires `cassio.init` has been called.
+        apply_schema: If true, the node table and edge table are created.
+    """
+
     def __init__(
         self,
         node_table: str = "entities",
@@ -39,21 +53,6 @@ class CassandraKnowledgeGraph:
         keyspace: Optional[str] = None,
         apply_schema: bool = True,
     ) -> None:
-        """
-        Create a Cassandra Knowledge Graph.
-
-        Args:
-            node_table: Name of the table containing nodes. Defaults to `"entities"`.
-            edge_table: Name of the table containing edges. Defaults to `
-                "relationships"`.
-            text_embeddings: Name of the embeddings to use, if any.
-            session: The Cassandra `Session` to use. If not specified, uses the default
-                `cassio` session, which requires `cassio.init` has been called.
-            keyspace: The Cassandra keyspace to use. If not specified, uses the default
-                `cassio` keyspace, which requires `cassio.init` has been called.
-            apply_schema: If true, the node table and edge table are created.
-        """
-
         session = check_resolve_session(session)
         keyspace = check_resolve_keyspace(keyspace)
 
@@ -134,7 +133,7 @@ class CassandraKnowledgeGraph:
                 edge_type TEXT,
                 PRIMARY KEY ((source_name, source_type), target_name, target_type, edge_type)
             );
-            """  # noqa
+            """  # noqa: E501
         )
 
         self._session.execute(
@@ -164,8 +163,7 @@ class CassandraKnowledgeGraph:
 
     # TODO: Allow filtering by node predicates and/or minimum similarity.
     def query_nearest_nodes(self, nodes: Iterable[str], k: int = 1) -> Iterable[Node]:
-        """
-        For each node, return the nearest nodes in the table.
+        """For each node, return the nearest nodes in the table.
 
         Args:
             nodes: The strings to search for in the list of nodes.
@@ -188,6 +186,7 @@ class CassandraKnowledgeGraph:
         self,
         elements: Iterable[Union[Node, Relation]],
     ) -> None:
+        """Insert the given elements into the graph."""
         for batch in batched(elements, n=4):
             from yaml import dump
 
@@ -226,7 +225,7 @@ class CassandraKnowledgeGraph:
                         ),
                     )
                 else:
-                    raise ValueError(f"Unsupported element type: {element}")
+                    raise TypeError(f"Unsupported element type: {element}")
 
             # TODO: Support concurrent execution of these statements.
             self._session.execute(batch_statement)
@@ -237,9 +236,7 @@ class CassandraKnowledgeGraph:
         edge_filters: Sequence[str] = (),
         steps: int = 3,
     ) -> Tuple[Iterable[Node], Iterable[Relation]]:
-        """
-        Retrieve the sub-graph from the given starting nodes.
-        """
+        """Retrieve the sub-graph from the given starting nodes."""
         edges = self.traverse(start, edge_filters, steps)
 
         # Create the set of nodes.
@@ -266,9 +263,9 @@ class CassandraKnowledgeGraph:
         edge_filters: Sequence[str] = (),
         steps: int = 3,
     ) -> Iterable[Relation]:
-        """
-        Traverse the graph from the given starting nodes and return the resulting
-        sub-graph.
+        """Traverse the graph from the given starting nodes.
+
+        Returns the resulting sub-graph.
 
         Args:
             start: The starting node or nodes.
@@ -298,9 +295,9 @@ class CassandraKnowledgeGraph:
         edge_filters: Sequence[str] = (),
         steps: int = 3,
     ) -> Iterable[Relation]:
-        """
-        Traverse the graph from the given starting nodes and return the resulting
-        sub-graph.
+        """Traverse the graph from the given starting nodes.
+
+        Returns the resulting sub-graph.
 
         Args:
             start: The starting node or nodes.

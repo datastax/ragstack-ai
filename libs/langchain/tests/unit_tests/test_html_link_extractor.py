@@ -47,8 +47,8 @@ def test_one_from_str():
 
 def test_one_from_beautiful_soup():
     extractor = HtmlLinkExtractor()
-    input = BeautifulSoup(PAGE_1, "html.parser")
-    results = extractor.extract_one(HtmlInput(input, base_url="https://foo.com/bar/"))
+    soup = BeautifulSoup(PAGE_1, "html.parser")
+    results = extractor.extract_one(HtmlInput(soup, base_url="https://foo.com/bar/"))
     assert results == {
         Link.incoming(kind="hyperlink", tag="https://foo.com/bar/"),
         Link.outgoing(kind="hyperlink", tag="https://foo.com/bar/relative"),

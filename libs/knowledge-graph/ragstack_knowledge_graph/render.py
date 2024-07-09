@@ -13,6 +13,7 @@ def _node_label(node: Node) -> str:
 def print_graph_documents(
     graph_documents: Union[GraphDocument, Iterable[GraphDocument]],
 ):
+    """Prints the relationships in the graph documents."""
     if isinstance(graph_documents, GraphDocument):
         graph_documents = [graph_documents]
 
@@ -20,13 +21,13 @@ def print_graph_documents(
         for relation in doc.relationships:
             source = relation.source
             target = relation.target
-            type = relation.type
-            print(f"{_node_label(source)} -> {_node_label(target)}: {type}")
+            print(f"{_node_label(source)} -> {_node_label(target)}: {relation.type}")  # noqa: T201
 
 
 def render_graph_documents(
     graph_documents: Union[GraphDocument, Iterable[GraphDocument]],
 ) -> graphviz.Digraph:
+    """Renders the relationships in the graph documents."""
     if isinstance(graph_documents, GraphDocument):
         graph_documents = [GraphDocument]
 
@@ -38,11 +39,10 @@ def render_graph_documents(
         node_key = (node.id, node.type)
         if node_id := nodes.get(node_key):
             return node_id
-        else:
-            node_id = f"{len(nodes)}"
-            nodes[node_key] = node_id
-            dot.node(node_id, label=_node_label(node))
-            return node_id
+        node_id = f"{len(nodes)}"
+        nodes[node_key] = node_id
+        dot.node(node_id, label=_node_label(node))
+        return node_id
 
     for graph_document in graph_documents:
         for node in graph_document.nodes:
@@ -54,6 +54,7 @@ def render_graph_documents(
 
 
 def render_knowledge_schema(knowledge_schema: KnowledgeSchema) -> graphviz.Digraph:
+    """Renders the knowledge schema as a graph."""
     dot = graphviz.Digraph()
 
     for node in knowledge_schema.nodes:

@@ -1,3 +1,4 @@
+# ruff: noqa: D103, INP001, T201
 import logging
 import os
 import time
@@ -73,7 +74,7 @@ def len_function(text: str) -> int:
     return len(tokenizer.tokenize(text))
 
 
-async def ingest(file_path: str, chunk_size: int, **kwargs):
+async def ingest(file_path: str, chunk_size: int, **_):
     doc_id = Path(file_path).name
 
     chunk_overlap = min(chunk_size / 4, min(chunk_size / 2, 64))
@@ -132,7 +133,7 @@ async def ingest(file_path: str, chunk_size: int, **kwargs):
     )
 
 
-def query_pipeline(k: int, chunk_size: int, **kwargs):
+def query_pipeline(k: int, chunk_size: int, **_):
     vector_store = get_lc_vector_store(chunk_size=chunk_size)
     llm = ChatOpenAI(model_name=LLM_MODEL)
 
@@ -145,7 +146,7 @@ def query_pipeline(k: int, chunk_size: int, **kwargs):
     """  # noqa: E501
     prompt = ChatPromptTemplate.from_template(prompt_template)
 
-    rag_chain = (
+    return (
         {
             "context": vector_store.as_retriever(search_kwargs={"k": k}),
             "question": RunnablePassthrough(),
@@ -154,5 +155,3 @@ def query_pipeline(k: int, chunk_size: int, **kwargs):
         | llm
         | StrOutputParser()
     )
-
-    return rag_chain

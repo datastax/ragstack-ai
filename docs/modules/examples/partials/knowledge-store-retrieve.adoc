@@ -1,0 +1,101 @@
+.Retrieve
+[%collapsible%open]
+====
+[source,python]
+----
+import cassio
+
+from dotenv import load_dotenv
+
+from langchain_openai import OpenAIEmbeddings, ChatOpenAI
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.runnables import RunnablePassthrough
+from langchain_core.output_parsers import StrOutputParser
+from ragstack_langchain.graph_store import CassandraGraphStore
+
+load_dotenv()
+
+SITE_PREFIX = "astra"
+QUESTION = "What vector indexing algorithms does Astra use?"
+
+# Initialize embeddings and graph store
+cassio.init(auto=True)
+embeddings = OpenAIEmbeddings()
+graph_store = CassandraGraphStore(
+    embeddings, node_table=f"{SITE_PREFIX}_nodes", edge_table=f"{SITE_PREFIX}_edges"
+)
+
+llm = ChatOpenAI(model="gpt-3.5-turbo")
+template = """You are a helpful technical support bot. You should provide complete answers explaining the options the user has available to address their problem. Answer the question based only on the following context:
+{context}
+
+Question: {question}
+"""
+prompt = ChatPromptTemplate.from_template(template)
+
+def format_docs(docs, max_length=200, max_docs=5):
+    # Limit the number of documents
+    docs = docs[:max_docs]
+
+    formatted = "\n\n".join(
+        f"From {doc.metadata['content_id']}: {doc.page_content[:max_length]}..." 
+        if len(doc.page_content) > max_length else
+        f"From {doc.metadata['content_id']}: {doc.page_content}"
+        for doc in docs
+    )
+    return formatted
+
+def run_and_render(chain, question, description):
+    print(f"\nRunning chain: {description}")
+    result = chain.invoke(question)
+    print("Output:")
+    print(result)
+
+# Vector-Only Retrieval
+vector_retriever = graph_store.as_retriever(search_kwargs={"depth": 0})
+vector_rag_chain = (
+    {"context": vector_retriever | format_docs, "question": RunnablePassthrough()}
+    | prompt
+    | llm
+    | StrOutputParser()
+)
+run_and_render(vector_rag_chain, QUESTION, "Vector-Only Retrieval")
+
+# Depth 1 and MMR retrieval
+graph_retriever = graph_store.as_retriever(search_kwargs={"depth": 1})
+mmr_graph_retriever = graph_store.as_retriever(
+    search_type="mmr_traversal",
+    search_kwargs={
+        "k": 4,
+        "fetch_k": 10,
+        "depth": 2
+    },
+)
+
+graph_rag_chain = (
+    {"context": graph_retriever | format_docs, "question": RunnablePassthrough()}
+    | prompt
+    | llm
+    | StrOutputParser()
+)
+run_and_render(graph_rag_chain, QUESTION, "Depth 1 Retrieval")
+
+mmr_graph_rag_chain = (
+    {"context": mmr_graph_retriever | format_docs, "question": RunnablePassthrough()}
+    | prompt
+    | llm
+    | StrOutputParser()
+)
+run_and_render(mmr_graph_rag_chain, QUESTION, "MMR Based Retrieval")
+
+print("\nDocument retrieval results:")
+for i, doc in enumerate(vector_retriever.invoke(QUESTION)):
+    print(f"Vector [{i}]:    {doc.metadata['content_id']}")
+
+for i, doc in enumerate(graph_retriever.invoke(QUESTION)):
+    print(f"Graph [{i}]:     {doc.metadata['content_id']}")
+
+for i, doc in enumerate(mmr_graph_retriever.invoke(QUESTION)):
+    print(f"MMR Graph [{i}]: {doc.metadata['content_id']}")
+----
+====

@@ -14,12 +14,12 @@ from tests.integration_tests.conftest import (
 )
 
 
-@pytest.fixture
+@pytest.fixture()
 def cassandra():
     return get_local_cassandra_test_store()
 
 
-@pytest.fixture
+@pytest.fixture()
 def astra_db():
     return get_astradb_test_store()
 
@@ -78,10 +78,12 @@ def test_embedding_cassandra_retriever(request, vector_store: str):
     )
     assert len(chunk_scores) == 5
     for chunk, score in chunk_scores:
-        logging.info(f"got chunk_id {chunk.chunk_id} with score {score}")
+        logging.info("got chunk_id %s with score %s", chunk.chunk_id, score)
 
     best_chunk = chunk_scores[0][0]
     assert len(best_chunk.text) > 0
     logging.info(
-        f"Highest scoring chunk_id: {best_chunk.chunk_id} with text: {best_chunk.text}"
+        "Highest scoring chunk_id: %s with text: %s",
+        best_chunk.chunk_id,
+        best_chunk.text,
     )

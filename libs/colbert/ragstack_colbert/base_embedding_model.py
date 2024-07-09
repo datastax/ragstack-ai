@@ -1,6 +1,7 @@
-"""
-This module defines an abstract base class (ABC) for generating token-based embeddings
-for text.
+"""Base embedding for ColBERT.
+
+This module defines an abstract base class (ABC) for generating token-based
+embeddings for text.
 """
 
 from abc import ABC, abstractmethod
@@ -10,8 +11,7 @@ from .objects import Embedding
 
 
 class BaseEmbeddingModel(ABC):
-    """
-    Abstract base class (ABC) for token-based embedding models.
+    """Abstract base class (ABC) for token-based embedding models.
 
     This class defines the interface for models that generate embeddings for text
     chunks and queries.
@@ -22,11 +22,9 @@ class BaseEmbeddingModel(ABC):
 
     @abstractmethod
     def embed_texts(self, texts: List[str]) -> List[Embedding]:
-        """
-        Embeds a list of texts into their corresponding vector embedding
-        representations.
+        """Embeds a list of texts into their vector embedding representations.
 
-        Parameters:
+        Args:
             texts (List[str]): A list of string texts.
 
         Returns:
@@ -40,13 +38,12 @@ class BaseEmbeddingModel(ABC):
         full_length_search: Optional[bool] = False,
         query_maxlen: int = -1,
     ) -> Embedding:
-        """
-        Embeds a single query text into its vector representation.
+        """Embeds a single query text into its vector representation.
 
         If the query has fewer than query_maxlen tokens it will be padded with BERT
         special [mast] tokens.
 
-        Parameters:
+        Args:
             query (str): The query text to encode.
             full_length_search (Optional[bool]): Indicates whether to encode the
                 query for a full-length search. Defaults to False.

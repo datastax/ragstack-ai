@@ -2,6 +2,7 @@ from typing import Any, Dict
 
 
 def dict_to_string(d: Dict[str, Any]) -> str:
+    """Convert dictionary to string."""
     parts = []
 
     for key, value in d.items():

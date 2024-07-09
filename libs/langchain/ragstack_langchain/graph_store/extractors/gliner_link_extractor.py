@@ -39,7 +39,7 @@ class GLiNERLinkExtractor(LinkExtractor[GLiNERInput]):
         self._kind = kind
         self._extract_kwargs = extract_kwargs or {}
 
-    def extract_one(self, input: GLiNERInput) -> Set[Link]:
+    def extract_one(self, input: GLiNERInput) -> Set[Link]:  # noqa: A002
         return next(self.extract_many([input]))
 
     def extract_many(

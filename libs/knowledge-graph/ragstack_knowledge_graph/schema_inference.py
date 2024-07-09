@@ -13,6 +13,8 @@ from .templates import load_template
 
 
 class KnowledgeSchemaInferer:
+    """Infers knowledge schemas from documents."""
+
     def __init__(self, llm: BaseChatModel) -> None:
         prompt = ChatPromptTemplate.from_messages(
             [
@@ -29,6 +31,7 @@ class KnowledgeSchemaInferer:
     def infer_schemas_from(
         self, documents: Sequence[Document]
     ) -> Sequence[KnowledgeSchema]:
+        """Infer knowledge schemas from a sequence of documents."""
         responses = self._chain.batch(
             [{"input": doc.page_content} for doc in documents]
         )

@@ -2,11 +2,11 @@ from typing import List
 
 from ragstack_ragulate.datasets import find_dataset
 from ragstack_ragulate.pipelines import QueryPipeline
-
-from ..utils import convert_vars_to_ingredients
+from ragstack_ragulate.utils import convert_vars_to_ingredients
 
 
 def setup_query(subparsers):
+    """Setup the query command."""
     query_parser = subparsers.add_parser("query", help="Run a query pipeline")
     query_parser.add_argument(
         "-n",
@@ -110,8 +110,9 @@ def setup_query(subparsers):
         restart: bool,
         provider: str,
         model: str,
-        **kwargs,
+        **_,
     ):
+        """Run a query pipeline."""
         if sample <= 0.0 or sample > 1.0:
             raise ValueError("Sample percent must be between 0 and 1")
 
@@ -122,8 +123,7 @@ def setup_query(subparsers):
                 raise ValueError(
                     "Only can set `subset` param when there is one dataset"
                 )
-            else:
-                datasets[0].subsets = subset
+            datasets[0].subsets = subset
 
         ingredients = convert_vars_to_ingredients(
             var_names=var_name, var_values=var_value

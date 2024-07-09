@@ -196,7 +196,7 @@ def run_rag_custom_chain(
         run_id = cb.traced_runs[0].id
         record_langsmith_sharelink(run_id, record_property)
 
-    logging.info("Got response: " + response)
+    logging.info("Got response: %s", response)
     assert "2020" in response, f"Expected 2020 in the answer but got: {response}"
 
 
@@ -209,7 +209,7 @@ def run_conversational_rag(
     logging.info("Starting to add texts to vector store")
     start = time.perf_counter_ns()
     vector_store.add_texts(SAMPLE_DATA)
-    logging.info(f"Added texts in {(time.perf_counter_ns() - start) / 1e9} seconds")
+    logging.info("Added texts in %s seconds", (time.perf_counter_ns() - start) / 1e9)
     retriever = vector_store.as_retriever()
     memory = ConversationSummaryMemory(
         llm=llm,
@@ -229,13 +229,13 @@ def run_conversational_rag(
         result = conversation.invoke({"question": "what is MyFakeProductForTesting?"})
         run_id = cb.traced_runs[0].id
         record_langsmith_sharelink(run_id, record_property)
-        logging.info("First result: " + str(result))
+        logging.info("First result: %s", result)
 
     with callbacks.collect_runs() as cb:
         result = conversation.invoke({"question": "and when was it released?"})
         run_id = cb.traced_runs[0].id
         record_langsmith_sharelink(run_id, record_property)
-        logging.info("Second result: " + str(result))
+        logging.info("Second result: %s", result)
 
     answer = result["answer"]
     assert "2020" in answer, f"Expected 2020 in the answer but got: {answer}"

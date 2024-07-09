@@ -1,4 +1,4 @@
-"""Temporary backward-compatibility for KnowledgeStore"""
+"""Temporary backward-compatibility for KnowledgeStore."""
 
 from .graph_store import (
     EmbeddingModel,

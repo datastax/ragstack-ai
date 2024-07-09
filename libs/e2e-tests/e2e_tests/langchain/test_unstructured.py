@@ -1,3 +1,5 @@
+from typing import TYPE_CHECKING
+
 import pytest
 from langchain.text_splitter import TokenTextSplitter
 from langchain_community.document_loaders import UnstructuredAPIFileLoader
@@ -15,9 +17,9 @@ from e2e_tests.conftest import (
 )
 from e2e_tests.langchain.rag_application import BASIC_QA_PROMPT
 from e2e_tests.test_utils import get_local_resource_path
-from e2e_tests.test_utils.vector_store_handler import (
-    VectorStoreTestContext,
-)
+
+if TYPE_CHECKING:
+    from e2e_tests.test_utils.vector_store_handler import VectorStoreTestContext
 
 
 @pytest.mark.parametrize("vector_store", ["cassandra", "astra_db"])

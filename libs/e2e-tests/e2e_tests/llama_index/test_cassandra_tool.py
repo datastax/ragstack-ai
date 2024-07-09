@@ -1,6 +1,7 @@
 import uuid
 
 import cassio
+import pytest
 from llama_index.agent.openai import OpenAIAgent
 from llama_index.llms.openai import OpenAI
 from llama_index.tools.cassandra.base import CassandraDatabaseToolSpec
@@ -9,7 +10,8 @@ from llama_index.tools.cassandra.cassandra_database_wrapper import (
 )
 
 
-def test_tool_with_openai_tool(cassandra):
+@pytest.mark.usefixtures("cassandra")
+def test_tool_with_openai_tool():
     session = cassio.config.resolve_session()
     session.execute("DROP TABLE IF EXISTS default_keyspace.tool_table_users;")
 

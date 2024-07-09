@@ -6,6 +6,7 @@ from langchain_community.graphs.graph_document import Node as LangChainNode
 from langchain_community.graphs.graph_store import GraphStore
 from langchain_core.embeddings import Embeddings
 from langchain_core.runnables import Runnable, RunnableLambda
+from typing_extensions import override
 
 from .knowledge_graph import CassandraKnowledgeGraph
 from .traverse import Node, Relation
@@ -25,6 +26,8 @@ def _elements(documents: Iterable[GraphDocument]) -> Iterable[Union[Node, Relati
 
 
 class CassandraGraphStore(GraphStore):
+    """A Cassandra-based graph store."""
+
     def __init__(
         self,
         node_table: str = "entities",
@@ -33,8 +36,7 @@ class CassandraGraphStore(GraphStore):
         session: Optional[Session] = None,
         keyspace: Optional[str] = None,
     ) -> None:
-        """
-        Create a Cassandra Graph Store.
+        """Create a Cassandra Graph Store.
 
         Before calling this, you must initialize cassio with `cassio.init`, or
         provide valid session and keyspace values.
@@ -47,6 +49,7 @@ class CassandraGraphStore(GraphStore):
             keyspace=keyspace,
         )
 
+    @override
     def add_graph_documents(
         self, graph_documents: List[GraphDocument], include_source: bool = False
     ) -> None:
@@ -54,28 +57,34 @@ class CassandraGraphStore(GraphStore):
         self.graph.insert(_elements(graph_documents))
 
     # TODO: should this include the types of each node?
+    @override
     def query(self, query: str, params: dict = {}) -> List[Dict[str, Any]]:  # noqa: B006
         raise ValueError("Querying Cassandra should use `as_runnable`.")
 
+    @override
     @property
+    @override
     def get_schema(self) -> str:
         raise NotImplementedError
 
     @property
+    @override
     def get_structured_schema(self) -> Dict[str, Any]:
         raise NotImplementedError
 
+    @override
     def refresh_schema(self) -> None:
         raise NotImplementedError
 
     def as_runnable(self, steps: int = 3, edge_filters: Sequence[str] = ()) -> Runnable:
-        """
-        Return a runnable that retrieves the sub-graph near the
-        input entity or entities.
+        """Convert to a runnable.
 
-        Parameters:
-        - steps: The maximum distance to follow from the starting points.
-        - edge_filters: Predicates to use for filtering the edges.
+        Returns a runnable that retrieves the sub-graph near the input entity or
+        entities.
+
+        Args:
+            steps: The maximum distance to follow from the starting points.
+            edge_filters: Predicates to use for filtering the edges.
         """
         return RunnableLambda(
             func=self.graph.traverse, afunc=self.graph.atraverse

@@ -27,8 +27,7 @@ def extract_entities(
     keyword_extraction_prompt: str = QUERY_ENTITY_EXTRACT_PROMPT,
     node_types: Optional[List[str]] = None,
 ) -> Runnable:
-    """
-    Return a keyword-extraction runnable.
+    """Return a keyword-extraction runnable.
 
     This will expect a dictionary containing the `"question"` to extract keywords from.
 

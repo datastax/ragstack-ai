@@ -95,7 +95,7 @@ def test_embeddings_with_baseline():
             assert similarity.shape == torch.Size([1])  # this has to be scalar
             # debug code to identify which token deviates
             if similarity.item() < 0.99:
-                logging.warning(f"n = {n}, similarity = {similarity.item()}")
+                logging.warning("n = %s, similarity = %s", n, similarity.item())
             assert similarity.item() > 0.99
             n = n + 1
 
@@ -131,7 +131,7 @@ def test_colbert_embedding_against_vanilla_impl():
 
 
 def model_embedding(model: str):
-    logging.info(f"test model compatibility {model}")
+    logging.info("test model compatibility %s", model)
     colbert_svc = ColbertEmbeddingModel(
         checkpoint=model,
         query_maxlen=32,

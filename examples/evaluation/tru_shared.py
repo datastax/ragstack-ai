@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import uuid
 from enum import Enum
@@ -28,6 +29,7 @@ from trulens_eval.feedback.provider import AzureOpenAI
 load_dotenv()
 
 temperature = 0
+logger = logging.getLogger(__name__)
 
 
 class Framework(Enum):
@@ -61,8 +63,7 @@ def get_test_data():
 def init_tru():
     if os.getenv("TRULENS_DB_CONN_STRING"):
         return Tru(database_url=os.getenv("TRULENS_DB_CONN_STRING"))
-    else:
-        return Tru()
+    return Tru()
 
 
 def get_feedback_functions(pipeline, golden_set):
@@ -121,15 +122,14 @@ def get_recorder(
             feedbacks=feedbacks,
             feedback_mode=feedback_mode,
         )
-    elif framework == Framework.LLAMA_INDEX:
+    if framework == Framework.LLAMA_INDEX:
         return TruLlama(
             pipeline,
             app_id=app_id,
             feedbacks=feedbacks,
             feedback_mode=feedback_mode,
         )
-    else:
-        raise Exception(f"Unknown framework: {framework} specified for get_recorder()")
+    raise ValueError(f"Unknown framework: {framework} specified for get_recorder()")
 
 
 def get_azure_chat_model(
@@ -142,7 +142,7 @@ def get_azure_chat_model(
             model_version=model_version,
             temperature=temperature,
         )
-    elif framework == Framework.LLAMA_INDEX:
+    if framework == Framework.LLAMA_INDEX:
         return LlamaAzureChatOpenAI(
             deployment_name=deployment_name,
             model=deployment_name,
@@ -151,8 +151,7 @@ def get_azure_chat_model(
             model_version=model_version,
             temperature=temperature,
         )
-    else:
-        raise Exception(f"Unknown framework: {framework} specified for getChatModel()")
+    raise ValueError(f"Unknown framework: {framework} specified for getChatModel()")
 
 
 def get_azure_embeddings_model(framework: Framework):
@@ -160,7 +159,7 @@ def get_azure_embeddings_model(framework: Framework):
         return AzureOpenAIEmbeddings(
             azure_deployment="text-embedding-ada-002", openai_api_version="2023-05-15"
         )
-    elif framework == Framework.LLAMA_INDEX:
+    if framework == Framework.LLAMA_INDEX:
         return AzureOpenAIEmbedding(
             deployment_name="text-embedding-ada-002",
             model="text-embedding-ada-002",
@@ -168,10 +167,9 @@ def get_azure_embeddings_model(framework: Framework):
             api_version="2023-05-15",
             temperature=temperature,
         )
-    else:
-        raise Exception(
-            f"Unknown framework: {framework} specified for getEmbeddingsModel()"
-        )
+    raise ValueError(
+        f"Unknown framework: {framework} specified for getEmbeddingsModel()"
+    )
 
 
 def get_astra_vector_store(framework: Framework, collection_name: str):
@@ -182,17 +180,16 @@ def get_astra_vector_store(framework: Framework, collection_name: str):
             token=os.getenv("ASTRA_DB_APPLICATION_TOKEN"),
             api_endpoint=os.getenv("ASTRA_DB_API_ENDPOINT"),
         )
-    elif framework == Framework.LLAMA_INDEX:
+    if framework == Framework.LLAMA_INDEX:
         return AstraDBVectorStore(
             collection_name=collection_name,
             api_endpoint=os.getenv("ASTRA_DB_API_ENDPOINT"),
             token=os.getenv("ASTRA_DB_APPLICATION_TOKEN"),
             embedding_dimension=1536,
         )
-    else:
-        raise Exception(
-            f"Unknown framework: {framework} specified for get_astra_vector_store()"
-        )
+    raise ValueError(
+        f"Unknown framework: {framework} specified for get_astra_vector_store()"
+    )
 
 
 def execute_query(framework: Framework, pipeline, query):
@@ -201,7 +198,9 @@ def execute_query(framework: Framework, pipeline, query):
     elif framework == Framework.LLAMA_INDEX:
         pipeline.query(query)
     else:
-        raise Exception(f"Unknown framework: {framework} specified for execute_query()")
+        raise ValueError(
+            f"Unknown framework: {framework} specified for execute_query()"
+        )
 
 
 # runs the pipeline across all queries in all known datasets
@@ -221,4 +220,6 @@ def execute_experiment(framework: Framework, pipeline, experiment_name: str):
                 with tru_recorder:
                     execute_query(framework, pipeline, query)
             except Exception:
-                print(f"Query: '{query}' caused exception, skipping.")
+                err = f"Query: '{query}' caused exception, skipping."
+                logger.exception(err)
+                print(err)

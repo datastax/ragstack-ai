@@ -51,9 +51,7 @@ class NeMoRag:
         self.retriever = retriever
 
     async def rag_using_lc(self, context: dict, llm: BaseLLM) -> ActionResult:
-        """
-        Defines the custom rag action
-        """
+        """Defines the custom rag action"""
         user_message = context.get("last_user_message")
         context_updates = {}
 
