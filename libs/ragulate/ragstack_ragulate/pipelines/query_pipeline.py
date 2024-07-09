@@ -244,9 +244,6 @@ class QueryPipeline(BasePipeline):
                 finally:
                     self.update_progress(query_change=1)
 
-                finally:
-                    self.update_progress(query_change=1)
-
         while self._finished_feedbacks < self._total_feedbacks:
             if self._sigint_received:
                 break
