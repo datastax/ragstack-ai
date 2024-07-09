@@ -1,11 +1,10 @@
 import os
-import unittest
 
 from ragstack_ragulate.config.config_parser import ConfigParser
 from ragstack_ragulate.config.config_schema_0_1 import ConfigSchema0Dot1
 
 
-class TestConfigValidation(unittest.TestCase):
+class TestConfigValidation:
     def test_full_config(self):
         config = {
             "version": 0.1,
@@ -78,25 +77,25 @@ class TestConfigValidation(unittest.TestCase):
         for field, errors in parser.errors.items():
             print(f"{field}: {errors}")
 
-        self.assertTrue(parser.is_valid)
+        assert parser.is_valid
 
         config = parser.get_config()
 
-        self.assertIn("chunk_size_500", config.recipes)
+        assert "chunk_size_500" in config.recipes
         chunk_size_500 = config.recipes["chunk_size_500"]
-        self.assertEqual(chunk_size_500.cleanup.method, "cleanup")
-        self.assertEqual(chunk_size_500.query.script, "chunk_size_experiment.py")
-        self.assertEqual(chunk_size_500.name, "chunk_size_500")
-        self.assertIn("chunk_size", chunk_size_500.ingredients)
-        self.assertEqual(chunk_size_500.ingredients["chunk_size"], 500)
+        assert chunk_size_500.cleanup.method, "cleanup"
+        assert chunk_size_500.query.script == "chunk_size_experiment.py"
+        assert chunk_size_500.name == "chunk_size_500"
+        assert "chunk_size" in chunk_size_500.ingredients
+        assert chunk_size_500.ingredients["chunk_size"] == 500
 
-        self.assertIn("chunk_size_1000", config.recipes)
+        assert "chunk_size_1000" in config.recipes
         chunk_size_1000 = config.recipes["chunk_size_1000"]
-        self.assertEqual(chunk_size_1000.ingest.method, "ingest")
-        self.assertEqual(chunk_size_1000.query.script, "chunk_size_experiment.py")
-        self.assertEqual(chunk_size_1000.name, "chunk_size_1000")
-        self.assertIn("chunk_size", chunk_size_1000.ingredients)
-        self.assertEqual(chunk_size_1000.ingredients["chunk_size"], 1000)
+        assert chunk_size_1000.ingest.method == "ingest"
+        assert chunk_size_1000.query.script == "chunk_size_experiment.py"
+        assert chunk_size_1000.name == "chunk_size_1000"
+        assert "chunk_size" in chunk_size_1000.ingredients
+        assert chunk_size_1000.ingredients["chunk_size"] == 1000
 
     def test_minimal_config(self):
         config = {
@@ -126,21 +125,21 @@ class TestConfigValidation(unittest.TestCase):
         for field, errors in parser.errors.items():
             print(f"{field}: {errors}")
 
-        self.assertTrue(parser.is_valid)
+        assert parser.is_valid
 
         config = parser.get_config()
-        self.assertIn("chunk_size_500", config.recipes)
+        assert "chunk_size_500" in config.recipes
         chunk_size_500 = config.recipes["chunk_size_500"]
-        self.assertIsNone(chunk_size_500.cleanup)
-        self.assertEqual(chunk_size_500.query.script, "minimal.py")
-        self.assertEqual(chunk_size_500.name, "chunk_size_500")
-        self.assertIn("chunk_size", chunk_size_500.ingredients)
-        self.assertEqual(chunk_size_500.ingredients["chunk_size"], 500)
+        assert chunk_size_500.cleanup is None
+        assert chunk_size_500.query.script == "minimal.py"
+        assert chunk_size_500.name == "chunk_size_500"
+        assert "chunk_size" in chunk_size_500.ingredients
+        assert chunk_size_500.ingredients["chunk_size"] == 500
 
-        self.assertIn("chunk_size_1000", config.recipes)
+        assert "chunk_size_1000" in config.recipes
         chunk_size_1000 = config.recipes["chunk_size_1000"]
-        self.assertIsNone(chunk_size_500.ingest)
-        self.assertEqual(chunk_size_1000.query.script, "minimal.py")
-        self.assertEqual(chunk_size_1000.name, "chunk_size_1000")
-        self.assertIn("chunk_size", chunk_size_1000.ingredients)
-        self.assertEqual(chunk_size_1000.ingredients["chunk_size"], 1000)
+        assert chunk_size_500.ingest is None
+        assert chunk_size_1000.query.script == "minimal.py"
+        assert chunk_size_1000.name == "chunk_size_1000"
+        assert "chunk_size" in chunk_size_1000.ingredients
+        assert chunk_size_1000.ingredients["chunk_size"] == 1000

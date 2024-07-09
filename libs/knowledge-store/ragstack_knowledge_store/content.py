@@ -2,6 +2,8 @@ from enum import Enum
 
 
 class Kind(str, Enum):
+    """The kind of content in a document."""
+
     document = "document"
     """A root document (PDF, HTML, etc.).
 

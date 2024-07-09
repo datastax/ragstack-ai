@@ -1,13 +1,13 @@
 from typing import List
 
+from ragstack_ragulate.analysis import Analysis
 from ragstack_ragulate.config import ConfigParser
+from ragstack_ragulate.logging_config import logger
 from ragstack_ragulate.pipelines import IngestPipeline, QueryPipeline
-
-from ..analysis import Analysis
-from ..logging_config import logger
 
 
 def setup_run(subparsers):
+    """Setup the run command."""
     run_parser = subparsers.add_parser(
         "run", help="Run an experiment from a config file"
     )
@@ -22,7 +22,8 @@ def setup_run(subparsers):
     run_parser.set_defaults(func=lambda args: call_run(**vars(args)))
 
 
-def call_run(config_file: str, **kwargs):
+def call_run(config_file: str, **_):
+    """Run an experiment from a config file."""
     config_parser = ConfigParser.from_file(file_path=config_file)
     config = config_parser.get_config()
 
@@ -56,23 +57,23 @@ def call_run(config_file: str, **kwargs):
 
     logger.debug("Found these ingest pipelines:")
     for ingest_pipeline in ingest_pipelines:
-        logger.debug(f"\t{ingest_pipeline._key()}")
+        logger.debug(f"\t{ingest_pipeline.key()}")
 
     ingest_pipelines = list(set(ingest_pipelines))
 
     logger.debug("Narrowed down to these ingest pipelines:")
     for ingest_pipeline in ingest_pipelines:
-        logger.debug(f"\t{ingest_pipeline._key()}")
+        logger.debug(f"\t{ingest_pipeline.key()}")
 
     logger.debug("Found these query pipelines:")
     for query_pipeline in query_pipelines:
-        logger.debug(f"\t{query_pipeline._key()}")
+        logger.debug(f"\t{query_pipeline.key()}")
 
     query_pipelines = list(set(query_pipelines))
 
     logger.debug("Narrowed down to these query pipelines:")
     for query_pipeline in query_pipelines:
-        logger.debug(f"\t{query_pipeline._key()}")
+        logger.debug(f"\t{query_pipeline.key()}")
 
     for ingest_pipeline in ingest_pipelines:
         ingest_pipeline.ingest()

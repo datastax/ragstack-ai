@@ -1,6 +1,7 @@
-"""Copied from langchain_community.utils.math
-See https://github.com/langchain-ai/langchain/blob/langchain-community%3D%3D0.0.38/libs/community/langchain_community/utils/math.py
-"""
+"""Copied from langchain_community.utils.math.
+
+See https://github.com/langchain-ai/langchain/blob/langchain-community%3D%3D0.0.38/libs/community/langchain_community/utils/math.py .
+"""  # noqa: E501
 
 import logging
 from typing import List, Union
@@ -41,5 +42,4 @@ def cosine_similarity(x: Matrix, y: Matrix) -> np.ndarray:
     else:
         x = np.array(x, dtype=np.float32)
         y = np.array(y, dtype=np.float32)
-        z = 1 - np.array(simd.cdist(x, y, metric="cosine"))
-        return z
+        return 1 - np.array(simd.cdist(x, y, metric="cosine"))

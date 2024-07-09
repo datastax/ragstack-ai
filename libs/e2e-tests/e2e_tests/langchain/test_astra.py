@@ -402,7 +402,7 @@ def test_vector_search_with_metadata(vectorstore: VectorStore):
     assert len(documents) == 0
 
 
-@pytest.mark.skip
+@pytest.mark.skip()
 def test_stress_astra():
     handler = AstraDBVectorStoreHandler(VectorStoreImplementation.ASTRADB)
     while True:
@@ -434,7 +434,7 @@ class MockEmbeddings(Embeddings):
         return self.mock_embedding(text)
 
 
-@pytest.fixture
+@pytest.fixture()
 def vectorstore() -> AstraDBVectorStore:
     if not is_astra:
         skip_test_due_to_implementation_not_supported("astradb")

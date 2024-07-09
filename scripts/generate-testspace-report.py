@@ -72,11 +72,11 @@ def cdata(text: str) -> str:
     return f"<![CDATA[{text}]]>"
 
 
-xml.etree.ElementTree._escape_cdata = unsafe_escape_data
+xml.etree.ElementTree._escape_cdata = unsafe_escape_data  # noqa: SLF001
 
 
-def main(type: str, input_file: str, output_file: str):
-    if type == "tests":
+def main(report_type: str, input_file: str, output_file: str):
+    if report_type == "tests":
         test_suites = parse_test_report(input_file)
         if len(test_suites) == 0:
             print("No test suites found in input file, exiting")
@@ -174,7 +174,7 @@ def parse_snyk_report(input_file: str):
                 severity = vulnerability.get("severity", "")
                 from_packages = " -> ".join(vulnerability.get("from", []))
                 version = vulnerability.get("version", "?")
-                id = vulnerability.get("id", "?")
+                vulenarability_id = vulnerability.get("id", "?")
                 identifiers = vulnerability.get("identifiers", [])
 
                 if "GHSA" in identifiers:
@@ -190,11 +190,15 @@ def parse_snyk_report(input_file: str):
                 ann_title = f"{title}@{version}"
                 cvss_str = f" [CVSS: {cvss_score}]" if cvss_score else ""
                 ann_description = (
-                    f"{title} [{id}] [{severity.capitalize()} severity] "
+                    f"{title} [{vulenarability_id}] [{severity.capitalize()} severity] "
                     f"{cvss_str} from {from_packages}"
                 )
-                if id not in vulnerabilities:
-                    vulnerabilities[id] = [ann_title, ann_description, link]
+                if vulenarability_id not in vulnerabilities:
+                    vulnerabilities[vulenarability_id] = [
+                        ann_title,
+                        ann_description,
+                        link,
+                    ]
 
             project = data.get("projectName", "")
             local_links = []

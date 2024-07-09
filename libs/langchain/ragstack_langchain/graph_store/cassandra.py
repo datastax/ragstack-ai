@@ -11,6 +11,7 @@ from langchain_community.utilities.cassandra import SetupMode
 from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
 from ragstack_knowledge_store import EmbeddingModel, graph_store
+from typing_extensions import override
 
 from .base import GraphStore, Node, nodes_to_documents
 
@@ -69,9 +70,11 @@ class CassandraGraphStore(GraphStore):
         )
 
     @property
+    @override
     def embeddings(self) -> Optional[Embeddings]:
         return self._embedding
 
+    @override
     def add_nodes(
         self,
         nodes: Iterable[Node],
@@ -86,6 +89,7 @@ class CassandraGraphStore(GraphStore):
         return self.store.add_nodes(_nodes)
 
     @classmethod
+    @override
     def from_texts(
         cls: Type["CassandraGraphStore"],
         texts: Iterable[str],
@@ -100,6 +104,7 @@ class CassandraGraphStore(GraphStore):
         return store
 
     @classmethod
+    @override
     def from_documents(
         cls: Type["CassandraGraphStore"],
         documents: Iterable[Document],
@@ -112,21 +117,21 @@ class CassandraGraphStore(GraphStore):
         store.add_documents(documents, ids=ids)
         return store
 
+    @override
     def similarity_search(
         self, query: str, k: int = 4, **kwargs: Any
     ) -> List[Document]:
         embedding_vector = self._embedding.embed_query(query)
-        return self.similarity_search_by_vector(
-            embedding_vector,
-            k=k,
-        )
+        return self.similarity_search_by_vector(embedding_vector, k=k, **kwargs)
 
+    @override
     def similarity_search_by_vector(
         self, embedding: List[float], k: int = 4, **kwargs: Any
     ) -> List[Document]:
         nodes = self.store.similarity_search(embedding, k=k)
         return list(nodes_to_documents(nodes))
 
+    @override
     def traversal_search(
         self,
         query: str,
@@ -138,6 +143,7 @@ class CassandraGraphStore(GraphStore):
         nodes = self.store.traversal_search(query, k=k, depth=depth)
         return nodes_to_documents(nodes)
 
+    @override
     def mmr_traversal_search(
         self,
         query: str,

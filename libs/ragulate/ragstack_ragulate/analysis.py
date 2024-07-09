@@ -12,7 +12,10 @@ from .utils import get_tru
 
 
 class Analysis:
+    """Analysis class."""
+
     def get_all_data(self, recipes: List[str]) -> DataFrame:
+        """Get all data from the recipes."""
         df_all = pd.DataFrame()
 
         all_metrics: List[str] = []
@@ -53,6 +56,7 @@ class Analysis:
         return reset_df, list(set(all_metrics))
 
     def calculate_statistics(self, df: pd.DataFrame, metrics: list):
+        """Calculate statistics."""
         stats = {}
         for recipe in df["recipe"].unique():
             stats[recipe] = {}
@@ -73,6 +77,7 @@ class Analysis:
         return stats
 
     def output_box_plots_by_dataset(self, df: DataFrame, metrics: List[str]):
+        """Output box plots by dataset."""
         stats = self.calculate_statistics(df, metrics)
         recipes = sorted(df["recipe"].unique(), key=lambda x: x.lower())
         datasets = sorted(df["dataset"].unique(), key=lambda x: x.lower())
@@ -155,6 +160,7 @@ class Analysis:
             write_image(fig, f"./{dataset}_box_plot.png")
 
     def output_histograms_by_dataset(self, df: pd.DataFrame, metrics: List[str]):
+        """Output histograms by dataset."""
         # Append "latency" to the metrics list
         metrics.append("latency")
 
@@ -246,6 +252,7 @@ class Analysis:
             plt.close()
 
     def compare(self, recipes: List[str], output: str):
+        """Compare results from 2 (or more) recipes."""
         df, metrics = self.get_all_data(recipes=recipes)
         if output == "box-plots":
             self.output_box_plots_by_dataset(df=df, metrics=metrics)

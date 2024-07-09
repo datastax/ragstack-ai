@@ -109,7 +109,7 @@ def test_wrong_connection_parameters(environment: Environment):
 
     # This is expected to be a valid endpoint,
     # because we want to test an AUTHENTICATION error
-    api_endpoint = environment.vectorstore._astra_db.base_url
+    api_endpoint = environment.vectorstore._astra_db.base_url  # noqa: SLF001
     try:
         print("api_endpoint:", api_endpoint)
         AstraDBVectorStore(
@@ -128,12 +128,10 @@ def test_wrong_connection_parameters(environment: Environment):
             )
 
 
-def verify_document(document, expected_content, expected_metadata):
+def verify_document(document, expected_content):
     if isinstance(document, NodeWithScore):
         document = document.node
         assert document.text == expected_content
-        # metadata is not returned by LlamaIndex
-        # assert document.metadata == expected_metadata
     else:
         raise TypeError(
             "document is not of type NodeWithScore but of type " + str(type(document))
@@ -185,7 +183,6 @@ def test_vector_search_with_metadata(environment: Environment):
     verify_document(
         documents[0],
         "RAGStack is a framework to run LangChain in production",
-        {"id": "http://mywebsite/intro", "source": "website", "context": "homepage"},
     )
 
     documents = index.as_retriever().retrieve("RAGStack")
@@ -201,7 +198,7 @@ def test_vector_search_with_metadata(environment: Environment):
     # assert len(documents) == 0
 
 
-@pytest.fixture
+@pytest.fixture()
 def environment() -> Environment:
     if not is_astra:
         skip_test_due_to_implementation_not_supported("astradb")
@@ -231,5 +228,5 @@ class MockEmbeddings(BaseEmbedding):
     @staticmethod
     def mock_embedding(text: str):
         res = [len(text) / 2, len(text) / 5, len(text) / 10]
-        logging.debug("mock_embedding for " + text + " : " + str(res))
+        logging.debug("mock_embedding for %s : %s", text, res)
         return res

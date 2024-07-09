@@ -38,7 +38,7 @@ class KeybertLinkExtractor(LinkExtractor[KeybertInput]):
         self._kind = kind
         self._extract_keywords_kwargs = extract_keywords_kwargs or {}
 
-    def extract_one(self, input: KeybertInput) -> Set[Link]:
+    def extract_one(self, input: KeybertInput) -> Set[Link]:  # noqa: A002
         keywords = self._kw_model.extract_keywords(
             input if isinstance(input, str) else input.page_content,
             **self._extract_keywords_kwargs,

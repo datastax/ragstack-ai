@@ -32,12 +32,12 @@ def validate_retrieval(results: List[NodeWithScore], key_value: str):
     return passed
 
 
-@pytest.fixture
+@pytest.fixture()
 def cassandra():
     return get_local_cassandra_test_store()
 
 
-@pytest.fixture
+@pytest.fixture()
 def astra_db():
     return get_astradb_test_store()
 
@@ -97,7 +97,7 @@ def test_sync(request, vector_store: str):
         texts = docs[doc_id][0]
         metadatas = docs[doc_id][1]
 
-        logging.debug(f"processing {doc_id} that has {len(texts)} chunks")
+        logging.debug("processing %s that has %s chunks", doc_id, len(texts))
 
         vector_store.add_texts(texts=texts, metadatas=metadatas, doc_id=doc_id)
 

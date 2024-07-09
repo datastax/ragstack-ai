@@ -2,11 +2,11 @@ from typing import List
 
 from ragstack_ragulate.datasets import find_dataset
 from ragstack_ragulate.pipelines import IngestPipeline
-
-from ..utils import convert_vars_to_ingredients
+from ragstack_ragulate.utils import convert_vars_to_ingredients
 
 
 def setup_ingest(subparsers):
+    """Setup the ingest command."""
     ingest_parser = subparsers.add_parser("ingest", help="Run an ingest pipeline")
     ingest_parser.add_argument(
         "-n",
@@ -58,8 +58,9 @@ def setup_ingest(subparsers):
         var_name: List[str],
         var_value: List[str],
         dataset: List[str],
-        **kwargs,
+        **_,
     ):
+        """Run an ingest pipeline."""
         datasets = [find_dataset(name=name) for name in dataset]
 
         ingredients = convert_vars_to_ingredients(
