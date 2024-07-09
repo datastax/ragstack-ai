@@ -35,7 +35,7 @@ def get_ingredients(
     """Return ingredients for the given method params."""
     ingredients = {}
     for method_param in method_params:
-        if method_param in reserved_params or method_param in ["kwargs"]:
+        if method_param in reserved_params or method_param in ["kwargs", "_"]:
             continue
         if method_param not in passed_ingredients:
             raise ValueError(
