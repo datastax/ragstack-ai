@@ -1,4 +1,5 @@
-"""
+"""ColBERT Vector Store.
+
 This module provides an implementation of the BaseVectorStore abstract class,
 specifically designed for use with a Cassandra database backend.
 It allows for the efficient storage and management of text embeddings
@@ -18,8 +19,12 @@ from .objects import Chunk, Metadata
 
 
 class ColbertVectorStore(BaseVectorStore):
-    """
-    An implementation of the BaseVectorStore abstract base class.
+    """A vector store implementation for ColBERT.
+
+    Args:
+        database (BaseDatabase): The database to use for storage
+        embedding_model (Optional[BaseEmbeddingModel]): The embedding model to use
+            for embedding text and queries.
     """
 
     _database: BaseDatabase
@@ -30,15 +35,6 @@ class ColbertVectorStore(BaseVectorStore):
         database: BaseDatabase,
         embedding_model: Optional[BaseEmbeddingModel] = None,
     ):
-        """
-        Initializes a new instance of the ColbertVectorStore.
-
-        Parameters:
-            database (BaseDatabase): The database to use for storage
-            embedding_model (Optional[BaseEmbeddingModel]): The embedding model to use
-                for embedding text and queries.
-        """
-
         self._database = database
         self._embedding_model = embedding_model
 
@@ -79,16 +75,14 @@ class ColbertVectorStore(BaseVectorStore):
 
     # implements the abc method to handle LlamaIndex add
     def add_chunks(self, chunks: List[Chunk]) -> List[Tuple[str, int]]:
-        """
-        Stores a list of embedded text chunks in the vector store
+        """Stores a list of embedded text chunks in the vector store.
 
-        Parameters:
+        Args:
             chunks (List[Chunk]): A list of `Chunk` instances to be stored.
 
         Returns:
             a list of tuples: (doc_id, chunk_id)
         """
-
         return self._database.add_chunks(chunks=chunks)
 
     # implements the abc method to handle LangChain add
@@ -98,11 +92,12 @@ class ColbertVectorStore(BaseVectorStore):
         metadatas: Optional[List[Metadata]] = None,
         doc_id: Optional[str] = None,
     ) -> List[Tuple[str, int]]:
-        """
+        """Adds text chunks to the vector store.
+
         Embeds and stores a list of text chunks and optional metadata into the vector
         store.
 
-        Parameters:
+        Args:
             texts: The list of text chunks to be embedded
             metadatas: An optional list of Metadata to be stored.
                 If provided, these are set 1 to 1 with the texts list.
@@ -117,26 +112,23 @@ class ColbertVectorStore(BaseVectorStore):
 
     # implements the abc method to handle LangChain and LlamaIndex delete
     def delete_chunks(self, doc_ids: List[str]) -> bool:
-        """
-        Deletes chunks from the vector store based on their document id.
+        """Deletes chunks from the vector store based on their document id.
 
-        Parameters:
+        Args:
             doc_ids: A list of document identifiers specifying the chunks to be deleted.
 
         Returns:
             True if the all the deletes were successful.
         """
-
         return self._database.delete_chunks(doc_ids=doc_ids)
 
     # implements the abc method to handle LlamaIndex add
     async def aadd_chunks(
         self, chunks: List[Chunk], concurrent_inserts: Optional[int] = 100
     ) -> List[Tuple[str, int]]:
-        """
-        Stores a list of embedded text chunks in the vector store
+        """Stores a list of embedded text chunks in the vector store.
 
-        Parameters:
+        Args:
             chunks: A list of `Chunk` instances to be stored.
             concurrent_inserts: How many concurrent inserts to make to the database.
                 Defaults to 100.
@@ -144,7 +136,6 @@ class ColbertVectorStore(BaseVectorStore):
         Returns:
             a list of tuples: (doc_id, chunk_id)
         """
-
         return await self._database.aadd_chunks(
             chunks=chunks, concurrent_inserts=concurrent_inserts
         )
@@ -157,11 +148,12 @@ class ColbertVectorStore(BaseVectorStore):
         doc_id: Optional[str] = None,
         concurrent_inserts: Optional[int] = 100,
     ) -> List[Tuple[str, int]]:
-        """
+        """Adds text chunks to the vector store.
+
         Embeds and stores a list of text chunks and optional metadata into the vector
         store.
 
-        Parameters:
+        Args:
             texts (List[str]): The list of text chunks to be embedded
             metadatas: An optional list of Metadata to be stored.
                 If provided, these are set 1 to 1 with the texts list.
@@ -182,10 +174,9 @@ class ColbertVectorStore(BaseVectorStore):
     async def adelete_chunks(
         self, doc_ids: List[str], concurrent_deletes: Optional[int] = 100
     ) -> bool:
-        """
-        Deletes chunks from the vector store based on their document id.
+        """Deletes chunks from the vector store based on their document id.
 
-        Parameters:
+        Args:
             doc_ids: A list of document identifiers specifying the chunks to be deleted.
             concurrent_deletes: How many concurrent deletes to make to the database.
                 Defaults to 100.
@@ -198,10 +189,7 @@ class ColbertVectorStore(BaseVectorStore):
         )
 
     def as_retriever(self) -> BaseRetriever:
-        """
-        Gets a retriever using the vector store.
-        """
-
+        """Gets a retriever using the vector store."""
         self._validate_embedding_model()
         return ColbertRetriever(
             database=self._database, embedding_model=self._embedding_model

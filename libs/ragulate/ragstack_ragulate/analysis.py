@@ -12,7 +12,10 @@ from .utils import get_tru
 
 
 class Analysis:
+    """Analysis class."""
+
     def get_all_data(self, recipes: List[str]) -> DataFrame:
+        """Get all data from the recipes."""
         df_all = pd.DataFrame()
 
         all_metrics: List[str] = []
@@ -22,36 +25,38 @@ class Analysis:
 
             for app in tru.get_apps():
                 dataset = app["app_id"]
-                df, metrics = tru.get_records_and_feedback([dataset])
+                df_records, metrics = tru.get_records_and_feedback([dataset])
                 all_metrics.extend(metrics)
 
-                columns_to_keep = metrics + [
+                columns_to_keep = [
+                    *metrics,
                     "record_id",
                     "latency",
                     "total_tokens",
                     "total_cost",
                 ]
                 columns_to_drop = [
-                    col for col in df.columns if col not in columns_to_keep
+                    col for col in df_records.columns if col not in columns_to_keep
                 ]
 
-                df.drop(columns=columns_to_drop, inplace=True)
-                df["recipe"] = recipe
-                df["dataset"] = dataset
+                df_records = df_records.drop(columns=columns_to_drop)
+                df_records["recipe"] = recipe
+                df_records["dataset"] = dataset
 
                 # set negative values to None
                 for metric in metrics:
-                    df.loc[df[metric] < 0, metric] = None
+                    df_records.loc[df_records[metric] < 0, metric] = None
 
-                df_all = pd.concat([df_all, df], axis=0, ignore_index=True)
+                df_all = pd.concat([df_all, df_records], axis=0, ignore_index=True)
 
             tru.delete_singleton()
 
-        df_all.reset_index(drop=True, inplace=True)
+        reset_df = df_all.reset_index(drop=True)
 
-        return df_all, list(set(all_metrics))
+        return reset_df, list(set(all_metrics))
 
     def calculate_statistics(self, df: pd.DataFrame, metrics: list):
+        """Calculate statistics."""
         stats = {}
         for recipe in df["recipe"].unique():
             stats[recipe] = {}
@@ -72,6 +77,7 @@ class Analysis:
         return stats
 
     def output_box_plots_by_dataset(self, df: DataFrame, metrics: List[str]):
+        """Output box plots by dataset."""
         stats = self.calculate_statistics(df, metrics)
         recipes = sorted(df["recipe"].unique(), key=lambda x: x.lower())
         datasets = sorted(df["dataset"].unique(), key=lambda x: x.lower())
@@ -154,6 +160,7 @@ class Analysis:
             write_image(fig, f"./{dataset}_box_plot.png")
 
     def output_histograms_by_dataset(self, df: pd.DataFrame, metrics: List[str]):
+        """Output histograms by dataset."""
         # Append "latency" to the metrics list
         metrics.append("latency")
 
@@ -245,10 +252,11 @@ class Analysis:
             plt.close()
 
     def compare(self, recipes: List[str], output: str):
+        """Compare results from 2 (or more) recipes."""
         df, metrics = self.get_all_data(recipes=recipes)
         if output == "box-plots":
             self.output_box_plots_by_dataset(df=df, metrics=metrics)
         elif output == "histogram-grid":
             self.output_histograms_by_dataset(df=df, metrics=metrics)
         else:
-            raise ValueError()
+            raise ValueError

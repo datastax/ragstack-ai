@@ -2,21 +2,28 @@ import asyncio
 from typing import List
 
 from tqdm import tqdm
+from typing_extensions import override
 
-from ..logging_config import logger
+from ragstack_ragulate.logging_config import logger
+
 from .base_pipeline import BasePipeline
 
 
 class IngestPipeline(BasePipeline):
+    """Ingest pipeline."""
+
     @property
+    @override
     def pipeline_type(self):
         return "ingest"
 
     @property
+    @override
     def get_reserved_params(self) -> List[str]:
         return ["file_path"]
 
     def ingest(self):
+        """Run the ingest pipeline."""
         logger.info(
             f"Starting ingest {self.recipe_name} "
             f"on {self.script_path}/{self.method_name} "

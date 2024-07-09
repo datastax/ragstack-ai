@@ -2,6 +2,7 @@ from ragstack_ragulate.datasets import get_dataset
 
 
 def setup_download(subparsers):
+    """Setup the download command."""
     download_parser = subparsers.add_parser("download", help="Download a dataset")
     download_parser.add_argument(
         "dataset_name",
@@ -21,6 +22,7 @@ def setup_download(subparsers):
     download_parser.set_defaults(func=lambda args: call_download(**vars(args)))
 
 
-def call_download(dataset_name: str, kind: str, **kwargs):
+def call_download(dataset_name: str, kind: str, **_):
+    """Download a dataset."""
     dataset = get_dataset(name=dataset_name, kind=kind)
     dataset.download_dataset()

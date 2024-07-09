@@ -13,10 +13,10 @@ def record_langsmith_sharelink(
     try:
         sharelink = LANGSMITH_CLIENT.share_run(run_id)
         record_property("langsmith_url", sharelink)
-        logging.info(f"recorded langsmith link: {sharelink}")
-    except Exception as e:
+        logging.info("recorded langsmith link: %s", sharelink)
+    except Exception:
         # runs may take a while to be discoverable
         if tries < 0:
-            raise e
+            raise
         time.sleep(5)
         record_langsmith_sharelink(run_id, record_property, tries - 1)

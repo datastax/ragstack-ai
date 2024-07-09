@@ -81,7 +81,6 @@ def test_wrong_connection_parameters(vectorstore: AstraDBVectorStore):
         pytest.fail("Should have thrown exception")
     except ConnectError as e:
         print("Error:", e)
-        pass
 
     # This is expected to be a valid endpoint,
     # because we want to test an AUTHENTICATION error
@@ -193,7 +192,7 @@ def test_basic_metadata_filtering_no_vector(vectorstore: AstraDBVectorStore):
         else:
             pytest.fail(
                 f"Should have thrown ValueError with UNSUPPORTED_FILTER_OPERATION "
-                f"but it was {e}"  # noqa: E501
+                f"but it was {e}"
             )
 
 
@@ -403,7 +402,7 @@ def test_vector_search_with_metadata(vectorstore: VectorStore):
     assert len(documents) == 0
 
 
-@pytest.mark.skip
+@pytest.mark.skip()
 def test_stress_astra():
     handler = AstraDBVectorStoreHandler(VectorStoreImplementation.ASTRADB)
     while True:
@@ -435,7 +434,7 @@ class MockEmbeddings(Embeddings):
         return self.mock_embedding(text)
 
 
-@pytest.fixture
+@pytest.fixture()
 def vectorstore() -> AstraDBVectorStore:
     if not is_astra:
         skip_test_due_to_implementation_not_supported("astradb")

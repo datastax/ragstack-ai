@@ -64,8 +64,9 @@ def get_vector_store_handler(
 ) -> VectorStoreHandler:
     if vector_database_type == "astradb":
         return AstraDBVectorStoreHandler(implementation)
-    elif vector_database_type == "local-cassandra":
+    if vector_database_type == "local-cassandra":
         return CassandraVectorStoreHandler(implementation)
+    raise ValueError("Invalid vector store implementation")
 
 
 failed_report_lines = []
@@ -100,7 +101,7 @@ def pytest_runtest_makereport(item, call):
         if not info:
             test_path = pathlib.PurePath(item.path)
             info = test_path.parent.name + "::" + test_path.name + "::" + item.name
-        logging.info(f"Test {info} took: {total_time} seconds")
+        logging.info("Test %s took: %s seconds", info, total_time)
         paths = str(item.path).split(os.sep)
         is_langchain = False
         is_llamaindex = False
@@ -127,29 +128,27 @@ def pytest_runtest_makereport(item, call):
             or "unconditional skip" in result
         )
         if not skip_report_line:
-            logging.info("Test report line: " + report_line)
+            logging.info("Test report line: %s", report_line)
             if rep.outcome != "passed":
                 # also keep skipped tests in the report
                 failed_report_lines.append(report_line)
                 if call.excinfo:
                     try:
-                        logging.warn("Full stacktrace:")
+                        logging.warning("Full stacktrace:")
                         import traceback
 
                         traceback.print_exception(
-                            call.excinfo._excinfo[0],
-                            call.excinfo._excinfo[1],
-                            call.excinfo._excinfo[2],
+                            call.excinfo.type, call.excinfo.value, call.excinfo.tb
                         )
-                    except Exception as e:
-                        logging.warn(f"Failed to print stacktrace: {e}")
+                    except Exception:  # noqa: BLE001
+                        logging.warning("Failed to print stacktrace", exc_info=True)
             all_report_lines.append(report_line)
             if is_langchain:
                 langchain_report_lines.append(report_line)
             elif is_llamaindex:
                 llamaindex_report_lines.append(report_line)
         else:
-            logging.info("Skipping test report line: " + result)
+            logging.info("Skipping test report line: %s", result)
         os.environ["RAGSTACK_E2E_TESTS_TEST_INFO"] = ""
 
     if rep.when == "call":
@@ -161,9 +160,8 @@ def set_current_test_info(test_name: str, test_info: str):
     os.environ["RAGSTACK_E2E_TESTS_TEST_INFO"] = f"{test_name}::{test_info}"
 
 
-@pytest.fixture(scope="session", autouse=True)
-def dump_report():
-    yield
+@pytest.hookimpl()
+def pytest_sessionfinish():
     logging.info("All tests report:")
     logging.info("\n".join(all_report_lines))
     logging.info("Failed tests report:")

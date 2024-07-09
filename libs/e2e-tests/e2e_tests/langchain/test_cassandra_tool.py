@@ -1,6 +1,7 @@
 import uuid
 
 import cassio
+import pytest
 from langchain import hub
 from langchain.agents import AgentExecutor, create_openai_tools_agent
 from langchain_community.tools.cassandra_database.tool import (
@@ -12,7 +13,8 @@ from langchain_community.utilities.cassandra_database import CassandraDatabase
 from langchain_openai import ChatOpenAI
 
 
-def test_tool_with_openai_tool(cassandra):
+@pytest.mark.usefixtures("cassandra")
+def test_tool_with_openai_tool():
     session = cassio.config.resolve_session()
     session.execute("DROP TABLE IF EXISTS default_keyspace.tool_table_users;")
 

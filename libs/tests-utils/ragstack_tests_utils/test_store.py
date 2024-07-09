@@ -104,8 +104,8 @@ class AstraDBTestStore(TestStore):
             f"select table_name FROM system_schema.tables "
             f"where keyspace_name ='{KEYSPACE}'"
         ).all()
-        logging.info(f"dropping {len(tables)} tables in keyspace {KEYSPACE}")
+        logging.info("dropping %s tables in keyspace %s", len(tables), KEYSPACE)
         for table in tables:
             session.execute(f"DROP TABLE IF EXISTS {KEYSPACE}.{table.table_name}")
-            logging.info(f"dropped table {table.table_name}")
+            logging.info("dropped table %s, ", table.table_name)
         return session

@@ -8,6 +8,8 @@ from .traverse import Node, Relation
 
 
 class NodeSchema(BaseModel):
+    """Schema for a node."""
+
     type: str
     """The name of the node type."""
 
@@ -16,6 +18,8 @@ class NodeSchema(BaseModel):
 
 
 class EdgeSchema(BaseModel):
+    """Schema for an edge."""
+
     type: str
     """The name of the edge type."""
 
@@ -24,6 +28,8 @@ class EdgeSchema(BaseModel):
 
 
 class RelationshipSchema(BaseModel):
+    """Schema for a relationship."""
+
     edge_type: str
     """The name of the edge type for the relationhsip."""
 
@@ -38,6 +44,8 @@ class RelationshipSchema(BaseModel):
 
 
 class Example(BaseModel):
+    """An example of a graph."""
+
     input: str
     """The source input."""
 
@@ -49,6 +57,8 @@ class Example(BaseModel):
 
 
 class KnowledgeSchema(BaseModel):
+    """Schema for a knowledge graph."""
+
     nodes: List[NodeSchema]
     """Allowed node types for the knowledge schema."""
 
@@ -59,20 +69,23 @@ class KnowledgeSchema(BaseModel):
     def from_file(cls, path: Union[str, Path]) -> "KnowledgeSchema":
         """Load a KnowledgeSchema from a JSON or YAML file.
 
-        Parameters:
-        - path: The path to the file to load.
+        Args:
+            path: The path to the file to load.
         """
         from pydantic_yaml import parse_yaml_file_as
 
         return parse_yaml_file_as(cls, path)
 
     def to_yaml_str(self) -> str:
+        """Convert the schema to a YAML string."""
         from pydantic_yaml import to_yaml_str
 
         return to_yaml_str(self)
 
 
 class KnowledgeSchemaValidator:
+    """Validates graph documents against a knowledge schema."""
+
     def __init__(self, schema: KnowledgeSchema) -> None:
         self._schema = schema
 
@@ -86,6 +99,7 @@ class KnowledgeSchemaValidator:
             # source/target type should exist in nodes, edge_type should exist in edges
 
     def validate_graph_document(self, document: GraphDocument):
+        """Validate a graph document against the schema."""
         e = ValueError("Invalid graph document for schema")
         for node_type in {node.type for node in document.nodes}:
             if node_type not in self._nodes:
