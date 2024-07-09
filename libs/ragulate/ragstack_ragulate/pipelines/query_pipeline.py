@@ -126,8 +126,8 @@ class QueryPipeline(BasePipeline):
         """Export results."""
         for dataset_name in self._queries:
             records, _feedback_names = self._tru.get_records_and_feedback(
-                    app_ids=[dataset_name]
-                )
+                app_ids=[dataset_name]
+            )
 
             # Export to JSON
             records.to_json(f"{self._name}_{dataset_name}_results.json")
