@@ -198,6 +198,8 @@ os.environ["AZURE_OPEN_AI_EMBEDDINGS_MODEL_DEPLOYMENT"] = "text-embedding-ada-00
 
 # vertex-ai
 if "GOOGLE_APPLICATION_CREDENTIALS" not in os.environ:
-    with tempfile.NamedTemporaryFile(mode="w", delete=False) as f:
+    with tempfile.NamedTemporaryFile(
+        prefix="gcloud-account-key", suffix=".json", mode="w", delete=False
+    ) as f:
         f.write(os.getenv("GCLOUD_ACCOUNT_KEY_JSON", ""))
         os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = f.name
