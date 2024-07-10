@@ -2,12 +2,26 @@ import contextlib
 import logging
 import threading
 from types import TracebackType
-from typing import Any, Callable, Literal, NamedTuple, Optional, Sequence, Tuple, Type
+from typing import (
+    Any,
+    Callable,
+    Literal,
+    NamedTuple,
+    Optional,
+    Protocol,
+    Sequence,
+    Tuple,
+    Type,
+)
 
 from cassandra.cluster import ResponseFuture, Session
 from cassandra.query import PreparedStatement
 
 logger = logging.getLogger(__name__)
+
+
+class _Callback(Protocol):
+    def __call__(self, rows: Sequence[Any], /) -> None: ...
 
 
 class ConcurrentQueries(contextlib.AbstractContextManager["ConcurrentQueries"]):
@@ -50,7 +64,7 @@ class ConcurrentQueries(contextlib.AbstractContextManager["ConcurrentQueries"]):
         self,
         query: PreparedStatement,
         parameters: Optional[Tuple[Any, ...]] = None,
-        callback: Optional[Callable[[Sequence[Any]], None]] = None,
+        callback: Optional[_Callback] = None,
     ) -> None:
         """Execute a query concurrently.
 
