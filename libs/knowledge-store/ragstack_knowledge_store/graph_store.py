@@ -364,7 +364,12 @@ class GraphStore:
                         self._query_by_id, parameters=(node_id,), callback=add_nodes
                     )
 
-        return [results[node_id] for node_id in ids if results[node_id] is not None]
+        nodes: List[Node] = []
+        for node_id in ids:
+            node = results[node_id]
+            if node is not None:
+                nodes.append(node)
+        return nodes
 
     def mmr_traversal_search(
         self,
