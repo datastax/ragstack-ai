@@ -1,5 +1,8 @@
+from typing import Any
+
 from testcontainers.core.container import DockerContainer
 from testcontainers.core.waiting_utils import wait_for_logs
+from typing_extensions import Self
 
 
 class CassandraContainer(DockerContainer):
@@ -7,7 +10,7 @@ class CassandraContainer(DockerContainer):
         self,
         image: str = "docker.io/stargateio/dse-next:4.0.11-b259738f492f",
         port: int = 9042,
-        **kwargs,
+        **kwargs: Any,
     ) -> None:
         super().__init__(image=image, **kwargs)
         self.port = port
@@ -22,13 +25,10 @@ class CassandraContainer(DockerContainer):
         self.with_env("CASSANDRA_DC", "datacenter1")
         self.with_exposed_ports(self.port)
 
-    def _configure(self):
-        pass
-
-    def start(self):
-        start_res = super().start()
+    def start(self) -> Self:
+        super().start()
         wait_for_logs(self, "Startup complete")
-        return start_res
+        return self
 
-    def get_mapped_port(self):
-        return self.get_exposed_port(self.port)
+    def get_mapped_port(self) -> int:
+        return int(self.get_exposed_port(self.port))

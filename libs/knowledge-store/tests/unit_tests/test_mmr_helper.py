@@ -4,7 +4,7 @@ from typing import List
 from ragstack_knowledge_store._mmr_helper import MmrHelper
 
 
-def test_mmr_helper_add_candidate():
+def test_mmr_helper_add_candidate() -> None:
     helper = MmrHelper(5, [0.0, 1.0])
     helper.add_candidates(
         {
@@ -16,7 +16,7 @@ def test_mmr_helper_add_candidate():
     assert helper.best_id == "a"
 
 
-def test_mmr_helper_pop_best():
+def test_mmr_helper_pop_best() -> None:
     helper = MmrHelper(5, [0.0, 1.0])
     helper.add_candidates(
         {
@@ -33,7 +33,7 @@ def angular_embedding(angle: float) -> List[float]:
     return [math.cos(angle * math.pi), math.sin(angle * math.pi)]
 
 
-def test_mmr_helper_added_documetns():
+def test_mmr_helper_added_documetns() -> None:
     """Test end to end construction and MMR search.
     The embedding function used here ensures `texts` become
     the following vectors on a circle (numbered v0 through v3):

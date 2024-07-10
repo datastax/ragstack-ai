@@ -2,15 +2,16 @@ import dataclasses
 from typing import Dict, Iterable, List, Optional
 
 import numpy as np
+from numpy.typing import NDArray
 
 from ragstack_knowledge_store.math import cosine_similarity
 
 
-def _emb_to_ndarray(embedding: List[float]) -> np.ndarray:
-    embedding = np.array(embedding, dtype=np.float32)
-    if embedding.ndim == 1:
-        embedding = np.expand_dims(embedding, axis=0)
-    return embedding
+def _emb_to_ndarray(embedding: List[float]) -> NDArray[np.float32]:
+    emb_array = np.array(embedding, dtype=np.float32)
+    if emb_array.ndim == 1:
+        emb_array = np.expand_dims(emb_array, axis=0)
+    return emb_array
 
 
 NEG_INF = float("-inf")
@@ -23,10 +24,10 @@ class _Candidate:
     weighted_redundancy: float
     score: float = dataclasses.field(init=False)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         self.score = self.weighted_similarity - self.weighted_redundancy
 
-    def update_redundancy(self, new_weighted_redundancy: float):
+    def update_redundancy(self, new_weighted_redundancy: float) -> None:
         if new_weighted_redundancy > self.weighted_redundancy:
             self.weighted_redundancy = new_weighted_redundancy
             self.score = self.weighted_similarity - self.weighted_redundancy
@@ -47,7 +48,7 @@ class MmrHelper:
     dimensions: int
     """Dimensions of the embedding."""
 
-    query_embedding: np.ndarray
+    query_embedding: NDArray[np.float32]
     """Embedding of the query as a (1,dim) ndarray."""
 
     lambda_mult: float
@@ -64,7 +65,7 @@ class MmrHelper:
 
     selected_ids: List[str]
     """List of selected IDs (in selection order)."""
-    selected_embeddings: np.ndarray
+    selected_embeddings: NDArray[np.float32]
     """(N, dim) ndarray with a row for each selected node."""
 
     candidate_id_to_index: Dict[str, int]
@@ -74,7 +75,7 @@ class MmrHelper:
 
     Same order as rows in `candidate_embeddings`.
     """
-    candidate_embeddings: np.ndarray
+    candidate_embeddings: NDArray[np.float32]
     """(N, dim) ndarray with a row for each candidate."""
 
     best_score: float
@@ -113,12 +114,12 @@ class MmrHelper:
         """Return the IDs of the candidates."""
         return self.candidate_id_to_index.keys()
 
-    def _already_selected_embeddings(self) -> np.ndarray:
+    def _already_selected_embeddings(self) -> NDArray[np.float32]:
         """Return the selected embeddings sliced to the already assigned values."""
         selected = len(self.selected_ids)
         return np.vsplit(self.selected_embeddings, [selected])[0]
 
-    def _pop_candidate(self, candidate_id: str) -> np.ndarray:
+    def _pop_candidate(self, candidate_id: str) -> NDArray[np.float32]:
         """Pop the candidate with the given ID.
 
         Returns:
@@ -127,7 +128,7 @@ class MmrHelper:
         # Get the embedding for the id.
         index = self.candidate_id_to_index.pop(candidate_id)
         assert self.candidates[index].id == candidate_id
-        embedding = self.candidate_embeddings[index].copy()
+        embedding: NDArray[np.float32] = self.candidate_embeddings[index].copy()
 
         # Swap that index with the last index in the candidates and
         # candidate_embeddings.
@@ -186,19 +187,21 @@ class MmrHelper:
 
         return selected_id
 
-    def add_candidates(self, candidates: Dict[str, List[float]]):
+    def add_candidates(self, candidates: Dict[str, List[float]]) -> None:
         """Add candidates to the consideration set."""
         # Determine the keys to actually include.
         # These are the candidates that aren't already selected
         # or under consideration.
-        include_ids = set(candidates.keys())
-        include_ids.difference_update(self.selected_ids)
-        include_ids.difference_update(self.candidate_id_to_index.keys())
-        include_ids = list(include_ids)
+        include_ids_set = set(candidates.keys())
+        include_ids_set.difference_update(self.selected_ids)
+        include_ids_set.difference_update(self.candidate_id_to_index.keys())
+        include_ids = list(include_ids_set)
 
         # Now, build up a matrix of the remaining candidate embeddings.
         # And add them to the
-        new_embeddings = np.ndarray((len(include_ids), self.dimensions))
+        new_embeddings: NDArray[np.float32] = np.ndarray(
+            (len(include_ids), self.dimensions)
+        )
         offset = self.candidate_embeddings.shape[0]
         for index, candidate_id in enumerate(include_ids):
             if candidate_id in include_ids:

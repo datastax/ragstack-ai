@@ -1,12 +1,12 @@
 """Temporary backward-compatibility for KnowledgeStore."""
 
-from .graph_store import (
-    EmbeddingModel,
-    Node,
-    SetupMode,
-)
+from .embedding_model import EmbeddingModel
 from .graph_store import (
     GraphStore as KnowledgeStore,
+)
+from .graph_store import (
+    Node,
+    SetupMode,
 )
 
 __all__ = [

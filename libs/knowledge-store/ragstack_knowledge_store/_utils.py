@@ -1,18 +1,20 @@
+from __future__ import annotations
+
 import sys
 
 try:
     # Try importing the function from itertools (Python 3.12+)
-    from itertools import batched
+    from itertools import batched  # type: ignore[attr-defined]
 except ImportError:
     from itertools import islice
-    from typing import Iterable, Iterator, TypeVar
+    from typing import Any, Iterable, Iterator, TypeVar
 
     # Fallback implementation for older Python versions
 
     T = TypeVar("T")
 
     # This is equivalent to `itertools.batched`, but that is only available in 3.12
-    def batched(iterable: Iterable[T], n: int) -> Iterator[Iterator[T]]:
+    def batched(iterable: Iterable[T], n: int) -> Iterator[tuple[T, ...]]:
         if n < 1:
             raise ValueError("n must be at least one")
         it = iter(iterable)
@@ -24,12 +26,12 @@ except ImportError:
 
 if sys.version_info >= (3, 10):
 
-    def strict_zip(*iterables):
+    def strict_zip(*iterables: Iterable[Any]) -> zip[tuple[Any, ...]]:
         return zip(*iterables, strict=True)
 
 else:
 
-    def strict_zip(*iterables):
+    def strict_zip(*iterables: Iterable[T]) -> zip[tuple[T]]:
         # Custom implementation for Python versions older than 3.10
         if not iterables:
             return
