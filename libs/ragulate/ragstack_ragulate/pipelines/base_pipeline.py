@@ -1,6 +1,7 @@
 import importlib.util
 import inspect
 import logging
+import sys
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List
 
@@ -103,7 +104,7 @@ class BasePipeline(ABC):
                 self._passed_ingredients,
                 exc_info=True,
             )
-            exit(1)
+            sys.exit(1)
 
     def get_method(self):
         """Return the pipeline method."""

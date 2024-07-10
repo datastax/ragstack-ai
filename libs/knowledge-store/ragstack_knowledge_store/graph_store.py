@@ -330,11 +330,11 @@ class GraphStore:
                 link_from_tags = set()  # link from these tags
 
                 for tag in links:
-                    if tag.direction == "in" or tag.direction == "bidir":
+                    if tag.direction in {"in", "bidir"}:
                         # An incoming link should be linked *from* nodes with the given
                         # tag.
                         link_from_tags.add((tag.kind, tag.tag))
-                    if tag.direction == "out" or tag.direction == "bidir":
+                    if tag.direction in {"out", "bidir"}:
                         link_to_tags.add((tag.kind, tag.tag))
 
                 metadata_blob = _serialize_metadata(metadata)

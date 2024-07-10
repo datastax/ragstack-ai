@@ -65,7 +65,6 @@ class DeleteCollectionHandler:
                 "%s deletions still running, waiting to complete", pending_deletions
             )
             time.sleep(1)
-        return
 
     def run_delete(self, collection: str):
         """Runs a delete_collection in the background, blocking if max_workers are

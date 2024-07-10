@@ -37,8 +37,11 @@ def all_gpus_support_fp16(is_cuda: Optional[bool] = False):
     for device_id in range(torch.cuda.device_count()):
         compute_capability = torch.cuda.get_device_capability(device_id)
         # FP16 support requires compute capability of 5.3 or higher
-        if compute_capability[0] < 5 or (
-            compute_capability[0] == 5 and compute_capability[1] < 3
+        min_compute_capability_major = 5
+        min_compute_capability_minor = 3
+        if compute_capability[0] < min_compute_capability_major or (
+            compute_capability[0] == min_compute_capability_major
+            and compute_capability[1] < min_compute_capability_minor
         ):
             logging.info(
                 "Device %s with compute capability %s does not support FP16 "

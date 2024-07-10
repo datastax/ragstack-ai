@@ -18,6 +18,8 @@ from e2e_tests.test_utils import skip_test_due_to_implementation_not_supported
 from e2e_tests.test_utils.astradb_vector_store_handler import AstraDBVectorStoreHandler
 from e2e_tests.test_utils.vector_store_handler import VectorStoreImplementation
 
+MINIMUM_ACCEPTABLE_SCORE = 0.1
+
 
 def test_basic_vector_search(vectorstore: AstraDBVectorStore):
     print("Running test_basic_vector_search")
@@ -236,7 +238,7 @@ def test_vector_search_with_metadata(vectorstore: VectorStore):
     )
 
     documents = vectorstore.search("RAGStack", "similarity")
-    assert len(documents) == 2
+    assert len(documents) == 2  # noqa: PLR2004
 
     documents = vectorstore.search(
         "RAGStack", "similarity", filter={"context": "homepage"}
@@ -249,7 +251,7 @@ def test_vector_search_with_metadata(vectorstore: VectorStore):
     )
 
     documents = vectorstore.search("RAGStack", "mmr")
-    assert len(documents) == 2
+    assert len(documents) == 2  # noqa: PLR2004
 
     documents = vectorstore.search("RAGStack", "mmr", filter={"context": "homepage"})
     assert len(documents) == 1
@@ -287,7 +289,7 @@ def test_vector_search_with_metadata(vectorstore: VectorStore):
     assert len(documents_with_score) == 1
     # th elements are Tuple(document, score)
     score = documents_with_score[0][1]
-    assert score > 0.1
+    assert score > MINIMUM_ACCEPTABLE_SCORE
 
     verify_document(
         documents_with_score[0][0],
@@ -303,7 +305,7 @@ def test_vector_search_with_metadata(vectorstore: VectorStore):
     assert len(documents_with_score) == 1
     # the elements are Tuple(document, score)
     score = documents_with_score[0][1]
-    assert score > 0.1
+    assert score > MINIMUM_ACCEPTABLE_SCORE
 
     verify_document(
         documents_with_score[0][0],
@@ -317,7 +319,7 @@ def test_vector_search_with_metadata(vectorstore: VectorStore):
     assert len(documents_with_score) == 1
     # the elements are Tuple(document, score)
     score = documents_with_score[0][1]
-    assert score > 0.1
+    assert score > MINIMUM_ACCEPTABLE_SCORE
 
     # test for max_marginal_relevance_search_by_vector
 
@@ -349,7 +351,7 @@ def test_vector_search_with_metadata(vectorstore: VectorStore):
     assert len(documents) == 1
 
     documents = vectorstore.similarity_search_by_vector(embedding=vector, k=2)
-    assert len(documents) == 2
+    assert len(documents) == 2  # noqa: PLR2004
 
     documents = vectorstore.similarity_search_by_vector(
         embedding=vector, k=1, filter={"context": "none"}
@@ -382,10 +384,10 @@ def test_vector_search_with_metadata(vectorstore: VectorStore):
 
     retriever = vectorstore.as_retriever()
     documents = retriever.get_relevant_documents("RAGStack")
-    assert len(documents) == 2
+    assert len(documents) == 2  # noqa: PLR2004
 
     documents = retriever.invoke("RAGStack", RunnableConfig(tags=["custom_retriever"]))
-    assert len(documents) == 2
+    assert len(documents) == 2  # noqa: PLR2004
 
     retriever = vectorstore.as_retriever(search_kwargs={"k": 1})
     documents = retriever.get_relevant_documents("RAGStack")
@@ -393,7 +395,7 @@ def test_vector_search_with_metadata(vectorstore: VectorStore):
 
     retriever = vectorstore.as_retriever(search_kwargs={"k": 2})
     documents = retriever.get_relevant_documents("RAGStack")
-    assert len(documents) == 2
+    assert len(documents) == 2  # noqa: PLR2004
 
     # delete all the documents
     vectorstore.delete(document_ids)

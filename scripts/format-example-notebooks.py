@@ -14,8 +14,8 @@ def main():
 
     nb_path = os.path.join("examples", "notebooks")
     for root, _, files in os.walk(nb_path):
-        for file in files:
-            file = os.path.join(root, file)
+        for filename in files:
+            file = os.path.join(root, filename)
             if ".ipynb_checkpoints" not in file and file.endswith(".ipynb"):
                 print("Formatting file: ", file)
                 with open(file) as f:

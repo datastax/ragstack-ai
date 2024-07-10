@@ -3,7 +3,9 @@
 import json
 import sys
 
-if len(sys.argv) < 3:
+_MIN_ARGV_LEN = 3
+
+if len(sys.argv) < _MIN_ARGV_LEN:
     print("Usage: parse-snyk-report.py {input_json} {output_file}")
     sys.exit(1)
 

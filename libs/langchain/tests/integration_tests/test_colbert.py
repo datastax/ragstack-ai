@@ -112,7 +112,7 @@ def test_sync_from_docs(request, vector_store: str):
         "What are Xenospheric Particulates?"
     )
 
-    assert len(results) > 3
+    assert len(results) > 3  # noqa: PLR2004
     assert results[1][1] > 0  # check score from result 2
     assert results[2][1] > 0  # check score from result 3
     assert results[1][1] > results[2][1]  # check that scores are returned in order
@@ -171,7 +171,7 @@ async def test_async_from_docs(request, vector_store: str):
         "What are Xenospheric Particulates?"
     )
 
-    assert len(results) > 3
+    assert len(results) > 3  # noqa: PLR2004
     assert results[1][1] > 0  # check score from result 2
     assert results[2][1] > 0  # check score from result 3
     assert results[1][1] > results[2][1]  # check that scores are returned in order
