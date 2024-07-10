@@ -1,9 +1,9 @@
 from typing import Any, Dict, Iterable, Optional, Set, Union
 
 from langchain_core.documents import Document
+from langchain_core.graph_vectorstores import Link
 
 from ragstack_langchain.graph_store.extractors.link_extractor import LinkExtractor
-from ragstack_langchain.graph_store.links import Link
 
 # TypeAlias is not available in Python 2.9, we can't use that or the newer `type`.
 KeybertInput = Union[str, Document]

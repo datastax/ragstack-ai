@@ -1,8 +1,7 @@
 from typing import Callable, List, Set
 
 from langchain_core.documents import Document
-
-from ragstack_langchain.graph_store.links import Link
+from langchain_core.graph_vectorstores import Link
 
 from .link_extractor import LinkExtractor
 from .link_extractor_adapter import LinkExtractorAdapter

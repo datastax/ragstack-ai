@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Generic, Iterable, Set, TypeVar
 
 if TYPE_CHECKING:
-    from ragstack_langchain.graph_store.links import Link
+    from langchain_core.graph_vectorstores import Link
 
 InputT = TypeVar("InputT")
 
