@@ -1,6 +1,7 @@
 import logging
 import os
 from abc import ABC, abstractmethod
+from typing import Optional
 
 import cassio
 from cassandra.cluster import Cluster, PlainTextAuthProvider, Session
@@ -17,7 +18,7 @@ class TestStore(ABC):
 
 
 class LocalCassandraTestStore(TestStore):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         start_container = os.environ.get("CASSANDRA_START_CONTAINER", "true")
         self.port = 9042
@@ -45,11 +46,11 @@ class LocalCassandraTestStore(TestStore):
 
 
 class AstraDBTestStore(TestStore):
-    token: str
-    database_id: str
+    token: Optional[str]
+    database_id: Optional[str]
     env: str
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         if not os.getenv("ASTRA_DB_ID") or not os.getenv("ASTRA_DB_TOKEN"):
             raise ValueError(
