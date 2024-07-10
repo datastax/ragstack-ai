@@ -51,7 +51,7 @@ def test_database_sync(request, vector_store: str):
 
     results = database.add_chunks(chunks=[chunk_0, chunk_1])
 
-    assert len(results) == 2
+    assert len(results) == 2  # noqa: PLR2004
     assert results[0] == (doc_id, 0)
     assert results[1] == (doc_id, 1)
 
@@ -94,7 +94,7 @@ async def test_database_async(request, vector_store: str):
     )
 
     results = await database.aadd_chunks(chunks=[chunk_0, chunk_1])
-    assert len(results) == 2
+    assert len(results) == 2  # noqa: PLR2004
     assert results[0] == (doc_id, 0)
     assert results[1] == (doc_id, 1)
 

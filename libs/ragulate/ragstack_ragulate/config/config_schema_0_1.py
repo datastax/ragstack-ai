@@ -8,13 +8,15 @@ from .base_config_schema import BaseConfigSchema
 from .objects import Config, Recipe, Step
 from .utils import dict_to_string
 
+_VERSION_0_1 = 0.1
+
 
 class ConfigSchema0Dot1(BaseConfigSchema):
     """Config schema for version 0.1."""
 
     @override
     def version(self):
-        return 0.1
+        return _VERSION_0_1
 
     @override
     def schema(self) -> Dict[str, Any]:
@@ -131,7 +133,7 @@ class ConfigSchema0Dot1(BaseConfigSchema):
         }
 
         return {
-            "version": {"type": "float", "allowed": [0.1]},
+            "version": {"type": "float", "allowed": [_VERSION_0_1]},
             "steps": steps,
             "recipes": recipe_list,
             "datasets": dataset_list,

@@ -4,7 +4,7 @@ import yaml
 from cerberus import Validator
 
 from .base_config_schema import BaseConfigSchema
-from .config_schema_0_1 import ConfigSchema0Dot1
+from .config_schema_0_1 import _VERSION_0_1, ConfigSchema0Dot1
 from .objects import Config
 
 
@@ -35,7 +35,7 @@ class ConfigParser:
         with open(file_path) as file:
             config = yaml.safe_load(file)
 
-            version = config.get("version", 0.1)
-            if version == 0.1:
+            version = config.get("version", _VERSION_0_1)
+            if version == _VERSION_0_1:
                 return cls(config_schema=ConfigSchema0Dot1(), config=config)
             raise ValueError(f"config file version {version} is not supported")

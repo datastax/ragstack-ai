@@ -77,7 +77,7 @@ def len_function(text: str) -> int:
 async def ingest(file_path: str, chunk_size: int, **_):
     doc_id = Path(file_path).name
 
-    chunk_overlap = min(chunk_size / 4, min(chunk_size / 2, 64))
+    chunk_overlap = min(chunk_size / 4, 64)
 
     start = time.time()
     docs = UnstructuredFileLoader(

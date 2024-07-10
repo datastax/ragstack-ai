@@ -186,7 +186,7 @@ def test_vector_search_with_metadata(environment: Environment):
     )
 
     documents = index.as_retriever().retrieve("RAGStack")
-    assert len(documents) == 2
+    assert len(documents) == 2  # noqa: PLR2004
 
     # delete all the documents
     for doc_id in document_ids:
