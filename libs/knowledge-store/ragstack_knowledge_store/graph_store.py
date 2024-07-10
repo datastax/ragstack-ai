@@ -370,10 +370,9 @@ class GraphStore:
                     )
 
         def get_result(node_id: str) -> Node:
-            if (result := results[node_id]) is not None:
-                return result
-            else:
+            if (result := results[node_id]) is None:
                 raise ValueError(f"No node with ID '{node_id}'")
+            return result
 
         return [get_result(node_id) for node_id in ids]
 
