@@ -1,6 +1,19 @@
 import asyncio
 import threading
-from typing import Any, Dict, Iterable, NamedTuple, Optional, Sequence, Union
+from asyncio import Future, Task
+from typing import (
+    Any,
+    Dict,
+    Iterable,
+    List,
+    NamedTuple,
+    Optional,
+    Self,
+    Sequence,
+    Set,
+    Tuple,
+    Union,
+)
 
 from cassandra.cluster import PreparedStatement, ResponseFuture, Session
 from cassio.config import check_resolve_keyspace, check_resolve_session
@@ -17,18 +30,24 @@ class Node(_Node):
 
     __slots__ = ()
 
-    def __new__(cls, name, type, properties=None):  # noqa: A002, D102
+    def __new__(
+        cls,
+        name: str,
+        type: str,  # noqa: A002
+        properties: Optional[Dict[str, Any]] = None,
+    ) -> "Node":
+        """Create a new node."""
         if properties is None:
             properties = {}
         return super().__new__(cls, name, type, properties)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"{self.name} ({self.type})"
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(self.name) * hash(self.type)
 
-    def __eq__(self, value) -> bool:
+    def __eq__(self, value: object) -> bool:
         if not isinstance(value, Node):
             return False
 
@@ -42,11 +61,11 @@ class Relation(NamedTuple):
     target: Node
     type: str
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"{self.source} -> {self.target}: {self.type}"
 
 
-def _parse_relation(row) -> Relation:
+def _parse_relation(row: Any) -> Relation:
     return Relation(
         source=Node(name=row.source_name, type=row.source_type),
         target=Node(name=row.target_name, type=row.target_type),
@@ -122,9 +141,9 @@ def traverse(
     session = check_resolve_session(session)
     keyspace = check_resolve_keyspace(keyspace)
 
-    pending = set()
-    distances = {}
-    results = set()
+    pending: Set[int] = set()
+    distances: Dict[Node, int] = {}
+    results: Set[Relation] = set()
     query = _prepare_edge_query(
         edge_table=edge_table,
         edge_source_name=edge_source_name,
@@ -138,9 +157,11 @@ def traverse(
     )
 
     condition = threading.Condition()
-    error = None
+    error: Optional[BaseException] = None
 
-    def handle_result(rows, source_distance: int, request: ResponseFuture):
+    def handle_result(
+        rows: Iterable[Any], source_distance: int, request: ResponseFuture
+    ) -> None:
         relations = map(_parse_relation, rows)
         with condition:
             if source_distance < steps:
@@ -160,7 +181,7 @@ def traverse(
                 if len(pending) == 0:
                     condition.notify()
 
-    def handle_error(e):
+    def handle_error(e: BaseException) -> None:
         nonlocal error
         with condition:
             error = e
@@ -210,16 +231,16 @@ class AsyncPagedQuery:
         self.loop = asyncio.get_running_loop()
         self.depth = depth
         self.response_future = response_future
-        self.current_page_future = asyncio.Future()
+        self.current_page_future: Future[Iterable[Any]] = asyncio.Future()
         self.response_future.add_callbacks(self._handle_page, self._handle_error)
 
-    def _handle_page(self, rows):
+    def _handle_page(self, rows: Iterable[Any]) -> None:
         self.loop.call_soon_threadsafe(self.current_page_future.set_result, rows)
 
-    def _handle_error(self, error):
+    def _handle_error(self, error: BaseException) -> None:
         self.loop.call_soon_threadsafe(self.current_page_future.set_exception, error)
 
-    async def next(self):
+    async def next(self) -> Tuple[int, List[Relation], Optional[Self]]:
         """Fetch the next page of results."""
         page = [_parse_relation(r) for r in await self.current_page_future]
 
@@ -291,7 +312,7 @@ async def atraverse(
 
     def fetch_relation(
         tg: asyncio.TaskGroup, depth: int, source: Node
-    ) -> AsyncPagedQuery:
+    ) -> Task[Tuple[int, List[Relation], Optional[AsyncPagedQuery]]]:
         paged_query = AsyncPagedQuery(
             depth, session.execute_async(query, (source.name, source.type))
         )

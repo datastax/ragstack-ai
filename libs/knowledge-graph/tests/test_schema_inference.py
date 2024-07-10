@@ -18,7 +18,7 @@ Paris.
 
 
 @pytest.mark.flaky(reruns=5, reruns_delay=0)
-def test_schema_inference(llm: BaseChatModel):
+def test_schema_inference(llm: BaseChatModel) -> None:
     schema_inferer = KnowledgeSchemaInferer(llm)
 
     results = schema_inferer.infer_schemas_from(
@@ -46,7 +46,7 @@ def test_schema_inference(llm: BaseChatModel):
     # We don't do more testing here since this is meant to attempt to infer things.
 
 
-def any_of_in_list(values: List[str], *expected):
+def any_of_in_list(values: List[str], *expected: str) -> None:
     for value in values:
         if value in expected:
             return

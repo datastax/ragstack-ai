@@ -58,7 +58,9 @@ class CassandraGraphStore(GraphStore):
 
     # TODO: should this include the types of each node?
     @override
-    def query(self, query: str, params: dict = {}) -> List[Dict[str, Any]]:  # noqa: B006
+    def query(
+        self, query: str, params: Optional[Dict[str, Any]] = None
+    ) -> List[Dict[str, Any]]:
         raise ValueError("Querying Cassandra should use `as_runnable`.")
 
     @override
@@ -76,7 +78,9 @@ class CassandraGraphStore(GraphStore):
     def refresh_schema(self) -> None:
         raise NotImplementedError
 
-    def as_runnable(self, steps: int = 3, edge_filters: Sequence[str] = ()) -> Runnable:
+    def as_runnable(
+        self, steps: int = 3, edge_filters: Sequence[str] = ()
+    ) -> Runnable[Union[Node, Sequence[Node]], Iterable[Relation]]:
         """Convert to a runnable.
 
         Returns a runnable that retrieves the sub-graph near the input entity or

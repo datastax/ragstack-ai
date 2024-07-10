@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Dict, List, Sequence, Union
+from typing import Dict, List, Self, Sequence, Union
 
 from langchain_community.graphs.graph_document import GraphDocument
 from langchain_core.pydantic_v1 import BaseModel
@@ -66,7 +66,7 @@ class KnowledgeSchema(BaseModel):
     """Allowed relationships for the knowledge schema."""
 
     @classmethod
-    def from_file(cls, path: Union[str, Path]) -> "KnowledgeSchema":
+    def from_file(cls, path: Union[str, Path]) -> Self:
         """Load a KnowledgeSchema from a JSON or YAML file.
 
         Args:
@@ -98,27 +98,27 @@ class KnowledgeSchemaValidator:
             # TODO: Validate the relationship.
             # source/target type should exist in nodes, edge_type should exist in edges
 
-    def validate_graph_document(self, document: GraphDocument):
+    def validate_graph_document(self, document: GraphDocument) -> None:
         """Validate a graph document against the schema."""
         e = ValueError("Invalid graph document for schema")
         for node_type in {node.type for node in document.nodes}:
             if node_type not in self._nodes:
                 e.add_note(f"No node type '{node_type}")
         for r in document.relationships:
-            relationships = self._relationships.get(r.edge_type, None)
+            relationships = self._relationships.get(r.type, None)
             if relationships is None:
-                e.add_note(f"No edge type '{r.edge_type}")
+                e.add_note(f"No edge type '{r.type}")
             else:
                 relationship = next(
                     candidate
                     for candidate in relationships
-                    if r.source_type in candidate.source_types
-                    if r.target_type in candidate.target_types
+                    if r.source.type in candidate.source_types
+                    if r.target.type in candidate.target_types
                 )
                 if relationship is None:
                     e.add_note(
                         "No relationship allows "
-                        f"({r.source_id} -> {r.type} -> {r.target.type})"
+                        f"({r.source.id} -> {r.type} -> {r.target.type})"
                     )
 
         if e.__notes__:

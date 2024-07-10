@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 from langchain_core.language_models import BaseChatModel
 from langchain_core.output_parsers import JsonOutputParser
@@ -26,7 +26,7 @@ def extract_entities(
     llm: BaseChatModel,
     keyword_extraction_prompt: str = QUERY_ENTITY_EXTRACT_PROMPT,
     node_types: Optional[List[str]] = None,
-) -> Runnable:
+) -> Runnable[Dict[str, Any], List[Node]]:
     """Return a keyword-extraction runnable.
 
     This will expect a dictionary containing the `"question"` to extract keywords from.

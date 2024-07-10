@@ -4,10 +4,8 @@ import pytest
 from langchain_community.graphs.graph_document import Node, Relationship
 from langchain_core.documents import Document
 from langchain_core.language_models import BaseChatModel
-from ragstack_knowledge_graph.extraction import (
-    KnowledgeSchema,
-    KnowledgeSchemaExtractor,
-)
+from ragstack_knowledge_graph.extraction import KnowledgeSchemaExtractor
+from ragstack_knowledge_graph.knowledge_schema import KnowledgeSchema
 
 
 @pytest.fixture(scope="session")
@@ -34,7 +32,7 @@ Paris.
 
 
 @pytest.mark.flaky(reruns=10, reruns_delay=0)
-def test_extraction(extractor: KnowledgeSchemaExtractor):
+def test_extraction(extractor: KnowledgeSchemaExtractor) -> None:
     results = extractor.extract([Document(page_content=MARIE_CURIE_SOURCE)])
 
     marie_curie = Node(id="Marie Curie", type="Person")
