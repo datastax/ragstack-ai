@@ -97,7 +97,7 @@ def test_ingest_errors(environment: Environment):
 def test_wrong_connection_parameters(environment: Environment):
     try:
         AstraDBVectorStore(
-            token="xxxxx",
+            token="xxxxx",  # noqa: S106
             # we assume that post 1234 is not open locally
             api_endpoint="https://locahost:1234",
             collection_name="something",
@@ -113,7 +113,7 @@ def test_wrong_connection_parameters(environment: Environment):
     try:
         print("api_endpoint:", api_endpoint)
         AstraDBVectorStore(
-            token="this-is-a-wrong-token",
+            token="this-is-a-wrong-token",  # noqa: S106
             api_endpoint=api_endpoint,
             collection_name="something",
             embedding_dimension=1536,

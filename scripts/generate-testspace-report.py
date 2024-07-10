@@ -241,7 +241,7 @@ def parse_snyk_report(input_file: str):
 
 
 def parse_test_report(input_file: str):
-    tree = parse(input_file)
+    tree = parse(input_file)  # noqa: S314
     root = tree.getroot()
     report_test_suites = {}
     for test_suites in root.iter("testsuites"):

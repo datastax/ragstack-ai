@@ -1,4 +1,5 @@
 import json
+import re
 import secrets
 from dataclasses import dataclass, field
 from enum import Enum
@@ -99,6 +100,9 @@ def _row_to_node(row: Any) -> Node:
     )
 
 
+_CQL_IDENTIFIER_PATTERN = re.compile(r"[a-zA-Z][a-zA-Z0-9_]*")
+
+
 @dataclass
 class _Edge:
     target_content_id: str
@@ -130,6 +134,15 @@ class GraphStore:
         session = check_resolve_session(session)
         keyspace = check_resolve_keyspace(keyspace)
 
+        if not _CQL_IDENTIFIER_PATTERN.fullmatch(keyspace):
+            raise ValueError(f"Invalid keyspace: {keyspace}")
+
+        if not _CQL_IDENTIFIER_PATTERN.fullmatch(node_table):
+            raise ValueError(f"Invalid node table name: {node_table}")
+
+        if not _CQL_IDENTIFIER_PATTERN.fullmatch(targets_table):
+            raise ValueError(f"Invalid node table name: {targets_table}")
+
         self._embedding = embedding
         self._node_table = node_table
         self._targets_table = targets_table
@@ -151,7 +164,7 @@ class GraphStore:
                 content_id, kind, text_content, text_embedding, link_to_tags,
                 metadata_blob, links_blob
             ) VALUES (?, '{Kind.passage}', ?, ?, ?, ?, ?)
-            """
+            """  # noqa: S608
         )
 
         self._insert_tag = session.prepare(
@@ -159,7 +172,7 @@ class GraphStore:
             INSERT INTO {keyspace}.{targets_table} (
                 target_content_id, kind, tag, target_text_embedding
             ) VALUES (?, ?, ?, ?)
-            """
+            """  # noqa: S608
         )
 
         self._query_by_id = session.prepare(
@@ -167,7 +180,7 @@ class GraphStore:
             SELECT content_id, kind, text_content, metadata_blob, links_blob
             FROM {keyspace}.{node_table}
             WHERE content_id = ?
-            """
+            """  # noqa: S608
         )
 
         self._query_by_embedding = session.prepare(
@@ -176,7 +189,7 @@ class GraphStore:
             FROM {keyspace}.{node_table}
             ORDER BY text_embedding ANN OF ?
             LIMIT ?
-            """
+            """  # noqa: S608
         )
         self._query_by_embedding.consistency_level = ConsistencyLevel.ONE
 
@@ -186,7 +199,7 @@ class GraphStore:
             FROM {keyspace}.{node_table}
             ORDER BY text_embedding ANN OF ?
             LIMIT ?
-            """
+            """  # noqa: S608
         )
         self._query_ids_and_link_to_tags_by_embedding.consistency_level = (
             ConsistencyLevel.ONE
@@ -197,7 +210,7 @@ class GraphStore:
             SELECT content_id, link_to_tags
             FROM {keyspace}.{node_table}
             WHERE content_id = ?
-            """
+            """  # noqa: S608
         )
 
         self._query_ids_and_embedding_by_embedding = session.prepare(
@@ -206,7 +219,7 @@ class GraphStore:
             FROM {keyspace}.{node_table}
             ORDER BY text_embedding ANN OF ?
             LIMIT ?
-            """
+            """  # noqa: S608
         )
         self._query_ids_and_embedding_by_embedding.consistency_level = (
             ConsistencyLevel.ONE
@@ -217,7 +230,7 @@ class GraphStore:
             SELECT link_to_tags
             FROM {keyspace}.{node_table}
             WHERE content_id = ?
-            """
+            """  # noqa: S608
         )
 
         self._query_targets_embeddings_by_kind_and_tag_and_embedding = session.prepare(
@@ -227,7 +240,7 @@ class GraphStore:
             WHERE kind = ? AND tag = ?
             ORDER BY target_text_embedding ANN of ?
             LIMIT ?
-            """
+            """  # noqa: S608
         )
 
         self._query_targets_by_kind_and_value = session.prepare(
@@ -235,7 +248,7 @@ class GraphStore:
             SELECT target_content_id, kind, tag
             FROM {keyspace}.{targets_table}
             WHERE kind = ? AND tag = ?
-            """
+            """  # noqa: S608
         )
 
     def _apply_schema(self) -> None:

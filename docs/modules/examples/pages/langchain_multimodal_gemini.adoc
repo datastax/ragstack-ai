@@ -47,7 +47,10 @@ Let's see if Gemini Pro Vision can identify a part to an espresso machine and te
 ----
 import requests
 
-source_img_data = requests.get('https://drive.google.com/uc?export=view&id=15ddcn-AIxpvRdWcFGvIr77XLWdo4Maof').content
+source_img_data = requests.get(
+    'https://drive.google.com/uc?export=view&id=15ddcn-AIxpvRdWcFGvIr77XLWdo4Maof',
+    timeout=30,
+).content
 with open('coffee_maker_part.png', 'wb') as handler:
   handler.write(source_img_data)
 ----
@@ -162,7 +165,7 @@ for i in range(len(df)):
 
   # Download this product's image and save it to the Colab filesystem.
   # In a production system this binary data would be stored in Google Cloud Storage
-  img_data = requests.get(image).content
+  img_data = requests.get(image, timeout=30).content
   with open(f'{name}.png', 'wb') as handler:
     handler.write(img_data)
 
@@ -303,7 +306,10 @@ from langchain.schema.messages import HumanMessage
 from vertexai.preview.vision_models import MultiModalEmbeddingModel, Image
 from astrapy.db import AstraDB
 
-source_img_data = requests.get('https://drive.google.com/uc?export=view&id=15ddcn-AIxpvRdWcFGvIr77XLWdo4Maof').content
+source_img_data = requests.get(
+    'https://drive.google.com/uc?export=view&id=15ddcn-AIxpvRdWcFGvIr77XLWdo4Maof',
+    timeout=30,
+).content
 with open('coffee_maker_part.png', 'wb') as handler:
     handler.write(source_img_data)
 
@@ -343,7 +349,7 @@ for i in range(len(df)):
 
     # Download this product's image and save it to your local filesystem.
     # In a production system this binary data would be stored in Google Cloud Storage
-    img_data = requests.get(image).content
+    img_data = requests.get(image, timeout=30).content
     with open(f'{name}.png', 'wb') as handler:
         handler.write(img_data)
 

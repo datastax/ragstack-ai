@@ -102,8 +102,10 @@ class AstraDBTestStore(TestStore):
             )
         session = cassio.config.check_resolve_session()
         tables = session.execute(
-            f"select table_name FROM system_schema.tables "
-            f"where keyspace_name ='{KEYSPACE}'"
+            f"""
+            select table_name FROM system_schema.tables
+            where keyspace_name ='{KEYSPACE}'
+            """  # noqa: S608
         ).all()
         logging.info("dropping %s tables in keyspace %s", len(tables), KEYSPACE)
         for table in tables:

@@ -1,4 +1,5 @@
 import json
+import re
 from itertools import repeat
 from typing import Any, Dict, Iterable, Optional, Sequence, Tuple, Union, cast
 
@@ -29,6 +30,9 @@ def _parse_node(row: Any) -> Node:
     )
 
 
+_CQL_IDENTIFIER_PATTERN = re.compile(r"[a-zA-Z][a-zA-Z0-9_]*")
+
+
 class CassandraKnowledgeGraph:
     """Cassandra Knowledge Graph.
 
@@ -56,6 +60,15 @@ class CassandraKnowledgeGraph:
         session = check_resolve_session(session)
         keyspace = check_resolve_keyspace(keyspace)
 
+        if not _CQL_IDENTIFIER_PATTERN.fullmatch(keyspace):
+            raise ValueError(f"Invalid keyspace: {keyspace}")
+
+        if not _CQL_IDENTIFIER_PATTERN.fullmatch(node_table):
+            raise ValueError(f"Invalid node table name: {node_table}")
+
+        if not _CQL_IDENTIFIER_PATTERN.fullmatch(edge_table):
+            raise ValueError(f"Invalid edge table name: {edge_table}")
+
         self._text_embeddings = text_embeddings
         self._text_embeddings_dim = (
             # Embedding vectors must have dimension:
@@ -78,7 +91,7 @@ class CassandraKnowledgeGraph:
             f"""INSERT INTO {keyspace}.{node_table} (
                     name, type, text_embedding, properties_json
                 ) VALUES (?, ?, ?, ?)
-            """
+            """  # noqa: S608
         )
 
         self._insert_relationship = self._session.prepare(
@@ -86,7 +99,7 @@ class CassandraKnowledgeGraph:
             INSERT INTO {keyspace}.{edge_table} (
                 source_name, source_type, target_name, target_type, edge_type
             ) VALUES (?, ?, ?, ?, ?)
-            """
+            """  # noqa: S608
         )
 
         self._query_relationship = self._session.prepare(
@@ -94,7 +107,7 @@ class CassandraKnowledgeGraph:
             SELECT name, type, properties_json
             FROM {keyspace}.{node_table}
             WHERE name = ? AND type = ?
-            """
+            """  # noqa: S608
         )
 
         self._query_nodes_by_embedding = self._session.prepare(
@@ -103,7 +116,7 @@ class CassandraKnowledgeGraph:
             FROM {keyspace}.{node_table}
             ORDER BY text_embedding ANN OF ?
             LIMIT ?
-            """
+            """  # noqa: S608
         )
 
     def _apply_schema(self) -> None:

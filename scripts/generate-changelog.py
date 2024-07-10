@@ -33,7 +33,7 @@ def main():
     root_package_name = sys.argv[2]
     url = f"https://pypi.org/pypi/{root_package_name}/{package_version}/json"
     deps_str = ""
-    json_response = requests.get(url).json()
+    json_response = requests.get(url, timeout=30).json()
     requires = json_response["info"]["requires_dist"]
     for require in requires:
         version_range = ""
