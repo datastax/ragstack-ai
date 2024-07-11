@@ -12,6 +12,7 @@ from typing import (
     Sequence,
     Set,
     Tuple,
+    Union,
     cast,
 )
 
@@ -23,6 +24,7 @@ from .concurrency import ConcurrentQueries
 from .content import Kind
 from .embedding_model import EmbeddingModel
 from .links import Link
+from .metadata import _normalize_metadata_indexing_policy
 
 CONTENT_ID = "content_id"
 
@@ -131,6 +133,7 @@ class GraphStore:
         session: Optional[Session] = None,
         keyspace: Optional[str] = None,
         setup_mode: SetupMode = SetupMode.SYNC,
+        metadata_indexing: Union[Tuple[str, Iterable[str]], str] = "all",
     ):
         session = check_resolve_session(session)
         keyspace = check_resolve_keyspace(keyspace)
@@ -149,6 +152,9 @@ class GraphStore:
         self._targets_table = targets_table
         self._session = session
         self._keyspace = keyspace
+        self._metadata_indexing_policy = _normalize_metadata_indexing_policy(
+            metadata_indexing
+        )
 
         if setup_mode == SetupMode.SYNC:
             self._apply_schema()
@@ -163,15 +169,16 @@ class GraphStore:
             f"""
             INSERT INTO {keyspace}.{node_table} (
                 content_id, kind, text_content, text_embedding, link_to_tags,
-                metadata_blob, links_blob
-            ) VALUES (?, '{Kind.passage}', ?, ?, ?, ?, ?)
+                metadata_blob, links_blob, metadata_s
+            ) VALUES (?, '{Kind.passage}', ?, ?, ?, ?, ?, ?)
             """  # noqa: S608
         )
 
         self._insert_tag = session.prepare(
             f"""
             INSERT INTO {keyspace}.{targets_table} (
-                target_content_id, kind, tag, target_text_embedding, target_link_to_tags
+                target_content_id, kind, tag, target_text_embedding,
+                target_link_to_tags, target_metadata_s
             ) VALUES (?, ?, ?, ?, ?)
             """  # noqa: S608
         )
@@ -265,6 +272,7 @@ class GraphStore:
                 link_to_tags SET<TUPLE<TEXT, TEXT>>,
                 metadata_blob TEXT,
                 links_blob TEXT,
+                metadata_s MAP<TEXT,TEXT>,
 
                 PRIMARY KEY (content_id)
             )
@@ -281,6 +289,10 @@ class GraphStore:
                 -- fetching nodes.
                 target_text_embedding VECTOR<FLOAT, {embedding_dim}>,
                 target_link_to_tags SET<TUPLE<TEXT, TEXT>>,
+
+                -- metadata_s of target node. allows hybrid search without
+                -- fetching nodes.
+                target_metadata_s MAP<TEXT,TEXT>,
 
                 PRIMARY KEY ((kind, tag), target_content_id)
             )
@@ -299,6 +311,20 @@ class GraphStore:
             CREATE CUSTOM INDEX IF NOT EXISTS {self._targets_table}_target_text_embedding_index
             ON {self._keyspace}.{self._targets_table}(target_text_embedding)
             USING 'StorageAttachedIndex';
+        """)  # noqa: E501
+
+        # Index on metadata_s (for hybrid search)
+        self._session.execute(f"""
+            CREATE CUSTOM INDEX IF NOT EXISTS {self._node_table}_metadata_s_index
+            ON {self._keyspace}.{self._node_table}(ENTRIES(metadata_s))
+            "USING 'StorageAttachedIndex';"
+        """)  # noqa: E501
+
+        # Index on target_metadata_s (for hybrid search)
+        self._session.execute(f"""
+            CREATE CUSTOM INDEX IF NOT EXISTS {self._targets_table}_target_metadata_s_index
+            ON {self._keyspace}.{self._targets_table}(ENTRIES(target_metadata_s))
+            "USING 'StorageAttachedIndex';"
         """)  # noqa: E501
 
     def _concurrent_queries(self) -> ConcurrentQueries:
