@@ -107,7 +107,7 @@ _CQL_IDENTIFIER_PATTERN = re.compile(r"[a-zA-Z][a-zA-Z0-9_]*")
 class _Edge:
     target_content_id: str
     target_text_embedding: List[float]
-    target_link_to_tags: List[Tuple[str, str]]
+    target_link_to_tags: Set[Tuple[str, str]]
 
 
 class GraphStore:
@@ -440,7 +440,7 @@ class GraphStore:
 
         # Fetch the initial candidates and add them to the helper and
         # outgoing_tags.
-        def fetch_initial_candidates():
+        def fetch_initial_candidates() -> None:
             fetched = self._session.execute(
                 self._query_ids_and_embedding_by_embedding,
                 (query_embedding, fetch_k),
@@ -682,7 +682,7 @@ class GraphStore:
                     targets[row.target_content_id] = _Edge(
                         target_content_id=row.target_content_id,
                         target_text_embedding=row.target_text_embedding,
-                        target_link_to_tags=row.target_link_to_tags,
+                        target_link_to_tags=set(row.target_link_to_tags),
                     )
 
         with self._concurrent_queries() as cq:
