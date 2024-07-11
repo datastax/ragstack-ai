@@ -448,7 +448,7 @@ class GraphStore:
             candidates = {}
             for row in fetched:
                 candidates[row.content_id] = row.text_embedding
-                outgoing_tags[row.content_id] = set(row.link_to_tags)
+                outgoing_tags[row.content_id] = set(row.link_to_tags or [])
             helper.add_candidates(candidates)
 
         fetch_initial_candidates()
@@ -682,7 +682,7 @@ class GraphStore:
                     targets[row.target_content_id] = _Edge(
                         target_content_id=row.target_content_id,
                         target_text_embedding=row.target_text_embedding,
-                        target_link_to_tags=set(row.target_link_to_tags),
+                        target_link_to_tags=set(row.target_link_to_tags or []),
                     )
 
         with self._concurrent_queries() as cq:
