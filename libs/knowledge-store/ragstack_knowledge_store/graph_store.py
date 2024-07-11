@@ -441,16 +441,16 @@ class GraphStore:
         # Fetch the initial candidates and add them to the helper and
         # outgoing_tags.
         def fetch_initial_candidates():
-
             fetched = self._session.execute(
                 self._query_ids_and_embedding_by_embedding,
                 (query_embedding, fetch_k),
             )
-            candidates = dict()
+            candidates = {}
             for row in fetched:
                 candidates[row.content_id] = row.text_embedding
                 outgoing_tags[row.content_id] = set(row.link_to_tags)
             helper.add_candidates(candidates)
+
         fetch_initial_candidates()
 
         # Select the best item, K times.
@@ -491,11 +491,15 @@ class GraphStore:
                 new_candidates = {}
                 for adjacent in adjacents:
                     if adjacent.target_content_id not in outgoing_tags:
-                        outgoing_tags[adjacent.target_content_id] = adjacent.target_link_to_tags
+                        outgoing_tags[adjacent.target_content_id] = (
+                            adjacent.target_link_to_tags
+                        )
                         new_candidates[adjacent.target_content_id] = (
                             adjacent.target_text_embedding
                         )
-                        if next_depth < depths.get(adjacent.target_content_id, depth + 1):
+                        if next_depth < depths.get(
+                            adjacent.target_content_id, depth + 1
+                        ):
                             # If this is a new shortest depth, or there was no
                             # previous depth, update the depths. This ensures that
                             # when we discover a node we will have the shortest
@@ -628,8 +632,8 @@ class GraphStore:
             yield _row_to_node(row)
 
     def _get_outgoing_tags(
-            self,
-            source_ids: Iterable[str],
+        self,
+        source_ids: Iterable[str],
     ) -> Set[Tuple[str, str]]:
         """Return the set of outgoing tags for the given source ID(s).
 
@@ -656,9 +660,10 @@ class GraphStore:
         query_embedding: List[float],
         k_per_tag: Optional[int] = None,
     ) -> Iterable[_Edge]:
-        """Return the target nodes with incoming links from any of the given tags..
+        """Return the target nodes with incoming links from any of the given tags.
 
         Args:
+            tags: The tags to look for links *from*.
             query_embedding: The query embedding. Used to rank target nodes.
             k_per_tag: The number of target nodes to fetch for each outgoing tag.
 
@@ -675,23 +680,23 @@ class GraphStore:
             for row in rows:
                 if row.target_content_id not in targets:
                     targets[row.target_content_id] = _Edge(
-                        target_content_id = row.target_content_id,
-                        target_text_embedding = row.target_text_embedding,
-                        target_link_to_tags = row.target_link_to_tags,
+                        target_content_id=row.target_content_id,
+                        target_text_embedding=row.target_text_embedding,
+                        target_link_to_tags=row.target_link_to_tags,
                     )
 
         with self._concurrent_queries() as cq:
-            for (kind, value) in tags:
+            for kind, value in tags:
                 cq.execute(
                     self._query_targets_embeddings_by_kind_and_tag_and_embedding,
-                        parameters=(
-                            kind,
-                            value,
-                            query_embedding,
-                            k_per_tag or 10,
-                        ),
-                        callback=add_targets,
-                    )
+                    parameters=(
+                        kind,
+                        value,
+                        query_embedding,
+                        k_per_tag or 10,
+                    ),
+                    callback=add_targets,
+                )
 
         # TODO: Consider a combined limit based on the similarity and/or
         # predicated MMR score?
