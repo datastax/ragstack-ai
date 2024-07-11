@@ -2,6 +2,8 @@ from typing import List, Optional
 
 from ragstack_ragulate.analysis import Analysis
 
+from .utils import remove_sqlite_extension
+
 
 def setup_compare(subparsers):
     """Setup the compare command."""
@@ -24,13 +26,6 @@ def setup_compare(subparsers):
         default="box-plots",
     )
     compare_parser.set_defaults(func=lambda args: call_compare(**vars(args)))
-
-
-def remove_sqlite_extension(s):
-    """Remove the .sqlite extension from a string."""
-    if s.endswith(".sqlite"):
-        return s[:-7]
-    return s
 
 
 def call_compare(
