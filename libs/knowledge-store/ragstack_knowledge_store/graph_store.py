@@ -107,6 +107,7 @@ _CQL_IDENTIFIER_PATTERN = re.compile(r"[a-zA-Z][a-zA-Z0-9_]*")
 class _Edge:
     target_content_id: str
     target_text_embedding: List[float]
+    target_link_to_tags: List[Tuple[str, str]]
 
 
 class GraphStore:
@@ -170,8 +171,8 @@ class GraphStore:
         self._insert_tag = session.prepare(
             f"""
             INSERT INTO {keyspace}.{targets_table} (
-                target_content_id, kind, tag, target_text_embedding
-            ) VALUES (?, ?, ?, ?)
+                target_content_id, kind, tag, target_text_embedding, target_link_to_tags
+            ) VALUES (?, ?, ?, ?, ?)
             """  # noqa: S608
         )
 
@@ -215,7 +216,7 @@ class GraphStore:
 
         self._query_ids_and_embedding_by_embedding = session.prepare(
             f"""
-            SELECT content_id, text_embedding
+            SELECT content_id, text_embedding, link_to_tags
             FROM {keyspace}.{node_table}
             ORDER BY text_embedding ANN OF ?
             LIMIT ?
@@ -235,7 +236,7 @@ class GraphStore:
 
         self._query_targets_embeddings_by_kind_and_tag_and_embedding = session.prepare(
             f"""
-            SELECT target_content_id, target_text_embedding, tag
+            SELECT target_content_id, target_text_embedding, tag, target_link_to_tags
             FROM {keyspace}.{targets_table}
             WHERE kind = ? AND tag = ?
             ORDER BY target_text_embedding ANN of ?
@@ -279,6 +280,7 @@ class GraphStore:
                 -- text_embedding of target node. allows MMR to be applied without
                 -- fetching nodes.
                 target_text_embedding VECTOR<FLOAT, {embedding_dim}>,
+                target_link_to_tags SET<TUPLE<TEXT, TEXT>>,
 
                 PRIMARY KEY ((kind, tag), target_content_id)
             )
@@ -354,7 +356,7 @@ class GraphStore:
                 for kind, value in link_from_tags:
                     cq.execute(
                         self._insert_tag,
-                        parameters=(node_id, kind, value, text_embedding),
+                        parameters=(node_id, kind, value, text_embedding, link_to_tags),
                     )
 
         return node_ids
@@ -433,16 +435,28 @@ class GraphStore:
             score_threshold=score_threshold,
         )
 
-        # Fetch the initial candidates and add them to the helper.
-        fetched = self._session.execute(
-            self._query_ids_and_embedding_by_embedding,
-            (query_embedding, fetch_k),
-        )
-        helper.add_candidates({row.content_id: row.text_embedding for row in fetched})
+        # For each unvisited node, stores the outgoing tags.
+        outgoing_tags: Dict[str, Set[Tuple[str, str]]] = {}
+
+        # Fetch the initial candidates and add them to the helper and
+        # outgoing_tags.
+        def fetch_initial_candidates():
+
+            fetched = self._session.execute(
+                self._query_ids_and_embedding_by_embedding,
+                (query_embedding, fetch_k),
+            )
+            candidates = dict()
+            for row in fetched:
+                candidates[row.content_id] = row.text_embedding
+                outgoing_tags[row.content_id] = set(row.link_to_tags)
+            helper.add_candidates(candidates)
+        fetch_initial_candidates()
 
         # Select the best item, K times.
         depths = {candidate_id: 0 for candidate_id in helper.candidate_ids()}
         visited_tags: Set[Tuple[str, str]] = set()
+
         for _ in range(k):
             selected_id = helper.pop_best()
 
@@ -457,30 +471,42 @@ class GraphStore:
                 # TODO: For a big performance win, we should track which tags we've
                 # already incorporated. We don't need to issue adjacent queries for
                 # those.
+
+                # Find the tags linked to from the selected ID.
+                link_to_tags = outgoing_tags.pop(selected_id)
+
+                # Don't re-visit already visited tags.
+                link_to_tags.difference_update(visited_tags)
+
+                # Find the nodes with incoming links from those tags.
                 adjacents = self._get_adjacent(
-                    [selected_id],
-                    visited_tags=visited_tags,
+                    link_to_tags,
                     query_embedding=query_embedding,
                     k_per_tag=adjacent_k,
                 )
 
+                # Record the link_to_tags as visited.
+                visited_tags.update(link_to_tags)
+
                 new_candidates = {}
                 for adjacent in adjacents:
-                    new_candidates[adjacent.target_content_id] = (
-                        adjacent.target_text_embedding
-                    )
-                    if next_depth < depths.get(adjacent.target_content_id, depth + 1):
-                        # If this is a new shortest depth, or there was no
-                        # previous depth, update the depths. This ensures that
-                        # when we discover a node we will have the shortest
-                        # depth available.
-                        #
-                        # NOTE: No effort is made to traverse from nodes that
-                        # were previously selected if they become reachable via
-                        # a shorter path via nodes selected later. This is
-                        # currently "intended", but may be worth experimenting
-                        # with.
-                        depths[adjacent.target_content_id] = next_depth
+                    if adjacent.target_content_id not in outgoing_tags:
+                        outgoing_tags[adjacent.target_content_id] = adjacent.target_link_to_tags
+                        new_candidates[adjacent.target_content_id] = (
+                            adjacent.target_text_embedding
+                        )
+                        if next_depth < depths.get(adjacent.target_content_id, depth + 1):
+                            # If this is a new shortest depth, or there was no
+                            # previous depth, update the depths. This ensures that
+                            # when we discover a node we will have the shortest
+                            # depth available.
+                            #
+                            # NOTE: No effort is made to traverse from nodes that
+                            # were previously selected if they become reachable via
+                            # a shorter path via nodes selected later. This is
+                            # currently "intended", but may be worth experimenting
+                            # with.
+                            depths[adjacent.target_content_id] = next_depth
                 helper.add_candidates(new_candidates)
 
         return self._nodes_with_ids(helper.selected_ids)
@@ -601,42 +627,45 @@ class GraphStore:
         for row in self._session.execute(self._query_by_embedding, (embedding, k)):
             yield _row_to_node(row)
 
+    def _get_outgoing_tags(
+            self,
+            source_ids: Iterable[str],
+    ) -> Set[Tuple[str, str]]:
+        """Return the set of outgoing tags for the given source ID(s).
+
+        Args:
+            source_ids: The IDs of the source nodes to retrieve outgoing tags for.
+        """
+        tags = set()
+
+        def add_sources(rows: Iterable[Any]) -> None:
+            for row in rows:
+                tags.update(row.link_to_tags)
+
+        with self._concurrent_queries() as cq:
+            for source_id in source_ids:
+                cq.execute(
+                    self._query_source_tags_by_id, (source_id,), callback=add_sources
+                )
+
+        return tags
+
     def _get_adjacent(
         self,
-        source_ids: Iterable[str],
-        visited_tags: Set[Tuple[str, str]],
+        tags: Set[Tuple[str, str]],
         query_embedding: List[float],
         k_per_tag: Optional[int] = None,
     ) -> Iterable[_Edge]:
-        """Return the target nodes adjacent to any of the source nodes.
+        """Return the target nodes with incoming links from any of the given tags..
 
         Args:
-            source_ids: The source IDs to start from when retrieving adjacent nodes.
-            visited_tags: Tags we've already visited.
             query_embedding: The query embedding. Used to rank target nodes.
             k_per_tag: The number of target nodes to fetch for each outgoing tag.
 
         Returns:
             List of adjacent edges.
         """
-        targets: Dict[str, List[float]] = {}
-
-        def add_sources(rows: Iterable[Any]) -> None:
-            for row in rows:
-                for new_tag in row.link_to_tags or []:
-                    if new_tag not in visited_tags:
-                        visited_tags.add(new_tag)
-
-                        cq.execute(
-                            self._query_targets_embeddings_by_kind_and_tag_and_embedding,
-                            parameters=(
-                                new_tag[0],
-                                new_tag[1],
-                                query_embedding,
-                                k_per_tag or 10,
-                            ),
-                            callback=add_targets,
-                        )
+        targets: Dict[str, _Edge] = {}
 
         def add_targets(rows: Iterable[Any]) -> None:
             # TODO: Figure out how to use the "kind" on the edge.
@@ -644,18 +673,26 @@ class GraphStore:
             # adjacent via any kind, and we don't have enough information to
             # determine which kind(s) a given target was reached from.
             for row in rows:
-                targets.setdefault(row.target_content_id, row.target_text_embedding)
+                if row.target_content_id not in targets:
+                    targets[row.target_content_id] = _Edge(
+                        target_content_id = row.target_content_id,
+                        target_text_embedding = row.target_text_embedding,
+                        target_link_to_tags = row.target_link_to_tags,
+                    )
 
         with self._concurrent_queries() as cq:
-            # TODO: We could eliminate this query by storing the source tags of the
-            # target node in the targets table.
-            for source_id in source_ids:
+            for (kind, value) in tags:
                 cq.execute(
-                    self._query_source_tags_by_id, (source_id,), callback=add_sources
-                )
+                    self._query_targets_embeddings_by_kind_and_tag_and_embedding,
+                        parameters=(
+                            kind,
+                            value,
+                            query_embedding,
+                            k_per_tag or 10,
+                        ),
+                        callback=add_targets,
+                    )
 
-        # TODO: Consider a combined limit based on the similarity and/or predicated MMR score?  # noqa: E501
-        return [
-            _Edge(target_content_id=content_id, target_text_embedding=embedding)
-            for (content_id, embedding) in targets.items()
-        ]
+        # TODO: Consider a combined limit based on the similarity and/or
+        # predicated MMR score?
+        return targets.values()
