@@ -1,6 +1,6 @@
 from bs4 import BeautifulSoup
+from langchain_core.graph_vectorstores import Link
 from ragstack_langchain.graph_store.extractors import HtmlInput, HtmlLinkExtractor
-from ragstack_langchain.graph_store.links import Link
 
 PAGE_1 = """
 <html>

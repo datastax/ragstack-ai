@@ -1,5 +1,5 @@
+from langchain_core.graph_vectorstores import Link
 from ragstack_langchain.graph_store.extractors import HierarchyLinkExtractor
-from ragstack_langchain.graph_store.links import Link
 
 PATH_1 = ["Root", "H1", "h2"]
 
