@@ -246,8 +246,8 @@ class GraphStore:
     def _apply_schema(self) -> None:
         """Apply the schema to the database."""
         embedding_dim = len(self._embedding.embed_query("Test Query"))
-        self._session.execute(
-            f"""CREATE TABLE IF NOT EXISTS {self._keyspace}.{self._node_table} (
+        self._session.execute(f"""
+            CREATE TABLE IF NOT EXISTS {self._keyspace}.{self._node_table} (
                 content_id TEXT,
                 kind TEXT,
                 text_content TEXT,
@@ -260,8 +260,7 @@ class GraphStore:
 
                 PRIMARY KEY (content_id)
             )
-            """
-        )
+        """)
 
 
         # Index on text_embedding (for similarity search)
