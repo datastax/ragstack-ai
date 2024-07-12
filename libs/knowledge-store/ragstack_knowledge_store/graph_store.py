@@ -127,10 +127,10 @@ class GraphStore:
         embedding: EmbeddingModel,
         *,
         node_table: str = "graph_nodes",
-        targets_table: str = "graph_targets",
         session: Optional[Session] = None,
         keyspace: Optional[str] = None,
         setup_mode: SetupMode = SetupMode.SYNC,
+        **kwargs: Any,
     ):
         session = check_resolve_session(session)
         keyspace = check_resolve_keyspace(keyspace)
@@ -141,12 +141,8 @@ class GraphStore:
         if not _CQL_IDENTIFIER_PATTERN.fullmatch(node_table):
             raise ValueError(f"Invalid node table name: {node_table}")
 
-        if not _CQL_IDENTIFIER_PATTERN.fullmatch(targets_table):
-            raise ValueError(f"Invalid node table name: {targets_table}")
-
         self._embedding = embedding
         self._node_table = node_table
-        self._targets_table = targets_table
         self._session = session
         self._keyspace = keyspace
 
@@ -162,17 +158,9 @@ class GraphStore:
         self._insert_passage = session.prepare(
             f"""
             INSERT INTO {keyspace}.{node_table} (
-                content_id, kind, text_content, text_embedding, link_to_tags,
+                content_id, kind, text_content, text_embedding, link_to_tags, link_from_tags,
                 metadata_blob, links_blob
-            ) VALUES (?, '{Kind.passage}', ?, ?, ?, ?, ?)
-            """  # noqa: S608
-        )
-
-        self._insert_tag = session.prepare(
-            f"""
-            INSERT INTO {keyspace}.{targets_table} (
-                target_content_id, kind, tag, target_text_embedding, target_link_to_tags
-            ) VALUES (?, ?, ?, ?, ?)
+            ) VALUES (?, '{Kind.passage}', ?, ?, ?, ?, ?, ?)
             """  # noqa: S608
         )
 
@@ -236,19 +224,22 @@ class GraphStore:
 
         self._query_targets_embeddings_by_kind_and_tag_and_embedding = session.prepare(
             f"""
-            SELECT target_content_id, target_text_embedding, tag, target_link_to_tags
-            FROM {keyspace}.{targets_table}
-            WHERE kind = ? AND tag = ?
-            ORDER BY target_text_embedding ANN of ?
+            SELECT
+                content_id AS target_content_id,
+                text_embedding AS target_text_embedding,
+                link_to_tags AS target_link_to_tags
+            FROM {keyspace}.{node_table}
+            WHERE link_from_tags CONTAINS (?, ?)
+            ORDER BY text_embedding ANN of ?
             LIMIT ?
             """  # noqa: S608
         )
 
-        self._query_targets_by_kind_and_value = session.prepare(
-            f"""
-            SELECT target_content_id, kind, tag
-            FROM {keyspace}.{targets_table}
-            WHERE kind = ? AND tag = ?
+        self._query_targets_by_kind_and_value = session.prepare(f"""
+            SELECT
+                content_id AS target_content_id
+            FROM {keyspace}.{node_table}
+            WHERE link_from_tags CONTAINS (?, ?)
             """  # noqa: S608
         )
 
@@ -263,6 +254,7 @@ class GraphStore:
                 text_embedding VECTOR<FLOAT, {embedding_dim}>,
 
                 link_to_tags SET<TUPLE<TEXT, TEXT>>,
+                link_from_tags SET<TUPLE<TEXT, TEXT>>,
                 metadata_blob TEXT,
                 links_blob TEXT,
 
@@ -271,21 +263,6 @@ class GraphStore:
             """
         )
 
-        self._session.execute(
-            f"""CREATE TABLE IF NOT EXISTS {self._keyspace}.{self._targets_table} (
-                target_content_id TEXT,
-                kind TEXT,
-                tag TEXT,
-
-                -- text_embedding of target node. allows MMR to be applied without
-                -- fetching nodes.
-                target_text_embedding VECTOR<FLOAT, {embedding_dim}>,
-                target_link_to_tags SET<TUPLE<TEXT, TEXT>>,
-
-                PRIMARY KEY ((kind, tag), target_content_id)
-            )
-            """
-        )
 
         # Index on text_embedding (for similarity search)
         self._session.execute(f"""
@@ -294,12 +271,11 @@ class GraphStore:
             USING 'StorageAttachedIndex';
         """)
 
-        # Index on target_text_embedding (for similarity search)
         self._session.execute(f"""
-            CREATE CUSTOM INDEX IF NOT EXISTS {self._targets_table}_target_text_embedding_index
-            ON {self._keyspace}.{self._targets_table}(target_text_embedding)
+            CREATE CUSTOM INDEX IF NOT EXISTS {self._node_table}_link_from_tags
+            ON {self._keyspace}.{self._node_table}(link_from_tags)
             USING 'StorageAttachedIndex';
-        """)  # noqa: E501
+        """)
 
     def _concurrent_queries(self) -> ConcurrentQueries:
         return ConcurrentQueries(self._session)
@@ -348,16 +324,11 @@ class GraphStore:
                         text,
                         text_embedding,
                         link_to_tags,
+                        link_from_tags,
                         metadata_blob,
                         links_blob,
                     ),
                 )
-
-                for kind, value in link_from_tags:
-                    cq.execute(
-                        self._insert_tag,
-                        parameters=(node_id, kind, value, text_embedding, link_to_tags),
-                    )
 
         return node_ids
 

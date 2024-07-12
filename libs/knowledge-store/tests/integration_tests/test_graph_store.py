@@ -51,13 +51,11 @@ def graph_store_factory(
         name = secrets.token_hex(8)
 
         node_table = f"nodes_{name}"
-        targets_table = f"targets_{name}"
         return GraphStore(
             embedding,
             session=session,
             keyspace=KEYSPACE,
             node_table=node_table,
-            targets_table=targets_table,
         )
 
     yield _make_graph_store
