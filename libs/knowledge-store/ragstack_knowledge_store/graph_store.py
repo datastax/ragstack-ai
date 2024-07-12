@@ -235,7 +235,8 @@ class GraphStore:
             """  # noqa: S608
         )
 
-        self._query_targets_by_kind_and_value = session.prepare(f"""
+        self._query_targets_by_kind_and_value = session.prepare(
+            f"""
             SELECT
                 content_id AS target_content_id
             FROM {keyspace}.{node_table}
@@ -261,7 +262,6 @@ class GraphStore:
                 PRIMARY KEY (content_id)
             )
         """)
-
 
         # Index on text_embedding (for similarity search)
         self._session.execute(f"""
