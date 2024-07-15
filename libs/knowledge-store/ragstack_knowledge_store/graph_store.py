@@ -130,7 +130,7 @@ class GraphStore:
         session: Optional[Session] = None,
         keyspace: Optional[str] = None,
         setup_mode: SetupMode = SetupMode.SYNC,
-        **kwargs: Any,
+        **kwargs: Any, #noqa: ARG002
     ):
         session = check_resolve_session(session)
         keyspace = check_resolve_keyspace(keyspace)
@@ -158,8 +158,8 @@ class GraphStore:
         self._insert_passage = session.prepare(
             f"""
             INSERT INTO {keyspace}.{node_table} (
-                content_id, kind, text_content, text_embedding, link_to_tags, link_from_tags,
-                metadata_blob, links_blob
+                content_id, kind, text_content, text_embedding, link_to_tags,
+                link_from_tags, metadata_blob, links_blob
             ) VALUES (?, '{Kind.passage}', ?, ?, ?, ?, ?, ?)
             """  # noqa: S608
         )
@@ -232,7 +232,7 @@ class GraphStore:
             WHERE link_from_tags CONTAINS (?, ?)
             ORDER BY text_embedding ANN of ?
             LIMIT ?
-            """  # noqa: S608
+            """
         )
 
         self._query_targets_by_kind_and_value = session.prepare(
@@ -241,7 +241,7 @@ class GraphStore:
                 content_id AS target_content_id
             FROM {keyspace}.{node_table}
             WHERE link_from_tags CONTAINS (?, ?)
-            """  # noqa: S608
+            """
         )
 
     def _apply_schema(self) -> None:
