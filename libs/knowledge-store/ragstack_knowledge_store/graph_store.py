@@ -130,7 +130,6 @@ class GraphStore:
         session: Optional[Session] = None,
         keyspace: Optional[str] = None,
         setup_mode: SetupMode = SetupMode.SYNC,
-        **kwargs: Any, #noqa: ARG002
     ):
         session = check_resolve_session(session)
         keyspace = check_resolve_keyspace(keyspace)
