@@ -39,7 +39,6 @@ class CassandraGraphStore(GraphStore):
         embedding: Embeddings,
         *,
         node_table: str = "graph_nodes",
-        targets_table: str = "graph_targets",
         session: Optional[Session] = None,
         keyspace: Optional[str] = None,
         setup_mode: SetupMode = SetupMode.SYNC,
@@ -63,7 +62,6 @@ class CassandraGraphStore(GraphStore):
         self.store = graph_store.GraphStore(
             embedding=_EmbeddingModelAdapter(embedding),
             node_table=node_table,
-            targets_table=targets_table,
             session=session,
             keyspace=keyspace,
             setup_mode=_setup_mode,

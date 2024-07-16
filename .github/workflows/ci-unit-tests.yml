@@ -52,8 +52,8 @@ jobs:
           cd docker/examples/local-llm
           sudo docker build -t local-llm .
 
-  unit-tests:
-    name: Unit Tests (Python ${{ matrix.python-version }})
+  lint:
+    name: Lint (Python ${{ matrix.python-version }})
     needs: ["preconditions"]
     runs-on: ubuntu-latest
     strategy:
@@ -73,8 +73,47 @@ jobs:
           python-version: "${{ matrix.python-version }}"
 
       - name: Run lint
-        if: ${{ matrix.python-version != '3.12' }}
         uses: ./.github/actions/lint
+
+  type-check:
+    name: Type Check
+    needs: ["preconditions"]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: "Setup: Python 3.11"
+        uses: ./.github/actions/setup-python
+
+      - name: "Type check (knowledge-graph)"
+        run: tox -e type -c libs/knowledge-graph && rm -rf libs/knowledge-graph/.tox
+
+      - name: "Type check (knowledge-store)"
+        run: tox -e type -c libs/knowledge-store && rm -rf libs/knowledge-store/.tox
+
+      - name: "Type check (test-utils)"
+        run: tox -e type -c libs/tests-utils && rm -rf libs/tests-utils/.tox
+
+  unit-tests:
+    name: Unit Tests (Python ${{ matrix.python-version }})
+    needs: ["preconditions"]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version:
+          - "3.12"
+          - "3.11"
+          - "3.10"
+          - "3.9"
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: "Setup: Python ${{ matrix.python-version }}"
+        uses: ./.github/actions/setup-python
+        with:
+          python-version: "${{ matrix.python-version }}"
 
       - name: "Unit tests (root)"
         # yamllint disable-line rule:line-length

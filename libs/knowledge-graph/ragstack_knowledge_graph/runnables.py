@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 from langchain_core.language_models import BaseChatModel
 from langchain_core.output_parsers import JsonOutputParser
@@ -26,7 +26,7 @@ def extract_entities(
     llm: BaseChatModel,
     keyword_extraction_prompt: str = QUERY_ENTITY_EXTRACT_PROMPT,
     node_types: Optional[List[str]] = None,
-) -> Runnable:
+) -> Runnable[Dict[str, Any], List[Node]]:
     """Return a keyword-extraction runnable.
 
     This will expect a dictionary containing the `"question"` to extract keywords from.
@@ -39,8 +39,14 @@ def extract_entities(
             `{format_instructions}` which describe how to produce the output.
     """
     prompt = ChatPromptTemplate.from_messages([keyword_extraction_prompt])
-    assert "question" in prompt.input_variables
-    assert "format_instructions" in prompt.input_variables
+    if "question" not in prompt.input_variables:
+        raise ValueError(
+            "Missing 'question' placeholder in extraction prompt template."
+        )
+    if "format_instructions" not in prompt.input_variables:
+        raise ValueError(
+            "Missing 'format_instructions' placeholder in extraction prompt template."
+        )
 
     class SimpleNode(BaseModel):
         """Represents a node in a graph with associated properties."""

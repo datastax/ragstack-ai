@@ -1,8 +1,9 @@
-from typing import Dict, List, Sequence, Union, cast
+from typing import TYPE_CHECKING, Any, Dict, List, Sequence, Union, cast
 
 from langchain_community.graphs.graph_document import GraphDocument
 from langchain_core.documents import Document
 from langchain_core.language_models.chat_models import BaseChatModel
+from langchain_core.messages import SystemMessage
 from langchain_core.prompts import (
     ChatPromptTemplate,
     HumanMessagePromptTemplate,
@@ -22,6 +23,9 @@ from .knowledge_schema import (
     KnowledgeSchemaValidator,
 )
 from .templates import load_template
+
+if TYPE_CHECKING:
+    from langchain_core.prompts.chat import MessageLikeRepresentation
 
 
 def _format_example(idx: int, example: Example) -> str:
@@ -43,7 +47,7 @@ class KnowledgeSchemaExtractor:
         self._validator = KnowledgeSchemaValidator(schema)
         self.strict = strict
 
-        messages = [
+        messages: List[MessageLikeRepresentation] = [
             SystemMessagePromptTemplate(
                 prompt=load_template(
                     "extraction.md", knowledge_schema_yaml=schema.to_yaml_str()
@@ -52,22 +56,24 @@ class KnowledgeSchemaExtractor:
         ]
 
         if examples:
-            formatted = "\n\n".join(map(_format_example, examples))
-            messages.append(SystemMessagePromptTemplate(prompt=formatted))
+            formatted = "\n\n".join(
+                [_format_example(i, example) for i, example in enumerate(examples)]
+            )
+            messages.append(SystemMessage(content=formatted))
 
         messages.append(HumanMessagePromptTemplate.from_template("Input: {input}"))
 
         prompt = ChatPromptTemplate.from_messages(messages)
-        schema = create_simple_model(
+        model_schema = create_simple_model(
             node_labels=[node.type for node in schema.nodes],
             rel_types=list({r.edge_type for r in schema.relationships}),
         )
         # TODO: Use "full" output so we can detect parsing errors?
-        structured_llm = llm.with_structured_output(schema)
+        structured_llm = llm.with_structured_output(model_schema)
         self._chain = prompt | structured_llm
 
     def _process_response(
-        self, document: Document, response: Union[Dict, BaseModel]
+        self, document: Document, response: Union[Dict[str, Any], BaseModel]
     ) -> GraphDocument:
         raw_graph = cast(_Graph, response)
         nodes = (
@@ -81,14 +87,14 @@ class KnowledgeSchemaExtractor:
             else []
         )
 
-        document = GraphDocument(
+        graph_document = GraphDocument(
             nodes=nodes, relationships=relationships, source=document
         )
 
         if self.strict:
-            self._validator.validate_graph_document(document)
+            self._validator.validate_graph_document(graph_document)
 
-        return document
+        return graph_document
 
     def extract(self, documents: List[Document]) -> List[GraphDocument]:
         """Extract knowledge graphs from a list of documents."""

@@ -1,4 +1,5 @@
 import json
+import re
 from itertools import repeat
 from typing import Any, Dict, Iterable, Optional, Sequence, Tuple, Union, cast
 
@@ -19,7 +20,7 @@ def _deserialize_md_dict(md_string: str) -> Dict[str, Any]:
     return cast(Dict[str, Any], json.loads(md_string))
 
 
-def _parse_node(row) -> Node:
+def _parse_node(row: Any) -> Node:
     return Node(
         name=row.name,
         type=row.type,
@@ -27,6 +28,9 @@ def _parse_node(row) -> Node:
         if row.properties_json
         else {},
     )
+
+
+_CQL_IDENTIFIER_PATTERN = re.compile(r"[a-zA-Z][a-zA-Z0-9_]*")
 
 
 class CassandraKnowledgeGraph:
@@ -56,6 +60,15 @@ class CassandraKnowledgeGraph:
         session = check_resolve_session(session)
         keyspace = check_resolve_keyspace(keyspace)
 
+        if not _CQL_IDENTIFIER_PATTERN.fullmatch(keyspace):
+            raise ValueError(f"Invalid keyspace: {keyspace}")
+
+        if not _CQL_IDENTIFIER_PATTERN.fullmatch(node_table):
+            raise ValueError(f"Invalid node table name: {node_table}")
+
+        if not _CQL_IDENTIFIER_PATTERN.fullmatch(edge_table):
+            raise ValueError(f"Invalid edge table name: {edge_table}")
+
         self._text_embeddings = text_embeddings
         self._text_embeddings_dim = (
             # Embedding vectors must have dimension:
@@ -78,7 +91,7 @@ class CassandraKnowledgeGraph:
             f"""INSERT INTO {keyspace}.{node_table} (
                     name, type, text_embedding, properties_json
                 ) VALUES (?, ?, ?, ?)
-            """
+            """  # noqa: S608
         )
 
         self._insert_relationship = self._session.prepare(
@@ -86,7 +99,7 @@ class CassandraKnowledgeGraph:
             INSERT INTO {keyspace}.{edge_table} (
                 source_name, source_type, target_name, target_type, edge_type
             ) VALUES (?, ?, ?, ?, ?)
-            """
+            """  # noqa: S608
         )
 
         self._query_relationship = self._session.prepare(
@@ -94,7 +107,7 @@ class CassandraKnowledgeGraph:
             SELECT name, type, properties_json
             FROM {keyspace}.{node_table}
             WHERE name = ? AND type = ?
-            """
+            """  # noqa: S608
         )
 
         self._query_nodes_by_embedding = self._session.prepare(
@@ -103,10 +116,10 @@ class CassandraKnowledgeGraph:
             FROM {keyspace}.{node_table}
             ORDER BY text_embedding ANN OF ?
             LIMIT ?
-            """
+            """  # noqa: S608
         )
 
-    def _apply_schema(self):
+    def _apply_schema(self) -> None:
         # Partition by `name` and cluster by `type`.
         # Each `(name, type)` pair is a unique node.
         # We can enumerate all `type` values for a given `name` to identify ambiguous
@@ -152,11 +165,13 @@ class CassandraKnowledgeGraph:
             """
         )
 
-    def _send_query_nearest_node(self, node: str, k: int = 1) -> ResponseFuture:
+    def _send_query_nearest_node(
+        self, embeddings: Embeddings, node: str, k: int = 1
+    ) -> ResponseFuture:
         return self._session.execute_async(
             self._query_nodes_by_embedding,
             (
-                self._text_embeddings.embed_query(node),
+                embeddings.embed_query(node),
                 k,
             ),
         )
@@ -173,13 +188,11 @@ class CassandraKnowledgeGraph:
             raise ValueError("Unable to query for nearest nodes without embeddings")
 
         node_futures: Iterable[ResponseFuture] = [
-            self._send_query_nearest_node(n, k) for n in nodes
+            self._send_query_nearest_node(self._text_embeddings, n, k) for n in nodes
         ]
-
-        nodes = {
+        return {
             _parse_node(n) for node_future in node_futures for n in node_future.result()
         }
-        return list(nodes)
 
     # TODO: Introduce `ainsert` for async insertions.
     def insert(
@@ -253,9 +266,11 @@ class CassandraKnowledgeGraph:
             for n in nodes
         ]
 
-        nodes = [_parse_node(n) for future in node_futures for n in future.result()]
+        graph_nodes = [
+            _parse_node(n) for future in node_futures for n in future.result()
+        ]
 
-        return nodes, edges
+        return graph_nodes, edges
 
     def traverse(
         self,

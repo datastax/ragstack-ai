@@ -1,4 +1,4 @@
-from typing import Iterable, Union
+from typing import Dict, Iterable, Tuple, Union
 
 import graphviz
 from langchain_community.graphs.graph_document import GraphDocument, Node
@@ -12,7 +12,7 @@ def _node_label(node: Node) -> str:
 
 def print_graph_documents(
     graph_documents: Union[GraphDocument, Iterable[GraphDocument]],
-):
+) -> None:
     """Prints the relationships in the graph documents."""
     if isinstance(graph_documents, GraphDocument):
         graph_documents = [graph_documents]
@@ -29,13 +29,13 @@ def render_graph_documents(
 ) -> graphviz.Digraph:
     """Renders the relationships in the graph documents."""
     if isinstance(graph_documents, GraphDocument):
-        graph_documents = [GraphDocument]
+        graph_documents = [graph_documents]
 
     dot = graphviz.Digraph()
 
-    nodes = {}
+    nodes: Dict[Tuple[Union[str, int], str], str] = {}
 
-    def _node_id(node: Node) -> int:
+    def _node_id(node: Node) -> str:
         node_key = (node.id, node.type)
         if node_id := nodes.get(node_key):
             return node_id

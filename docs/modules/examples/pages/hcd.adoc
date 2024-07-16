@@ -1,0 +1,45 @@
+= RAGStack and Hyper-Converged Database (HCD) example
+:navtitle: RAGStack with Hyper-Converged Database
+
+. Clone the HCD example repository.
++
+[source,bash]
+----
+git clone git@github.com:datastax/astra-db-java.git
+cd astra-db-java
+----
++
+. Build the Docker image and confirm the containers are in a running state.
++
+[source,bash]
+----
+docker compose up -d
+docker compose ps
+----
++
+. Install dependencies.
++
+[source,bash]
+----
+pip install ragstack-ai-langchain python-dotenv langchainhub
+----
++
+. Create a `.env` file in the root directory of the project and add the following environment variables.
++
+[source,bash]
+----
+OPENAI_API_KEY="sk-..."
+----
++
+. Create a Python script to embed and generate the results.
++
+include::examples:partial$hcd-quickstart.adoc[]
++
+You should see output like this:
++
+[source,plain]
+----
+Task decomposition involves breaking down a complex task into smaller and simpler steps to make it more manageable. Techniques like Chain of Thought and Tree of Thoughts help models decompose hard tasks and enhance performance by thinking step by step. This process allows for a better interpretation of the model's thinking process and can involve various methods such as simple prompting, task-specific instructions, or human inputs.
+----
+
+

@@ -1,6 +1,7 @@
 import importlib.util
 import inspect
 import logging
+import sys
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List
 
@@ -35,7 +36,7 @@ def get_ingredients(
     """Return ingredients for the given method params."""
     ingredients = {}
     for method_param in method_params:
-        if method_param in reserved_params or method_param in ["kwargs"]:
+        if method_param in reserved_params or method_param in ["kwargs", "_"]:
             continue
         if method_param not in passed_ingredients:
             raise ValueError(
@@ -103,7 +104,7 @@ class BasePipeline(ABC):
                 self._passed_ingredients,
                 exc_info=True,
             )
-            exit(1)
+            sys.exit(1)
 
     def get_method(self):
         """Return the pipeline method."""

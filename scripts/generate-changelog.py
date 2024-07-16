@@ -1,10 +1,11 @@
 #!/usr/bin/env python
+import sys
 
 try:
     import requests
 except ImportError:
     print("Please install requests: pip install requests")
-    exit(1)
+    sys.exit(1)
 import sys
 
 IMPORTANT_DEPENDENCIES = [
@@ -24,21 +25,23 @@ IMPORTANT_DEPENDENCIES = [
     "pyarrow",
 ]
 
+_MIN_ARGV_LEN = 2
+
 
 def main():
-    if len(sys.argv) < 2:
+    if len(sys.argv) < _MIN_ARGV_LEN:
         print("Usage: generate-changelog.py {version} {package_name}")
         sys.exit(1)
     package_version = sys.argv[1]
     root_package_name = sys.argv[2]
     url = f"https://pypi.org/pypi/{root_package_name}/{package_version}/json"
     deps_str = ""
-    json_response = requests.get(url).json()
+    json_response = requests.get(url, timeout=30).json()
     requires = json_response["info"]["requires_dist"]
-    for require in requires:
+    for req in requires:
         version_range = ""
         extra = ""
-        require = require.replace(" ", "")
+        require = req.replace(" ", "")
         if ";extra" in require:
             extra = require[require.index(";extra") + 8 :]
             require = require[: require.index(";extra")]

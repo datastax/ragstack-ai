@@ -73,10 +73,11 @@ def test_embedding_cassandra_retriever(request, vector_store: str):
 
     retriever = store.as_retriever()
 
+    k = 5
     chunk_scores = retriever.text_search(
-        query_text="what kind fish lives shallow coral reefs", k=5
+        query_text="what kind fish lives shallow coral reefs", k=k
     )
-    assert len(chunk_scores) == 5
+    assert len(chunk_scores) == k
     for chunk, score in chunk_scores:
         logging.info("got chunk_id %s with score %s", chunk.chunk_id, score)
 

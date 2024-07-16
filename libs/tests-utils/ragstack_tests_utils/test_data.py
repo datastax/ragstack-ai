@@ -23,7 +23,7 @@ class TestData:
             return [[float(value) for value in row] for row in reader]
 
     @staticmethod
-    def save_csv_embedding(csv_file_name: str, embedding: Embedding):
+    def save_csv_embedding(csv_file_name: str, embedding: Embedding) -> None:
         with open(TestData._get_test_data_path(csv_file_name), "w", newline="") as f:
             writer = csv.writer(f)
             writer.writerows(embedding)
@@ -76,6 +76,7 @@ class TestData:
         """Returns: A short, highly-technical text on renewable energy"""
         return TestData._get_text_file("renewable_energy.txt")
 
+    @staticmethod
     def renewable_energy_embedding() -> Embedding:
         """Returns: An embedding for the `renewable_energy_text()` text"""
         return TestData._get_csv_embedding("renewable_energy.csv")

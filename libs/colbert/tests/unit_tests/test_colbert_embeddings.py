@@ -10,7 +10,7 @@ def test_colbert_token_embeddings():
 
     embeddings = colbert.embed_texts(texts=texts)
 
-    assert len(embeddings) == 2
+    assert len(embeddings) == 2  # noqa: PLR2004
     assert len(embeddings[0][0]) == DEFAULT_COLBERT_DIM
 
 
@@ -27,7 +27,7 @@ def test_colbert_token_embeddings_with_params():
 
     embeddings = colbert.embed_texts(texts=texts)
 
-    assert len(embeddings) == 3
+    assert len(embeddings) == 3  # noqa: PLR2004
 
     assert len(embeddings[0][0]) == DEFAULT_COLBERT_DIM
 
@@ -40,5 +40,6 @@ def test_colbert_query_embeddings():
     assert query_tensor.shape == (12, 128)
 
     # test query encoding
-    embedding = colbert.embed_query("test-query", query_maxlen=512)
-    assert len(embedding) == 512
+    query_maxlen = 512
+    embedding = colbert.embed_query("test-query", query_maxlen=query_maxlen)
+    assert len(embedding) == query_maxlen

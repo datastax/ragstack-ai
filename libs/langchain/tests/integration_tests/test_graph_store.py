@@ -20,7 +20,6 @@ class GraphStoreFactory:
         self.keyspace = keyspace
         self.uid = secrets.token_hex(8)
         self.node_table = f"nodes_{self.uid}"
-        self.targets_table = f"targets_{self.uid}"
         self.embedding = embedding
         self._store = None
 
@@ -39,7 +38,6 @@ class GraphStoreFactory:
                 session=self.session,
                 keyspace=self.keyspace,
                 node_table=self.node_table,
-                targets_table=self.targets_table,
                 ids=ids,
             )
 
@@ -47,9 +45,6 @@ class GraphStoreFactory:
 
     def drop(self):
         self.session.execute(f"DROP TABLE IF EXISTS {self.keyspace}.{self.node_table};")
-        self.session.execute(
-            f"DROP TABLE IF EXISTS {self.keyspace}.{self.targets_table};"
-        )
 
 
 @pytest.fixture(scope="session")

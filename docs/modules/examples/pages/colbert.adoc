@@ -15,21 +15,70 @@ Use ColBERT, Astra DB, and RAGStack to:
 
 For more information, see xref:colbert:index.adoc[].
 
-== Prerequisites
-
 [NOTE]
 ====
 To run ragstack-ai-colbert in a Windows environment, use https://learn.microsoft.com/en-us/windows/wsl/install[Windows Subsystem for Linux].
 ====
 
-Import the ragstack-ai-colbert package:
+== Prerequisites
+
+. Install dependencies:
++
 [source,python]
 ----
-pip install ragstack-ai-colbert
+pip install ragstack-ai-colbert python-dotenv
 ----
++
+. Create a `.env` file in your application directory with the following environment variables:
++
+[source,bash]
+----
+ASTRA_DB_APPLICATION_TOKEN=AstraCS: ...
+ASTRA_DB_ID=2eab82dc-9032-45ba-aeb0-a481b6f9458d
+----
++
+[NOTE]
+====
+In an Astra API endpoint like `https://2eab82dc-9032-45ba-aeb0-a481b6f9458d-us-east-1.apps.astra.datastax.com`, the `ASTRA_DB_ID` is `2eab82dc-9032-45ba-aeb0-a481b6f9458d`.
+====
 
 == Prepare data and create embeddings
 
+. Import dependencies and load environment variables.
++
+[source,python]
+----
+import os
+import logging
+import nest_asyncio
+from dotenv import load_dotenv
+from ragstack_colbert import CassandraDatabase, ColbertEmbeddingModel, ColbertVectorStore
+
+load_dotenv()
+----
++
+. Set up the ColBERT and Astra configurations.
++
+[source,python]
+----
+keyspace="default_keyspace"
+database_id=os.getenv("ASTRA_DB_ID")
+astra_token=os.getenv("ASTRA_DB_APPLICATION_TOKEN")
+
+database = CassandraDatabase.from_astra(
+    astra_token=astra_token,
+    database_id=database_id,
+    keyspace=keyspace
+)
+
+embedding_model = ColbertEmbeddingModel()
+
+vector_store = ColbertVectorStore(
+    database = database,
+    embedding_model = embedding_model,
+)
+----
++
 . Prepare documents for chunking.
 +
 [source,python]
@@ -44,32 +93,8 @@ arctic_botany_dict = {
     "Traditional Knowledge and Arctic Botany": "Indigenous peoples of the Arctic have a deep connection with the land and its plant life. Traditional knowledge, passed down through generations, includes the uses of plants for nutrition, healing, and materials. This body of knowledge is invaluable for both conservation and understanding the ecological relationships in Arctic ecosystems. Integrating traditional knowledge with scientific research enriches our comprehension of Arctic botany and enhances conservation strategies.",
     "Future Directions in Arctic Botanical Studies": "The future of Arctic botany lies in interdisciplinary research, combining traditional knowledge with modern scientific techniques. As the Arctic undergoes rapid changes, understanding the ecological, cultural, and climatic dimensions of Arctic flora becomes increasingly important. Future research will need to address the challenges of climate change, explore the potential for Arctic plants in biotechnology, and continue to conserve this unique biome. The resilience of Arctic flora offers lessons in adaptation and survival relevant to global challenges."
 }
+
 arctic_botany_texts = list(arctic_botany_dict.values())
-----
-+
-. Set up the ColBERT and Astra configurations.
-+
-[source,python]
-----
-from getpass import getpass
-from ragstack_colbert import CassandraDatabase, ColbertEmbeddingModel, ColbertVectorStore
-
-keyspace="default_keyspace"
-database_id=getpass("Enter your Astra Database Id:")
-astra_token=getpass("Enter your Astra Token:")
-
-database = CassandraDatabase.from_astra(
-    astra_token=astra_token,
-    database_id=database_id,
-    keyspace=keyspace
-)
-
-embedding_model = ColbertEmbeddingModel()
-
-vector_store = ColbertVectorStore(
-    database = database,
-    embedding_model = embedding_model,
-)
 ----
 +
 . Connect to Astra and ingest embeddings.
@@ -94,28 +119,28 @@ Python::
 +
 [source,python]
 ----
-import logging
-import nest_asyncio
 nest_asyncio.apply()
 
-logging.getLogger('cassandra').setLevel(logging.ERROR) # workaround to suppress logs
-from ragstack_colbert import ColbertRetriever
-retriever = ColbertRetriever(
-    vector_store=db, embedding_model=colbert
-)
+logging.getLogger("cassandra").setLevel(logging.ERROR)  # workaround to suppress logs
+retriever = vector_store.as_retriever()
 
-answers = retriever.retrieve("What's arctic botany", k=2)
-for answer in answers:
-  print(f"Rank: {answer.rank} Score: {answer.score} Text: {answer.data.text}\n")
+answers = retriever.text_search("What's arctic botany", k=2)
+for rank, (answer, score) in enumerate(answers):
+    print(f"Rank: {rank} Score: {score} Text: {answer.text}\n")
 ----
-
++
 Result::
 +
 [source,plain]
 ----
-Rank: 0 Score: 5.266005039215088 Text: Arctic botany is the study of plant life in the Arctic, a region characterized by extreme cold, permafrost, and minimal sunlight for much of the year. Despite these harsh conditions, a diverse range of flora thrives here, adapted to survive with minimal water, low temperatures, and high light levels during the summer. This introduction aims to shed light on the resilience and adaptation of Arctic plants, setting the stage for a deeper dive into the unique botanical ecosystem of the Arctic.
+#> QueryTokenizer.tensorize(batch_text[0], batch_background[0], bsize) ==
+#> Input: . What's arctic botany,                 True,           None
+#> Output IDs: torch.Size([9]), tensor([  101,     1,  2054,  1005,  1055,  2396,  2594, 17018,   102])
+#> Output Mask: torch.Size([9]), tensor([1, 1, 1, 1, 1, 1, 1, 1, 1])
 
-Rank: 1 Score: 3.9489646703004837 Text: Research in Arctic botany is crucial for understanding the intricate balance of this ecosystem and the impacts of climate change. Scientists conduct studies on plant physiology, genetics, and ecosystem dynamics. Conservation efforts are focused on protecting the Arctic's unique biodiversity through protected areas, sustainable management practices, and international cooperation. These efforts aim to preserve the Arctic flora for future generations and maintain its role in the global climate system.
+Rank: 0 Score: 5.266004428267479 Text: Arctic botany is the study of plant life in the Arctic, a region characterized by extreme cold, permafrost, and minimal sunlight for much of the year. Despite these harsh conditions, a diverse range of flora thrives here, adapted to survive with minimal water, low temperatures, and high light levels during the summer. This introduction aims to shed light on the resilience and adaptation of Arctic plants, setting the stage for a deeper dive into the unique botanical ecosystem of the Arctic.
+
+Rank: 1 Score: 5.266004309058189 Text: Arctic botany is the study of plant life in the Arctic, a region characterized by extreme cold, permafrost, and minimal sunlight for much of the year. Despite these harsh conditions, a diverse range of flora thrives here, adapted to survive with minimal water, low temperatures, and high light levels during the summer. This introduction aims to shed light on the resilience and adaptation of Arctic plants, setting the stage for a deeper dive into the unique botanical ecosystem of the Arctic.
 ----
 ======
 
@@ -123,11 +148,11 @@ Rank: 1 Score: 3.9489646703004837 Text: Research in Arctic botany is crucial for
 
 Alternatively, use the ColBERT extra with the `ragstack-ai-langchain` package to retrieve documents.
 
-. Install the RAGStack LangChain package with the ColBERT extra.
+. Install the RAGStack Langchain package with the ColBERT extra.
 +
 [source,python]
 ----
-pip install ragstack-ai-langchain[colbert]
+pip install "ragstack-ai-langchain[colbert]"
 ----
 +
 . Run the LangChain retriever against the indexed embeddings.
@@ -145,7 +170,10 @@ lc_vector_store = LangchainColbertVectorStore(
     embedding_model=embedding_model,
 )
 
-docs = lc_vector_store.similarity_search("what kind fish lives shallow coral reefs atlantic, india ocean, red sea, gulf of mexico, pacific, and arctic ocean")
+docs = lc_vector_store.similarity_search(
+    "what kind fish lives shallow coral reefs atlantic, india ocean, "
+    "red sea, gulf of mexico, pacific, and arctic ocean"
+)
 print(f"first answer: {docs[0].page_content}")
 ----
 

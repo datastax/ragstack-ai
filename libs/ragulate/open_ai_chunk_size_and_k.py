@@ -25,7 +25,7 @@ def get_vector_store(chunk_size: int):
 def ingest(file_path: str, chunk_size: int, **_):
     vector_store = get_vector_store(chunk_size=chunk_size)
 
-    chunk_overlap = min(chunk_size / 4, min(chunk_size / 2, 64))
+    chunk_overlap = min(chunk_size / 4, 64)
 
     text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
         model_name=EMBEDDING_MODEL,

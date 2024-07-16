@@ -162,8 +162,8 @@ def parse_snyk_report(input_file: str):
 
     all_links = []
 
-    for snykfile in files:
-        snykfile = os.path.join(input_file, snykfile)
+    for f in files:
+        snykfile = os.path.join(input_file, f)
         print("Reading file: " + snykfile)
 
         with open(snykfile) as file:
@@ -241,7 +241,7 @@ def parse_snyk_report(input_file: str):
 
 
 def parse_test_report(input_file: str):
-    tree = parse(input_file)
+    tree = parse(input_file)  # noqa: S314
     root = tree.getroot()
     report_test_suites = {}
     for test_suites in root.iter("testsuites"):
@@ -299,7 +299,9 @@ def parse_test_report(input_file: str):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 4:
+    MIN_ARGV_LEN = 4
+
+    if len(sys.argv) < MIN_ARGV_LEN:
         print(
             "Usage: generate-testspace-report.py [tests|snyk] "
             "{junit-file.xml|snyk.json} {output-file.xml}"

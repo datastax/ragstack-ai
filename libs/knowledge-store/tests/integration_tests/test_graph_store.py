@@ -1,9 +1,9 @@
 import secrets
-from typing import Iterator
+from typing import Callable, Iterator, List
 
 import pytest
 from dotenv import load_dotenv
-from langchain_openai import OpenAIEmbeddings
+from ragstack_knowledge_store import EmbeddingModel
 from ragstack_knowledge_store.graph_store import GraphStore
 from ragstack_tests_utils import LocalCassandraTestStore
 
@@ -21,24 +21,41 @@ def cassandra() -> Iterator[LocalCassandraTestStore]:
         store.docker_container.stop()
 
 
+DUMMY_VECTOR = [0.1, 0.2]
+
+
+class DummyEmbeddingModel(EmbeddingModel):
+    def embed_texts(self, texts: List[str]) -> List[List[float]]:
+        return [DUMMY_VECTOR] * len(texts)
+
+    def embed_query(self, _: str) -> List[float]:
+        return DUMMY_VECTOR
+
+    async def aembed_texts(self, texts: List[str]) -> List[List[float]]:
+        return [DUMMY_VECTOR] * len(texts)
+
+    async def aembed_query(self, _: str) -> List[float]:
+        return DUMMY_VECTOR
+
+
 @pytest.fixture()
-def graph_store_factory(cassandra: LocalCassandraTestStore):
+def graph_store_factory(
+    cassandra: LocalCassandraTestStore,
+) -> Iterator[Callable[[], GraphStore]]:
     session = cassandra.create_cassandra_session()
     session.set_keyspace(KEYSPACE)
 
-    embedding = OpenAIEmbeddings()
+    embedding = DummyEmbeddingModel()
 
-    def _make_graph_store():
+    def _make_graph_store() -> GraphStore:
         name = secrets.token_hex(8)
 
         node_table = f"nodes_{name}"
-        targets_table = f"targets_{name}"
         return GraphStore(
             embedding,
             session=session,
             keyspace=KEYSPACE,
             node_table=node_table,
-            targets_table=targets_table,
         )
 
     yield _make_graph_store
@@ -46,7 +63,7 @@ def graph_store_factory(cassandra: LocalCassandraTestStore):
     session.shutdown()
 
 
-def test_graph_store_creation(graph_store_factory):
+def test_graph_store_creation(graph_store_factory: Callable[[], GraphStore]) -> None:
     """Test that a graph store can be created.
 
     This verifies the schema can be applied and the queries prepared.

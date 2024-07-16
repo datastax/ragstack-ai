@@ -1,3 +1,4 @@
+# ruff: noqa: T201
 import random
 import signal
 import time
@@ -189,6 +190,8 @@ class QueryPipeline(BasePipeline):
         pipeline = query_method(**self.ingredients)
         llm_provider = self.get_provider()
 
+        print(f"Using provider: {llm_provider} for evaluation.")
+
         feedbacks = Feedbacks(llm_provider=llm_provider, pipeline=pipeline)
 
         self.start_evaluation()
@@ -237,7 +240,7 @@ class QueryPipeline(BasePipeline):
                     err = f"Query: '{query}' caused exception, skipping."
                     logger.exception(err)
                     # TODO: figure out why the logger isn't working after tru-lens starts. For now use print().  # noqa: E501
-                    print(f"{err} Exception {e}")  # noqa: T201
+                    print(f"{err} Exception {e}")
                 finally:
                     self.update_progress(query_change=1)
 

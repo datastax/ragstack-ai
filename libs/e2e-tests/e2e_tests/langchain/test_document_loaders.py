@@ -34,7 +34,7 @@ def test_csv_loader():
                 ]
             )
         docs = CSVLoader(file_path=temp_csv_file.name).load()
-        assert len(docs) == 3
+        assert len(docs) == 3  # noqa: PLR2004
 
         doc1 = docs[0]
         assert doc1.page_content == "column1: value1\ncolumn2: value2\ncolumn3: value3"
@@ -48,7 +48,7 @@ def test_web_based_loader():
     )
     loader.requests_per_second = 1
     docs = loader.load()
-    assert len(docs) == 2
+    assert len(docs) == 2  # noqa: PLR2004
 
     doc1 = docs[0]
     assert "0.1.0 - Oct 4, 2023" in doc1.page_content
@@ -150,19 +150,21 @@ def test_astradb_loader() -> None:
         [{"foo": "bar2", "baz": "qux"}] * 4 + [{"foo": "bar", "baz": "qux"}] * 4
     )
 
+    doc_number = 22
+
     loader = AstraDBLoader(
         astra_ref.collection,
         token=astra_ref.token,
         api_endpoint=astra_ref.api_endpoint,
         nb_prefetched=1,
         projection={"foo": 1},
-        find_options={"limit": 22},
+        find_options={"limit": doc_number},
         filter_criteria={"foo": "bar"},
         page_content_mapper=lambda r: "Payload: " + json.dumps(r),
     )
     docs = loader.load()
 
-    assert len(docs) == 22
+    assert len(docs) == doc_number
     ids = set()
     for doc in docs:
         assert doc.page_content.startswith("Payload: ")

@@ -87,7 +87,7 @@ class TestConfigValidation:
         assert chunk_size_500.query.script == "chunk_size_experiment.py"
         assert chunk_size_500.name == "chunk_size_500"
         assert "chunk_size" in chunk_size_500.ingredients
-        assert chunk_size_500.ingredients["chunk_size"] == 500
+        assert chunk_size_500.ingredients["chunk_size"] == 500  # noqa: PLR2004
 
         assert "chunk_size_1000" in config.recipes
         chunk_size_1000 = config.recipes["chunk_size_1000"]
@@ -95,7 +95,7 @@ class TestConfigValidation:
         assert chunk_size_1000.query.script == "chunk_size_experiment.py"
         assert chunk_size_1000.name == "chunk_size_1000"
         assert "chunk_size" in chunk_size_1000.ingredients
-        assert chunk_size_1000.ingredients["chunk_size"] == 1000
+        assert chunk_size_1000.ingredients["chunk_size"] == 1000  # noqa: PLR2004
 
     def test_minimal_config(self):
         config = {
@@ -134,7 +134,7 @@ class TestConfigValidation:
         assert chunk_size_500.query.script == "minimal.py"
         assert chunk_size_500.name == "chunk_size_500"
         assert "chunk_size" in chunk_size_500.ingredients
-        assert chunk_size_500.ingredients["chunk_size"] == 500
+        assert chunk_size_500.ingredients["chunk_size"] == 500  # noqa: PLR2004
 
         assert "chunk_size_1000" in config.recipes
         chunk_size_1000 = config.recipes["chunk_size_1000"]
@@ -142,4 +142,4 @@ class TestConfigValidation:
         assert chunk_size_1000.query.script == "minimal.py"
         assert chunk_size_1000.name == "chunk_size_1000"
         assert "chunk_size" in chunk_size_1000.ingredients
-        assert chunk_size_1000.ingredients["chunk_size"] == 1000
+        assert chunk_size_1000.ingredients["chunk_size"] == 1000  # noqa: PLR2004
