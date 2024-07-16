@@ -1,3 +1,5 @@
+# ruff: noqa: B006
+
 import json
 import logging
 import re
@@ -13,10 +15,11 @@ from typing import (
     Sequence,
     Set,
     Tuple,
+    Union,
     cast,
 )
 
-from cassandra.cluster import ConsistencyLevel, Session
+from cassandra.cluster import ConsistencyLevel, PreparedStatement, Session
 from cassio.config import check_resolve_keyspace, check_resolve_session
 
 from ._mmr_helper import MmrHelper
@@ -28,6 +31,12 @@ from .links import Link
 logger = logging.getLogger(__name__)
 
 CONTENT_ID = "content_id"
+
+CONTENT_COLUMNS = "content_id, kind, text_content, links_blob, metadata_blob"
+
+SELECT_CQL_TEMPLATE = (
+    "SELECT {columns} FROM {table_name}{where_clause}{order_clause}{limit_clause};"
+)
 
 
 @dataclass
@@ -50,6 +59,26 @@ class SetupMode(Enum):
     SYNC = 1
     ASYNC = 2
     OFF = 3
+
+
+class MetadataIndexingMode(Enum):
+    """Mode used to index metadata."""
+
+    DEFAULT_TO_UNSEARCHABLE = 1
+    DEFAULT_TO_SEARCHABLE = 2
+
+
+MetadataIndexingType = Union[Tuple[str, Iterable[str]], str]
+MetadataIndexingPolicy = Tuple[MetadataIndexingMode, Set[str]]
+
+
+def _is_metadata_field_indexed(field_name: str, policy: MetadataIndexingPolicy) -> bool:
+    p_mode, p_fields = policy
+    if p_mode == MetadataIndexingMode.DEFAULT_TO_UNSEARCHABLE:
+        return field_name in p_fields
+    if p_mode == MetadataIndexingMode.DEFAULT_TO_SEARCHABLE:
+        return field_name not in p_fields
+    raise ValueError(f"Unexpected metadata indexing mode {p_mode}")
 
 
 def _serialize_metadata(md: Dict[str, Any]) -> str:
@@ -132,6 +161,7 @@ class GraphStore:
         session: Optional[Session] = None,
         keyspace: Optional[str] = None,
         setup_mode: SetupMode = SetupMode.SYNC,
+        metadata_indexing: MetadataIndexingType = "all",
     ):
         if targets_table:
             logger.warning(
@@ -152,6 +182,11 @@ class GraphStore:
         self._node_table = node_table
         self._session = session
         self._keyspace = keyspace
+        self._prepared_query_cache: Dict[str, PreparedStatement] = {}
+
+        self._metadata_indexing_policy = self._normalize_metadata_indexing_policy(
+            metadata_indexing=metadata_indexing,
+        )
 
         if setup_mode == SetupMode.SYNC:
             self._apply_schema()
@@ -166,39 +201,17 @@ class GraphStore:
             f"""
             INSERT INTO {keyspace}.{node_table} (
                 content_id, kind, text_content, text_embedding, link_to_tags,
-                link_from_tags, metadata_blob, links_blob
-            ) VALUES (?, '{Kind.passage}', ?, ?, ?, ?, ?, ?)
+                link_from_tags, links_blob, metadata_blob, metadata_s
+            ) VALUES (?, '{Kind.passage}', ?, ?, ?, ?, ?, ?, ?)
             """  # noqa: S608
         )
 
         self._query_by_id = session.prepare(
             f"""
-            SELECT content_id, kind, text_content, metadata_blob, links_blob
+            SELECT {CONTENT_COLUMNS}
             FROM {keyspace}.{node_table}
             WHERE content_id = ?
             """  # noqa: S608
-        )
-
-        self._query_by_embedding = session.prepare(
-            f"""
-            SELECT content_id, kind, text_content, metadata_blob, links_blob
-            FROM {keyspace}.{node_table}
-            ORDER BY text_embedding ANN OF ?
-            LIMIT ?
-            """  # noqa: S608
-        )
-        self._query_by_embedding.consistency_level = ConsistencyLevel.ONE
-
-        self._query_ids_and_link_to_tags_by_embedding = session.prepare(
-            f"""
-            SELECT content_id, link_to_tags
-            FROM {keyspace}.{node_table}
-            ORDER BY text_embedding ANN OF ?
-            LIMIT ?
-            """  # noqa: S608
-        )
-        self._query_ids_and_link_to_tags_by_embedding.consistency_level = (
-            ConsistencyLevel.ONE
         )
 
         self._query_ids_and_link_to_tags_by_id = session.prepare(
@@ -209,18 +222,6 @@ class GraphStore:
             """  # noqa: S608
         )
 
-        self._query_ids_and_embedding_by_embedding = session.prepare(
-            f"""
-            SELECT content_id, text_embedding, link_to_tags
-            FROM {keyspace}.{node_table}
-            ORDER BY text_embedding ANN OF ?
-            LIMIT ?
-            """  # noqa: S608
-        )
-        self._query_ids_and_embedding_by_embedding.consistency_level = (
-            ConsistencyLevel.ONE
-        )
-
         self._query_source_tags_by_id = session.prepare(
             f"""
             SELECT link_to_tags
@@ -229,33 +230,15 @@ class GraphStore:
             """  # noqa: S608
         )
 
-        self._query_targets_embeddings_by_kind_and_tag_and_embedding = session.prepare(
-            f"""
-            SELECT
-                content_id AS target_content_id,
-                text_embedding AS target_text_embedding,
-                link_to_tags AS target_link_to_tags
-            FROM {keyspace}.{node_table}
-            WHERE link_from_tags CONTAINS (?, ?)
-            ORDER BY text_embedding ANN of ?
-            LIMIT ?
-            """
-        )
-
-        self._query_targets_by_kind_and_value = session.prepare(
-            f"""
-            SELECT
-                content_id AS target_content_id
-            FROM {keyspace}.{node_table}
-            WHERE link_from_tags CONTAINS (?, ?)
-            """
-        )
+    def table_name(self) -> str:
+        """Returns the fully qualified table name."""
+        return f"{self._keyspace}.{self._node_table}"
 
     def _apply_schema(self) -> None:
         """Apply the schema to the database."""
         embedding_dim = len(self._embedding.embed_query("Test Query"))
         self._session.execute(f"""
-            CREATE TABLE IF NOT EXISTS {self._keyspace}.{self._node_table} (
+            CREATE TABLE IF NOT EXISTS {self.table_name()} (
                 content_id TEXT,
                 kind TEXT,
                 text_content TEXT,
@@ -263,8 +246,9 @@ class GraphStore:
 
                 link_to_tags SET<TUPLE<TEXT, TEXT>>,
                 link_from_tags SET<TUPLE<TEXT, TEXT>>,
-                metadata_blob TEXT,
                 links_blob TEXT,
+                metadata_blob TEXT,
+                metadata_s MAP<TEXT,TEXT>,
 
                 PRIMARY KEY (content_id)
             )
@@ -273,13 +257,19 @@ class GraphStore:
         # Index on text_embedding (for similarity search)
         self._session.execute(f"""
             CREATE CUSTOM INDEX IF NOT EXISTS {self._node_table}_text_embedding_index
-            ON {self._keyspace}.{self._node_table}(text_embedding)
+            ON {self.table_name()}(text_embedding)
             USING 'StorageAttachedIndex';
         """)
 
         self._session.execute(f"""
             CREATE CUSTOM INDEX IF NOT EXISTS {self._node_table}_link_from_tags
-            ON {self._keyspace}.{self._node_table}(link_from_tags)
+            ON {self.table_name()}(link_from_tags)
+            USING 'StorageAttachedIndex';
+        """)
+
+        self._session.execute(f"""
+            CREATE CUSTOM INDEX IF NOT EXISTS {self._node_table}_metadata_s_index
+            ON {self.table_name()}(ENTRIES(metadata_s))
             USING 'StorageAttachedIndex';
         """)
 
@@ -321,6 +311,12 @@ class GraphStore:
                     if tag.direction in {"out", "bidir"}:
                         link_to_tags.add((tag.kind, tag.tag))
 
+                metadata_s = {
+                    k: self._coerce_string(v)
+                    for k, v in metadata.items()
+                    if _is_metadata_field_indexed(k, self._metadata_indexing_policy)
+                }
+
                 metadata_blob = _serialize_metadata(metadata)
                 links_blob = _serialize_links(links)
                 cq.execute(
@@ -331,8 +327,9 @@ class GraphStore:
                         text_embedding,
                         link_to_tags,
                         link_from_tags,
-                        metadata_blob,
                         links_blob,
+                        metadata_blob,
+                        metadata_s,
                     ),
                 )
 
@@ -345,7 +342,7 @@ class GraphStore:
         results: Dict[str, Optional[Node]] = {}
         with self._concurrent_queries() as cq:
 
-            def add_nodes(rows: Iterable[Any]) -> None:
+            def node_callback(rows: Iterable[Any]) -> None:
                 # Should always be exactly one row here. We don't need to check
                 #   1. The query is for a `ID == ?` query on the primary key.
                 #   2. If it doesn't exist, the `get_result` method below will
@@ -358,7 +355,7 @@ class GraphStore:
                     # Mark this node ID as being fetched.
                     results[node_id] = None
                     cq.execute(
-                        self._query_by_id, parameters=(node_id,), callback=add_nodes
+                        self._query_by_id, parameters=(node_id,), callback=node_callback
                     )
 
         def get_result(node_id: str) -> Node:
@@ -378,6 +375,7 @@ class GraphStore:
         adjacent_k: int = 10,
         lambda_mult: float = 0.5,
         score_threshold: float = float("-inf"),
+        metadata_filter: Dict[str, Any] = {},
     ) -> Iterable[Node]:
         """Retrieve documents from this graph store using MMR-traversal.
 
@@ -403,6 +401,7 @@ class GraphStore:
                 diversity and 1 to minimum diversity. Defaults to 0.5.
             score_threshold: Only documents with a score greater than or equal
                 this threshold will be chosen. Defaults to -infinity.
+            metadata_filter: Optional metadata to filter the results.
         """
         query_embedding = self._embedding.embed_query(query)
         helper = MmrHelper(
@@ -417,10 +416,22 @@ class GraphStore:
 
         # Fetch the initial candidates and add them to the helper and
         # outgoing_tags.
+        initial_candidates_query = self._get_search_cql(
+            has_limit=True,
+            columns="content_id, text_embedding, link_to_tags",
+            metadata_keys=list(metadata_filter.keys()),
+            has_embedding=True,
+        )
+
         def fetch_initial_candidates() -> None:
+            params = self._get_search_params(
+                limit=fetch_k,
+                metadata=metadata_filter,
+                embedding=query_embedding,
+            )
+
             fetched = self._session.execute(
-                self._query_ids_and_embedding_by_embedding,
-                (query_embedding, fetch_k),
+                query=initial_candidates_query, parameters=params
             )
             candidates = {}
             for row in fetched:
@@ -460,6 +471,7 @@ class GraphStore:
                     link_to_tags,
                     query_embedding=query_embedding,
                     k_per_tag=adjacent_k,
+                    metadata_filter=metadata_filter,
                 )
 
                 # Record the link_to_tags as visited.
@@ -493,7 +505,12 @@ class GraphStore:
         return self._nodes_with_ids(helper.selected_ids)
 
     def traversal_search(
-        self, query: str, *, k: int = 4, depth: int = 1
+        self,
+        query: str,
+        *,
+        k: int = 4,
+        depth: int = 1,
+        metadata_filter: Dict[str, Any] = {},
     ) -> Iterable[Node]:
         """Retrieve documents from this knowledge store.
 
@@ -506,6 +523,7 @@ class GraphStore:
             k: The number of Documents to return from the initial vector search.
                 Defaults to 4.
             depth: The maximum depth of edges to traverse. Defaults to 1.
+            metadata_filter: Optional metadata to filter the results.
 
         Returns:
             Collection of retrieved documents.
@@ -520,6 +538,19 @@ class GraphStore:
         #   Query for `link_to_tags` of those "new" node IDs.
         #
         # ...
+
+        traversal_query = self._get_search_cql(
+            columns="content_id, link_to_tags",
+            has_limit=True,
+            metadata_keys=list(metadata_filter.keys()),
+            has_embedding=True,
+        )
+
+        visit_nodes_query = self._get_search_cql(
+            columns="content_id AS target_content_id",
+            has_link_from_tags=True,
+            metadata_keys=list(metadata_filter.keys()),
+        )
 
         with self._concurrent_queries() as cq:
             # Map from visited ID to depth
@@ -563,12 +594,12 @@ class GraphStore:
                     # If there are new tags to visit at the next depth, query for the
                     # node IDs.
                     for kind, value in outgoing_tags:
+                        params = self._get_search_params(
+                            link_from_tags=(kind, value), metadata=metadata_filter
+                        )
                         cq.execute(
-                            self._query_targets_by_kind_and_value,
-                            parameters=(
-                                kind,
-                                value,
-                            ),
+                            query=visit_nodes_query,
+                            parameters=params,
                             callback=lambda rows, d=d: visit_targets(d, rows),
                         )
 
@@ -591,9 +622,15 @@ class GraphStore:
                         )
 
             query_embedding = self._embedding.embed_query(query)
+            params = self._get_search_params(
+                limit=k,
+                metadata=metadata_filter,
+                embedding=query_embedding,
+            )
+
             cq.execute(
-                self._query_ids_and_link_to_tags_by_embedding,
-                parameters=(query_embedding, k),
+                traversal_query,
+                parameters=params,
                 callback=lambda nodes: visit_nodes(0, nodes),
             )
 
@@ -603,10 +640,28 @@ class GraphStore:
         self,
         embedding: List[float],
         k: int = 4,
+        metadata_filter: Dict[str, Any] = {},
     ) -> Iterable[Node]:
-        """Retrieve nodes similar to the given embedding."""
-        for row in self._session.execute(self._query_by_embedding, (embedding, k)):
+        """Retrieve nodes similar to the given embedding, optionally filtered by metadata."""  # noqa: E501
+        query, params = self._get_search_cql_and_params(
+            embedding=embedding, limit=k, metadata=metadata_filter
+        )
+
+        for row in self._session.execute(query, params):
             yield _row_to_node(row)
+
+    def metadata_search(
+        self, metadata: Dict[str, Any] = {}, n: int = 5
+    ) -> Iterable[Node]:
+        """Retrieve nodes based on their metadata."""
+        query, params = self._get_search_cql_and_params(metadata=metadata, limit=n)
+
+        for row in self._session.execute(query, params):
+            yield _row_to_node(row)
+
+    def get_node(self, content_id: str) -> Node:
+        """Get a node by its id."""
+        return self._nodes_with_ids(ids=[content_id])[0]
 
     def _get_outgoing_tags(
         self,
@@ -636,6 +691,7 @@ class GraphStore:
         tags: Set[Tuple[str, str]],
         query_embedding: List[float],
         k_per_tag: Optional[int] = None,
+        metadata_filter: Dict[str, Any] = {},
     ) -> Iterable[_Edge]:
         """Return the target nodes with incoming links from any of the given tags.
 
@@ -643,11 +699,26 @@ class GraphStore:
             tags: The tags to look for links *from*.
             query_embedding: The query embedding. Used to rank target nodes.
             k_per_tag: The number of target nodes to fetch for each outgoing tag.
+            metadata_filter: Optional metadata to filter the results.
 
         Returns:
             List of adjacent edges.
         """
         targets: Dict[str, _Edge] = {}
+
+        columns = """
+            content_id AS target_content_id,
+            text_embedding AS target_text_embedding,
+            link_to_tags AS target_link_to_tags
+        """
+
+        adjacent_query = self._get_search_cql(
+            has_limit=True,
+            columns=columns,
+            metadata_keys=list(metadata_filter.keys()),
+            has_embedding=True,
+            has_link_from_tags=True,
+        )
 
         def add_targets(rows: Iterable[Any]) -> None:
             # TODO: Figure out how to use the "kind" on the edge.
@@ -664,17 +735,193 @@ class GraphStore:
 
         with self._concurrent_queries() as cq:
             for kind, value in tags:
+                params = self._get_search_params(
+                    limit=k_per_tag or 10,
+                    metadata=metadata_filter,
+                    embedding=query_embedding,
+                    link_from_tags=(kind, value),
+                )
+
                 cq.execute(
-                    self._query_targets_embeddings_by_kind_and_tag_and_embedding,
-                    parameters=(
-                        kind,
-                        value,
-                        query_embedding,
-                        k_per_tag or 10,
-                    ),
+                    query=adjacent_query,
+                    parameters=params,
                     callback=add_targets,
                 )
 
         # TODO: Consider a combined limit based on the similarity and/or
         # predicated MMR score?
         return targets.values()
+
+    @staticmethod
+    def _normalize_metadata_indexing_policy(
+        metadata_indexing: Union[Tuple[str, Iterable[str]], str],
+    ) -> MetadataIndexingPolicy:
+        mode: MetadataIndexingMode
+        fields: Set[str]
+        # metadata indexing policy normalization:
+        if isinstance(metadata_indexing, str):
+            if metadata_indexing.lower() == "all":
+                mode, fields = (MetadataIndexingMode.DEFAULT_TO_SEARCHABLE, set())
+            elif metadata_indexing.lower() == "none":
+                mode, fields = (MetadataIndexingMode.DEFAULT_TO_UNSEARCHABLE, set())
+            else:
+                raise ValueError(
+                    f"Unsupported metadata_indexing value '{metadata_indexing}'"
+                )
+        else:
+            if len(metadata_indexing) != 2:  # noqa: PLR2004
+                raise ValueError(
+                    f"Unsupported metadata_indexing value '{metadata_indexing}'."
+                )
+            # it's a 2-tuple (mode, fields) still to normalize
+            _mode, _field_spec = metadata_indexing
+            fields = {_field_spec} if isinstance(_field_spec, str) else set(_field_spec)
+            if _mode.lower() in {
+                "default_to_unsearchable",
+                "allowlist",
+                "allow",
+                "allow_list",
+            }:
+                mode = MetadataIndexingMode.DEFAULT_TO_UNSEARCHABLE
+            elif _mode.lower() in {
+                "default_to_searchable",
+                "denylist",
+                "deny",
+                "deny_list",
+            }:
+                mode = MetadataIndexingMode.DEFAULT_TO_SEARCHABLE
+            else:
+                raise ValueError(
+                    f"Unsupported metadata indexing mode specification '{_mode}'"
+                )
+        return (mode, fields)
+
+    @staticmethod
+    def _coerce_string(value: Any) -> str:
+        if isinstance(value, str):
+            return value
+        if isinstance(value, bool):
+            # bool MUST come before int in this chain of ifs!
+            return json.dumps(value)
+        if isinstance(value, int):
+            # we don't want to store '1' and '1.0' differently
+            # for the sake of metadata-filtered retrieval:
+            return json.dumps(float(value))
+        if isinstance(value, float) or value is None:
+            return json.dumps(value)
+        # when all else fails ...
+        return str(value)
+
+    def _extract_where_clause_cql(
+        self,
+        metadata_keys: List[str] = [],
+        has_link_from_tags: bool = False,
+    ) -> str:
+        wc_blocks: List[str] = []
+
+        if has_link_from_tags:
+            wc_blocks.append("link_from_tags CONTAINS (?, ?)")
+
+        for key in sorted(metadata_keys):
+            if _is_metadata_field_indexed(key, self._metadata_indexing_policy):
+                wc_blocks.append(f"metadata_s['{key}'] = ?")
+            else:
+                raise ValueError(
+                    "Non-indexed metadata fields cannot be used in queries."
+                )
+
+        if len(wc_blocks) == 0:
+            return ""
+
+        return " WHERE " + " AND ".join(wc_blocks)
+
+    def _extract_where_clause_params(
+        self,
+        metadata: Dict[str, Any],
+        link_from_tags: Optional[Tuple[str, str]] = None,
+    ) -> List[Any]:
+        params: List[Any] = []
+
+        if link_from_tags is not None:
+            params.append(link_from_tags[0])
+            params.append(link_from_tags[1])
+
+        for key, value in sorted(metadata.items()):
+            if _is_metadata_field_indexed(key, self._metadata_indexing_policy):
+                params.append(self._coerce_string(value=value))
+            else:
+                raise ValueError(
+                    "Non-indexed metadata fields cannot be used in queries."
+                )
+
+        return params
+
+    def _get_search_cql(
+        self,
+        has_limit: bool = False,
+        columns: Optional[str] = CONTENT_COLUMNS,
+        metadata_keys: List[str] = [],
+        has_embedding: bool = False,
+        has_link_from_tags: bool = False,
+    ) -> PreparedStatement:
+        where_clause = self._extract_where_clause_cql(
+            metadata_keys=metadata_keys, has_link_from_tags=has_link_from_tags
+        )
+        limit_clause = " LIMIT ?" if has_limit else ""
+        order_clause = " ORDER BY text_embedding ANN OF ?" if has_embedding else ""
+
+        select_cql = SELECT_CQL_TEMPLATE.format(
+            columns=columns,
+            table_name=self.table_name(),
+            where_clause=where_clause,
+            order_clause=order_clause,
+            limit_clause=limit_clause,
+        )
+
+        if select_cql in self._prepared_query_cache:
+            return self._prepared_query_cache[select_cql]
+
+        prepared_query = self._session.prepare(select_cql)
+        prepared_query.consistency_level = ConsistencyLevel.ONE
+        self._prepared_query_cache[select_cql] = prepared_query
+
+        return prepared_query
+
+    def _get_search_params(
+        self,
+        limit: Optional[int] = None,
+        metadata: Dict[str, Any] = {},
+        embedding: Optional[List[float]] = None,
+        link_from_tags: Optional[Tuple[str, str]] = None,
+    ) -> Tuple[PreparedStatement, Tuple[Any, ...]]:
+        where_params = self._extract_where_clause_params(
+            metadata=metadata, link_from_tags=link_from_tags
+        )
+
+        limit_params = [limit] if limit is not None else []
+        order_params = [embedding] if embedding is not None else []
+
+        return tuple(list(where_params) + order_params + limit_params)
+
+    def _get_search_cql_and_params(
+        self,
+        limit: Optional[int] = None,
+        columns: Optional[str] = CONTENT_COLUMNS,
+        metadata: Dict[str, Any] = {},
+        embedding: Optional[List[float]] = None,
+        link_from_tags: Optional[Tuple[str, str]] = None,
+    ) -> Tuple[PreparedStatement, Tuple[Any, ...]]:
+        query = self._get_search_cql(
+            has_limit=limit is not None,
+            columns=columns,
+            metadata_keys=list(metadata.keys()),
+            has_embedding=embedding is not None,
+            has_link_from_tags=link_from_tags is not None,
+        )
+        params = self._get_search_params(
+            limit=limit,
+            metadata=metadata,
+            embedding=embedding,
+            link_from_tags=link_from_tags,
+        )
+        return query, params
