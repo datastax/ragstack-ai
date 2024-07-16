@@ -6,15 +6,7 @@ from typing import Any, Dict, List, Optional
 
 from tqdm import tqdm
 from trulens_eval import Tru, TruChain
-from trulens_eval.feedback.provider import (
-    AzureOpenAI,
-    Bedrock,
-    Huggingface,
-    Langchain,
-    LiteLLM,
-    OpenAI,
-)
-from trulens_eval.feedback.provider.base import LLMProvider
+from trulens_eval.feedback.provider import AzureOpenAI, Huggingface, LLMProvider, OpenAI
 from trulens_eval.schema.feedback import FeedbackMode, FeedbackResultStatus
 from typing_extensions import override
 
@@ -131,6 +123,16 @@ class QueryPipeline(BasePipeline):
         self._tru.start_evaluator(disable_tqdm=True)
         self._evaluation_running = True
 
+    def export_results(self):
+        """Export results."""
+        for dataset_name in self._queries:
+            records, _feedback_names = self._tru.get_records_and_feedback(
+                app_ids=[dataset_name]
+            )
+
+            # Export to JSON
+            records.to_json(f"{self._name}_{dataset_name}_results.json")
+
     def stop_evaluation(self, loc: str):
         """Stop evaluation."""
         if self._evaluation_running:
@@ -143,6 +145,7 @@ class QueryPipeline(BasePipeline):
                 logger.exception("issue stopping evaluator")
             finally:
                 self._progress.close()
+                self.export_results()
 
     def update_progress(self, query_change: int = 0):
         """Update progress bar."""
@@ -176,12 +179,6 @@ class QueryPipeline(BasePipeline):
             return OpenAI(model_engine=model_name)
         if llm_provider == "azureopenai":
             return AzureOpenAI(deployment_name=model_name)
-        if llm_provider == "bedrock":
-            return Bedrock(model_id=model_name)
-        if llm_provider == "litellm":
-            return LiteLLM(model_engine=model_name)
-        if llm_provider == "Langchain":
-            return Langchain(model_engine=model_name)
         if llm_provider == "huggingface":
             return Huggingface(name=model_name)
         raise ValueError(f"Unsupported provider: {llm_provider}")
