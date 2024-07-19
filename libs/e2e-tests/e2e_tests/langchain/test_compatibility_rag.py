@@ -372,7 +372,7 @@ def vertex_gemini_multimodal_embedding():
 
 @pytest.fixture()
 def vertex_gemini_pro_vision_llm():
-    return ChatVertexAI(model_name="gemini-1.5-flash")
+    return ChatVertexAI(model_name="gemini-pro-vision")
 
 
 @pytest.fixture()
@@ -381,9 +381,9 @@ def vertex_gemini_pro_llm():
 
 
 @pytest.fixture()
-def gemini_pro_vision_llm():
+def gemini_flash_llm():
     return ChatGoogleGenerativeAI(
-        model="gemini-pro-vision", google_api_key=get_required_env("GOOGLE_API_KEY")
+        model="gemini-1.5-flash", google_api_key=get_required_env("GOOGLE_API_KEY")
     )
 
 
@@ -404,7 +404,7 @@ def gemini_pro_llm():
         # disable due to this bug:
         # https://github.com/googleapis/python-aiplatform/issues/3227
         # ("vertex_gemini_multimodal_embedding", "vertex_gemini_pro_vision_llm"),
-        ("vertex_gemini_multimodal_embedding", "gemini_pro_vision_llm"),
+        ("vertex_gemini_multimodal_embedding", "gemini_flash_llm"),
     ],
 )
 def test_multimodal(vector_store, embedding, llm, request, record_property):
