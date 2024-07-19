@@ -179,6 +179,7 @@ jobs:
       - name: Cleanup AstraDB
         uses: nicoloboschi/cleanup-astradb@v1
         if: ${{ always() && inputs.astradb }}
+        continue-on-error: true
         with:
           token: ${{ secrets[inputs.astradb-token-secret-name] }}
           name: ${{ steps.astra-db.outputs.name }}
