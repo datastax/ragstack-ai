@@ -284,11 +284,11 @@ def gemini_pro_llm():
 
 
 @pytest.fixture()
-def gemini_pro_vision_llm():
+def gemini_flash_llm():
     return (
         GeminiMultiModal(
             api_key=get_required_env("GOOGLE_API_KEY"),
-            model_name="models/gemini-pro-vision",
+            model_name="models/gemini-1.5-flash",
         ),
         lambda llm, prompt, image_path: llm.complete(
             prompt=prompt, image_documents=[ImageNode(image_path=image_path)]
@@ -306,7 +306,7 @@ def gemini_pro_vision_llm():
         # disable due to this bug:
         # https://github.com/googleapis/python-aiplatform/issues/3227
         # ("vertex_gemini_multimodal_embedding", "vertex_gemini_pro_vision_llm"),
-        ("vertex_gemini_multimodal_embedding", "gemini_pro_vision_llm"),
+        ("vertex_gemini_multimodal_embedding", "gemini_flash_llm"),
     ],
 )
 def test_multimodal(vector_store, embedding, llm, request):
