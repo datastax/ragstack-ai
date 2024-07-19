@@ -372,7 +372,7 @@ def vertex_gemini_multimodal_embedding():
 
 @pytest.fixture()
 def vertex_gemini_pro_vision_llm():
-    return ChatVertexAI(model_name="gemini-pro-vision")
+    return ChatVertexAI(model_name="gemini-1.5-flash")
 
 
 @pytest.fixture()
