@@ -6,7 +6,6 @@ import pytest
 from dotenv import load_dotenv
 from ragstack_knowledge_store import EmbeddingModel
 from ragstack_knowledge_store.graph_store import GraphStore, Node, Link
-import gensim.downloader as api
 import numpy as np
 from ragstack_tests_utils import LocalCassandraTestStore
 
@@ -14,20 +13,14 @@ load_dotenv()
 
 KEYSPACE = "default_keyspace"
 
-word2vec = api.load('word2vec-google-news-300')
 
-def text_to_embedding(text):
-    words = text.split()
-    word_vectors = []
-
-    for word in words:
-        if word in word2vec:
-            word_vectors.append(word2vec[word])
-
-    if not word_vectors:
-        return np.zeros(word2vec.vector_size)
-
-    return np.mean(word_vectors, axis=0)
+def text_to_embedding(text, max_length=100):
+    embedding = np.zeros(max_length)
+    for i, char in enumerate(text):
+        if i >= max_length:
+            break
+        embedding[i] = ord(char) / 255  # Normalize ASCII value
+    return embedding
 
 
 @pytest.fixture(scope="session")
@@ -39,12 +32,11 @@ def cassandra() -> Iterator[LocalCassandraTestStore]:
         store.docker_container.stop()
 
 
-DUMMY_VECTOR = [0.1, 0.2]
-
-
-class AngularTwoDimensionalEmbeddings(EmbeddingModel):
+class AngularOrTextEmbeddings(EmbeddingModel):
     """
-    From angles (as strings in units of pi) to unit embedding vectors on a circle.
+    From angles (as strings in units of pi) to two-dimensional embedding vectors on a circle.
+    -- or --
+    Simple text encodings
     """
 
     def embed_texts(self, texts: List[str]) -> List[List[float]]:
@@ -90,7 +82,7 @@ def graph_store_factory(
     session = cassandra.create_cassandra_session()
     session.set_keyspace(KEYSPACE)
 
-    embedding = AngularTwoDimensionalEmbeddings()
+    embedding = AngularOrTextEmbeddings()
 
     def _make_graph_store() -> GraphStore:
         name = secrets.token_hex(8)
@@ -216,10 +208,10 @@ def test_write_retrieve_keywords(graph_store_factory: Callable[[], GraphStore]):
 
     # Doc2 is more similar, but World and Earth are similar enough that doc1 also shows
     # up.
-    results = gs.similarity_search("Earth", k=2)
+    results = gs.similarity_search(text_to_embedding("Earth"), k=2)
     assert _result_ids(results) == ["doc2", "doc1"]
 
-    results = gs.similarity_search("Earth", k=1)
+    results = gs.similarity_search(text_to_embedding("Earth"), k=1)
     assert _result_ids(results) == ["doc2"]
 
     results = gs.traversal_search("Earth", k=2, depth=0)
@@ -254,7 +246,7 @@ def test_metadata(graph_store_factory: Callable[[], GraphStore]):
             )
         ]
     )
-    results = list(gs.similarity_search("A"))
+    results = list(gs.similarity_search(text_to_embedding("A")))
     assert len(results) == 1
     assert results[0].id == "a"
     assert results[0].metadata["other"] == "some other field"
