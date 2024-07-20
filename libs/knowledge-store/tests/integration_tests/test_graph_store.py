@@ -1,12 +1,13 @@
-import secrets
 import math
-from typing import Callable, Iterator, List, Iterable
+import secrets
+from typing import Callable, Iterable, Iterator, List
 
+import numpy as np
 import pytest
 from dotenv import load_dotenv
 from ragstack_knowledge_store import EmbeddingModel
-from ragstack_knowledge_store.graph_store import GraphStore, Node, Link
-import numpy as np
+from ragstack_knowledge_store.graph_store import GraphStore, Node
+from ragstack_knowledge_store.links import Link
 from ragstack_tests_utils import LocalCassandraTestStore
 
 load_dotenv()
@@ -15,27 +16,31 @@ KEYSPACE = "default_keyspace"
 
 vector_size = 52
 
-def text_to_embedding(text:str) -> List[float]:
+
+def text_to_embedding(text: str) -> List[float]:
     """Embeds text using a simple ascii conversion algorithm"""
     embedding = np.zeros(vector_size)
     for i, char in enumerate(text):
-        if i >= vector_size-2:
+        if i >= vector_size - 2:
             break
-        embedding[i+2] = ord(char) / 255  # Normalize ASCII value
-    return embedding
+        embedding[i + 2] = ord(char) / 255  # Normalize ASCII value
+    vector: List[float] = embedding.tolist()
+    return vector
 
-def angle_to_embedding(angle:float) -> List[float]:
+
+def angle_to_embedding(angle: float) -> List[float]:
     """Embeds angles onto a circle"""
     embedding = np.zeros(vector_size)
     embedding[0] = math.cos(angle * math.pi)
     embedding[1] = math.sin(angle * math.pi)
-    return embedding
+    vector: List[float] = embedding.tolist()
+    return vector
 
 
 class SimpleEmbeddingModel(EmbeddingModel):
     """
-    Embeds numeric values (as strings in units of pi) into two-dimensional vectors on a circle, and
-    other text into a simple 50-dimension vector.
+    Embeds numeric values (as strings in units of pi) into two-dimensional vectors on
+    a circle, and other text into a simple 50-dimension vector.
     """
 
     def embed_texts(self, texts: List[str]) -> List[List[float]]:
@@ -82,6 +87,7 @@ def cassandra() -> Iterator[LocalCassandraTestStore]:
     if store.docker_container:
         store.docker_container.stop()
 
+
 @pytest.fixture()
 def graph_store_factory(
     cassandra: LocalCassandraTestStore,
@@ -107,16 +113,16 @@ def graph_store_factory(
     session.shutdown()
 
 
+def _result_ids(nodes: Iterable[Node]) -> List[str]:
+    return [n.id for n in nodes if n.id is not None]
+
+
 def test_graph_store_creation(graph_store_factory: Callable[[], GraphStore]) -> None:
     """Test that a graph store can be created.
 
     This verifies the schema can be applied and the queries prepared.
     """
     graph_store_factory()
-
-
-def _result_ids(nodes: Iterable[Node]) -> List[str]:
-    return [n.id for n in nodes]
 
 
 def test_mmr_traversal(graph_store_factory: Callable[[], GraphStore]) -> None:
@@ -182,7 +188,8 @@ def test_mmr_traversal(graph_store_factory: Callable[[], GraphStore]) -> None:
     results = gs.mmr_traversal_search("0.0", k=4)
     assert _result_ids(results) == ["v0", "v2", "v1", "v3"]
 
-def test_write_retrieve_keywords(graph_store_factory: Callable[[], GraphStore]):
+
+def test_write_retrieve_keywords(graph_store_factory: Callable[[], GraphStore]) -> None:
     gs = graph_store_factory()
 
     greetings = Node(
@@ -205,9 +212,9 @@ def test_write_retrieve_keywords(graph_store_factory: Callable[[], GraphStore]):
         id="doc2",
         text="Hello Earth",
         links={
-                Link(direction="out", kind="parent", tag="parent"),
-                Link(direction="bidir", kind="kw", tag="greeting"),
-                Link(direction="bidir", kind="kw", tag="earth"),
+            Link(direction="out", kind="parent", tag="parent"),
+            Link(direction="bidir", kind="kw", tag="greeting"),
+            Link(direction="bidir", kind="kw", tag="earth"),
         },
     )
 
@@ -237,7 +244,7 @@ def test_write_retrieve_keywords(graph_store_factory: Callable[[], GraphStore]):
     assert set(_result_ids(results)) == {"doc2", "doc1", "greetings"}
 
 
-def test_metadata(graph_store_factory: Callable[[], GraphStore]):
+def test_metadata(graph_store_factory: Callable[[], GraphStore]) -> None:
     gs = graph_store_factory()
 
     gs.add_nodes(
