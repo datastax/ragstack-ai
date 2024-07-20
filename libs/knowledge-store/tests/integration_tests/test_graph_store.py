@@ -13,30 +13,29 @@ load_dotenv()
 
 KEYSPACE = "default_keyspace"
 
+vector_size = 52
 
-def text_to_embedding(text, max_length=100):
-    embedding = np.zeros(max_length)
+def text_to_embedding(text:str) -> List[float]:
+    """Embeds text using a simple ascii conversion algorithm"""
+    embedding = np.zeros(vector_size)
     for i, char in enumerate(text):
-        if i >= max_length:
+        if i >= vector_size-2:
             break
-        embedding[i] = ord(char) / 255  # Normalize ASCII value
+        embedding[i+2] = ord(char) / 255  # Normalize ASCII value
+    return embedding
+
+def angle_to_embedding(angle:float) -> List[float]:
+    """Embeds angles onto a circle"""
+    embedding = np.zeros(vector_size)
+    embedding[0] = math.cos(angle * math.pi)
+    embedding[1] = math.sin(angle * math.pi)
     return embedding
 
 
-@pytest.fixture(scope="session")
-def cassandra() -> Iterator[LocalCassandraTestStore]:
-    store = LocalCassandraTestStore()
-    yield store
-
-    if store.docker_container:
-        store.docker_container.stop()
-
-
-class AngularOrTextEmbeddings(EmbeddingModel):
+class SimpleEmbeddingModel(EmbeddingModel):
     """
-    From angles (as strings in units of pi) to two-dimensional embedding vectors on a circle.
-    -- or --
-    Simple text encodings
+    Embeds numeric values (as strings in units of pi) into two-dimensional vectors on a circle, and
+    other text into a simple 50-dimension vector.
     """
 
     def embed_texts(self, texts: List[str]) -> List[List[float]]:
@@ -50,13 +49,13 @@ class AngularOrTextEmbeddings(EmbeddingModel):
         Convert input text to a 'vector' (list of floats).
         If the text is a number, use it as the angle for the
         unit vector in units of pi.
-        Any other input text is embedded using word2vec
+        Any other input text is embedded as is.
         """
         try:
             angle = float(text)
-            return [math.cos(angle * math.pi), math.sin(angle * math.pi)]
+            return angle_to_embedding(angle=angle)
         except ValueError:
-            # Assume: just test string, no attention is paid to values.
+            # Assume: just test string
             return text_to_embedding(text)
 
     async def aembed_texts(self, texts: List[str]) -> List[List[float]]:
@@ -70,10 +69,18 @@ class AngularOrTextEmbeddings(EmbeddingModel):
         Convert input text to a 'vector' (list of floats).
         If the text is a number, use it as the angle for the
         unit vector in units of pi.
-        Any other input text becomes the singular result [0, 0] !
+        Any other input text is embedded as is.
         """
         return self.embed_query(text=text)
 
+
+@pytest.fixture(scope="session")
+def cassandra() -> Iterator[LocalCassandraTestStore]:
+    store = LocalCassandraTestStore()
+    yield store
+
+    if store.docker_container:
+        store.docker_container.stop()
 
 @pytest.fixture()
 def graph_store_factory(
@@ -82,7 +89,7 @@ def graph_store_factory(
     session = cassandra.create_cassandra_session()
     session.set_keyspace(KEYSPACE)
 
-    embedding = AngularOrTextEmbeddings()
+    embedding = SimpleEmbeddingModel()
 
     def _make_graph_store() -> GraphStore:
         name = secrets.token_hex(8)
