@@ -25,6 +25,7 @@ def main() -> None:
     cli_commands.setup_query(subparsers=subparsers)
     cli_commands.setup_compare(subparsers=subparsers)
     cli_commands.setup_run(subparsers=subparsers)
+    cli_commands.setup_dashboard(subparsers=subparsers)
 
     # Parse the command-line arguments
     args = parser.parse_args()
