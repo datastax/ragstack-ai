@@ -1,6 +1,7 @@
 import logging
 
 import pytest
+from cassandra.cluster import Session
 from ragstack_colbert import (
     CassandraDatabase,
     ColbertEmbeddingModel,
@@ -8,25 +9,9 @@ from ragstack_colbert import (
 )
 from ragstack_tests_utils import TestData
 
-from tests.integration_tests.conftest import (
-    get_astradb_test_store,
-    get_local_cassandra_test_store,
-)
 
-
-@pytest.fixture()
-def cassandra():
-    return get_local_cassandra_test_store()
-
-
-@pytest.fixture()
-def astra_db():
-    return get_astradb_test_store()
-
-
-@pytest.mark.parametrize("vector_store", ["cassandra", "astra_db"])
-def test_embedding_cassandra_retriever(request, vector_store: str):
-    vector_store = request.getfixturevalue(vector_store)
+@pytest.mark.parametrize("session", ["cassandra", "astra_db"], indirect=["session"])
+def test_embedding_cassandra_retriever(session: Session):
     narrative = TestData.marine_animals_text()
 
     # Define the desired chunk size and overlap size
@@ -52,9 +37,6 @@ def test_embedding_cassandra_retriever(request, vector_store: str):
     chunked_texts = chunk_texts(narrative, chunk_size, overlap_size)
 
     doc_id = "marine_animals"
-
-    session = vector_store.create_cassandra_session()
-    session.default_timeout = 180
 
     database = CassandraDatabase.from_session(
         keyspace="default_keyspace",

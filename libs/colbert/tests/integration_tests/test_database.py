@@ -1,27 +1,11 @@
 import pytest
+from cassandra.cluster import Session
 from ragstack_colbert import CassandraDatabase, Chunk
 from ragstack_tests_utils import TestData
 
-from tests.integration_tests.conftest import (
-    get_astradb_test_store,
-    get_local_cassandra_test_store,
-)
 
-
-@pytest.fixture()
-def cassandra():
-    return get_local_cassandra_test_store()
-
-
-@pytest.fixture()
-def astra_db():
-    return get_astradb_test_store()
-
-
-@pytest.mark.parametrize("vector_store", ["cassandra", "astra_db"])
-def test_database_sync(request, vector_store: str):
-    vector_store = request.getfixturevalue(vector_store)
-
+@pytest.mark.parametrize("session", ["cassandra", "astra_db"], indirect=["session"])
+def test_database_sync(session: Session):
     doc_id = "earth_doc_id"
 
     chunk_0 = Chunk(
@@ -39,9 +23,6 @@ def test_database_sync(request, vector_store: str):
         metadata={"name": "renewable_energy", "id": 42},
         embedding=TestData.renewable_energy_embedding(),
     )
-
-    session = vector_store.create_cassandra_session()
-    session.default_timeout = 180
 
     database = CassandraDatabase.from_session(
         keyspace="default_keyspace",
@@ -61,11 +42,8 @@ def test_database_sync(request, vector_store: str):
     assert result
 
 
-@pytest.mark.parametrize("vector_store", ["cassandra", "astra_db"])
-@pytest.mark.asyncio()
-async def test_database_async(request, vector_store: str):
-    vector_store = request.getfixturevalue(vector_store)
-
+@pytest.mark.parametrize("session", ["cassandra", "astra_db"], indirect=["session"])
+async def test_database_async(session: Session):
     doc_id = "earth_doc_id"
 
     chunk_0 = Chunk(
@@ -83,9 +61,6 @@ async def test_database_async(request, vector_store: str):
         metadata={"name": "renewable_energy", "id": 42},
         embedding=TestData.renewable_energy_embedding(),
     )
-
-    session = vector_store.create_cassandra_session()
-    session.default_timeout = 180
 
     database = CassandraDatabase.from_session(
         keyspace="default_keyspace",
