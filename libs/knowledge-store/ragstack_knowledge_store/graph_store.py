@@ -1,4 +1,5 @@
 import json
+import logging
 import re
 import secrets
 from dataclasses import asdict, dataclass, field, is_dataclass
@@ -23,6 +24,8 @@ from .concurrency import ConcurrentQueries
 from .content import Kind
 from .embedding_model import EmbeddingModel
 from .links import Link
+
+logger = logging.getLogger(__name__)
 
 CONTENT_ID = "content_id"
 
@@ -125,10 +128,17 @@ class GraphStore:
         embedding: EmbeddingModel,
         *,
         node_table: str = "graph_nodes",
+        targets_table: str = "",
         session: Optional[Session] = None,
         keyspace: Optional[str] = None,
         setup_mode: SetupMode = SetupMode.SYNC,
     ):
+        if targets_table:
+            logger.warning(
+                "The 'targets_table' parameter is deprecated "
+                "and will be removed in future versions."
+            )
+
         session = check_resolve_session(session)
         keyspace = check_resolve_keyspace(keyspace)
 
