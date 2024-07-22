@@ -59,9 +59,8 @@ def _serialize_metadata(md: Dict[str, Any]) -> str:
 def _serialize_links(links: Set[Link]) -> str:
     class SetAndLinkEncoder(json.JSONEncoder):
         def default(self, obj: Any) -> Any:
-            if is_dataclass(obj):
-                # TODO: Mypy false positive: https://github.com/python/mypy/issues/17550
-                return asdict(obj)  # type: ignore[call-overload]
+            if is_dataclass(obj) and not isinstance(obj, type):
+                return asdict(obj)
 
             try:
                 iterable = iter(obj)
