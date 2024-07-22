@@ -1,5 +1,5 @@
+from langchain_community.graph_vectorstores.extractors import GLiNERLinkExtractor
 from langchain_core.graph_vectorstores import Link
-from ragstack_langchain.graph_store.extractors import GLiNERLinkExtractor
 
 PAGE_1 = """
 Cristiano Ronaldo dos Santos Aveiro (Portuguese pronunciation: [kɾiʃ'tjɐnu

@@ -1,10 +1,9 @@
 from typing import Iterable, Sequence
 
+from langchain_community.graph_vectorstores.extractors import LinkExtractor
 from langchain_core.documents import Document
 from langchain_core.documents.transformers import BaseDocumentTransformer
 from langchain_core.graph_vectorstores.links import add_links
-
-from ragstack_langchain.graph_store.extractors.link_extractor import LinkExtractor
 
 
 class LinkExtractorTransformer(BaseDocumentTransformer):
