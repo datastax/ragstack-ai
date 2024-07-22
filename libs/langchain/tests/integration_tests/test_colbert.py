@@ -2,17 +2,13 @@ import logging
 from typing import List, Tuple
 
 import pytest
+from cassandra.cluster import Session
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document
 from ragstack_colbert import CassandraDatabase, ColbertEmbeddingModel
 from ragstack_langchain.colbert import ColbertVectorStore
 from ragstack_tests_utils import TestData
 from transformers import BertTokenizer
-
-from tests.integration_tests.conftest import (
-    get_astradb_test_store,
-    get_local_cassandra_test_store,
-)
 
 logging.getLogger("cassandra").setLevel(logging.ERROR)
 
@@ -67,22 +63,8 @@ def validate_retrieval(results: List[Document], key_value: str):
     return passed
 
 
-@pytest.fixture()
-def cassandra():
-    return get_local_cassandra_test_store()
-
-
-@pytest.fixture()
-def astra_db():
-    return get_astradb_test_store()
-
-
-@pytest.mark.parametrize("vector_store", ["cassandra", "astra_db"])
-def test_sync_from_docs(request, vector_store: str):
-    vector_store = request.getfixturevalue(vector_store)
-    session = vector_store.create_cassandra_session()
-    session.default_timeout = 180
-
+@pytest.mark.parametrize("session", ["cassandra", "astra_db"], indirect=["session"])
+def test_sync_from_docs(session: Session) -> None:
     table_name = "LangChain_test_sync_from_docs"
 
     database = CassandraDatabase.from_session(session=session, table_name=table_name)
@@ -133,13 +115,8 @@ def test_sync_from_docs(request, vector_store: str):
     assert validate_retrieval(results, key_value="coral reefs")
 
 
-@pytest.mark.parametrize("vector_store", ["cassandra", "astra_db"])
-@pytest.mark.asyncio()
-async def test_async_from_docs(request, vector_store: str):
-    vector_store = request.getfixturevalue(vector_store)
-    session = vector_store.create_cassandra_session()
-    session.default_timeout = 180
-
+@pytest.mark.parametrize("session", ["cassandra", "astra_db"], indirect=["session"])
+async def test_async_from_docs(session: Session) -> None:
     table_name = "LangChain_test_async_from_docs"
 
     database = CassandraDatabase.from_session(session=session, table_name=table_name)

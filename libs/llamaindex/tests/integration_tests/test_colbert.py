@@ -2,6 +2,7 @@ import logging
 from typing import Dict, List, Tuple
 
 import pytest
+from cassandra.cluster import Session
 from llama_index.core import Settings, get_response_synthesizer
 from llama_index.core.ingestion import IngestionPipeline
 from llama_index.core.query_engine import RetrieverQueryEngine
@@ -16,11 +17,6 @@ from ragstack_colbert import (
 from ragstack_llamaindex.colbert import ColbertRetriever
 from ragstack_tests_utils import TestData
 
-from tests.integration_tests.conftest import (
-    get_astradb_test_store,
-    get_local_cassandra_test_store,
-)
-
 logging.getLogger("cassandra").setLevel(logging.ERROR)
 
 
@@ -32,22 +28,8 @@ def validate_retrieval(results: List[NodeWithScore], key_value: str):
     return passed
 
 
-@pytest.fixture()
-def cassandra():
-    return get_local_cassandra_test_store()
-
-
-@pytest.fixture()
-def astra_db():
-    return get_astradb_test_store()
-
-
-@pytest.mark.parametrize("vector_store", ["astra_db"])  # "cassandra",
-def test_sync(request, vector_store: str):
-    vector_store = request.getfixturevalue(vector_store)
-    session = vector_store.create_cassandra_session()
-    session.default_timeout = 180
-
+@pytest.mark.parametrize("session", ["astra_db"], indirect=["session"])  # "cassandra",
+def test_sync(session: Session):
     table_name = "LlamaIndex_colbert_sync"
 
     batch_size = 5  # 640 recommended for production use

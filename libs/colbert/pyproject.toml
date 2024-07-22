@@ -17,10 +17,14 @@ torch = "2.2.1"
 cassio = "~0.1.7"
 pydantic = "^2.7.1"
 
+# Workaround for https://github.com/pytorch/pytorch/pull/127921
+# Remove when we upgrade to pytorch 2.4
+setuptools = { version = ">=70", python = ">=3.12" }
+
+
 [tool.poetry.group.test.dependencies]
 ragstack-ai-tests-utils = { path = "../tests-utils", develop = true }
 pytest-asyncio = "^0.23.6"
 
-[tool.poetry.group.dev.dependencies]
-setuptools = "70.0.0"
-
+[tool.pytest.ini_options]
+asyncio_mode = "auto"

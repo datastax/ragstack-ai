@@ -1,28 +1,24 @@
 import pytest
+from cassandra.cluster import Session
 from ragstack_tests_utils import AstraDBTestStore, LocalCassandraTestStore
 
-status = {
-    "local_cassandra_test_store": None,
-    "astradb_test_store": None,
-}
+
+@pytest.fixture(scope="session")
+def cassandra() -> LocalCassandraTestStore:
+    store = LocalCassandraTestStore()
+    yield store
+    if store.docker_container:
+        store.docker_container.stop()
 
 
-def get_local_cassandra_test_store():
-    if not status["local_cassandra_test_store"]:
-        status["local_cassandra_test_store"] = LocalCassandraTestStore()
-    return status["local_cassandra_test_store"]
+@pytest.fixture(scope="session")
+def astra_db() -> AstraDBTestStore:
+    return AstraDBTestStore()
 
 
-def get_astradb_test_store():
-    if not status["astradb_test_store"]:
-        status["astradb_test_store"] = AstraDBTestStore()
-    return status["astradb_test_store"]
-
-
-@pytest.hookimpl()
-def pytest_sessionfinish():
-    if (
-        status["local_cassandra_test_store"]
-        and status["local_cassandra_test_store"].docker_container
-    ):
-        status["local_cassandra_test_store"].docker_container.stop()
+@pytest.fixture()
+def session(request) -> Session:
+    test_store = request.getfixturevalue(request.param)
+    session = test_store.create_cassandra_session()
+    session.default_timeout = 180
+    return session
