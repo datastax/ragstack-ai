@@ -1,5 +1,5 @@
-from ragstack_langchain.graph_store.extractors import KeybertLinkExtractor
-from ragstack_langchain.graph_store.links import Link
+from langchain_community.graph_vectorstores.extractors import KeybertLinkExtractor
+from langchain_core.graph_vectorstores import Link
 
 PAGE_1 = """
 Supervised learning is the machine learning task of learning a function that

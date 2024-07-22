@@ -1,21 +1,36 @@
-from langchain_core.documents import Document
-from ragstack_langchain.graph_store.extractors import (
-    HtmlLinkExtractor,
-    LinkExtractorTransformer,
-)
-from ragstack_langchain.graph_store.extractors.gliner_link_extractor import (
+from langchain_community.graph_vectorstores.extractors import (
     GLiNERLinkExtractor,
-)
-from ragstack_langchain.graph_store.extractors.keybert_link_extractor import (
+    HtmlLinkExtractor,
     KeybertLinkExtractor,
 )
-from ragstack_langchain.graph_store.links import Link, get_links
+from langchain_core.documents import Document
+from langchain_core.graph_vectorstores.links import Link, get_links
+from ragstack_langchain.graph_store.extractors import LinkExtractorTransformer
 
 from . import (
     test_gliner_link_extractor,
-    test_html_link_extractor,
     test_keybert_link_extractor,
 )
+
+PAGE_1 = """
+<html>
+<body>
+Hello.
+<a href="relative">Relative</a>
+<a href="/relative-base">Relative base.</a>
+<a href="http://cnn.com">Aboslute</a>
+<a href="//same.foo">Test</a>
+</body>
+</html>
+"""
+
+PAGE_2 = """
+<html>
+<body>
+Hello.
+<a href="/bar/#fragment">Relative</a>
+</html>
+"""
 
 
 def test_html_extractor():
@@ -25,13 +40,13 @@ def test_html_extractor():
         ]
     )
     doc1 = Document(
-        page_content=test_html_link_extractor.PAGE_1,
+        page_content=PAGE_1,
         metadata={
             "source": "https://foo.com/bar/",
         },
     )
     doc2 = Document(
-        page_content=test_html_link_extractor.PAGE_2,
+        page_content=PAGE_2,
         metadata={
             "source": "https://foo.com/baz/",
         },
@@ -40,7 +55,7 @@ def test_html_extractor():
     assert results[0] == doc1
     assert results[1] == doc2
 
-    assert get_links(doc1) == {
+    assert set(get_links(doc1)) == {
         Link.incoming(kind="hyperlink", tag="https://foo.com/bar/"),
         Link.outgoing(kind="hyperlink", tag="https://foo.com/bar/relative"),
         Link.outgoing(kind="hyperlink", tag="https://foo.com/relative-base"),
@@ -48,7 +63,7 @@ def test_html_extractor():
         Link.outgoing(kind="hyperlink", tag="https://same.foo"),
     }
 
-    assert get_links(doc2) == {
+    assert set(get_links(doc2)) == {
         Link.incoming(kind="hyperlink", tag="https://foo.com/baz/"),
         Link.outgoing(kind="hyperlink", tag="https://foo.com/bar/"),
     }
@@ -71,7 +86,7 @@ def test_multiple_extractors():
     assert results[0] == doc1
     assert results[1] == doc2
 
-    assert get_links(doc1) == {
+    assert set(get_links(doc1)) == {
         Link(kind="kw", direction="bidir", tag="labeled"),
         Link(kind="kw", direction="bidir", tag="learning"),
         Link(kind="kw", direction="bidir", tag="training"),
@@ -79,7 +94,7 @@ def test_multiple_extractors():
         Link(kind="kw", direction="bidir", tag="labels"),
     }
 
-    assert get_links(doc2) == {
+    assert set(get_links(doc2)) == {
         Link(kind="kw", direction="bidir", tag="cristiano"),
         Link(kind="kw", direction="bidir", tag="goalscorer"),
         Link(kind="kw", direction="bidir", tag="footballer"),
