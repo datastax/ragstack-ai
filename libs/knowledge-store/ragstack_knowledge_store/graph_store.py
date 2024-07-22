@@ -1,7 +1,7 @@
 import json
 import re
 import secrets
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field, is_dataclass
 from enum import Enum
 from typing import (
     Any,
@@ -57,12 +57,11 @@ def _serialize_metadata(md: Dict[str, Any]) -> str:
 
 
 def _serialize_links(links: Set[Link]) -> str:
-    import dataclasses
-
     class SetAndLinkEncoder(json.JSONEncoder):
         def default(self, obj: Any) -> Any:
-            if dataclasses.is_dataclass(obj):
-                return dataclasses.asdict(obj)
+            if is_dataclass(obj):
+                # TODO: Mypy false positive: https://github.com/python/mypy/issues/17550
+                return asdict(obj)  # type: ignore[call-overload]
 
             try:
                 iterable = iter(obj)
