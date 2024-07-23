@@ -5,7 +5,7 @@ from ragstack_tests_utils import TestData
 
 
 @pytest.mark.parametrize("session", ["cassandra", "astra_db"], indirect=["session"])
-def test_database_sync(session: Session):
+def test_database_sync(session: Session) -> None:
     doc_id = "earth_doc_id"
 
     chunk_0 = Chunk(
@@ -43,15 +43,17 @@ def test_database_sync(session: Session):
 
 
 @pytest.mark.parametrize("session", ["cassandra", "astra_db"], indirect=["session"])
-async def test_database_async(session: Session):
+async def test_database_async(session: Session) -> None:
     doc_id = "earth_doc_id"
+
+    climate_change_embedding = TestData.climate_change_embedding()
 
     chunk_0 = Chunk(
         doc_id=doc_id,
         chunk_id=0,
         text=TestData.climate_change_text(),
         metadata={"name": "climate_change", "id": 23},
-        embedding=TestData.climate_change_embedding(),
+        embedding=climate_change_embedding,
     )
 
     chunk_1 = Chunk(
@@ -73,7 +75,9 @@ async def test_database_async(session: Session):
     assert results[0] == (doc_id, 0)
     assert results[1] == (doc_id, 1)
 
-    chunks = await database.search_relevant_chunks(vector=chunk_0.embedding[5], n=2)
+    chunks = await database.search_relevant_chunks(
+        vector=climate_change_embedding[5], n=2
+    )
     assert len(chunks) == 1
     assert chunks[0].doc_id == doc_id
     assert chunks[0].chunk_id == 0

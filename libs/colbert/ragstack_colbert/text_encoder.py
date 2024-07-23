@@ -9,7 +9,7 @@ chunks.
 """
 
 import logging
-from typing import List, Optional
+from typing import List, Optional, cast
 
 import torch
 from colbert.infra import ColBERTConfig
@@ -107,7 +107,7 @@ class TextEncoder:
         return embedded_chunks
 
     def encode_query(
-        self, text: str, query_maxlen: int, full_length_search: Optional[bool] = False
+        self, text: str, query_maxlen: int, full_length_search: bool = False
     ) -> Embedding:
         """Encodes a query into an embedding."""
         if query_maxlen < 0:
@@ -127,4 +127,4 @@ class TextEncoder:
 
         self._checkpoint.query_tokenizer.query_maxlen = prev_query_maxlen
 
-        return query_embedding.tolist()[0]
+        return cast(Embedding, query_embedding.tolist()[0])

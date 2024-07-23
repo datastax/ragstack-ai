@@ -1,4 +1,5 @@
 import pytest
+from _pytest.fixtures import FixtureRequest
 from cassandra.cluster import Session
 from ragstack_tests_utils import AstraDBTestStore, LocalCassandraTestStore
 
@@ -17,7 +18,7 @@ def astra_db() -> AstraDBTestStore:
 
 
 @pytest.fixture()
-def session(request) -> Session:
+def session(request: FixtureRequest) -> Session:
     test_store = request.getfixturevalue(request.param)
     session = test_store.create_cassandra_session()
     session.default_timeout = 180

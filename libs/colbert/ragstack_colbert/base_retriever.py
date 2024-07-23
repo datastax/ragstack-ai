@@ -25,7 +25,7 @@ class BaseRetriever(ABC):
         self,
         query_embedding: Embedding,
         k: Optional[int] = None,
-        include_embedding: Optional[bool] = False,
+        include_embedding: bool = False,
         **kwargs: Any,
     ) -> List[Tuple[Chunk, float]]:
         """Search for relevant text chunks based on a query embedding.
@@ -34,16 +34,16 @@ class BaseRetriever(ABC):
         store, ranked by relevance or other metrics.
 
         Args:
-            query_embedding (Embedding): The query embedding to search for relevant
+            query_embedding: The query embedding to search for relevant
                 text chunks.
-            k (Optional[int]): The number of top results to retrieve.
-            include_embedding (Optional[bool]): Optional (default False) flag to
+            k: The number of top results to retrieve.
+            include_embedding: Optional (default False) flag to
                 include the embedding vectors in the returned chunks
-            **kwargs (Any): Additional parameters that implementations might require
+            **kwargs: Additional parameters that implementations might require
                 for customized retrieval operations.
 
         Returns:
-            List[Tuple[Chunk, float]]: A list of retrieved Chunk, float Tuples,
+            A list of retrieved Chunk, float Tuples,
                 each representing a text chunk that is relevant to the query,
                 along with its similarity score.
         """
@@ -54,7 +54,7 @@ class BaseRetriever(ABC):
         self,
         query_embedding: Embedding,
         k: Optional[int] = None,
-        include_embedding: Optional[bool] = False,
+        include_embedding: bool = False,
         **kwargs: Any,
     ) -> List[Tuple[Chunk, float]]:
         """Search for relevant text chunks based on a query embedding.
@@ -63,16 +63,16 @@ class BaseRetriever(ABC):
         store, ranked by relevance or other metrics.
 
         Args:
-            query_embedding (Embedding): The query embedding to search for relevant
+            query_embedding: The query embedding to search for relevant
                 text chunks.
-            k (Optional[int]): The number of top results to retrieve.
-            include_embedding (Optional[bool]): Optional (default False) flag to
+            k: The number of top results to retrieve.
+            include_embedding: Optional (default False) flag to
                 include the embedding vectors in the returned chunks
-            **kwargs (Any): Additional parameters that implementations might require
+            **kwargs: Additional parameters that implementations might require
                 for customized retrieval operations.
 
         Returns:
-            List[Tuple[Chunk, float]]: A list of retrieved Chunk, float Tuples,
+            A list of retrieved Chunk, float Tuples,
                 each representing a text chunk that is relevant to the query,
                 along with its similarity score.
         """
@@ -84,7 +84,7 @@ class BaseRetriever(ABC):
         query_text: str,
         k: Optional[int] = None,
         query_maxlen: Optional[int] = None,
-        include_embedding: Optional[bool] = False,
+        include_embedding: bool = False,
         **kwargs: Any,
     ) -> List[Tuple[Chunk, float]]:
         """Search for relevant text chunks based on a query text.
@@ -93,17 +93,17 @@ class BaseRetriever(ABC):
         store, ranked by relevance or other metrics.
 
         Args:
-            query_text (str): The query text to search for relevant text chunks.
-            k (Optional[int]): The number of top results to retrieve.
-            query_maxlen (Optional[int]): The maximum length of the query to consider.
+            query_text: The query text to search for relevant text chunks.
+            k: The number of top results to retrieve.
+            query_maxlen: The maximum length of the query to consider.
                 If None, the maxlen will be dynamically generated.
-            include_embedding (Optional[bool]): Optional (default False) flag to
+            include_embedding: Optional (default False) flag to
                 include the embedding vectors in the returned chunks
-            **kwargs (Any): Additional parameters that implementations might require
+            **kwargs: Additional parameters that implementations might require
                 for customized retrieval operations.
 
         Returns:
-            List[Tuple[Chunk, float]]: A list of retrieved Chunk, float Tuples,
+            A list of retrieved Chunk, float Tuples,
                 each representing a text chunk that is relevant to the query,
                 along with its similarity score.
         """
@@ -115,7 +115,7 @@ class BaseRetriever(ABC):
         query_text: str,
         k: Optional[int] = None,
         query_maxlen: Optional[int] = None,
-        include_embedding: Optional[bool] = False,
+        include_embedding: bool = False,
         **kwargs: Any,
     ) -> List[Tuple[Chunk, float]]:
         """Search for relevant text chunks based on a query text.
@@ -124,17 +124,17 @@ class BaseRetriever(ABC):
         store, ranked by relevance or other metrics.
 
         Args:
-            query_text (str): The query text to search for relevant text chunks.
-            k (Optional[int]): The number of top results to retrieve.
-            query_maxlen (Optional[int]): The maximum length of the query to consider.
+            query_text: The query text to search for relevant text chunks.
+            k: The number of top results to retrieve.
+            query_maxlen: The maximum length of the query to consider.
                 If None, the maxlen will be dynamically generated.
-            include_embedding (Optional[bool]): Optional (default False) flag to
+            include_embedding: Optional (default False) flag to
                 include the embedding vectors in the returned chunks
-            **kwargs (Any): Additional parameters that implementations might require
+            **kwargs: Additional parameters that implementations might require
                 for customized retrieval operations.
 
         Returns:
-            List[Tuple[Chunk, float]]: A list of retrieved Chunk, float Tuples,
+            A list of retrieved Chunk, float Tuples,
                 each representing a text chunk that is relevant to the query,
                 along with its similarity score.
         """
