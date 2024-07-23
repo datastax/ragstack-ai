@@ -1,3 +1,4 @@
+# Test docs workflow does not run for this change.
 from importlib import metadata
 
 try:
