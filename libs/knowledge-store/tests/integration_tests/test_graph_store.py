@@ -98,7 +98,9 @@ def graph_store_factory(
 
     embedding = SimpleEmbeddingModel()
 
-    def _make_graph_store(metadata_indexing: MetadataIndexingType = "all") -> GraphStore:
+    def _make_graph_store(
+        metadata_indexing: MetadataIndexingType = "all",
+    ) -> GraphStore:
         name = secrets.token_hex(8)
 
         node_table = f"nodes_{name}"
@@ -118,7 +120,9 @@ def _result_ids(nodes: Iterable[Node]) -> List[str]:
     return [n.id for n in nodes if n.id is not None]
 
 
-def test_mmr_traversal(graph_store_factory: Callable[[MetadataIndexingType], GraphStore]) -> None:
+def test_mmr_traversal(
+    graph_store_factory: Callable[[MetadataIndexingType], GraphStore],
+) -> None:
     """
     Test end to end construction and MMR search.
     The embedding function used here ensures `texts` become
@@ -163,7 +167,7 @@ def test_mmr_traversal(graph_store_factory: Callable[[MetadataIndexingType], Gra
         metadata={"even": False},
     )
 
-    gs = graph_store_factory()
+    gs = graph_store_factory("all")
     gs.add_nodes([v0, v1, v2, v3])
 
     results = gs.mmr_traversal_search("0.0", k=2, fetch_k=2)
@@ -191,7 +195,9 @@ def test_mmr_traversal(graph_store_factory: Callable[[MetadataIndexingType], Gra
     assert _result_ids(results) == ["v0", "v2"]
 
 
-def test_write_retrieve_keywords(graph_store_factory: Callable[[MetadataIndexingType], GraphStore]) -> None:
+def test_write_retrieve_keywords(
+    graph_store_factory: Callable[[MetadataIndexingType], GraphStore],
+) -> None:
     greetings = Node(
         id="greetings",
         text="Typical Greetings",
@@ -221,7 +227,7 @@ def test_write_retrieve_keywords(graph_store_factory: Callable[[MetadataIndexing
         metadata={"Hello": True, "Greeting": "earth"},
     )
 
-    gs = graph_store_factory()
+    gs = graph_store_factory("all")
     gs.add_nodes([greetings, doc1, doc2])
 
     # Doc2 is more similar, but World and Earth are similar enough that doc1 also shows
@@ -260,8 +266,10 @@ def test_write_retrieve_keywords(graph_store_factory: Callable[[MetadataIndexing
     assert set(_result_ids(results)) == {"doc2", "doc1", "greetings"}
 
 
-def test_metadata(graph_store_factory: Callable[[MetadataIndexingType], GraphStore]) -> None:
-    gs = graph_store_factory()
+def test_metadata(
+    graph_store_factory: Callable[[MetadataIndexingType], GraphStore],
+) -> None:
+    gs = graph_store_factory("all")
     gs.add_nodes(
         [
             Node(
