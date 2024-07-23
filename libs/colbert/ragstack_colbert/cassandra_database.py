@@ -9,12 +9,13 @@ facilitating scalable and high-relevancy retrieval operations.
 import asyncio
 import logging
 from collections import defaultdict
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Awaitable, Dict, List, Optional, Set, Tuple
 
 import cassio
 from cassandra.cluster import Session
 from cassio.table.query import Predicate, PredicateOperator
 from cassio.table.tables import ClusteredMetadataVectorCassandraTable
+from typing_extensions import Self, override
 
 from .base_database import BaseDatabase
 from .constant import DEFAULT_COLBERT_DIM
@@ -39,7 +40,7 @@ class CassandraDatabase(BaseDatabase):
 
     _table: ClusteredMetadataVectorCassandraTable
 
-    def __new__(cls):  # noqa: D102
+    def __new__(cls) -> Self:  # noqa: D102
         raise ValueError(
             "This class cannot be instantiated directly. "
             "Please use the `from_astra()` or `from_session()` class methods."
@@ -51,12 +52,12 @@ class CassandraDatabase(BaseDatabase):
         database_id: str,
         astra_token: str,
         keyspace: Optional[str] = "default_keyspace",
-        table_name: Optional[str] = "colbert",
+        table_name: str = "colbert",
         timeout: Optional[int] = 300,
-    ):
+    ) -> Self:
         """Creates a CassandraVectorStore using AstraDB connection info."""
         cassio.init(token=astra_token, database_id=database_id, keyspace=keyspace)
-        session = cassio.config.resolve_session()
+        session = cassio.config.check_resolve_session()
         session.default_timeout = timeout
 
         return cls.from_session(
@@ -68,8 +69,8 @@ class CassandraDatabase(BaseDatabase):
         cls,
         session: Session,
         keyspace: Optional[str] = "default_keyspace",
-        table_name: Optional[str] = "colbert",
-    ):
+        table_name: str = "colbert",
+    ) -> Self:
         """Creates a CassandraVectorStore using an existing session."""
         instance = super().__new__(cls)
         instance._initialize(session=session, keyspace=keyspace, table_name=table_name)  # noqa: SLF001
@@ -78,17 +79,17 @@ class CassandraDatabase(BaseDatabase):
     def _initialize(
         self,
         session: Session,
-        keyspace: str,
+        keyspace: Optional[str],
         table_name: str,
-    ):
+    ) -> None:
         """Initializes a new instance of the CassandraVectorStore.
 
         Args:
-            session (Session): The Cassandra session to use.
-            keyspace (str): The keyspace in which the table exists or will be created.
-            table_name (str): The name of the table to use or create for storing
+            session: The Cassandra session to use.
+            keyspace: The keyspace in which the table exists or will be created.
+            table_name: The name of the table to use or create for storing
                 embeddings.
-            timeout (int, optional): The default timeout in seconds for Cassandra
+            timeout: The default timeout in seconds for Cassandra
                 operations. Defaults to 180.
         """
         try:
@@ -113,7 +114,7 @@ class CassandraDatabase(BaseDatabase):
 
     def _log_insert_error(
         self, doc_id: str, chunk_id: int, embedding_id: int, exp: Exception
-    ):
+    ) -> None:
         if embedding_id == -1:
             logging.error(
                 "issue inserting document data: %s chunk: %s: %s", doc_id, chunk_id, exp
@@ -127,15 +128,8 @@ class CassandraDatabase(BaseDatabase):
                 exp,
             )
 
+    @override
     def add_chunks(self, chunks: List[Chunk]) -> List[Tuple[str, int]]:
-        """Stores a list of embedded text chunks in the vector store.
-
-        Args:
-            chunks (List[Chunk]): A list of `Chunk` instances to be stored.
-
-        Returns:
-            a list of tuples: (doc_id, chunk_id)
-        """
         failed_chunks: List[Tuple[str, int]] = []
         success_chunks: List[Tuple[str, int]] = []
 
@@ -157,19 +151,20 @@ class CassandraDatabase(BaseDatabase):
                 failed_chunks.append((doc_id, chunk_id))
                 continue
 
-            for embedding_id, vector in enumerate(chunk.embedding):
-                try:
-                    self._table.put(
-                        partition_id=doc_id,
-                        row_id=(chunk_id, embedding_id),
-                        vector=vector,
-                    )
-                except Exception as exp:  # noqa: BLE001
-                    self._log_insert_error(
-                        doc_id=doc_id, chunk_id=chunk_id, embedding_id=-1, exp=exp
-                    )
-                    failed_chunks.append((doc_id, chunk_id))
-                    continue
+            if chunk.embedding:
+                for embedding_id, vector in enumerate(chunk.embedding):
+                    try:
+                        self._table.put(
+                            partition_id=doc_id,
+                            row_id=(chunk_id, embedding_id),
+                            vector=vector,
+                        )
+                    except Exception as exp:  # noqa: BLE001
+                        self._log_insert_error(
+                            doc_id=doc_id, chunk_id=chunk_id, embedding_id=-1, exp=exp
+                        )
+                        failed_chunks.append((doc_id, chunk_id))
+                        continue
 
             success_chunks.append((doc_id, chunk_id))
 
@@ -186,7 +181,7 @@ class CassandraDatabase(BaseDatabase):
         sem: asyncio.Semaphore,
         doc_id: str,
         chunk_id: int,
-        embedding_id: Optional[int] = -1,
+        embedding_id: int = -1,
         text: Optional[str] = None,
         metadata: Optional[Dict[str, Any]] = None,
         vector: Optional[Vector] = None,
@@ -209,22 +204,13 @@ class CassandraDatabase(BaseDatabase):
                 return doc_id, chunk_id, embedding_id, e
             return doc_id, chunk_id, embedding_id, None
 
+    @override
     async def aadd_chunks(
-        self, chunks: List[Chunk], concurrent_inserts: Optional[int] = 100
+        self, chunks: List[Chunk], concurrent_inserts: int = 100
     ) -> List[Tuple[str, int]]:
-        """Stores a list of embedded text chunks in the vector store.
-
-        Args:
-            chunks (List[Chunk]): A list of `Chunk` instances to be stored.
-            concurrent_inserts (Optional[int]): How many concurrent inserts to make to
-                the database. Defaults to 100.
-
-        Returns:
-            a list of tuples: (doc_id, chunk_id)
-        """
         semaphore = asyncio.Semaphore(concurrent_inserts)
-        all_tasks = []
-        tasks_per_chunk = defaultdict(int)
+        all_tasks: List[Awaitable[Tuple[str, int, int, Optional[Exception]]]] = []
+        tasks_per_chunk: Dict[Tuple[str, int], int] = defaultdict(int)
 
         for chunk in chunks:
             doc_id = chunk.doc_id
@@ -243,27 +229,35 @@ class CassandraDatabase(BaseDatabase):
             )
             tasks_per_chunk[(doc_id, chunk_id)] += 1
 
-            for index, vector in enumerate(chunk.embedding):
-                all_tasks.append(
-                    self._limited_put(
-                        sem=semaphore,
-                        doc_id=doc_id,
-                        chunk_id=chunk_id,
-                        embedding_id=index,
-                        vector=vector,
+            if chunk.embedding:
+                for index, vector in enumerate(chunk.embedding):
+                    all_tasks.append(
+                        self._limited_put(
+                            sem=semaphore,
+                            doc_id=doc_id,
+                            chunk_id=chunk_id,
+                            embedding_id=index,
+                            vector=vector,
+                        )
                     )
-                )
-                tasks_per_chunk[(doc_id, chunk_id)] += 1
+                    tasks_per_chunk[(doc_id, chunk_id)] += 1
 
         results = await asyncio.gather(*all_tasks, return_exceptions=True)
 
-        for doc_id, chunk_id, embedding_id, exp in results:
-            if exp is None:
-                tasks_per_chunk[(doc_id, chunk_id)] -= 1
+        for result in results:
+            if isinstance(result, BaseException):
+                logging.error("issue inserting data", exc_info=result)
             else:
-                self._log_insert_error(
-                    doc_id=doc_id, chunk_id=chunk_id, embedding_id=embedding_id, exp=exp
-                )
+                doc_id, chunk_id, embedding_id, exp = result
+                if exp is None:
+                    tasks_per_chunk[(doc_id, chunk_id)] -= 1
+                else:
+                    self._log_insert_error(
+                        doc_id=doc_id,
+                        chunk_id=chunk_id,
+                        embedding_id=embedding_id,
+                        exp=exp,
+                    )
 
         outputs: List[Tuple[str, int]] = []
         failed_chunks: List[Tuple[str, int]] = []
@@ -282,16 +276,8 @@ class CassandraDatabase(BaseDatabase):
 
         return outputs
 
+    @override
     def delete_chunks(self, doc_ids: List[str]) -> bool:
-        """Deletes chunks from the vector store based on their document id.
-
-        Args:
-            doc_ids (List[str]): A list of document identifiers specifying the chunks
-                to be deleted.
-
-        Returns:
-            True if the all the deletes were successful.
-        """
         failed_docs: List[str] = []
 
         for doc_id in doc_ids:
@@ -321,20 +307,10 @@ class CassandraDatabase(BaseDatabase):
                 return doc_id, e
             return doc_id, None
 
+    @override
     async def adelete_chunks(
-        self, doc_ids: List[str], concurrent_deletes: Optional[int] = 100
+        self, doc_ids: List[str], concurrent_deletes: int = 100
     ) -> bool:
-        """Deletes chunks from the vector store based on their document id.
-
-        Args:
-            doc_ids (List[str]): A list of document identifiers specifying the chunks
-                to be deleted.
-            concurrent_deletes (Optional[int]): How many concurrent deletes to make
-                to the database. Defaults to 100.
-
-        Returns:
-            True if the all the deletes were successful.
-        """
         semaphore = asyncio.Semaphore(concurrent_deletes)
         all_tasks = [
             self._limited_delete(
@@ -349,11 +325,15 @@ class CassandraDatabase(BaseDatabase):
         success = True
         failed_docs: List[str] = []
 
-        for doc_id, exp in results:
-            if exp is not None:
-                logging.error("issue deleting document: %s: %s", doc_id, exp)
-                success = False
-                failed_docs.append(doc_id)
+        for result in results:
+            if isinstance(result, BaseException):
+                logging.error("issue inserting data", exc_info=result)
+            else:
+                doc_id, exp = result
+                if exp is not None:
+                    logging.error("issue deleting document: %s", doc_id, exc_info=exp)
+                    success = False
+                    failed_docs.append(doc_id)
 
         if len(failed_docs) > 0:
             raise CassandraDatabaseError(
@@ -363,13 +343,8 @@ class CassandraDatabase(BaseDatabase):
 
         return success
 
+    @override
     async def search_relevant_chunks(self, vector: Vector, n: int) -> List[Chunk]:
-        """Retrieves 'n' ANN results for an embedded token vector.
-
-        Returns:
-            A list of Chunks with only `doc_id` and `chunk_id` set.
-            Fewer than 'n' results may be returned.
-        """
         chunks: Set[Chunk] = set()
 
         # TODO: only return partition_id and row_id after cassio supports this
@@ -383,12 +358,8 @@ class CassandraDatabase(BaseDatabase):
             )
         return list(chunks)
 
+    @override
     async def get_chunk_embedding(self, doc_id: str, chunk_id: int) -> Chunk:
-        """Retrieve the embedding data for a chunk.
-
-        Returns:
-            A chunk with `doc_id`, `chunk_id`, and `embedding` set.
-        """
         row_id = (chunk_id, Predicate(PredicateOperator.GT, -1))
         rows = await self._table.aget_partition(partition_id=doc_id, row_id=row_id)
 
@@ -396,16 +367,17 @@ class CassandraDatabase(BaseDatabase):
 
         return Chunk(doc_id=doc_id, chunk_id=chunk_id, embedding=embedding)
 
+    @override
     async def get_chunk_data(
-        self, doc_id: str, chunk_id: int, include_embedding: Optional[bool] = False
+        self, doc_id: str, chunk_id: int, include_embedding: bool = False
     ) -> Chunk:
-        """Retrieve the text and metadata for a chunk.
-
-        Returns:
-            A chunk with `doc_id`, `chunk_id`, `text`, and `metadata` set.
-        """
         row_id = (chunk_id, Predicate(PredicateOperator.EQ, -1))
         row = await self._table.aget(partition_id=doc_id, row_id=row_id)
+
+        if row is None:
+            raise CassandraDatabaseError(
+                f"no chunk found for doc_id: {doc_id} chunk_id: {chunk_id}"
+            )
 
         if include_embedding is True:
             embedded_chunk = await self.get_chunk_embedding(
@@ -423,5 +395,6 @@ class CassandraDatabase(BaseDatabase):
             embedding=embedding,
         )
 
+    @override
     def close(self) -> None:
-        """Cleans up any open resources."""
+        pass

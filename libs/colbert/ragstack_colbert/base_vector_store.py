@@ -87,13 +87,13 @@ class BaseVectorStore(ABC):
     # handles LlamaIndex add
     @abstractmethod
     async def aadd_chunks(
-        self, chunks: List[Chunk], concurrent_inserts: Optional[int] = 100
+        self, chunks: List[Chunk], concurrent_inserts: int = 100
     ) -> List[Tuple[str, int]]:
         """Stores a list of embedded text chunks in the vector store.
 
         Args:
-            chunks (List[Chunk]): A list of `Chunk` instances to be stored.
-            concurrent_inserts (Optional[int]): How many concurrent inserts to make to
+            chunks: A list of `Chunk` instances to be stored.
+            concurrent_inserts: How many concurrent inserts to make to
                 the database. Defaults to 100.
 
         Returns:
@@ -107,7 +107,7 @@ class BaseVectorStore(ABC):
         texts: List[str],
         metadatas: Optional[List[Metadata]],
         doc_id: Optional[str] = None,
-        concurrent_inserts: Optional[int] = 100,
+        concurrent_inserts: int = 100,
     ) -> List[Tuple[str, int]]:
         """Adds text chunks to the vector store.
 
@@ -115,12 +115,12 @@ class BaseVectorStore(ABC):
         store.
 
         Args:
-            texts (List[str]): The list of text chunks to be embedded
-            metadatas (Optional[List[Metadata]])): An optional list of Metadata to be
+            texts: The list of text chunks to be embedded
+            metadatas: An optional list of Metadata to be
                 stored. If provided, these are set 1 to 1 with the texts list.
-            doc_id (Optional[str]): The document id associated with the texts.
+            doc_id: The document id associated with the texts.
                 If not provided, it is generated.
-            concurrent_inserts (Optional[int]): How many concurrent inserts to make to
+            concurrent_inserts: How many concurrent inserts to make to
                 the database. Defaults to 100.
 
         Returns:
@@ -130,14 +130,14 @@ class BaseVectorStore(ABC):
     # handles LangChain and LlamaIndex delete
     @abstractmethod
     async def adelete_chunks(
-        self, doc_ids: List[str], concurrent_deletes: Optional[int] = 100
+        self, doc_ids: List[str], concurrent_deletes: int = 100
     ) -> bool:
         """Deletes chunks from the vector store based on their document id.
 
         Args:
-            doc_ids (List[str]): A list of document identifiers specifying the chunks
+            doc_ids: A list of document identifiers specifying the chunks
                 to be deleted.
-            concurrent_deletes (Optional[int]): How many concurrent deletes to make to
+            concurrent_deletes: How many concurrent deletes to make to
                 the database. Defaults to 100.
 
         Returns:

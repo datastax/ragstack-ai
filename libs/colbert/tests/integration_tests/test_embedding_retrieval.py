@@ -1,4 +1,5 @@
 import logging
+from typing import List
 
 import pytest
 from cassandra.cluster import Session
@@ -11,7 +12,7 @@ from ragstack_tests_utils import TestData
 
 
 @pytest.mark.parametrize("session", ["cassandra", "astra_db"], indirect=["session"])
-def test_embedding_cassandra_retriever(session: Session):
+def test_embedding_cassandra_retriever(session: Session) -> None:
     narrative = TestData.marine_animals_text()
 
     # Define the desired chunk size and overlap size
@@ -19,7 +20,7 @@ def test_embedding_cassandra_retriever(session: Session):
     overlap_size = 50
 
     # Function to generate chunks with the specified size and overlap
-    def chunk_texts(text, chunk_size, overlap_size):
+    def chunk_texts(text: str, chunk_size: int, overlap_size: int) -> List[str]:
         texts = []
         start = 0
         end = chunk_size

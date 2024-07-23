@@ -35,8 +35,8 @@ class BaseEmbeddingModel(ABC):
     def embed_query(
         self,
         query: str,
-        full_length_search: Optional[bool] = False,
-        query_maxlen: int = -1,
+        full_length_search: bool = False,
+        query_maxlen: Optional[int] = None,
     ) -> Embedding:
         """Embeds a single query text into its vector representation.
 
@@ -44,12 +44,12 @@ class BaseEmbeddingModel(ABC):
         special [mast] tokens.
 
         Args:
-            query (str): The query text to encode.
-            full_length_search (Optional[bool]): Indicates whether to encode the
+            query: The query text to encode.
+            full_length_search: Indicates whether to encode the
                 query for a full-length search. Defaults to False.
-            query_maxlen (int): The fixed length for the query token embedding.
-                If -1, uses a dynamically calculated value.
+            query_maxlen: The fixed length for the query token embedding.
+                If None, uses a dynamically calculated value.
 
         Returns:
-            Embedding: A vector embedding representation of the query text
+            A vector embedding representation of the query text
         """

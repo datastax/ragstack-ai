@@ -57,5 +57,5 @@ class Chunk(BaseModel):
 
     # Allow objects to be hashable - only necessary if you need to use them in sets or
     # as dict keys.
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash((self.doc_id, self.chunk_id))

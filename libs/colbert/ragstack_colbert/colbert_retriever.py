@@ -25,11 +25,11 @@ from .base_retriever import BaseRetriever
 from .objects import Chunk, Embedding, Vector
 
 
-def all_gpus_support_fp16(is_cuda: Optional[bool] = False):
+def all_gpus_support_fp16(is_cuda: bool = False) -> bool:
     """Check if all available GPU devices support FP16 (half-precision) operations.
 
     Returns:
-        bool: True if all GPUs support FP16, False otherwise.
+        True if all GPUs support FP16, False otherwise.
     """
     if not is_cuda:
         return False
@@ -58,8 +58,8 @@ def all_gpus_support_fp16(is_cuda: Optional[bool] = False):
 def max_similarity_torch(
     query_vector: Vector,
     chunk_embedding: Embedding,
-    is_cuda: Optional[bool] = False,
-    is_fp16: Optional[bool] = False,
+    is_cuda: bool = False,
+    is_fp16: bool = False,
 ) -> float:
     """Calculates the maximum similarity for a query vector and a chunk embedding.
 
@@ -67,17 +67,17 @@ def max_similarity_torch(
     chunk embedding, leveraging PyTorch for efficient computation.
 
     Args:
-        query_vector (Vector): A list of float representing the query text.
-        chunk_embedding (Embedding): A list of Vector, each representing an chunk
+        query_vector: A list of float representing the query text.
+        chunk_embedding: A list of Vector, each representing an chunk
             embedding vector.
-        is_cuda (Optional[bool]): A flag indicating whether to use CUDA (GPU)
+        is_cuda: A flag indicating whether to use CUDA (GPU)
             for computation. Defaults to False.
-        is_fp16 (bool): A flag indicating whether to half-precision floating point
+        is_fp16: A flag indicating whether to half-precision floating point
             operations on CUDA (GPU).
             Has no effect on CPU computation. Defaults to False.
 
     Returns:
-        Tensor: A tensor containing the highest similarity score (dot product value)
+        A tensor containing the highest similarity score (dot product value)
             found between the query vector and any of the embedding vectors in the list.
 
     Note:
@@ -106,16 +106,6 @@ def max_similarity_torch(
 
     # returns a tensor; the item() is the score
     return float(max_sim.item())
-
-
-def get_trace(e: Exception) -> str:
-    """Extracts the traceback information from an exception."""
-    trace = ""
-    tb = e.__traceback__
-    while tb is not None:
-        trace += f"\tFile: {tb.tb_frame.f_code.co_filename} Line: {tb.tb_lineno}\n"
-        tb = tb.tb_next
-    return trace
 
 
 class ColbertRetriever(BaseRetriever):
@@ -157,9 +147,6 @@ class ColbertRetriever(BaseRetriever):
         self._is_cuda = torch.cuda.is_available()
         self._is_fp16 = all_gpus_support_fp16(self._is_cuda)
 
-    def close(self) -> None:
-        """Closes any open resources held by the retriever."""
-
     async def _query_relevant_chunks(
         self, query_embedding: Embedding, top_k: int
     ) -> Set[Chunk]:
@@ -174,11 +161,10 @@ class ColbertRetriever(BaseRetriever):
 
         # Process results and handle potential exceptions
         for result in results:
-            if isinstance(result, Exception):
+            if isinstance(result, BaseException):
                 logging.error(
-                    "Issue on database.get_relevant_chunks(): %s at %s",
-                    result,
-                    get_trace(result),
+                    "Issue on database.get_relevant_chunks()",
+                    exc_info=result,
                 )
             else:
                 chunks.update(result)
@@ -195,15 +181,17 @@ class ColbertRetriever(BaseRetriever):
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
         # Process results and handle potential exceptions
+        chunk_embeddings = []
         for result in results:
-            if isinstance(result, Exception):
+            if isinstance(result, BaseException):
                 logging.error(
-                    "Issue on database.get_chunk_embeddings():  %s at %s",
-                    result,
-                    get_trace(result),
+                    "Issue on database.get_chunk_embeddings()",
+                    exc_info=result,
                 )
+            else:
+                chunk_embeddings.append(result)
 
-        return results
+        return chunk_embeddings
 
     def _score_chunks(
         self, query_embedding: Embedding, chunk_embeddings: List[Chunk]
@@ -211,6 +199,8 @@ class ColbertRetriever(BaseRetriever):
         """Process the retrieved chunk data to calculate scores."""
         chunk_scores = {}
         for chunk in chunk_embeddings:
+            if not chunk.embedding:
+                continue
             chunk_scores[chunk] = sum(
                 max_similarity_torch(
                     query_vector=query_vector,
@@ -225,7 +215,7 @@ class ColbertRetriever(BaseRetriever):
     async def _get_chunk_data(
         self,
         chunks: List[Chunk],
-        include_embedding: Optional[bool] = False,
+        include_embedding: bool = False,
     ) -> List[Chunk]:
         """Fetches text and metadata for each chunk.
 
@@ -244,15 +234,17 @@ class ColbertRetriever(BaseRetriever):
         ]
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
+        chunks = []
         for result in results:
-            if isinstance(result, Exception):
+            if isinstance(result, BaseException):
                 logging.error(
-                    "Issue on database.get_chunk_data(): %s at %s",
-                    result,
-                    get_trace(result),
+                    "Issue on database.get_chunk_data()",
+                    exc_info=result,
                 )
+            else:
+                chunks.append(result)
 
-        return results
+        return chunks
 
     @override
     async def atext_search(
@@ -260,29 +252,9 @@ class ColbertRetriever(BaseRetriever):
         query_text: str,
         k: Optional[int] = 5,
         query_maxlen: Optional[int] = None,
-        include_embedding: Optional[bool] = False,
+        include_embedding: bool = False,
         **kwargs: Any,
     ) -> List[Tuple[Chunk, float]]:
-        """Searches for relevant text chunks based on a given query text.
-
-        Retrieves a list of text chunks most relevant to the given query,
-        using semantic similarity as the criteria.
-
-        Args:
-            query_text (str): The query text to search for relevant text chunks.
-            k (Optional[int]): The number of top results to retrieve. Default 5.
-            query_maxlen (Optional[int]): The maximum length of the query to consider.
-                If None, the maxlen will be dynamically generated.
-            include_embedding (Optional[bool]): Optional (default False) flag to include
-                the embedding vectors in the returned chunks
-            **kwargs (Any): Additional parameters that implementations might require
-                for customized retrieval operations.
-
-        Returns:
-            List[Tuple[Chunk, float]]: A list of retrieved Chunk, float Tuples,
-                each representing a text chunk that is relevant to the query,
-                along with its similarity score.
-        """
         query_embedding = self._embedding_model.embed_query(
             query=query_text, query_maxlen=query_maxlen
         )
@@ -299,28 +271,11 @@ class ColbertRetriever(BaseRetriever):
         self,
         query_embedding: Embedding,
         k: Optional[int] = 5,
-        include_embedding: Optional[bool] = False,
+        include_embedding: bool = False,
         **kwargs: Any,
     ) -> List[Tuple[Chunk, float]]:
-        """Searches for relevant text chunks based on a given query embedding.
-
-        Retrieves a list of text chunks most relevant to the given query,
-        using semantic similarity as the criteria.
-
-        Args:
-            query_embedding (Embedding): The query embedding to search for relevant
-                text chunks.
-            k (Optional[int]): The number of top results to retrieve. Default 5.
-            include_embedding (Optional[bool]): Optional (default False) flag to include
-                the embedding vectors in the returned chunks
-            **kwargs (Any): Additional parameters that implementations might require
-                for customized retrieval operations.
-
-        Returns:
-            List[Tuple[Chunk, float]]: A list of retrieved Chunk, float Tuples,
-                each representing a text chunk that is relevant to the query,
-                along with its similarity score.
-        """
+        if k is None:
+            k = 5
         top_k = max(math.floor(len(query_embedding) / 2), 16)
         logging.debug(
             "based on query length of %s tokens, retrieving %s results per "
@@ -330,7 +285,7 @@ class ColbertRetriever(BaseRetriever):
         )
 
         # search for relevant chunks (only with `doc_id` and `chunk_id` set)
-        relevant_chunks: List[Chunk] = await self._query_relevant_chunks(
+        relevant_chunks: Set[Chunk] = await self._query_relevant_chunks(
             query_embedding=query_embedding, top_k=top_k
         )
 
@@ -348,7 +303,7 @@ class ColbertRetriever(BaseRetriever):
 
         # only keep the top k sorted results
         top_k_chunks: List[Chunk] = sorted(
-            chunk_scores, key=chunk_scores.get, reverse=True
+            chunk_scores, key=lambda c: chunk_scores.get(c, 0), reverse=True
         )[:k]
 
         chunks: List[Chunk] = await self._get_chunk_data(
@@ -363,29 +318,9 @@ class ColbertRetriever(BaseRetriever):
         query_text: str,
         k: Optional[int] = 5,
         query_maxlen: Optional[int] = None,
-        include_embedding: Optional[bool] = False,
+        include_embedding: bool = False,
         **kwargs: Any,
     ) -> List[Tuple[Chunk, float]]:
-        """Searches for relevant text chunks based on a given query text.
-
-        Retrieves a list of text chunks relevant to a given query from the vector
-        store, ranked by relevance or other metrics.
-
-        Args:
-            query_text (str): The query text to search for relevant text chunks.
-            k (Optional[int]): The number of top results to retrieve. Default 5.
-            query_maxlen (Optional[int]): The maximum length of the query to consider.
-                If None, the maxlen will be dynamically generated.
-            include_embedding (Optional[bool]): Optional (default False) flag to
-                include the embedding vectors in the returned chunks
-            **kwargs (Any): Additional parameters that implementations might require
-                for customized retrieval operations.
-
-        Returns:
-            List[Tuple[Chunk, float]]: A list of retrieved Chunk, float Tuples,
-                each representing a text chunk that is relevant to the query,
-                along with its similarity score.
-        """
         return asyncio.run(
             self.atext_search(
                 query_text=query_text,
@@ -401,28 +336,9 @@ class ColbertRetriever(BaseRetriever):
         self,
         query_embedding: Embedding,
         k: Optional[int] = 5,
-        include_embedding: Optional[bool] = False,
+        include_embedding: bool = False,
         **kwargs: Any,
     ) -> List[Tuple[Chunk, float]]:
-        """Searches for relevant text chunks based on a given query embedding.
-
-        Retrieves a list of text chunks relevant to a given query from the vector
-        store, ranked by relevance or other metrics.
-
-        Args:
-            query_embedding (Embedding): The query embedding to search for relevant
-                text chunks.
-            k (Optional[int]): The number of top results to retrieve. Default 5.
-            include_embedding (Optional[bool]): Optional (default False) flag to
-                include the embedding vectors in the returned chunks
-            **kwargs (Any): Additional parameters that implementations might require
-                for customized retrieval operations.
-
-        Returns:
-            List[Tuple[Chunk, float]]: A list of retrieved Chunk, float Tuples,
-                each representing a text chunk that is relevant to the query,
-                along with its similarity score.
-        """
         return asyncio.run(
             self.aembedding_search(
                 query_embedding=query_embedding,

@@ -42,7 +42,7 @@ MAXIMUM_DISTANCE = 0.001
 
 
 # a uility function to evaluate similarity of two embeddings at per token level
-def are_they_similar(embedded_chunks: List[Embedding], tensors: List[Tensor]):
+def are_they_similar(embedded_chunks: List[Embedding], tensors: List[Tensor]) -> None:
     n = 0
     pdist = torch.nn.PairwiseDistance(p=2)
     for embedding in embedded_chunks:
@@ -62,7 +62,7 @@ def are_they_similar(embedded_chunks: List[Embedding], tensors: List[Tensor]):
     assert n == len(tensors)
 
 
-def test_embeddings_with_baseline():
+def test_embeddings_with_baseline() -> None:
     colbert = ColbertEmbeddingModel(
         doc_maxlen=220,
         nbits=2,
@@ -117,7 +117,7 @@ def test_embeddings_with_baseline():
     are_they_similar(embedded_chunks2, embedded_tensors)
 
 
-def test_colbert_embedding_against_vanilla_impl():
+def test_colbert_embedding_against_vanilla_impl() -> None:
     # this is a vanilla ColBERT embedding in a list of per token embeddings
     # based on the just Stanford ColBERT library
     cf = ColBERTConfig(checkpoint="colbert-ir/colbertv2.0")
@@ -134,7 +134,7 @@ def test_colbert_embedding_against_vanilla_impl():
     are_they_similar(embedded_chunks, embeddings_flat)
 
 
-def model_embedding(model: str):
+def model_embedding(model: str) -> None:
     logging.info("test model compatibility %s", model)
     colbert_svc = ColbertEmbeddingModel(
         checkpoint=model,
@@ -161,7 +161,7 @@ def model_embedding(model: str):
     assert len(embedding) == query_maxlen
 
 
-def test_compatible_models():
+def test_compatible_models() -> None:
     # ColBERT models and Google BERT models on HF
     # test representive models's compatibility with this repo's ColBERT embedding
     # evaluation is not within this test scope
@@ -177,4 +177,5 @@ def test_compatible_models():
         # "google-bert/bert-base-cased",   # already tested uncased
     ]
 
-    [model_embedding(model) for model in models]
+    for model in models:
+        model_embedding(model)

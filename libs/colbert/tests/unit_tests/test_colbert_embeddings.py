@@ -3,7 +3,7 @@ from ragstack_colbert import ColbertEmbeddingModel
 from ragstack_colbert.constant import DEFAULT_COLBERT_DIM, DEFAULT_COLBERT_MODEL
 
 
-def test_colbert_token_embeddings():
+def test_colbert_token_embeddings() -> None:
     colbert = ColbertEmbeddingModel()
 
     texts = ["test1", "test2"]
@@ -14,7 +14,7 @@ def test_colbert_token_embeddings():
     assert len(embeddings[0][0]) == DEFAULT_COLBERT_DIM
 
 
-def test_colbert_token_embeddings_with_params():
+def test_colbert_token_embeddings_with_params() -> None:
     colbert = ColbertEmbeddingModel(
         doc_maxlen=220,
         nbits=2,
@@ -32,7 +32,7 @@ def test_colbert_token_embeddings_with_params():
     assert len(embeddings[0][0]) == DEFAULT_COLBERT_DIM
 
 
-def test_colbert_query_embeddings():
+def test_colbert_query_embeddings() -> None:
     colbert = ColbertEmbeddingModel()
 
     embedding = colbert.embed_query("who is the president of the united states?")

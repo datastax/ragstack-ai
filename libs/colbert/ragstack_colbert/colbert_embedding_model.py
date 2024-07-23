@@ -13,6 +13,7 @@ with support for both CPU and GPU computing environments.
 from typing import List, Optional
 
 from colbert.infra import ColBERTConfig
+from typing_extensions import override
 
 from .base_embedding_model import BaseEmbeddingModel
 from .constant import DEFAULT_COLBERT_MODEL
@@ -37,14 +38,14 @@ class ColbertEmbeddingModel(BaseEmbeddingModel):
 
     def __init__(
         self,
-        checkpoint: Optional[str] = DEFAULT_COLBERT_MODEL,
-        doc_maxlen: Optional[int] = 256,
-        nbits: Optional[int] = 2,
-        kmeans_niters: Optional[int] = 4,
-        nranks: Optional[int] = -1,
+        checkpoint: str = DEFAULT_COLBERT_MODEL,
+        doc_maxlen: int = 256,
+        nbits: int = 2,
+        kmeans_niters: int = 4,
+        nranks: int = -1,
         query_maxlen: Optional[int] = None,
-        verbose: Optional[int] = 3,  # 3 is the default on ColBERT checkpoint
-        chunk_batch_size: Optional[int] = 640,
+        verbose: int = 3,  # 3 is the default on ColBERT checkpoint
+        chunk_batch_size: int = 640,
     ):
         """Initializes a new instance of the ColbertEmbeddingModel class.
 
@@ -53,20 +54,19 @@ class ColbertEmbeddingModel(BaseEmbeddingModel):
         tokenizer and encoder.
 
         Args:
-            checkpoint (Optional[str]): Path or URL to the Colbert model checkpoint.
+            checkpoint: Path or URL to the Colbert model checkpoint.
                 Default is a pre-defined model.
-            doc_maxlen (Optional[int]): Maximum number of tokens for document chunks.
+            doc_maxlen: Maximum number of tokens for document chunks.
                 Should equal the chunk_size.
-            nbits (Optional[int]): The number bits that each dimension encodes to.
-            kmeans_niters (Optional[int]): Number of iterations for k-means clustering
+            nbits: The number bits that each dimension encodes to.
+            kmeans_niters: Number of iterations for k-means clustering
                 during quantization.
-            nranks (Optional[int]): Number of ranks (processors) to use for distributed
+            nranks: Number of ranks (processors) to use for distributed
                 computing; -1 uses all available CPUs/GPUs.
-            query_maxlen (Optional[int]): Maximum length of query tokens for embedding.
-            verbose (Optional[int]): Verbosity level for logging.
-            chunk_batch_size (Optional[int]): The number of chunks to batch during
+            query_maxlen: Maximum length of query tokens for embedding.
+            verbose: Verbosity level for logging.
+            chunk_batch_size: The number of chunks to batch during
                 embedding. Defaults to 640.
-            **kwargs: Additional keyword arguments for future extensions.
         """
         if query_maxlen is None:
             query_maxlen = -1
@@ -83,16 +83,8 @@ class ColbertEmbeddingModel(BaseEmbeddingModel):
         )
         self._encoder = TextEncoder(config=colbert_config, verbose=verbose)
 
-    # implements the Abstract Class Method
+    @override
     def embed_texts(self, texts: List[str]) -> List[Embedding]:
-        """Embeds a list of texts into their vector embedding representations.
-
-        Args:
-            texts (List[str]): A list of string texts.
-
-        Returns:
-            List[Embedding]: A list of embeddings, in the order of the input list
-        """
         chunks = [
             Chunk(doc_id="dummy", chunk_id=i, text=t) for i, t in enumerate(texts)
         ]
@@ -105,30 +97,15 @@ class ColbertEmbeddingModel(BaseEmbeddingModel):
 
         sorted_embedded_chunks = sorted(embedded_chunks, key=lambda c: c.chunk_id)
 
-        return [c.embedding for c in sorted_embedded_chunks]
+        return [c.embedding or [] for c in sorted_embedded_chunks]
 
-    # implements the Abstract Class Method
+    @override
     def embed_query(
         self,
         query: str,
-        full_length_search: Optional[bool] = False,
+        full_length_search: bool = False,
         query_maxlen: Optional[int] = None,
     ) -> Embedding:
-        """Embeds a single query text into its vector representation.
-
-        If the query has fewer than query_maxlen tokens it will be padded with BERT
-        special [mast] tokens.
-
-        Args:
-            query (str): The query string to encode.
-            full_length_search (Optional[bool]): Indicates whether to encode the query
-                for a full-length search. Defaults to False.
-            query_maxlen (int): The fixed length for the query token embedding.
-                If None, uses a dynamically calculated value.
-
-        Returns:
-            Embedding: A vector embedding representation of the query text
-        """
         if query_maxlen is None:
             query_maxlen = -1
 

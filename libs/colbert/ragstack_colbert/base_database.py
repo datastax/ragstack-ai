@@ -6,7 +6,7 @@ models.
 """
 
 from abc import ABC, abstractmethod
-from typing import List, Optional, Tuple
+from typing import List, Tuple
 
 from .objects import Chunk, Vector
 
@@ -48,13 +48,13 @@ class BaseDatabase(ABC):
 
     @abstractmethod
     async def aadd_chunks(
-        self, chunks: List[Chunk], concurrent_inserts: Optional[int] = 100
+        self, chunks: List[Chunk], concurrent_inserts: int = 100
     ) -> List[Tuple[str, int]]:
         """Stores a list of embedded text chunks in the vector store.
 
         Args:
-            chunks (List[Chunk]): A list of `Chunk` instances to be stored.
-            concurrent_inserts (Optional[int]): How many concurrent inserts to make to
+            chunks: A list of `Chunk` instances to be stored.
+            concurrent_inserts: How many concurrent inserts to make to
                 the database. Defaults to 100.
 
         Returns:
@@ -63,14 +63,14 @@ class BaseDatabase(ABC):
 
     @abstractmethod
     async def adelete_chunks(
-        self, doc_ids: List[str], concurrent_deletes: Optional[int] = 100
+        self, doc_ids: List[str], concurrent_deletes: int = 100
     ) -> bool:
         """Deletes chunks from the vector store based on their document id.
 
         Args:
-            doc_ids (List[str]): A list of document identifiers specifying the chunks
+            doc_ids: A list of document identifiers specifying the chunks
                 to be deleted.
-            concurrent_deletes (Optional[int]): How many concurrent deletes to make
+            concurrent_deletes: How many concurrent deletes to make
                 to the database. Defaults to 100.
 
         Returns:
@@ -96,7 +96,7 @@ class BaseDatabase(ABC):
 
     @abstractmethod
     async def get_chunk_data(
-        self, doc_id: str, chunk_id: int, include_embedding: Optional[bool]
+        self, doc_id: str, chunk_id: int, include_embedding: bool = False
     ) -> Chunk:
         """Retrieve the text and metadata for a chunk.
 

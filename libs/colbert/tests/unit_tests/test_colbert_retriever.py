@@ -3,7 +3,7 @@ from ragstack_colbert.colbert_retriever import max_similarity_torch
 from ragstack_colbert.text_encoder import calculate_query_maxlen
 
 
-def test_max_similarity_torch():
+def test_max_similarity_torch() -> None:
     # Example query vector and embedding list
     query_vector = torch.tensor([1, 2, 3], dtype=torch.float32)
     embedding_list = [
@@ -20,7 +20,9 @@ def test_max_similarity_torch():
     )  # Should be the highest
 
     # Call the function under test
-    max_sim = max_similarity_torch(query_vector, embedding_list)
+    max_sim = max_similarity_torch(
+        query_vector.tolist(), [embedding.tolist() for embedding in embedding_list]
+    )
 
     # Check if the returned max similarity matches the expected value
     assert (
@@ -28,7 +30,7 @@ def test_max_similarity_torch():
     ), "The max similarity does not match the expected value."
 
 
-def test_query_maxlen_calculation():
+def test_query_maxlen_calculation() -> None:
     tokens = [["word1"], ["word2", "word3"]]
     assert calculate_query_maxlen(tokens) == 5  # noqa: PLR2004
 
