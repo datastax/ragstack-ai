@@ -1,4 +1,3 @@
-# ruff: noqa: PT011, RUF015
 import math
 import secrets
 from typing import Callable, Iterable, Iterator, List
@@ -317,11 +316,11 @@ def test_graph_store_metadata(
     assert gotten4 == Node(text="bb4", id="row4", metadata=md4)
 
     # metadata searches:
-    md_gotten3a = list(gs.metadata_search(metadata={"a": 1}))[0]
+    md_gotten3a = list(gs.metadata_search(metadata={"a": 1}))[0]  # noqa: RUF015
     assert md_gotten3a == gotten3
-    md_gotten3b = list(gs.metadata_search(metadata={"b": "Bee", "c": True}))[0]
+    md_gotten3b = list(gs.metadata_search(metadata={"b": "Bee", "c": True}))[0]  # noqa: RUF015
     assert md_gotten3b == gotten3
-    md_gotten4 = list(gs.metadata_search(metadata={"c1": True, "c3": True}))[0]
+    md_gotten4 = list(gs.metadata_search(metadata={"c1": True, "c3": True}))[0]  # noqa: RUF015
     assert md_gotten4 == gotten4
 
     # 'search' proper
@@ -350,11 +349,11 @@ def test_graph_store_metadata_routing(
 
     gs_all = graph_store_factory("all")
     gs_all.add_nodes([Node(id="row1", text="bb1", metadata=test_md)])
-    gotten_all = list(gs_all.metadata_search(metadata={"mds": "string"}))[0]
+    gotten_all = list(gs_all.metadata_search(metadata={"mds": "string"}))[0]  # noqa: RUF015
     assert gotten_all.metadata == test_md
     gs_none = graph_store_factory("none")
     gs_none.add_nodes([Node(id="row1", text="bb1", metadata=test_md)])
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError):  # noqa: PT011
         # querying on non-indexed metadata fields:
         list(gs_none.metadata_search(metadata={"mds": "string"}))
     gotten_none = gs_none.get_node(content_id="row1")
@@ -370,13 +369,13 @@ def test_graph_store_metadata_routing(
     }
     gs_allow = graph_store_factory(("allow", {"mdas", "mdan", "mdab"}))
     gs_allow.add_nodes([Node(id="row1", text="bb1", metadata=test_md_allowdeny)])
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError):  # noqa: PT011
         list(gs_allow.metadata_search(metadata={"mdds": "MDDS"}))
-    gotten_allow = list(gs_allow.metadata_search(metadata={"mdas": "MDAS"}))[0]
+    gotten_allow = list(gs_allow.metadata_search(metadata={"mdas": "MDAS"}))[0]  # noqa: RUF015
     assert gotten_allow.metadata == test_md_allowdeny
     gs_deny = graph_store_factory(("deny", {"mdds", "mddn", "mddb"}))
     gs_deny.add_nodes([Node(id="row1", text="bb1", metadata=test_md_allowdeny)])
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError):  # noqa: PT011
         list(gs_deny.metadata_search(metadata={"mdds": "MDDS"}))
-    gotten_deny = list(gs_deny.metadata_search(metadata={"mdas": "MDAS"}))[0]
+    gotten_deny = list(gs_deny.metadata_search(metadata={"mdas": "MDAS"}))[0]  # noqa: RUF015
     assert gotten_deny.metadata == test_md_allowdeny

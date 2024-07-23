@@ -1,4 +1,3 @@
-# ruff: noqa: SLF001
 """
 Stringification of everything in the simple metadata handling
 """
@@ -17,7 +16,7 @@ class TestMetadataStringCoercion:
             "something": RuntimeError("You cannot do this!"),
         }
 
-        stringified = {k: GraphStore._coerce_string(v) for k, v in md_dict.items()}
+        stringified = {k: GraphStore._coerce_string(v) for k, v in md_dict.items()}  # noqa: SLF001
 
         expected = {
             "integer": "1.0",

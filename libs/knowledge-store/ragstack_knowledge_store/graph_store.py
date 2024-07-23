@@ -1,5 +1,3 @@
-# ruff: noqa: B006
-
 import json
 import logging
 import re
@@ -375,7 +373,7 @@ class GraphStore:
         adjacent_k: int = 10,
         lambda_mult: float = 0.5,
         score_threshold: float = float("-inf"),
-        metadata_filter: Dict[str, Any] = {},
+        metadata_filter: Dict[str, Any] = {},  # noqa: B006
     ) -> Iterable[Node]:
         """Retrieve documents from this graph store using MMR-traversal.
 
@@ -510,7 +508,7 @@ class GraphStore:
         *,
         k: int = 4,
         depth: int = 1,
-        metadata_filter: Dict[str, Any] = {},
+        metadata_filter: Dict[str, Any] = {},  # noqa: B006
     ) -> Iterable[Node]:
         """Retrieve documents from this knowledge store.
 
@@ -640,7 +638,7 @@ class GraphStore:
         self,
         embedding: List[float],
         k: int = 4,
-        metadata_filter: Dict[str, Any] = {},
+        metadata_filter: Dict[str, Any] = {},  # noqa: B006
     ) -> Iterable[Node]:
         """Retrieve nodes similar to the given embedding, optionally filtered by metadata."""  # noqa: E501
         query, params = self._get_search_cql_and_params(
@@ -651,7 +649,9 @@ class GraphStore:
             yield _row_to_node(row)
 
     def metadata_search(
-        self, metadata: Dict[str, Any] = {}, n: int = 5
+        self,
+        metadata: Dict[str, Any] = {},  # noqa: B006
+        n: int = 5,
     ) -> Iterable[Node]:
         """Retrieve nodes based on their metadata."""
         query, params = self._get_search_cql_and_params(metadata=metadata, limit=n)
@@ -691,7 +691,7 @@ class GraphStore:
         tags: Set[Tuple[str, str]],
         query_embedding: List[float],
         k_per_tag: Optional[int] = None,
-        metadata_filter: Dict[str, Any] = {},
+        metadata_filter: Dict[str, Any] = {},  # noqa: B006
     ) -> Iterable[_Edge]:
         """Return the target nodes with incoming links from any of the given tags.
 
@@ -814,7 +814,7 @@ class GraphStore:
 
     def _extract_where_clause_cql(
         self,
-        metadata_keys: List[str] = [],
+        metadata_keys: List[str] = [],  # noqa: B006
         has_link_from_tags: bool = False,
     ) -> str:
         wc_blocks: List[str] = []
@@ -860,7 +860,7 @@ class GraphStore:
         self,
         has_limit: bool = False,
         columns: Optional[str] = CONTENT_COLUMNS,
-        metadata_keys: List[str] = [],
+        metadata_keys: List[str] = [],  # noqa: B006
         has_embedding: bool = False,
         has_link_from_tags: bool = False,
     ) -> PreparedStatement:
@@ -890,7 +890,7 @@ class GraphStore:
     def _get_search_params(
         self,
         limit: Optional[int] = None,
-        metadata: Dict[str, Any] = {},
+        metadata: Dict[str, Any] = {},  # noqa: B006
         embedding: Optional[List[float]] = None,
         link_from_tags: Optional[Tuple[str, str]] = None,
     ) -> Tuple[PreparedStatement, Tuple[Any, ...]]:
@@ -907,7 +907,7 @@ class GraphStore:
         self,
         limit: Optional[int] = None,
         columns: Optional[str] = CONTENT_COLUMNS,
-        metadata: Dict[str, Any] = {},
+        metadata: Dict[str, Any] = {},  # noqa: B006
         embedding: Optional[List[float]] = None,
         link_from_tags: Optional[Tuple[str, str]] = None,
     ) -> Tuple[PreparedStatement, Tuple[Any, ...]]:
