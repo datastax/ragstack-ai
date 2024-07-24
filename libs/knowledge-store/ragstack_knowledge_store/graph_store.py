@@ -414,11 +414,20 @@ class GraphStore:
 
         # Fetch the initial candidates and add them to the helper and
         # outgoing_tags.
+        columns = "content_id, text_embedding, link_to_tags"
         initial_candidates_query = self._get_search_cql(
             has_limit=True,
-            columns="content_id, text_embedding, link_to_tags",
+            columns=columns,
             metadata_keys=list(metadata_filter.keys()),
             has_embedding=True,
+        )
+
+        adjacent_query = self._get_search_cql(
+            has_limit=True,
+            columns=columns,
+            metadata_keys=list(metadata_filter.keys()),
+            has_embedding=True,
+            has_link_from_tags=True,
         )
 
         def fetch_initial_candidates() -> None:
@@ -467,6 +476,7 @@ class GraphStore:
                 # Find the nodes with incoming links from those tags.
                 adjacents = self._get_adjacent(
                     link_to_tags,
+                    adjacent_query=adjacent_query,
                     query_embedding=query_embedding,
                     k_per_tag=adjacent_k,
                     metadata_filter=metadata_filter,
@@ -689,6 +699,7 @@ class GraphStore:
     def _get_adjacent(
         self,
         tags: Set[Tuple[str, str]],
+        adjacent_query: PreparedStatement,
         query_embedding: List[float],
         k_per_tag: Optional[int] = None,
         metadata_filter: Dict[str, Any] = {},  # noqa: B006
@@ -706,20 +717,6 @@ class GraphStore:
         """
         targets: Dict[str, _Edge] = {}
 
-        columns = """
-            content_id AS target_content_id,
-            text_embedding AS target_text_embedding,
-            link_to_tags AS target_link_to_tags
-        """
-
-        adjacent_query = self._get_search_cql(
-            has_limit=True,
-            columns=columns,
-            metadata_keys=list(metadata_filter.keys()),
-            has_embedding=True,
-            has_link_from_tags=True,
-        )
-
         def add_targets(rows: Iterable[Any]) -> None:
             # TODO: Figure out how to use the "kind" on the edge.
             # This is tricky, since we currently issue one query for anything
@@ -728,9 +725,9 @@ class GraphStore:
             for row in rows:
                 if row.target_content_id not in targets:
                     targets[row.target_content_id] = _Edge(
-                        target_content_id=row.target_content_id,
-                        target_text_embedding=row.target_text_embedding,
-                        target_link_to_tags=set(row.target_link_to_tags or []),
+                        target_content_id=row.content_id,
+                        target_text_embedding=row.text_embedding,
+                        target_link_to_tags=set(row.link_to_tags or []),
                     )
 
         with self._concurrent_queries() as cq:
