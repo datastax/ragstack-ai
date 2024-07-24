@@ -708,6 +708,7 @@ class GraphStore:
 
         Args:
             tags: The tags to look for links *from*.
+            adjacent_query: Prepared query for adjacent nodes.
             query_embedding: The query embedding. Used to rank target nodes.
             k_per_tag: The number of target nodes to fetch for each outgoing tag.
             metadata_filter: Optional metadata to filter the results.
@@ -723,8 +724,8 @@ class GraphStore:
             # adjacent via any kind, and we don't have enough information to
             # determine which kind(s) a given target was reached from.
             for row in rows:
-                if row.target_content_id not in targets:
-                    targets[row.target_content_id] = _Edge(
+                if row.content_id not in targets:
+                    targets[row.content_id] = _Edge(
                         target_content_id=row.content_id,
                         target_text_embedding=row.text_embedding,
                         target_link_to_tags=set(row.link_to_tags or []),
