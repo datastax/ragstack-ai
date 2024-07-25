@@ -1,3 +1,5 @@
+from typing import Iterator
+
 import pytest
 from cassandra.cluster import Session
 from dotenv import load_dotenv
@@ -7,7 +9,7 @@ load_dotenv()
 
 
 @pytest.fixture(scope="session")
-def cassandra() -> LocalCassandraTestStore:
+def cassandra() -> Iterator[LocalCassandraTestStore]:
     store = LocalCassandraTestStore()
     yield store
     if store.docker_container:
