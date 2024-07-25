@@ -17,7 +17,7 @@ class BaseDataset(ABC):
     _subsets: List[str] = []
 
     def __init__(
-        self, dataset_name: str, root_storage_path: Optional[str] = "datasets"
+        self, dataset_name: str, root_storage_path: str = "datasets"
     ):
         self.name = dataset_name
         self.root_storage_path = root_storage_path
@@ -29,7 +29,7 @@ class BaseDataset(ABC):
     def list_files_at_path(self, path: str) -> List[str]:
         """lists all files at a path (excluding dot files)"""
         return [
-            f
+            f.name
             for f in Path(path).iterdir()
             if f.is_file() and not f.name.startswith(".")
         ]
@@ -39,7 +39,7 @@ class BaseDataset(ABC):
         return self._subsets
 
     @subsets.setter
-    def subsets(self, value: List[str]):
+    def subsets(self, value: List[str]) -> None:
         self._subsets = value
 
     @abstractmethod
@@ -47,7 +47,7 @@ class BaseDataset(ABC):
         """the sub-path to store the dataset in"""
 
     @abstractmethod
-    def download_dataset(self):
+    def download_dataset(self) -> None:
         """downloads a dataset locally"""
 
     @abstractmethod

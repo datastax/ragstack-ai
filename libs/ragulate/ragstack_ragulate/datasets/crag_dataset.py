@@ -20,7 +20,7 @@ class CragDataset(BaseDataset):
     ]
 
     def __init__(
-        self, dataset_name: str, root_storage_path: Optional[str] = "datasets"
+        self, dataset_name: str, root_storage_path: str = "datasets"
     ):
         super().__init__(dataset_name=dataset_name, root_storage_path=root_storage_path)
 
@@ -45,7 +45,7 @@ class CragDataset(BaseDataset):
                 )
                 for url, output_file in zip(urls, output_files)
             ]
-            asyncio.run(asyncio.gather(*tasks))
+            asyncio.get_event_loop().run_until_complete(asyncio.gather(*tasks))
         else:
             raise NotImplementedError(f"Crag download not supported for {self.name}")
 

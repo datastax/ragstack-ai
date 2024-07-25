@@ -4,7 +4,7 @@ from typing import Dict, List, Optional, Tuple
 
 import inflection
 from llama_index.core.llama_dataset import download
-from llama_index.core.llama_dataset.download import (
+from llama_index.core.download.dataset import (
     LLAMA_DATASETS_LFS_URL,
     LLAMA_DATASETS_SOURCE_FILES_GITHUB_TREE_URL,
 )
@@ -19,7 +19,7 @@ class LlamaDataset(BaseDataset):
     _llama_datasets_source_files_tree_url: str
 
     def __init__(
-        self, dataset_name: str, root_storage_path: Optional[str] = "datasets"
+        self, dataset_name: str, root_storage_path: str = "datasets"
     ):
         super().__init__(dataset_name=dataset_name, root_storage_path=root_storage_path)
         self._llama_datasets_lfs_url: str = LLAMA_DATASETS_LFS_URL
@@ -39,7 +39,7 @@ class LlamaDataset(BaseDataset):
         """downloads a dataset locally"""
         download_dir = self._get_dataset_path()
 
-        def download_by_name(name):
+        def download_by_name(name: str) -> None:
             download.download_llama_dataset(
                 llama_dataset_class=name,
                 download_dir=download_dir,

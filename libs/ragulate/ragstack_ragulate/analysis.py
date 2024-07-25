@@ -1,11 +1,10 @@
-from typing import List
+from typing import Any, Dict, List, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 import seaborn as sns
-from pandas import DataFrame
 from plotly.io import write_image
 
 from .utils import get_tru
@@ -14,7 +13,7 @@ from .utils import get_tru
 class Analysis:
     """Analysis class."""
 
-    def get_all_data(self, recipes: List[str]) -> DataFrame:
+    def get_all_data(self, recipes: List[str]) -> Tuple[pd.DataFrame, List[str]]:
         """Get all data from the recipes."""
         df_all = pd.DataFrame()
 
@@ -55,9 +54,11 @@ class Analysis:
 
         return reset_df, list(set(all_metrics))
 
-    def calculate_statistics(self, df: pd.DataFrame, metrics: list):
+    def calculate_statistics(
+        self, df: pd.DataFrame, metrics: List[str]
+    ) -> Dict[str, Any]:
         """Calculate statistics."""
-        stats = {}
+        stats: Dict[str, Any] = {}
         for recipe in df["recipe"].unique():
             stats[recipe] = {}
             for metric in metrics:
@@ -76,7 +77,7 @@ class Analysis:
                     }
         return stats
 
-    def output_box_plots_by_dataset(self, df: DataFrame, metrics: List[str]):
+    def output_box_plots_by_dataset(self, df: pd.DataFrame, metrics: List[str]) -> None:
         """Output box plots by dataset."""
         stats = self.calculate_statistics(df, metrics)
         recipes = sorted(df["recipe"].unique(), key=lambda x: x.lower())
@@ -101,7 +102,6 @@ class Analysis:
                 q1 = []
                 median = []
                 q3 = []
-                mean = []
                 low = []
                 high = []
                 for metric in metrics:
@@ -120,7 +120,7 @@ class Analysis:
                         q1=q1,
                         median=median,
                         q3=q3,
-                        mean=mean,
+                        mean=[],
                         lowerfence=low,
                         upperfence=high,
                         name=recipe,
@@ -159,7 +159,9 @@ class Analysis:
 
             write_image(fig, f"./{dataset}_box_plot.png")
 
-    def output_histograms_by_dataset(self, df: pd.DataFrame, metrics: List[str]):
+    def output_histograms_by_dataset(
+        self, df: pd.DataFrame, metrics: List[str]
+    ) -> None:
         """Output histograms by dataset."""
         # Append "latency" to the metrics list
         metrics.append("latency")
@@ -184,7 +186,7 @@ class Analysis:
             sns.set_theme(style="darkgrid")
 
             # Custom function to set bin ranges and filter invalid values
-            def custom_hist(data, **kws):
+            def custom_hist(data: Dict[str, Any], **kws: Any) -> None:
                 metric = data["metric"].iloc[0]
                 data = data[
                     np.isfinite(data["value"])
@@ -251,7 +253,7 @@ class Analysis:
             # Close the plot to avoid displaying it
             plt.close()
 
-    def compare(self, recipes: List[str], output: str):
+    def compare(self, recipes: List[str], output: str = "box-plots") -> None:
         """Compare results from 2 (or more) recipes."""
         df, metrics = self.get_all_data(recipes=recipes)
         if output == "box-plots":
@@ -259,4 +261,4 @@ class Analysis:
         elif output == "histogram-grid":
             self.output_histograms_by_dataset(df=df, metrics=metrics)
         else:
-            raise ValueError
+            raise ValueError(f"Invalid output type: {output}")

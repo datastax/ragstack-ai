@@ -36,7 +36,7 @@ class QueryPipeline(BasePipeline):
 
     @property
     @override
-    def pipeline_type(self):
+    def pipeline_type(self) -> str:
         return "query"
 
     @property
@@ -53,8 +53,8 @@ class QueryPipeline(BasePipeline):
         datasets: List[BaseDataset],
         sample_percent: float = 1.0,
         random_seed: Optional[int] = None,
-        restart_pipeline: Optional[bool] = False,
-        llm_provider: Optional[str] = "OpenAI",
+        restart_pipeline: bool = False,
+        llm_provider: str = "OpenAI",
         model_name: Optional[str] = None,
     ):
         self._queries = {}
@@ -113,17 +113,17 @@ class QueryPipeline(BasePipeline):
         # Set finished queries count to total existing queries
         self._finished_queries = total_existing_queries
 
-    def signal_handler(self, _, __):
+    def signal_handler(self, _: Any, __: Any) -> None:
         """Handle SIGINT signal."""
         self._sigint_received = True
         self.stop_evaluation("sigint")
 
-    def start_evaluation(self):
+    def start_evaluation(self) -> None:
         """Start evaluation."""
         self._tru.start_evaluator(disable_tqdm=True)
         self._evaluation_running = True
 
-    def export_results(self):
+    def export_results(self) -> None:
         """Export results."""
         for dataset_name in self._queries:
             records, _feedback_names = self._tru.get_records_and_feedback(
@@ -133,7 +133,7 @@ class QueryPipeline(BasePipeline):
             # Export to JSON
             records.to_json(f"{self._name}_{dataset_name}_results.json")
 
-    def stop_evaluation(self, loc: str):
+    def stop_evaluation(self, loc: str) -> None:
         """Stop evaluation."""
         if self._evaluation_running:
             try:
@@ -147,7 +147,7 @@ class QueryPipeline(BasePipeline):
                 self._progress.close()
                 self.export_results()
 
-    def update_progress(self, query_change: int = 0):
+    def update_progress(self, query_change: int = 0) -> None:
         """Update progress bar."""
         self._finished_queries += query_change
 
@@ -183,7 +183,7 @@ class QueryPipeline(BasePipeline):
             return Huggingface(name=model_name)
         raise ValueError(f"Unsupported provider: {llm_provider}")
 
-    def query(self):
+    def query(self) -> None:
         """Run the query pipeline."""
         query_method = self.get_method()
 

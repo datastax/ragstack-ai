@@ -4,7 +4,7 @@ import sys
 import pytest
 
 
-def main():
+def main() -> None:
     """Run the unit tests."""
     sys.exit(pytest.main(["tests/unit_tests"]))
 

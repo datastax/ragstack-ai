@@ -3,20 +3,25 @@ import inspect
 import logging
 import sys
 from abc import ABC, abstractmethod
+from types import ModuleType
 from typing import Any, Dict, List
 
 from ragstack_ragulate.datasets import BaseDataset
 
 
-def load_module(file_path, name):
+def load_module(file_path: str, name: str) -> ModuleType:
     """Load a module from a file path dynamically."""
     spec = importlib.util.spec_from_file_location(name, file_path)
+    if spec is None:
+        raise ValueError(f"Could not load module from {file_path}")
     module = importlib.util.module_from_spec(spec)
+    if spec.loader is None:
+        raise ValueError(f"No Module loader found for {file_path}")
     spec.loader.exec_module(module)
     return module
 
 
-def get_method(script_path: str, pipeline_type: str, method_name: str):
+def get_method(script_path: str, pipeline_type: str, method_name: str) -> Any:
     """Return the method from the script."""
     module = load_module(script_path, name=pipeline_type)
     return getattr(module, method_name)
@@ -25,7 +30,7 @@ def get_method(script_path: str, pipeline_type: str, method_name: str):
 def get_method_params(method: Any) -> List[str]:
     """Return the parameters of a method."""
     signature = inspect.signature(method)
-    return signature.parameters.keys()
+    return list(signature.parameters.keys())
 
 
 def get_ingredients(
@@ -61,7 +66,7 @@ class BasePipeline(ABC):
 
     @property
     @abstractmethod
-    def pipeline_type(self):
+    def pipeline_type(self) -> str:
         """Type of pipeline (ingest, query, cleanup)."""
 
     @property
@@ -106,7 +111,7 @@ class BasePipeline(ABC):
             )
             sys.exit(1)
 
-    def get_method(self):
+    def get_method(self) -> Any:
         """Return the pipeline method."""
         return self._method
 
@@ -125,10 +130,10 @@ class BasePipeline(ABC):
             key_parts.append(f"{name}_{value}")
         return "_".join(key_parts)
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if isinstance(other, BasePipeline):
             return self.key() == other.key()
         return False
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(self.key())

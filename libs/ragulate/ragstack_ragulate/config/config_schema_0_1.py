@@ -15,7 +15,7 @@ class ConfigSchema0Dot1(BaseConfigSchema):
     """Config schema for version 0.1."""
 
     @override
-    def version(self):
+    def version(self) -> float:
         return _VERSION_0_1
 
     @override
@@ -205,7 +205,8 @@ class ConfigSchema0Dot1(BaseConfigSchema):
                         f"{step_kind} step {doc_recipe_step} for recipe {recipe_name} "
                         f"is not defined in the `steps` section"
                     )
-                recipe_steps[step_kind] = step
+                if step:
+                    recipe_steps[step_kind] = step
 
             if "query" not in recipe_steps:
                 raise ValueError(f"query step is missing for recipe {recipe_name}")
@@ -218,25 +219,25 @@ class ConfigSchema0Dot1(BaseConfigSchema):
             recipes[recipe_name] = Recipe(
                 name=recipe_name,
                 ingest=recipe_steps.get("ingest"),
-                query=recipe_steps.get("query"),
+                query=recipe_steps["query"],
                 cleanup=recipe_steps.get("cleanup"),
                 ingredients=ingredients,
             )
 
-            datasets: Dict[str, BaseDataset] = {}
+        datasets: Dict[str, BaseDataset] = {}
 
-            for doc_dataset in document.get("datasets", []):
-                if isinstance(doc_dataset, str):
-                    datasets[doc_dataset] = find_dataset(name=doc_dataset)
-                else:
-                    doc_dataset_name = doc_dataset.get("name", None)
-                    doc_dataset_kind = doc_dataset.get("kind", None)
-                    if doc_dataset_name is None or doc_dataset_kind is None:
-                        raise ValueError(
-                            "datasets must be specified with `name` and `kind`"
-                        )
-                    datasets[doc_dataset_name] = get_dataset(
-                        name=doc_dataset_name, kind=doc_dataset_kind
+        for doc_dataset in document.get("datasets", []):
+            if isinstance(doc_dataset, str):
+                datasets[doc_dataset] = find_dataset(name=doc_dataset)
+            else:
+                doc_dataset_name = doc_dataset.get("name", None)
+                doc_dataset_kind = doc_dataset.get("kind", None)
+                if doc_dataset_name is None or doc_dataset_kind is None:
+                    raise ValueError(
+                        "datasets must be specified with `name` and `kind`"
                     )
+                datasets[doc_dataset_name] = get_dataset(
+                    name=doc_dataset_name, kind=doc_dataset_kind
+                )
 
         return Config(recipes=recipes, datasets=datasets)

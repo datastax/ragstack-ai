@@ -26,7 +26,7 @@ class ConfigParser:
     def get_config(self) -> Config:
         """Return the config."""
         if not self.is_valid:
-            return None
+            return Config()
         return self._config_schema.parse_document(self._document)
 
     @classmethod

@@ -3,13 +3,13 @@ import logging
 import os
 import time
 from pathlib import Path
-from typing import List
+from typing import Any, List
 
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import UnstructuredFileLoader
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.runnables import RunnablePassthrough
+from langchain_core.runnables import Runnable, RunnablePassthrough
 from langchain_openai import ChatOpenAI
 from ragstack_colbert import (
     CassandraDatabase,
@@ -74,7 +74,7 @@ def len_function(text: str) -> int:
     return len(tokenizer.tokenize(text))
 
 
-async def ingest(file_path: str, chunk_size: int, **_):
+async def ingest(file_path: str, chunk_size: int, **_: Any) -> None:
     doc_id = Path(file_path).name
 
     chunk_overlap = min(chunk_size / 4, 64)
@@ -134,9 +134,9 @@ async def ingest(file_path: str, chunk_size: int, **_):
     )
 
 
-def query_pipeline(k: int, chunk_size: int, **_):
+def query_pipeline(k: int, chunk_size: int, **_: Any) -> Runnable[Any, Any]:
     vector_store = get_lc_vector_store(chunk_size=chunk_size)
-    llm = ChatOpenAI(model_name=LLM_MODEL)
+    llm = ChatOpenAI(model=LLM_MODEL)
 
     # build a prompt
     prompt_template = """

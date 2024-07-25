@@ -14,7 +14,7 @@ class IngestPipeline(BasePipeline):
 
     @property
     @override
-    def pipeline_type(self):
+    def pipeline_type(self) -> str:
         return "ingest"
 
     @property
@@ -22,7 +22,7 @@ class IngestPipeline(BasePipeline):
     def get_reserved_params(self) -> List[str]:
         return ["file_path"]
 
-    def ingest(self):
+    def ingest(self) -> None:
         """Run the ingest pipeline."""
         logger.info(
             f"Starting ingest {self.recipe_name} "

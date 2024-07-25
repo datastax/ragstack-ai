@@ -5,8 +5,8 @@ from ragstack_ragulate.config.config_schema_0_1 import ConfigSchema0Dot1
 
 
 class TestConfigValidation:
-    def test_full_config(self):
-        config = {
+    def test_full_config(self) -> None:
+        json_config = {
             "version": 0.1,
             "steps": {
                 "ingest": [
@@ -72,7 +72,7 @@ class TestConfigValidation:
             os.path.join("datasets", "llama", "braintrust_coda_help_desk"),
             exist_ok=True,
         )
-        parser = ConfigParser(config_schema=ConfigSchema0Dot1(), config=config)
+        parser = ConfigParser(config_schema=ConfigSchema0Dot1(), config=json_config)
 
         for field, errors in parser.errors.items():
             print(f"{field}: {errors}")
@@ -83,6 +83,7 @@ class TestConfigValidation:
 
         assert "chunk_size_500" in config.recipes
         chunk_size_500 = config.recipes["chunk_size_500"]
+        assert chunk_size_500.cleanup is not None
         assert chunk_size_500.cleanup.method, "cleanup"
         assert chunk_size_500.query.script == "chunk_size_experiment.py"
         assert chunk_size_500.name == "chunk_size_500"
@@ -91,14 +92,15 @@ class TestConfigValidation:
 
         assert "chunk_size_1000" in config.recipes
         chunk_size_1000 = config.recipes["chunk_size_1000"]
+        assert chunk_size_1000.ingest is not None
         assert chunk_size_1000.ingest.method == "ingest"
         assert chunk_size_1000.query.script == "chunk_size_experiment.py"
         assert chunk_size_1000.name == "chunk_size_1000"
         assert "chunk_size" in chunk_size_1000.ingredients
         assert chunk_size_1000.ingredients["chunk_size"] == 1000  # noqa: PLR2004
 
-    def test_minimal_config(self):
-        config = {
+    def test_minimal_config(self) -> None:
+        json_config = {
             "version": 0.1,
             "steps": {
                 "query": [
@@ -120,7 +122,7 @@ class TestConfigValidation:
             os.path.join("datasets", "llama", "blockchain_solana"), exist_ok=True
         )
         os.makedirs(os.path.join("datasets", "llama", "other_dataset"), exist_ok=True)
-        parser = ConfigParser(config_schema=ConfigSchema0Dot1(), config=config)
+        parser = ConfigParser(config_schema=ConfigSchema0Dot1(), config=json_config)
 
         for field, errors in parser.errors.items():
             print(f"{field}: {errors}")

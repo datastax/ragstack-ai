@@ -1,5 +1,5 @@
 import re
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Union
 
 from trulens_eval import Tru
 
@@ -23,7 +23,7 @@ def convert_vars_to_ingredients(
     return params
 
 
-def _convert_string(s):
+def _convert_string(s: str) -> Union[str, int, float]:
     s = s.strip()
     if re.match(r"^\d+$", s):
         return int(s)
