@@ -1,11 +1,12 @@
-from typing import List, Optional
+from argparse import ArgumentParser, _SubParsersAction
+from typing import Any, List
 
 from ragstack_ragulate.analysis import Analysis
 
 from .utils import remove_sqlite_extension
 
 
-def setup_compare(subparsers):
+def setup_compare(subparsers: _SubParsersAction[ArgumentParser]) -> None:
     """Setup the compare command."""
     compare_parser = subparsers.add_parser(
         "compare", help="Compare results from 2 (or more) recipes"
@@ -30,9 +31,9 @@ def setup_compare(subparsers):
 
 def call_compare(
     recipe: List[str],
-    output: Optional[str] = "box-plots",
-    **_,
-):
+    output: str = "box-plots",
+    **_: Any,
+) -> None:
     """Compare results from 2 (or more) recipes."""
     analysis = Analysis()
 

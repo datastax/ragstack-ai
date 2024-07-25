@@ -4,7 +4,7 @@ import sys
 import pytest
 
 
-def main():
+def main() -> None:
     """Run the integration tests."""
     sys.exit(pytest.main(["tests/integration_tests"]))
 

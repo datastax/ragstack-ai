@@ -1,11 +1,12 @@
-from typing import List
+from argparse import ArgumentParser, _SubParsersAction
+from typing import Any, List
 
 from ragstack_ragulate.datasets import find_dataset
 from ragstack_ragulate.pipelines import IngestPipeline
 from ragstack_ragulate.utils import convert_vars_to_ingredients
 
 
-def setup_ingest(subparsers):
+def setup_ingest(subparsers: _SubParsersAction[ArgumentParser]) -> None:
     """Setup the ingest command."""
     ingest_parser = subparsers.add_parser("ingest", help="Run an ingest pipeline")
     ingest_parser.add_argument(
@@ -58,8 +59,8 @@ def setup_ingest(subparsers):
         var_name: List[str],
         var_value: List[str],
         dataset: List[str],
-        **_,
-    ):
+        **_: Any,
+    ) -> None:
         """Run an ingest pipeline."""
         datasets = [find_dataset(name=name) for name in dataset]
 

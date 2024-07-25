@@ -1,4 +1,5 @@
-from typing import List
+from argparse import ArgumentParser, _SubParsersAction
+from typing import Any, List
 
 from ragstack_ragulate.analysis import Analysis
 from ragstack_ragulate.config import ConfigParser
@@ -6,7 +7,7 @@ from ragstack_ragulate.logging_config import logger
 from ragstack_ragulate.pipelines import IngestPipeline, QueryPipeline
 
 
-def setup_run(subparsers):
+def setup_run(subparsers: _SubParsersAction[ArgumentParser]) -> None:
     """Setup the run command."""
     run_parser = subparsers.add_parser(
         "run", help="Run an experiment from a config file"
@@ -22,7 +23,7 @@ def setup_run(subparsers):
     run_parser.set_defaults(func=lambda args: call_run(**vars(args)))
 
 
-def call_run(config_file: str, **_):
+def call_run(config_file: str, **_: Any) -> None:
     """Run an experiment from a config file."""
     config_parser = ConfigParser.from_file(file_path=config_file)
     config = config_parser.get_config()
@@ -41,7 +42,7 @@ def call_run(config_file: str, **_):
                     script_path=recipe.ingest.script,
                     method_name=recipe.ingest.method,
                     ingredients=recipe.ingredients,
-                    datasets=config.datasets.values(),
+                    datasets=list(config.datasets.values()),
                 )
             )
         if recipe.query is not None:
@@ -51,7 +52,7 @@ def call_run(config_file: str, **_):
                     script_path=recipe.query.script,
                     method_name=recipe.query.method,
                     ingredients=recipe.ingredients,
-                    datasets=config.datasets.values(),
+                    datasets=list(config.datasets.values()),
                 )
             )
 
@@ -81,7 +82,7 @@ def call_run(config_file: str, **_):
     for query_pipeline in query_pipelines:
         query_pipeline.query()
 
-    recipe_names = config.recipes.keys()
+    recipe_names = list(config.recipes.keys())
 
     analysis = Analysis()
     analysis.compare(recipes=recipe_names)

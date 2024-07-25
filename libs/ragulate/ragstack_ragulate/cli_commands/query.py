@@ -1,11 +1,12 @@
-from typing import List
+from argparse import ArgumentParser, _SubParsersAction
+from typing import Any, List
 
 from ragstack_ragulate.datasets import find_dataset
 from ragstack_ragulate.pipelines import QueryPipeline
 from ragstack_ragulate.utils import convert_vars_to_ingredients
 
 
-def setup_query(subparsers):
+def setup_query(subparsers: _SubParsersAction[ArgumentParser]) -> None:
     """Setup the query command."""
     query_parser = subparsers.add_parser("query", help="Run a query pipeline")
     query_parser.add_argument(
@@ -110,8 +111,8 @@ def setup_query(subparsers):
         restart: bool,
         provider: str,
         model: str,
-        **_,
-    ):
+        **_: Any,
+    ) -> None:
         """Run a query pipeline."""
         if sample <= 0.0 or sample > 1.0:
             raise ValueError("Sample percent must be between 0 and 1")
