@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, List, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
 
 from llama_index.core.callbacks.base import CallbackManager
 from llama_index.core.constants import DEFAULT_SIMILARITY_TOP_K
@@ -27,7 +27,7 @@ class ColbertRetriever(BaseRetriever):
         retriever: ColbertBaseRetriever,
         similarity_top_k: int = DEFAULT_SIMILARITY_TOP_K,
         callback_manager: Optional[CallbackManager] = None,
-        object_map: Optional[dict] = None,
+        object_map: Optional[Dict[str, Any]] = None,
         verbose: bool = False,
         query_maxlen: int = -1,
     ) -> None:
@@ -51,6 +51,6 @@ class ColbertRetriever(BaseRetriever):
             query_maxlen=self._query_maxlen,
         )
         return [
-            NodeWithScore(node=TextNode(text=c.text, metadata=c.metadata), score=s)
+            NodeWithScore(node=TextNode(text=c.text, extra_info=c.metadata), score=s)
             for (c, s) in chunk_scores
         ]

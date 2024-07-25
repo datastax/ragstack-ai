@@ -5,8 +5,9 @@ import pytest
 from cassandra.cluster import Session
 from llama_index.core import Settings, get_response_synthesizer
 from llama_index.core.ingestion import IngestionPipeline
+from llama_index.core.llms import MockLLM
 from llama_index.core.query_engine import RetrieverQueryEngine
-from llama_index.core.schema import Document, NodeWithScore
+from llama_index.core.schema import Document, NodeWithScore, QueryBundle
 from llama_index.core.text_splitter import SentenceSplitter
 from ragstack_colbert import (
     CassandraDatabase,
@@ -20,7 +21,7 @@ from ragstack_tests_utils import TestData
 logging.getLogger("cassandra").setLevel(logging.ERROR)
 
 
-def validate_retrieval(results: List[NodeWithScore], key_value: str):
+def validate_retrieval(results: List[NodeWithScore], key_value: str) -> bool:
     passed = False
     for result in results:
         if key_value in result.text:
@@ -29,7 +30,7 @@ def validate_retrieval(results: List[NodeWithScore], key_value: str):
 
 
 @pytest.mark.parametrize("session", ["astra_db"], indirect=["session"])  # "cassandra",
-def test_sync(session: Session):
+def test_sync(session: Session) -> None:
     table_name = "LlamaIndex_colbert_sync"
 
     batch_size = 5  # 640 recommended for production use
@@ -47,15 +48,15 @@ def test_sync(session: Session):
         embedding_model=embedding_model,
     )
 
-    docs: List[Document] = []
+    docs = []
     docs.append(
         Document(
-            text=TestData.marine_animals_text(), metadata={"name": "marine_animals"}
+            text=TestData.marine_animals_text(), extra_info={"name": "marine_animals"}
         )
     )
     docs.append(
         Document(
-            text=TestData.nebula_voyager_text(), metadata={"name": "nebula_voyager"}
+            text=TestData.nebula_voyager_text(), extra_info={"name": "nebula_voyager"}
         )
     )
 
@@ -64,20 +65,20 @@ def test_sync(session: Session):
 
     nodes = pipeline.run(documents=docs)
 
-    docs: Dict[str, Tuple[List[str], List[Metadata]]] = {}
+    docs2: Dict[str, Tuple[List[str], List[Metadata]]] = {}
 
     for node in nodes:
         doc_id = node.metadata["name"]
-        if doc_id not in docs:
-            docs[doc_id] = ([], [])
-        docs[doc_id][0].append(node.text)
-        docs[doc_id][1].append(node.metadata)
+        if doc_id not in docs2:
+            docs2[doc_id] = ([], [])
+        docs2[doc_id][0].append(node.text)
+        docs2[doc_id][1].append(node.metadata)
 
     logging.debug("Starting to embed ColBERT docs and save them to the database")
 
-    for doc_id in docs:
-        texts = docs[doc_id][0]
-        metadatas = docs[doc_id][1]
+    for doc_id in docs2:
+        texts = docs2[doc_id][0]
+        metadatas = docs2[doc_id][1]
 
         logging.debug("processing %s that has %s chunks", doc_id, len(texts))
 
@@ -87,22 +88,24 @@ def test_sync(session: Session):
         retriever=vector_store.as_retriever(), similarity_top_k=5
     )
 
-    Settings.llm = None
+    Settings.llm = MockLLM()
 
     response_synthesizer = get_response_synthesizer()
 
-    pipeline = RetrieverQueryEngine(
+    pipeline2 = RetrieverQueryEngine(
         retriever=retriever,
         response_synthesizer=response_synthesizer,
     )
 
-    results = pipeline.retrieve("Who developed the Astroflux Navigator?")
+    results = pipeline2.retrieve(QueryBundle("Who developed the Astroflux Navigator?"))
     assert validate_retrieval(results, key_value="Astroflux Navigator")
 
-    results = pipeline.retrieve(
-        "Describe the phenomena known as 'Chrono-spatial Echoes'"
+    results = pipeline2.retrieve(
+        QueryBundle("Describe the phenomena known as 'Chrono-spatial Echoes'")
     )
     assert validate_retrieval(results, key_value="Chrono-spatial Echoes")
 
-    results = pipeline.retrieve("How do anglerfish adapt to the deep ocean's darkness?")
+    results = pipeline2.retrieve(
+        QueryBundle("How do anglerfish adapt to the deep ocean's darkness?")
+    )
     assert validate_retrieval(results, key_value="anglerfish")
