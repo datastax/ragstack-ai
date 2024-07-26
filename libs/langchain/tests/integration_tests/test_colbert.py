@@ -1,5 +1,5 @@
 import logging
-from typing import List, Tuple
+from typing import List
 
 import pytest
 from cassandra.cluster import Session
@@ -13,13 +13,11 @@ from transformers import BertTokenizer
 
 logging.getLogger("cassandra").setLevel(logging.ERROR)
 
-test_data = {
-    "chunks": None,
-}
+test_data = {}
 
 
 def get_test_chunks() -> List[Document]:
-    if test_data["chunks"] is None:
+    if "chunks" not in test_data:
         docs: List[Document] = []
         docs.append(
             Document(
@@ -56,7 +54,7 @@ def get_test_chunks() -> List[Document]:
     return test_data["chunks"]
 
 
-def validate_retrieval(results: List[Document], key_value: str):
+def validate_retrieval(results: List[Document], key_value: str) -> bool:
     passed = False
     for result in results:
         if key_value in result.page_content:
@@ -85,35 +83,33 @@ def test_sync_from_docs(session: Session) -> None:
         documents=doc_chunks, database=database, embedding=embedding
     )
 
-    results: List[Document] = vector_store.similarity_search(
+    results = vector_store.similarity_search(
         "What challenges does the Quantum Opacity phenomenon present to the crew of "
         "the Nebula Voyager"
     )
     assert validate_retrieval(results, key_value="Quantum Opacity")
 
-    results: List[Tuple[Document, float]] = vector_store.similarity_search_with_score(
+    results2 = vector_store.similarity_search_with_score(
         "What are Xenospheric Particulates?"
     )
 
-    assert len(results) > 3  # noqa: PLR2004
-    assert results[1][1] > 0  # check score from result 2
-    assert results[2][1] > 0  # check score from result 3
-    assert results[1][1] > results[2][1]  # check that scores are returned in order
+    assert len(results2) > 3  # noqa: PLR2004
+    assert results2[1][1] > 0  # check score from result 2
+    assert results2[2][1] > 0  # check score from result 3
+    assert results2[1][1] > results2[2][1]  # check that scores are returned in order
 
     assert validate_retrieval(
-        [r[0] for r in results], key_value="Xenospheric Particulates"
+        [r[0] for r in results2], key_value="Xenospheric Particulates"
     )
 
-    results: List[Document] = vector_store.similarity_search(
+    results3 = vector_store.similarity_search(
         "What communication methods do dolphins use within their pods?"
     )
-    assert validate_retrieval(results, key_value="dolphin")
+    assert validate_retrieval(results3, key_value="dolphin")
 
     retriever = vector_store.as_retriever(k=2)
-    results: List[Document] = retriever.invoke(
-        "What role do coral reefs play in marine ecosystems?"
-    )
-    assert validate_retrieval(results, key_value="coral reefs")
+    results4 = retriever.invoke("What role do coral reefs play in marine ecosystems?")
+    assert validate_retrieval(results4, key_value="coral reefs")
 
 
 @pytest.mark.parametrize("session", ["cassandra", "astra_db"], indirect=["session"])
@@ -137,34 +133,32 @@ async def test_async_from_docs(session: Session) -> None:
         documents=doc_chunks, database=database, embedding=embedding
     )
 
-    results: List[Document] = await vector_store.asimilarity_search(
+    results = await vector_store.asimilarity_search(
         "What challenges does the Quantum Opacity phenomenon present to the crew of "
         "the Nebula Voyager"
     )
     assert validate_retrieval(results, key_value="Quantum Opacity")
 
-    results: List[
-        Tuple[Document, float]
-    ] = await vector_store.asimilarity_search_with_score(
+    results2 = await vector_store.asimilarity_search_with_score(
         "What are Xenospheric Particulates?"
     )
 
     assert len(results) > 3  # noqa: PLR2004
-    assert results[1][1] > 0  # check score from result 2
-    assert results[2][1] > 0  # check score from result 3
-    assert results[1][1] > results[2][1]  # check that scores are returned in order
+    assert results2[1][1] > 0  # check score from result 2
+    assert results2[2][1] > 0  # check score from result 3
+    assert results2[1][1] > results2[2][1]  # check that scores are returned in order
 
     assert validate_retrieval(
-        [r[0] for r in results], key_value="Xenospheric Particulates"
+        [r[0] for r in results2], key_value="Xenospheric Particulates"
     )
 
-    results: List[Document] = await vector_store.asimilarity_search(
+    results3 = await vector_store.asimilarity_search(
         "What communication methods do dolphins use within their pods?"
     )
-    assert validate_retrieval(results, key_value="dolphin")
+    assert validate_retrieval(results3, key_value="dolphin")
 
     retriever = vector_store.as_retriever(k=2)
-    results: List[Document] = await retriever.ainvoke(
+    results4 = await retriever.ainvoke(
         "What role do coral reefs play in marine ecosystems?"
     )
-    assert validate_retrieval(results, key_value="coral reefs")
+    assert validate_retrieval(results4, key_value="coral reefs")

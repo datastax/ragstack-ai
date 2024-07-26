@@ -3,13 +3,13 @@ from typing import List, Optional
 from langchain_core.embeddings import Embeddings
 from ragstack_colbert import DEFAULT_COLBERT_MODEL, ColbertEmbeddingModel
 from ragstack_colbert.base_embedding_model import BaseEmbeddingModel
-from typing_extensions import override
+from typing_extensions import Self, override
 
 
 class TokensEmbeddings(Embeddings):
     """Adapter for token-based embedding models and the LangChain Embeddings."""
 
-    def __init__(self, embedding: BaseEmbeddingModel = None):
+    def __init__(self, embedding: Optional[BaseEmbeddingModel] = None):
         self.embedding = embedding or ColbertEmbeddingModel()
 
     @override
@@ -32,8 +32,9 @@ class TokensEmbeddings(Embeddings):
         """Get the embedding model."""
         return self.embedding
 
-    @staticmethod
+    @classmethod
     def colbert(
+        cls,
         checkpoint: str = DEFAULT_COLBERT_MODEL,
         doc_maxlen: int = 256,
         nbits: int = 2,
@@ -42,9 +43,9 @@ class TokensEmbeddings(Embeddings):
         query_maxlen: Optional[int] = None,
         verbose: int = 3,
         chunk_batch_size: int = 640,
-    ):
+    ) -> Self:
         """Create a new ColBERT embedding model."""
-        return TokensEmbeddings(
+        return cls(
             ColbertEmbeddingModel(
                 checkpoint,
                 doc_maxlen,

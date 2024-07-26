@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, List, Optional, Tuple
+from typing import TYPE_CHECKING, List, Optional, Tuple
 
 from langchain_core.callbacks.manager import (
     AsyncCallbackManagerForRetrieverRun,
@@ -39,11 +39,10 @@ class ColbertRetriever(BaseRetriever):
     def __init__(
         self,
         retriever: ColbertBaseRetriever,
-        k: Optional[int] = 5,
+        k: int = 5,
         query_maxlen: Optional[int] = None,
-        **kwargs: Any,
     ):
-        super().__init__(retriever=retriever, k=k, **kwargs)
+        super().__init__()
         self.retriever = retriever
         self.k = k
         self.query_maxlen = query_maxlen
