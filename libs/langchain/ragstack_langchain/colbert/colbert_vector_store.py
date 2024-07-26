@@ -262,9 +262,7 @@ class ColbertVectorStore(VectorStore):
         **kwargs: Any,
     ) -> CVS:
         if not isinstance(embedding, TokensEmbeddings):
-            raise TypeError(
-                "ColbertVectorStore requires a ColbertEmbeddings embedding."
-            )
+            raise TypeError("ColbertVectorStore requires a TokensEmbeddings embedding.")
         if database is None:
             raise ValueError(
                 "ColbertVectorStore requires a ColbertBaseDatabase database."
