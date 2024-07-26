@@ -75,13 +75,13 @@ class KnowledgeSchema(BaseModel):
         """
         from pydantic_yaml import parse_yaml_file_as
 
-        return parse_yaml_file_as(cls, path)
+        return parse_yaml_file_as(cls, path)  # type: ignore[type-var]
 
     def to_yaml_str(self) -> str:
         """Convert the schema to a YAML string."""
         from pydantic_yaml import to_yaml_str
 
-        return to_yaml_str(self)
+        return to_yaml_str(self)  # type: ignore[arg-type]
 
 
 class KnowledgeSchemaValidator:

@@ -32,7 +32,8 @@ if TYPE_CHECKING:
 def _format_example(idx: int, example: Example) -> str:
     from pydantic_yaml import to_yaml_str
 
-    return f"Example {idx}:\n```yaml\n{to_yaml_str(example)}\n```"
+    yaml_example = to_yaml_str(example)  # type: ignore[arg-type]
+    return f"Example {idx}:\n```yaml\n{yaml_example}\n```"
 
 
 class KnowledgeSchemaExtractor:
