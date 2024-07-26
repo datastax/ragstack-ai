@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Sequence, Union, cast
+from collections.abc import Sequence
+from typing import TYPE_CHECKING, Any, cast
 
 from langchain_community.graphs.graph_document import GraphDocument
 from langchain_core.documents import Document
@@ -47,7 +48,7 @@ class KnowledgeSchemaExtractor:
         self._validator = KnowledgeSchemaValidator(schema)
         self.strict = strict
 
-        messages: List[MessageLikeRepresentation] = [
+        messages: list[MessageLikeRepresentation] = [
             SystemMessagePromptTemplate(
                 prompt=load_template(
                     "extraction.md", knowledge_schema_yaml=schema.to_yaml_str()
@@ -73,7 +74,7 @@ class KnowledgeSchemaExtractor:
         self._chain = prompt | structured_llm
 
     def _process_response(
-        self, document: Document, response: Union[Dict[str, Any], BaseModel]
+        self, document: Document, response: dict[str, Any] | BaseModel
     ) -> GraphDocument:
         raw_graph = cast(_Graph, response)
         nodes = (
@@ -96,7 +97,7 @@ class KnowledgeSchemaExtractor:
 
         return graph_document
 
-    def extract(self, documents: List[Document]) -> List[GraphDocument]:
+    def extract(self, documents: list[Document]) -> list[GraphDocument]:
         """Extract knowledge graphs from a list of documents."""
         # TODO: Define an async version of extraction?
         responses = self._chain.batch_as_completed(

@@ -1,5 +1,6 @@
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Dict, List, Self, Sequence, Union
+from typing import Self
 
 from langchain_community.graphs.graph_document import GraphDocument
 from langchain_core.pydantic_v1 import BaseModel
@@ -33,10 +34,10 @@ class RelationshipSchema(BaseModel):
     edge_type: str
     """The name of the edge type for the relationhsip."""
 
-    source_types: List[str]
+    source_types: list[str]
     """The node types for the source of the relationship."""
 
-    target_types: List[str]
+    target_types: list[str]
     """The node types for the target of the relationship."""
 
     description: str
@@ -59,14 +60,14 @@ class Example(BaseModel):
 class KnowledgeSchema(BaseModel):
     """Schema for a knowledge graph."""
 
-    nodes: List[NodeSchema]
+    nodes: list[NodeSchema]
     """Allowed node types for the knowledge schema."""
 
-    relationships: List[RelationshipSchema]
+    relationships: list[RelationshipSchema]
     """Allowed relationships for the knowledge schema."""
 
     @classmethod
-    def from_file(cls, path: Union[str, Path]) -> Self:
+    def from_file(cls, path: str | Path) -> Self:
         """Load a KnowledgeSchema from a JSON or YAML file.
 
         Args:
@@ -91,7 +92,7 @@ class KnowledgeSchemaValidator:
 
         self._nodes = {node.type: node for node in schema.nodes}
 
-        self._relationships: Dict[str, List[RelationshipSchema]] = {}
+        self._relationships: dict[str, list[RelationshipSchema]] = {}
         for r in schema.relationships:
             self._relationships.setdefault(r.edge_type, []).append(r)
 

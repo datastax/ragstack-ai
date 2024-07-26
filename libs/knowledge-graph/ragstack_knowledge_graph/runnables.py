@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from langchain_core.language_models import BaseChatModel
 from langchain_core.output_parsers import JsonOutputParser
@@ -25,8 +25,8 @@ QUERY_ENTITY_EXTRACT_PROMPT = (
 def extract_entities(
     llm: BaseChatModel,
     keyword_extraction_prompt: str = QUERY_ENTITY_EXTRACT_PROMPT,
-    node_types: Optional[List[str]] = None,
-) -> Runnable[Dict[str, Any], List[Node]]:
+    node_types: list[str] | None = None,
+) -> Runnable[dict[str, Any], list[Node]]:
     """Return a keyword-extraction runnable.
 
     This will expect a dictionary containing the `"question"` to extract keywords from.
@@ -59,7 +59,7 @@ def extract_entities(
     class SimpleNodeList(BaseModel):
         """Represents a list of simple nodes."""
 
-        nodes: List[SimpleNode]
+        nodes: list[SimpleNode]
 
     output_parser = JsonOutputParser(pydantic_object=SimpleNodeList)
     return (
