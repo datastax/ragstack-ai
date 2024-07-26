@@ -1,6 +1,7 @@
 from typing import Any, Iterable, List, Optional, Tuple, Type, TypeVar
 
 from langchain_core.documents import Document
+from langchain_core.embeddings import Embeddings
 from langchain_core.vectorstores import VectorStore, VectorStoreRetriever
 from ragstack_colbert import Chunk
 from ragstack_colbert import ColbertVectorStore as RagstackColbertVectorStore
@@ -11,6 +12,8 @@ from ragstack_colbert.base_embedding_model import (
 from ragstack_colbert.base_retriever import BaseRetriever as ColbertBaseRetriever
 from ragstack_colbert.base_vector_store import BaseVectorStore as ColbertBaseVectorStore
 from typing_extensions import override
+
+from ragstack_langchain.colbert.embedding import TokensEmbeddings
 
 CVS = TypeVar("CVS", bound="ColbertVectorStore")
 
@@ -208,8 +211,9 @@ class ColbertVectorStore(VectorStore):
     def from_documents(
         cls,
         documents: List[Document],
-        database: ColbertBaseDatabase,
-        embedding_model: ColbertBaseEmbeddingModel,
+        embedding: Embeddings,
+        *,
+        database: Optional[ColbertBaseDatabase] = None,
         **kwargs: Any,
     ) -> CVS:
         """Return VectorStore initialized from documents and embeddings."""
@@ -218,7 +222,7 @@ class ColbertVectorStore(VectorStore):
         return cls.from_texts(
             texts=texts,
             database=database,
-            embedding_model=embedding_model,
+            embedding=embedding,
             metadatas=metadatas,
             **kwargs,
         )
@@ -228,8 +232,9 @@ class ColbertVectorStore(VectorStore):
     async def afrom_documents(
         cls: Type[CVS],
         documents: List[Document],
-        database: ColbertBaseDatabase,
-        embedding_model: ColbertBaseEmbeddingModel,
+        embedding: Embeddings,
+        *,
+        database: Optional[ColbertBaseDatabase] = None,
         concurrent_inserts: Optional[int] = 100,
         **kwargs: Any,
     ) -> CVS:
@@ -239,7 +244,7 @@ class ColbertVectorStore(VectorStore):
         return await cls.afrom_texts(
             texts=texts,
             database=database,
-            embedding_model=embedding_model,
+            embedding=embedding,
             metadatas=metadatas,
             concurrent_inserts=concurrent_inserts,
             **kwargs,
@@ -250,13 +255,21 @@ class ColbertVectorStore(VectorStore):
     def from_texts(
         cls: Type[CVS],
         texts: List[str],
-        database: ColbertBaseDatabase,
-        embedding_model: ColbertBaseEmbeddingModel,
+        embedding: Embeddings,
         metadatas: Optional[List[dict]] = None,
+        *,
+        database: Optional[ColbertBaseDatabase] = None,
         **kwargs: Any,
     ) -> CVS:
-        """Return VectorStore initialized from texts and embeddings."""
-        instance = cls(database=database, embedding_model=embedding_model, **kwargs)
+        if not isinstance(embedding, TokensEmbeddings):
+            raise TypeError("ColbertVectorStore requires a TokensEmbeddings embedding.")
+        if database is None:
+            raise ValueError(
+                "ColbertVectorStore requires a ColbertBaseDatabase database."
+            )
+        instance = cls(
+            database=database, embedding_model=embedding.get_embedding_model(), **kwargs
+        )
         instance.add_texts(texts=texts, metadatas=metadatas)
         return instance
 
@@ -265,14 +278,22 @@ class ColbertVectorStore(VectorStore):
     async def afrom_texts(
         cls: Type[CVS],
         texts: List[str],
-        database: ColbertBaseDatabase,
-        embedding_model: ColbertBaseEmbeddingModel,
+        embedding: Embeddings,
         metadatas: Optional[List[dict]] = None,
+        *,
+        database: Optional[ColbertBaseDatabase] = None,
         concurrent_inserts: Optional[int] = 100,
         **kwargs: Any,
     ) -> CVS:
-        """Return VectorStore initialized from texts and embeddings."""
-        instance = cls(database=database, embedding_model=embedding_model, **kwargs)
+        if not isinstance(embedding, TokensEmbeddings):
+            raise TypeError("ColbertVectorStore requires a TokensEmbeddings embedding.")
+        if database is None:
+            raise ValueError(
+                "ColbertVectorStore requires a ColbertBaseDatabase database."
+            )
+        instance = cls(
+            database=database, embedding_model=embedding.get_embedding_model(), **kwargs
+        )
         await instance.aadd_texts(
             texts=texts, metadatas=metadatas, concurrent_inserts=concurrent_inserts
         )

@@ -5,8 +5,9 @@ import pytest
 from cassandra.cluster import Session
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document
-from ragstack_colbert import CassandraDatabase, ColbertEmbeddingModel
+from ragstack_colbert import CassandraDatabase
 from ragstack_langchain.colbert import ColbertVectorStore
+from ragstack_langchain.colbert.embedding import TokensEmbeddings
 from ragstack_tests_utils import TestData
 from transformers import BertTokenizer
 
@@ -72,7 +73,7 @@ def test_sync_from_docs(session: Session) -> None:
     batch_size = 5  # 640 recommended for production use
     chunk_size = 250
 
-    embedding_model = ColbertEmbeddingModel(
+    embedding = TokensEmbeddings.colbert(
         doc_maxlen=chunk_size,
         chunk_batch_size=batch_size,
     )
@@ -81,7 +82,7 @@ def test_sync_from_docs(session: Session) -> None:
 
     doc_chunks: List[Document] = get_test_chunks()
     vector_store: ColbertVectorStore = ColbertVectorStore.from_documents(
-        documents=doc_chunks, database=database, embedding_model=embedding_model
+        documents=doc_chunks, database=database, embedding=embedding
     )
 
     results: List[Document] = vector_store.similarity_search(
@@ -124,7 +125,7 @@ async def test_async_from_docs(session: Session) -> None:
     batch_size = 5  # 640 recommended for production use
     chunk_size = 250
 
-    embedding_model = ColbertEmbeddingModel(
+    embedding = TokensEmbeddings.colbert(
         doc_maxlen=chunk_size,
         chunk_batch_size=batch_size,
     )
@@ -133,7 +134,7 @@ async def test_async_from_docs(session: Session) -> None:
 
     doc_chunks: List[Document] = get_test_chunks()
     vector_store: ColbertVectorStore = await ColbertVectorStore.afrom_documents(
-        documents=doc_chunks, database=database, embedding_model=embedding_model
+        documents=doc_chunks, database=database, embedding=embedding
     )
 
     results: List[Document] = await vector_store.asimilarity_search(
