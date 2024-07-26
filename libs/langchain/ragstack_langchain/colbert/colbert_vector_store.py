@@ -1,21 +1,25 @@
-from typing import Any, Iterable, List, Optional, Tuple, Type, TypeVar
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, Tuple
 
 from langchain_core.documents import Document
-from langchain_core.embeddings import Embeddings
 from langchain_core.vectorstores import VectorStore, VectorStoreRetriever
 from ragstack_colbert import Chunk
 from ragstack_colbert import ColbertVectorStore as RagstackColbertVectorStore
-from ragstack_colbert.base_database import BaseDatabase as ColbertBaseDatabase
-from ragstack_colbert.base_embedding_model import (
-    BaseEmbeddingModel as ColbertBaseEmbeddingModel,
-)
-from ragstack_colbert.base_retriever import BaseRetriever as ColbertBaseRetriever
-from ragstack_colbert.base_vector_store import BaseVectorStore as ColbertBaseVectorStore
-from typing_extensions import override
+from typing_extensions import Self, override
 
 from ragstack_langchain.colbert.embedding import TokensEmbeddings
 
-CVS = TypeVar("CVS", bound="ColbertVectorStore")
+if TYPE_CHECKING:
+    from langchain_core.embeddings import Embeddings
+    from ragstack_colbert.base_database import BaseDatabase as ColbertBaseDatabase
+    from ragstack_colbert.base_embedding_model import (
+        BaseEmbeddingModel as ColbertBaseEmbeddingModel,
+    )
+    from ragstack_colbert.base_retriever import BaseRetriever as ColbertBaseRetriever
+    from ragstack_colbert.base_vector_store import (
+        BaseVectorStore as ColbertBaseVectorStore,
+    )
 
 
 class ColbertVectorStore(VectorStore):
@@ -35,7 +39,7 @@ class ColbertVectorStore(VectorStore):
         self,
         database: ColbertBaseDatabase,
         embedding_model: ColbertBaseEmbeddingModel,
-    ):
+    ) -> None:
         self._vector_store = RagstackColbertVectorStore(
             database=database, embedding_model=embedding_model
         )
@@ -45,7 +49,7 @@ class ColbertVectorStore(VectorStore):
     def add_texts(
         self,
         texts: Iterable[str],
-        metadatas: Optional[List[dict]] = None,
+        metadatas: Optional[List[Dict[str, Any]]] = None,
         doc_id: Optional[str] = None,
         **kwargs: Any,
     ) -> List[str]:
@@ -60,17 +64,18 @@ class ColbertVectorStore(VectorStore):
         Returns:
             List of ids from adding the texts into the vectorstore.
         """
-        return self._vector_store.add_texts(
+        results = self._vector_store.add_texts(
             texts=list(texts), metadatas=metadatas, doc_id=doc_id
         )
+        return [results[0][0]] if results else []
 
     @override
     async def aadd_texts(
         self,
         texts: Iterable[str],
-        metadatas: Optional[List[dict]] = None,
+        metadatas: Optional[List[Dict[str, Any]]] = None,
         doc_id: Optional[str] = None,
-        concurrent_inserts: Optional[int] = 100,
+        concurrent_inserts: int = 100,
         **kwargs: Any,
     ) -> List[str]:
         """Run more texts through the embeddings and add to the vectorstore.
@@ -86,51 +91,30 @@ class ColbertVectorStore(VectorStore):
         Returns:
             List of ids from adding the texts into the vectorstore.
         """
-        return await self._vector_store.aadd_texts(
+        results = await self._vector_store.aadd_texts(
             texts=list(texts),
             metadatas=metadatas,
             doc_id=doc_id,
             concurrent_inserts=concurrent_inserts,
         )
+        return [results[0][0]] if results else []
 
     @override
     def delete(self, ids: Optional[List[str]] = None, **kwargs: Any) -> Optional[bool]:
-        """Delete by vector ID or other criteria.
-
-        Args:
-            ids: List of ids to delete.
-            **kwargs: Other keyword arguments that subclasses might use.
-
-        Returns:
-            Optional[bool]: True if deletion is successful,
-            False otherwise, None if not implemented.
-        """
-        return None if ids is None else self._vector_store.delete(ids=ids)
+        return None if ids is None else self._vector_store.delete_chunks(doc_ids=ids)
 
     @override
     async def adelete(
         self,
         ids: Optional[List[str]] = None,
-        concurrent_deletes: Optional[int] = 100,
+        concurrent_deletes: int = 100,
         **kwargs: Any,
     ) -> Optional[bool]:
-        """Delete by vector ID or other criteria.
-
-        Args:
-            ids: List of ids to delete.
-            concurrent_deletes: How many concurrent deletes to make to the database.
-                Defaults to 100.
-            **kwargs: Other keyword arguments that subclasses might use.
-
-        Returns:
-            Optional[bool]: True if deletion is successful,
-            False otherwise, None if not implemented.
-        """
         return (
             None
             if ids is None
-            else await self._vector_store.adelete(
-                ids=ids, concurrent_deletes=concurrent_deletes
+            else await self._vector_store.adelete_chunks(
+                doc_ids=ids, concurrent_deletes=concurrent_deletes
             )
         )
 
@@ -215,7 +199,7 @@ class ColbertVectorStore(VectorStore):
         *,
         database: Optional[ColbertBaseDatabase] = None,
         **kwargs: Any,
-    ) -> CVS:
+    ) -> Self:
         """Return VectorStore initialized from documents and embeddings."""
         texts = [d.page_content for d in documents]
         metadatas = [d.metadata for d in documents]
@@ -230,14 +214,14 @@ class ColbertVectorStore(VectorStore):
     @classmethod
     @override
     async def afrom_documents(
-        cls: Type[CVS],
+        cls,
         documents: List[Document],
         embedding: Embeddings,
         *,
         database: Optional[ColbertBaseDatabase] = None,
-        concurrent_inserts: Optional[int] = 100,
+        concurrent_inserts: int = 100,
         **kwargs: Any,
-    ) -> CVS:
+    ) -> Self:
         """Return VectorStore initialized from documents and embeddings."""
         texts = [d.page_content for d in documents]
         metadatas = [d.metadata for d in documents]
@@ -253,14 +237,14 @@ class ColbertVectorStore(VectorStore):
     @classmethod
     @override
     def from_texts(
-        cls: Type[CVS],
+        cls,
         texts: List[str],
         embedding: Embeddings,
-        metadatas: Optional[List[dict]] = None,
+        metadatas: Optional[List[Dict[str, Any]]] = None,
         *,
         database: Optional[ColbertBaseDatabase] = None,
         **kwargs: Any,
-    ) -> CVS:
+    ) -> Self:
         if not isinstance(embedding, TokensEmbeddings):
             raise TypeError("ColbertVectorStore requires a TokensEmbeddings embedding.")
         if database is None:
@@ -276,15 +260,15 @@ class ColbertVectorStore(VectorStore):
     @classmethod
     @override
     async def afrom_texts(
-        cls: Type[CVS],
+        cls,
         texts: List[str],
         embedding: Embeddings,
-        metadatas: Optional[List[dict]] = None,
+        metadatas: Optional[List[Dict[str, Any]]] = None,
         *,
         database: Optional[ColbertBaseDatabase] = None,
-        concurrent_inserts: Optional[int] = 100,
+        concurrent_inserts: int = 100,
         **kwargs: Any,
-    ) -> CVS:
+    ) -> Self:
         if not isinstance(embedding, TokensEmbeddings):
             raise TypeError("ColbertVectorStore requires a TokensEmbeddings embedding.")
         if database is None:

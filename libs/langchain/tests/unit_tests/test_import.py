@@ -1,4 +1,4 @@
-def test_import():
+def test_import() -> None:
     import astrapy  # noqa: F401
     import cassio  # noqa: F401
     import langchain_core  # noqa: F401
@@ -10,10 +10,10 @@ def test_import():
     from langchain_astradb import AstraDBVectorStore  # noqa: F401
 
 
-def test_meta():
+def test_meta() -> None:
     from importlib import metadata
 
-    def check_meta(package: str):
+    def check_meta(package: str) -> None:
         meta = metadata.metadata(package)
         assert meta["version"]
         assert meta["license"] == "BUSL-1.1"
