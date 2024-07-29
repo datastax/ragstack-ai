@@ -1,18 +1,11 @@
 import asyncio
 import threading
 from asyncio import Future, Task
+from collections.abc import Iterable, Sequence
 from typing import (
     Any,
-    Dict,
-    Iterable,
-    List,
     NamedTuple,
-    Optional,
     Self,
-    Sequence,
-    Set,
-    Tuple,
-    Union,
 )
 
 from cassandra.cluster import PreparedStatement, ResponseFuture, Session
@@ -22,7 +15,7 @@ from cassio.config import check_resolve_keyspace, check_resolve_session
 class _Node(NamedTuple):
     name: str
     type: str
-    properties: Dict[str, Any]
+    properties: dict[str, Any]
 
 
 class Node(_Node):
@@ -34,7 +27,7 @@ class Node(_Node):
         cls,
         name: str,
         type: str,  # noqa: A002
-        properties: Optional[Dict[str, Any]] = None,
+        properties: dict[str, Any] | None = None,
     ) -> "Node":
         """Create a new node."""
         if properties is None:
@@ -101,7 +94,7 @@ def _prepare_edge_query(
 
 
 def traverse(
-    start: Union[Node, Sequence[Node]],
+    start: Node | Sequence[Node],
     edge_table: str,
     edge_source_name: str = "source_name",
     edge_source_type: str = "source_type",
@@ -110,8 +103,8 @@ def traverse(
     edge_type: str = "edge_type",
     edge_filters: Sequence[str] = (),
     steps: int = 3,
-    session: Optional[Session] = None,
-    keyspace: Optional[str] = None,
+    session: Session | None = None,
+    keyspace: str | None = None,
 ) -> Iterable[Relation]:
     """Traverse the graph from the given starting nodes.
 
@@ -141,9 +134,9 @@ def traverse(
     session = check_resolve_session(session)
     keyspace = check_resolve_keyspace(keyspace)
 
-    pending: Set[int] = set()
-    distances: Dict[Node, int] = {}
-    results: Set[Relation] = set()
+    pending: set[int] = set()
+    distances: dict[Node, int] = {}
+    results: set[Relation] = set()
     query = _prepare_edge_query(
         edge_table=edge_table,
         edge_source_name=edge_source_name,
@@ -157,7 +150,7 @@ def traverse(
     )
 
     condition = threading.Condition()
-    error: Optional[BaseException] = None
+    error: BaseException | None = None
 
     def handle_result(
         rows: Iterable[Any], source_distance: int, request: ResponseFuture
@@ -240,7 +233,7 @@ class AsyncPagedQuery:
     def _handle_error(self, error: BaseException) -> None:
         self.loop.call_soon_threadsafe(self.current_page_future.set_exception, error)
 
-    async def next(self) -> Tuple[int, List[Relation], Optional[Self]]:
+    async def next(self) -> tuple[int, list[Relation], Self | None]:
         """Fetch the next page of results."""
         page = [_parse_relation(r) for r in await self.current_page_future]
 
@@ -252,7 +245,7 @@ class AsyncPagedQuery:
 
 
 async def atraverse(
-    start: Union[Node, Sequence[Node]],
+    start: Node | Sequence[Node],
     edge_table: str,
     edge_source_name: str = "source_name",
     edge_source_type: str = "source_type",
@@ -261,8 +254,8 @@ async def atraverse(
     edge_type: str = "edge_type",
     edge_filters: Sequence[str] = (),
     steps: int = 3,
-    session: Optional[Session] = None,
-    keyspace: Optional[str] = None,
+    session: Session | None = None,
+    keyspace: str | None = None,
 ) -> Iterable[Relation]:
     """Async traversal of the graph from the given starting nodes.
 
@@ -312,7 +305,7 @@ async def atraverse(
 
     def fetch_relation(
         tg: asyncio.TaskGroup, depth: int, source: Node
-    ) -> Task[Tuple[int, List[Relation], Optional[AsyncPagedQuery]]]:
+    ) -> Task[tuple[int, list[Relation], AsyncPagedQuery | None]]:
         paged_query = AsyncPagedQuery(
             depth, session.execute_async(query, (source.name, source.type))
         )

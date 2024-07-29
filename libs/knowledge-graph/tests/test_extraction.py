@@ -4,6 +4,7 @@ import pytest
 from langchain_community.graphs.graph_document import Node, Relationship
 from langchain_core.documents import Document
 from langchain_core.language_models import BaseChatModel
+
 from ragstack_knowledge_graph.extraction import KnowledgeSchemaExtractor
 from ragstack_knowledge_graph.knowledge_schema import KnowledgeSchema
 

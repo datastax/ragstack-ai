@@ -1,4 +1,5 @@
-from typing import Sequence, cast
+from collections.abc import Sequence
+from typing import cast
 
 from langchain_core.documents import Document
 from langchain_core.language_models.chat_models import BaseChatModel

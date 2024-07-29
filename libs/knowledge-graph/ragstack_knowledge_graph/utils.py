@@ -5,7 +5,10 @@ try:
     from itertools import batched  # type: ignore[attr-defined]
 except ImportError:
     from itertools import islice
-    from typing import Iterable, Iterator, TypeVar
+    from typing import TYPE_CHECKING, TypeVar
+
+    if TYPE_CHECKING:
+        from collections.abc import Iterable, Iterator
 
     # Fallback implementation for older Python versions
 

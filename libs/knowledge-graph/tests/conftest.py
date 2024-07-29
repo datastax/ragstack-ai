@@ -1,5 +1,5 @@
 import secrets
-from typing import Iterator, List
+from collections.abc import Iterator
 
 import pytest
 from cassandra.cluster import Cluster, Session
@@ -7,9 +7,10 @@ from dotenv import load_dotenv
 from langchain.graphs.graph_document import GraphDocument, Node, Relationship
 from langchain_core.documents import Document
 from langchain_core.language_models import BaseChatModel
-from ragstack_knowledge_graph.cassandra_graph_store import CassandraGraphStore
 from testcontainers.core.container import DockerContainer
 from testcontainers.core.waiting_utils import wait_for_logs
+
+from ragstack_knowledge_graph.cassandra_graph_store import CassandraGraphStore
 
 load_dotenv()
 
@@ -65,7 +66,7 @@ def llm() -> BaseChatModel:
 
 class DataFixture:
     def __init__(
-        self, session: Session, keyspace: str, documents: List[GraphDocument]
+        self, session: Session, keyspace: str, documents: list[GraphDocument]
     ) -> None:
         self.session = session
         self.keyspace = "default_keyspace"

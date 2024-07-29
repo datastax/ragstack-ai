@@ -1,7 +1,8 @@
 import json
 import re
+from collections.abc import Iterable, Sequence
 from itertools import repeat
-from typing import Any, Dict, Iterable, Optional, Sequence, Tuple, Union, cast
+from typing import Any, cast
 
 from cassandra.cluster import ResponseFuture, Session
 from cassandra.query import BatchStatement
@@ -12,12 +13,12 @@ from .traverse import Node, Relation, atraverse, traverse
 from .utils import batched
 
 
-def _serialize_md_dict(md_dict: Dict[str, Any]) -> str:
+def _serialize_md_dict(md_dict: dict[str, Any]) -> str:
     return json.dumps(md_dict, separators=(",", ":"), sort_keys=True)
 
 
-def _deserialize_md_dict(md_string: str) -> Dict[str, Any]:
-    return cast(Dict[str, Any], json.loads(md_string))
+def _deserialize_md_dict(md_string: str) -> dict[str, Any]:
+    return cast(dict[str, Any], json.loads(md_string))
 
 
 def _parse_node(row: Any) -> Node:
@@ -52,9 +53,9 @@ class CassandraKnowledgeGraph:
         self,
         node_table: str = "entities",
         edge_table: str = "relationships",
-        text_embeddings: Optional[Embeddings] = None,
-        session: Optional[Session] = None,
-        keyspace: Optional[str] = None,
+        text_embeddings: Embeddings | None = None,
+        session: Session | None = None,
+        keyspace: str | None = None,
         apply_schema: bool = True,
     ) -> None:
         session = check_resolve_session(session)
@@ -197,7 +198,7 @@ class CassandraKnowledgeGraph:
     # TODO: Introduce `ainsert` for async insertions.
     def insert(
         self,
-        elements: Iterable[Union[Node, Relation]],
+        elements: Iterable[Node | Relation],
     ) -> None:
         """Insert the given elements into the graph."""
         for batch in batched(elements, n=4):
@@ -245,10 +246,10 @@ class CassandraKnowledgeGraph:
 
     def subgraph(
         self,
-        start: Union[Node, Sequence[Node]],
+        start: Node | Sequence[Node],
         edge_filters: Sequence[str] = (),
         steps: int = 3,
-    ) -> Tuple[Iterable[Node], Iterable[Relation]]:
+    ) -> tuple[Iterable[Node], Iterable[Relation]]:
         """Retrieve the sub-graph from the given starting nodes."""
         edges = self.traverse(start, edge_filters, steps)
 
@@ -274,7 +275,7 @@ class CassandraKnowledgeGraph:
 
     def traverse(
         self,
-        start: Union[Node, Sequence[Node]],
+        start: Node | Sequence[Node],
         edge_filters: Sequence[str] = (),
         steps: int = 3,
     ) -> Iterable[Relation]:
@@ -306,7 +307,7 @@ class CassandraKnowledgeGraph:
 
     async def atraverse(
         self,
-        start: Union[Node, Sequence[Node]],
+        start: Node | Sequence[Node],
         edge_filters: Sequence[str] = (),
         steps: int = 3,
     ) -> Iterable[Relation]:

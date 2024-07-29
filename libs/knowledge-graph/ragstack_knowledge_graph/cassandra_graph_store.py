@@ -1,4 +1,5 @@
-from typing import Any, Dict, Iterable, List, Optional, Sequence, Union
+from collections.abc import Iterable, Sequence
+from typing import Any
 
 from cassandra.cluster import Session
 from langchain_community.graphs.graph_document import GraphDocument
@@ -12,7 +13,7 @@ from .knowledge_graph import CassandraKnowledgeGraph
 from .traverse import Node, Relation
 
 
-def _elements(documents: Iterable[GraphDocument]) -> Iterable[Union[Node, Relation]]:
+def _elements(documents: Iterable[GraphDocument]) -> Iterable[Node | Relation]:
     def _node(node: LangChainNode) -> Node:
         return Node(name=str(node.id), type=node.type)
 
@@ -32,9 +33,9 @@ class CassandraGraphStore(GraphStore):
         self,
         node_table: str = "entities",
         edge_table: str = "relationships",
-        text_embeddings: Optional[Embeddings] = None,
-        session: Optional[Session] = None,
-        keyspace: Optional[str] = None,
+        text_embeddings: Embeddings | None = None,
+        session: Session | None = None,
+        keyspace: str | None = None,
     ) -> None:
         """Create a Cassandra Graph Store.
 
@@ -51,7 +52,7 @@ class CassandraGraphStore(GraphStore):
 
     @override
     def add_graph_documents(
-        self, graph_documents: List[GraphDocument], include_source: bool = False
+        self, graph_documents: list[GraphDocument], include_source: bool = False
     ) -> None:
         # TODO: Include source.
         self.graph.insert(_elements(graph_documents))
@@ -59,8 +60,8 @@ class CassandraGraphStore(GraphStore):
     # TODO: should this include the types of each node?
     @override
     def query(
-        self, query: str, params: Optional[Dict[str, Any]] = None
-    ) -> List[Dict[str, Any]]:
+        self, query: str, params: dict[str, Any] | None = None
+    ) -> list[dict[str, Any]]:
         raise ValueError("Querying Cassandra should use `as_runnable`.")
 
     @override
@@ -71,7 +72,7 @@ class CassandraGraphStore(GraphStore):
 
     @property
     @override
-    def get_structured_schema(self) -> Dict[str, Any]:
+    def get_structured_schema(self) -> dict[str, Any]:
         raise NotImplementedError
 
     @override
@@ -80,7 +81,7 @@ class CassandraGraphStore(GraphStore):
 
     def as_runnable(
         self, steps: int = 3, edge_filters: Sequence[str] = ()
-    ) -> Runnable[Union[Node, Sequence[Node]], Iterable[Relation]]:
+    ) -> Runnable[Node | Sequence[Node], Iterable[Relation]]:
         """Convert to a runnable.
 
         Returns a runnable that retrieves the sub-graph near the input entity or

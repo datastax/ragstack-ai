@@ -1,8 +1,7 @@
-from typing import List
-
 import pytest
 from langchain_core.documents import Document
 from langchain_core.language_models import BaseChatModel
+
 from ragstack_knowledge_graph.schema_inference import KnowledgeSchemaInferer
 
 MARIE_CURIE_SOURCE = """
@@ -46,7 +45,7 @@ def test_schema_inference(llm: BaseChatModel) -> None:
     # We don't do more testing here since this is meant to attempt to infer things.
 
 
-def any_of_in_list(values: List[str], *expected: str) -> None:
+def any_of_in_list(values: list[str], *expected: str) -> None:
     for value in values:
         if value in expected:
             return
