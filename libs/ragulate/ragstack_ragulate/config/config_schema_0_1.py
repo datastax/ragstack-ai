@@ -1,4 +1,6 @@
-from typing import Any, Dict
+from __future__ import annotations
+
+from typing import Any
 
 from typing_extensions import override
 
@@ -19,7 +21,7 @@ class ConfigSchema0Dot1(BaseConfigSchema):
         return _VERSION_0_1
 
     @override
-    def schema(self) -> Dict[str, Any]:
+    def schema(self) -> dict[str, Any]:
         step_list = {
             "type": "list",
             "schema": {
@@ -142,10 +144,10 @@ class ConfigSchema0Dot1(BaseConfigSchema):
         }
 
     @override
-    def parse_document(self, document: Dict[str, Any]) -> Config:
-        ingest_steps: Dict[str, Step] = {}
-        query_steps: Dict[str, Step] = {}
-        cleanup_steps: Dict[str, Step] = {}
+    def parse_document(self, document: dict[str, Any]) -> Config:
+        ingest_steps: dict[str, Step] = {}
+        query_steps: dict[str, Step] = {}
+        cleanup_steps: dict[str, Step] = {}
 
         step_map = {
             "ingest": ingest_steps,
@@ -168,12 +170,12 @@ class ConfigSchema0Dot1(BaseConfigSchema):
                     name=doc_name, script=doc_script, method=doc_method
                 )
 
-        recipes: Dict[str, Recipe] = {}
+        recipes: dict[str, Recipe] = {}
 
         doc_recipes = document.get("recipes", {})
         for doc_recipe in doc_recipes:
             doc_ingredients = doc_recipe.get("ingredients", {})
-            ingredients: Dict[str, Any] = {}
+            ingredients: dict[str, Any] = {}
 
             for doc_ingredient in doc_ingredients:
                 for key, value in doc_ingredient.items():
@@ -195,7 +197,7 @@ class ConfigSchema0Dot1(BaseConfigSchema):
             else:
                 recipe_name = doc_name
 
-            recipe_steps: Dict[str, Step] = {}
+            recipe_steps: dict[str, Step] = {}
 
             for step_kind in step_map:
                 doc_recipe_step = doc_recipe.get(step_kind, None)
@@ -224,7 +226,7 @@ class ConfigSchema0Dot1(BaseConfigSchema):
                 ingredients=ingredients,
             )
 
-        datasets: Dict[str, BaseDataset] = {}
+        datasets: dict[str, BaseDataset] = {}
 
         for doc_dataset in document.get("datasets", []):
             if isinstance(doc_dataset, str):

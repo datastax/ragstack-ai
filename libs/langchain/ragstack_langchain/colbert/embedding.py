@@ -1,9 +1,13 @@
-from typing import List, Optional
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, List, Optional
 
 from langchain_core.embeddings import Embeddings
 from ragstack_colbert import DEFAULT_COLBERT_MODEL, ColbertEmbeddingModel
-from ragstack_colbert.base_embedding_model import BaseEmbeddingModel
 from typing_extensions import Self, override
+
+if TYPE_CHECKING:
+    from ragstack_colbert.base_embedding_model import BaseEmbeddingModel
 
 
 class TokensEmbeddings(Embeddings):

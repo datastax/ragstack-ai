@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 import logging
 import os
-from typing import List
+from typing import TYPE_CHECKING
 
 import cassio
 from cassandra.auth import PlainTextAuthProvider
@@ -10,7 +12,6 @@ from langchain_community.chat_message_histories import (
     CassandraChatMessageHistory,
 )
 from langchain_community.vectorstores.cassandra import Cassandra
-from langchain_core.chat_history import BaseChatMessageHistory
 from llama_index.core.schema import TextNode
 from llama_index.core.vector_stores.types import (
     VectorStoreQuery,
@@ -29,6 +30,9 @@ from e2e_tests.test_utils.vector_store_handler import (
     VectorStoreImplementation,
     VectorStoreTestContext,
 )
+
+if TYPE_CHECKING:
+    from langchain_core.chat_history import BaseChatMessageHistory
 
 
 class CassandraVectorStoreHandler(VectorStoreHandler):
@@ -76,7 +80,7 @@ class CassandraVectorStoreHandler(VectorStoreHandler):
 
 class EnhancedCassandraLangChainVectorStore(EnhancedLangChainVectorStore, Cassandra):
     def put_document(
-        self, doc_id: str, document: str, metadata: dict, vector: List[float]
+        self, doc_id: str, document: str, metadata: dict, vector: list[float]
     ) -> None:
         if isinstance(self.table, MetadataVectorCassandraTable):
             self.table.put(
@@ -93,7 +97,7 @@ class EnhancedCassandraLangChainVectorStore(EnhancedLangChainVectorStore, Cassan
                 metadata=metadata or {},
             )
 
-    def search_documents(self, vector: List[float], limit: int) -> List[str]:
+    def search_documents(self, vector: list[float], limit: int) -> list[str]:
         if isinstance(self.table, MetadataVectorCassandraTable):
             return [
                 result["body_blob"]
@@ -109,13 +113,13 @@ class EnhancedCassandraLlamaIndexVectorStore(
     EnhancedLlamaIndexVectorStore, CassandraVectorStore
 ):
     def put_document(
-        self, doc_id: str, document: str, metadata: dict, vector: List[float]
+        self, doc_id: str, document: str, metadata: dict, vector: list[float]
     ) -> None:
         self.add(
             [TextNode(text=document, metadata=metadata, id_=doc_id, embedding=vector)]
         )
 
-    def search_documents(self, vector: List[float], limit: int) -> List[str]:
+    def search_documents(self, vector: list[float], limit: int) -> list[str]:
         return self.query(
             VectorStoreQuery(query_embedding=vector, similarity_top_k=limit)
         ).ids

@@ -10,7 +10,7 @@ produce embeddings suitable for high-relevancy retrieval tasks,
 with support for both CPU and GPU computing environments.
 """
 
-from typing import List, Optional
+from __future__ import annotations
 
 from colbert.infra import ColBERTConfig
 from typing_extensions import override
@@ -43,7 +43,7 @@ class ColbertEmbeddingModel(BaseEmbeddingModel):
         nbits: int = 2,
         kmeans_niters: int = 4,
         nranks: int = -1,
-        query_maxlen: Optional[int] = None,
+        query_maxlen: int | None = None,
         verbose: int = 3,  # 3 is the default on ColBERT checkpoint
         chunk_batch_size: int = 640,
     ):
@@ -84,7 +84,7 @@ class ColbertEmbeddingModel(BaseEmbeddingModel):
         self._encoder = TextEncoder(config=colbert_config, verbose=verbose)
 
     @override
-    def embed_texts(self, texts: List[str]) -> List[Embedding]:
+    def embed_texts(self, texts: list[str]) -> list[Embedding]:
         chunks = [
             Chunk(doc_id="dummy", chunk_id=i, text=t) for i, t in enumerate(texts)
         ]
@@ -104,7 +104,7 @@ class ColbertEmbeddingModel(BaseEmbeddingModel):
         self,
         query: str,
         full_length_search: bool = False,
-        query_maxlen: Optional[int] = None,
+        query_maxlen: int | None = None,
     ) -> Embedding:
         if query_maxlen is None:
             query_maxlen = -1

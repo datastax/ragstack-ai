@@ -5,11 +5,14 @@ specifically designed to work with ColBERT or similar dense embedding models,
 and can be used to create a LangChain or LlamaIndex ColBERT vector store.
 """
 
-from abc import ABC, abstractmethod
-from typing import List, Optional, Tuple
+from __future__ import annotations
 
-from .base_retriever import BaseRetriever
-from .objects import Chunk, Metadata
+from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .base_retriever import BaseRetriever
+    from .objects import Chunk, Metadata
 
 # LlamaIndex Node (chunk) has ids, text, embedding, metadata
 #            VectorStore.add(nodes: List[Node]) -> List[str](ids): embeds texts OUTside add  # noqa: E501
@@ -37,7 +40,7 @@ class BaseVectorStore(ABC):
 
     # handles LlamaIndex add
     @abstractmethod
-    def add_chunks(self, chunks: List[Chunk]) -> List[Tuple[str, int]]:
+    def add_chunks(self, chunks: list[Chunk]) -> list[tuple[str, int]]:
         """Stores a list of embedded text chunks in the vector store.
 
         Args:
@@ -51,10 +54,10 @@ class BaseVectorStore(ABC):
     @abstractmethod
     def add_texts(
         self,
-        texts: List[str],
-        metadatas: Optional[List[Metadata]],
-        doc_id: Optional[str] = None,
-    ) -> List[Tuple[str, int]]:
+        texts: list[str],
+        metadatas: list[Metadata] | None,
+        doc_id: str | None = None,
+    ) -> list[tuple[str, int]]:
         """Adds text chunks to the vector store.
 
         Embeds and stores a list of text chunks and optional metadata into the vector
@@ -73,7 +76,7 @@ class BaseVectorStore(ABC):
 
     # handles LangChain and LlamaIndex delete
     @abstractmethod
-    def delete_chunks(self, doc_ids: List[str]) -> bool:
+    def delete_chunks(self, doc_ids: list[str]) -> bool:
         """Deletes chunks from the vector store based on their document id.
 
         Args:
@@ -87,8 +90,8 @@ class BaseVectorStore(ABC):
     # handles LlamaIndex add
     @abstractmethod
     async def aadd_chunks(
-        self, chunks: List[Chunk], concurrent_inserts: int = 100
-    ) -> List[Tuple[str, int]]:
+        self, chunks: list[Chunk], concurrent_inserts: int = 100
+    ) -> list[tuple[str, int]]:
         """Stores a list of embedded text chunks in the vector store.
 
         Args:
@@ -104,11 +107,11 @@ class BaseVectorStore(ABC):
     @abstractmethod
     async def aadd_texts(
         self,
-        texts: List[str],
-        metadatas: Optional[List[Metadata]],
-        doc_id: Optional[str] = None,
+        texts: list[str],
+        metadatas: list[Metadata] | None,
+        doc_id: str | None = None,
         concurrent_inserts: int = 100,
-    ) -> List[Tuple[str, int]]:
+    ) -> list[tuple[str, int]]:
         """Adds text chunks to the vector store.
 
         Embeds and stores a list of text chunks and optional metadata into the vector
@@ -130,7 +133,7 @@ class BaseVectorStore(ABC):
     # handles LangChain and LlamaIndex delete
     @abstractmethod
     async def adelete_chunks(
-        self, doc_ids: List[str], concurrent_deletes: int = 100
+        self, doc_ids: list[str], concurrent_deletes: int = 100
     ) -> bool:
         """Deletes chunks from the vector store based on their document id.
 

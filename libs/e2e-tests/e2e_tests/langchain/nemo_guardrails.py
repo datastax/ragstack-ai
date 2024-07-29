@@ -1,8 +1,9 @@
-from langchain.llms.base import BaseLLM
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from langchain.prompts import PromptTemplate
 from langchain.schema.output_parser import StrOutputParser
-from langchain.schema.retriever import BaseRetriever
-from langchain.schema.vectorstore import VectorStore
 from nemoguardrails import LLMRails, RailsConfig
 from nemoguardrails.actions.actions import ActionResult
 
@@ -10,6 +11,11 @@ from e2e_tests.langchain.rag_application import (
     BASIC_QA_PROMPT,
     SAMPLE_DATA,
 )
+
+if TYPE_CHECKING:
+    from langchain.llms.base import BaseLLM
+    from langchain.schema.retriever import BaseRetriever
+    from langchain.schema.vectorstore import VectorStore
 
 
 def _config(engine, model) -> str:

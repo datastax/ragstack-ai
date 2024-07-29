@@ -1,8 +1,9 @@
+from __future__ import annotations
+
 import logging
-from typing import Dict, List, Tuple
+from typing import TYPE_CHECKING
 
 import pytest
-from cassandra.cluster import Session
 from llama_index.core import Settings, get_response_synthesizer
 from llama_index.core.ingestion import IngestionPipeline
 from llama_index.core.llms import MockLLM
@@ -18,10 +19,13 @@ from ragstack_colbert import (
 from ragstack_llamaindex.colbert import ColbertRetriever
 from ragstack_tests_utils import TestData
 
+if TYPE_CHECKING:
+    from cassandra.cluster import Session
+
 logging.getLogger("cassandra").setLevel(logging.ERROR)
 
 
-def validate_retrieval(results: List[NodeWithScore], key_value: str) -> bool:
+def validate_retrieval(results: list[NodeWithScore], key_value: str) -> bool:
     passed = False
     for result in results:
         if key_value in result.text:
@@ -65,7 +69,7 @@ def test_sync(session: Session) -> None:
 
     nodes = pipeline.run(documents=docs)
 
-    docs2: Dict[str, Tuple[List[str], List[Metadata]]] = {}
+    docs2: dict[str, tuple[list[str], list[Metadata]]] = {}
 
     for node in nodes:
         doc_id = node.metadata["name"]

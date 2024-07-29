@@ -4,10 +4,13 @@ This module defines an abstract base class (ABC) for generating token-based
 embeddings for text.
 """
 
-from abc import ABC, abstractmethod
-from typing import List, Optional
+from __future__ import annotations
 
-from .objects import Embedding
+from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .objects import Embedding
 
 
 class BaseEmbeddingModel(ABC):
@@ -21,7 +24,7 @@ class BaseEmbeddingModel(ABC):
     """
 
     @abstractmethod
-    def embed_texts(self, texts: List[str]) -> List[Embedding]:
+    def embed_texts(self, texts: list[str]) -> list[Embedding]:
         """Embeds a list of texts into their vector embedding representations.
 
         Args:
@@ -36,7 +39,7 @@ class BaseEmbeddingModel(ABC):
         self,
         query: str,
         full_length_search: bool = False,
-        query_maxlen: Optional[int] = None,
+        query_maxlen: int | None = None,
     ) -> Embedding:
         """Embeds a single query text into its vector representation.
 

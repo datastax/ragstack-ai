@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 import asyncio
-from typing import List
 
 from tqdm import tqdm
 from typing_extensions import override
@@ -19,7 +20,7 @@ class IngestPipeline(BasePipeline):
 
     @property
     @override
-    def get_reserved_params(self) -> List[str]:
+    def get_reserved_params(self) -> list[str]:
         return ["file_path"]
 
     def ingest(self) -> None:

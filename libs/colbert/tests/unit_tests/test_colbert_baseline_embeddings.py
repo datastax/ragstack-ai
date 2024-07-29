@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 import logging
-from typing import List
 
 import torch
 from colbert.indexing.collection_encoder import CollectionEncoder
@@ -42,7 +43,7 @@ MAXIMUM_DISTANCE = 0.001
 
 
 # a uility function to evaluate similarity of two embeddings at per token level
-def are_they_similar(embedded_chunks: List[Embedding], tensors: List[Tensor]) -> None:
+def are_they_similar(embedded_chunks: list[Embedding], tensors: list[Tensor]) -> None:
     n = 0
     pdist = torch.nn.PairwiseDistance(p=2)
     for embedding in embedded_chunks:
@@ -78,7 +79,7 @@ def test_embeddings_with_baseline() -> None:
     please add to the model and implementions resultsed euclidian and cosine threshold change
     2024-04-08 default model - https://huggingface.co/colbert-ir/colbertv2.0
     """  # noqa: E501
-    embeddings: List[Embedding] = colbert.embed_texts(arctic_botany_chunks)
+    embeddings: list[Embedding] = colbert.embed_texts(arctic_botany_chunks)
 
     pdist = torch.nn.PairwiseDistance(p=2)
     embedded_tensors = []

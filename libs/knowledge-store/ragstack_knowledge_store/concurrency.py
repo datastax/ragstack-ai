@@ -1,21 +1,23 @@
+from __future__ import annotations
+
 import contextlib
 import logging
 import threading
-from types import TracebackType
 from typing import (
+    TYPE_CHECKING,
     Any,
     Callable,
     Literal,
     NamedTuple,
-    Optional,
     Protocol,
     Sequence,
-    Tuple,
-    Type,
 )
 
-from cassandra.cluster import ResponseFuture, Session
-from cassandra.query import PreparedStatement
+if TYPE_CHECKING:
+    from types import TracebackType
+
+    from cassandra.cluster import ResponseFuture, Session
+    from cassandra.query import PreparedStatement
 
 logger = logging.getLogger(__name__)
 
@@ -31,13 +33,13 @@ class ConcurrentQueries(contextlib.AbstractContextManager["ConcurrentQueries"]):
         self._session = session
         self._completion = threading.Condition()
         self._pending = 0
-        self._error: Optional[BaseException] = None
+        self._error: BaseException | None = None
 
     def _handle_result(
         self,
         result: Sequence[NamedTuple],
         future: ResponseFuture,
-        callback: Optional[Callable[[Sequence[NamedTuple]], Any]],
+        callback: Callable[[Sequence[NamedTuple]], Any] | None,
     ) -> None:
         if callback is not None:
             callback(result)
@@ -63,8 +65,8 @@ class ConcurrentQueries(contextlib.AbstractContextManager["ConcurrentQueries"]):
     def execute(
         self,
         query: PreparedStatement,
-        parameters: Optional[Tuple[Any, ...]] = None,
-        callback: Optional[_Callback] = None,
+        parameters: tuple[Any, ...] | None = None,
+        callback: _Callback | None = None,
     ) -> None:
         """Execute a query concurrently.
 
@@ -97,14 +99,11 @@ class ConcurrentQueries(contextlib.AbstractContextManager["ConcurrentQueries"]):
             },
         )
 
-    def __enter__(self) -> "ConcurrentQueries":
-        return super().__enter__()
-
     def __exit__(
         self,
-        _exc_type: Optional[Type[BaseException]],
-        _exc_inst: Optional[BaseException],
-        _exc_traceback: Optional[TracebackType],
+        _exc_type: type[BaseException] | None,
+        _exc_inst: BaseException | None,
+        _exc_traceback: TracebackType | None,
     ) -> Literal[False]:
         with self._completion:
             while self._error is None and self._pending > 0:

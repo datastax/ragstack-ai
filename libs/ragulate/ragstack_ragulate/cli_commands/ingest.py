@@ -1,9 +1,13 @@
-from argparse import ArgumentParser, _SubParsersAction
-from typing import Any, List
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any
 
 from ragstack_ragulate.datasets import find_dataset
 from ragstack_ragulate.pipelines import IngestPipeline
 from ragstack_ragulate.utils import convert_vars_to_ingredients
+
+if TYPE_CHECKING:
+    from argparse import ArgumentParser, _SubParsersAction
 
 
 def setup_ingest(subparsers: _SubParsersAction[ArgumentParser]) -> None:
@@ -56,9 +60,9 @@ def setup_ingest(subparsers: _SubParsersAction[ArgumentParser]) -> None:
         name: str,
         script_path: str,
         method_name: str,
-        var_name: List[str],
-        var_value: List[str],
-        dataset: List[str],
+        var_name: list[str],
+        var_value: list[str],
+        dataset: list[str],
         **_: Any,
     ) -> None:
         """Run an ingest pipeline."""

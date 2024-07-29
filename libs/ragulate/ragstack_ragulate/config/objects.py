@@ -1,8 +1,10 @@
-from typing import Any, Dict
+from __future__ import annotations
+
+from typing import Any
 
 from pydantic import BaseModel
 
-from ragstack_ragulate.datasets import BaseDataset
+from ragstack_ragulate.datasets import BaseDataset  # noqa: TCH001
 
 
 class Step(BaseModel):
@@ -20,7 +22,7 @@ class Recipe(BaseModel):
     ingest: Step | None
     query: Step
     cleanup: Step | None
-    ingredients: Dict[str, Any]
+    ingredients: dict[str, Any]
 
 
 class Config(BaseModel):
@@ -31,5 +33,5 @@ class Config(BaseModel):
 
         arbitrary_types_allowed = True
 
-    recipes: Dict[str, Recipe] = {}
-    datasets: Dict[str, BaseDataset] = {}
+    recipes: dict[str, Recipe] = {}
+    datasets: dict[str, BaseDataset] = {}

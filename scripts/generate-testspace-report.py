@@ -1,11 +1,11 @@
 #!/usr/bin/env python
+from __future__ import annotations
 
 import json
 import os.path
 import sys
 import xml
 from dataclasses import dataclass
-from typing import List
 from xml.etree.ElementTree import Element, ElementTree, SubElement, parse
 
 
@@ -43,15 +43,15 @@ class TestCase:
     name: str
     passed: bool
     time: str
-    links: List[Link]
-    failures: List[Failure]
+    links: list[Link]
+    failures: list[Failure]
 
 
 @dataclass
 class TestSuite:
     name: str
-    test_cases: List[TestCase]
-    links: List[Link]
+    test_cases: list[TestCase]
+    links: list[Link]
 
 
 def unsafe_escape_data(text):

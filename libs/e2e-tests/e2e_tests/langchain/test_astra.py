@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 import json
 import logging
-from typing import List
+from typing import TYPE_CHECKING
 
 import pytest
 from astrapy.api import APIRequestError
@@ -9,7 +11,6 @@ from langchain.schema.embeddings import Embeddings
 from langchain_astradb import AstraDBVectorStore
 from langchain_core.documents import Document
 from langchain_core.runnables import RunnableConfig
-from langchain_core.vectorstores import VectorStore
 
 from e2e_tests.conftest import (
     is_astra,
@@ -17,6 +18,9 @@ from e2e_tests.conftest import (
 from e2e_tests.test_utils import skip_test_due_to_implementation_not_supported
 from e2e_tests.test_utils.astradb_vector_store_handler import AstraDBVectorStoreHandler
 from e2e_tests.test_utils.vector_store_handler import VectorStoreImplementation
+
+if TYPE_CHECKING:
+    from langchain_core.vectorstores import VectorStore
 
 MINIMUM_ACCEPTABLE_SCORE = 0.1
 
@@ -427,11 +431,11 @@ class MockEmbeddings(Embeddings):
     def mock_embedding(text: str):
         return [len(text) / 2, len(text) / 5, len(text) / 10]
 
-    def embed_documents(self, texts: List[str]) -> List[List[float]]:
+    def embed_documents(self, texts: list[str]) -> list[list[float]]:
         self.embedded_documents = texts
         return [self.mock_embedding(text) for text in texts]
 
-    def embed_query(self, text: str) -> List[float]:
+    def embed_query(self, text: str) -> list[float]:
         self.embedded_query = text
         return self.mock_embedding(text)
 

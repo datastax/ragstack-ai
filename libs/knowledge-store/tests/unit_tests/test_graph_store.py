@@ -1,4 +1,6 @@
-from typing import Any, Dict, Set
+from __future__ import annotations
+
+from typing import Any
 
 from ragstack_knowledge_store.graph_store import (
     _deserialize_links,
@@ -10,7 +12,7 @@ from ragstack_knowledge_store.links import Link
 
 
 def test_metadata_serialization() -> None:
-    def assert_roundtrip(metadata: Dict[str, Any]) -> None:
+    def assert_roundtrip(metadata: dict[str, Any]) -> None:
         serialized = _serialize_metadata(metadata)
         deserialized = _deserialize_metadata(serialized)
         assert metadata == deserialized
@@ -20,7 +22,7 @@ def test_metadata_serialization() -> None:
 
 
 def test_links_serialization() -> None:
-    def assert_roundtrip(links: Set[Link]) -> None:
+    def assert_roundtrip(links: set[Link]) -> None:
         serialized = _serialize_links(links)
         deserialized = _deserialize_links(serialized)
         assert links == deserialized

@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 import math
 import secrets
-from typing import Callable, Iterable, Iterator, List
+from typing import Callable, Iterable, Iterator
 
 import numpy as np
 import pytest
@@ -17,23 +19,23 @@ KEYSPACE = "default_keyspace"
 vector_size = 52
 
 
-def text_to_embedding(text: str) -> List[float]:
+def text_to_embedding(text: str) -> list[float]:
     """Embeds text using a simple ascii conversion algorithm"""
     embedding = np.zeros(vector_size)
     for i, char in enumerate(text):
         if i >= vector_size - 2:
             break
         embedding[i + 2] = ord(char) / 255  # Normalize ASCII value
-    vector: List[float] = embedding.tolist()
+    vector: list[float] = embedding.tolist()
     return vector
 
 
-def angle_to_embedding(angle: float) -> List[float]:
+def angle_to_embedding(angle: float) -> list[float]:
     """Embeds angles onto a circle"""
     embedding = np.zeros(vector_size)
     embedding[0] = math.cos(angle * math.pi)
     embedding[1] = math.sin(angle * math.pi)
-    vector: List[float] = embedding.tolist()
+    vector: list[float] = embedding.tolist()
     return vector
 
 
@@ -43,13 +45,13 @@ class SimpleEmbeddingModel(EmbeddingModel):
     a circle, and other text into a simple 50-dimension vector.
     """
 
-    def embed_texts(self, texts: List[str]) -> List[List[float]]:
+    def embed_texts(self, texts: list[str]) -> list[list[float]]:
         """
         Make a list of texts into a list of embedding vectors.
         """
         return [self.embed_query(text) for text in texts]
 
-    def embed_query(self, text: str) -> List[float]:
+    def embed_query(self, text: str) -> list[float]:
         """
         Convert input text to a 'vector' (list of floats).
         If the text is a number, use it as the angle for the
@@ -63,13 +65,13 @@ class SimpleEmbeddingModel(EmbeddingModel):
             # Assume: just test string
             return text_to_embedding(text)
 
-    async def aembed_texts(self, texts: List[str]) -> List[List[float]]:
+    async def aembed_texts(self, texts: list[str]) -> list[list[float]]:
         """
         Make a list of texts into a list of embedding vectors.
         """
         return self.embed_texts(texts=texts)
 
-    async def aembed_query(self, text: str) -> List[float]:
+    async def aembed_query(self, text: str) -> list[float]:
         """
         Convert input text to a 'vector' (list of floats).
         If the text is a number, use it as the angle for the
@@ -115,7 +117,7 @@ def graph_store_factory(
     session.shutdown()
 
 
-def _result_ids(nodes: Iterable[Node]) -> List[str]:
+def _result_ids(nodes: Iterable[Node]) -> list[str]:
     return [n.id for n in nodes if n.id is not None]
 
 

@@ -1,7 +1,8 @@
+from __future__ import annotations
+
 import logging
 import os
 from abc import ABC, abstractmethod
-from typing import Optional
 
 import cassio
 from cassandra.cluster import Cluster, PlainTextAuthProvider, Session
@@ -46,8 +47,8 @@ class LocalCassandraTestStore(TestStore):
 
 
 class AstraDBTestStore(TestStore):
-    token: Optional[str]
-    database_id: Optional[str]
+    token: str | None
+    database_id: str | None
     env: str
 
     def __init__(self) -> None:

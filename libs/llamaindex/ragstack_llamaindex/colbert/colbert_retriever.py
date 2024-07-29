@@ -1,13 +1,15 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
+from __future__ import annotations
 
-from llama_index.core.callbacks.base import CallbackManager
+from typing import TYPE_CHECKING, Any
+
 from llama_index.core.constants import DEFAULT_SIMILARITY_TOP_K
 from llama_index.core.retrievers import BaseRetriever
 from llama_index.core.schema import NodeWithScore, QueryBundle, TextNode
-from ragstack_colbert.base_retriever import BaseRetriever as ColbertBaseRetriever
 
 if TYPE_CHECKING:
+    from llama_index.core.callbacks.base import CallbackManager
     from ragstack_colbert import Chunk
+    from ragstack_colbert.base_retriever import BaseRetriever as ColbertBaseRetriever
 
 
 class ColbertRetriever(BaseRetriever):
@@ -20,14 +22,14 @@ class ColbertRetriever(BaseRetriever):
 
     _retriever: ColbertBaseRetriever
     _k: int
-    _query_maxlen: Optional[int]
+    _query_maxlen: int | None
 
     def __init__(
         self,
         retriever: ColbertBaseRetriever,
         similarity_top_k: int = DEFAULT_SIMILARITY_TOP_K,
-        callback_manager: Optional[CallbackManager] = None,
-        object_map: Optional[Dict[str, Any]] = None,
+        callback_manager: CallbackManager | None = None,
+        object_map: dict[str, Any] | None = None,
         verbose: bool = False,
         query_maxlen: int = -1,
     ) -> None:
@@ -44,8 +46,8 @@ class ColbertRetriever(BaseRetriever):
     def _retrieve(
         self,
         query_bundle: QueryBundle,
-    ) -> List[NodeWithScore]:
-        chunk_scores: List[Tuple[Chunk, float]] = self._retriever.text_search(
+    ) -> list[NodeWithScore]:
+        chunk_scores: list[tuple[Chunk, float]] = self._retriever.text_search(
             query_text=query_bundle.query_str,
             k=self._k,
             query_maxlen=self._query_maxlen,

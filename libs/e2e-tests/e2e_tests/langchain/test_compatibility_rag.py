@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 import logging
-from typing import List
 
 import pytest
 from langchain import callbacks
@@ -417,11 +418,11 @@ def test_multimodal(vector_store, embedding, llm, request, record_property):
 
     class FakeEmbeddings(Embeddings):
         @override
-        def embed_documents(self, texts: List[str]) -> List[List[float]]:
+        def embed_documents(self, texts: list[str]) -> list[list[float]]:
             return [[0.0] * embedding_size] * len(texts)
 
         @override
-        def embed_query(self, text: str) -> List[float]:
+        def embed_query(self, text: str) -> list[float]:
             return [0.0] * embedding_size
 
     enhanced_vector_store = request.getfixturevalue(

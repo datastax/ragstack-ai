@@ -1,7 +1,9 @@
-from typing import Any, Dict
+from __future__ import annotations
+
+from typing import Any
 
 
-def dict_to_string(d: Dict[str, Any]) -> str:
+def dict_to_string(d: dict[str, Any]) -> str:
     """Convert dictionary to string."""
     parts = []
 
