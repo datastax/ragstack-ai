@@ -10,7 +10,7 @@ from tqdm import tqdm
 from trulens_eval import Tru, TruChain
 from trulens_eval.feedback.provider import AzureOpenAI, Huggingface, LLMProvider, OpenAI
 from trulens_eval.schema.feedback import FeedbackMode, FeedbackResultStatus
-from typing_extensions import override
+from typing_extensions import Never, override
 
 from ragstack_ragulate.logging_config import logger
 from ragstack_ragulate.utils import get_tru
@@ -29,7 +29,7 @@ class QueryPipeline(BasePipeline):
 
     _tru: Tru
     _name: str
-    _progress: tqdm
+    _progress: tqdm[Never]
     _queries: dict[str, list[str]]
     _golden_sets: dict[str, list[dict[str, str]]]
     _total_queries: int = 0

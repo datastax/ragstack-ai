@@ -1,4 +1,3 @@
-# ruff: noqa: D103, INP001, T201
 import os
 from typing import Any
 

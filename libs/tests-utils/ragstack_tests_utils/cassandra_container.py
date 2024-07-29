@@ -5,7 +5,7 @@ from testcontainers.core.waiting_utils import wait_for_logs
 from typing_extensions import Self
 
 
-class CassandraContainer(DockerContainer):
+class CassandraContainer(DockerContainer):  # type: ignore[misc]
     def __init__(
         self,
         image: str = "docker.io/stargateio/dse-next:4.0.11-b259738f492f",
