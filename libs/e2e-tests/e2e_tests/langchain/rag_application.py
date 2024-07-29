@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 import logging
 import time
 from operator import itemgetter
-from typing import Callable, Dict, List, Optional, Sequence
+from typing import TYPE_CHECKING, Callable, Sequence
 
 from langchain import callbacks
 from langchain.chains import ConversationalRetrievalChain
@@ -9,23 +11,25 @@ from langchain.memory import (
     ConversationSummaryMemory,
 )
 from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder, PromptTemplate
-from langchain.schema import Document
-from langchain.schema.language_model import BaseLanguageModel
 from langchain.schema.messages import AIMessage, HumanMessage
 from langchain.schema.output_parser import StrOutputParser
-from langchain.schema.retriever import BaseRetriever
 from langchain.schema.runnable import (
     Runnable,
     RunnableBranch,
     RunnableLambda,
     RunnableMap,
 )
-from langchain.schema.vectorstore import VectorStore
-from langchain_core.chat_history import BaseChatMessageHistory
 from langchain_core.tracers import ConsoleCallbackHandler
 from pydantic import BaseModel
 
 from e2e_tests.test_utils.tracing import record_langsmith_sharelink
+
+if TYPE_CHECKING:
+    from langchain.schema import Document
+    from langchain.schema.language_model import BaseLanguageModel
+    from langchain.schema.retriever import BaseRetriever
+    from langchain.schema.vectorstore import VectorStore
+    from langchain_core.chat_history import BaseChatMessageHistory
 
 BASIC_QA_PROMPT = """
 Answer the question based only on the supplied context. If you don't know the answer, say the following: "I don't know the answer".
@@ -86,7 +90,7 @@ SAMPLE_DATA = [
 
 class ChatRequest(BaseModel):
     question: str
-    chat_history: Optional[List[Dict[str, str]]]
+    chat_history: list[dict[str, str]] | None
 
 
 def create_retriever_chain(

@@ -8,17 +8,21 @@ where such dense embeddings are used to measure the semantic similarity between 
 chunks.
 """
 
+from __future__ import annotations
+
 import logging
-from typing import List, Optional, cast
+from typing import TYPE_CHECKING, cast
 
 import torch
-from colbert.infra import ColBERTConfig
 from colbert.modeling.checkpoint import Checkpoint
 
 from .objects import Chunk, Embedding
 
+if TYPE_CHECKING:
+    from colbert.infra import ColBERTConfig
 
-def calculate_query_maxlen(tokens: List[List[str]]) -> int:
+
+def calculate_query_maxlen(tokens: list[list[str]]) -> int:
     """Calculates maximum query length.
 
     Calculates an appropriate maximum query length for token embeddings,
@@ -53,7 +57,7 @@ class TextEncoder:
         verbose (int): The level of logging to use
     """
 
-    def __init__(self, config: ColBERTConfig, verbose: Optional[int] = 3) -> None:
+    def __init__(self, config: ColBERTConfig, verbose: int | None = 3) -> None:
         logging.info("Cuda enabled GPU available: %s", torch.cuda.is_available())
 
         self._checkpoint = Checkpoint(
@@ -61,7 +65,7 @@ class TextEncoder:
         )
         self._use_cpu = config.total_visible_gpus == 0
 
-    def encode_chunks(self, chunks: List[Chunk], batch_size: int = 640) -> List[Chunk]:
+    def encode_chunks(self, chunks: list[Chunk], batch_size: int = 640) -> list[Chunk]:
         """Encodes a list of chunks into embeddings.
 
         Encodes a list of chunks into embeddings, processing in batches to
@@ -78,7 +82,7 @@ class TextEncoder:
         """
         logging.debug("#> Encoding %s chunks..", len(chunks))
 
-        embedded_chunks: List[Chunk] = []
+        embedded_chunks: list[Chunk] = []
 
         if len(chunks) == 0:
             return embedded_chunks

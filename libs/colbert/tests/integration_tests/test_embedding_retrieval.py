@@ -1,14 +1,18 @@
+from __future__ import annotations
+
 import logging
-from typing import List
+from typing import TYPE_CHECKING
 
 import pytest
-from cassandra.cluster import Session
 from ragstack_colbert import (
     CassandraDatabase,
     ColbertEmbeddingModel,
     ColbertVectorStore,
 )
 from ragstack_tests_utils import TestData
+
+if TYPE_CHECKING:
+    from cassandra.cluster import Session
 
 
 @pytest.mark.parametrize("session", ["cassandra", "astra_db"], indirect=["session"])
@@ -20,7 +24,7 @@ def test_embedding_cassandra_retriever(session: Session) -> None:
     overlap_size = 50
 
     # Function to generate chunks with the specified size and overlap
-    def chunk_texts(text: str, chunk_size: int, overlap_size: int) -> List[str]:
+    def chunk_texts(text: str, chunk_size: int, overlap_size: int) -> list[str]:
         texts = []
         start = 0
         end = chunk_size

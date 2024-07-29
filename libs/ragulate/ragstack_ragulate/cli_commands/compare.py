@@ -1,9 +1,13 @@
-from argparse import ArgumentParser, _SubParsersAction
-from typing import Any, List
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any
 
 from ragstack_ragulate.analysis import Analysis
 
 from .utils import remove_sqlite_extension
+
+if TYPE_CHECKING:
+    from argparse import ArgumentParser, _SubParsersAction
 
 
 def setup_compare(subparsers: _SubParsersAction[ArgumentParser]) -> None:
@@ -30,7 +34,7 @@ def setup_compare(subparsers: _SubParsersAction[ArgumentParser]) -> None:
 
 
 def call_compare(
-    recipe: List[str],
+    recipe: list[str],
     output: str = "box-plots",
     **_: Any,
 ) -> None:

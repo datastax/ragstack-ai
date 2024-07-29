@@ -1,11 +1,12 @@
+from __future__ import annotations
+
 import logging
-from typing import List
+from typing import TYPE_CHECKING
 
 import pytest
 from httpx import ConnectError, HTTPStatusError
 from llama_index.core import ServiceContext, StorageContext, VectorStoreIndex
 from llama_index.core.embeddings import BaseEmbedding
-from llama_index.core.llms import LLM
 from llama_index.core.node_parser import SimpleNodeParser
 from llama_index.core.schema import Document, NodeWithScore
 from llama_index.core.vector_stores import (
@@ -22,6 +23,9 @@ from e2e_tests.conftest import (
 from e2e_tests.test_utils import skip_test_due_to_implementation_not_supported
 from e2e_tests.test_utils.astradb_vector_store_handler import AstraDBVectorStoreHandler
 from e2e_tests.test_utils.vector_store_handler import VectorStoreImplementation
+
+if TYPE_CHECKING:
+    from llama_index.core.llms import LLM
 
 
 class Environment:
@@ -216,13 +220,13 @@ def environment() -> Environment:
 
 
 class MockEmbeddings(BaseEmbedding):
-    def _get_query_embedding(self, query: str) -> List[float]:
+    def _get_query_embedding(self, query: str) -> list[float]:
         return self.mock_embedding(query)
 
-    async def _aget_query_embedding(self, query: str) -> List[float]:
+    async def _aget_query_embedding(self, query: str) -> list[float]:
         return self.mock_embedding(query)
 
-    def _get_text_embedding(self, text: str) -> List[float]:
+    def _get_text_embedding(self, text: str) -> list[float]:
         return self.mock_embedding(text)
 
     @staticmethod

@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 import re
-from typing import Any, Dict, List, Union
+from typing import Any
 
 from trulens_eval import Tru
 
@@ -14,16 +16,16 @@ def get_tru(recipe_name: str) -> Tru:
 
 
 def convert_vars_to_ingredients(
-    var_names: List[str], var_values: List[str]
-) -> Dict[str, Any]:
+    var_names: list[str], var_values: list[str]
+) -> dict[str, Any]:
     """Convert variables to ingredients."""
-    params: Dict[str, Any] = {}
+    params: dict[str, Any] = {}
     for i, name in enumerate(var_names):
         params[name] = _convert_string(var_values[i])
     return params
 
 
-def _convert_string(s: str) -> Union[str, int, float]:
+def _convert_string(s: str) -> str | int | float:
     s = s.strip()
     if re.match(r"^\d+$", s):
         return int(s)

@@ -5,10 +5,13 @@ text chunk embeddings, specifically designed to work with ColBERT or similar emb
 models.
 """
 
-from abc import ABC, abstractmethod
-from typing import Any, List, Optional, Tuple
+from __future__ import annotations
 
-from .objects import Chunk, Embedding
+from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from .objects import Chunk, Embedding
 
 
 class BaseRetriever(ABC):
@@ -24,10 +27,10 @@ class BaseRetriever(ABC):
     def embedding_search(
         self,
         query_embedding: Embedding,
-        k: Optional[int] = None,
+        k: int | None = None,
         include_embedding: bool = False,
         **kwargs: Any,
-    ) -> List[Tuple[Chunk, float]]:
+    ) -> list[tuple[Chunk, float]]:
         """Search for relevant text chunks based on a query embedding.
 
         Retrieves a list of text chunks relevant to a given query from the vector
@@ -53,10 +56,10 @@ class BaseRetriever(ABC):
     async def aembedding_search(
         self,
         query_embedding: Embedding,
-        k: Optional[int] = None,
+        k: int | None = None,
         include_embedding: bool = False,
         **kwargs: Any,
-    ) -> List[Tuple[Chunk, float]]:
+    ) -> list[tuple[Chunk, float]]:
         """Search for relevant text chunks based on a query embedding.
 
         Retrieves a list of text chunks relevant to a given query from the vector
@@ -82,11 +85,11 @@ class BaseRetriever(ABC):
     def text_search(
         self,
         query_text: str,
-        k: Optional[int] = None,
-        query_maxlen: Optional[int] = None,
+        k: int | None = None,
+        query_maxlen: int | None = None,
         include_embedding: bool = False,
         **kwargs: Any,
-    ) -> List[Tuple[Chunk, float]]:
+    ) -> list[tuple[Chunk, float]]:
         """Search for relevant text chunks based on a query text.
 
         Retrieves a list of text chunks relevant to a given query from the vector
@@ -113,11 +116,11 @@ class BaseRetriever(ABC):
     async def atext_search(
         self,
         query_text: str,
-        k: Optional[int] = None,
-        query_maxlen: Optional[int] = None,
+        k: int | None = None,
+        query_maxlen: int | None = None,
         include_embedding: bool = False,
         **kwargs: Any,
-    ) -> List[Tuple[Chunk, float]]:
+    ) -> list[tuple[Chunk, float]]:
         """Search for relevant text chunks based on a query text.
 
         Retrieves a list of text chunks relevant to a given query from the vector

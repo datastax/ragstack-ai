@@ -11,18 +11,22 @@ This flexibility ensures that the retrieval system can be deployed in a variety 
 hardware environments.
 """
 
+from __future__ import annotations
+
 import asyncio
 import logging
 import math
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import TYPE_CHECKING, Any
 
 import torch
 from typing_extensions import override
 
-from .base_database import BaseDatabase
-from .base_embedding_model import BaseEmbeddingModel
 from .base_retriever import BaseRetriever
-from .objects import Chunk, Embedding, Vector
+
+if TYPE_CHECKING:
+    from .base_database import BaseDatabase
+    from .base_embedding_model import BaseEmbeddingModel
+    from .objects import Chunk, Embedding, Vector
 
 
 def all_gpus_support_fp16(is_cuda: bool = False) -> bool:
@@ -149,9 +153,9 @@ class ColbertRetriever(BaseRetriever):
 
     async def _query_relevant_chunks(
         self, query_embedding: Embedding, top_k: int
-    ) -> Set[Chunk]:
+    ) -> set[Chunk]:
         """Queries for the top_k most relevant chunks for each query token."""
-        chunks: Set[Chunk] = set()
+        chunks: set[Chunk] = set()
         # Collect all tasks
         tasks = [
             self._database.search_relevant_chunks(vector=v, n=top_k)
@@ -171,7 +175,7 @@ class ColbertRetriever(BaseRetriever):
 
         return chunks
 
-    async def _get_chunk_embeddings(self, chunks: Set[Chunk]) -> List[Chunk]:
+    async def _get_chunk_embeddings(self, chunks: set[Chunk]) -> list[Chunk]:
         """Retrieves Chunks with `doc_id`, `chunk_id`, and `embedding` set."""
         # Collect all tasks
         tasks = [
@@ -194,8 +198,8 @@ class ColbertRetriever(BaseRetriever):
         return chunk_embeddings
 
     def _score_chunks(
-        self, query_embedding: Embedding, chunk_embeddings: List[Chunk]
-    ) -> Dict[Chunk, float]:
+        self, query_embedding: Embedding, chunk_embeddings: list[Chunk]
+    ) -> dict[Chunk, float]:
         """Process the retrieved chunk data to calculate scores."""
         chunk_scores = {}
         for chunk in chunk_embeddings:
@@ -214,9 +218,9 @@ class ColbertRetriever(BaseRetriever):
 
     async def _get_chunk_data(
         self,
-        chunks: List[Chunk],
+        chunks: list[Chunk],
         include_embedding: bool = False,
-    ) -> List[Chunk]:
+    ) -> list[Chunk]:
         """Fetches text and metadata for each chunk.
 
         Returns:
@@ -250,11 +254,11 @@ class ColbertRetriever(BaseRetriever):
     async def atext_search(
         self,
         query_text: str,
-        k: Optional[int] = 5,
-        query_maxlen: Optional[int] = None,
+        k: int | None = 5,
+        query_maxlen: int | None = None,
         include_embedding: bool = False,
         **kwargs: Any,
-    ) -> List[Tuple[Chunk, float]]:
+    ) -> list[tuple[Chunk, float]]:
         query_embedding = self._embedding_model.embed_query(
             query=query_text, query_maxlen=query_maxlen
         )
@@ -270,10 +274,10 @@ class ColbertRetriever(BaseRetriever):
     async def aembedding_search(
         self,
         query_embedding: Embedding,
-        k: Optional[int] = 5,
+        k: int | None = 5,
         include_embedding: bool = False,
         **kwargs: Any,
-    ) -> List[Tuple[Chunk, float]]:
+    ) -> list[tuple[Chunk, float]]:
         if k is None:
             k = 5
         top_k = max(math.floor(len(query_embedding) / 2), 16)
@@ -285,28 +289,28 @@ class ColbertRetriever(BaseRetriever):
         )
 
         # search for relevant chunks (only with `doc_id` and `chunk_id` set)
-        relevant_chunks: Set[Chunk] = await self._query_relevant_chunks(
+        relevant_chunks: set[Chunk] = await self._query_relevant_chunks(
             query_embedding=query_embedding, top_k=top_k
         )
 
         # get the embedding for each chunk
         # (with `doc_id`, `chunk_id`, and `embedding` set)
-        chunk_embeddings: List[Chunk] = await self._get_chunk_embeddings(
+        chunk_embeddings: list[Chunk] = await self._get_chunk_embeddings(
             chunks=relevant_chunks
         )
 
         # score the chunks using max_similarity
-        chunk_scores: Dict[Chunk, float] = self._score_chunks(
+        chunk_scores: dict[Chunk, float] = self._score_chunks(
             query_embedding=query_embedding,
             chunk_embeddings=chunk_embeddings,
         )
 
         # only keep the top k sorted results
-        top_k_chunks: List[Chunk] = sorted(
+        top_k_chunks: list[Chunk] = sorted(
             chunk_scores, key=lambda c: chunk_scores.get(c, 0), reverse=True
         )[:k]
 
-        chunks: List[Chunk] = await self._get_chunk_data(
+        chunks: list[Chunk] = await self._get_chunk_data(
             chunks=top_k_chunks, include_embedding=include_embedding
         )
 
@@ -316,11 +320,11 @@ class ColbertRetriever(BaseRetriever):
     def text_search(
         self,
         query_text: str,
-        k: Optional[int] = 5,
-        query_maxlen: Optional[int] = None,
+        k: int | None = 5,
+        query_maxlen: int | None = None,
         include_embedding: bool = False,
         **kwargs: Any,
-    ) -> List[Tuple[Chunk, float]]:
+    ) -> list[tuple[Chunk, float]]:
         return asyncio.run(
             self.atext_search(
                 query_text=query_text,
@@ -335,10 +339,10 @@ class ColbertRetriever(BaseRetriever):
     def embedding_search(
         self,
         query_embedding: Embedding,
-        k: Optional[int] = 5,
+        k: int | None = 5,
         include_embedding: bool = False,
         **kwargs: Any,
-    ) -> List[Tuple[Chunk, float]]:
+    ) -> list[tuple[Chunk, float]]:
         return asyncio.run(
             self.aembedding_search(
                 query_embedding=query_embedding,

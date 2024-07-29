@@ -1,8 +1,9 @@
+from __future__ import annotations
+
 import logging
-from typing import List
+from typing import TYPE_CHECKING, List
 
 import pytest
-from cassandra.cluster import Session
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document
 from ragstack_colbert import CassandraDatabase
@@ -10,6 +11,9 @@ from ragstack_langchain.colbert import ColbertVectorStore
 from ragstack_langchain.colbert.embedding import TokensEmbeddings
 from ragstack_tests_utils import TestData
 from transformers import BertTokenizer
+
+if TYPE_CHECKING:
+    from cassandra.cluster import Session
 
 logging.getLogger("cassandra").setLevel(logging.ERROR)
 

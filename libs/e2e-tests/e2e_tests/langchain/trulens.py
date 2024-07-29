@@ -1,11 +1,11 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 import numpy as np
 from langchain.prompts import PromptTemplate
-from langchain.schema.language_model import BaseLanguageModel
 from langchain.schema.output_parser import StrOutputParser
-from langchain.schema.runnable import Runnable
-from langchain.schema.vectorstore import VectorStore
 from langchain_core.runnables import RunnablePassthrough
-from langchain_core.vectorstores import VectorStoreRetriever
 from trulens_eval import Feedback, Tru, TruChain
 from trulens_eval.app import App
 from trulens_eval.feedback.provider import Langchain
@@ -15,6 +15,12 @@ from e2e_tests.langchain.rag_application import (
     SAMPLE_DATA,
     format_docs,
 )
+
+if TYPE_CHECKING:
+    from langchain.schema.language_model import BaseLanguageModel
+    from langchain.schema.runnable import Runnable
+    from langchain.schema.vectorstore import VectorStore
+    from langchain_core.vectorstores import VectorStoreRetriever
 
 
 def _feedback_functions(chain: Runnable, llm: BaseLanguageModel) -> list[Feedback]:

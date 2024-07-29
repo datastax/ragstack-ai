@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 import math
-from typing import List
 
 from ragstack_knowledge_store._mmr_helper import MmrHelper
 
@@ -29,7 +30,7 @@ def test_mmr_helper_pop_best() -> None:
     assert helper.pop_best() is None
 
 
-def angular_embedding(angle: float) -> List[float]:
+def angular_embedding(angle: float) -> list[float]:
     return [math.cos(angle * math.pi), math.sin(angle * math.pi)]
 
 

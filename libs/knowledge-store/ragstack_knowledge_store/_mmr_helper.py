@@ -1,13 +1,17 @@
+from __future__ import annotations
+
 import dataclasses
-from typing import Dict, Iterable, List, Optional
+from typing import TYPE_CHECKING, Iterable
 
 import numpy as np
-from numpy.typing import NDArray
 
 from ragstack_knowledge_store.math import cosine_similarity
 
+if TYPE_CHECKING:
+    from numpy.typing import NDArray
 
-def _emb_to_ndarray(embedding: List[float]) -> NDArray[np.float32]:
+
+def _emb_to_ndarray(embedding: list[float]) -> NDArray[np.float32]:
     emb_array = np.array(embedding, dtype=np.float32)
     if emb_array.ndim == 1:
         emb_array = np.expand_dims(emb_array, axis=0)
@@ -63,14 +67,14 @@ class MmrHelper:
     score_threshold: float
     """Only documents with a score greater than or equal to this will be chosen."""
 
-    selected_ids: List[str]
+    selected_ids: list[str]
     """List of selected IDs (in selection order)."""
     selected_embeddings: NDArray[np.float32]
     """(N, dim) ndarray with a row for each selected node."""
 
-    candidate_id_to_index: Dict[str, int]
+    candidate_id_to_index: dict[str, int]
     """Dictionary of candidate IDs to indices in candidates and candidate_embeddings."""
-    candidates: List[_Candidate]
+    candidates: list[_Candidate]
     """List containing information about candidates.
 
     Same order as rows in `candidate_embeddings`.
@@ -79,12 +83,12 @@ class MmrHelper:
     """(N, dim) ndarray with a row for each candidate."""
 
     best_score: float
-    best_id: Optional[str]
+    best_id: str | None
 
     def __init__(
         self,
         k: int,
-        query_embedding: List[float],
+        query_embedding: list[float],
         lambda_mult: float = 0.5,
         score_threshold: float = NEG_INF,
     ) -> None:
@@ -154,7 +158,7 @@ class MmrHelper:
 
         return embedding
 
-    def pop_best(self) -> Optional[str]:
+    def pop_best(self) -> str | None:
         """Select and pop the best item being considered.
 
         Updates the consideration set based on it.
@@ -191,7 +195,7 @@ class MmrHelper:
 
         return selected_id
 
-    def add_candidates(self, candidates: Dict[str, List[float]]) -> None:
+    def add_candidates(self, candidates: dict[str, list[float]]) -> None:
         """Add candidates to the consideration set."""
         # Determine the keys to actually include.
         # These are the candidates that aren't already selected

@@ -1,11 +1,15 @@
-from typing import Any, Dict, List
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 from trulens_eval import Feedback
 from trulens_eval.app import App
 from trulens_eval.feedback import GroundTruthAgreement
-from trulens_eval.feedback.provider.base import LLMProvider
-from trulens_eval.utils.serial import Lens
+
+if TYPE_CHECKING:
+    from trulens_eval.feedback.provider.base import LLMProvider
+    from trulens_eval.utils.serial import Lens
 
 
 class Feedbacks:
@@ -47,7 +51,7 @@ class Feedbacks:
             .aggregate(np.mean)
         )
 
-    def answer_correctness(self, golden_set: List[Dict[str, str]]) -> Feedback:
+    def answer_correctness(self, golden_set: list[dict[str, str]]) -> Feedback:
         """Return answer correctness feedback."""
         # GroundTruth for comparing the Answer to the Ground-Truth Answer
         ground_truth_collection = GroundTruthAgreement(

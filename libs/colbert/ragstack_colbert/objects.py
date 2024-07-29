@@ -4,6 +4,8 @@ This module defines a set of data classes for handling chunks of text in various
 stages of processing within the ColBERT retrieval system.
 """
 
+from __future__ import annotations
+
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
@@ -34,7 +36,7 @@ class Chunk(BaseModel):
     metadata: Metadata = Field(
         default_factory=dict, description="flat metadata of the chunk"
     )
-    embedding: Optional[Embedding] = Field(
+    embedding: Optional[Embedding] = Field(  # noqa: UP007
         default=None, description="embedding of the chunk"
     )
 

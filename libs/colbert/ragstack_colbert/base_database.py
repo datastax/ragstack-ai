@@ -5,10 +5,13 @@ text chunk embeddings, specifically designed to work with ColBERT or similar emb
 models.
 """
 
-from abc import ABC, abstractmethod
-from typing import List, Tuple
+from __future__ import annotations
 
-from .objects import Chunk, Vector
+from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .objects import Chunk, Vector
 
 
 class BaseDatabase(ABC):
@@ -24,7 +27,7 @@ class BaseDatabase(ABC):
     """
 
     @abstractmethod
-    def add_chunks(self, chunks: List[Chunk]) -> List[Tuple[str, int]]:
+    def add_chunks(self, chunks: list[Chunk]) -> list[tuple[str, int]]:
         """Stores a list of embedded text chunks in the vector store.
 
         Args:
@@ -35,7 +38,7 @@ class BaseDatabase(ABC):
         """
 
     @abstractmethod
-    def delete_chunks(self, doc_ids: List[str]) -> bool:
+    def delete_chunks(self, doc_ids: list[str]) -> bool:
         """Deletes chunks from the vector store based on their document id.
 
         Args:
@@ -48,8 +51,8 @@ class BaseDatabase(ABC):
 
     @abstractmethod
     async def aadd_chunks(
-        self, chunks: List[Chunk], concurrent_inserts: int = 100
-    ) -> List[Tuple[str, int]]:
+        self, chunks: list[Chunk], concurrent_inserts: int = 100
+    ) -> list[tuple[str, int]]:
         """Stores a list of embedded text chunks in the vector store.
 
         Args:
@@ -63,7 +66,7 @@ class BaseDatabase(ABC):
 
     @abstractmethod
     async def adelete_chunks(
-        self, doc_ids: List[str], concurrent_deletes: int = 100
+        self, doc_ids: list[str], concurrent_deletes: int = 100
     ) -> bool:
         """Deletes chunks from the vector store based on their document id.
 
@@ -78,7 +81,7 @@ class BaseDatabase(ABC):
         """
 
     @abstractmethod
-    async def search_relevant_chunks(self, vector: Vector, n: int) -> List[Chunk]:
+    async def search_relevant_chunks(self, vector: Vector, n: int) -> list[Chunk]:
         """Retrieves 'n' ANN results for an embedded token vector.
 
         Returns:

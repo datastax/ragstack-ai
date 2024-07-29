@@ -1,9 +1,11 @@
 # ruff: noqa: D103, INP001, T201
+from __future__ import annotations
+
 import logging
 import os
 import time
 from pathlib import Path
-from typing import Any, List
+from typing import Any
 
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import UnstructuredFileLoader
@@ -114,7 +116,7 @@ async def ingest(file_path: str, chunk_size: int, **_: Any) -> None:
 
     await colbert_vector_store.adelete_chunks(doc_ids=[doc_id])
 
-    chunks: List[Chunk] = []
+    chunks: list[Chunk] = []
     for i, doc in enumerate(chunked_docs):
         chunks.append(
             Chunk(

@@ -1,15 +1,16 @@
+from __future__ import annotations
+
 import concurrent
 import logging
 import os
 import threading
 import time
 from dataclasses import dataclass, field
-from typing import Callable, List
+from typing import TYPE_CHECKING, Callable
 
 import cassio
 from langchain_astradb import AstraDBVectorStore as LangChainVectorStore
 from langchain_community.chat_message_histories import AstraDBChatMessageHistory
-from langchain_core.chat_history import BaseChatMessageHistory
 
 try:
     from llama_index.vector_stores import AstraDBVectorStore
@@ -35,6 +36,9 @@ from e2e_tests.test_utils.vector_store_handler import (
     VectorStoreImplementation,
     VectorStoreTestContext,
 )
+
+if TYPE_CHECKING:
+    from langchain_core.chat_history import BaseChatMessageHistory
 
 
 @dataclass
@@ -94,7 +98,7 @@ class EnhancedAstraDBLangChainVectorStore(
     EnhancedLangChainVectorStore, LangChainVectorStore
 ):
     def put_document(
-        self, doc_id: str, document: str, metadata: dict, vector: List[float]
+        self, doc_id: str, document: str, metadata: dict, vector: list[float]
     ) -> None:
         self.collection.insert_one(
             {
@@ -105,7 +109,7 @@ class EnhancedAstraDBLangChainVectorStore(
             }
         )
 
-    def search_documents(self, vector: List[float], limit: int) -> List[str]:
+    def search_documents(self, vector: list[float], limit: int) -> list[str]:
         return [
             result["document"]
             for result in self.collection.vector_find(
@@ -119,7 +123,7 @@ class EnhancedAstraDBLlamaIndexVectorStore(
     AstraDBVectorStore, EnhancedLlamaIndexVectorStore
 ):
     def put_document(
-        self, doc_id: str, document: str, metadata: dict, vector: List[float]
+        self, doc_id: str, document: str, metadata: dict, vector: list[float]
     ) -> None:
         self.client.insert_one(
             {
@@ -130,7 +134,7 @@ class EnhancedAstraDBLlamaIndexVectorStore(
             }
         )
 
-    def search_documents(self, vector: List[float], limit: int) -> List[str]:
+    def search_documents(self, vector: list[float], limit: int) -> list[str]:
         return [
             result["document"]
             for result in self.client.vector_find(
@@ -141,7 +145,7 @@ class EnhancedAstraDBLlamaIndexVectorStore(
 
 
 class AstraDBVectorStoreTestContext(VectorStoreTestContext):
-    def __init__(self, handler: "AstraDBVectorStoreHandler"):
+    def __init__(self, handler: AstraDBVectorStoreHandler):
         super().__init__()
         self.handler = handler
         self.test_id = "test_id" + random_string()

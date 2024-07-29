@@ -1,8 +1,10 @@
 # ruff: noqa: T201
+from __future__ import annotations
+
 import random
 import signal
 import time
-from typing import Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any
 
 from tqdm import tqdm
 from trulens_eval import Tru, TruChain
@@ -10,12 +12,14 @@ from trulens_eval.feedback.provider import AzureOpenAI, Huggingface, LLMProvider
 from trulens_eval.schema.feedback import FeedbackMode, FeedbackResultStatus
 from typing_extensions import override
 
-from ragstack_ragulate.datasets import BaseDataset
 from ragstack_ragulate.logging_config import logger
 from ragstack_ragulate.utils import get_tru
 
 from .base_pipeline import BasePipeline
 from .feedbacks import Feedbacks
+
+if TYPE_CHECKING:
+    from ragstack_ragulate.datasets import BaseDataset
 
 
 class QueryPipeline(BasePipeline):
@@ -26,8 +30,8 @@ class QueryPipeline(BasePipeline):
     _tru: Tru
     _name: str
     _progress: tqdm
-    _queries: Dict[str, List[str]]
-    _golden_sets: Dict[str, List[Dict[str, str]]]
+    _queries: dict[str, list[str]]
+    _golden_sets: dict[str, list[dict[str, str]]]
     _total_queries: int = 0
     _total_feedbacks: int = 0
     _finished_feedbacks: int = 0
@@ -41,7 +45,7 @@ class QueryPipeline(BasePipeline):
 
     @property
     @override
-    def get_reserved_params(self) -> List[str]:
+    def get_reserved_params(self) -> list[str]:
         return []
 
     def __init__(
@@ -49,13 +53,13 @@ class QueryPipeline(BasePipeline):
         recipe_name: str,
         script_path: str,
         method_name: str,
-        ingredients: Dict[str, Any],
-        datasets: List[BaseDataset],
+        ingredients: dict[str, Any],
+        datasets: list[BaseDataset],
         sample_percent: float = 1.0,
-        random_seed: Optional[int] = None,
+        random_seed: int | None = None,
         restart_pipeline: bool = False,
         llm_provider: str = "OpenAI",
-        model_name: Optional[str] = None,
+        model_name: str | None = None,
     ):
         self._queries = {}
         self._golden_sets = {}

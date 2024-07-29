@@ -1,12 +1,16 @@
+from __future__ import annotations
+
 import importlib.util
 import inspect
 import logging
 import sys
 from abc import ABC, abstractmethod
-from types import ModuleType
-from typing import Any, Dict, List
+from typing import TYPE_CHECKING, Any
 
-from ragstack_ragulate.datasets import BaseDataset
+if TYPE_CHECKING:
+    from types import ModuleType
+
+    from ragstack_ragulate.datasets import BaseDataset
 
 
 def load_module(file_path: str, name: str) -> ModuleType:
@@ -27,17 +31,17 @@ def get_method(script_path: str, pipeline_type: str, method_name: str) -> Any:
     return getattr(module, method_name)
 
 
-def get_method_params(method: Any) -> List[str]:
+def get_method_params(method: Any) -> list[str]:
     """Return the parameters of a method."""
     signature = inspect.signature(method)
     return list(signature.parameters.keys())
 
 
 def get_ingredients(
-    method_params: List[str],
-    reserved_params: List[str],
-    passed_ingredients: Dict[str, Any],
-) -> Dict[str, Any]:
+    method_params: list[str],
+    reserved_params: list[str],
+    passed_ingredients: dict[str, Any],
+) -> dict[str, Any]:
     """Return ingredients for the given method params."""
     ingredients = {}
     for method_param in method_params:
@@ -59,10 +63,10 @@ class BasePipeline(ABC):
     script_path: str
     method_name: str
     _method: Any
-    _method_params: List[str]
-    _passed_ingredients: Dict[str, Any]
-    ingredients: Dict[str, Any]
-    datasets: List[BaseDataset]
+    _method_params: list[str]
+    _passed_ingredients: dict[str, Any]
+    ingredients: dict[str, Any]
+    datasets: list[BaseDataset]
 
     @property
     @abstractmethod
@@ -71,7 +75,7 @@ class BasePipeline(ABC):
 
     @property
     @abstractmethod
-    def get_reserved_params(self) -> List[str]:
+    def get_reserved_params(self) -> list[str]:
         """Get the list of reserved parameter names for this pipeline type."""
 
     def __init__(
@@ -79,8 +83,8 @@ class BasePipeline(ABC):
         recipe_name: str,
         script_path: str,
         method_name: str,
-        ingredients: Dict[str, Any],
-        datasets: List[BaseDataset],
+        ingredients: dict[str, Any],
+        datasets: list[BaseDataset],
     ):
         self.recipe_name = recipe_name
         self.script_path = script_path
@@ -115,7 +119,7 @@ class BasePipeline(ABC):
         """Return the pipeline method."""
         return self._method
 
-    def dataset_names(self) -> List[str]:
+    def dataset_names(self) -> list[str]:
         """Return the names of the datasets."""
         return [d.name for d in self.datasets]
 

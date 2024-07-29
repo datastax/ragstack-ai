@@ -1,4 +1,6 @@
-from typing import Any, Dict, List, Tuple
+from __future__ import annotations
+
+from typing import Any
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -13,11 +15,11 @@ from .utils import get_tru
 class Analysis:
     """Analysis class."""
 
-    def get_all_data(self, recipes: List[str]) -> Tuple[pd.DataFrame, List[str]]:
+    def get_all_data(self, recipes: list[str]) -> tuple[pd.DataFrame, list[str]]:
         """Get all data from the recipes."""
         df_all = pd.DataFrame()
 
-        all_metrics: List[str] = []
+        all_metrics: list[str] = []
 
         for recipe in recipes:
             tru = get_tru(recipe_name=recipe)
@@ -55,10 +57,10 @@ class Analysis:
         return reset_df, list(set(all_metrics))
 
     def calculate_statistics(
-        self, df: pd.DataFrame, metrics: List[str]
-    ) -> Dict[str, Any]:
+        self, df: pd.DataFrame, metrics: list[str]
+    ) -> dict[str, Any]:
         """Calculate statistics."""
-        stats: Dict[str, Any] = {}
+        stats: dict[str, Any] = {}
         for recipe in df["recipe"].unique():
             stats[recipe] = {}
             for metric in metrics:
@@ -77,7 +79,7 @@ class Analysis:
                     }
         return stats
 
-    def output_box_plots_by_dataset(self, df: pd.DataFrame, metrics: List[str]) -> None:
+    def output_box_plots_by_dataset(self, df: pd.DataFrame, metrics: list[str]) -> None:
         """Output box plots by dataset."""
         stats = self.calculate_statistics(df, metrics)
         recipes = sorted(df["recipe"].unique(), key=lambda x: x.lower())
@@ -160,7 +162,7 @@ class Analysis:
             write_image(fig, f"./{dataset}_box_plot.png")
 
     def output_histograms_by_dataset(
-        self, df: pd.DataFrame, metrics: List[str]
+        self, df: pd.DataFrame, metrics: list[str]
     ) -> None:
         """Output histograms by dataset."""
         # Append "latency" to the metrics list
@@ -186,7 +188,7 @@ class Analysis:
             sns.set_theme(style="darkgrid")
 
             # Custom function to set bin ranges and filter invalid values
-            def custom_hist(data: Dict[str, Any], **kws: Any) -> None:
+            def custom_hist(data: dict[str, Any], **kws: Any) -> None:
                 metric = data["metric"].iloc[0]
                 data = data[
                     np.isfinite(data["value"])
@@ -253,7 +255,7 @@ class Analysis:
             # Close the plot to avoid displaying it
             plt.close()
 
-    def compare(self, recipes: List[str], output: str = "box-plots") -> None:
+    def compare(self, recipes: list[str], output: str = "box-plots") -> None:
         """Compare results from 2 (or more) recipes."""
         df, metrics = self.get_all_data(recipes=recipes)
         if output == "box-plots":

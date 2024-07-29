@@ -1,16 +1,18 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING, List, Optional, Tuple
 
-from langchain_core.callbacks.manager import (
-    AsyncCallbackManagerForRetrieverRun,
-    CallbackManagerForRetrieverRun,
-)
 from langchain_core.documents import Document
 from langchain_core.retrievers import BaseRetriever
-from ragstack_colbert.base_retriever import BaseRetriever as ColbertBaseRetriever
 from typing_extensions import override
 
 if TYPE_CHECKING:
+    from langchain_core.callbacks.manager import (
+        AsyncCallbackManagerForRetrieverRun,
+        CallbackManagerForRetrieverRun,
+    )
     from ragstack_colbert import Chunk
+    from ragstack_colbert.base_retriever import BaseRetriever as ColbertBaseRetriever
 
 
 class ColbertRetriever(BaseRetriever):
