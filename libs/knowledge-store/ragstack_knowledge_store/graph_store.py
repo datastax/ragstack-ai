@@ -4,17 +4,13 @@ import json
 import logging
 import re
 import secrets
+from collections.abc import Iterable
 from dataclasses import asdict, dataclass, field, is_dataclass
 from enum import Enum
 from typing import (
     TYPE_CHECKING,
     Any,
-    Dict,
-    Iterable,
-    List,
     Sequence,
-    Set,
-    Tuple,
     Union,
     cast,
 )
@@ -70,8 +66,8 @@ class MetadataIndexingMode(Enum):
     DEFAULT_TO_SEARCHABLE = 2
 
 
-MetadataIndexingType = Union[Tuple[str, Iterable[str]], str]
-MetadataIndexingPolicy = Tuple[MetadataIndexingMode, Set[str]]
+MetadataIndexingType = Union[tuple[str, Iterable[str]], str]
+MetadataIndexingPolicy = tuple[MetadataIndexingMode, set[str]]
 
 
 def _is_metadata_field_indexed(field_name: str, policy: MetadataIndexingPolicy) -> bool:
@@ -84,7 +80,7 @@ def _is_metadata_field_indexed(field_name: str, policy: MetadataIndexingPolicy) 
 
 
 def _serialize_metadata(md: dict[str, Any]) -> str:
-    if isinstance(md.get("links"), Set):
+    if isinstance(md.get("links"), set):
         md = md.copy()
         md["links"] = list(md["links"])
     return json.dumps(md)
@@ -93,15 +89,12 @@ def _serialize_metadata(md: dict[str, Any]) -> str:
 def _serialize_links(links: set[Link]) -> str:
     class SetAndLinkEncoder(json.JSONEncoder):
         def default(self, obj: Any) -> Any:
-            if is_dataclass(obj) and not isinstance(obj, type):
+            if not isinstance(obj, type) and is_dataclass(obj):
                 return asdict(obj)
 
-            try:
-                iterable = iter(obj)
-            except TypeError:
-                pass
-            else:
-                return list(iterable)
+            if isinstance(obj, Iterable):
+                return list(obj)
+
             # Let the base class default method raise the TypeError
             return super().default(obj)
 
@@ -111,13 +104,13 @@ def _serialize_links(links: set[Link]) -> str:
 def _deserialize_metadata(json_blob: str | None) -> dict[str, Any]:
     # We don't need to convert the links list back to a set -- it will be
     # converted when accessed, if needed.
-    return cast(Dict[str, Any], json.loads(json_blob or ""))
+    return cast(dict[str, Any], json.loads(json_blob or ""))
 
 
 def _deserialize_links(json_blob: str | None) -> set[Link]:
     return {
         Link(kind=link["kind"], direction=link["direction"], tag=link["tag"])
-        for link in cast(List[Dict[str, Any]], json.loads(json_blob or ""))
+        for link in cast(list[dict[str, Any]], json.loads(json_blob or ""))
     }
 
 
