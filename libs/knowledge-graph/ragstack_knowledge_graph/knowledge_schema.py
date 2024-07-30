@@ -109,18 +109,16 @@ class KnowledgeSchemaValidator:
             relationships = self._relationships.get(r.type, None)
             if relationships is None:
                 e.add_note(f"No edge type '{r.type}")
-            else:
-                relationship = next(
-                    candidate
-                    for candidate in relationships
-                    if r.source.type in candidate.source_types
-                    if r.target.type in candidate.target_types
+            elif not any(
+                candidate
+                for candidate in relationships
+                if r.source.type in candidate.source_types
+                and r.target.type in candidate.target_types
+            ):
+                e.add_note(
+                    "No relationship allows "
+                    f"({r.source.id} -> {r.type} -> {r.target.type})"
                 )
-                if relationship is None:
-                    e.add_note(
-                        "No relationship allows "
-                        f"({r.source.id} -> {r.type} -> {r.target.type})"
-                    )
 
         if e.__notes__:
             raise e

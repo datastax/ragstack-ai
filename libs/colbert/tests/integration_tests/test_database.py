@@ -32,9 +32,7 @@ def test_database_sync(session: Session) -> None:
 
     results = database.add_chunks(chunks=[chunk_0, chunk_1])
 
-    assert len(results) == 2  # noqa: PLR2004
-    assert results[0] == (doc_id, 0)
-    assert results[1] == (doc_id, 1)
+    assert results == [(doc_id, 0), (doc_id, 1)]
 
     # TODO: verify other db methods.
 
@@ -71,46 +69,51 @@ async def test_database_async(session: Session) -> None:
     )
 
     results = await database.aadd_chunks(chunks=[chunk_0, chunk_1])
-    assert len(results) == 2  # noqa: PLR2004
-    assert results[0] == (doc_id, 0)
-    assert results[1] == (doc_id, 1)
+    assert results == [(doc_id, 0), (doc_id, 1)]
 
     chunks = await database.search_relevant_chunks(
         vector=climate_change_embedding[5], n=2
     )
-    assert len(chunks) == 1
-    assert chunks[0].doc_id == doc_id
-    assert chunks[0].chunk_id == 0
-    assert chunks[0].text is None
-    assert chunks[0].metadata == {}
-    assert chunks[0].embedding is None
+    assert chunks == [
+        Chunk(
+            doc_id=doc_id,
+            chunk_id=0,
+            embedding=None,
+        )
+    ]
 
     chunk = await database.get_chunk_embedding(doc_id=doc_id, chunk_id=1)
-    assert chunk.doc_id == doc_id
-    assert chunk.chunk_id == 1
-    assert chunk.text is None
-    assert chunk.metadata == {}
-    assert chunk.embedding == chunk_1.embedding
+    assert chunk == Chunk(
+        doc_id=doc_id,
+        chunk_id=1,
+        embedding=chunk_1.embedding,
+    )
 
     chunk = await database.get_chunk_data(doc_id=doc_id, chunk_id=0)
-    assert chunk.doc_id == doc_id
-    assert chunk.chunk_id == 0
-    assert chunk.text == chunk_0.text
-    # this is broken due to a cassio bug
-    # which converts Number fields to strings
-    # assert chunk.metadata == chunk_0.metadata
-    assert chunk.embedding is None
+
+    assert chunk == Chunk(
+        doc_id=doc_id,
+        chunk_id=0,
+        text=chunk_0.text,
+        # this is broken due to a cassio bug
+        # which converts Number fields to strings
+        # metadata=chunk_0.metadata,
+        embedding=None,
+    )
 
     chunk = await database.get_chunk_data(
         doc_id=doc_id, chunk_id=0, include_embedding=True
     )
-    assert chunk.doc_id == doc_id
-    assert chunk.chunk_id == 0
-    assert chunk.text == chunk_0.text
-    # this is broken due to a cassio bug
-    # which converts Number fields to strings
-    # assert chunk.metadata == chunk_0.metadata
-    assert chunk.embedding == chunk_0.embedding
+
+    assert chunk == Chunk(
+        doc_id=doc_id,
+        chunk_id=0,
+        text=chunk_0.text,
+        # this is broken due to a cassio bug
+        # which converts Number fields to strings
+        # metadata=chunk_0.metadata,
+        embedding=chunk_0.embedding,
+    )
 
     result = await database.adelete_chunks(doc_ids=[doc_id])
     assert result
