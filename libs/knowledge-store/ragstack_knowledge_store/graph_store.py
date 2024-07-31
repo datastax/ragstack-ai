@@ -10,7 +10,12 @@ from enum import Enum
 from typing import (
     TYPE_CHECKING,
     Any,
+    Dict,
+    List,
+    Optional,
     Sequence,
+    Set,
+    Tuple,
     Union,
     cast,
 )
@@ -217,14 +222,6 @@ class GraphStore:
             """  # noqa: S608
         )
 
-        self._query_source_tags_by_id = session.prepare(
-            f"""
-            SELECT link_to_tags
-            FROM {keyspace}.{node_table}
-            WHERE content_id = ?
-            """  # noqa: S608
-        )
-
     def table_name(self) -> str:
         """Returns the fully qualified table name."""
         return f"{self._keyspace}.{self._node_table}"
@@ -364,6 +361,7 @@ class GraphStore:
         self,
         query: str,
         *,
+        neighborhood: Optional[Sequence[str]] = None,
         k: int = 4,
         depth: int = 2,
         fetch_k: int = 100,
@@ -384,6 +382,10 @@ class GraphStore:
 
         Args:
             query: The query string to search for.
+            neighborhood: Optional list of documents to use as the initial neighborhood
+                to search. If provided, the adjacent nodes to the neighborhood will be
+                used as the initial candidates, rather than performing a generic vector
+                search.
             k: Number of Documents to return. Defaults to 4.
             fetch_k: Number of initial Documents to fetch via similarity.
                 Defaults to 100.
@@ -406,19 +408,12 @@ class GraphStore:
             score_threshold=score_threshold,
         )
 
-        # For each unvisited node, stores the outgoing tags.
+        # For each unselected node, stores the outgoing tags.
         outgoing_tags: dict[str, set[tuple[str, str]]] = {}
 
         # Fetch the initial candidates and add them to the helper and
         # outgoing_tags.
         columns = "content_id, text_embedding, link_to_tags"
-        initial_candidates_query = self._get_search_cql(
-            has_limit=True,
-            columns=columns,
-            metadata_keys=list(metadata_filter.keys()),
-            has_embedding=True,
-        )
-
         adjacent_query = self._get_search_cql(
             has_limit=True,
             columns=columns,
@@ -427,7 +422,17 @@ class GraphStore:
             has_link_from_tags=True,
         )
 
+        visited_tags: Set[Tuple[str, str]] = set()
+        excluded_ids: Set[str] = set()
+
         def fetch_initial_candidates() -> None:
+            initial_candidates_query = self._get_search_cql(
+                has_limit=True,
+                columns=columns,
+                metadata_keys=list(metadata_filter.keys()),
+                has_embedding=True,
+            )
+
             params = self._get_search_params(
                 limit=fetch_k,
                 metadata=metadata_filter,
@@ -443,12 +448,45 @@ class GraphStore:
                 outgoing_tags[row.content_id] = set(row.link_to_tags or [])
             helper.add_candidates(candidates)
 
-        fetch_initial_candidates()
+        def fetch_neighborhood(neighborhood: Sequence[str]) -> None:
+            # Put the neighborhood into the ouhgoing tags, to avoid adding it
+            # to the candidate set in the future.
+            outgoing_tags.update({ id: set() for id in neighborhood})
+
+            # Initialize the visited_tags with the set of outgoing tags from the neighborhood.
+            visited_tags = self._get_outgoing_tags(neighborhood)
+
+            # Call `self._get_adjacent` to fetch the candidates.
+            adjacents = self._get_adjacent(
+                visited_tags,
+                adjacent_query=adjacent_query,
+                query_embedding=query_embedding,
+                k_per_tag=adjacent_k,
+                metadata_filter=metadata_filter,
+            )
+
+            new_candidates = {}
+            for adjacent in adjacents:
+                if adjacent.target_content_id not in outgoing_tags:
+                    outgoing_tags[adjacent.target_content_id] = (
+                        adjacent.target_link_to_tags
+                    )
+
+                    new_candidates[adjacent.target_content_id] = (
+                        adjacent.target_text_embedding
+                    )
+            helper.add_candidates(new_candidates)
+
+
+        if neighborhood is None:
+            fetch_initial_candidates()
+        else:
+            fetch_neighborhood(neighborhood)
+
+        # Tracks the depth of each candidate.
+        depths = {candidate_id: 0 for candidate_id in helper.candidate_ids()}
 
         # Select the best item, K times.
-        depths = {candidate_id: 0 for candidate_id in helper.candidate_ids()}
-        visited_tags: set[tuple[str, str]] = set()
-
         for _ in range(k):
             selected_id = helper.pop_best()
 
@@ -673,7 +711,7 @@ class GraphStore:
     def _get_outgoing_tags(
         self,
         source_ids: Iterable[str],
-    ) -> set[tuple[str, str]]:
+    ) -> Set[Tuple[str, str]]:
         """Return the set of outgoing tags for the given source ID(s).
 
         Args:
@@ -683,23 +721,24 @@ class GraphStore:
 
         def add_sources(rows: Iterable[Any]) -> None:
             for row in rows:
-                tags.update(row.link_to_tags)
+                if row.link_to_tags:
+                    tags.update(row.link_to_tags)
 
         with self._concurrent_queries() as cq:
             for source_id in source_ids:
                 cq.execute(
-                    self._query_source_tags_by_id, (source_id,), callback=add_sources
+                    self._query_ids_and_link_to_tags_by_id, (source_id,), callback=add_sources
                 )
 
         return tags
 
     def _get_adjacent(
         self,
-        tags: set[tuple[str, str]],
+        tags: Set[Tuple[str, str]],
         adjacent_query: PreparedStatement,
-        query_embedding: list[float],
-        k_per_tag: int | None = None,
-        metadata_filter: dict[str, Any] = {},  # noqa: B006
+        query_embedding: List[float],
+        k_per_tag: Optional[int] = None,
+        metadata_filter: Optional[Dict[str, Any]] = None,
     ) -> Iterable[_Edge]:
         """Return the target nodes with incoming links from any of the given tags.
 
@@ -809,15 +848,19 @@ class GraphStore:
 
     def _extract_where_clause_cql(
         self,
-        metadata_keys: list[str] = [],  # noqa: B006
+        has_id: bool = False,
+        metadata_keys: Optional[List[str]] = None,
         has_link_from_tags: bool = False,
     ) -> str:
         wc_blocks: list[str] = []
 
+        if has_id:
+            wc_blocks.append("content_id == ?")
+
         if has_link_from_tags:
             wc_blocks.append("link_from_tags CONTAINS (?, ?)")
 
-        for key in sorted(metadata_keys):
+        for key in sorted(metadata_keys or []):
             if _is_metadata_field_indexed(key, self._metadata_indexing_policy):
                 wc_blocks.append(f"metadata_s['{key}'] = ?")
             else:
@@ -832,8 +875,8 @@ class GraphStore:
 
     def _extract_where_clause_params(
         self,
-        metadata: dict[str, Any],
-        link_from_tags: tuple[str, str] | None = None,
+        metadata: Dict[str, Any],
+        link_from_tags: Tuple[str, str] | None = None,
     ) -> list[Any]:
         params: list[Any] = []
 
@@ -854,13 +897,16 @@ class GraphStore:
     def _get_search_cql(
         self,
         has_limit: bool = False,
-        columns: str | None = CONTENT_COLUMNS,
-        metadata_keys: list[str] = [],  # noqa: B006
+        columns: Optional[str] = CONTENT_COLUMNS,
+        metadata_keys: Optional[List[str]] = None,
+        has_id: bool = False,
         has_embedding: bool = False,
         has_link_from_tags: bool = False,
     ) -> PreparedStatement:
         where_clause = self._extract_where_clause_cql(
-            metadata_keys=metadata_keys, has_link_from_tags=has_link_from_tags
+            has_id=has_id,
+            metadata_keys=metadata_keys,
+            has_link_from_tags=has_link_from_tags
         )
         limit_clause = " LIMIT ?" if has_limit else ""
         order_clause = " ORDER BY text_embedding ANN OF ?" if has_embedding else ""
@@ -884,13 +930,13 @@ class GraphStore:
 
     def _get_search_params(
         self,
-        limit: int | None = None,
-        metadata: dict[str, Any] = {},  # noqa: B006
-        embedding: list[float] | None = None,
-        link_from_tags: tuple[str, str] | None = None,
-    ) -> tuple[PreparedStatement, tuple[Any, ...]]:
+        limit: Optional[int] = None,
+        metadata: Optional[Dict[str, Any]] = None,
+        embedding: Optional[List[float]] = None,
+        link_from_tags: Optional[Tuple[str, str]] = None,
+    ) -> Tuple[PreparedStatement, Tuple[Any, ...]]:
         where_params = self._extract_where_clause_params(
-            metadata=metadata, link_from_tags=link_from_tags
+            metadata=metadata or {}, link_from_tags=link_from_tags
         )
 
         limit_params = [limit] if limit is not None else []
@@ -900,16 +946,16 @@ class GraphStore:
 
     def _get_search_cql_and_params(
         self,
-        limit: int | None = None,
-        columns: str | None = CONTENT_COLUMNS,
-        metadata: dict[str, Any] = {},  # noqa: B006
-        embedding: list[float] | None = None,
-        link_from_tags: tuple[str, str] | None = None,
-    ) -> tuple[PreparedStatement, tuple[Any, ...]]:
+        limit: Optional[int] = None,
+        columns: Optional[str] = CONTENT_COLUMNS,
+        metadata: Optional[Dict[str, Any]] = None,
+        embedding: Optional[List[float]] = None,
+        link_from_tags: Optional[Tuple[str, str]] = None,
+    ) -> Tuple[PreparedStatement, Tuple[Any, ...]]:
         query = self._get_search_cql(
             has_limit=limit is not None,
             columns=columns,
-            metadata_keys=list(metadata.keys()),
+            metadata_keys=list(metadata.keys()) if metadata else None,
             has_embedding=embedding is not None,
             has_link_from_tags=link_from_tags is not None,
         )

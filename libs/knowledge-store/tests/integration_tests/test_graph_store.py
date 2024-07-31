@@ -195,6 +195,16 @@ def test_mmr_traversal(
     results = gs.mmr_traversal_search("0.0", k=4, metadata_filter={"even": True})
     assert _result_ids(results) == ["v0", "v2"]
 
+    # with neighborhood=[v0], we should start traversal there.
+    # this means that the initial candidates are `v2`,`v3`. `v1` is unreachable and not included.
+    results = gs.mmr_traversal_search("0.0", k=4, neighborhood=["v0"])
+    assert _result_ids(results) == ["v2", "v3"]
+
+    # with neighborhood=[v1], we should start traversal there.
+    # there are no adjacent nodes, so there are no results.
+    results = gs.mmr_traversal_search("0.0", k=4, neighborhood=["v1"])
+    assert _result_ids(results) == []
+
 
 def test_write_retrieve_keywords(
     graph_store_factory: Callable[[MetadataIndexingType], GraphStore],
