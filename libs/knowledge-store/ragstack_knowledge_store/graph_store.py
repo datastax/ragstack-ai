@@ -10,12 +10,8 @@ from enum import Enum
 from typing import (
     TYPE_CHECKING,
     Any,
-    Dict,
-    List,
     Optional,
     Sequence,
-    Set,
-    Tuple,
     Union,
     cast,
 )
@@ -422,8 +418,8 @@ class GraphStore:
             has_link_from_tags=True,
         )
 
-        visited_tags: Set[Tuple[str, str]] = set()
-        excluded_ids: Set[str] = set()
+        visited_tags: set[tuple[str, str]] = set()
+        excluded_ids: set[str] = set()
 
         def fetch_initial_candidates() -> None:
             initial_candidates_query = self._get_search_cql(
@@ -711,7 +707,7 @@ class GraphStore:
     def _get_outgoing_tags(
         self,
         source_ids: Iterable[str],
-    ) -> Set[Tuple[str, str]]:
+    ) -> set[tuple[str, str]]:
         """Return the set of outgoing tags for the given source ID(s).
 
         Args:
@@ -734,11 +730,11 @@ class GraphStore:
 
     def _get_adjacent(
         self,
-        tags: Set[Tuple[str, str]],
+        tags: set[tuple[str, str]],
         adjacent_query: PreparedStatement,
-        query_embedding: List[float],
+        query_embedding: list[float],
         k_per_tag: Optional[int] = None,
-        metadata_filter: Optional[Dict[str, Any]] = None,
+        metadata_filter: Optional[dict[str, Any]] = None,
     ) -> Iterable[_Edge]:
         """Return the target nodes with incoming links from any of the given tags.
 
@@ -849,7 +845,7 @@ class GraphStore:
     def _extract_where_clause_cql(
         self,
         has_id: bool = False,
-        metadata_keys: Optional[List[str]] = None,
+        metadata_keys: Optional[list[str]] = None,
         has_link_from_tags: bool = False,
     ) -> str:
         wc_blocks: list[str] = []
@@ -875,8 +871,8 @@ class GraphStore:
 
     def _extract_where_clause_params(
         self,
-        metadata: Dict[str, Any],
-        link_from_tags: Tuple[str, str] | None = None,
+        metadata: dict[str, Any],
+        link_from_tags: Optional[tuple[str, str]] = None,
     ) -> list[Any]:
         params: list[Any] = []
 
@@ -898,7 +894,7 @@ class GraphStore:
         self,
         has_limit: bool = False,
         columns: Optional[str] = CONTENT_COLUMNS,
-        metadata_keys: Optional[List[str]] = None,
+        metadata_keys: Optional[list[str]] = None,
         has_id: bool = False,
         has_embedding: bool = False,
         has_link_from_tags: bool = False,
@@ -931,10 +927,10 @@ class GraphStore:
     def _get_search_params(
         self,
         limit: Optional[int] = None,
-        metadata: Optional[Dict[str, Any]] = None,
-        embedding: Optional[List[float]] = None,
-        link_from_tags: Optional[Tuple[str, str]] = None,
-    ) -> Tuple[PreparedStatement, Tuple[Any, ...]]:
+        metadata: Optional[dict[str, Any]] = None,
+        embedding: Optional[list[float]] = None,
+        link_from_tags: Optional[tuple[str, str]] = None,
+    ) -> tuple[PreparedStatement, tuple[Any, ...]]:
         where_params = self._extract_where_clause_params(
             metadata=metadata or {}, link_from_tags=link_from_tags
         )
@@ -948,10 +944,10 @@ class GraphStore:
         self,
         limit: Optional[int] = None,
         columns: Optional[str] = CONTENT_COLUMNS,
-        metadata: Optional[Dict[str, Any]] = None,
-        embedding: Optional[List[float]] = None,
-        link_from_tags: Optional[Tuple[str, str]] = None,
-    ) -> Tuple[PreparedStatement, Tuple[Any, ...]]:
+        metadata: Optional[dict[str, Any]] = None,
+        embedding: Optional[list[float]] = None,
+        link_from_tags: Optional[tuple[str, str]] = None,
+    ) -> tuple[PreparedStatement, tuple[Any, ...]]:
         query = self._get_search_cql(
             has_limit=limit is not None,
             columns=columns,
