@@ -1,9 +1,9 @@
 import asyncio
 import json
 from os import path
-from typing import Dict, List, Optional, Tuple
+from typing import List, Optional
 
-from .base_dataset import BaseDataset
+from .base_dataset import BaseDataset, QueryItem
 
 
 class CragDataset(BaseDataset):
@@ -52,10 +52,8 @@ class CragDataset(BaseDataset):
     def get_source_file_paths(self) -> List[str]:
         raise NotImplementedError("Crag source files are not yet supported")
 
-    def get_queries_and_golden_set(self) -> Tuple[List[str], List[Dict[str, str]]]:
-        """gets a list of queries and golden_truth answers for a dataset"""
-        queries: List[str] = []
-        golden_set: List[Dict[str, str]] = []
+    def _load_query_items_and_golden_set(self) -> None:
+        """loads query_items and golden_set"""
 
         for subset in self.subsets:
             if subset not in self._subset_kinds:
@@ -74,10 +72,11 @@ class CragDataset(BaseDataset):
 
                 query = data.get("query")
                 answer = data.get("answer")
+                del data["query"]
+                del data["answer"]
                 if query is not None and answer is not None:
-                    queries.append(query)
-                    golden_set.append({"query": query, "response": answer})
-
-        print(f"found {len(queries)} for subsets: {self.subsets}")
-
-        return queries, golden_set
+                    self._query_items.append(QueryItem(
+                        query=query,
+                        metadata=data,
+                    ))
+                    self._golden_set.append({"query": query, "response": answer})

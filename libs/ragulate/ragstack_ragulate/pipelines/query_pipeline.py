@@ -19,7 +19,7 @@ from .base_pipeline import BasePipeline
 from .feedbacks import Feedbacks
 
 if TYPE_CHECKING:
-    from ragstack_ragulate.datasets import BaseDataset
+    from ragstack_ragulate.datasets import BaseDataset, QueryItem
 
 
 class QueryPipeline(BasePipeline):
@@ -30,7 +30,7 @@ class QueryPipeline(BasePipeline):
     _tru: Tru
     _name: str
     _progress: tqdm[Never]
-    _queries: dict[str, list[str]]
+    _query_items: dict[str, list[QueryItem]]
     _golden_sets: dict[str, list[dict[str, str]]]
     _total_queries: int = 0
     _total_feedbacks: int = 0
@@ -61,7 +61,7 @@ class QueryPipeline(BasePipeline):
         llm_provider: str = "OpenAI",
         model_name: str | None = None,
     ):
-        self._queries = {}
+        self._query_items = {}
         self._golden_sets = {}
         super().__init__(
             recipe_name=recipe_name,
@@ -89,14 +89,14 @@ class QueryPipeline(BasePipeline):
 
         total_existing_queries = 0
         for dataset in datasets:
-            queries, golden_set = dataset.get_queries_and_golden_set()
+            query_items = dataset.get_query_items()
             if self.sample_percent < 1.0:
                 if self.random_seed is not None:
                     random.seed(self.random_seed)
                 sampled_indices = random.sample(
-                    range(len(queries)), int(self.sample_percent * len(queries))
+                    range(len(query_items)), int(self.sample_percent * len(query_items))
                 )
-                queries = [queries[i] for i in sampled_indices]
+                query_items = [query_items[i] for i in sampled_indices]
 
             # Check for existing records and filter queries
             existing_records, _feedbacks = self._tru.get_records_and_feedback(
@@ -105,11 +105,15 @@ class QueryPipeline(BasePipeline):
             existing_queries = existing_records["input"].dropna().tolist()
             total_existing_queries += len(existing_queries)
 
-            queries = [query for query in queries if query not in existing_queries]
+            query_items = [
+                query_item
+                for query_item in query_items
+                if query_item.query not in existing_queries
+            ]
 
-            self._queries[dataset.name] = queries
-            self._golden_sets[dataset.name] = golden_set
-            self._total_queries += len(self._queries[dataset.name])
+            self._query_items[dataset.name] = query_items
+            self._golden_sets[dataset.name] = dataset.get_golden_set()
+            self._total_queries += len(self._query_items[dataset.name])
 
         metric_count = 4
         self._total_feedbacks = self._total_queries * metric_count
@@ -129,7 +133,7 @@ class QueryPipeline(BasePipeline):
 
     def export_results(self) -> None:
         """Export results."""
-        for dataset_name in self._queries:
+        for dataset_name in self._query_items:
             records, _feedback_names = self._tru.get_records_and_feedback(
                 app_ids=[dataset_name]
             )
@@ -217,7 +221,7 @@ class QueryPipeline(BasePipeline):
             initial=self._finished_queries,
         )
 
-        for dataset_name in self._queries:
+        for dataset_name in self._query_items:
             feedback_functions = [
                 feedbacks.answer_correctness(
                     golden_set=self._golden_sets[dataset_name]
@@ -234,14 +238,15 @@ class QueryPipeline(BasePipeline):
                 feedback_mode=FeedbackMode.DEFERRED,
             )
 
-            for query in self._queries[dataset_name]:
+            for query_item in self._query_items[dataset_name]:
                 if self._sigint_received:
                     break
                 try:
-                    with recorder:
-                        pipeline.invoke(query)
+                    with recorder as recording:
+                        recording.record_metadata = query_item.metadata
+                        pipeline.invoke(query_item.query)
                 except Exception as e:  # noqa: BLE001
-                    err = f"Query: '{query}' caused exception, skipping."
+                    err = f"Query: '{query_item.query}' caused exception, skipping."
                     logger.exception(err)
                     # TODO: figure out why the logger isn't working after tru-lens starts. For now use print().  # noqa: E501
                     print(f"{err} Exception {e}")

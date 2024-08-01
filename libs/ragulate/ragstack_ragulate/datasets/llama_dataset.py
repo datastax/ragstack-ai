@@ -10,7 +10,7 @@ from llama_index.core.download.dataset import (
 )
 
 from ..logging_config import logger
-from .base_dataset import BaseDataset
+from .base_dataset import BaseDataset, QueryItem
 
 
 class LlamaDataset(BaseDataset):
@@ -69,17 +69,14 @@ class LlamaDataset(BaseDataset):
         source_path = path.join(self._get_dataset_path(), "source_files")
         return self.list_files_at_path(path=source_path)
 
-    def get_queries_and_golden_set(self) -> Tuple[List[str], List[Dict[str, str]]]:
-        """gets a list of queries and golden_truth answers for a dataset"""
+    def _load_query_items_and_golden_set(self) -> None:
+        """loads query_items and golden_set"""
         json_path = path.join(self._get_dataset_path(), "rag_dataset.json")
         with open(json_path, "r") as f:
             examples = json.load(f)["examples"]
-            queries = [e["query"] for e in examples]
-            golden_set = [
-                {
-                    "query": e["query"],
-                    "response": e["reference_answer"],
-                }
-                for e in examples
-            ]
-            return queries, golden_set
+            for example in examples:
+                self._query_items.append(QueryItem(query=example["query"], metadata={}))
+                self._golden_set.append({
+                    "query": example["query"],
+                    "response": example["reference_answer"],
+                })
