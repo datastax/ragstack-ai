@@ -378,10 +378,12 @@ class GraphStore:
         Args:
             query: The query string to search for.
             initial_roots: Optional list of document IDs to use for initializing search.
-                The top `adjacent_k` nodes adjacent to each initial root will be included
-                in the set of initial candidates.
+                The top `adjacent_k` nodes adjacent to each initial root will be
+                included in the set of initial candidates. To fetch only in the
+                neighborhood of these nodes, set `ftech_k = 0`.
             k: Number of Documents to return. Defaults to 4.
             fetch_k: Number of initial Documents to fetch via similarity.
+                Will be added to the nodes adjacent to `initial_roots`.
                 Defaults to 100.
             adjacent_k: Number of adjacent Documents to fetch.
                 Defaults to 10.
