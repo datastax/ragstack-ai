@@ -69,7 +69,7 @@ class LlamaDataset(BaseDataset):
         source_path = path.join(self._get_dataset_path(), "source_files")
         return self.list_files_at_path(path=source_path)
 
-    def _load_query_items_and_golden_set(self):
+    def _load_query_items_and_golden_set(self) -> None:
         """loads query_items and golden_set"""
         json_path = path.join(self._get_dataset_path(), "rag_dataset.json")
         with open(json_path, "r") as f:

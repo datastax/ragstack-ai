@@ -68,7 +68,7 @@ class BaseDataset(ABC):
         """gets a list of source file paths for for a dataset"""
 
     @abstractmethod
-    def _load_query_items_and_golden_set(self):
+    def _load_query_items_and_golden_set(self) -> None:
         """loads query_items and golden_set"""
 
     def get_query_items(self) -> List[QueryItem]:

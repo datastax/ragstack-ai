@@ -52,7 +52,7 @@ class CragDataset(BaseDataset):
     def get_source_file_paths(self) -> List[str]:
         raise NotImplementedError("Crag source files are not yet supported")
 
-    def _load_query_items_and_golden_set(self):
+    def _load_query_items_and_golden_set(self) -> None:
         """loads query_items and golden_set"""
 
         for subset in self.subsets:

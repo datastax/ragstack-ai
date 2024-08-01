@@ -133,7 +133,7 @@ class QueryPipeline(BasePipeline):
 
     def export_results(self) -> None:
         """Export results."""
-        for dataset_name in self._queries:
+        for dataset_name in self._query_items:
             records, _feedback_names = self._tru.get_records_and_feedback(
                 app_ids=[dataset_name]
             )
