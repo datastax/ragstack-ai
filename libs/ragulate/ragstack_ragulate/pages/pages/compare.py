@@ -1,6 +1,6 @@
 import asyncio
 import pandas as pd
-from typing import Dict, Iterable, Tuple, List, Optional
+from typing import Dict, Iterable, Tuple, List, Optional, Any
 
 # https://github.com/jerryjliu/llama_index/issues/7244:
 asyncio.set_event_loop(asyncio.new_event_loop())
@@ -19,6 +19,10 @@ from streamlit_pills import pills
 from streamlit_extras.switch_page_button import switch_page
 
 from trulens_eval import Tru
+
+st.set_page_config(page_title="Ragulate - Compare",
+                   layout="wide",
+                   initial_sidebar_state="collapsed")
 
 
 def get_tru(recipe_name: str) -> Tru:
@@ -47,20 +51,92 @@ def extract_contexts(context_relevance_calls: List[str]) -> List[str]:
 
     return contexts
 
+numericColumnType = [
+  "numericColumn",
+  "numberColumnFilter"
+]
+
+class Column:
+    field: str
+    children: Dict[str, "Column"]
+    type: List[str]
+    hide: bool
+    width: int
+
+    def __init__(self, field: Optional[str] = None, children: Optional[Dict[str, "Column"]] = None, type: Optional[List[str]] = None, hide: Optional[bool] = False, width: Optional[int] = 0):
+        self.field = field
+        self.children = children if children is not None else {}
+        self.type = type if type is not None else []
+        self.hide = hide
+        self.width = width if width is not None else 0
+
+    def get_props(self, headerName: str) -> Dict[str, Any]:
+        props:Dict[str, Any] = {
+            "headerName": headerName,
+            "field": self.field,
+            "type": self.type,
+        }
+        if self.hide:
+            props["hide"] = True
+        if self.width > 0:
+            props["width"] = self.width
+        return props
+
+
+def get_column_defs(columns: Dict[str, Column]) -> List[Dict[str, Any]]:
+    columnDefs: List[Dict[str, Any]] = []
+
+    for headerName, column in columns.items():
+        if len(column.children) == 0:
+            columnDefs.append(column.get_props(headerName=headerName))
+        else:
+            columnDefs.append({
+                "headerName": headerName,
+                "children": get_column_defs(columns=column.children)
+            })
+    return columnDefs
+
+
+
+def find_common_strings(list_of_lists: List[List[str]]) -> List[str]:
+    # Convert each list to a set
+    sets = [set(lst) for lst in list_of_lists]
+
+    # Find the intersection of all sets
+    common_strings = set.intersection(*sets)
+
+    # Convert the set back to a list (if needed)
+    return list(common_strings)
+
+def find_full_set_of_strings(list_of_lists: List[List[str]]) -> List[str]:
+    # Convert each list to a set
+    sets = [set(lst) for lst in list_of_lists]
+
+    # Find the union of all sets
+    full_set_of_strings = set.union(*sets)
+
+    # Convert the set back to a list (if needed)
+    return list(full_set_of_strings)
+
 # Columns: ['app_id', 'app_json', 'type', 'record_id', 'input', 'output',
     # 'tags', 'record_json', 'cost_json', 'perf_json', 'ts', 'context_relevance',
     # 'answer_relevance', 'answer_correctness', 'groundedness', 'context_relevance_calls',
     # 'answer_relevance_calls', 'answer_correctness_calls', 'groundedness_calls',
     # 'latency', 'total_tokens', 'total_cost']
 
-def combine_and_calculate_diff(df_list: List[pd.DataFrame], titles: List[str]) -> pd.DataFrame:
-    # Ensure the lengths of df_list and titles match
-    assert len(df_list) == len(titles), "Number of dataframes and titles must match."
+def combine_and_calculate_diff(df_list: List[pd.DataFrame], feedbacks_list: List[List[str]], recipes: List[str]) -> Tuple[pd.DataFrame, List[str]]:
+    # Ensure the lengths of df_list and recipes match
+    assert len(df_list) == len(recipes), "Number of dataframes and recipes must match."
 
-    columns_to_drop = ['app_id', 'app_json', 'type', 'record_id', 'latency',
-                       'tags', 'record_json', 'cost_json', 'perf_json', 'ts',
-                       'context_relevance_calls', 'answer_relevance_calls',
-                       'answer_correctness_calls', 'groundedness_calls', 'total_cost']
+    feedbacks = find_common_strings(feedbacks_list)
+
+    columns_to_drop = ['app_id', 'app_json', 'type', 'record_id', 'latency', 'tags',
+                       'record_json', 'cost_json', 'perf_json', 'ts','total_cost']
+
+    for feedback in find_full_set_of_strings(feedbacks_list):
+        columns_to_drop.append(f"{feedback}_calls")
+
+    columns_to_diff = feedbacks + ["total_tokens"]
 
     # for call in df_list[0].loc[0,'context_relevance_calls']:
     #     st.write(call)
@@ -69,52 +145,108 @@ def combine_and_calculate_diff(df_list: List[pd.DataFrame], titles: List[str]) -
     df_list[0]['ground_truth'] = df_list[0]['answer_correctness_calls'].apply(extract_ground_truth)
     df_list[0]['contexts'] = df_list[0]['context_relevance_calls'].apply(extract_contexts)
     df_list[0].drop(columns=columns_to_drop, inplace=True)
-    df_list[0].columns = [f'{col}_{titles[0]}' if col != 'input' and col != 'ground_truth' else col for col in df_list[0].columns]
+    df_list[0].columns = [f'{col}_{recipes[0]}' if col != 'input' and col != 'ground_truth' else col for col in df_list[0].columns]
 
     # Process the remaining dataframes
-    for df, title in zip(df_list[1:], titles[1:]):
+    for df, recipe in zip(df_list[1:], recipes[1:]):
         df['contexts'] = df['context_relevance_calls'].apply(extract_contexts)
         df.drop(columns=columns_to_drop, inplace=True)
-        df.columns = [f'{col}_{title}' if col != 'input' else 'input' for col in df.columns]
+        df.columns = [f'{col}_{recipe}' if col != 'input' else 'input' for col in df.columns]
 
-    # Combine dataframes on 'input' column
+    # Combine dataframes on 'input' col
+    # umn
     combined_df = df_list[0]
     for df in df_list[1:]:
         combined_df = combined_df.merge(df, on='input', how='outer')
 
     # If there are exactly two dataframes, calculate the differences
     if len(df_list) == 2:
-        for col in ['context_relevance', 'answer_relevance', 'answer_correctness', 'groundedness', 'total_tokens']:
-            combined_df[f'{col}__diff'] = combined_df[f'{col}_{titles[0]}'] - combined_df[f'{col}_{titles[1]}']
+        for col in columns_to_diff:
+            combined_df[f'{col}__diff'] = combined_df[f'{col}_{recipes[0]}'] - combined_df[f'{col}_{recipes[1]}']
 
     # Reorder the columns
-    output_columns = [f'output_{title}' for title in titles]
+    output_columns = [f'output_{recipe}' for recipe in recipes]
     remaining_columns = sorted([col for col in combined_df.columns if col not in ['input', 'ground_truth'] + output_columns])
 
     combined_df = combined_df[['input', 'ground_truth'] + output_columns + remaining_columns]
 
-    return combined_df
+    return (combined_df, feedbacks)
 
 #@st.cache_data
-def get_data(recipes: List[str], dataset: str, timestamp: int) -> Dict[str, List[str]]:
+def get_data(recipes: List[str], dataset: str, timestamp: int) -> Tuple[pd.DataFrame, List[str]]:
     df_list: List[pd.DataFrame] = []
+    feedbacks_list: List[List[str]] = []
     for recipe in recipes:
         tru = get_tru(recipe_name=recipe)
         df, feedbacks = tru.get_records_and_feedback(app_ids=[dataset])
         df_list.append(df)
-
+        feedbacks_list.append(feedbacks)
         tru.delete_singleton()
 
-    return combine_and_calculate_diff(df_list=df_list, titles=recipes)
-
-
-st.title("Compare")
-selected_recipes = st.session_state.selected_recipes
-dataset = "vcg"
-st.write("Selected recipes: " + ", ".join(selected_recipes))
-st.write(f"Dataset: {dataset}")
-st.dataframe(get_data(recipes=selected_recipes, dataset=dataset, timestamp=0))
-
+    return combine_and_calculate_diff(df_list=df_list, feedbacks_list=feedbacks_list, recipes=recipes)
 
 if st.button("home"):
     switch_page("home")
+
+st.title("Compare")
+recipes = st.session_state.selected_recipes
+dataset = "vcg"
+st.write("Selected recipes: " + ", ".join(recipes) + f"Dataset: {dataset}")
+
+
+
+compare_df, feedbacks = get_data(recipes=recipes, dataset=dataset, timestamp=0)
+
+columns: Dict[str, Column] = {}
+
+columns["Query"] = Column(field="input")
+columns["Answer"] = Column()
+columns["Answer"].children["Ground Truth"] = Column(field="ground_truth")
+
+for recipe in recipes:
+    columns["Answer"].children[recipe] = Column(field=f"output_{recipe}")
+    columns[f"contexts_{recipe}"] = Column(field=f"contexts_{recipe}", hide=True)
+
+for data_col in feedbacks + ["total_tokens"]:
+    columns[data_col] = Column()
+    for recipe in recipes:
+        columns[data_col].children[recipe] = Column(field=f"{data_col}_{recipe}", type=numericColumnType, width=(len(recipe)*7)+ 50)
+    if len(recipes) == 2:
+        columns[data_col].children["Diff"] = Column(field=f"{data_col}__diff", type=numericColumnType, width=(len("Diff")*7)+ 50)
+
+
+
+
+gb = GridOptionsBuilder.from_dataframe(compare_df)
+
+gb.configure_default_column(autoHeight=True, wrapText=True)
+gb.configure_pagination(paginationPageSize=25, paginationAutoPageSize=False)
+gb.configure_side_bar()
+gb.configure_selection(selection_mode="single", use_checkbox=False)
+
+gridOptions = gb.build()
+gridOptions["columnDefs"] = get_column_defs(columns=columns)
+data = AgGrid(
+    compare_df,
+    gridOptions=gridOptions,
+    update_mode=GridUpdateMode.SELECTION_CHANGED,
+    allow_unsafe_jscode=True,
+)
+
+selected_rows = data.selected_rows
+selected_rows = pd.DataFrame(selected_rows)
+
+if len(selected_rows) == 0:
+    st.write("Hint: select a row to display details of a record")
+
+else:
+    # Start the record specific section
+    st.divider()
+
+    # Breadcrumbs
+    st.caption(
+        f"{selected_rows['input'][0]}"
+    )
+
+
+
