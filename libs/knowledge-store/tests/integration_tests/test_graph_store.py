@@ -195,6 +195,22 @@ def test_mmr_traversal(
     results = gs.mmr_traversal_search("0.0", k=4, metadata_filter={"even": True})
     assert _result_ids(results) == ["v0", "v2"]
 
+    # with initial_roots=[v0], we should start traversal there. this means that
+    # the initial candidates are `v2`,`v3`. `v1` is unreachable and not
+    # included.
+    results = gs.mmr_traversal_search("0.0", fetch_k=0, k=4, initial_roots=["v0"])
+    assert _result_ids(results) == ["v2", "v3"]
+
+    # with initial_roots=[v1], we should start traversal there.
+    # there are no adjacent nodes, so there are no results.
+    results = gs.mmr_traversal_search("0.0", fetch_k=0, k=4, initial_roots=["v1"])
+    assert _result_ids(results) == []
+
+    # with initial_roots=[v0] and `fetch_k > 0` we should be able to reach everything.
+    # but we don't re-fetch `v0`.
+    results = gs.mmr_traversal_search("0.0", fetch_k=2, k=4, initial_roots=["v0"])
+    assert _result_ids(results) == ["v1", "v3", "v2"]
+
 
 def test_write_retrieve_keywords(
     graph_store_factory: Callable[[MetadataIndexingType], GraphStore],
