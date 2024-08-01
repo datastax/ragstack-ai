@@ -202,7 +202,7 @@ def huggingface_hub_minilml6v2_embedding():
         # ("huggingface_hub_minilml6v2_embedding", "huggingface_hub_flant5xxl_llm"),
     ],
 )
-def test_rag(vector_store, embedding, llm, request):
+def test_rag(vector_store, embedding, llm, request) -> None:
     set_current_test_info(
         "llama_index::rag",
         f"{llm},{embedding},{vector_store}",
@@ -309,7 +309,7 @@ def gemini_flash_llm():
         ("vertex_gemini_multimodal_embedding", "gemini_flash_llm"),
     ],
 )
-def test_multimodal(vector_store, embedding, llm, request):
+def test_multimodal(vector_store, embedding, llm, request) -> None:
     set_current_test_info(
         "llama_index::multimodal",
         f"{llm},{embedding},{vector_store}",
@@ -369,7 +369,7 @@ def test_multimodal(vector_store, embedding, llm, request):
     "chat",
     ["gemini_pro_llm", "vertex_gemini_pro_llm"],
 )
-def test_chat(chat, request):
+def test_chat(chat, request) -> None:
     set_current_test_info("llama_index::chat", chat)
     chat_model = request.getfixturevalue(chat)
     response = chat_model.complete("Hello! Where Archimede was born?")

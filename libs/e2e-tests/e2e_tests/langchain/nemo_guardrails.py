@@ -53,7 +53,7 @@ def _colang() -> str:
 
 
 class NeMoRag:
-    def __init__(self, retriever):
+    def __init__(self, retriever) -> None:
         self.retriever = retriever
 
     async def rag_using_lc(self, context: dict, llm: BaseLLM) -> ActionResult:
@@ -77,7 +77,7 @@ class NeMoRag:
 
         return ActionResult(return_value=answer, context_updates=context_updates)
 
-    def init(self, app: LLMRails):
+    def init(self, app: LLMRails) -> None:
         app.register_action(self.rag_using_lc, "rag")
 
 

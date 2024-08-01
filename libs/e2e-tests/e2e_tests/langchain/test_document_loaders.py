@@ -17,11 +17,11 @@ from e2e_tests.test_utils.astradb_vector_store_handler import AstraDBVectorStore
 from e2e_tests.test_utils.vector_store_handler import VectorStoreImplementation
 
 
-def set_current_test_info_document_loader(doc_loader: str):
+def set_current_test_info_document_loader(doc_loader: str) -> None:
     set_current_test_info("langchain::document_loader", doc_loader)
 
 
-def test_csv_loader():
+def test_csv_loader() -> None:
     set_current_test_info_document_loader("csv")
     with tempfile.NamedTemporaryFile(mode="w+", suffix=".csv") as temp_csv_file:
         with open(temp_csv_file.name, "w") as write:
@@ -41,7 +41,7 @@ def test_csv_loader():
         assert doc1.metadata == {"row": 0, "source": temp_csv_file.name}
 
 
-def test_web_based_loader():
+def test_web_based_loader() -> None:
     set_current_test_info_document_loader("web")
     loader = WebBaseLoader(
         ["https://langstream.ai/changelog/", "https://langstream.ai/faq/"]
@@ -69,7 +69,7 @@ def test_web_based_loader():
     }
 
 
-def test_s3_loader():
+def test_s3_loader() -> None:
     set_current_test_info_document_loader("s3")
     aws_region = "us-east-1"
     bucket_name = f"ragstack-ci-{uuid.uuid4()}"
@@ -95,7 +95,7 @@ def test_s3_loader():
         bucket.delete()
 
 
-def test_azure_blob_doc_loader():
+def test_azure_blob_doc_loader() -> None:
     set_current_test_info_document_loader("azure")
     from azure.storage.blob import BlobClient
 

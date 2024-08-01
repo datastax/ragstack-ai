@@ -37,7 +37,7 @@ def llama_parse_markdown():
     "llama_parse_instance",
     ["llama_parse_text", "llama_parse_markdown"],
 )
-def test_llama_parse(vector_store, llama_parse_instance, request):
+def test_llama_parse(vector_store, llama_parse_instance, request) -> None:
     vector_store_context: VectorStoreTestContext = request.getfixturevalue(vector_store)
     lp_type, lp = request.getfixturevalue(llama_parse_instance)
     llm = OpenAI(api_key=get_required_env("OPENAI_API_KEY"))
