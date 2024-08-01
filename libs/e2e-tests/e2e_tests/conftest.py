@@ -156,13 +156,13 @@ def pytest_runtest_makereport(item, call):
         os.environ["RAGSTACK_E2E_TESTS_TEST_START"] = str(time.perf_counter_ns())
 
 
-def set_current_test_info(test_name: str, test_info: str):
+def set_current_test_info(test_name: str, test_info: str) -> None:
     test_info = test_info.replace("_", "-")
     os.environ["RAGSTACK_E2E_TESTS_TEST_INFO"] = f"{test_name}::{test_info}"
 
 
 @pytest.hookimpl()
-def pytest_sessionfinish():
+def pytest_sessionfinish() -> None:
     logging.info("All tests report:")
     logging.info("\n".join(all_report_lines))
     logging.info("Failed tests report:")
@@ -184,7 +184,7 @@ def pytest_sessionfinish():
     _report_to_file("", "llamaindex-tests-report.txt", llamaindex_report_lines)
 
 
-def _report_to_file(stats_str: str, filename: str, report_lines: list):
+def _report_to_file(stats_str: str, filename: str, report_lines: list) -> None:
     report_lines.sort()
     with open(filename, "w") as f:
         if stats_str:

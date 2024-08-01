@@ -49,7 +49,7 @@ class Environment:
         self.storage_context = StorageContext.from_defaults(vector_store=vectorstore)
 
 
-def test_basic_vector_search(environment: Environment):
+def test_basic_vector_search(environment: Environment) -> None:
     print("Running test_basic_vector_search")
     documents = [
         Document(text="RAGStack is a framework to run LangChain in production")
@@ -66,7 +66,7 @@ def test_basic_vector_search(environment: Environment):
     assert len(retriever.retrieve("RAGStack")) > 0
 
 
-def test_ingest_errors(environment: Environment):
+def test_ingest_errors(environment: Environment) -> None:
     print("Running test_ingest_errors")
 
     empty_text = ""
@@ -98,7 +98,7 @@ def test_ingest_errors(environment: Environment):
     )
 
 
-def test_wrong_connection_parameters(environment: Environment):
+def test_wrong_connection_parameters(environment: Environment) -> None:
     try:
         AstraDBVectorStore(
             token="xxxxx",  # noqa: S106
@@ -132,7 +132,7 @@ def test_wrong_connection_parameters(environment: Environment):
             )
 
 
-def verify_document(document, expected_content):
+def verify_document(document, expected_content) -> None:
     if isinstance(document, NodeWithScore):
         document = document.node
         assert document.text == expected_content
@@ -142,7 +142,7 @@ def verify_document(document, expected_content):
         )
 
 
-def test_vector_search_with_metadata(environment: Environment):
+def test_vector_search_with_metadata(environment: Environment) -> None:
     print("Running test_vector_search_with_metadata")
 
     documents = [

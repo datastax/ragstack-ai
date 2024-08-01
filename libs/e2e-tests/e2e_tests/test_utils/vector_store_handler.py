@@ -62,7 +62,7 @@ class VectorStoreHandler(ABC):
         self.implementation = implementation
         self.supported_implementations = supported_implementations
 
-    def check_implementation(self):
+    def check_implementation(self) -> None:
         if self.implementation not in self.supported_implementations:
             skip_test_due_to_implementation_not_supported(self.implementation.value)
 
@@ -70,5 +70,5 @@ class VectorStoreHandler(ABC):
     def before_test(self) -> VectorStoreTestContext:
         pass
 
-    def after_test(self):
+    def after_test(self) -> None:
         return

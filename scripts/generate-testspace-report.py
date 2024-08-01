@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from xml.etree.ElementTree import Element, ElementTree, SubElement, parse
 
 
-def rewrite_name(name):
+def rewrite_name(name) -> str:
     params = ""
     if "[" in name:
         after_split = name.split("[")
@@ -75,7 +75,7 @@ def cdata(text: str) -> str:
 xml.etree.ElementTree._escape_cdata = unsafe_escape_data  # noqa: SLF001
 
 
-def main(report_type: str, input_file: str, output_file: str):
+def main(report_type: str, input_file: str, output_file: str) -> None:
     if report_type == "tests":
         test_suites = parse_test_report(input_file)
         if len(test_suites) == 0:

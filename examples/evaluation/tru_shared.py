@@ -192,7 +192,7 @@ def get_astra_vector_store(framework: Framework, collection_name: str):
     )
 
 
-def execute_query(framework: Framework, pipeline, query):
+def execute_query(framework: Framework, pipeline, query) -> None:
     if framework == Framework.LANG_CHAIN:
         pipeline.invoke(query)
     elif framework == Framework.LLAMA_INDEX:
@@ -204,7 +204,7 @@ def execute_query(framework: Framework, pipeline, query):
 
 
 # runs the pipeline across all queries in all known datasets
-def execute_experiment(framework: Framework, pipeline, experiment_name: str):
+def execute_experiment(framework: Framework, pipeline, experiment_name: str) -> None:
     init_tru()
 
     # use a short uuid to ensure that multiple experiments with the same name don't
