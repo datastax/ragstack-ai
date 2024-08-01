@@ -28,7 +28,7 @@ IMPORTANT_DEPENDENCIES = [
 _MIN_ARGV_LEN = 2
 
 
-def main():
+def main() -> None:
     if len(sys.argv) < _MIN_ARGV_LEN:
         print("Usage: generate-changelog.py {version} {package_name}")
         sys.exit(1)

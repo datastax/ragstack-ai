@@ -25,14 +25,14 @@ if TYPE_CHECKING:
 MINIMUM_ACCEPTABLE_SCORE = 0.1
 
 
-def test_basic_vector_search(vectorstore: AstraDBVectorStore):
+def test_basic_vector_search(vectorstore: AstraDBVectorStore) -> None:
     print("Running test_basic_vector_search")
     vectorstore.add_texts(["RAGStack is a framework to run LangChain in production"])
     retriever = vectorstore.as_retriever()
     assert len(retriever.get_relevant_documents("RAGStack")) > 0
 
 
-def test_ingest_errors(vectorstore: AstraDBVectorStore):
+def test_ingest_errors(vectorstore: AstraDBVectorStore) -> None:
     print("Running test_ingestion")
 
     empty_text = ""
@@ -75,7 +75,7 @@ def test_ingest_errors(vectorstore: AstraDBVectorStore):
             )
 
 
-def test_wrong_connection_parameters(vectorstore: AstraDBVectorStore):
+def test_wrong_connection_parameters(vectorstore: AstraDBVectorStore) -> None:
     try:
         AstraDBVectorStore(
             collection_name="something",
@@ -109,7 +109,7 @@ def test_wrong_connection_parameters(vectorstore: AstraDBVectorStore):
             )
 
 
-def test_basic_metadata_filtering_no_vector(vectorstore: AstraDBVectorStore):
+def test_basic_metadata_filtering_no_vector(vectorstore: AstraDBVectorStore) -> None:
     collection = vectorstore.collection
     vectorstore.add_texts(
         texts=["RAGStack is a framework to run LangChain in production"],
@@ -202,7 +202,7 @@ def test_basic_metadata_filtering_no_vector(vectorstore: AstraDBVectorStore):
             )
 
 
-def verify_document(document, expected_content, expected_metadata):
+def verify_document(document, expected_content, expected_metadata) -> None:
     if isinstance(document, Document):
         assert document.page_content == expected_content
         assert document.metadata == expected_metadata
@@ -211,7 +211,7 @@ def verify_document(document, expected_content, expected_metadata):
         assert document.get("metadata") == expected_metadata
 
 
-def test_vector_search_with_metadata(vectorstore: VectorStore):
+def test_vector_search_with_metadata(vectorstore: VectorStore) -> None:
     print("Running test_vector_search_with_metadata")
 
     document_ids = vectorstore.add_texts(
@@ -409,7 +409,7 @@ def test_vector_search_with_metadata(vectorstore: VectorStore):
 
 
 @pytest.mark.skip()
-def test_stress_astra():
+def test_stress_astra() -> None:
     handler = AstraDBVectorStoreHandler(VectorStoreImplementation.ASTRADB)
     while True:
         context = handler.before_test()
@@ -423,7 +423,7 @@ def test_stress_astra():
 
 
 class MockEmbeddings(Embeddings):
-    def __init__(self):
+    def __init__(self) -> None:
         self.embedded_documents = None
         self.embedded_query = None
 

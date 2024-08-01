@@ -26,7 +26,7 @@ from e2e_tests.test_utils.astradb_vector_store_handler import (
 from e2e_tests.test_utils.vector_store_handler import VectorStoreImplementation
 
 
-def test_ingest_llama_retrieve_langchain(astra_ref: AstraRef):
+def test_ingest_llama_retrieve_langchain(astra_ref: AstraRef) -> None:
     print("Running test_ingest_llama_retrieve_langchain")
     token = astra_ref.token
     api_endpoint = astra_ref.api_endpoint
@@ -123,7 +123,7 @@ def test_ingest_llama_retrieve_langchain(astra_ref: AstraRef):
     print("response:", response)
 
 
-def test_ingest_langchain_retrieve_llama_index(astra_ref: AstraRef):
+def test_ingest_langchain_retrieve_llama_index(astra_ref: AstraRef) -> None:
     print("Running test_ingest_langchain_retrieve_llama_index")
     token = astra_ref.token
     api_endpoint = astra_ref.api_endpoint

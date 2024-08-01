@@ -304,7 +304,7 @@ def nvidia_aifoundation_mixtral8x7b_llm():
         ),
     ],
 )
-def test_rag(test_case, vector_store, embedding, llm, request, record_property):
+def test_rag(test_case, vector_store, embedding, llm, request, record_property) -> None:
     set_current_test_info(
         "langchain::" + test_case,
         f"{llm},{embedding},{vector_store}",
@@ -327,7 +327,7 @@ def _run_test(
     embedding_fn,
     resolved_llm,
     record_property,
-):
+) -> None:
     # NeMo guardrails running only with certain LLMs
     if test_case == "nemo_guardrails" and not resolved_llm["nemo_config"]:
         skip_test_due_to_implementation_not_supported("nemo_guardrails")
@@ -408,7 +408,7 @@ def gemini_pro_llm():
         ("vertex_gemini_multimodal_embedding", "gemini_flash_llm"),
     ],
 )
-def test_multimodal(vector_store, embedding, llm, request, record_property):
+def test_multimodal(vector_store, embedding, llm, request, record_property) -> None:
     set_current_test_info(
         "langchain::multimodal_rag",
         f"{llm},{embedding},{vector_store}",
@@ -487,7 +487,7 @@ def test_multimodal(vector_store, embedding, llm, request, record_property):
 
 
 @pytest.mark.parametrize("chat", ["vertex_gemini_pro_llm", "gemini_pro_llm"])
-def test_chat(chat, request, record_property):
+def test_chat(chat, request, record_property) -> None:
     set_current_test_info(
         "langchain::chat",
         chat,

@@ -20,7 +20,7 @@ time.
 """
 
 
-def test_one_from_keywords():
+def test_one_from_keywords() -> None:
     extractor = GLiNERLinkExtractor(
         labels=["Person", "Award", "Date", "Competitions", "Teams"]
     )

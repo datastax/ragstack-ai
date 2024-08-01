@@ -4,7 +4,7 @@ import json
 import os
 
 
-def main():
+def main() -> None:
     nb_make_final_object = {
         "post_cell_execute": [
             "from conftest import before_notebook",

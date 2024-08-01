@@ -14,7 +14,7 @@ from langchain_openai import ChatOpenAI
 
 
 @pytest.mark.usefixtures("cassandra")
-def test_tool_with_openai_tool():
+def test_tool_with_openai_tool() -> None:
     session = cassio.config.resolve_session()
     session.execute("DROP TABLE IF EXISTS default_keyspace.tool_table_users;")
 

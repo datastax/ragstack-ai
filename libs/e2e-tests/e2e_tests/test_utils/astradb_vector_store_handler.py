@@ -61,7 +61,7 @@ class DeleteCollectionHandler:
         """Returns the number of ongoing deletions."""
         return self.max_workers - self.semaphore._value  # noqa: SLF001
 
-    def await_ongoing_deletions_completed(self):
+    def await_ongoing_deletions_completed(self) -> None:
         """Blocks until all ongoing deletions are completed."""
         pending_deletions = self.max_workers - self.semaphore._value  # noqa: SLF001
         while pending_deletions >= 0:
@@ -79,7 +79,7 @@ class DeleteCollectionHandler:
             lambda: self._run_and_release(collection),
         )
 
-    def _run_and_release(self, collection: str):
+    def _run_and_release(self, collection: str) -> None:
         """Internal wrapper to run the delete function and release the semaphore once
         done."""
         try:
@@ -89,7 +89,7 @@ class DeleteCollectionHandler:
         finally:
             self.semaphore.release()
 
-    def shutdown(self, wait=True):
+    def shutdown(self, wait=True) -> None:
         """Shuts down the executor, waiting for tasks to complete if specified."""
         self.executor.shutdown(wait=wait)
 
@@ -217,7 +217,7 @@ class AstraDBVectorStoreTestContext(VectorStoreTestContext):
         return vector_store
 
 
-def try_delete_with_backoff(collection: str, sleep=1, max_tries=5):
+def try_delete_with_backoff(collection: str, sleep=1, max_tries=5) -> None:
     try:
         response = AstraDBVectorStoreHandler.default_astra_client.delete_collection(
             collection
@@ -244,7 +244,7 @@ class AstraDBVectorStoreHandler(VectorStoreHandler):
     delete_collection_handler = None
 
     @classmethod
-    def initialize(cls):
+    def initialize(cls) -> None:
         if not cls.token:
             cls.token = get_required_env("ASTRA_DB_APPLICATION_TOKEN")
             cls.api_endpoint = get_required_env("ASTRA_DB_API_ENDPOINT")
@@ -275,7 +275,7 @@ class AstraDBVectorStoreHandler(VectorStoreHandler):
             env=self.__class__.env,
         )
 
-    def ensure_astra_env_clean(self, blocking=False):
+    def ensure_astra_env_clean(self, blocking=False) -> None:
         logging.info(
             "Ensuring astra env is clean (current deletions in progress: %s)",
             self.__class__.delete_collection_handler.get_current_deletions(),
@@ -341,5 +341,5 @@ class AstraDBVectorStoreHandler(VectorStoreHandler):
                 cassio.init(token=self.astra_ref.token, database_id=self.astra_ref.id)
         return AstraDBVectorStoreTestContext(self)
 
-    def after_test(self):
+    def after_test(self) -> None:
         self.ensure_astra_env_clean(blocking=True)
