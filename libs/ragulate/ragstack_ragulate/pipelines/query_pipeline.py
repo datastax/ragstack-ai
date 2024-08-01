@@ -12,7 +12,6 @@ from trulens_eval.feedback.provider import AzureOpenAI, Huggingface, LLMProvider
 from trulens_eval.schema.feedback import FeedbackMode, FeedbackResultStatus
 from typing_extensions import Never, override
 
-from ragstack_ragulate.datasets import BaseDataset, QueryItem
 from ragstack_ragulate.logging_config import logger
 from ragstack_ragulate.utils import get_tru
 
@@ -20,7 +19,7 @@ from .base_pipeline import BasePipeline
 from .feedbacks import Feedbacks
 
 if TYPE_CHECKING:
-    from ragstack_ragulate.datasets import BaseDataset
+    from ragstack_ragulate.datasets import BaseDataset, QueryItem
 
 
 class QueryPipeline(BasePipeline):
@@ -106,7 +105,11 @@ class QueryPipeline(BasePipeline):
             existing_queries = existing_records["input"].dropna().tolist()
             total_existing_queries += len(existing_queries)
 
-            query_items = [query_item for query_item in query_items if query_item.query not in existing_queries]
+            query_items = [
+                query_item
+                for query_item in query_items
+                if query_item.query not in existing_queries
+            ]
 
             self._query_items[dataset.name] = query_items
             self._golden_sets[dataset.name] = dataset.get_golden_set()
@@ -240,7 +243,7 @@ class QueryPipeline(BasePipeline):
                     break
                 try:
                     with recorder as recording:
-                        recording.record_metadata=query_item.metadata
+                        recording.record_metadata = query_item.metadata
                         pipeline.invoke(query_item.query)
                 except Exception as e:  # noqa: BLE001
                     err = f"Query: '{query_item.query}' caused exception, skipping."
