@@ -356,7 +356,7 @@ class GraphStore:
         self,
         query: str,
         *,
-        neighborhood: Sequence[str] | None = None,
+        initial_roots: Sequence[str] = (),
         k: int = 4,
         depth: int = 2,
         fetch_k: int = 100,
@@ -377,10 +377,9 @@ class GraphStore:
 
         Args:
             query: The query string to search for.
-            neighborhood: Optional list of documents to use as the initial neighborhood
-                to search. If provided, the adjacent nodes to the neighborhood will be
-                used as the initial candidates, rather than performing a generic vector
-                search.
+            initial_roots: Optional list of document IDs to use for initializing search.
+                The top `adjacent_k` nodes adjacent to each initial root will be included
+                in the set of initial candidates.
             k: Number of Documents to return. Defaults to 4.
             fetch_k: Number of initial Documents to fetch via similarity.
                 Defaults to 100.
@@ -419,31 +418,8 @@ class GraphStore:
 
         visited_tags: set[tuple[str, str]] = set()
 
-        def fetch_initial_candidates() -> None:
-            initial_candidates_query = self._get_search_cql(
-                has_limit=True,
-                columns=columns,
-                metadata_keys=list(metadata_filter.keys()),
-                has_embedding=True,
-            )
-
-            params = self._get_search_params(
-                limit=fetch_k,
-                metadata=metadata_filter,
-                embedding=query_embedding,
-            )
-
-            fetched = self._session.execute(
-                query=initial_candidates_query, parameters=params
-            )
-            candidates = {}
-            for row in fetched:
-                candidates[row.content_id] = row.text_embedding
-                outgoing_tags[row.content_id] = set(row.link_to_tags or [])
-            helper.add_candidates(candidates)
-
         def fetch_neighborhood(neighborhood: Sequence[str]) -> None:
-            # Put the neighborhood into the ouhgoing tags, to avoid adding it
+            # Put the neighborhood into the outgoing tags, to avoid adding it
             # to the candidate set in the future.
             outgoing_tags.update({content_id: set() for content_id in neighborhood})
 
@@ -472,10 +448,34 @@ class GraphStore:
                     )
             helper.add_candidates(new_candidates)
 
-        if neighborhood is None:
+        def fetch_initial_candidates() -> None:
+            initial_candidates_query = self._get_search_cql(
+                has_limit=True,
+                columns=columns,
+                metadata_keys=list(metadata_filter.keys()),
+                has_embedding=True,
+            )
+
+            params = self._get_search_params(
+                limit=fetch_k,
+                metadata=metadata_filter,
+                embedding=query_embedding,
+            )
+
+            fetched = self._session.execute(
+                query=initial_candidates_query, parameters=params
+            )
+            candidates = {}
+            for row in fetched:
+                if row.content_id not in outgoing_tags:
+                    candidates[row.content_id] = row.text_embedding
+                    outgoing_tags[row.content_id] = set(row.link_to_tags or [])
+            helper.add_candidates(candidates)
+
+        if initial_roots:
+            fetch_neighborhood(initial_roots)
+        if fetch_k > 0:
             fetch_initial_candidates()
-        else:
-            fetch_neighborhood(neighborhood)
 
         # Tracks the depth of each candidate.
         depths = {candidate_id: 0 for candidate_id in helper.candidate_ids()}
@@ -845,7 +845,7 @@ class GraphStore:
     def _extract_where_clause_cql(
         self,
         has_id: bool = False,
-        metadata_keys: list[str] | None = None,
+        metadata_keys: Sequence[str] = (),
         has_link_from_tags: bool = False,
     ) -> str:
         wc_blocks: list[str] = []
@@ -856,7 +856,7 @@ class GraphStore:
         if has_link_from_tags:
             wc_blocks.append("link_from_tags CONTAINS (?, ?)")
 
-        for key in sorted(metadata_keys or []):
+        for key in sorted(metadata_keys):
             if _is_metadata_field_indexed(key, self._metadata_indexing_policy):
                 wc_blocks.append(f"metadata_s['{key}'] = ?")
             else:
@@ -894,7 +894,7 @@ class GraphStore:
         self,
         has_limit: bool = False,
         columns: str | None = CONTENT_COLUMNS,
-        metadata_keys: list[str] | None = None,
+        metadata_keys: Sequence[str] = (),
         has_id: bool = False,
         has_embedding: bool = False,
         has_link_from_tags: bool = False,
@@ -951,7 +951,7 @@ class GraphStore:
         query = self._get_search_cql(
             has_limit=limit is not None,
             columns=columns,
-            metadata_keys=list(metadata.keys()) if metadata else None,
+            metadata_keys=list(metadata.keys()) if metadata else (),
             has_embedding=embedding is not None,
             has_link_from_tags=link_from_tags is not None,
         )
