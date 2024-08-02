@@ -1,5 +1,6 @@
 import asyncio
 import pandas as pd
+import json
 from typing import Dict, Iterable, Tuple, List, Optional, Any
 
 # https://github.com/jerryjliu/llama_index/issues/7244:
@@ -19,6 +20,8 @@ from streamlit_pills import pills
 from streamlit_extras.switch_page_button import switch_page
 
 from trulens_eval import Tru
+
+PAGINATION_SIZE = 10
 
 st.set_page_config(page_title="Ragulate - Compare",
                    layout="wide",
@@ -62,13 +65,15 @@ class Column:
     type: List[str]
     hide: bool
     width: int
+    style: Dict[str, str]
 
-    def __init__(self, field: Optional[str] = None, children: Optional[Dict[str, "Column"]] = None, type: Optional[List[str]] = None, hide: Optional[bool] = False, width: Optional[int] = 0):
+    def __init__(self, field: Optional[str] = None, children: Optional[Dict[str, "Column"]] = None, type: Optional[List[str]] = None, hide: Optional[bool] = False, width: Optional[int] = 0, style: Optional[Dict[str, str]] = None):
         self.field = field
         self.children = children if children is not None else {}
         self.type = type if type is not None else []
         self.hide = hide
         self.width = width if width is not None else 0
+        self.style = style
 
     def get_props(self, headerName: str) -> Dict[str, Any]:
         props:Dict[str, Any] = {
@@ -80,6 +85,8 @@ class Column:
             props["hide"] = True
         if self.width > 0:
             props["width"] = self.width
+        if self.style is not None:
+            props["cellStyle"] = {k:v for k,v in self.style.items()}
         return props
 
 
@@ -131,7 +138,7 @@ def combine_and_calculate_diff(df_list: List[pd.DataFrame], feedbacks_list: List
     feedbacks = find_common_strings(feedbacks_list)
 
     columns_to_drop = ['app_id', 'app_json', 'type', 'record_id', 'latency', 'tags',
-                       'record_json', 'cost_json', 'perf_json', 'ts','total_cost']
+                       'cost_json', 'perf_json', 'ts','total_cost']
 
     for feedback in find_full_set_of_strings(feedbacks_list):
         columns_to_drop.append(f"{feedback}_calls")
@@ -170,9 +177,9 @@ def combine_and_calculate_diff(df_list: List[pd.DataFrame], feedbacks_list: List
 
     combined_df = combined_df[['input', 'ground_truth'] + output_columns + remaining_columns]
 
-    return (combined_df, feedbacks)
+    return (combined_df, columns_to_diff)
 
-#@st.cache_data
+@st.cache_data
 def get_data(recipes: List[str], dataset: str, timestamp: int) -> Tuple[pd.DataFrame, List[str]]:
     df_list: List[pd.DataFrame] = []
     feedbacks_list: List[List[str]] = []
@@ -188,26 +195,22 @@ def get_data(recipes: List[str], dataset: str, timestamp: int) -> Tuple[pd.DataF
 if st.button("home"):
     switch_page("home")
 
-st.title("Compare")
 recipes = st.session_state.selected_recipes
 dataset = "vcg"
-st.write("Selected recipes: " + ", ".join(recipes) + f"Dataset: {dataset}")
-
-
-
-compare_df, feedbacks = get_data(recipes=recipes, dataset=dataset, timestamp=0)
+compare_df, data_cols = get_data(recipes=recipes, dataset=dataset, timestamp=0)
 
 columns: Dict[str, Column] = {}
 
-columns["Query"] = Column(field="input")
+columns["Query"] = Column(field="input", style={"word-break": "break-word"})
 columns["Answer"] = Column()
-columns["Answer"].children["Ground Truth"] = Column(field="ground_truth")
 
 for recipe in recipes:
-    columns["Answer"].children[recipe] = Column(field=f"output_{recipe}")
+    columns["Answer"].children[recipe] = Column(field=f"output_{recipe}", width=400, style={"word-break": "break-word"})
     columns[f"contexts_{recipe}"] = Column(field=f"contexts_{recipe}", hide=True)
 
-for data_col in feedbacks + ["total_tokens"]:
+columns["Answer"].children["Ground Truth"] = Column(field="ground_truth", width=400, style={"word-break": "break-word"})
+
+for data_col in data_cols:
     columns[data_col] = Column()
     for recipe in recipes:
         columns[data_col].children[recipe] = Column(field=f"{data_col}_{recipe}", type=numericColumnType, width=(len(recipe)*7)+ 50)
@@ -215,12 +218,10 @@ for data_col in feedbacks + ["total_tokens"]:
         columns[data_col].children["Diff"] = Column(field=f"{data_col}__diff", type=numericColumnType, width=(len("Diff")*7)+ 50)
 
 
-
-
 gb = GridOptionsBuilder.from_dataframe(compare_df)
 
 gb.configure_default_column(autoHeight=True, wrapText=True)
-gb.configure_pagination(paginationPageSize=25, paginationAutoPageSize=False)
+gb.configure_pagination(paginationPageSize=PAGINATION_SIZE, paginationAutoPageSize=False)
 gb.configure_side_bar()
 gb.configure_selection(selection_mode="single", use_checkbox=False)
 
@@ -243,10 +244,33 @@ else:
     # Start the record specific section
     st.divider()
 
-    # Breadcrumbs
-    st.caption(
-        f"{selected_rows['input'][0]}"
-    )
+    st.subheader(f"Query")
+    st.caption(selected_rows['input'][0])
+    st.subheader(f"Ground Truth")
+    st.caption(selected_rows['ground_truth'][0])
+
+    table = {}
+    for recipe in recipes:
+        column_data = [selected_rows[f"output_{recipe}"][0]]
+        for data_col in data_cols:
+            column_data.append(selected_rows[f"{data_col}_{recipe}"][0])
+        table[recipe] = column_data
+
+    df = pd.DataFrame(table)
+    df.index = ["Answer"] + data_cols
+    st.subheader(f"Results")
+    st.table(df)
+
+    st.subheader(f"Contexts")
+    context_cols = st.columns(len(recipes))
+    for i, recipe in enumerate(recipes):
+        for j, context in enumerate(selected_rows[f"contexts_{recipe}"][0]):
+            context_cols[i].caption(f"Chunk: {j + 1}")
+            with context_cols[i].popover(f"{json.dumps(context[0:200])}..."):
+                st.write(context)
+
+
+
 
 
 
