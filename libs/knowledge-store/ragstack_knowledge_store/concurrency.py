@@ -9,6 +9,7 @@ from typing import (
     Callable,
     Literal,
     NamedTuple,
+    Optional,
     Protocol,
     Sequence,
 )
@@ -67,6 +68,7 @@ class ConcurrentQueries(contextlib.AbstractContextManager["ConcurrentQueries"]):
         query: PreparedStatement,
         parameters: tuple[Any, ...] | None = None,
         callback: _Callback | None = None,
+        timeout: Optional[float] = None,
     ) -> None:
         """Execute a query concurrently.
 
@@ -86,7 +88,14 @@ class ConcurrentQueries(contextlib.AbstractContextManager["ConcurrentQueries"]):
             if self._error is not None:
                 return
 
-        future: ResponseFuture = self._session.execute_async(query, parameters)
+        execute_kwargs = {}
+        if timeout is not None:
+            execute_kwargs['timeout'] = timeout
+        future: ResponseFuture = self._session.execute_async(
+            query,
+            parameters,
+            **execute_kwargs,
+        )
         future.add_callbacks(
             self._handle_result,
             self._handle_error,
