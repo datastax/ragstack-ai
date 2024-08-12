@@ -1,0 +1,67 @@
+version: 0.1
+
+steps:
+  ingest:
+    - name: chunk_size_ingest
+      script: experiment_chunk_size_and_k.py
+      method: ingest
+  query:
+    - name: chunk_size_query
+      script: experiment_chunk_size_and_k.py
+      method: query_pipeline
+  cleanup:
+    - name: chunk_size_cleanup
+      script: experiment_chunk_size_and_k.py
+      method: cleanup
+
+recipes:
+  - name: chunk_size_100_k_2
+    ingest: chunk_size_ingest
+    query: chunk_size_query
+    cleanup: chunk_size_cleanup
+    ingredients:
+      - chunk_size: 100
+      - k: 2
+  - name: chunk_size_100_k_5
+    ingest: chunk_size_ingest
+    query: chunk_size_query
+    cleanup: chunk_size_cleanup
+    ingredients:
+      - chunk_size: 100
+      - k: 5
+  - name: chunk_size_200_k_2
+    ingest: chunk_size_ingest
+    query: chunk_size_query
+    cleanup: chunk_size_cleanup
+    ingredients:
+      - chunk_size: 200
+      - k: 2
+  - name: chunk_size_200_k_5
+    ingest: chunk_size_ingest
+    query: chunk_size_query
+    cleanup: chunk_size_cleanup
+    ingredients:
+      - chunk_size: 200
+      - k: 5
+
+datasets:
+  - name: BraintrustCodaHelpDesk
+    kind: llama
+  - name: BlockchainSolana
+    kind: llama
+
+eval_llms:
+  - vendor: open_ai
+    model: gpt3.5-turbo
+    name: gpt3.5
+    default: true
+  - name: llama3
+    vendor: huggingface
+    model: llama3
+
+metrics:
+  groundedness:
+    enabled: true
+  answer_correctness:
+    enabled: true
+    eval_llm: llama3
