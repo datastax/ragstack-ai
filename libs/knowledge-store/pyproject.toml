@@ -12,6 +12,7 @@ packages = [{ include = "ragstack_knowledge_store" }]
 [tool.poetry.dependencies]
 python = ">=3.9,<3.13"
 cassio = "^0.1.7"
+simsimd = { version = ">=5.0.0", optional = true }
 
 [tool.poetry.group.dev.dependencies]
 ruff = "*"
@@ -21,12 +22,7 @@ pytest-asyncio = "^0.23.6"
 ipykernel = "^6.29.4"
 testcontainers = "~3.7.1"
 python-dotenv = "^1.0.1"
-
-# Resolve numpy version for 3.8 to 3.12+
-numpy = [
-    {version = ">1,<2", python = "<3.12"},
-    {version = ">1.26.0,<2", python = ">=3.12"}
-]
+simsimd = "^5.0.0"
 
 [tool.poetry.group.test.dependencies]
 ragstack-ai-langchain = { path = "../langchain", develop = true }
@@ -44,7 +40,7 @@ show_error_codes = true
 show_error_context = true
 
 [[tool.mypy.overrides]]
-module = "simsimd.*,cassandra.*"
+module = "cassandra.*"
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]
