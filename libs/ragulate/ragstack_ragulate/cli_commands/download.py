@@ -3,7 +3,7 @@ from typing import Any
 from ragstack_ragulate.datasets import get_dataset
 
 
-def setup_download(subparsers) -> None:
+def setup_download(subparsers) -> None: # type: ignore
     """Setup the download command."""
     download_parser = subparsers.add_parser("download", help="Download a dataset")
     download_parser.add_argument(

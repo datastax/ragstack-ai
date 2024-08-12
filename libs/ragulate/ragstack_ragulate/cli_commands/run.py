@@ -8,7 +8,7 @@ from ragstack_ragulate.logging_config import logger
 from ragstack_ragulate.pipelines import IngestPipeline, QueryPipeline
 
 
-def setup_run(subparsers) -> None:
+def setup_run(subparsers) -> None: # type: ignore
     """Setup the run command."""
     run_parser = subparsers.add_parser(
         "run", help="Run an experiment from a config file"

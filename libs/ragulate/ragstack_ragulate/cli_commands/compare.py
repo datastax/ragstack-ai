@@ -7,7 +7,7 @@ from ragstack_ragulate.analysis import Analysis
 from .utils import remove_sqlite_extension
 
 
-def setup_compare(subparsers) -> None:
+def setup_compare(subparsers) -> None: # type: ignore
     """Setup the compare command."""
     compare_parser = subparsers.add_parser(
         "compare", help="Compare results from 2 (or more) recipes"
