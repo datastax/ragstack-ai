@@ -1,16 +1,13 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 from ragstack_ragulate.datasets import find_dataset
 from ragstack_ragulate.pipelines import IngestPipeline
 from ragstack_ragulate.utils import convert_vars_to_ingredients
 
-if TYPE_CHECKING:
-    from argparse import ArgumentParser, _SubParsersAction
 
-
-def setup_ingest(subparsers: _SubParsersAction[ArgumentParser]) -> None:
+def setup_ingest(subparsers) -> None:  # type: ignore[no-untyped-def]
     """Setup the ingest command."""
     ingest_parser = subparsers.add_parser("ingest", help="Run an ingest pipeline")
     ingest_parser.add_argument(
