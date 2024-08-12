@@ -1,10 +1,9 @@
-from argparse import ArgumentParser, _SubParsersAction
 from typing import Any
 
 from ragstack_ragulate.datasets import get_dataset
 
 
-def setup_download(subparsers: _SubParsersAction[ArgumentParser]) -> None:
+def setup_download(subparsers) -> None:
     """Setup the download command."""
     download_parser = subparsers.add_parser("download", help="Download a dataset")
     download_parser.add_argument(

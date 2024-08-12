@@ -1,16 +1,13 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 from ragstack_ragulate.analysis import Analysis
 
 from .utils import remove_sqlite_extension
 
-if TYPE_CHECKING:
-    from argparse import ArgumentParser, _SubParsersAction
 
-
-def setup_compare(subparsers: _SubParsersAction[ArgumentParser]) -> None:
+def setup_compare(subparsers) -> None:
     """Setup the compare command."""
     compare_parser = subparsers.add_parser(
         "compare", help="Compare results from 2 (or more) recipes"

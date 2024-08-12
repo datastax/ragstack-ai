@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Any
 
 from tqdm import tqdm
 from trulens_eval import Tru, TruChain
-from trulens_eval.feedback.provider import AzureOpenAI, Huggingface, LLMProvider, OpenAI
+from trulens_eval.feedback.provider import AzureOpenAI, Huggingface, OpenAI
 from trulens_eval.schema.feedback import FeedbackMode, FeedbackResultStatus
 from typing_extensions import Never, override
 
@@ -19,6 +19,8 @@ from .base_pipeline import BasePipeline
 from .feedbacks import Feedbacks
 
 if TYPE_CHECKING:
+    from trulens_eval.feedback.provider.base import LLMProvider
+
     from ragstack_ragulate.datasets import BaseDataset, QueryItem
 
 
