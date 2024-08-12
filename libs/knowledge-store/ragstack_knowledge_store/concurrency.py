@@ -9,7 +9,6 @@ from typing import (
     Callable,
     Literal,
     NamedTuple,
-    Optional,
     Protocol,
     Sequence,
 )
@@ -68,7 +67,7 @@ class ConcurrentQueries(contextlib.AbstractContextManager["ConcurrentQueries"]):
         query: PreparedStatement,
         parameters: tuple[Any, ...] | None = None,
         callback: _Callback | None = None,
-        timeout: Optional[float] = None,
+        timeout: float | None = None,
     ) -> None:
         """Execute a query concurrently.
 
@@ -79,6 +78,7 @@ class ConcurrentQueries(contextlib.AbstractContextManager["ConcurrentQueries"]):
             query: The query to execute.
             parameters: Parameter tuple for the query. Defaults to `None`.
             callback: Callback to apply to the results. Defaults to `None`.
+            timeout: Timeout to use (if not the session default).
         """
         # TODO: We could have some form of throttling, where we track the number
         # of pending calls and queue things if it exceed some threshold.
@@ -90,7 +90,7 @@ class ConcurrentQueries(contextlib.AbstractContextManager["ConcurrentQueries"]):
 
         execute_kwargs = {}
         if timeout is not None:
-            execute_kwargs['timeout'] = timeout
+            execute_kwargs["timeout"] = timeout
         future: ResponseFuture = self._session.execute_async(
             query,
             parameters,
