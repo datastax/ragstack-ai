@@ -5,7 +5,7 @@ from ragstack_ragulate.dashboard import run_dashboard
 from .utils import remove_sqlite_extension
 
 
-def setup_dashboard(subparsers) -> None: # type: ignore
+def setup_dashboard(subparsers) -> None:  # type: ignore[no-untyped-def]
     """Setup the dashboard command."""
     dashboard_parser = subparsers.add_parser(
         "dashboard",

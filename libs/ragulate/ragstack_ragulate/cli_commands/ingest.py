@@ -7,7 +7,7 @@ from ragstack_ragulate.pipelines import IngestPipeline
 from ragstack_ragulate.utils import convert_vars_to_ingredients
 
 
-def setup_ingest(subparsers) -> None: # type: ignore
+def setup_ingest(subparsers) -> None:  # type: ignore[no-untyped-def]
     """Setup the ingest command."""
     ingest_parser = subparsers.add_parser("ingest", help="Run an ingest pipeline")
     ingest_parser.add_argument(

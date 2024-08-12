@@ -7,7 +7,7 @@ from ragstack_ragulate.pipelines import QueryPipeline
 from ragstack_ragulate.utils import convert_vars_to_ingredients
 
 
-def setup_query(subparsers) -> None: # type: ignore
+def setup_query(subparsers) -> None:  # type: ignore[no-untyped-def]
     """Setup the query command."""
     query_parser = subparsers.add_parser("query", help="Run a query pipeline")
     query_parser.add_argument(
