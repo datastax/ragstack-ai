@@ -157,7 +157,9 @@ class GraphStore:
         keyspace: str | None = None,
         setup_mode: SetupMode = SetupMode.SYNC,
         metadata_indexing: MetadataIndexingType = "all",
+        insert_timeout: float = 30.0,
     ):
+        self._insert_timeout = insert_timeout
         if targets_table:
             logger.warning(
                 "The 'targets_table' parameter is deprecated "
@@ -318,6 +320,7 @@ class GraphStore:
                         metadata_blob,
                         metadata_s,
                     ),
+                    timeout=self._insert_timeout,
                 )
 
         return node_ids
