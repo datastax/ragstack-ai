@@ -484,7 +484,9 @@ class GraphStore:
                     if tag_filter.len() == 0:
                         outgoing_tags[row.content_id] = set(row.link_to_tags or [])
                     else:
-                        outgoing_tags[row.content_id] = tag_filter.intersection(set(row.link_to_tags or []))
+                        outgoing_tags[row.content_id] = tag_filter.intersection(
+                            set(row.link_to_tags or [])
+                        )
             helper.add_candidates(candidates)
 
         if initial_roots:
