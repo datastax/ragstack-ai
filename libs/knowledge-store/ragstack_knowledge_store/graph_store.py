@@ -446,7 +446,7 @@ class GraphStore:
             new_candidates = {}
             for adjacent in adjacents:
                 if adjacent.target_content_id not in outgoing_tags:
-                    if tag_filter.len() == 0:
+                    if len(tag_filter) == 0:
                         outgoing_tags[adjacent.target_content_id] = (
                             adjacent.target_link_to_tags
                         )
@@ -481,7 +481,7 @@ class GraphStore:
             for row in fetched:
                 if row.content_id not in outgoing_tags:
                     candidates[row.content_id] = row.text_embedding
-                    if tag_filter.len() == 0:
+                    if len(tag_filter) == 0:
                         outgoing_tags[row.content_id] = set(row.link_to_tags or [])
                     else:
                         outgoing_tags[row.content_id] = tag_filter.intersection(
@@ -534,7 +534,7 @@ class GraphStore:
                 new_candidates = {}
                 for adjacent in adjacents:
                     if adjacent.target_content_id not in outgoing_tags:
-                        if tag_filter.len() == 0:
+                        if len(tag_filter) == 0:
                             outgoing_tags[adjacent.target_content_id] = (
                                 adjacent.target_link_to_tags
                             )
@@ -650,7 +650,7 @@ class GraphStore:
                                     # (unless we find it an earlier depth)
                                     visited_tags[(kind, value)] = d
                                     if (
-                                        tag_filter.len() == 0
+                                        len(tag_filter) == 0
                                         or (kind, value) in tag_filter
                                     ):
                                         outgoing_tags.add((kind, value))
