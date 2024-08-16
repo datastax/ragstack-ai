@@ -292,6 +292,14 @@ def test_write_retrieve_keywords(
     results = gs.traversal_search("Earth", k=1, depth=1)
     assert set(_result_ids(results)) == {"doc2", "doc1", "greetings"}
 
+    results = gs.traversal_search(
+        "Earth", k=1, depth=1, tag_filter={("parent", "parent")}
+    )
+    assert set(_result_ids(results)) == {"doc2", "greetings"}
+
+    results = gs.traversal_search("Earth", k=1, depth=1, tag_filter={("no", "match")})
+    assert _result_ids(results) == []
+
 
 def test_metadata(
     graph_store_factory: Callable[[MetadataIndexingType], GraphStore],

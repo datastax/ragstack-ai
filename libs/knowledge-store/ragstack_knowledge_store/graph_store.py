@@ -570,6 +570,7 @@ class GraphStore:
         k: int = 4,
         depth: int = 1,
         metadata_filter: dict[str, Any] = {},  # noqa: B006
+        tag_filter: set[tuple[str, str]],
     ) -> Iterable[Node]:
         """Retrieve documents from this knowledge store.
 
@@ -583,6 +584,7 @@ class GraphStore:
                 Defaults to 4.
             depth: The maximum depth of edges to traverse. Defaults to 1.
             metadata_filter: Optional metadata to filter the results.
+            tag_filter: Optional tags to filter graph edges to be traversed.
 
         Returns:
             Collection of retrieved documents.
@@ -647,7 +649,11 @@ class GraphStore:
                                     # given depth, so we don't fetch it again
                                     # (unless we find it an earlier depth)
                                     visited_tags[(kind, value)] = d
-                                    outgoing_tags.add((kind, value))
+                                    if (
+                                        tag_filter.len() == 0
+                                        or (kind, value) in tag_filter
+                                    ):
+                                        outgoing_tags.add((kind, value))
 
                 if outgoing_tags:
                     # If there are new tags to visit at the next depth, query for the
