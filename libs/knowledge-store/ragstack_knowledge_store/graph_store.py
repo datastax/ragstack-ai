@@ -367,7 +367,7 @@ class GraphStore:
         lambda_mult: float = 0.5,
         score_threshold: float = float("-inf"),
         metadata_filter: dict[str, Any] = {},  # noqa: B006
-        tag_filter: set[tuple[str, str]],
+        tag_filter: set[tuple[str, str]] = {},
     ) -> Iterable[Node]:
         """Retrieve documents from this graph store using MMR-traversal.
 
@@ -570,7 +570,7 @@ class GraphStore:
         k: int = 4,
         depth: int = 1,
         metadata_filter: dict[str, Any] = {},  # noqa: B006
-        tag_filter: set[tuple[str, str]],
+        tag_filter: set[tuple[str, str]] = {},
     ) -> Iterable[Node]:
         """Retrieve documents from this knowledge store.
 
