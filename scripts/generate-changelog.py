@@ -56,7 +56,8 @@ def main() -> None:
                 version_range = require[i:]
                 break
         if not version_range:
-            raise ValueError(f"Could not parse version range from {require}")
+            msg = f"Could not parse version range from {require}"
+            raise ValueError(msg)
         for important_dependency in IMPORTANT_DEPENDENCIES:
             if package_name.startswith(important_dependency + "["):
                 package_name = important_dependency

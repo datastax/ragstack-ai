@@ -88,8 +88,9 @@ async def ingest(file_path: str, chunk_size: int, **_: Any) -> None:
     print(f"It took {duration} seconds to load and parse the document")
 
     # confirm only one document returned per file
-    if not len(docs) == 1:
-        raise ValueError("Only one document must be returned per file")
+    if len(docs) != 1:
+        msg = "Only one document must be returned per file"
+        raise ValueError(msg)
 
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=chunk_size,

@@ -17,10 +17,12 @@ def load_module(file_path: str, name: str) -> ModuleType:
     """Load a module from a file path dynamically."""
     spec = importlib.util.spec_from_file_location(name, file_path)
     if spec is None:
-        raise ValueError(f"Could not load module from {file_path}")
+        msg = f"Could not load module from {file_path}"
+        raise ValueError(msg)
     module = importlib.util.module_from_spec(spec)
     if spec.loader is None:
-        raise ValueError(f"No Module loader found for {file_path}")
+        msg = f"No Module loader found for {file_path}"
+        raise ValueError(msg)
     spec.loader.exec_module(module)
     return module
 
@@ -48,9 +50,8 @@ def get_ingredients(
         if method_param in reserved_params or method_param in ["kwargs", "_"]:
             continue
         if method_param not in passed_ingredients:
-            raise ValueError(
-                f"method param '{method_param}' doesn't exist in the ingredients"
-            )
+            msg = f"method param '{method_param}' doesn't exist in the ingredients"
+            raise ValueError(msg)
         ingredients[method_param] = passed_ingredients[method_param]
 
     return ingredients

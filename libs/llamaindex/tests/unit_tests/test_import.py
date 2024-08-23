@@ -15,7 +15,8 @@ def test_import() -> None:
 def check_no_import(fn: Callable[[], Any]) -> None:
     try:
         fn()
-        raise RuntimeError("Should have failed to import")
+        msg = "Should have failed to import"
+        raise RuntimeError(msg)
     except ImportError:
         pass
 

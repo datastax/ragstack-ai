@@ -54,9 +54,8 @@ class AstraDBTestStore(TestStore):
     def __init__(self) -> None:
         super().__init__()
         if not os.getenv("ASTRA_DB_ID") or not os.getenv("ASTRA_DB_TOKEN"):
-            raise ValueError(
-                "ASTRA_DB_ID and ASTRA_DB_TOKEN environment variables must be set"
-            )
+            msg = "ASTRA_DB_ID and ASTRA_DB_TOKEN environment variables must be set"
+            raise ValueError(msg)
         self.token = os.getenv("ASTRA_DB_TOKEN")
         self.database_id = os.getenv("ASTRA_DB_ID")
         self.env = os.getenv("ASTRA_DB_ENV", "prod").lower()

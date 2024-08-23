@@ -55,7 +55,8 @@ def get_required_env(name) -> str:
 
 vector_database_type = os.environ.get("VECTOR_DATABASE_TYPE", "astradb")
 if vector_database_type not in ["astradb", "local-cassandra"]:
-    raise ValueError(f"Invalid VECTOR_DATABASE_TYPE: {vector_database_type}")
+    msg = f"Invalid VECTOR_DATABASE_TYPE: {vector_database_type}"
+    raise ValueError(msg)
 
 is_astra = vector_database_type == "astradb"
 
@@ -67,7 +68,8 @@ def get_vector_store_handler(
         return AstraDBVectorStoreHandler(implementation)
     if vector_database_type == "local-cassandra":
         return CassandraVectorStoreHandler(implementation)
-    raise ValueError("Invalid vector store implementation")
+    msg = "Invalid vector store implementation"
+    raise ValueError(msg)
 
 
 failed_report_lines = []

@@ -31,7 +31,8 @@ def main() -> None:
                             found = True
                             break
                     if not found:
-                        raise ValueError("No code cells found in file: ", file)
+                        msg = "No code cells found in file: "
+                        raise ValueError(msg, file)
                 with open(file, "w") as f:
                     f.write(json.dumps(as_json, indent=1, sort_keys=True))
 

@@ -45,10 +45,11 @@ class CassandraDatabase(BaseDatabase):
     _table: ClusteredMetadataVectorCassandraTable
 
     def __new__(cls) -> Self:  # noqa: D102
-        raise ValueError(
+        msg = (
             "This class cannot be instantiated directly. "
             "Please use the `from_astra()` or `from_session()` class methods."
         )
+        raise ValueError(msg)
 
     @classmethod
     def from_astra(
@@ -173,10 +174,11 @@ class CassandraDatabase(BaseDatabase):
             success_chunks.append((doc_id, chunk_id))
 
         if len(failed_chunks) > 0:
-            raise CassandraDatabaseError(
+            msg = (
                 f"add failed for these chunks: {failed_chunks}. "
                 f"See error logs for more info."
             )
+            raise CassandraDatabaseError(msg)
 
         return success_chunks
 
@@ -273,10 +275,11 @@ class CassandraDatabase(BaseDatabase):
                 failed_chunks.append((doc_id, chunk_id))
 
         if len(failed_chunks) > 0:
-            raise CassandraDatabaseError(
+            msg = (
                 f"add failed for these chunks: {failed_chunks}. "
                 f"See error logs for more info."
             )
+            raise CassandraDatabaseError(msg)
 
         return outputs
 
@@ -292,8 +295,9 @@ class CassandraDatabase(BaseDatabase):
                 failed_docs.append(doc_id)
 
         if len(failed_docs) > 0:
+            msg = "delete failed for these docs: %s. See error logs for more info."
             raise CassandraDatabaseError(
-                "delete failed for these docs: %s. See error logs for more info.",
+                msg,
                 failed_docs,
             )
 
@@ -340,10 +344,11 @@ class CassandraDatabase(BaseDatabase):
                     failed_docs.append(doc_id)
 
         if len(failed_docs) > 0:
-            raise CassandraDatabaseError(
+            msg = (
                 f"delete failed for these docs: {failed_docs}. "
                 f"See error logs for more info."
             )
+            raise CassandraDatabaseError(msg)
 
         return success
 
@@ -379,9 +384,8 @@ class CassandraDatabase(BaseDatabase):
         row = await self._table.aget(partition_id=doc_id, row_id=row_id)
 
         if row is None:
-            raise CassandraDatabaseError(
-                f"no chunk found for doc_id: {doc_id} chunk_id: {chunk_id}"
-            )
+            msg = f"no chunk found for doc_id: {doc_id} chunk_id: {chunk_id}"
+            raise CassandraDatabaseError(msg)
 
         if include_embedding is True:
             embedded_chunk = await self.get_chunk_embedding(
