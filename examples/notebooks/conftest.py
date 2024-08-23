@@ -8,10 +8,12 @@ from astrapy.db import AstraDB
 
 def get_required_env(name) -> str:
     if name not in os.environ:
-        raise ValueError(f"Missing required environment variable: {name}")
+        msg = f"Missing required environment variable: {name}"
+        raise ValueError(msg)
     value = os.environ[name]
     if not value:
-        raise ValueError(f"Empty required environment variable: {name}")
+        msg = f"Empty required environment variable: {name}"
+        raise ValueError(msg)
     return value
 
 

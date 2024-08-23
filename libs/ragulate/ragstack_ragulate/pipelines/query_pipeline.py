@@ -191,7 +191,8 @@ class QueryPipeline(BasePipeline):
             return AzureOpenAI(deployment_name=model_name)
         if llm_provider == "huggingface":
             return Huggingface(name=model_name)
-        raise ValueError(f"Unsupported provider: {llm_provider}")
+        msg = f"Unsupported provider: {llm_provider}"
+        raise ValueError(msg)
 
     def query(self) -> None:
         """Run the query pipeline."""

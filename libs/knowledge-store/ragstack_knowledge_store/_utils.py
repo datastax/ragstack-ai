@@ -16,7 +16,8 @@ except ImportError:
     # This is equivalent to `itertools.batched`, but that is only available in 3.12
     def batched(iterable: Iterable[T], n: int) -> Iterator[tuple[T, ...]]:
         if n < 1:
-            raise ValueError("n must be at least one")
+            msg = "n must be at least one"
+            raise ValueError(msg)
         it = iter(iterable)
         while batch := tuple(islice(it, n)):
             yield batch

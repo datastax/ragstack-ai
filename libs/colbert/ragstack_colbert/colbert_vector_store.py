@@ -46,9 +46,8 @@ class ColbertVectorStore(BaseVectorStore):
 
     def _validate_embedding_model(self) -> BaseEmbeddingModel:
         if self._embedding_model is None:
-            raise AttributeError(
-                "To use this method, `embedding_model` must be set on class creation."
-            )
+            msg = "To use this method, `embedding_model` must be set on class creation."
+            raise AttributeError(msg)
         return self._embedding_model
 
     def _build_chunks(
@@ -60,7 +59,8 @@ class ColbertVectorStore(BaseVectorStore):
         embedding_model = self._validate_embedding_model()
 
         if metadatas is not None and len(texts) != len(metadatas):
-            raise ValueError("Length of texts and metadatas must match.")
+            msg = "Length of texts and metadatas must match."
+            raise ValueError(msg)
 
         if doc_id is None:
             doc_id = str(uuid.uuid4())
