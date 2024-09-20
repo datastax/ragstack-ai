@@ -128,11 +128,8 @@ def _deserialize_links(json_blob: str | None) -> set[Link]:
         for link in cast(list[dict[str, Any]], json.loads(json_blob or ""))
     }
 
-def _metadata_s_link_key(link: Link) -> str:
+def _tag_s_link_key(link: Link) -> str:
     return "link_from_" + json.dumps({"kind": link.kind, "tag": link.tag})
-
-def _metadata_s_link_value() -> str:
-    return "link_from"
 
 def _row_to_node(row: Any) -> Node:
     if hasattr(row, "metadata_blob"):
@@ -220,8 +217,8 @@ class GraphStore:
         self._insert_passage = session.prepare(
             f"""
             INSERT INTO {keyspace}.{node_table} (
-                {CONTENT_ID}, text_content, text_embedding, metadata_blob, metadata_s
-            ) VALUES (?, ?, ?, ?, ?)
+                {CONTENT_ID}, text_content, text_embedding, metadata_blob, metadata_s, tag_s
+            ) VALUES (?, ?, ?, ?, ?, ?)
             """  # noqa: S608
         )
 
@@ -255,6 +252,7 @@ class GraphStore:
                 text_embedding VECTOR<FLOAT, {embedding_dim}>,
                 metadata_blob TEXT,
                 metadata_s MAP<TEXT,TEXT>,
+                tag_s SET<TEXT>,
                 PRIMARY KEY ({CONTENT_ID})
             )
         """)
@@ -263,6 +261,12 @@ class GraphStore:
         self._session.execute(f"""
             CREATE CUSTOM INDEX IF NOT EXISTS {self._node_table}_text_embedding_index
             ON {self.table_name()}(text_embedding)
+            USING 'StorageAttachedIndex';
+        """)
+
+        self._session.execute(f"""
+            CREATE CUSTOM INDEX IF NOT EXISTS {self._node_table}_tag_s_index
+            ON {self.table_name()}(tag_s)
             USING 'StorageAttachedIndex';
         """)
 
@@ -308,8 +312,8 @@ class GraphStore:
                     if _is_metadata_field_indexed(k, self._metadata_indexing_policy)
                 }
 
-                for incoming_link in incoming_links:
-                    metadata_s[_metadata_s_link_key(link=incoming_link)] =_metadata_s_link_value()
+                tag_s = [_tag_s_link_key(l) for l in incoming_links]
+
 
                 metadata_blob = _serialize_metadata(metadata)
 
@@ -321,6 +325,7 @@ class GraphStore:
                         text_embedding,
                         metadata_blob,
                         metadata_s,
+                        tag_s,
                     ),
                     timeout=self._insert_timeout,
                 )
@@ -411,24 +416,24 @@ class GraphStore:
         )
 
         # For each unselected node, stores the outgoing links.
-        outgoing_links_map: dict[str, set[Link]] = {}
-        visited_links: set[Link] = set()
+        outgoing_link_keys_map: dict[str, set[str]] = {}
+        visited_link_keys: set[str] = set()
 
         def fetch_neighborhood(neighborhood: Sequence[str]) -> None:
-            nonlocal outgoing_links_map
-            nonlocal visited_links
+            nonlocal outgoing_link_keys_map
+            nonlocal visited_link_keys
 
             # Put the neighborhood into the outgoing links, to avoid adding it
             # to the candidate set in the future.
-            outgoing_links_map.update({content_id: set() for content_id in neighborhood})
+            outgoing_link_keys_map.update({content_id: set() for content_id in neighborhood})
 
             # Initialize the visited_links with the set of outgoing links from the
             # neighborhood. This prevents re-visiting them.
-            visited_links = self._get_outgoing_links(neighborhood)
+            visited_link_keys = self._get_outgoing_link_keys(neighborhood)
 
             # Call `self._get_adjacent` to fetch the candidates.
             adjacent_nodes: Iterable[Node] = self._get_adjacent_nodes(
-                outgoing_links=visited_links,
+                outgoing_link_keys=visited_link_keys,
                 query_embedding=query_embedding,
                 k_per_tag=adjacent_k,
                 metadata_filter=metadata_filter,
@@ -436,15 +441,15 @@ class GraphStore:
 
             candidates: dict[str, list[float]] = {}
             for node in adjacent_nodes:
-                if node.id not in outgoing_links_map:
-                    outgoing_links_map[node.id] = node.outgoing_links()
+                if node.id not in outgoing_link_keys_map:
+                    outgoing_link_keys_map[node.id] = node.outgoing_links()
                     candidates[node.id] = node.embedding
 
             helper.add_candidates(candidates)
 
         def fetch_initial_candidates() -> None:
-            nonlocal outgoing_links_map
-            nonlocal visited_links
+            nonlocal outgoing_link_keys_map
+            nonlocal visited_link_keys
 
             initial_query, initial_params = self._get_search_cql_and_params(
                 columns=f"{CONTENT_ID}, text_embedding, metadata_blob",
@@ -459,8 +464,9 @@ class GraphStore:
             candidates: dict[str, list[float]] = {}
             for row in rows:
                 node = _row_to_node(row)
-                if node.id not in outgoing_links_map:
-                    outgoing_links_map[node.id] = node.outgoing_links()
+                if node.id not in outgoing_link_keys_map:
+                    outgoing_link_keys = [_tag_s_link_key(l) for l in node.outgoing_links()]
+                    outgoing_link_keys_map[node.id] = set(outgoing_link_keys)
                     candidates[node.id] = node.embedding
             helper.add_candidates(candidates)
 
@@ -489,26 +495,27 @@ class GraphStore:
                 # those.
 
                 # Find the outgoing links linked to from the selected ID.
-                selected_outgoing_links = outgoing_links_map.pop(selected_id)
+                selected_outgoing_link_keys = outgoing_link_keys_map.pop(selected_id)
 
                 # Don't re-visit already visited links.
-                selected_outgoing_links.difference_update(visited_links)
+                outgoing_link_keys_map.difference_update(visited_link_keys)
 
                 # Find the nodes with incoming links from those tags.
                 adjacent_nodes: Iterable[Node] = self._get_adjacent_nodes(
-                    outgoing_links=selected_outgoing_links,
+                    outgoing_link_keys=selected_outgoing_link_keys,
                     query_embedding=query_embedding,
                     k_per_tag=adjacent_k,
                     metadata_filter=metadata_filter,
                 )
 
                 # Record the selected_outgoing_links as visited.
-                visited_links.update(selected_outgoing_links)
+                visited_link_keys.update(selected_outgoing_link_keys)
 
                 candidates: dict[str, list[float]] = {}
                 for node in adjacent_nodes:
-                    if node.id not in outgoing_links_map:
-                        outgoing_links_map[node.id] = node.outgoing_links()
+                    if node.id not in outgoing_link_keys_map:
+                        outgoing_link_keys = [_tag_s_link_key(l) for l in node.outgoing_links()]
+                        outgoing_link_keys_map[node.id] = set(outgoing_link_keys)
                         candidates[node.id] = node.embedding
 
                         if next_depth < depths.get(node.id, depth + 1):
@@ -529,89 +536,14 @@ class GraphStore:
 
 
 
-    def traversal_search_sync(
-            self,
-            query: str,
-            *,
-            k: int = 4,
-            depth: int = 1,
-            metadata_filter: dict[str, Any] = {},  # noqa: B006
-        ) -> Iterable[Node]:
-        """Retrieve documents from this knowledge store.
-
-        First, `k` nodes are retrieved using a vector search for the `query` string.
-        Then, additional nodes are discovered up to the given `depth` from those
-        starting nodes.
-
-        Args:
-            query: The query string.
-            k: The number of Documents to return from the initial vector search.
-                Defaults to 4.
-            depth: The maximum depth of edges to traverse. Defaults to 1.
-            metadata_filter: Optional metadata to filter the results.
-
-        Returns:
-            Collection of retrieved documents.
-        """
-        visited_ids: dict[str, int] = {}
-        visited_link_keys: dict[str, int] = {}
-
-        work_queue = deque()
-
-        # Initial traversal query
-        traversal_query, traversal_params = self._get_search_cql_and_params(
-            columns=f"{CONTENT_ID}, metadata_blob",
-            metadata=metadata_filter,
-            embedding=self._embedding.embed_query(query),
-            limit=k
-        )
-
-        # Execute the initial query synchronously
-        initial_rows = self._session.execute(traversal_query, traversal_params)
-
-        for row in initial_rows:
-            node = _row_to_node(row=row)
-            work_queue.append((node, 0))
-
-        while work_queue:
-            node, d = work_queue.popleft()
-            # Check if node has been visited at a lower depth
-            if d <= visited_ids.get(node.id, depth):
-                visited_ids[node.id] = d
-                if d < depth:
-                    # Get outgoing link keys
-                    for outgoing_link in tqdm(node.outgoing_links()):
-                        link_key = _metadata_s_link_key(link=outgoing_link)
-                        if d <= visited_link_keys.get(link_key, depth):
-                            visited_link_keys[link_key] = d
-                            # Query nodes with this link key
-                            query, params = self._get_search_cql_and_params(
-                                columns=CONTENT_ID,
-                                metadata=metadata_filter,
-                                link_keys=[link_key],
-                            )
-                            target_rows = self._session.execute(query, params)
-                            for row in target_rows:
-                                target_node_id = getattr(row, CONTENT_ID)
-                                if d < visited_ids.get(target_node_id, depth):
-                                    # Fetch node by ID
-                                    node_query = self._query_id_and_metadata_by_id
-                                    node_params = (target_node_id,)
-                                    node_rows = self._session.execute(node_query, node_params)
-                                    for node_row in node_rows:
-                                        target_node = _row_to_node(node_row)
-                                        work_queue.append((target_node, d + 1))
-
-        return self._nodes_with_ids(visited_ids.keys())
-
     def traversal_search(
-            self,
-            query: str,
-            *,
-            k: int = 4,
-            depth: int = 1,
-            metadata_filter: dict[str, Any] = {},  # noqa: B006
-        ) -> Iterable[Node]:
+        self,
+        query: str,
+        *,
+        k: int = 4,
+        depth: int = 1,
+        metadata_filter: dict[str, Any] = {},  # noqa: B006
+    ) -> Iterable[Node]:
         """Retrieve documents from this knowledge store.
 
         First, `k` nodes are retrieved using a vector search for the `query` string.
@@ -628,90 +560,132 @@ class GraphStore:
         Returns:
             Collection of retrieved documents.
         """
-        visited_ids: dict[str, int] = {}
-        visited_link_keys: dict[str, int] = {}
+        # Depth 0:
+        #   Query for `k` nodes similar to the question.
+        #   Retrieve `content_id` and `link_to_tags` (via `metadata-blob`).
+        #
+        # Depth 1:
+        #   Query for nodes that have an incoming tag in the `link_to_tags` set.
+        #   Combine node IDs.
+        #   Query for `link_to_tags` of those "new" node IDs.
+        #
+        # ...
 
-        # Locks for thread safety
-        visited_ids_lock = threading.Lock()
-        visited_link_keys_lock = threading.Lock()
 
-        work_queue = Queue()
+        with self._concurrent_queries() as cq:
+            # Map from visited ID to depth
+            visited_ids: dict[str, int] = {}
 
-        # Initial traversal query
-        traversal_query, traversal_params = self._get_search_cql_and_params(
-            columns=f"{CONTENT_ID}, metadata_blob",
-            metadata=metadata_filter,
-            embedding=self._embedding.embed_query(query),
-            limit=k
-        )
+            # Map from visited link keys to depth. Allows skipping queries
+            # for link keys that we've already traversed.
+            visited_link_keys: dict[str, int] = {}
 
-        # Execute the initial query synchronously
-        initial_rows = self._session.execute(traversal_query, traversal_params)
+            def visit_nodes(d: int, rows: Sequence[Any]) -> None:
+                nonlocal visited_ids
+                nonlocal visited_link_keys
 
-        for row in initial_rows:
-            node = _row_to_node(row=row)
-            work_queue.put((node, 0))
+                # Visit nodes at the given depth.
+                # Each node has `content_id` and `link_to_tags` (via `metadata_blob`).
 
-        def worker():
-            while True:
-                try:
-                    node, d = work_queue.get(timeout=1)
-                except Empty:
-                    # If no work is available after timeout, exit the worker
-                    return
+                # Iterate over nodes, tracking the *new* outgoing kind links for this
+                # depth. This is links that are either new, or newly discovered at a
+                # lower depth.
+                outgoing_link_keys: Set[str] = set()
+                for row in rows:
+                    node = _row_to_node(row=row)
 
-                with visited_ids_lock:
+                    # Add visited ID. If it is closer it is a new node at this depth:
                     if d <= visited_ids.get(node.id, depth):
                         visited_ids[node.id] = d
-                    else:
-                        # Node already visited at a lower depth
-                        work_queue.task_done()
-                        continue
+                        # If we can continue traversing from this node,
+                        if d < depth:
+                            # Record any new (or newly discovered at a lower depth)
+                            # links to the set to traverse.
+                            for outgoing_link in node.outgoing_links():
+                                link_key = _tag_s_link_key(link=outgoing_link)
+                                if d <= visited_link_keys.get(link_key, depth):
+                                    # Record that we'll query this link at the
+                                    # given depth, so we don't fetch it again
+                                    # (unless we find it an earlier depth)
+                                    visited_link_keys[link_key] = d
+                                    outgoing_link_keys.add(link_key)
 
-                if d < depth:
-                    # Get outgoing link keys
-                    outgoing_links = node.outgoing_links()
-                    for outgoing_link in outgoing_links:
-                        link_key = _metadata_s_link_key(link=outgoing_link)
-                        with visited_link_keys_lock:
-                            if d <= visited_link_keys.get(link_key, depth):
-                                visited_link_keys[link_key] = d
-                            else:
-                                continue  # Already visited at lower depth
-
-                        # Query nodes with this link key
+                # If there are new link keys to visit at the next depth, query for the
+                # node IDs.
+                if d == 0:
+                    for link_key in tqdm(outgoing_link_keys, desc="outgoing link key queries"):
                         query, params = self._get_search_cql_and_params(
                             columns=CONTENT_ID,
                             metadata=metadata_filter,
-                            link_keys=[link_key],
+                            tag=link_key,
                         )
-                        target_rows = self._session.execute(query, params)
-                        for row in target_rows:
-                            target_node_id = getattr(row, CONTENT_ID)
-                            with visited_ids_lock:
-                                if d < visited_ids.get(target_node_id, depth):
-                                    # Fetch node by ID
-                                    node_query = self._query_id_and_metadata_by_id
-                                    node_params = (target_node_id,)
-                                    node_rows = self._session.execute(node_query, node_params)
-                                    for node_row in node_rows:
-                                        target_node = _row_to_node(node_row)
-                                        work_queue.put((target_node, d + 1))
-                work_queue.task_done()
 
-        num_workers = 10  # Adjust the number of worker threads as needed
-        threads = []
-        for _ in range(num_workers):
-            t = threading.Thread(target=worker)
-            t.start()
-            threads.append(t)
+                        # print(query)
+                        # print(params)
 
-        # Wait for all items to be processed
-        work_queue.join()
+                        # target_rows = self._session.execute(query, params)
+                        # visit_targets(d=d, rows=target_rows)
 
-        # Wait for all worker threads to finish
-        for t in threads:
-            t.join()
+                        cq.execute(
+                            query=query,
+                            parameters=params,
+                            callback=lambda target_rows, d=d: visit_targets(d, rows=target_rows),
+                            timeout=4,
+                        )
+                else:
+                    for link_key in outgoing_link_keys:
+                        query, params = self._get_search_cql_and_params(
+                            columns=CONTENT_ID,
+                            metadata=metadata_filter,
+                            tag=link_key,
+                        )
+
+                        # target_rows = self._session.execute(query, params)
+                        # visit_targets(d=d, rows=target_rows)
+
+                        cq.execute(
+                            query=query,
+                            parameters=params,
+                            callback=lambda target_rows, d=d: visit_targets(d, rows=target_rows),
+                        )
+
+            def visit_targets(d: int, rows: Sequence[Any]) -> None:
+                nonlocal visited_ids
+
+                new_node_ids_at_next_depth: Set[int] = set()
+                for row in rows:
+                    target_node = _row_to_node(row=row)
+                    if d < visited_ids.get(target_node.id, depth):
+                        new_node_ids_at_next_depth.add(target_node.id)
+
+                for node_id in new_node_ids_at_next_depth:
+                    # node_rows = self._session.execute(
+                    #     query=self._query_id_and_metadata_by_id,
+                    #     parameters=(node_id,),
+                    # )
+                    # visit_nodes(d=d+1, rows=node_rows)
+
+                    cq.execute(
+                        self._query_id_and_metadata_by_id,
+                        parameters=(node_id,),
+                        callback=lambda node_rows, d=d: visit_nodes(d + 1, node_rows),
+                    )
+
+            traversal_query, traversal_params = self._get_search_cql_and_params(
+                columns=f"{CONTENT_ID}, metadata_blob",
+                metadata=metadata_filter,
+                embedding=self._embedding.embed_query(query),
+                limit=k
+            )
+
+            # initial_rows = self._session.execute(query=traversal_query, parameters=traversal_params)
+            # visit_nodes(d=0, rows=initial_rows)
+
+            cq.execute(
+                traversal_query,
+                parameters=traversal_params,
+                callback=lambda initial_rows: visit_nodes(0, rows=initial_rows),
+            )
 
         return self._nodes_with_ids(visited_ids.keys())
 
@@ -752,21 +726,22 @@ class GraphStore:
         """Get a node by its id."""
         return self._nodes_with_ids(ids=[content_id])[0]
 
-    def _get_outgoing_links(
+    def _get_outgoing_link_keys(
         self,
         source_ids: Iterable[str],
-    ) -> set[Link]:
+    ) -> set[str]:
         """Return the set of outgoing links for the given source ID(s).
 
         Args:
             source_ids: The IDs of the source nodes to retrieve outgoing links for.
         """
-        outgoing_links: Set[Link] = set()
+        outgoing_links: Set[str] = set()
 
         def add_sources(rows: Iterable[Any]) -> None:
             for row in rows:
                 node = _row_to_node(row=row)
-                outgoing_links.update(node.outgoing_links())
+                outgoing_link_keys = [_tag_s_link_key(l) for l in node.outgoing_links()]
+                outgoing_links.update(outgoing_link_keys)
 
         with self._concurrent_queries() as cq:
             for source_id in source_ids:
@@ -780,7 +755,7 @@ class GraphStore:
 
     def _get_adjacent_nodes(
         self,
-        outgoing_links: set[Link],
+        outgoing_link_keys: set[str],
         query_embedding: list[float],
         k_per_link: int = 10,
         metadata_filter: dict[str, Any] = {},
@@ -809,14 +784,13 @@ class GraphStore:
                     targets[target_node.id] = target_node
 
         with self._concurrent_queries() as cq:
-            for outgoing_link in outgoing_links:
-                link_key = _metadata_s_link_key(link=outgoing_link)
+            for outgoing_link_key in outgoing_link_keys:
                 query, params = self._get_search_cql_and_params(
                     columns=columns,
                     limit=k_per_link,
                     metadata=metadata_filter,
                     embedding=query_embedding,
-                    link_keys=[link_key]
+                    link_key=outgoing_link_key,
                 )
 
                 cq.execute(
@@ -885,13 +859,20 @@ class GraphStore:
 
     def _extract_where_clause_cql(
         self,
-        metadata_keys: Sequence[str] = (),
+        metadata: dict[str, Any] = {},
+        tag: str | None = None
     ) -> str:
         wc_blocks: list[str] = []
 
-        for key in sorted(metadata_keys):
+        # Use SimpleStatements if querying for tags
+        item_placeholder = "%s" if tag is not None else "?"
+
+        if tag is not None:
+            wc_blocks.append(f"tag_s CONTAINS {item_placeholder}")
+
+        for key in sorted(metadata.keys()):
             if _is_metadata_field_indexed(key, self._metadata_indexing_policy):
-                wc_blocks.append(f"metadata_s['{key}'] = %s")
+                wc_blocks.append(f"metadata_s['{key}'] = {item_placeholder}")
             else:
                 msg = "Non-indexed metadata fields cannot be used in queries."
                 raise ValueError(msg)
@@ -904,8 +885,12 @@ class GraphStore:
     def _extract_where_clause_params(
         self,
         metadata: dict[str, Any],
+        tag: str | None = None
     ) -> list[Any]:
         params: list[Any] = []
+
+        if tag is not None:
+            params.append(tag)
 
         for key, value in sorted(metadata.items()):
             if _is_metadata_field_indexed(key, self._metadata_indexing_policy):
@@ -922,20 +907,10 @@ class GraphStore:
         limit: int | None = None,
         metadata: dict[str, Any] | None = None,
         embedding: list[float] | None = None,
-        link_keys: list[str] | None = None,
+        tag: str | None = None,
     ) -> tuple[PreparedStatement|SimpleStatement, tuple[Any, ...]]:
-        if link_keys is not None:
-            if metadata is None:
-                metadata = {}
-            else:
-                # don't add link search to original metadata dict
-                metadata = metadata.copy()
-            for link_key in link_keys:
-                metadata[link_key] = _metadata_s_link_value()
 
-        metadata_keys = list(metadata.keys()) if metadata else []
-
-        where_clause = self._extract_where_clause_cql(metadata_keys=metadata_keys)
+        where_clause = self._extract_where_clause_cql(metadata=metadata, tag=tag)
         limit_clause = " LIMIT ?" if limit is not None else ""
         order_clause = " ORDER BY text_embedding ANN OF ?" if embedding is not None else ""
 
@@ -947,14 +922,14 @@ class GraphStore:
             limit_clause=limit_clause,
         )
 
-        where_params = self._extract_where_clause_params(metadata=metadata or {})
+        where_params = self._extract_where_clause_params(metadata=metadata, tag=tag)
         limit_params = [limit] if limit is not None else []
         order_params = [embedding] if embedding is not None else []
 
         params = tuple(list(where_params) + order_params + limit_params)
 
-        if len(metadata_keys) > 0:
-            return SimpleStatement(query_string=select_cql, fetch_size=100), params
+        if tag is not None:
+            return SimpleStatement(query_string=select_cql), params
         elif select_cql in self._prepared_query_cache:
             return self._prepared_query_cache[select_cql], params
         else:
