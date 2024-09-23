@@ -459,7 +459,7 @@ class GraphStore:
                 if row.content_id not in outgoing_links:
                     node = _row_to_node(row=row)
                     candidates[node.id] = node.embedding
-                    outgoing_links[node.id] = set(node.outgoing_links())
+                    outgoing_links[node.id] = node.outgoing_links()
             helper.add_candidates(candidates)
 
         if initial_roots:
@@ -610,11 +610,11 @@ class GraphStore:
                 if outgoing_links:
                     # If there are new tags to visit at the next depth, query for the
                     # node IDs.
-                    for link in outgoing_links:
+                    for outgoing_link in outgoing_links:
                         visit_nodes_query, params = self._get_search_cql_and_params(
                             columns="content_id AS target_content_id",
                             metadata=metadata_filter,
-                            link_keys=[_metadata_s_link_key(link)]
+                            outgoing_link=outgoing_link,
                         )
                         cq.execute(
                             query=visit_nodes_query,
@@ -748,7 +748,7 @@ class GraphStore:
                     limit=k_per_tag or 10,
                     metadata=metadata_filter,
                     embedding=query_embedding,
-                    link_keys=[_metadata_s_link_key(link=link)]
+                    outgoing_link=link,
                 )
 
                 cq.execute(
@@ -854,16 +854,15 @@ class GraphStore:
         limit: int | None = None,
         metadata: dict[str, Any] | None = None,
         embedding: list[float] | None = None,
-        link_keys: list[str] | None = None,
+        outgoing_link: Link | None = None,
     ) -> tuple[PreparedStatement|SimpleStatement, tuple[Any, ...]]:
-        if link_keys is not None:
+        if outgoing_link is not None:
             if metadata is None:
                 metadata = {}
             else:
                 # don't add link search to original metadata dict
                 metadata = metadata.copy()
-            for link_key in link_keys:
-                metadata[link_key] = _metadata_s_link_value()
+                metadata[_metadata_s_link_key(link=outgoing_link)] = _metadata_s_link_value()
 
         metadata_keys = list(metadata.keys()) if metadata else []
 
