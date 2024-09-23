@@ -22,7 +22,6 @@ from typing_extensions import assert_never
 
 from ._mmr_helper import MmrHelper
 from .concurrency import ConcurrentQueries
-from .content import Kind
 from .links import Link
 
 if TYPE_CHECKING:
@@ -52,7 +51,7 @@ class Node:
     metadata: dict[str, Any] = field(default_factory=dict)
     """Metadata for the node."""
     links: set[Link] = field(default_factory=set)
-    """All the links for the node."""
+    """Links for the node."""
 
     def incoming_links(self) -> set[Link]:
         return set([l for l in self.links if (l.direction in ["in", "bidir"])])
@@ -148,13 +147,6 @@ def _row_to_node(row: Any) -> Node:
 
 
 _CQL_IDENTIFIER_PATTERN = re.compile(r"[a-zA-Z][a-zA-Z0-9_]*")
-
-
-@dataclass
-class _Edge:
-    target_content_id: str
-    target_text_embedding: list[float]
-    target_link_to_tags: set[tuple[str, str]]
 
 
 class GraphStore:
@@ -415,60 +407,45 @@ class GraphStore:
         )
 
         # For each unselected node, stores the outgoing tags.
-        outgoing_tags: dict[str, set[tuple[str, str]]] = {}
+        outgoing_links: dict[str, set[Link]] = {}
+        visited_links: set[Link] = set()
 
-        # Fetch the initial candidates and add them to the helper and
-        # outgoing_tags.
-        columns = "content_id, text_embedding, link_to_tags"
-        adjacent_query = self._get_search_cql(
-            has_limit=True,
-            columns=columns,
-            metadata_keys=list(metadata_filter.keys()),
-            has_embedding=True,
-            has_link_from_tags=True,
-        )
-
-        visited_tags: set[tuple[str, str]] = set()
 
         def fetch_neighborhood(neighborhood: Sequence[str]) -> None:
+            nonlocal outgoing_links
+            nonlocal visited_links
+
             # Put the neighborhood into the outgoing tags, to avoid adding it
             # to the candidate set in the future.
-            outgoing_tags.update({content_id: set() for content_id in neighborhood})
+            outgoing_links.update({content_id: set() for content_id in neighborhood})
 
-            # Initialize the visited_tags with the set of outgoing from the
+            # Initialize the visited_links with the set of outgoing from the
             # neighborhood. This prevents re-visiting them.
-            visited_tags = self._get_outgoing_tags(neighborhood)
+            visited_links = self._get_outgoing_links(neighborhood)
 
             # Call `self._get_adjacent` to fetch the candidates.
-            adjacents = self._get_adjacent(
-                visited_tags,
-                adjacent_query=adjacent_query,
+            adjacent_nodes = self._get_adjacent(
+                links=visited_links,
                 query_embedding=query_embedding,
                 k_per_tag=adjacent_k,
                 metadata_filter=metadata_filter,
             )
 
             new_candidates = {}
-            for adjacent in adjacents:
-                if adjacent.target_content_id not in outgoing_tags:
-                    outgoing_tags[adjacent.target_content_id] = (
-                        adjacent.target_link_to_tags
+            for adjacent_node in adjacent_nodes:
+                if adjacent_node.id not in outgoing_links:
+                    outgoing_links[adjacent_node.id] = (
+                        adjacent_node.outgoing_links()
                     )
 
-                    new_candidates[adjacent.target_content_id] = (
-                        adjacent.target_text_embedding
+                    new_candidates[adjacent_node.id] = (
+                        adjacent_node.embedding
                     )
             helper.add_candidates(new_candidates)
 
         def fetch_initial_candidates() -> None:
-            initial_candidates_query = self._get_search_cql(
-                has_limit=True,
-                columns=columns,
-                metadata_keys=list(metadata_filter.keys()),
-                has_embedding=True,
-            )
-
-            params = self._get_search_params(
+            initial_candidates_query, params = self._get_search_cql_and_params(
+                columns = "content_id, text_embedding, metadata_blob",
                 limit=fetch_k,
                 metadata=metadata_filter,
                 embedding=query_embedding,
@@ -479,9 +456,10 @@ class GraphStore:
             )
             candidates = {}
             for row in fetched:
-                if row.content_id not in outgoing_tags:
-                    candidates[row.content_id] = row.text_embedding
-                    outgoing_tags[row.content_id] = set(row.link_to_tags or [])
+                if row.content_id not in outgoing_links:
+                    node = _row_to_node(row=row)
+                    candidates[node.id] = node.embedding
+                    outgoing_links[node.id] = set(node.outgoing_links())
             helper.add_candidates(candidates)
 
         if initial_roots:
@@ -509,34 +487,33 @@ class GraphStore:
                 # those.
 
                 # Find the tags linked to from the selected ID.
-                link_to_tags = outgoing_tags.pop(selected_id)
+                link_to_tags = outgoing_links.pop(selected_id)
 
                 # Don't re-visit already visited tags.
-                link_to_tags.difference_update(visited_tags)
+                link_to_tags.difference_update(visited_links)
 
                 # Find the nodes with incoming links from those tags.
-                adjacents = self._get_adjacent(
-                    link_to_tags,
-                    adjacent_query=adjacent_query,
+                adjacent_nodes = self._get_adjacent(
+                    links=link_to_tags,
                     query_embedding=query_embedding,
                     k_per_tag=adjacent_k,
                     metadata_filter=metadata_filter,
                 )
 
                 # Record the link_to_tags as visited.
-                visited_tags.update(link_to_tags)
+                visited_links.update(link_to_tags)
 
                 new_candidates = {}
-                for adjacent in adjacents:
-                    if adjacent.target_content_id not in outgoing_tags:
-                        outgoing_tags[adjacent.target_content_id] = (
-                            adjacent.target_link_to_tags
+                for adjacent_node in adjacent_nodes:
+                    if adjacent_node.id not in outgoing_links:
+                        outgoing_links[adjacent_node.id] = (
+                            adjacent_node.outgoing_links()
                         )
-                        new_candidates[adjacent.target_content_id] = (
-                            adjacent.target_text_embedding
+                        new_candidates[adjacent_node.id] = (
+                            adjacent_node.embedding
                         )
                         if next_depth < depths.get(
-                            adjacent.target_content_id, depth + 1
+                            adjacent_node.id, depth + 1
                         ):
                             # If this is a new shortest depth, or there was no
                             # previous depth, update the depths. This ensures that
@@ -548,7 +525,7 @@ class GraphStore:
                             # a shorter path via nodes selected later. This is
                             # currently "intended", but may be worth experimenting
                             # with.
-                            depths[adjacent.target_content_id] = next_depth
+                            depths[adjacent_node.id] = next_depth
                 helper.add_candidates(new_candidates)
 
         return self._nodes_with_ids(helper.selected_ids)
@@ -597,11 +574,11 @@ class GraphStore:
 
             # Map from visited tag `(kind, tag)` to depth. Allows skipping queries
             # for tags that we've already traversed.
-            visited_tags: dict[tuple[str, str], int] = {}
+            visited_links: dict[Link, int] = {}
 
             def visit_nodes(d: int, rows: Sequence[Any]) -> None:
                 nonlocal visited_ids
-                nonlocal visited_tags
+                nonlocal visited_links
 
                 # Visit nodes at the given depth.
                 # Each node has `content_id` and `link_to_tags`.
@@ -609,7 +586,7 @@ class GraphStore:
                 # Iterate over nodes, tracking the *new* outgoing kind tags for this
                 # depth. This is tags that are either new, or newly discovered at a
                 # lower depth.
-                outgoing_tags: Set[Link] = set()
+                outgoing_links: Set[Link] = set()
                 for row in rows:
                     content_id = row.content_id
 
@@ -623,17 +600,17 @@ class GraphStore:
                             # Record any new (or newly discovered at a lower depth)
                             # tags to the set to traverse.
                             for link in node.outgoing_links():
-                                if d <= visited_tags.get((link.kind, link.tag), depth):
+                                if d <= visited_links.get(link, depth):
                                     # Record that we'll query this tag at the
                                     # given depth, so we don't fetch it again
                                     # (unless we find it an earlier depth)
-                                    visited_tags[(link.kind, link.tag)] = d
-                                    outgoing_tags.add(link)
+                                    visited_links[link] = d
+                                    outgoing_links.add(link)
 
-                if outgoing_tags:
+                if outgoing_links:
                     # If there are new tags to visit at the next depth, query for the
                     # node IDs.
-                    for link in outgoing_tags:
+                    for link in outgoing_links:
                         visit_nodes_query, params = self._get_search_cql_and_params(
                             columns="content_id AS target_content_id",
                             metadata=metadata_filter,
@@ -707,21 +684,21 @@ class GraphStore:
         """Get a node by its id."""
         return self._nodes_with_ids(ids=[content_id])[0]
 
-    def _get_outgoing_tags(
+    def _get_outgoing_links(
         self,
         source_ids: Iterable[str],
-    ) -> set[tuple[str, str]]:
+    ) -> set[Link]:
         """Return the set of outgoing tags for the given source ID(s).
 
         Args:
             source_ids: The IDs of the source nodes to retrieve outgoing tags for.
         """
-        tags = set()
+        links = set()
 
         def add_sources(rows: Iterable[Any]) -> None:
             for row in rows:
-                if row.link_to_tags:
-                    tags.update(row.link_to_tags)
+                node = _row_to_node(row=row)
+                links.update(node.outgoing_links())
 
         with self._concurrent_queries() as cq:
             for source_id in source_ids:
@@ -731,21 +708,19 @@ class GraphStore:
                     callback=add_sources,
                 )
 
-        return tags
+        return links
 
     def _get_adjacent(
         self,
-        tags: set[tuple[str, str]],
-        adjacent_query: PreparedStatement,
+        links: set[Link],
         query_embedding: list[float],
         k_per_tag: int | None = None,
         metadata_filter: dict[str, Any] | None = None,
-    ) -> Iterable[_Edge]:
+    ) -> Iterable[Node]:
         """Return the target nodes with incoming links from any of the given tags.
 
         Args:
             tags: The tags to look for links *from*.
-            adjacent_query: Prepared query for adjacent nodes.
             query_embedding: The query embedding. Used to rank target nodes.
             k_per_tag: The number of target nodes to fetch for each outgoing tag.
             metadata_filter: Optional metadata to filter the results.
@@ -753,28 +728,27 @@ class GraphStore:
         Returns:
             List of adjacent edges.
         """
-        targets: dict[str, _Edge] = {}
+        targets: dict[str, Node] = {}
 
         def add_targets(rows: Iterable[Any]) -> None:
+            nonlocal targets
+
             # TODO: Figure out how to use the "kind" on the edge.
             # This is tricky, since we currently issue one query for anything
             # adjacent via any kind, and we don't have enough information to
             # determine which kind(s) a given target was reached from.
             for row in rows:
                 if row.content_id not in targets:
-                    targets[row.content_id] = _Edge(
-                        target_content_id=row.content_id,
-                        target_text_embedding=row.text_embedding,
-                        target_link_to_tags=set(row.link_to_tags or []),
-                    )
+                    targets[row.content_id] = _row_to_node(row=row)
 
         with self._concurrent_queries() as cq:
-            for kind, value in tags:
-                params = self._get_search_params(
+            for link in links:
+                adjacent_query, params = self._get_search_cql_and_params(
+                    columns = "content_id, text_embedding, metadata_blob",
                     limit=k_per_tag or 10,
                     metadata=metadata_filter,
                     embedding=query_embedding,
-                    link_from_tags=(kind, value),
+                    link_keys=[_metadata_s_link_key(link=link)]
                 )
 
                 cq.execute(
