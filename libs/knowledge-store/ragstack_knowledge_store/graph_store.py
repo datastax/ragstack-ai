@@ -549,7 +549,13 @@ class GraphStore:
                             depths[adjacent.target_content_id] = next_depth
                 helper.add_candidates(new_candidates)
 
-        return self._nodes_with_ids(helper.selected_ids)
+        nodes = self._nodes_with_ids(helper.selected_ids)
+        for node, similarity_score, mmr_score in zip(
+            nodes, helper.selected_similarity_scores, helper.selected_mmr_scores
+        ):
+            node.metadata["similarity_score"] = similarity_score
+            node.metadata["mmr_score"] = mmr_score
+        return nodes
 
     def traversal_search(
         self,
