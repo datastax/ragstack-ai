@@ -73,3 +73,8 @@ def test_mmr_helper_added_documetns() -> None:
         }
     )
     assert helper.pop_best() == "v2"
+
+    assert math.isclose(helper.selected_similarity_scores[0], 0.9250772068)
+    assert math.isclose(helper.selected_similarity_scores[1], 0.7071067811)
+    assert math.isclose(helper.selected_mmr_scores[0], 0.4625386034)
+    assert math.isclose(helper.selected_mmr_scores[1], 0.1607613986)
