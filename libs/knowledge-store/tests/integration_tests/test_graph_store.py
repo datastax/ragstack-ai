@@ -211,6 +211,16 @@ def test_mmr_traversal(
     results = gs.mmr_traversal_search("0.0", fetch_k=2, k=4, initial_roots=["v0"])
     assert _result_ids(results) == ["v1", "v3", "v2"]
 
+    results = gs.mmr_traversal_search(
+        "0.0", k=2, fetch_k=2, tag_filter={("explicit", "link")}
+    )
+    assert _result_ids(results) == ["v0", "v2"]
+
+    results = gs.mmr_traversal_search(
+        "0.0", k=2, fetch_k=2, tag_filter={("no", "match")}
+    )
+    assert _result_ids(results) == []
+
 
 def test_write_retrieve_keywords(
     graph_store_factory: Callable[[MetadataIndexingType], GraphStore],
@@ -281,6 +291,14 @@ def test_write_retrieve_keywords(
     # edge.
     results = gs.traversal_search("Earth", k=1, depth=1)
     assert set(_result_ids(results)) == {"doc2", "doc1", "greetings"}
+
+    results = gs.traversal_search(
+        "Earth", k=1, depth=1, tag_filter={("parent", "parent")}
+    )
+    assert set(_result_ids(results)) == {"doc2", "greetings"}
+
+    results = gs.traversal_search("Earth", k=1, depth=1, tag_filter={("no", "match")})
+    assert _result_ids(results) == []
 
 
 def test_metadata(
