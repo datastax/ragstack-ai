@@ -17,6 +17,7 @@ from typing import (
 
 from cassandra.cluster import ConsistencyLevel, PreparedStatement, Session
 from cassio.config import check_resolve_keyspace, check_resolve_session
+from typing_extensions import assert_never
 
 from ._mmr_helper import MmrHelper
 from .concurrency import ConcurrentQueries
@@ -76,7 +77,7 @@ def _is_metadata_field_indexed(field_name: str, policy: MetadataIndexingPolicy) 
         return field_name in p_fields
     if p_mode == MetadataIndexingMode.DEFAULT_TO_SEARCHABLE:
         return field_name not in p_fields
-    raise ValueError(f"Unexpected metadata indexing mode {p_mode}")
+    assert_never(p_mode)
 
 
 def _serialize_metadata(md: dict[str, Any]) -> str:
@@ -157,7 +158,9 @@ class GraphStore:
         keyspace: str | None = None,
         setup_mode: SetupMode = SetupMode.SYNC,
         metadata_indexing: MetadataIndexingType = "all",
+        insert_timeout: float = 30.0,
     ):
+        self._insert_timeout = insert_timeout
         if targets_table:
             logger.warning(
                 "The 'targets_table' parameter is deprecated "
@@ -168,10 +171,12 @@ class GraphStore:
         keyspace = check_resolve_keyspace(keyspace)
 
         if not _CQL_IDENTIFIER_PATTERN.fullmatch(keyspace):
-            raise ValueError(f"Invalid keyspace: {keyspace}")
+            msg = f"Invalid keyspace: {keyspace}"
+            raise ValueError(msg)
 
         if not _CQL_IDENTIFIER_PATTERN.fullmatch(node_table):
-            raise ValueError(f"Invalid node table name: {node_table}")
+            msg = f"Invalid node table name: {node_table}"
+            raise ValueError(msg)
 
         self._embedding = embedding
         self._node_table = node_table
@@ -186,10 +191,11 @@ class GraphStore:
         if setup_mode == SetupMode.SYNC:
             self._apply_schema()
         elif setup_mode != SetupMode.OFF:
-            raise ValueError(
+            msg = (
                 f"Invalid setup mode {setup_mode.name}. "
                 "Only SYNC and OFF are supported at the moment"
             )
+            raise ValueError(msg)
 
         # TODO: Parent ID / source ID / etc.
         self._insert_passage = session.prepare(
@@ -318,6 +324,7 @@ class GraphStore:
                         metadata_blob,
                         metadata_s,
                     ),
+                    timeout=self._insert_timeout,
                 )
 
         return node_ids
@@ -347,7 +354,8 @@ class GraphStore:
 
         def get_result(node_id: str) -> Node:
             if (result := results[node_id]) is None:
-                raise ValueError(f"No node with ID '{node_id}'")
+                msg = f"No node with ID '{node_id}'"
+                raise ValueError(msg)
             return result
 
         return [get_result(node_id) for node_id in ids]
@@ -541,7 +549,13 @@ class GraphStore:
                             depths[adjacent.target_content_id] = next_depth
                 helper.add_candidates(new_candidates)
 
-        return self._nodes_with_ids(helper.selected_ids)
+        nodes = self._nodes_with_ids(helper.selected_ids)
+        for node, similarity_score, mmr_score in zip(
+            nodes, helper.selected_similarity_scores, helper.selected_mmr_scores
+        ):
+            node.metadata["similarity_score"] = similarity_score
+            node.metadata["mmr_score"] = mmr_score
+        return nodes
 
     def traversal_search(
         self,
@@ -797,14 +811,9 @@ class GraphStore:
             elif metadata_indexing.lower() == "none":
                 mode, fields = (MetadataIndexingMode.DEFAULT_TO_UNSEARCHABLE, set())
             else:
-                raise ValueError(
-                    f"Unsupported metadata_indexing value '{metadata_indexing}'"
-                )
+                msg = f"Unsupported metadata_indexing value '{metadata_indexing}'"
+                raise ValueError(msg)
         else:
-            if len(metadata_indexing) != 2:  # noqa: PLR2004
-                raise ValueError(
-                    f"Unsupported metadata_indexing value '{metadata_indexing}'."
-                )
             # it's a 2-tuple (mode, fields) still to normalize
             _mode, _field_spec = metadata_indexing
             fields = {_field_spec} if isinstance(_field_spec, str) else set(_field_spec)
@@ -823,10 +832,9 @@ class GraphStore:
             }:
                 mode = MetadataIndexingMode.DEFAULT_TO_SEARCHABLE
             else:
-                raise ValueError(
-                    f"Unsupported metadata indexing mode specification '{_mode}'"
-                )
-        return (mode, fields)
+                msg = f"Unsupported metadata indexing mode specification '{_mode}'"
+                raise ValueError(msg)
+        return mode, fields
 
     @staticmethod
     def _coerce_string(value: Any) -> str:
@@ -862,9 +870,8 @@ class GraphStore:
             if _is_metadata_field_indexed(key, self._metadata_indexing_policy):
                 wc_blocks.append(f"metadata_s['{key}'] = ?")
             else:
-                raise ValueError(
-                    "Non-indexed metadata fields cannot be used in queries."
-                )
+                msg = "Non-indexed metadata fields cannot be used in queries."
+                raise ValueError(msg)
 
         if len(wc_blocks) == 0:
             return ""
@@ -886,9 +893,8 @@ class GraphStore:
             if _is_metadata_field_indexed(key, self._metadata_indexing_policy):
                 params.append(self._coerce_string(value=value))
             else:
-                raise ValueError(
-                    "Non-indexed metadata fields cannot be used in queries."
-                )
+                msg = "Non-indexed metadata fields cannot be used in queries."
+                raise ValueError(msg)
 
         return params
 

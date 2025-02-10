@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Any
 
 from tqdm import tqdm
 from trulens_eval import Tru, TruChain
-from trulens_eval.feedback.provider import AzureOpenAI, Huggingface, LLMProvider, OpenAI
+from trulens_eval.feedback.provider import AzureOpenAI, Huggingface, OpenAI
 from trulens_eval.schema.feedback import FeedbackMode, FeedbackResultStatus
 from typing_extensions import Never, override
 
@@ -19,6 +19,8 @@ from .base_pipeline import BasePipeline
 from .feedbacks import Feedbacks
 
 if TYPE_CHECKING:
+    from trulens_eval.feedback.provider.base import LLMProvider
+
     from ragstack_ragulate.datasets import BaseDataset, QueryItem
 
 
@@ -189,7 +191,8 @@ class QueryPipeline(BasePipeline):
             return AzureOpenAI(deployment_name=model_name)
         if llm_provider == "huggingface":
             return Huggingface(name=model_name)
-        raise ValueError(f"Unsupported provider: {llm_provider}")
+        msg = f"Unsupported provider: {llm_provider}"
+        raise ValueError(msg)
 
     def query(self) -> None:
         """Run the query pipeline."""

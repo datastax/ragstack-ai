@@ -263,4 +263,5 @@ class Analysis:
         elif output == "histogram-grid":
             self.output_histograms_by_dataset(df=df, metrics=metrics)
         else:
-            raise ValueError(f"Invalid output type: {output}")
+            msg = f"Invalid output type: {output}"
+            raise ValueError(msg)

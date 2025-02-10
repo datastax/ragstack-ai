@@ -1,17 +1,14 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 from ragstack_ragulate.analysis import Analysis
 from ragstack_ragulate.config import ConfigParser
 from ragstack_ragulate.logging_config import logger
 from ragstack_ragulate.pipelines import IngestPipeline, QueryPipeline
 
-if TYPE_CHECKING:
-    from argparse import ArgumentParser, _SubParsersAction
 
-
-def setup_run(subparsers: _SubParsersAction[ArgumentParser]) -> None:
+def setup_run(subparsers) -> None:  # type: ignore[no-untyped-def]
     """Setup the run command."""
     run_parser = subparsers.add_parser(
         "run", help="Run an experiment from a config file"

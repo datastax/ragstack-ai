@@ -1,4 +1,3 @@
-from argparse import ArgumentParser, _SubParsersAction
 from typing import Any
 
 from ragstack_ragulate.dashboard import run_dashboard
@@ -6,7 +5,7 @@ from ragstack_ragulate.dashboard import run_dashboard
 from .utils import remove_sqlite_extension
 
 
-def setup_dashboard(subparsers: _SubParsersAction[ArgumentParser]) -> None:
+def setup_dashboard(subparsers) -> None:  # type: ignore[no-untyped-def]
     """Setup the dashboard command."""
     dashboard_parser = subparsers.add_parser(
         "dashboard",

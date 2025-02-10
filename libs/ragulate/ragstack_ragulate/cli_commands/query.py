@@ -1,16 +1,13 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 from ragstack_ragulate.datasets import find_dataset
 from ragstack_ragulate.pipelines import QueryPipeline
 from ragstack_ragulate.utils import convert_vars_to_ingredients
 
-if TYPE_CHECKING:
-    from argparse import ArgumentParser, _SubParsersAction
 
-
-def setup_query(subparsers: _SubParsersAction[ArgumentParser]) -> None:
+def setup_query(subparsers) -> None:  # type: ignore[no-untyped-def]
     """Setup the query command."""
     query_parser = subparsers.add_parser("query", help="Run a query pipeline")
     query_parser.add_argument(
@@ -119,15 +116,15 @@ def setup_query(subparsers: _SubParsersAction[ArgumentParser]) -> None:
     ) -> None:
         """Run a query pipeline."""
         if sample <= 0.0 or sample > 1.0:
-            raise ValueError("Sample percent must be between 0 and 1")
+            msg = "Sample percent must be between 0 and 1"
+            raise ValueError(msg)
 
         datasets = [find_dataset(name=name) for name in dataset]
 
         if subset is not None and len(subset) > 0:
             if len(datasets) > 1:
-                raise ValueError(
-                    "Only can set `subset` param when there is one dataset"
-                )
+                msg = "Only can set `subset` param when there is one dataset"
+                raise ValueError(msg)
             datasets[0].subsets = subset
 
         ingredients = convert_vars_to_ingredients(

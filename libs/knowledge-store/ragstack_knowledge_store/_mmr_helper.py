@@ -24,6 +24,7 @@ NEG_INF = float("-inf")
 @dataclasses.dataclass
 class _Candidate:
     id: str
+    similarity: float
     weighted_similarity: float
     weighted_redundancy: float
     score: float = dataclasses.field(init=False)
@@ -69,6 +70,13 @@ class MmrHelper:
 
     selected_ids: list[str]
     """List of selected IDs (in selection order)."""
+
+    selected_mmr_scores: list[float]
+    """List of MMR score at the time each document is selected."""
+
+    selected_similarity_scores: list[float]
+    """List of similarity score for each selected document."""
+
     selected_embeddings: NDArray[np.float32]
     """(N, dim) ndarray with a row for each selected node."""
 
@@ -100,6 +108,8 @@ class MmrHelper:
         self.score_threshold = score_threshold
 
         self.selected_ids = []
+        self.selected_similarity_scores = []
+        self.selected_mmr_scores = []
 
         # List of selected embeddings (in selection order).
         self.selected_embeddings = np.ndarray((k, self.dimensions), dtype=np.float32)
@@ -123,30 +133,34 @@ class MmrHelper:
         selected = len(self.selected_ids)
         return np.vsplit(self.selected_embeddings, [selected])[0]
 
-    def _pop_candidate(self, candidate_id: str) -> NDArray[np.float32]:
+    def _pop_candidate(self, candidate_id: str) -> tuple[float, NDArray[np.float32]]:
         """Pop the candidate with the given ID.
 
         Returns:
-            The embedding of the candidate.
+            The similarity score and embedding of the candidate.
         """
         # Get the embedding for the id.
         index = self.candidate_id_to_index.pop(candidate_id)
-        if not self.candidates[index].id == candidate_id:
-            raise ValueError(
+        if self.candidates[index].id != candidate_id:
+            msg = (
                 "ID in self.candidate_id_to_index doesn't match the ID of the "
                 "corresponding index in self.candidates"
             )
+            raise ValueError(msg)
         embedding: NDArray[np.float32] = self.candidate_embeddings[index].copy()
 
         # Swap that index with the last index in the candidates and
         # candidate_embeddings.
         last_index = self.candidate_embeddings.shape[0] - 1
 
+        similarity = 0.0
         if index == last_index:
             # Already the last item. We don't need to swap.
-            self.candidates.pop()
+            similarity = self.candidates.pop().similarity
         else:
             self.candidate_embeddings[index] = self.candidate_embeddings[last_index]
+
+            similarity = self.candidates[index].similarity
 
             old_last = self.candidates.pop()
             self.candidates[index] = old_last
@@ -156,7 +170,7 @@ class MmrHelper:
             0
         ]
 
-        return embedding
+        return similarity, embedding
 
     def pop_best(self) -> str | None:
         """Select and pop the best item being considered.
@@ -171,11 +185,13 @@ class MmrHelper:
 
         # Get the selection and remove from candidates.
         selected_id = self.best_id
-        selected_embedding = self._pop_candidate(selected_id)
+        selected_similarity, selected_embedding = self._pop_candidate(selected_id)
 
         # Add the ID and embedding to the selected information.
         selection_index = len(self.selected_ids)
         self.selected_ids.append(selected_id)
+        self.selected_mmr_scores.append(self.best_score)
+        self.selected_similarity_scores.append(selected_similarity)
         self.selected_embeddings[selection_index] = selected_embedding
 
         # Reset the best score / best ID.
@@ -231,6 +247,7 @@ class MmrHelper:
                 max_redundancy = redundancy[index].max()
             candidate = _Candidate(
                 id=candidate_id,
+                similarity=similarity[index][0],
                 weighted_similarity=self.lambda_mult * similarity[index][0],
                 weighted_redundancy=self.lambda_mult_complement * max_redundancy,
             )

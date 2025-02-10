@@ -129,7 +129,8 @@ def get_recorder(
             feedbacks=feedbacks,
             feedback_mode=feedback_mode,
         )
-    raise ValueError(f"Unknown framework: {framework} specified for get_recorder()")
+    msg = f"Unknown framework: {framework} specified for get_recorder()"
+    raise ValueError(msg)
 
 
 def get_azure_chat_model(
@@ -151,7 +152,8 @@ def get_azure_chat_model(
             model_version=model_version,
             temperature=temperature,
         )
-    raise ValueError(f"Unknown framework: {framework} specified for getChatModel()")
+    msg = f"Unknown framework: {framework} specified for getChatModel()"
+    raise ValueError(msg)
 
 
 def get_azure_embeddings_model(framework: Framework):
@@ -167,9 +169,8 @@ def get_azure_embeddings_model(framework: Framework):
             api_version="2023-05-15",
             temperature=temperature,
         )
-    raise ValueError(
-        f"Unknown framework: {framework} specified for getEmbeddingsModel()"
-    )
+    msg = f"Unknown framework: {framework} specified for getEmbeddingsModel()"
+    raise ValueError(msg)
 
 
 def get_astra_vector_store(framework: Framework, collection_name: str):
@@ -187,9 +188,8 @@ def get_astra_vector_store(framework: Framework, collection_name: str):
             token=os.getenv("ASTRA_DB_APPLICATION_TOKEN"),
             embedding_dimension=1536,
         )
-    raise ValueError(
-        f"Unknown framework: {framework} specified for get_astra_vector_store()"
-    )
+    msg = f"Unknown framework: {framework} specified for get_astra_vector_store()"
+    raise ValueError(msg)
 
 
 def execute_query(framework: Framework, pipeline, query) -> None:
@@ -198,9 +198,8 @@ def execute_query(framework: Framework, pipeline, query) -> None:
     elif framework == Framework.LLAMA_INDEX:
         pipeline.query(query)
     else:
-        raise ValueError(
-            f"Unknown framework: {framework} specified for execute_query()"
-        )
+        msg = f"Unknown framework: {framework} specified for execute_query()"
+        raise ValueError(msg)
 
 
 # runs the pipeline across all queries in all known datasets

@@ -1,12 +1,25 @@
-'use strict'
+"use strict";
 
-const { execSync } = require('child_process')
+const { execSync } = require("child_process");
 
 module.exports.register = (context) => {
-  context.once('sitePublished', () => {
+  context.once("sitePublished", ({ playbook }) => {
     const logger = context.getLogger('tailwind-processor-extension')
-    logger.info('Building Tailwind')
-    execSync('npm run tailwindcss', { stdio: 'inherit' })
-    logger.info('Tailwind Build Successful')
-  })
-}
+    const outputDir = playbook?.output?.dir || "build/site";
+    logger.info("Building Tailwind");
+    var configPath = execSync(`find ${outputDir} -name tailwind.config.js`)
+      .toString()
+      .trim();
+    var cssPath = execSync(`find ${outputDir} -name site*.css`)
+      .toString()
+      .trim();
+    logger.info(
+      `npm run tailwindcss --tailwind-config-path=${configPath} --css-path=${cssPath}`
+    );
+    execSync(
+      `npm run tailwindcss --tailwind-config-path=${configPath} --css-path=${cssPath}`,
+      { stdio: "inherit" }
+    );
+    logger.info("Tailwind Build Successful");
+  });
+};

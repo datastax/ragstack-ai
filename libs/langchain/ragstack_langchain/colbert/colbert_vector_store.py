@@ -246,11 +246,11 @@ class ColbertVectorStore(VectorStore):
         **kwargs: Any,
     ) -> Self:
         if not isinstance(embedding, TokensEmbeddings):
-            raise TypeError("ColbertVectorStore requires a TokensEmbeddings embedding.")
+            msg = "ColbertVectorStore requires a TokensEmbeddings embedding."
+            raise TypeError(msg)
         if database is None:
-            raise ValueError(
-                "ColbertVectorStore requires a ColbertBaseDatabase database."
-            )
+            msg = "ColbertVectorStore requires a ColbertBaseDatabase database."
+            raise ValueError(msg)
         instance = cls(
             database=database, embedding_model=embedding.get_embedding_model(), **kwargs
         )
@@ -270,11 +270,11 @@ class ColbertVectorStore(VectorStore):
         **kwargs: Any,
     ) -> Self:
         if not isinstance(embedding, TokensEmbeddings):
-            raise TypeError("ColbertVectorStore requires a TokensEmbeddings embedding.")
+            msg = "ColbertVectorStore requires a TokensEmbeddings embedding."
+            raise TypeError(msg)
         if database is None:
-            raise ValueError(
-                "ColbertVectorStore requires a ColbertBaseDatabase database."
-            )
+            msg = "ColbertVectorStore requires a ColbertBaseDatabase database."
+            raise ValueError(msg)
         instance = cls(
             database=database, embedding_model=embedding.get_embedding_model(), **kwargs
         )
@@ -290,5 +290,6 @@ class ColbertVectorStore(VectorStore):
         search_kwargs["k"] = k
         search_type = kwargs.get("search_type", "similarity")
         if search_type != "similarity":
-            raise ValueError(f"Unsupported search type: {search_type}")
+            msg = f"Unsupported search type: {search_type}"
+            raise ValueError(msg)
         return super().as_retriever(search_kwargs=search_kwargs, **kwargs)

@@ -1,19 +1,17 @@
 = Introduction to Graph-Based Knowledge Extraction and Traversal
-
-RAGStack offers two libraries supporting knowledge graph extraction and traversal, `ragstack-ai-knowledge-graph` and `ragstack-ai-knowledge-store`.
-
-A knowledge graph represents information as **nodes**. Nodes are connected by **edges** indicating relationships between them. Each edge includes the source (for example, "Marie Curie" the person), the target ("Nobel Prize" the award) and a type, indicating how the source relates to the target (for example, “won”).
-
-A graph database isn't required to use the knowledge graph libraries - RAGStack uses Astra DB or Apache Cassandra to store and retrieve graphs.
-
-The `ragstack-ai-knowledge-graph` library offers **entity-centric** knowledge graph extraction and traversal. It extracts a knowledge graph from unstructured information and creates nodes from **entities**, or concepts (for example, "Seattle").
-
-The `ragstack-ai-knowledge-store` library offers **content-centric** knowledge graph extraction and traversal. It extracts a knowledge graph from unstructured information and creates nodes from **content** (for example, a specific document about Seattle).
+:page-aliases: knowledge-graph:knowledge-graph.adoc, knowledge-graph:knowledge-store.adoc
 
 [IMPORTANT]
 ====
-This feature is currently under development and has not been fully tested. It is not supported for use in production environments. Please use this feature in testing and development environments only.
+The `ragstack-ai-knowledge-graph` and `ragstack-ai-knowledge-store` libraries are no longer under development.
+
+Instead, you can find the latest tools and techniques for working with knowledge graphs and graph RAG in the https://github.com/datastax/graph-rag[Graph RAG project].
+
+If you have further questions, contact https://support.datastax.com/[DataStax Support].
 ====
+
+A knowledge graph represents information as **nodes**. Nodes are connected by **edges** indicating relationships between them. Each edge includes the source (for example, "Marie Curie" the person), the target ("Nobel Prize" the award) and a type, indicating how the source relates to the target (for example, “won”).
+
 
 == What's the difference between knowledge graphs and vector similarity search?
 
@@ -28,49 +26,42 @@ From a developer's perspective, a knowledge graph is built into a RAG pipeline s
 
 For example: consider a tech support system, where you find an article that is similar to your question, and it says. "If you have trouble with step 4, see this article for more information". Even if "more information" is not similar to your original question, it likely provides more information.
 
-The article's "see more information" is an example of an edge in a knowledge graph. The edge connects the initial article to additional information, indicating that the two are related. This relationship would not be captured in a similarity search.
+The article's HTML links can be examples of edges in a knowledge graph. These edges connect the initial article to additional information, indicating that they are related. This relationship would not be captured in a vector similarity search.
 
 These edges also increase the diversity of results. Within the same tech support system, if you retrieve 100 chunks that are highly similar to the question, you have retrieved 100 chunks that are also highly similar to themselves. Following edges to linked information increases diversity.
 
-== The `ragstack-ai-knowledge-graph` library
 
-The `ragstack-ai-knowledge-graph` library contains functions for the extraction and traversal of **entity-centric** knowledge graphs.
+== How is Knowledge Graph RAG different from RAG?
 
-To install the package, run:
+Short answer: it isn't. Knowledge graphs are a method of doing RAG, but with a different representation of the information.
 
-[source,bash]
-----
-pip install ragstack-ai-knowledge-graph
-----
+RAG with similarity search creates a vector representation of information based on chunks of text. The query is compared to the question, and the most similar chunks are returned as the answer.
 
-To install the library as an extra with the RAGStack Langchain package, run:
+Knowledge graph RAG extracts a knowledge graph from information, and stores the graph representation in a vector or graph knowledge store.
 
-[source,bash]
-----
-pip install "ragstack-ai-langchain[knowledge-graph]"
-----
+Instead of a similarity search query, the graph store is **traversed** to extract a sub-graph of the knowledge graph's edges and properties. For example, a query for "Marie Curie" returns a sub-graph of nodes representing her relationships, accomplishments, and other relevant information - the context.
 
-For more information, see xref:knowledge-graph.adoc[].
+You're telling the graph store to "start with this node, and show me the relationships to a depth of 2 nodes outwards."
 
-== The `ragstack-ai-knowledge-store` library
 
-The `ragstack-ai-knowledge-store` library contains functions for creating a **content-centric** vector-and-graph store. This store combines the benefits of vector stores with the context and relationships of a related edges.
+== What's the difference between entity-centric and content-centric knowledge graphs?
 
-To install the package, run:
+**Entity-centric knowledge graphs** capture edge relationships between entities.
+A knowledge graph is extracted with an LLM from unstructured information, and its entities and their edge relationships are stored in a vector or graph store.
 
-[source,bash]
-----
-pip install ragstack-ai-knowledge-store
-----
+However, extracting this entity-centric knowledge graph from unstructured information is difficult, time-consuming, and error-prone. A user has to guide the LLM on the kinds of nodes and relationships to be extracted with a schema, and if the knowledge schema changes, the graph has to be processed again. The context advantages of entity-centric knowledge graphs are great, but the cost to build and maintain them is much higher than just chunking and embedding content to a vector store.
 
-To install the library as an extra with the RAGStack Langchain package, run:
+**Content-centric knowledge graphs** offer a compromise between the ease and scalability of vector similarity search, and the context and relationships of entity-centric knowledge graphs.
 
-[source,bash]
-----
-pip install "ragstack-ai-langchain[knowledge-store]"
-----
+The content-centric approach starts with nodes that represent content (a specific document about Seattle), instead of concepts or entities (a node representing Seattle). A node may represent a table, an image, or a section of a document. Since the node represents the original content, the nodes are exactly what is stored when using vector search.
 
-For more information, see xref:knowledge-store.adoc[].
+Unstructured content is loaded, chunked, and written to a vector store.
+Each chunk can be run through a variety of analyses to identify links. For example, links in the content may turn into `links_to edges`, and keywords may be extracted from the chunk to link up with other chunks on the same topic.
+
+To add edges, each chunk may be annotated with URLs that its content represents, or each chunk may be associated with keywords.
+
+Retrieval is where the benefits of vector search and content-centric traversal come together.
+The query's initial starting points in the knowledge graph are identified based on vector similarity to the question, and then additional chunks are selected by following edges from that node. Including nodes that are related both by embedding distance (similarity) and graph distance (related) leads to a more diverse set of chunks with deeper context and less hallucinations.
 
 
 

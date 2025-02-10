@@ -363,7 +363,8 @@ def _run_test(
             vector_store=vector_store, config=resolved_llm["nemo_config"]
         )
     else:
-        raise ValueError(f"Unknown test case: {test_case}")
+        msg = f"Unknown test case: {test_case}"
+        raise ValueError(msg)
 
 
 @pytest.fixture()

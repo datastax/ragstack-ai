@@ -42,4 +42,5 @@ class ConfigParser:
             version = config.get("version", _VERSION_0_1)
             if version == _VERSION_0_1:
                 return cls(config_schema=ConfigSchema0Dot1(), config=config)
-            raise ValueError(f"config file version {version} is not supported")
+            msg = f"config file version {version} is not supported"
+            raise ValueError(msg)

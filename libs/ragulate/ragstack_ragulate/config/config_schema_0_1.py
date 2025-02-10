@@ -162,10 +162,11 @@ class ConfigSchema0Dot1(BaseConfigSchema):
                 doc_script = doc_step.get("script", None)
                 doc_method = doc_step.get("method", None)
                 if doc_name in steps:
-                    raise ValueError(
+                    msg = (
                         f"{step_kind} step names must be unique. Found {doc_name} more "
                         f"than once."
                     )
+                    raise ValueError(msg)
                 steps[doc_name] = Step(
                     name=doc_name, script=doc_script, method=doc_method
                 )
@@ -180,19 +181,19 @@ class ConfigSchema0Dot1(BaseConfigSchema):
             for doc_ingredient in doc_ingredients:
                 for key, value in doc_ingredient.items():
                     if key in ingredients:
-                        raise ValueError(
-                            f"ingredient {key} appears in recipe more than once."
-                        )
+                        msg = f"ingredient {key} appears in recipe more than once."
+                        raise ValueError(msg)
                     ingredients[key] = value
 
             doc_name = doc_recipe.get("name", None)
 
             if doc_name is None:
                 if len(doc_ingredients) == 0:
-                    raise ValueError(
+                    msg = (
                         "recipe must either have a `name` defined or contain at least "
                         "one ingredient."
                     )
+                    raise ValueError(msg)
                 recipe_name = dict_to_string(ingredients)
             else:
                 recipe_name = doc_name
@@ -203,20 +204,24 @@ class ConfigSchema0Dot1(BaseConfigSchema):
                 doc_recipe_step = doc_recipe.get(step_kind, None)
                 step = step_map[step_kind].get(doc_recipe_step, None)
                 if doc_recipe_step is not None and step is None:
-                    raise ValueError(
+                    msg = (
                         f"{step_kind} step {doc_recipe_step} for recipe {recipe_name} "
                         f"is not defined in the `steps` section"
                     )
+                    raise ValueError(msg)
                 if step:
                     recipe_steps[step_kind] = step
 
             if "query" not in recipe_steps:
-                raise ValueError(f"query step is missing for recipe {recipe_name}")
+                msg = f"query step is missing for recipe {recipe_name}"
+                raise ValueError(msg)
 
             if recipe_name in recipes:
-                raise ValueError(
-                    f"recipe names must be unique. Found {recipe_name} more than once."
+                msg = (
+                    "recipe names must be unique. "
+                    f"Found {recipe_name} more than once."
                 )
+                raise ValueError(msg)
 
             recipes[recipe_name] = Recipe(
                 name=recipe_name,
@@ -235,9 +240,8 @@ class ConfigSchema0Dot1(BaseConfigSchema):
                 doc_dataset_name = doc_dataset.get("name", None)
                 doc_dataset_kind = doc_dataset.get("kind", None)
                 if doc_dataset_name is None or doc_dataset_kind is None:
-                    raise ValueError(
-                        "datasets must be specified with `name` and `kind`"
-                    )
+                    msg = "datasets must be specified with `name` and `kind`"
+                    raise ValueError(msg)
                 datasets[doc_dataset_name] = get_dataset(
                     name=doc_dataset_name, kind=doc_dataset_kind
                 )
