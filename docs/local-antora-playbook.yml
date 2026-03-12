@@ -1,0 +1,76 @@
+# This is a configuration file for Antora.
+# You can pass it to Antora to build this content as an HTML site for previewing offline.
+#
+#  $ npm install
+#  $ npx antora --clean local-antora-playbook.yml
+
+site:
+  title: RAGStack
+  start_page: ragstack::index.adoc
+content:
+  sources:
+  - url: ..
+    start_path: docs
+    branches: HEAD
+  # ...or use this content source instead to pull the content directly from the remote repository
+  #- url: https://github.com/datastax/ragstack-ai.git
+  #  start_path: docs
+  #  branches: HEAD
+  #  edit_url: '{web_url}/edit/{refname}/{path}'
+antora:
+  extensions:
+  # Unlisted pages extension: Locates unlisted pages, which are pages not accessible from the navigation. https://docs.antora.org/antora/latest/extend/extension-use-cases/#report-unlisted-pages
+  - id: unlisted-pages
+    enabled: true
+    require: antora-extensions/unlisted-pages-extension.js
+    add_to_navigation: false
+    unlisted_pages_heading: Orphans
+asciidoc:
+  extensions:
+  - '@asciidoctor/tabs'
+  attributes:
+    experimental: ''
+    idprefix: '@'
+    idseparator: '-@'
+    table-caption: false
+    example-caption: false
+    listing-caption: false
+    figure-caption: false
+    hide-uri-scheme: '@'
+    max-include-depth: 10
+    page-toclevels: 2@
+    tabs-sync-option: ''
+    table-stripes: 'hover'
+    xrefstyle: short
+ui:
+  bundle:
+    url: https://gitlab.com/antora/antora-ui-default/-/jobs/artifacts/master/raw/build/ui-bundle.zip?job=bundle-stable
+    snapshot: true
+  supplemental_files:
+  # Supplemental UI configuration for @asciidoctor/tabs. See https://github.com/asciidoctor/asciidoctor-tabs/blob/main/docs/use-with-antora.adoc
+  - path: css/vendor/tabs.css
+    contents: ./node_modules/@asciidoctor/tabs/dist/css/tabs.css
+  - path: js/vendor/tabs.js
+    contents: ./node_modules/@asciidoctor/tabs/dist/js/tabs.js
+  - path: partials/footer-scripts.hbs
+    contents: |
+      <script id="site-script" src="{{{uiRootPath}}}/js/site.js" data-ui-root-path="{{{uiRootPath}}}"></script>
+      <script async src="{{{uiRootPath}}}/js/vendor/highlight.js"></script>
+      <script async src="{{{uiRootPath}}}/js/vendor/tabs.js"></script>
+      {{#if env.SITE_SEARCH_PROVIDER}}
+      {{> search-scripts}}
+      {{/if}}
+  - path: partials/head-styles.hbs
+    contents: |
+      <link rel="stylesheet" href="{{{uiRootPath}}}/css/site.css">
+      <link rel="stylesheet" href="{{{uiRootPath}}}/css/vendor/tabs.css">
+  - path:
+runtime:
+  log:
+    failure_level: warn
+    format: pretty
+git:
+  # ensure_git_suffix: false # Enable if necessary -- some git services don’t recognize the URL if it contains the .git extension.
+  fetch_concurrency: 8 # Lowering this setting can potentially resolve network errors (such as ECONNRESET) related to fetching multiple content sources concurrently.
+output:
+  dir: ./build
