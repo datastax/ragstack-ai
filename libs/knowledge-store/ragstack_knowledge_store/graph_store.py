@@ -372,6 +372,7 @@ class GraphStore:
         lambda_mult: float = 0.5,
         score_threshold: float = float("-inf"),
         metadata_filter: dict[str, Any] = {},  # noqa: B006
+        tag_filter: set[tuple[str, str]] = {},
     ) -> Iterable[Node]:
         """Retrieve documents from this graph store using MMR-traversal.
 
@@ -403,6 +404,7 @@ class GraphStore:
             score_threshold: Only documents with a score greater than or equal
                 this threshold will be chosen. Defaults to -infinity.
             metadata_filter: Optional metadata to filter the results.
+            tag_filter: Optional tags to filter graph edges to be traversed.
         """
         query_embedding = self._embedding.embed_query(query)
         helper = MmrHelper(
@@ -449,9 +451,14 @@ class GraphStore:
             new_candidates = {}
             for adjacent in adjacents:
                 if adjacent.target_content_id not in outgoing_tags:
-                    outgoing_tags[adjacent.target_content_id] = (
-                        adjacent.target_link_to_tags
-                    )
+                    if len(tag_filter) == 0:
+                        outgoing_tags[adjacent.target_content_id] = (
+                            adjacent.target_link_to_tags
+                        )
+                    else:
+                        outgoing_tags[adjacent.target_content_id] = (
+                            tag_filter.intersection(adjacent.target_link_to_tags)
+                        )
 
                     new_candidates[adjacent.target_content_id] = (
                         adjacent.target_text_embedding
@@ -479,7 +486,12 @@ class GraphStore:
             for row in fetched:
                 if row.content_id not in outgoing_tags:
                     candidates[row.content_id] = row.text_embedding
-                    outgoing_tags[row.content_id] = set(row.link_to_tags or [])
+                    if len(tag_filter) == 0:
+                        outgoing_tags[row.content_id] = set(row.link_to_tags or [])
+                    else:
+                        outgoing_tags[row.content_id] = tag_filter.intersection(
+                            set(row.link_to_tags or [])
+                        )
             helper.add_candidates(candidates)
 
         if initial_roots:
@@ -527,9 +539,14 @@ class GraphStore:
                 new_candidates = {}
                 for adjacent in adjacents:
                     if adjacent.target_content_id not in outgoing_tags:
-                        outgoing_tags[adjacent.target_content_id] = (
-                            adjacent.target_link_to_tags
-                        )
+                        if len(tag_filter) == 0:
+                            outgoing_tags[adjacent.target_content_id] = (
+                                adjacent.target_link_to_tags
+                            )
+                        else:
+                            outgoing_tags[adjacent.target_content_id] = (
+                                tag_filter.intersection(adjacent.target_link_to_tags)
+                            )
                         new_candidates[adjacent.target_content_id] = (
                             adjacent.target_text_embedding
                         )
@@ -564,6 +581,7 @@ class GraphStore:
         k: int = 4,
         depth: int = 1,
         metadata_filter: dict[str, Any] = {},  # noqa: B006
+        tag_filter: set[tuple[str, str]] = {},
     ) -> Iterable[Node]:
         """Retrieve documents from this knowledge store.
 
@@ -577,6 +595,7 @@ class GraphStore:
                 Defaults to 4.
             depth: The maximum depth of edges to traverse. Defaults to 1.
             metadata_filter: Optional metadata to filter the results.
+            tag_filter: Optional tags to filter graph edges to be traversed.
 
         Returns:
             Collection of retrieved documents.
@@ -641,7 +660,11 @@ class GraphStore:
                                     # given depth, so we don't fetch it again
                                     # (unless we find it an earlier depth)
                                     visited_tags[(kind, value)] = d
-                                    outgoing_tags.add((kind, value))
+                                    if (
+                                        len(tag_filter) == 0
+                                        or (kind, value) in tag_filter
+                                    ):
+                                        outgoing_tags.add((kind, value))
 
                 if outgoing_tags:
                     # If there are new tags to visit at the next depth, query for the
