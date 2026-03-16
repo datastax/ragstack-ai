@@ -17,23 +17,27 @@ if TYPE_CHECKING:
     from types import TracebackType
 
     from cassandra.cluster import ResponseFuture, Session
-    from cassandra.query import PreparedStatement
+    from cassandra.query import PreparedStatement, SimpleStatement
 
 logger = logging.getLogger(__name__)
 
 
 class _Callback(Protocol):
-    def __call__(self, rows: Sequence[Any], /) -> None: ...
+    def __call__(self, rows: Sequence[Any], /) -> None:
+        ...
 
 
 class ConcurrentQueries(contextlib.AbstractContextManager["ConcurrentQueries"]):
-    """Context manager for concurrent queries."""
+    """Context manager for concurrent queries with a max limit of 5 ongoing queries."""
+
+    _MAX_CONCURRENT_QUERIES = 5
 
     def __init__(self, session: Session) -> None:
         self._session = session
         self._completion = threading.Condition()
         self._pending = 0
         self._error: BaseException | None = None
+        self._semaphore = threading.Semaphore(self._MAX_CONCURRENT_QUERIES)
 
     def _handle_result(
         self,
@@ -49,6 +53,7 @@ class ConcurrentQueries(contextlib.AbstractContextManager["ConcurrentQueries"]):
         else:
             with self._completion:
                 self._pending -= 1
+                self._semaphore.release()  # Release the semaphore once a query completes
                 if self._pending == 0:
                     self._completion.notify()
 
@@ -60,19 +65,18 @@ class ConcurrentQueries(contextlib.AbstractContextManager["ConcurrentQueries"]):
         )
         with self._completion:
             self._error = error
+            self._pending -= 1  # Decrement pending count
+            self._semaphore.release()  # Release the semaphore on error
             self._completion.notify()
 
     def execute(
         self,
-        query: PreparedStatement,
+        query: PreparedStatement | SimpleStatement,
         parameters: tuple[Any, ...] | None = None,
         callback: _Callback | None = None,
         timeout: float | None = None,
     ) -> None:
-        """Execute a query concurrently.
-
-        Because this is done concurrently, it expects a callback if you need
-        to inspect the results.
+        """Execute a query concurrently with a max of 5 concurrent queries.
 
         Args:
             query: The query to execute.
@@ -80,33 +84,47 @@ class ConcurrentQueries(contextlib.AbstractContextManager["ConcurrentQueries"]):
             callback: Callback to apply to the results. Defaults to `None`.
             timeout: Timeout to use (if not the session default).
         """
-        # TODO: We could have some form of throttling, where we track the number
-        # of pending calls and queue things if it exceed some threshold.
-
         with self._completion:
-            self._pending += 1
             if self._error is not None:
                 return
 
-        execute_kwargs = {}
-        if timeout is not None:
-            execute_kwargs["timeout"] = timeout
-        future: ResponseFuture = self._session.execute_async(
-            query,
-            parameters,
-            **execute_kwargs,
-        )
-        future.add_callbacks(
-            self._handle_result,
-            self._handle_error,
-            callback_kwargs={
-                "future": future,
-                "callback": callback,
-            },
-            errback_kwargs={
-                "future": future,
-            },
-        )
+        # Acquire the semaphore before proceeding to ensure we do not exceed the max limit
+        self._semaphore.acquire()
+
+        with self._completion:
+            if self._error is not None:
+                # Release semaphore before returning
+                self._semaphore.release()
+                return
+            self._pending += 1
+
+        try:
+            execute_kwargs = {}
+            if timeout is not None:
+                execute_kwargs["timeout"] = timeout
+            future: ResponseFuture = self._session.execute_async(
+                query,
+                parameters,
+                **execute_kwargs,
+            )
+            future.add_callbacks(
+                self._handle_result,
+                self._handle_error,
+                callback_kwargs={
+                    "future": future,
+                    "callback": callback,
+                },
+                errback_kwargs={
+                    "future": future,
+                },
+            )
+        except Exception as e:
+            with self._completion:
+                self._error = e
+                self._pending -= 1  # Decrement pending count
+                self._semaphore.release()  # Release semaphore
+                self._completion.notify()
+            raise
 
     def __exit__(
         self,
@@ -122,6 +140,4 @@ class ConcurrentQueries(contextlib.AbstractContextManager["ConcurrentQueries"]):
             raise self._error
 
         # Don't swallow the exception.
-        # We don't need to do anything with the exception (`_exc_*` parameters)
-        # since returning false here will automatically re-raise it.
         return False
