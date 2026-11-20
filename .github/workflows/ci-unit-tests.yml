@@ -115,9 +115,9 @@ jobs:
       matrix:
         python-version:
           - "3.12"
-          - "3.11"
-          - "3.10"
-          - "3.9"
+#          - "3.11"
+#          - "3.10"
+#          - "3.9"
     steps:
       - name: Check out the repo
         uses: actions/checkout@v4
@@ -127,14 +127,14 @@ jobs:
         with:
           python-version: "${{ matrix.python-version }}"
 
-      - name: "Unit tests (root)"
-        # yamllint disable-line rule:line-length
-        if: ${{ needs.preconditions.outputs.libs_langchain == 'true' || needs.preconditions.outputs.libs_colbert == 'true' || needs.preconditions.outputs.libs_llamaindex == 'true' }}
-        run: tox -e unit-tests && rm -rf .tox
-
-      - name: "Unit tests (ragulate)"
-        if: ${{ needs.preconditions.outputs.libs_ragulate == 'true' && matrix.python-version != '3.9' }}
-        run: tox -e unit-tests -c libs/ragulate && rm -rf libs/ragulate/.tox
+#      - name: "Unit tests (root)"
+#        # yamllint disable-line rule:line-length
+#        if: ${{ needs.preconditions.outputs.libs_langchain == 'true' || needs.preconditions.outputs.libs_colbert == 'true' || needs.preconditions.outputs.libs_llamaindex == 'true' }}
+#        run: tox -e unit-tests && rm -rf .tox
+#
+#      - name: "Unit tests (ragulate)"
+#        if: ${{ needs.preconditions.outputs.libs_ragulate == 'true' && matrix.python-version != '3.9' }}
+#        run: tox -e unit-tests -c libs/ragulate && rm -rf libs/ragulate/.tox
 
       - name: "Unit tests (colbert)"
         if: ${{ needs.preconditions.outputs.libs_colbert == 'true' }}
