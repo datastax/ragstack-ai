@@ -1,0 +1,361 @@
+= Integrating Mastra with Astra DB
+
+:navtitle: Integrating Mastra with Astra DB
+:page-layout: tutorial
+:page-icon-role: bg-[var(--ds-neutral-900)]
+:page-toclevels: 1
+
+This tutorial demonstrates how to integrate Mastra with Astra DB to build an AI-powered chef agent with Retrieval-Augmented Generation (RAG) capabilities. You'll learn how to leverage Astra DB's vector search functionality to store ingredients and create a context-aware cooking assistant.
+
+[NOTE]
+====
+Mastra is an open-source TypeScript framework for building intelligent applications with LLMs (Large Language Models). It provides a streamlined way to create, manage, and deploy AI agents and workflows with type safety.
+
+Learn more at https://mastra.ai/docs
+====
+
+include::examples:partial$prerequisites-typescript.adoc[]
+
+== Installation & Project Initialization
+
+The recommended way to start a new Mastra project is to use the project scaffolding script:
+
+[source,bash]
+----
+npx create-mastra@latest
+----
+
+You will be prompted to:
+
+* Name your project (e.g., "mastra-astra-project")
+* Choose components to install (select "Agents" at minimum)
+* Select a default provider (choose OpenAI, or the preferred provider with embedding support like Cohere)
+* Include example code (optional)
+
+After the script completes, navigate to your new project directory and install the additional packages needed for our Astra DB integration:
+
+[source,bash]
+----
+cd mastra-astra-project
+
+# Install Astra DB integration
+npm install @mastra/astra
+
+# Install memory support
+npm install @mastra/memory
+
+# Install RAG support
+npm install @mastra/rag
+----
+
+== Configuration
+
+When you initialize a Mastra project, a `.env.development` file is created for local development. Update this file with the necessary API keys and configuration settings for Astra DB:
+
+[source,bash]
+----
+# Models
+OPENAI_API_KEY=your_openai_api_key
+# or the API key for your preferred provider with embedding support
+# (e.g., COHERE_API_KEY)
+
+# AstraDB
+ASTRA_DB_TOKEN=your_astra_db_token
+ASTRA_DB_ENDPOINT=your_astra_db_endpoint
+ASTRA_DB_KEYSPACE=your_astra_db_keyspace
+----
+
+== Understanding Memory in Mastra
+
+[NOTE]
+====
+Before building our chef agent, let's understand what Memory means in Mastra and how it can enhance AI applications with Astra DB.
+====
+
+Memory in Mastra allows agents to maintain context across interactions. There are two primary types of memory:
+
+1. *Conversation History*: Keeps track of recent messages in the conversation.
+2. *Semantic Recall*: Uses vector embeddings to retrieve relevant information from the conversation.
+
+When using memory with Astra DB, we're leveraging Astra's vector search capabilities to implement semantic recall, allowing our agents to remember facts, preferences, and past interactions in a more intelligent way.
+
+== Building a Basic Agent with Memory
+
+Let's start by building a basic agent with memory capabilities using Astra DB.
+
+=== Step 1: Set Up Shared Resources
+
+First, create a file for shared resources that will be used across your application:
+
+Create `src/mastra/shared.ts`:
+
+[source,typescript]
+----
+import { openai } from "@ai-sdk/openai";
+import { AstraVector } from "@mastra/astra";
+import { Memory } from "@mastra/memory";
+
+export const embedder = openai.embedding("text-embedding-3-small");
+
+export const vector = new AstraVector({
+  token: process.env.ASTRA_DB_TOKEN ?? "",
+  endpoint: process.env.ASTRA_DB_ENDPOINT ?? "",
+  keyspace: process.env.ASTRA_DB_KEYSPACE ?? "",
+});
+
+export const memory = new Memory({
+  embedder,
+  vector,
+});
+
+export const model = openai("gpt-4o-mini");
+----
+
+=== Step 2: Create a Basic Chef Agent
+
+Now, let's create a simple chef agent with memory but without any custom tools:
+
+Create `src/mastra/agents/chefAgent.ts`:
+
+[source,typescript]
+----
+import { Agent } from "@mastra/core/agent";
+import { memory, model } from "../shared";
+
+export const chefAgent = new Agent({
+  name: "chefAgent",
+  model,
+  memory,
+  instructions:
+    "You are Michel, a practical and experienced home chef. " +
+    "You help people cook with whatever ingredients they have available. " +
+});
+----
+
+=== Step 3: Register the Agent with Mastra
+
+Create `src/mastra/index.ts`:
+
+[source,typescript]
+----
+import { Mastra } from "@mastra/core";
+import { chefAgent } from "./agents/chefAgent";
+import { vector } from "./shared";
+
+export const mastra = new Mastra({
+  agents: { chefAgent },
+  vectors: { vector },
+});
+----
+
+=== Step 4: Test the Basic Agent with Memory
+
+Run the following command to start the Mastra development server:
+
+[source,bash]
+----
+npm run dev
+----
+
+This will start the Mastra playground on port 4111. You can access it at http://localhost:4111.
+
+Now let's test the agent's memory capabilities:
+
+1. Navigate to the Mastra playground at http://localhost:4111
+2. Find and select the "chefAgent"
+3. Start a conversation with the agent with a message like:
++
+[source]
+----
+Hi Chef Michel! Just so you know, I'm allergic to shellfish and I love spicy food.
+----
+4. Continue the conversation with a few more messages about preferences or ingredients
+
+=== Step 5: Check Astra DB for Memory Storage
+
+Now, go to your Astra DB dashboard. You should see a new collection that's been automatically created to store the conversation embeddings (typically prefixed with `memory_messages`). This collection contains the vector embeddings of your conversation messages, enabling semantic recall.
+
+[NOTE]
+====
+Even without any custom tools, Mastra has automatically created and populated this `memory_messages` collection in Astra DB. This happens because we connected the Memory instance to AstraVector, and Mastra's semantic recall system automatically stores and retrieves message embeddings from this collection. This powerful capability works out of the box without any additional code.
+====
+
+== Enhancing the Agent with RAG Tools
+
+Now that we've seen the basic semantic recall capabilities with Astra DB, let's enhance our chef agent with custom RAG tools to manage a structured ingredient database.
+
+=== Step 1: Create Chef Tools
+
+Create a file `src/mastra/tools/chefTools.ts`:
+
+[source,typescript]
+----
+import { createTool } from "@mastra/core";
+import { z } from "zod";
+import { embedMany } from "ai";
+import { createVectorQueryTool } from "@mastra/rag";
+import { embedder, model } from "../shared";
+
+export type Ingredient = {
+  name: string;
+  availability: "in_stock" | "out_of_stock";
+  tags: string[];
+};
+
+export const addIngredientTool = createTool({
+  id: "addIngredientTool",
+  description: "Add a new ingredient to the vector store",
+  inputSchema: z
+    .object({
+      ingredients: z
+        .array(
+          z.object({
+            name: z.string().describe("Name of the ingredient"),
+            availability: z
+              .enum(["in_stock", "out_of_stock"])
+              .describe("Availability status"),
+            tags: z.array(z.string()).describe("Tags for the ingredient"),
+          }),
+        )
+        .describe("List of ingredients to add"),
+    })
+    .describe("Add multiple ingredients to the vector store"),
+  execute: async ({ context, mastra }) => {
+    const { ingredients } = context;
+
+    const memory = mastra?.getAgent("chefAgent").getMemory();
+    const embedder = memory?.embedder;
+    const vector = memory?.vector;
+
+    if (!vector || !embedder) {
+      return { error: "Vector store or embedder not found" };
+    }
+
+    // Embed all ingredients at once
+    const embeddings = await embedMany({
+      model: embedder,
+      values: ingredients.map((ing) => ing.name),
+    });
+
+    const indexes = await vector.listIndexes();
+
+    if (!indexes.includes("ingredients")) {
+      await vector.createIndex({
+        indexName: "ingredients",
+        dimension: 1536, // should match the dimensions of the embedding model used
+      });
+    }
+
+    const result = await vector.upsert({
+      indexName: "ingredients",
+      vectors: embeddings.embeddings,
+      metadata: ingredients,
+    });
+
+    return { result };
+  },
+});
+
+export const ingredientQueryTool = createVectorQueryTool({
+  vectorStoreName: "vector", // as configured in mastra
+  indexName: "ingredients",
+  model: embedder,
+  id: "ingredientQueryTool",
+  description: "Query the vector store for ingredients",
+  reranker: {
+    model,
+    options: {
+      weights: {
+        semantic: 0.5,
+        vector: 0.3,
+        position: 0.2,
+      },
+      topK: 5,
+    },
+  },
+});
+----
+
+=== Step 2: Update the Chef Agent with RAG Tools
+
+Now, update our chef agent to use these new tools:
+
+Update `src/mastra/agents/chefAgent.ts`:
+
+[source,typescript]
+----
+import { Agent } from "@mastra/core/agent";
+import { addIngredientTool, ingredientQueryTool } from "../tools/chefTools";
+import { memory, model } from "../shared";
+
+export const chefAgent = new Agent({
+  name: "chefAgent",
+  model,
+  memory,
+  tools: { addIngredientTool, ingredientQueryTool },
+  instructions:
+    "You are Michel, a practical and experienced home chef. " +
+    "You help people cook with whatever ingredients they have available. " +
+    "You have access to a vector store of ingredients and their availability. " +
+    "You can add new ingredients to the store and query for existing ingredients. " +
+    "You can also query for ingredients by name, availability, or tags.",
+});
+----
+
+=== Step 3: Test the Enhanced RAG Capabilities
+
+Restart the development server to apply the changes:
+
+[source,bash]
+----
+npm run dev
+----
+
+Now test the enhanced RAG capabilities:
+
+1. Navigate to the Mastra playground at http://localhost:4111
+2. Find and select the "chefAgent"
+3. Add ingredients to your database:
++
+[source]
+----
+Can you add tomatoes, basil, and mozzarella to my ingredient list? They're all in stock.
+----
+
+4. Query ingredients:
++
+[source]
+----
+What Italian dishes can I make with my ingredients?
+----
+
+The agent will use the `addIngredientTool` to store these ingredients in Astra DB, then use the `ingredientQueryTool` to semantically search for recipes that match the available ingredients.
+
+=== Step 4: Check Astra DB for Multiple Collections
+
+Go back to your Astra DB dashboard. Now you should see two collections:
+
+1. The `memory_messages` collection we saw earlier (for conversation memory)
+2. A new `ingredients` collection (created by our custom tools)
+
+This demonstrates how Astra DB can be used for multiple vector storage purposes within the same application - both for agent memory and for domain-specific data.
+
+== Conclusion
+
+Congratulations! You've successfully built an AI-powered chef agent using Mastra and Astra DB. This integration showcases a progressive enhancement approach to RAG:
+
+1. *Basic Semantic Recall*: Using Astra DB to store and retrieve conversation embeddings, enabling the agent to remember information from previous interactions
+2. *Enhanced RAG Capabilities*: Building on the semantic recall foundation to create domain-specific tools for managing structured data (ingredients)
+
+The integration demonstrates two powerful uses of Astra DB's vector capabilities:
+
+* *Automatic memory vectors*: Mastra automatically creates and manages vector embeddings for conversation memory
+* *Custom vector collections*: Our tools create and manage a separate collection for domain-specific data
+
+== What's next?
+
+Explore more advanced storage options, agent workflows, and integrations in the xref:index.adoc[RAGStack Examples Index].
+
+For details on Astra DB, see https://docs.datastax.com/en/astra-serverless/docs.
+
+For Mastra core documentation, see https://mastra.ai/docs.
